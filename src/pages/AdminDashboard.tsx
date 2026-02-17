@@ -41,6 +41,11 @@ const AdminDashboard = () => {
   const [newEmailEventId, setNewEmailEventId] = useState("");
   const [newEmail, setNewEmail] = useState("");
 
+  // Grant access form
+  const [grantEventId, setGrantEventId] = useState("");
+  const [grantName, setGrantName] = useState("");
+  const [grantEmail, setGrantEmail] = useState("");
+
   // New resource form
   const [newResEventId, setNewResEventId] = useState("");
   const [newResTitle, setNewResTitle] = useState("");
@@ -169,6 +174,22 @@ const AdminDashboard = () => {
     await supabase.from("event_access_requests").update({ status }).eq("id", id);
     await fetchAll();
     toast({ title: `Request ${status}` });
+  };
+
+  const grantAccess = async () => {
+    if (!grantEventId || !grantName.trim() || !grantEmail.trim()) return;
+    try {
+      await callAdminApi("grant-access", {
+        event_id: grantEventId,
+        name: grantName.trim(),
+        email: grantEmail.trim(),
+      });
+      setGrantName(""); setGrantEmail("");
+      await fetchAll();
+      toast({ title: "Access granted!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const addApprovedEmail = async () => {
@@ -442,7 +463,27 @@ const AdminDashboard = () => {
 
           {/* Requests Tab */}
           {activeTab === "requests" && (
-            <div className="bg-card rounded-lg border border-border overflow-hidden">
+            <div className="space-y-6">
+              {/* Grant Access Form */}
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-4">Grant Access</h2>
+                <p className="text-sm text-muted-foreground mb-4">Directly grant a member access to an event's resources.</p>
+                <div className="flex gap-3 flex-wrap">
+                  <select
+                    value={grantEventId}
+                    onChange={e => setGrantEventId(e.target.value)}
+                    className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[180px]"
+                  >
+                    <option value="">Select event</option>
+                    {events.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+                  </select>
+                  <Input placeholder="Name" value={grantName} onChange={e => setGrantName(e.target.value)} className="flex-1 min-w-[150px]" />
+                  <Input placeholder="Email address" value={grantEmail} onChange={e => setGrantEmail(e.target.value)} className="flex-1 min-w-[200px]" />
+                  <Button onClick={grantAccess}><Check className="h-4 w-4 mr-1" /> Grant Access</Button>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
@@ -485,6 +526,7 @@ const AdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+             </div>
             </div>
           )}
 

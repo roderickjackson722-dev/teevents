@@ -83,6 +83,39 @@ Deno.serve(async (req) => {
         if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+
+      if (action === "grant-access") {
+        const email = (body.email || "").trim().toLowerCase();
+        if (!body.event_id || !email || !body.name) {
+          return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        // Check if request already exists
+        const { data: existing } = await adminClient
+          .from("event_access_requests")
+          .select("id, status")
+          .eq("event_id", body.event_id)
+          .eq("email", email)
+          .maybeSingle();
+
+        if (existing) {
+          if (existing.status === "approved") {
+            return new Response(JSON.stringify({ error: "Already approved" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+          // Update existing to approved
+          const { error } = await adminClient.from("event_access_requests").update({ status: "approved" }).eq("id", existing.id);
+          if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        } else {
+          // Create new approved request
+          const { error } = await adminClient.from("event_access_requests").insert({
+            event_id: body.event_id,
+            email,
+            name: body.name.trim(),
+            status: "approved",
+          });
+          if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
     }
 
     // Default: fetch all admin data

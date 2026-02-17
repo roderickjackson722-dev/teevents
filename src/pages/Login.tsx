@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LogIn, User, Mail, ChevronRight, CheckCircle, Clock } from "lucide-react";
+import { LogIn, User, Mail, ChevronRight, CheckCircle, Clock, ExternalLink, FileText } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState<"approved" | "pending" | null>(null);
+  const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -52,7 +53,19 @@ const Login = () => {
       return;
     }
 
-    setSubmitted(data.status === "approved" ? "approved" : "pending");
+    if (data.status === "approved") {
+      try {
+        const res = await supabase.functions.invoke("event-resources", {
+          body: { event_id: selectedEvent.id, email: email.trim().toLowerCase() },
+        });
+        if (res.data?.resources) {
+          setResources(res.data.resources);
+        }
+      } catch {}
+      setSubmitted("approved");
+    } else {
+      setSubmitted("pending");
+    }
   };
 
   return (
@@ -69,23 +82,48 @@ const Login = () => {
         >
           <div className="bg-card rounded-lg shadow-xl p-8 border border-border">
             {submitted ? (
-              <div className="text-center py-6">
+              <div className="py-4">
                 {submitted === "approved" ? (
                   <>
-                    <CheckCircle className="h-14 w-14 text-green-600 mx-auto mb-4" />
-                    <h2 className="text-2xl font-display font-bold text-foreground mb-2">Access Granted!</h2>
-                    <p className="text-muted-foreground text-sm">
-                      You've been approved for <strong>{selectedEvent?.title}</strong>. Check your email for event resources.
-                    </p>
+                    <div className="text-center mb-6">
+                      <CheckCircle className="h-12 w-12 text-primary mx-auto mb-3" />
+                      <h2 className="text-2xl font-display font-bold text-foreground mb-1">Access Granted!</h2>
+                      <p className="text-muted-foreground text-sm">
+                        Welcome to <strong>{selectedEvent?.title}</strong>
+                      </p>
+                    </div>
+                    {resources.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Event Resources</p>
+                        {resources.map((resource) => (
+                          <a
+                            key={resource.id}
+                            href={resource.link || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center gap-3 p-3 rounded-md border border-border transition-all ${resource.link ? "hover:border-secondary/50 hover:bg-muted/50 cursor-pointer" : "opacity-60 pointer-events-none"}`}
+                          >
+                            <FileText className="h-4 w-4 text-secondary shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{resource.title}</p>
+                              {resource.description && (
+                                <p className="text-xs text-muted-foreground truncate">{resource.description}</p>
+                              )}
+                            </div>
+                            {resource.link && <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </>
                 ) : (
-                  <>
+                  <div className="text-center">
                     <Clock className="h-14 w-14 text-secondary mx-auto mb-4" />
                     <h2 className="text-2xl font-display font-bold text-foreground mb-2">Request Submitted</h2>
                     <p className="text-muted-foreground text-sm">
                       Your request for <strong>{selectedEvent?.title}</strong> is pending approval. You'll be notified once approved.
                     </p>
-                  </>
+                  </div>
                 )}
               </div>
             ) : !selectedEvent ? (

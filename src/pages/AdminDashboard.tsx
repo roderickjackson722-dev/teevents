@@ -22,6 +22,11 @@ const AdminDashboard = () => {
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
   const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails">("events");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<string | null>(null);
+  const [editEventTitle, setEditEventTitle] = useState("");
+  const [editEventDate, setEditEventDate] = useState("");
+  const [editEventLocation, setEditEventLocation] = useState("");
+  const [editEventStatus, setEditEventStatus] = useState<"current" | "past">("current");
 
   // New event form
   const [newTitle, setNewTitle] = useState("");
@@ -116,6 +121,28 @@ const AdminDashboard = () => {
     await supabase.from("events").delete().eq("id", id);
     await fetchAll();
     toast({ title: "Event deleted" });
+  };
+
+  const startEditingEvent = (event: Tables<"events">) => {
+    setEditingEvent(event.id);
+    setEditEventTitle(event.title);
+    setEditEventDate(event.date || "");
+    setEditEventLocation(event.location || "");
+    setEditEventStatus(event.status as "current" | "past");
+  };
+
+  const updateEvent = async (id: string) => {
+    if (!editEventTitle.trim()) return;
+    const { error } = await supabase.from("events").update({
+      title: editEventTitle.trim(),
+      date: editEventDate || null,
+      location: editEventLocation.trim() || null,
+      status: editEventStatus,
+    }).eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    setEditingEvent(null);
+    await fetchAll();
+    toast({ title: "Event updated!" });
   };
 
   const updateRequestStatus = async (id: string, status: "approved" | "denied") => {
@@ -241,25 +268,51 @@ const AdminDashboard = () => {
               {/* Events List */}
               {events.map(event => (
                 <div key={event.id} className="bg-card rounded-lg border border-border">
-                  <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        event.status === "current" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"
-                      }`}>{event.status}</span>
-                      <h3 className="font-display font-semibold">{event.title}</h3>
-                      {event.date && <span className="text-xs text-muted-foreground">{new Date(event.date).toLocaleDateString()}</span>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)} className="text-muted-foreground hover:text-foreground">
-                        {expandedEvent === event.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      </button>
-                      <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                  <div className="p-4">
+                    {editingEvent === event.id ? (
+                      <div className="space-y-3">
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <Input placeholder="Title *" value={editEventTitle} onChange={e => setEditEventTitle(e.target.value)} />
+                          <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
+                          <Input placeholder="Location" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} />
+                          <select
+                            value={editEventStatus}
+                            onChange={e => setEditEventStatus(e.target.value as "current" | "past")}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          >
+                            <option value="current">Current</option>
+                            <option value="past">Past</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => updateEvent(event.id)}><Save className="h-4 w-4 mr-1" /> Save</Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditingEvent(null)}><X className="h-4 w-4 mr-1" /> Cancel</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            event.status === "current" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"
+                          }`}>{event.status}</span>
+                          <h3 className="font-display font-semibold">{event.title}</h3>
+                          {event.date && <span className="text-xs text-muted-foreground">{new Date(event.date).toLocaleDateString()}</span>}
+                          {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => startEditingEvent(event)} className="text-muted-foreground hover:text-foreground">
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)} className="text-muted-foreground hover:text-foreground">
+                            {expandedEvent === event.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </button>
+                          <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Expanded: Resources */}
                   {expandedEvent === event.id && (
                     <div className="border-t border-border p-4">
                       <h4 className="font-semibold text-sm mb-3 flex items-center gap-1"><FileText className="h-4 w-4" /> Resources</h4>

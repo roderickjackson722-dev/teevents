@@ -43,6 +43,8 @@ const AdminDashboard = () => {
   const [newResTitle, setNewResTitle] = useState("");
   const [newResDesc, setNewResDesc] = useState("");
   const [newResLink, setNewResLink] = useState("");
+  const [editingResource, setEditingResource] = useState<string | null>(null);
+  const [editResLink, setEditResLink] = useState("");
 
   useEffect(() => {
     checkAdmin();
@@ -158,6 +160,14 @@ const AdminDashboard = () => {
     await fetchAll();
   };
 
+  const updateResourceLink = async (id: string) => {
+    const { error } = await supabase.from("event_resources").update({ link: editResLink.trim() || null }).eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    setEditingResource(null);
+    await fetchAll();
+    toast({ title: "Resource updated!" });
+  };
+
   if (loading) return <Layout><div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div></Layout>;
 
   const getEventTitle = (eventId: string) => events.find(e => e.id === eventId)?.title || "Unknown";
@@ -254,13 +264,35 @@ const AdminDashboard = () => {
                     <div className="border-t border-border p-4">
                       <h4 className="font-semibold text-sm mb-3 flex items-center gap-1"><FileText className="h-4 w-4" /> Resources</h4>
                       <div className="space-y-2 mb-4">
-                        {resources.filter(r => r.event_id === event.id).map(res => (
+                         {resources.filter(r => r.event_id === event.id).map(res => (
                           <div key={res.id} className="flex items-center justify-between text-sm bg-muted/50 rounded px-3 py-2">
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <span className="font-medium">{res.title}</span>
-                              {res.link && <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs">({res.link})</a>}
+                              {editingResource === res.id ? (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Input
+                                    value={editResLink}
+                                    onChange={e => setEditResLink(e.target.value)}
+                                    placeholder="Link (URL)"
+                                    className="h-7 text-xs flex-1"
+                                  />
+                                  <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800">
+                                    <Save className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground">
+                                    <X className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                res.link && <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate">({res.link})</a>
+                              )}
                             </div>
-                            <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                            <div className="flex items-center gap-1 ml-2">
+                              {editingResource !== res.id && (
+                                <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
+                              )}
+                              <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                            </div>
                           </div>
                         ))}
                       </div>

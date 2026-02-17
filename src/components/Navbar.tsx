@@ -8,6 +8,7 @@ const navLinks = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about" },
   { label: "Services", to: "/services" },
+  { label: "Events", to: "/events" },
   { label: "Reviews", to: "/reviews" },
   { label: "Contact", to: "/contact" },
 ];
@@ -46,7 +47,7 @@ const Navbar = () => {
             className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-secondary/90 transition-colors"
           >
             <LogIn className="h-4 w-4" />
-            Coach Login
+            Event Login
           </Link>
         </div>
 
@@ -89,7 +90,7 @@ const Navbar = () => {
                 className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase mt-2 w-fit"
               >
                 <LogIn className="h-4 w-4" />
-                Coach Login
+                Event Login
               </Link>
             </div>
           </motion.div>

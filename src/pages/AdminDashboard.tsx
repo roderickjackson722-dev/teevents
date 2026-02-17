@@ -73,6 +73,8 @@ const AdminDashboard = () => {
       supabase.from("approved_emails").select("*").order("created_at", { ascending: false }),
       supabase.from("event_resources").select("*").order("sort_order", { ascending: true }),
     ]);
+    console.log("Resources fetch result:", resourcesRes);
+    if (resourcesRes.error) console.error("Resources error:", resourcesRes.error);
     setEvents(eventsRes.data || []);
     setRequests(requestsRes.data || []);
     setApprovedEmails(emailsRes.data || []);

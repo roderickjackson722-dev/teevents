@@ -201,7 +201,12 @@ const Login = () => {
                 <div className="space-y-5">
                   {returningEvents.map((event) => (
                     <div key={event.id}>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{event.title}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        {event.image_url && (
+                          <img src={event.image_url} alt={event.title} className="h-8 w-8 rounded-md object-cover shrink-0" />
+                        )}
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{event.title}</p>
+                      </div>
                       {event.resources.length > 0 ? renderResources(event.resources) : (
                         <p className="text-xs text-muted-foreground italic">No resources available yet.</p>
                       )}
@@ -220,7 +225,11 @@ const Login = () => {
                 {submitted === "approved" ? (
                   <>
                     <div className="text-center mb-6">
-                      <CheckCircle className="h-12 w-12 text-primary mx-auto mb-3" />
+                      {selectedEvent?.image_url ? (
+                        <img src={selectedEvent.image_url} alt={selectedEvent.title} className="h-16 w-16 rounded-lg object-cover mx-auto mb-3" />
+                      ) : (
+                        <CheckCircle className="h-12 w-12 text-primary mx-auto mb-3" />
+                      )}
                       <h2 className="text-2xl font-display font-bold text-foreground mb-1">Access Granted!</h2>
                       <p className="text-muted-foreground text-sm">
                         Welcome to <strong>{selectedEvent?.title}</strong>
@@ -263,9 +272,12 @@ const Login = () => {
                       <button
                         key={event.id}
                         onClick={() => setSelectedEvent(event)}
-                        className="w-full text-left p-4 rounded-md border border-border hover:border-secondary/50 hover:bg-muted/50 transition-all flex items-center justify-between group"
+                        className="w-full text-left p-4 rounded-md border border-border hover:border-secondary/50 hover:bg-muted/50 transition-all flex items-center gap-3 group"
                       >
-                        <div>
+                        {event.image_url && (
+                          <img src={event.image_url} alt={event.title} className="h-10 w-10 rounded-md object-cover shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
                           <p className="font-display font-semibold text-foreground">{event.title}</p>
                           {event.date && (
                             <p className="text-xs text-muted-foreground mt-1">
@@ -273,7 +285,7 @@ const Login = () => {
                             </p>
                           )}
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -288,6 +300,9 @@ const Login = () => {
             {mode === "new" && !submitted && selectedEvent && (
               <>
                 <div className="text-center mb-6">
+                  {selectedEvent.image_url && (
+                    <img src={selectedEvent.image_url} alt={selectedEvent.title} className="h-14 w-14 rounded-lg object-cover mx-auto mb-3" />
+                  )}
                   <h1 className="text-2xl font-display font-bold text-foreground">Request Access</h1>
                   <p className="text-muted-foreground text-sm mt-2">{selectedEvent.title}</p>
                 </div>

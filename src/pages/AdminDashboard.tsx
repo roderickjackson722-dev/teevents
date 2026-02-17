@@ -481,6 +481,34 @@ const AdminDashboard = () => {
                   <Input placeholder="Email address" value={grantEmail} onChange={e => setGrantEmail(e.target.value)} className="flex-1 min-w-[200px]" />
                   <Button onClick={grantAccess}><Check className="h-4 w-4 mr-1" /> Grant Access</Button>
                 </div>
+
+                {/* Pending Requests inside Grant Access */}
+                {requests.filter(r => r.status === "pending").length > 0 && (
+                  <div className="mt-6 border-t border-border pt-4">
+                    <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                      <Users className="h-4 w-4" /> Pending Requests ({requests.filter(r => r.status === "pending").length})
+                    </h3>
+                    <div className="space-y-2">
+                      {requests.filter(r => r.status === "pending").map(req => (
+                        <div key={req.id} className="flex items-center justify-between bg-muted/30 rounded-md px-4 py-3">
+                          <div className="flex items-center gap-4 flex-wrap">
+                            <span className="font-medium text-sm">{req.name}</span>
+                            <span className="text-sm text-muted-foreground">{req.email}</span>
+                            <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">{getEventTitle(req.event_id)}</span>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => updateRequestStatus(req.id, "approved")} className="text-green-600 hover:text-green-800">
+                              <Check className="h-4 w-4 mr-1" /> Approve
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => updateRequestStatus(req.id, "denied")} className="text-red-600 hover:text-red-800">
+                              <X className="h-4 w-4 mr-1" /> Deny
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="bg-card rounded-lg border border-border overflow-hidden">

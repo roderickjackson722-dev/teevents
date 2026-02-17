@@ -13,8 +13,8 @@ Deno.serve(async (req) => {
   try {
     const { event_id, email } = await req.json();
 
-    if (!event_id || !email) {
-      return new Response(JSON.stringify({ error: "Missing event_id or email" }), {
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Missing email" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -25,30 +25,76 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify the user is approved for this event
-    const { data: request } = await supabase
-      .from("event_access_requests")
-      .select("status")
-      .eq("event_id", event_id)
-      .eq("email", email.trim().toLowerCase())
-      .eq("status", "approved")
-      .maybeSingle();
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!request) {
-      return new Response(JSON.stringify({ error: "Not approved" }), {
-        status: 403,
+    // Single event mode: verify approval and return resources
+    if (event_id) {
+      const { data: request } = await supabase
+        .from("event_access_requests")
+        .select("status")
+        .eq("event_id", event_id)
+        .eq("email", normalizedEmail)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (!request) {
+        return new Response(JSON.stringify({ error: "Not approved" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: resources } = await supabase
+        .from("event_resources")
+        .select("*")
+        .eq("event_id", event_id)
+        .order("sort_order", { ascending: true });
+
+      return new Response(JSON.stringify({ resources: resources || [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Fetch resources
-    const { data: resources } = await supabase
+    // Returning member mode: find all approved events with resources
+    const { data: approvedRequests } = await supabase
+      .from("event_access_requests")
+      .select("event_id")
+      .eq("email", normalizedEmail)
+      .eq("status", "approved");
+
+    if (!approvedRequests || approvedRequests.length === 0) {
+      return new Response(JSON.stringify({ events: [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const eventIds = approvedRequests.map((r) => r.event_id);
+
+    const { data: events } = await supabase
+      .from("events")
+      .select("*")
+      .in("id", eventIds)
+      .eq("status", "current")
+      .order("date", { ascending: true });
+
+    if (!events || events.length === 0) {
+      return new Response(JSON.stringify({ events: [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: allResources } = await supabase
       .from("event_resources")
       .select("*")
-      .eq("event_id", event_id)
+      .in("event_id", eventIds)
       .order("sort_order", { ascending: true });
 
-    return new Response(JSON.stringify({ resources: resources || [] }), {
+    const eventsWithResources = events.map((event) => ({
+      ...event,
+      resources: (allResources || []).filter((r) => r.event_id === event.id),
+    }));
+
+    return new Response(JSON.stringify({ events: eventsWithResources }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

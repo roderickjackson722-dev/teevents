@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import iconBlack from "@/assets/icon-black.png";
+import logoBlack from "@/assets/logo-black.png";
 
 const Footer = () => {
   return (
@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">
-            <img src={iconBlack} alt="TeeVents" className="h-12 w-12 object-contain invert" />
+            <img src={logoBlack} alt="TeeVents" className="h-12 w-12 object-contain invert" />
             <div>
               <h3 className="font-display text-xl font-semibold">TeeVents Golf Mgt.</h3>
               <p className="text-sm text-primary-foreground/60 mt-1">

@@ -1,1 +1,4 @@
 project_id = "wmoivwwerxqscqznivnn"
+
+[functions.event-resources]
+verify_jwt = false

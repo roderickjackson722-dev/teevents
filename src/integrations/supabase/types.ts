@@ -124,10 +124,12 @@ export type Database = {
           created_at: string
           date: string | null
           description: string | null
+          gallery_url: string | null
           id: string
           image_url: string | null
           link: string | null
           location: string | null
+          results_url: string | null
           status: string
           title: string
           updated_at: string
@@ -136,10 +138,12 @@ export type Database = {
           created_at?: string
           date?: string | null
           description?: string | null
+          gallery_url?: string | null
           id?: string
           image_url?: string | null
           link?: string | null
           location?: string | null
+          results_url?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -148,10 +152,12 @@ export type Database = {
           created_at?: string
           date?: string | null
           description?: string | null
+          gallery_url?: string | null
           id?: string
           image_url?: string | null
           link?: string | null
           location?: string | null
+          results_url?: string | null
           status?: string
           title?: string
           updated_at?: string

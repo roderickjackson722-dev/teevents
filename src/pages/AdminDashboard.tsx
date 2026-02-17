@@ -26,6 +26,8 @@ const AdminDashboard = () => {
   const [editEventDate, setEditEventDate] = useState("");
   const [editEventLocation, setEditEventLocation] = useState("");
   const [editEventStatus, setEditEventStatus] = useState<"current" | "past">("current");
+  const [editGalleryUrl, setEditGalleryUrl] = useState("");
+  const [editResultsUrl, setEditResultsUrl] = useState("");
 
   // New event form
   const [newTitle, setNewTitle] = useState("");
@@ -33,6 +35,8 @@ const AdminDashboard = () => {
   const [newDate, setNewDate] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newLink, setNewLink] = useState("");
+  const [newGalleryUrl, setNewGalleryUrl] = useState("");
+  const [newResultsUrl, setNewResultsUrl] = useState("");
   const [newStatus, setNewStatus] = useState<"current" | "past">("current");
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -132,9 +136,11 @@ const AdminDashboard = () => {
       title: newTitle.trim(), description: newDesc.trim() || null,
       date: newDate || null, location: newLocation.trim() || null,
       link: newLink.trim() || null, status: newStatus, image_url: imageUrl,
+      gallery_url: newGalleryUrl.trim() || null,
+      results_url: newResultsUrl.trim() || null,
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); setUploading(false); return; }
-    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewImageFile(null);
+    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewGalleryUrl(""); setNewResultsUrl(""); setNewImageFile(null);
     const fileInput = document.getElementById("event-image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     await fetchAll();
@@ -154,6 +160,8 @@ const AdminDashboard = () => {
     setEditEventDate(event.date || "");
     setEditEventLocation(event.location || "");
     setEditEventStatus(event.status as "current" | "past");
+    setEditGalleryUrl((event as any).gallery_url || "");
+    setEditResultsUrl((event as any).results_url || "");
   };
 
   const updateEvent = async (id: string) => {
@@ -163,7 +171,9 @@ const AdminDashboard = () => {
       date: editEventDate || null,
       location: editEventLocation.trim() || null,
       status: editEventStatus,
-    }).eq("id", id);
+      gallery_url: editGalleryUrl.trim() || null,
+      results_url: editResultsUrl.trim() || null,
+    } as any).eq("id", id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setEditingEvent(null);
     await fetchAll();
@@ -311,6 +321,8 @@ const AdminDashboard = () => {
                   <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} />
                   <Input placeholder="Location" value={newLocation} onChange={e => setNewLocation(e.target.value)} />
                   <Input placeholder="Link (URL)" value={newLink} onChange={e => setNewLink(e.target.value)} />
+                  <Input placeholder="Gallery URL (Google Photos)" value={newGalleryUrl} onChange={e => setNewGalleryUrl(e.target.value)} />
+                  <Input placeholder="Results URL (optional)" value={newResultsUrl} onChange={e => setNewResultsUrl(e.target.value)} />
                   <Input id="event-image-upload" type="file" accept="image/*" onChange={e => setNewImageFile(e.target.files?.[0] || null)} />
                   <select
                     value={newStatus}
@@ -339,6 +351,8 @@ const AdminDashboard = () => {
                             <Input placeholder="Title *" value={editEventTitle} onChange={e => setEditEventTitle(e.target.value)} />
                             <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
                             <Input placeholder="Location" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} />
+                            <Input placeholder="Gallery URL (Google Photos)" value={editGalleryUrl} onChange={e => setEditGalleryUrl(e.target.value)} />
+                            <Input placeholder="Results URL (optional)" value={editResultsUrl} onChange={e => setEditResultsUrl(e.target.value)} />
                             <select
                               value={editEventStatus}
                               onChange={e => setEditEventStatus(e.target.value as "current" | "past")}

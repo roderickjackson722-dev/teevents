@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, ExternalLink } from "lucide-react";
+import { Calendar, MapPin, ExternalLink, Image, Trophy } from "lucide-react";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -65,16 +65,38 @@ const Events = () => {
             </span>
           )}
         </div>
-        {event.link && (
-          <a
-            href={event.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
-          >
-            View Details <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        )}
+        <div className="flex flex-wrap gap-3">
+          {event.link && (
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
+            >
+              View Details <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+          {(event as any).gallery_url && (
+            <a
+              href={(event as any).gallery_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
+            >
+              <Image className="h-3.5 w-3.5" /> Gallery
+            </a>
+          )}
+          {(event as any).results_url && (
+            <a
+              href={(event as any).results_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
+            >
+              <Trophy className="h-3.5 w-3.5" /> Results
+            </a>
+          )}
+        </div>
       </div>
     </motion.div>
   );

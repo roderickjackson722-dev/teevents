@@ -31,6 +31,8 @@ const AdminDashboard = () => {
   const [newLink, setNewLink] = useState("");
   const [newStatus, setNewStatus] = useState<"current" | "past">("current");
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // New email form
   const [newEmailEventId, setNewEmailEventId] = useState("");
@@ -77,14 +79,34 @@ const AdminDashboard = () => {
 
   const addEvent = async () => {
     if (!newTitle.trim()) return;
+    setUploading(true);
+    let imageUrl: string | null = null;
+
+    if (newImageFile) {
+      const fileExt = newImageFile.name.split(".").pop();
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from("event-images").upload(filePath, newImageFile);
+      if (uploadError) {
+        toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+        setUploading(false);
+        return;
+      }
+      const { data: { publicUrl } } = supabase.storage.from("event-images").getPublicUrl(filePath);
+      imageUrl = publicUrl;
+    }
+
     const { error } = await supabase.from("events").insert({
       title: newTitle.trim(), description: newDesc.trim() || null,
       date: newDate || null, location: newLocation.trim() || null,
-      link: newLink.trim() || null, status: newStatus, image_url: newImageUrl.trim() || null,
+      link: newLink.trim() || null, status: newStatus, image_url: imageUrl,
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewImageUrl("");
+    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewImageFile(null);
+    // Reset file input
+    const fileInput = document.getElementById("event-image-upload") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
     await fetchAll();
+    setUploading(false);
     toast({ title: "Event added!" });
   };
 
@@ -193,7 +215,7 @@ const AdminDashboard = () => {
                   <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} />
                   <Input placeholder="Location" value={newLocation} onChange={e => setNewLocation(e.target.value)} />
                   <Input placeholder="Link (URL)" value={newLink} onChange={e => setNewLink(e.target.value)} />
-                  <Input placeholder="Image URL" value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} />
+                  <Input id="event-image-upload" type="file" accept="image/*" onChange={e => setNewImageFile(e.target.files?.[0] || null)} />
                   <select
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value as "current" | "past")}
@@ -202,7 +224,7 @@ const AdminDashboard = () => {
                     <option value="current">Current</option>
                     <option value="past">Past</option>
                   </select>
-                  <Button onClick={addEvent}><Plus className="h-4 w-4 mr-1" /> Add Event</Button>
+                  <Button onClick={addEvent} disabled={uploading}><Plus className="h-4 w-4 mr-1" /> {uploading ? "Uploading..." : "Add Event"}</Button>
                 </div>
               </div>
 

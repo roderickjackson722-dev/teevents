@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
-  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save
+  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ const AdminDashboard = () => {
   const [newLocation, setNewLocation] = useState("");
   const [newLink, setNewLink] = useState("");
   const [newStatus, setNewStatus] = useState<"current" | "past">("current");
-  const [newImageUrl, setNewImageUrl] = useState("");
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -46,7 +44,6 @@ const AdminDashboard = () => {
   // New resource form
   const [newResEventId, setNewResEventId] = useState("");
   const [newResTitle, setNewResTitle] = useState("");
-  const [newResDesc, setNewResDesc] = useState("");
   const [newResLink, setNewResLink] = useState("");
   const [editingResource, setEditingResource] = useState<string | null>(null);
   const [editResLink, setEditResLink] = useState("");
@@ -66,19 +63,41 @@ const AdminDashboard = () => {
     setLoading(false);
   };
 
+  const callAdminApi = useCallback(async (action?: string, body?: Record<string, unknown>) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Not authenticated");
+
+    const url = new URL(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-data`);
+    if (action) url.searchParams.set("action", action);
+
+    const res = await fetch(url.toString(), {
+      method: body ? "POST" : "GET",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Request failed");
+    }
+    return res.json();
+  }, []);
+
   const fetchAll = async () => {
-    const [eventsRes, requestsRes, emailsRes, resourcesRes] = await Promise.all([
-      supabase.from("events").select("*").order("date", { ascending: false }),
-      supabase.from("event_access_requests").select("*").order("created_at", { ascending: false }),
-      supabase.from("approved_emails").select("*").order("created_at", { ascending: false }),
-      supabase.from("event_resources").select("*").order("sort_order", { ascending: true }),
-    ]);
-    console.log("Resources fetch result:", resourcesRes);
-    if (resourcesRes.error) console.error("Resources error:", resourcesRes.error);
-    setEvents(eventsRes.data || []);
-    setRequests(requestsRes.data || []);
-    setApprovedEmails(emailsRes.data || []);
-    setResources(resourcesRes.data || []);
+    try {
+      const data = await callAdminApi();
+      setEvents(data.events || []);
+      setRequests(data.requests || []);
+      setApprovedEmails(data.approvedEmails || []);
+      setResources(data.resources || []);
+    } catch (err: any) {
+      console.error("Failed to fetch admin data:", err);
+      toast({ title: "Error loading data", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleSignOut = async () => {
@@ -109,9 +128,8 @@ const AdminDashboard = () => {
       date: newDate || null, location: newLocation.trim() || null,
       link: newLink.trim() || null, status: newStatus, image_url: imageUrl,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); setUploading(false); return; }
     setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewImageFile(null);
-    // Reset file input
     const fileInput = document.getElementById("event-image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     await fetchAll();
@@ -174,30 +192,48 @@ const AdminDashboard = () => {
 
   const addResource = async () => {
     if (!newResEventId || !newResTitle.trim()) return;
-    const { error } = await supabase.from("event_resources").insert({
-      event_id: newResEventId, title: newResTitle.trim(),
-      description: newResDesc.trim() || null, link: newResLink.trim() || null,
-    });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setNewResTitle(""); setNewResDesc(""); setNewResLink("");
-    await fetchAll();
-    toast({ title: "Resource added!" });
+    try {
+      await callAdminApi("add-resource", {
+        event_id: newResEventId,
+        title: newResTitle.trim(),
+        link: newResLink.trim() || null,
+      });
+      setNewResTitle(""); setNewResLink("");
+      await fetchAll();
+      toast({ title: "Resource added!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const deleteResource = async (id: string) => {
-    await supabase.from("event_resources").delete().eq("id", id);
-    await fetchAll();
+    try {
+      await callAdminApi("delete-resource", { id });
+      await fetchAll();
+      toast({ title: "Resource deleted" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const updateResourceLink = async (id: string) => {
-    const { error } = await supabase.from("event_resources").update({ link: editResLink.trim() || null }).eq("id", id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setEditingResource(null);
-    await fetchAll();
-    toast({ title: "Resource updated!" });
+    try {
+      await callAdminApi("update-resource-link", { id, link: editResLink.trim() || null });
+      setEditingResource(null);
+      await fetchAll();
+      toast({ title: "Resource updated!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
-  if (loading) return <Layout><div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div></Layout>;
+  if (loading) return (
+    <Layout>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    </Layout>
+  );
 
   const getEventTitle = (eventId: string) => events.find(e => e.id === eventId)?.title || "Unknown";
 
@@ -208,7 +244,7 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-display font-bold text-primary-foreground">Admin Dashboard</h1>
-            <p className="text-primary-foreground/70 mt-1">Manage events, access, and resources</p>
+            <p className="text-primary-foreground/70 mt-1">Manage tournaments, access, and resources</p>
           </div>
           <Button variant="ghost" onClick={handleSignOut} className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary/80">
             <LogOut className="h-4 w-4 mr-2" /> Sign Out
@@ -221,7 +257,7 @@ const AdminDashboard = () => {
           {/* Tabs */}
           <div className="flex gap-2 mb-8 border-b border-border pb-2">
             {([
-              ["events", "Events", Calendar],
+              ["events", "Tournaments", Calendar],
               ["requests", "Access Requests", Users],
               ["emails", "Auto-Approve Emails", Mail],
             ] as const).map(([key, label, Icon]) => (
@@ -268,98 +304,139 @@ const AdminDashboard = () => {
               </div>
 
               {/* Events List */}
-              {events.map(event => (
-                <div key={event.id} className="bg-card rounded-lg border border-border">
-                  <div className="p-4">
-                    {editingEvent === event.id ? (
-                      <div className="space-y-3">
-                        <div className="grid sm:grid-cols-2 gap-3">
-                          <Input placeholder="Title *" value={editEventTitle} onChange={e => setEditEventTitle(e.target.value)} />
-                          <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
-                          <Input placeholder="Location" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} />
-                          <select
-                            value={editEventStatus}
-                            onChange={e => setEditEventStatus(e.target.value as "current" | "past")}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          >
-                            <option value="current">Current</option>
-                            <option value="past">Past</option>
-                          </select>
+              {events.map(event => {
+                const eventResources = resources.filter(r => r.event_id === event.id);
+                const isExpanded = expandedEvent === event.id;
+
+                return (
+                  <div key={event.id} className="bg-card rounded-lg border border-border overflow-hidden">
+                    {/* Event Header */}
+                    <div className="p-4">
+                      {editingEvent === event.id ? (
+                        <div className="space-y-3">
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input placeholder="Title *" value={editEventTitle} onChange={e => setEditEventTitle(e.target.value)} />
+                            <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
+                            <Input placeholder="Location" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} />
+                            <select
+                              value={editEventStatus}
+                              onChange={e => setEditEventStatus(e.target.value as "current" | "past")}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                              <option value="current">Current</option>
+                              <option value="past">Past</option>
+                            </select>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => updateEvent(event.id)}><Save className="h-4 w-4 mr-1" /> Save</Button>
+                            <Button size="sm" variant="outline" onClick={() => setEditingEvent(null)}><X className="h-4 w-4 mr-1" /> Cancel</Button>
+                          </div>
                         </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              event.status === "current" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"
+                            }`}>{event.status}</span>
+                            <h3 className="font-display font-semibold">{event.title}</h3>
+                            {event.date && <span className="text-xs text-muted-foreground">{new Date(event.date).toLocaleDateString()}</span>}
+                            {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
+                            {eventResources.length > 0 && (
+                              <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">
+                                {eventResources.length} resource{eventResources.length !== 1 ? "s" : ""}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => startEditingEvent(event)} className="text-muted-foreground hover:text-foreground">
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => setExpandedEvent(isExpanded ? null : event.id)} className="text-muted-foreground hover:text-foreground">
+                              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </button>
+                            <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Expanded: Resources */}
+                    {isExpanded && (
+                      <div className="border-t border-border p-4 bg-muted/20">
+                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-1">
+                          <FileText className="h-4 w-4" /> Resources ({eventResources.length})
+                        </h4>
+
+                        {eventResources.length > 0 ? (
+                          <div className="space-y-2 mb-4">
+                            {eventResources.map(res => (
+                              <div key={res.id} className="flex items-center justify-between text-sm bg-card rounded-md border border-border px-3 py-2">
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-medium">{res.title}</span>
+                                  {editingResource === res.id ? (
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <Input
+                                        value={editResLink}
+                                        onChange={e => setEditResLink(e.target.value)}
+                                        placeholder="Link (URL)"
+                                        className="h-7 text-xs flex-1"
+                                      />
+                                      <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800">
+                                        <Save className="h-3.5 w-3.5" />
+                                      </Button>
+                                      <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground">
+                                        <X className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    res.link && (
+                                      <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate inline-flex items-center gap-1">
+                                        <LinkIcon className="h-3 w-3" /> Link
+                                      </a>
+                                    )
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 ml-2">
+                                  {editingResource !== res.id && (
+                                    <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground">
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+                                  )}
+                                  <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground mb-4 italic">No resources yet. Add one below.</p>
+                        )}
+
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => updateEvent(event.id)}><Save className="h-4 w-4 mr-1" /> Save</Button>
-                          <Button size="sm" variant="outline" onClick={() => setEditingEvent(null)}><X className="h-4 w-4 mr-1" /> Cancel</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                            event.status === "current" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"
-                          }`}>{event.status}</span>
-                          <h3 className="font-display font-semibold">{event.title}</h3>
-                          {event.date && <span className="text-xs text-muted-foreground">{new Date(event.date).toLocaleDateString()}</span>}
-                          {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => startEditingEvent(event)} className="text-muted-foreground hover:text-foreground">
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          <button onClick={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)} className="text-muted-foreground hover:text-foreground">
-                            {expandedEvent === event.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </button>
-                          <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <Input
+                            placeholder="Resource title"
+                            className="flex-1"
+                            value={newResEventId === event.id ? newResTitle : ""}
+                            onFocus={() => setNewResEventId(event.id)}
+                            onChange={e => { setNewResEventId(event.id); setNewResTitle(e.target.value); }}
+                          />
+                          <Input
+                            placeholder="Link (URL)"
+                            className="flex-1"
+                            value={newResEventId === event.id ? newResLink : ""}
+                            onFocus={() => setNewResEventId(event.id)}
+                            onChange={e => { setNewResEventId(event.id); setNewResLink(e.target.value); }}
+                          />
+                          <Button size="sm" onClick={addResource}><Plus className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
                     )}
                   </div>
-                  {expandedEvent === event.id && (
-                    <div className="border-t border-border p-4">
-                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-1"><FileText className="h-4 w-4" /> Resources</h4>
-                      <div className="space-y-2 mb-4">
-                         {resources.filter(r => r.event_id === event.id).map(res => (
-                          <div key={res.id} className="flex items-center justify-between text-sm bg-muted/50 rounded px-3 py-2">
-                            <div className="flex-1 min-w-0">
-                              <span className="font-medium">{res.title}</span>
-                              {editingResource === res.id ? (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Input
-                                    value={editResLink}
-                                    onChange={e => setEditResLink(e.target.value)}
-                                    placeholder="Link (URL)"
-                                    className="h-7 text-xs flex-1"
-                                  />
-                                  <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800">
-                                    <Save className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground">
-                                    <X className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                res.link && <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate">({res.link})</a>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 ml-2">
-                              {editingResource !== res.id && (
-                                <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
-                              )}
-                              <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <Input placeholder="Resource title" className="flex-1" value={newResEventId === event.id ? newResTitle : ""} onFocus={() => setNewResEventId(event.id)} onChange={e => { setNewResEventId(event.id); setNewResTitle(e.target.value); }} />
-                        <Input placeholder="Link (URL)" className="flex-1" value={newResEventId === event.id ? newResLink : ""} onFocus={() => setNewResEventId(event.id)} onChange={e => { setNewResEventId(event.id); setNewResLink(e.target.value); }} />
-                        <Button size="sm" onClick={addResource}><Plus className="h-3.5 w-3.5" /></Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

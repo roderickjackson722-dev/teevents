@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
-  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, ArrowUp, ArrowDown
+  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical
 } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -291,24 +292,27 @@ const AdminDashboard = () => {
     }
   };
 
-  const moveResource = async (eventId: string, resourceId: string, direction: "up" | "down") => {
-    const eventResources = resources
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    const eventId = result.source.droppableId;
+    const sorted = resources
       .filter(r => r.event_id === eventId)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    const idx = eventResources.findIndex(r => r.id === resourceId);
-    if (idx < 0) return;
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= eventResources.length) return;
+    const reordered = Array.from(sorted);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
 
-    const updates = [
-      { id: eventResources[idx].id, sort_order: eventResources[swapIdx].sort_order ?? swapIdx },
-      { id: eventResources[swapIdx].id, sort_order: eventResources[idx].sort_order ?? idx },
-    ];
+    const updates = reordered.map((r, i) => ({ id: r.id, sort_order: i }));
+    // Optimistic update
+    setResources(prev => {
+      const others = prev.filter(r => r.event_id !== eventId);
+      return [...others, ...reordered.map((r, i) => ({ ...r, sort_order: i }))];
+    });
     try {
       await callAdminApi("reorder-resources", { updates });
-      await fetchAll();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+      await fetchAll();
     }
   };
 
@@ -459,67 +463,67 @@ const AdminDashboard = () => {
                         </h4>
 
                         {eventResources.length > 0 ? (
-                          <div className="space-y-2 mb-4">
-                            {eventResources
-                              .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                              .map((res, idx) => (
-                              <div key={res.id} className="flex items-center justify-between text-sm bg-card rounded-md border border-border px-3 py-2">
-                                <div className="flex items-center gap-2 mr-2">
-                                  <div className="flex flex-col">
-                                    <button
-                                      onClick={() => moveResource(event.id, res.id, "up")}
-                                      disabled={idx === 0}
-                                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
-                                    >
-                                      <ArrowUp className="h-3 w-3" />
-                                    </button>
-                                    <button
-                                      onClick={() => moveResource(event.id, res.id, "down")}
-                                      disabled={idx === eventResources.length - 1}
-                                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
-                                    >
-                                      <ArrowDown className="h-3 w-3" />
-                                    </button>
-                                  </div>
+                          <DragDropContext onDragEnd={onDragEnd}>
+                            <Droppable droppableId={event.id}>
+                              {(provided) => (
+                                <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2 mb-4">
+                                  {eventResources
+                                    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                                    .map((res, idx) => (
+                                    <Draggable key={res.id} draggableId={res.id} index={idx}>
+                                      {(dragProvided, snapshot) => (
+                                        <div
+                                          ref={dragProvided.innerRef}
+                                          {...dragProvided.draggableProps}
+                                          className={`flex items-center justify-between text-sm bg-card rounded-md border border-border px-3 py-2 ${snapshot.isDragging ? "shadow-lg ring-2 ring-primary/30" : ""}`}
+                                        >
+                                          <div {...dragProvided.dragHandleProps} className="flex items-center mr-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                            <GripVertical className="h-4 w-4" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <span className="font-medium">{res.title}</span>
+                                            {editingResource === res.id ? (
+                                              <div className="flex items-center gap-2 mt-1">
+                                                <Input
+                                                  value={editResLink}
+                                                  onChange={e => setEditResLink(e.target.value)}
+                                                  placeholder="Link (URL)"
+                                                  className="h-7 text-xs flex-1"
+                                                />
+                                                <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800">
+                                                  <Save className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground">
+                                                  <X className="h-3.5 w-3.5" />
+                                                </Button>
+                                              </div>
+                                            ) : (
+                                              res.link && (
+                                                <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate inline-flex items-center gap-1">
+                                                  <LinkIcon className="h-3 w-3" /> Link
+                                                </a>
+                                              )
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-1 ml-2">
+                                            {editingResource !== res.id && (
+                                              <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground">
+                                                <Pencil className="h-3.5 w-3.5" />
+                                              </button>
+                                            )}
+                                            <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive">
+                                              <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <span className="font-medium">{res.title}</span>
-                                  {editingResource === res.id ? (
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <Input
-                                        value={editResLink}
-                                        onChange={e => setEditResLink(e.target.value)}
-                                        placeholder="Link (URL)"
-                                        className="h-7 text-xs flex-1"
-                                      />
-                                      <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800">
-                                        <Save className="h-3.5 w-3.5" />
-                                      </Button>
-                                      <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground">
-                                        <X className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    res.link && (
-                                      <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate inline-flex items-center gap-1">
-                                        <LinkIcon className="h-3 w-3" /> Link
-                                      </a>
-                                    )
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1 ml-2">
-                                  {editingResource !== res.id && (
-                                    <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground">
-                                      <Pencil className="h-3.5 w-3.5" />
-                                    </button>
-                                  )}
-                                  <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive">
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                              )}
+                            </Droppable>
+                          </DragDropContext>
                         ) : (
                           <p className="text-sm text-muted-foreground mb-4 italic">No resources yet. Add one below.</p>
                         )}

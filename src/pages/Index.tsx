@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
-import iconBlack from "@/assets/icon-black.png";
+import logoBlack from "@/assets/logo-black.png";
 
 const Index = () => {
   return (
@@ -55,7 +55,7 @@ const Index = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <img src={iconBlack} alt="" className="h-16 w-16 mx-auto mb-6 invert opacity-80" />
+            <img src={logoBlack} alt="" className="h-16 w-16 mx-auto mb-6 invert opacity-80" />
             <h2 className="text-3xl md:text-4xl font-display font-bold text-primary-foreground mb-4">
               TeeVents Golf Mgt.
             </h2>

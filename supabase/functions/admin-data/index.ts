@@ -89,7 +89,6 @@ Deno.serve(async (req) => {
         if (!body.event_id || !email || !body.name) {
           return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-        // Check if request already exists
         const { data: existing } = await adminClient
           .from("event_access_requests")
           .select("id, status")
@@ -101,11 +100,9 @@ Deno.serve(async (req) => {
           if (existing.status === "approved") {
             return new Response(JSON.stringify({ error: "Already approved" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
-          // Update existing to approved
           const { error } = await adminClient.from("event_access_requests").update({ status: "approved" }).eq("id", existing.id);
           if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         } else {
-          // Create new approved request
           const { error } = await adminClient.from("event_access_requests").insert({
             event_id: body.event_id,
             email,
@@ -115,6 +112,37 @@ Deno.serve(async (req) => {
           if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (action === "bulk-grant-access") {
+        const entries: { name: string; email: string }[] = body.entries || [];
+        const eventId = body.event_id;
+        if (!eventId || !entries.length) {
+          return new Response(JSON.stringify({ error: "Missing event or entries" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        let granted = 0;
+        let skipped = 0;
+        for (const entry of entries) {
+          const email = (entry.email || "").trim().toLowerCase();
+          const name = (entry.name || "").trim();
+          if (!email || !name) { skipped++; continue; }
+          const { data: existing } = await adminClient
+            .from("event_access_requests")
+            .select("id, status")
+            .eq("event_id", eventId)
+            .eq("email", email)
+            .maybeSingle();
+          if (existing && existing.status === "approved") { skipped++; continue; }
+          if (existing) {
+            await adminClient.from("event_access_requests").update({ status: "approved" }).eq("id", existing.id);
+          } else {
+            await adminClient.from("event_access_requests").insert({
+              event_id: eventId, email, name, status: "approved",
+            });
+          }
+          granted++;
+        }
+        return new Response(JSON.stringify({ success: true, granted, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
 

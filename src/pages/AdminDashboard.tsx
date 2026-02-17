@@ -2,11 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
-  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2
+  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -49,6 +50,9 @@ const AdminDashboard = () => {
   const [grantEventId, setGrantEventId] = useState("");
   const [grantName, setGrantName] = useState("");
   const [grantEmail, setGrantEmail] = useState("");
+  const [bulkEmails, setBulkEmails] = useState("");
+  const [bulkEventId, setBulkEventId] = useState("");
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // New resource form
   const [newResEventId, setNewResEventId] = useState("");
@@ -199,6 +203,35 @@ const AdminDashboard = () => {
       toast({ title: "Access granted!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const bulkGrantAccess = async () => {
+    if (!bulkEventId || !bulkEmails.trim()) return;
+    const lines = bulkEmails.trim().split("\n").filter(l => l.trim());
+    const entries = lines.map(line => {
+      const parts = line.split(",").map(s => s.trim());
+      if (parts.length >= 2) {
+        return { name: parts[0], email: parts[1] };
+      }
+      // If no comma, treat entire line as email with "Member" as name
+      return { name: "Member", email: parts[0] };
+    }).filter(e => e.email);
+
+    if (!entries.length) return;
+    setBulkLoading(true);
+    try {
+      const result = await callAdminApi("bulk-grant-access", {
+        event_id: bulkEventId,
+        entries,
+      });
+      setBulkEmails("");
+      await fetchAll();
+      toast({ title: `Bulk import complete`, description: `${result.granted} granted, ${result.skipped} skipped` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -494,6 +527,36 @@ const AdminDashboard = () => {
                   <Input placeholder="Name" value={grantName} onChange={e => setGrantName(e.target.value)} className="flex-1 min-w-[150px]" />
                   <Input placeholder="Email address" value={grantEmail} onChange={e => setGrantEmail(e.target.value)} className="flex-1 min-w-[200px]" />
                   <Button onClick={grantAccess}><Check className="h-4 w-4 mr-1" /> Grant Access</Button>
+                </div>
+
+                {/* Bulk Import */}
+                <div className="mt-6 border-t border-border pt-4">
+                  <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                    <Upload className="h-4 w-4" /> Bulk Import Emails
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Paste one entry per line. Format: <code className="bg-muted px-1 rounded">Name, email@example.com</code> — or just an email per line.
+                  </p>
+                  <div className="flex gap-3 items-start flex-wrap">
+                    <select
+                      value={bulkEventId}
+                      onChange={e => setBulkEventId(e.target.value)}
+                      className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[180px]"
+                    >
+                      <option value="">Select event</option>
+                      {events.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+                    </select>
+                    <Textarea
+                      placeholder={"John Doe, john@example.com\nJane Smith, jane@example.com\nor just: user@example.com"}
+                      value={bulkEmails}
+                      onChange={e => setBulkEmails(e.target.value)}
+                      className="flex-1 min-w-[300px] min-h-[100px] text-sm"
+                    />
+                    <Button onClick={bulkGrantAccess} disabled={bulkLoading || !bulkEventId || !bulkEmails.trim()}>
+                      {bulkLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
+                      Import
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Pending Requests inside Grant Access */}

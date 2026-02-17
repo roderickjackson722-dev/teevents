@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
-  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload
+  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, ArrowUp, ArrowDown
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -291,6 +291,27 @@ const AdminDashboard = () => {
     }
   };
 
+  const moveResource = async (eventId: string, resourceId: string, direction: "up" | "down") => {
+    const eventResources = resources
+      .filter(r => r.event_id === eventId)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    const idx = eventResources.findIndex(r => r.id === resourceId);
+    if (idx < 0) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= eventResources.length) return;
+
+    const updates = [
+      { id: eventResources[idx].id, sort_order: eventResources[swapIdx].sort_order ?? swapIdx },
+      { id: eventResources[swapIdx].id, sort_order: eventResources[idx].sort_order ?? idx },
+    ];
+    try {
+      await callAdminApi("reorder-resources", { updates });
+      await fetchAll();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center">
@@ -439,8 +460,28 @@ const AdminDashboard = () => {
 
                         {eventResources.length > 0 ? (
                           <div className="space-y-2 mb-4">
-                            {eventResources.map(res => (
+                            {eventResources
+                              .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                              .map((res, idx) => (
                               <div key={res.id} className="flex items-center justify-between text-sm bg-card rounded-md border border-border px-3 py-2">
+                                <div className="flex items-center gap-2 mr-2">
+                                  <div className="flex flex-col">
+                                    <button
+                                      onClick={() => moveResource(event.id, res.id, "up")}
+                                      disabled={idx === 0}
+                                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                      <ArrowUp className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => moveResource(event.id, res.id, "down")}
+                                      disabled={idx === eventResources.length - 1}
+                                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                      <ArrowDown className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <span className="font-medium">{res.title}</span>
                                   {editingResource === res.id ? (

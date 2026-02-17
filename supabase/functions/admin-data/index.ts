@@ -84,6 +84,14 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      if (action === "reorder-resources") {
+        const updates: { id: string; sort_order: number }[] = body.updates || [];
+        for (const u of updates) {
+          await adminClient.from("event_resources").update({ sort_order: u.sort_order }).eq("id", u.id);
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       if (action === "grant-access") {
         const email = (body.email || "").trim().toLowerCase();
         if (!body.event_id || !email || !body.name) {

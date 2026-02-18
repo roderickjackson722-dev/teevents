@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
-  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical
+  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -21,7 +21,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews">("events");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [editEventTitle, setEditEventTitle] = useState("");
@@ -61,6 +61,16 @@ const AdminDashboard = () => {
   const [newResLink, setNewResLink] = useState("");
   const [editingResource, setEditingResource] = useState<string | null>(null);
   const [editResLink, setEditResLink] = useState("");
+
+  // Reviews state
+  const [reviews, setReviews] = useState<{ id: string; author: string; organization: string; text: string; sort_order: number; created_at: string }[]>([]);
+  const [newReviewAuthor, setNewReviewAuthor] = useState("");
+  const [newReviewOrg, setNewReviewOrg] = useState("");
+  const [newReviewText, setNewReviewText] = useState("");
+  const [editingReview, setEditingReview] = useState<string | null>(null);
+  const [editReviewAuthor, setEditReviewAuthor] = useState("");
+  const [editReviewOrg, setEditReviewOrg] = useState("");
+  const [editReviewText, setEditReviewText] = useState("");
 
   useEffect(() => {
     checkAdmin();
@@ -108,6 +118,7 @@ const AdminDashboard = () => {
       setRequests(data.requests || []);
       setApprovedEmails(data.approvedEmails || []);
       setResources(data.resources || []);
+      setReviews(data.reviews || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
       toast({ title: "Error loading data", description: err.message, variant: "destructive" });
@@ -316,6 +327,65 @@ const AdminDashboard = () => {
     }
   };
 
+  const addReview = async () => {
+    if (!newReviewAuthor.trim() || !newReviewText.trim()) return;
+    try {
+      await callAdminApi("add-review", {
+        author: newReviewAuthor.trim(),
+        organization: newReviewOrg.trim(),
+        text: newReviewText.trim(),
+        sort_order: reviews.length,
+      });
+      setNewReviewAuthor(""); setNewReviewOrg(""); setNewReviewText("");
+      await fetchAll();
+      toast({ title: "Review added!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const deleteReview = async (id: string) => {
+    try {
+      await callAdminApi("delete-review", { id });
+      await fetchAll();
+      toast({ title: "Review deleted" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const updateReview = async (id: string) => {
+    if (!editReviewAuthor.trim() || !editReviewText.trim()) return;
+    try {
+      await callAdminApi("update-review", {
+        id,
+        author: editReviewAuthor.trim(),
+        organization: editReviewOrg.trim(),
+        text: editReviewText.trim(),
+      });
+      setEditingReview(null);
+      await fetchAll();
+      toast({ title: "Review updated!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const onReviewDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    const reordered = Array.from(reviews.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)));
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+    const updates = reordered.map((r, i) => ({ id: r.id, sort_order: i }));
+    setReviews(reordered.map((r, i) => ({ ...r, sort_order: i })));
+    try {
+      await callAdminApi("reorder-reviews", { updates });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      await fetchAll();
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center">
@@ -349,6 +419,7 @@ const AdminDashboard = () => {
               ["events", "Tournaments", Calendar],
               ["requests", "Access Requests", Users],
               ["emails", "Auto-Approve Emails", Mail],
+              ["reviews", "Reviews", Star],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -725,6 +796,88 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* Reviews Tab */}
+          {activeTab === "reviews" && (
+            <div className="space-y-6">
+              {/* Add Review Form */}
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-4">Add New Review</h2>
+                <div className="grid gap-3">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <Input placeholder="Author name *" value={newReviewAuthor} onChange={e => setNewReviewAuthor(e.target.value)} />
+                    <Input placeholder="Organization (optional)" value={newReviewOrg} onChange={e => setNewReviewOrg(e.target.value)} />
+                  </div>
+                  <Textarea placeholder="Review text *" value={newReviewText} onChange={e => setNewReviewText(e.target.value)} className="min-h-[100px]" />
+                  <Button onClick={addReview} className="w-fit"><Plus className="h-4 w-4 mr-1" /> Add Review</Button>
+                </div>
+              </div>
+
+              {/* Reviews List with Drag & Drop */}
+              <DragDropContext onDragEnd={onReviewDragEnd}>
+                <Droppable droppableId="reviews-list">
+                  {(provided) => (
+                    <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
+                      {reviews
+                        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                        .map((review, idx) => (
+                        <Draggable key={review.id} draggableId={review.id} index={idx}>
+                          {(dragProvided, snapshot) => (
+                            <div
+                              ref={dragProvided.innerRef}
+                              {...dragProvided.draggableProps}
+                              className={`bg-card rounded-lg border border-border p-4 ${snapshot.isDragging ? "shadow-lg ring-2 ring-primary/30" : ""}`}
+                            >
+                              {editingReview === review.id ? (
+                                <div className="space-y-3">
+                                  <div className="grid sm:grid-cols-2 gap-3">
+                                    <Input placeholder="Author *" value={editReviewAuthor} onChange={e => setEditReviewAuthor(e.target.value)} />
+                                    <Input placeholder="Organization" value={editReviewOrg} onChange={e => setEditReviewOrg(e.target.value)} />
+                                  </div>
+                                  <Textarea placeholder="Review text *" value={editReviewText} onChange={e => setEditReviewText(e.target.value)} className="min-h-[80px]" />
+                                  <div className="flex gap-2">
+                                    <Button size="sm" onClick={() => updateReview(review.id)}><Save className="h-4 w-4 mr-1" /> Save</Button>
+                                    <Button size="sm" variant="outline" onClick={() => setEditingReview(null)}><X className="h-4 w-4 mr-1" /> Cancel</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-start gap-3">
+                                  <div {...dragProvided.dragHandleProps} className="mt-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                    <GripVertical className="h-4 w-4" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Quote className="h-4 w-4 text-secondary/50 flex-shrink-0" />
+                                      <span className="font-semibold text-sm">{review.author}</span>
+                                      {review.organization && <span className="text-xs text-muted-foreground">— {review.organization}</span>}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground italic line-clamp-2">"{review.text}"</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    <button onClick={() => { setEditingReview(review.id); setEditReviewAuthor(review.author); setEditReviewOrg(review.organization || ""); setEditReviewText(review.text); }} className="text-muted-foreground hover:text-foreground">
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => deleteReview(review.id)} className="text-muted-foreground hover:text-destructive">
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+
+              {reviews.length === 0 && (
+                <p className="text-center text-muted-foreground italic py-8">No reviews yet. Add one above.</p>
+              )}
             </div>
           )}
         </div>

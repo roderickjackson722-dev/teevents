@@ -92,6 +92,41 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      if (action === "add-review") {
+        const { error } = await adminClient.from("reviews").insert({
+          author: body.author,
+          organization: body.organization || "",
+          text: body.text,
+          sort_order: body.sort_order ?? 0,
+        });
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (action === "update-review") {
+        const { error } = await adminClient.from("reviews").update({
+          author: body.author,
+          organization: body.organization || "",
+          text: body.text,
+        }).eq("id", body.id);
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (action === "delete-review") {
+        const { error } = await adminClient.from("reviews").delete().eq("id", body.id);
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (action === "reorder-reviews") {
+        const updates: { id: string; sort_order: number }[] = body.updates || [];
+        for (const u of updates) {
+          await adminClient.from("reviews").update({ sort_order: u.sort_order }).eq("id", u.id);
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       if (action === "grant-access") {
         const email = (body.email || "").trim().toLowerCase();
         if (!body.event_id || !email || !body.name) {
@@ -155,11 +190,12 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes] = await Promise.all([
       adminClient.from("events").select("*").order("date", { ascending: false }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
       adminClient.from("event_resources").select("*").order("sort_order", { ascending: true }),
+      adminClient.from("reviews").select("*").order("sort_order", { ascending: true }),
     ]);
 
     return new Response(
@@ -168,6 +204,7 @@ Deno.serve(async (req) => {
         requests: requestsRes.data || [],
         approvedEmails: emailsRes.data || [],
         resources: resourcesRes.data || [],
+        reviews: reviewsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

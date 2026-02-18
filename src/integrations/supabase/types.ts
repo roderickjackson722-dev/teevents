@@ -164,6 +164,33 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          author: string
+          created_at: string
+          id: string
+          organization: string | null
+          sort_order: number | null
+          text: string
+        }
+        Insert: {
+          author: string
+          created_at?: string
+          id?: string
+          organization?: string | null
+          sort_order?: number | null
+          text: string
+        }
+        Update: {
+          author?: string
+          created_at?: string
+          id?: string
+          organization?: string | null
+          sort_order?: number | null
+          text?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

@@ -46,6 +46,9 @@ const AdminDashboard = () => {
   // New email form
   const [newEmailEventId, setNewEmailEventId] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [bulkApproveEmails, setBulkApproveEmails] = useState("");
+  const [bulkApproveEventId, setBulkApproveEventId] = useState("");
+  const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
 
   // Grant access form
   const [grantEventId, setGrantEventId] = useState("");
@@ -264,6 +267,26 @@ const AdminDashboard = () => {
   const removeApprovedEmail = async (id: string) => {
     await supabase.from("approved_emails").delete().eq("id", id);
     await fetchAll();
+  };
+
+  const bulkAddApprovedEmails = async () => {
+    if (!bulkApproveEventId || !bulkApproveEmails.trim()) return;
+    const emails = bulkApproveEmails.trim().split("\n").map(l => l.trim().toLowerCase()).filter(Boolean);
+    if (!emails.length) return;
+    setBulkApproveLoading(true);
+    let added = 0;
+    let skipped = 0;
+    for (const email of emails) {
+      const { error } = await supabase.from("approved_emails").insert({
+        event_id: bulkApproveEventId,
+        email,
+      });
+      if (error) { skipped++; } else { added++; }
+    }
+    setBulkApproveEmails("");
+    await fetchAll();
+    setBulkApproveLoading(false);
+    toast({ title: "Bulk import complete", description: `${added} added, ${skipped} skipped (duplicates)` });
   };
 
   const addResource = async () => {
@@ -756,6 +779,31 @@ const AdminDashboard = () => {
                   </select>
                   <Input placeholder="Email address" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="flex-1" />
                   <Button onClick={addApprovedEmail}><Plus className="h-4 w-4 mr-1" /> Add</Button>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-4">Bulk Import Auto-Approve Emails</h2>
+                <p className="text-sm text-muted-foreground mb-4">Paste one email per line to add multiple auto-approve emails at once.</p>
+                <div className="flex flex-wrap gap-3 items-start">
+                  <select
+                    value={bulkApproveEventId}
+                    onChange={e => setBulkApproveEventId(e.target.value)}
+                    className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[180px]"
+                  >
+                    <option value="">Select event</option>
+                    {events.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+                  </select>
+                  <Textarea
+                    placeholder={"user1@example.com\nuser2@example.com\nuser3@example.com"}
+                    value={bulkApproveEmails}
+                    onChange={e => setBulkApproveEmails(e.target.value)}
+                    className="flex-1 min-w-[300px] min-h-[100px] text-sm"
+                  />
+                  <Button onClick={bulkAddApprovedEmails} disabled={bulkApproveLoading || !bulkApproveEventId || !bulkApproveEmails.trim()}>
+                    {bulkApproveLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
+                    Import
+                  </Button>
                 </div>
               </div>
 

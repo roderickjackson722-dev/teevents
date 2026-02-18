@@ -69,8 +69,8 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "TeeVents <onboarding@resend.dev>",
-        to: adminEmails,
+        from: "TeeVents <contact@teevents.golf>",
+        to: [...adminEmails, "info@teevents.golf"],
         subject: `New Access Request: ${event_title}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

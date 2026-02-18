@@ -165,6 +165,39 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      if (action === "add-approved-email") {
+        const email = (body.email || "").trim().toLowerCase();
+        if (!body.event_id || !email) {
+          return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        const { error } = await adminClient.from("approved_emails").insert({ event_id: body.event_id, email });
+        if (error) return new Response(JSON.stringify({ error: error.code === "23505" ? "Email already added" : error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (action === "delete-approved-email") {
+        const { error } = await adminClient.from("approved_emails").delete().eq("id", body.id);
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      if (action === "bulk-add-approved-emails") {
+        const emails: string[] = body.emails || [];
+        const eventId = body.event_id;
+        if (!eventId || !emails.length) {
+          return new Response(JSON.stringify({ error: "Missing event or emails" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        let added = 0;
+        let skipped = 0;
+        for (const raw of emails) {
+          const email = (raw || "").trim().toLowerCase();
+          if (!email) { skipped++; continue; }
+          const { error } = await adminClient.from("approved_emails").insert({ event_id: eventId, email });
+          if (error) { skipped++; } else { added++; }
+        }
+        return new Response(JSON.stringify({ success: true, added, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       if (action === "bulk-grant-access") {
         const entries: { name: string; email: string }[] = body.entries || [];
         const eventId = body.event_id;

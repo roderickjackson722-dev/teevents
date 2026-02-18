@@ -58,7 +58,7 @@ const Contact = () => {
                   <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
                     <Mail className="h-5 w-5 text-primary-foreground" />
                   </div>
-                  <span>info@teevents.golf</span>
+                  <span>contact@teevents.golf</span>
                 </div>
                 <div className="flex items-center gap-4 text-foreground">
                   <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">

@@ -10,6 +10,21 @@ const reviews = [
     author: "Daniel Sterling Davis",
     organization: "Tap That Ash Cigar Club",
   },
+  {
+    text: "We called Rod at TeeVents for last minute help with our annual tournament. He was able to make quick changes and adjustments that made our tournament more effective. TeeVents was so informative and helpful we decided to use their services for the next years event.",
+    author: "National Black College Alumni Hall of Fame Foundation, Inc.",
+    organization: "",
+  },
+  {
+    text: "TeeVents did an excellent job of addressing the needs of the client and paying attention to the details. Definitely hands on and consistent communication was the pinnacle of their supervision and participation. I look forward to participating in any of their future events. Thank you TeeVents, for a job well done!",
+    author: "Jamila Johnson",
+    organization: "University of Maryland Eastern Shore",
+  },
+  {
+    text: "Just a quick comment to you my friend!! That was the very best event we have experienced in Atlanta at the HOF Golf tournament!!! Congratulations to all. Job well done!!!!!",
+    author: "Coach Gelow",
+    organization: "Savannah State University",
+  },
 ];
 
 const Reviews = () => {

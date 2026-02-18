@@ -252,21 +252,26 @@ const AdminDashboard = () => {
 
   const addApprovedEmail = async () => {
     if (!newEmailEventId || !newEmail.trim()) return;
-    const { error } = await supabase.from("approved_emails").insert({
-      event_id: newEmailEventId, email: newEmail.trim().toLowerCase(),
-    });
-    if (error) {
-      toast({ title: "Error", description: error.code === "23505" ? "Email already added" : error.message, variant: "destructive" });
-      return;
+    try {
+      await callAdminApi("add-approved-email", {
+        event_id: newEmailEventId,
+        email: newEmail.trim().toLowerCase(),
+      });
+      setNewEmail("");
+      await fetchAll();
+      toast({ title: "Email added to auto-approve list" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-    setNewEmail("");
-    await fetchAll();
-    toast({ title: "Email added to auto-approve list" });
   };
 
   const removeApprovedEmail = async (id: string) => {
-    await supabase.from("approved_emails").delete().eq("id", id);
-    await fetchAll();
+    try {
+      await callAdminApi("delete-approved-email", { id });
+      await fetchAll();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const bulkAddApprovedEmails = async () => {
@@ -274,19 +279,19 @@ const AdminDashboard = () => {
     const emails = bulkApproveEmails.trim().split("\n").map(l => l.trim().toLowerCase()).filter(Boolean);
     if (!emails.length) return;
     setBulkApproveLoading(true);
-    let added = 0;
-    let skipped = 0;
-    for (const email of emails) {
-      const { error } = await supabase.from("approved_emails").insert({
+    try {
+      const result = await callAdminApi("bulk-add-approved-emails", {
         event_id: bulkApproveEventId,
-        email,
+        emails,
       });
-      if (error) { skipped++; } else { added++; }
+      setBulkApproveEmails("");
+      await fetchAll();
+      toast({ title: "Bulk import complete", description: `${result.added} added, ${result.skipped} skipped (duplicates)` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setBulkApproveLoading(false);
     }
-    setBulkApproveEmails("");
-    await fetchAll();
-    setBulkApproveLoading(false);
-    toast({ title: "Bulk import complete", description: `${added} added, ${skipped} skipped (duplicates)` });
   };
 
   const addResource = async () => {

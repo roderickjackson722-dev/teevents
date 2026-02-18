@@ -130,6 +130,7 @@ export type Database = {
           link: string | null
           location: string | null
           results_url: string | null
+          sort_order: number | null
           status: string
           title: string
           updated_at: string
@@ -144,6 +145,7 @@ export type Database = {
           link?: string | null
           location?: string | null
           results_url?: string | null
+          sort_order?: number | null
           status?: string
           title: string
           updated_at?: string
@@ -158,6 +160,7 @@ export type Database = {
           link?: string | null
           location?: string | null
           results_url?: string | null
+          sort_order?: number | null
           status?: string
           title?: string
           updated_at?: string

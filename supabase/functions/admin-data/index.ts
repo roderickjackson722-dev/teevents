@@ -127,6 +127,14 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      if (action === "reorder-events") {
+        const updates: { id: string; sort_order: number }[] = body.updates || [];
+        for (const u of updates) {
+          await adminClient.from("events").update({ sort_order: u.sort_order }).eq("id", u.id);
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       if (action === "grant-access") {
         const email = (body.email || "").trim().toLowerCase();
         if (!body.event_id || !email || !body.name) {
@@ -191,7 +199,7 @@ Deno.serve(async (req) => {
 
     // Default: fetch all admin data
     const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes] = await Promise.all([
-      adminClient.from("events").select("*").order("date", { ascending: false }),
+      adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
       adminClient.from("event_resources").select("*").order("sort_order", { ascending: true }),

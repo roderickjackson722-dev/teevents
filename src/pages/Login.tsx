@@ -67,6 +67,14 @@ const Login = () => {
       } catch {}
       setSubmitted("approved");
     } else {
+      // Send notification to admins (fire and forget)
+      supabase.functions.invoke("notify-access-request", {
+        body: {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          event_title: selectedEvent.title,
+        },
+      }).catch(() => {});
       setSubmitted("pending");
     }
   };

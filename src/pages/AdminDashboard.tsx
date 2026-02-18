@@ -305,7 +305,27 @@ const AdminDashboard = () => {
 
   const onDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
-    const eventId = result.source.droppableId;
+    const droppableId = result.source.droppableId;
+
+    // Event reordering
+    if (droppableId === "events-list") {
+      const sorted = [...events].sort((a, b) => ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0));
+      const reordered = Array.from(sorted);
+      const [moved] = reordered.splice(result.source.index, 1);
+      reordered.splice(result.destination.index, 0, moved);
+      const updates = reordered.map((r, i) => ({ id: r.id, sort_order: i }));
+      setEvents(reordered.map((r, i) => ({ ...r, sort_order: i } as any)));
+      try {
+        await callAdminApi("reorder-events", { updates });
+      } catch (err: any) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+        await fetchAll();
+      }
+      return;
+    }
+
+    // Resource reordering
+    const eventId = droppableId;
     const sorted = resources
       .filter(r => r.event_id === eventId)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -314,7 +334,6 @@ const AdminDashboard = () => {
     reordered.splice(result.destination.index, 0, moved);
 
     const updates = reordered.map((r, i) => ({ id: r.id, sort_order: i }));
-    // Optimistic update
     setResources(prev => {
       const others = prev.filter(r => r.event_id !== eventId);
       return [...others, ...reordered.map((r, i) => ({ ...r, sort_order: i }))];
@@ -466,161 +485,130 @@ const AdminDashboard = () => {
               </div>
 
               {/* Events List */}
-              {events.map(event => {
-                const eventResources = resources.filter(r => r.event_id === event.id);
-                const isExpanded = expandedEvent === event.id;
-
-                return (
-                  <div key={event.id} className="bg-card rounded-lg border border-border overflow-hidden">
-                    {/* Event Header */}
-                    <div className="p-4">
-                      {editingEvent === event.id ? (
-                        <div className="space-y-3">
-                          <div className="grid sm:grid-cols-2 gap-3">
-                            <Input placeholder="Title *" value={editEventTitle} onChange={e => setEditEventTitle(e.target.value)} />
-                            <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
-                            <Input placeholder="Location" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} />
-                            <Input placeholder="Gallery URL (Google Photos)" value={editGalleryUrl} onChange={e => setEditGalleryUrl(e.target.value)} />
-                            <Input placeholder="Results URL (optional)" value={editResultsUrl} onChange={e => setEditResultsUrl(e.target.value)} />
-                            <select
-                              value={editEventStatus}
-                              onChange={e => setEditEventStatus(e.target.value as "current" | "past")}
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                              <option value="current">Current</option>
-                              <option value="past">Past</option>
-                            </select>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" onClick={() => updateEvent(event.id)}><Save className="h-4 w-4 mr-1" /> Save</Button>
-                            <Button size="sm" variant="outline" onClick={() => setEditingEvent(null)}><X className="h-4 w-4 mr-1" /> Cancel</Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              event.status === "current" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"
-                            }`}>{event.status}</span>
-                            <h3 className="font-display font-semibold">{event.title}</h3>
-                            {event.date && <span className="text-xs text-muted-foreground">{new Date(event.date).toLocaleDateString()}</span>}
-                            {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
-                            {eventResources.length > 0 && (
-                              <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">
-                                {eventResources.length} resource{eventResources.length !== 1 ? "s" : ""}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => startEditingEvent(event)} className="text-muted-foreground hover:text-foreground">
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button onClick={() => setExpandedEvent(isExpanded ? null : event.id)} className="text-muted-foreground hover:text-foreground">
-                              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                            </button>
-                            <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Expanded: Resources */}
-                    {isExpanded && (
-                      <div className="border-t border-border p-4 bg-muted/20">
-                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-1">
-                          <FileText className="h-4 w-4" /> Resources ({eventResources.length})
-                        </h4>
-
-                        {eventResources.length > 0 ? (
-                          <DragDropContext onDragEnd={onDragEnd}>
-                            <Droppable droppableId={event.id}>
-                              {(provided) => (
-                                <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2 mb-4">
-                                  {eventResources
-                                    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                                    .map((res, idx) => (
-                                    <Draggable key={res.id} draggableId={res.id} index={idx}>
-                                      {(dragProvided, snapshot) => (
-                                        <div
-                                          ref={dragProvided.innerRef}
-                                          {...dragProvided.draggableProps}
-                                          className={`flex items-center justify-between text-sm bg-card rounded-md border border-border px-3 py-2 ${snapshot.isDragging ? "shadow-lg ring-2 ring-primary/30" : ""}`}
-                                        >
-                                          <div {...dragProvided.dragHandleProps} className="flex items-center mr-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
-                                            <GripVertical className="h-4 w-4" />
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <span className="font-medium">{res.title}</span>
-                                            {editingResource === res.id ? (
-                                              <div className="flex items-center gap-2 mt-1">
-                                                <Input
-                                                  value={editResLink}
-                                                  onChange={e => setEditResLink(e.target.value)}
-                                                  placeholder="Link (URL)"
-                                                  className="h-7 text-xs flex-1"
-                                                />
-                                                <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800">
-                                                  <Save className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground">
-                                                  <X className="h-3.5 w-3.5" />
-                                                </Button>
-                                              </div>
-                                            ) : (
-                                              res.link && (
-                                                <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate inline-flex items-center gap-1">
-                                                  <LinkIcon className="h-3 w-3" /> Link
-                                                </a>
-                                              )
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-1 ml-2">
-                                            {editingResource !== res.id && (
-                                              <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground">
-                                                <Pencil className="h-3.5 w-3.5" />
-                                              </button>
-                                            )}
-                                            <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive">
-                                              <Trash2 className="h-3.5 w-3.5" />
-                                            </button>
-                                          </div>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="events-list">
+                  {(eventsDropProvided) => (
+                    <div ref={eventsDropProvided.innerRef} {...eventsDropProvided.droppableProps} className="space-y-4">
+                      {[...events].sort((a, b) => ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0)).map((event, idx) => {
+                        const eventResources = resources.filter(r => r.event_id === event.id);
+                        const isExpanded = expandedEvent === event.id;
+                        return (
+                          <Draggable key={event.id} draggableId={event.id} index={idx}>
+                            {(eventDragProvided, eventSnapshot) => (
+                              <div ref={eventDragProvided.innerRef} {...eventDragProvided.draggableProps} className={`bg-card rounded-lg border border-border overflow-hidden ${eventSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/30" : ""}`}>
+                                <div className="p-4">
+                                  {editingEvent === event.id ? (
+                                    <div className="space-y-3">
+                                      <div className="grid sm:grid-cols-2 gap-3">
+                                        <Input placeholder="Title *" value={editEventTitle} onChange={e => setEditEventTitle(e.target.value)} />
+                                        <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
+                                        <Input placeholder="Location" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} />
+                                        <Input placeholder="Gallery URL (Google Photos)" value={editGalleryUrl} onChange={e => setEditGalleryUrl(e.target.value)} />
+                                        <Input placeholder="Results URL (optional)" value={editResultsUrl} onChange={e => setEditResultsUrl(e.target.value)} />
+                                        <select value={editEventStatus} onChange={e => setEditEventStatus(e.target.value as "current" | "past")} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                          <option value="current">Current</option>
+                                          <option value="past">Past</option>
+                                        </select>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button size="sm" onClick={() => updateEvent(event.id)}><Save className="h-4 w-4 mr-1" /> Save</Button>
+                                        <Button size="sm" variant="outline" onClick={() => setEditingEvent(null)}><X className="h-4 w-4 mr-1" /> Cancel</Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-3 flex-wrap">
+                                        <div {...eventDragProvided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                          <GripVertical className="h-4 w-4" />
                                         </div>
-                                      )}
-                                    </Draggable>
-                                  ))}
-                                  {provided.placeholder}
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${event.status === "current" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"}`}>{event.status}</span>
+                                        <h3 className="font-display font-semibold">{event.title}</h3>
+                                        {event.date && <span className="text-xs text-muted-foreground">{new Date(event.date).toLocaleDateString()}</span>}
+                                        {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
+                                        {eventResources.length > 0 && (
+                                          <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">
+                                            {eventResources.length} resource{eventResources.length !== 1 ? "s" : ""}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <button onClick={() => startEditingEvent(event)} className="text-muted-foreground hover:text-foreground"><Pencil className="h-4 w-4" /></button>
+                                        <button onClick={() => setExpandedEvent(isExpanded ? null : event.id)} className="text-muted-foreground hover:text-foreground">
+                                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                        </button>
+                                        <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </Droppable>
-                          </DragDropContext>
-                        ) : (
-                          <p className="text-sm text-muted-foreground mb-4 italic">No resources yet. Add one below.</p>
-                        )}
-
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Resource title"
-                            className="flex-1"
-                            value={newResEventId === event.id ? newResTitle : ""}
-                            onFocus={() => setNewResEventId(event.id)}
-                            onChange={e => { setNewResEventId(event.id); setNewResTitle(e.target.value); }}
-                          />
-                          <Input
-                            placeholder="Link (URL)"
-                            className="flex-1"
-                            value={newResEventId === event.id ? newResLink : ""}
-                            onFocus={() => setNewResEventId(event.id)}
-                            onChange={e => { setNewResEventId(event.id); setNewResLink(e.target.value); }}
-                          />
-                          <Button size="sm" onClick={addResource}><Plus className="h-3.5 w-3.5" /></Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                                {isExpanded && (
+                                  <div className="border-t border-border p-4 bg-muted/20">
+                                    <h4 className="font-semibold text-sm mb-3 flex items-center gap-1">
+                                      <FileText className="h-4 w-4" /> Resources ({eventResources.length})
+                                    </h4>
+                                    {eventResources.length > 0 ? (
+                                      <DragDropContext onDragEnd={onDragEnd}>
+                                        <Droppable droppableId={event.id}>
+                                          {(resProvided) => (
+                                            <div ref={resProvided.innerRef} {...resProvided.droppableProps} className="space-y-2 mb-4">
+                                              {eventResources.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map((res, resIdx) => (
+                                                <Draggable key={res.id} draggableId={res.id} index={resIdx}>
+                                                  {(resDragProvided, resSnapshot) => (
+                                                    <div ref={resDragProvided.innerRef} {...resDragProvided.draggableProps} className={`flex items-center justify-between text-sm bg-card rounded-md border border-border px-3 py-2 ${resSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/30" : ""}`}>
+                                                      <div {...resDragProvided.dragHandleProps} className="flex items-center mr-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                                        <GripVertical className="h-4 w-4" />
+                                                      </div>
+                                                      <div className="flex-1 min-w-0">
+                                                        <span className="font-medium">{res.title}</span>
+                                                        {editingResource === res.id ? (
+                                                          <div className="flex items-center gap-2 mt-1">
+                                                            <Input value={editResLink} onChange={e => setEditResLink(e.target.value)} placeholder="Link (URL)" className="h-7 text-xs flex-1" />
+                                                            <Button size="sm" variant="ghost" onClick={() => updateResourceLink(res.id)} className="h-7 px-2 text-green-600 hover:text-green-800"><Save className="h-3.5 w-3.5" /></Button>
+                                                            <Button size="sm" variant="ghost" onClick={() => setEditingResource(null)} className="h-7 px-2 text-muted-foreground"><X className="h-3.5 w-3.5" /></Button>
+                                                          </div>
+                                                        ) : (
+                                                          res.link && (
+                                                            <a href={res.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-secondary hover:underline text-xs truncate inline-flex items-center gap-1">
+                                                              <LinkIcon className="h-3 w-3" /> Link
+                                                            </a>
+                                                          )
+                                                        )}
+                                                      </div>
+                                                      <div className="flex items-center gap-1 ml-2">
+                                                        {editingResource !== res.id && (
+                                                          <button onClick={() => { setEditingResource(res.id); setEditResLink(res.link || ""); }} className="text-muted-foreground hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
+                                                        )}
+                                                        <button onClick={() => deleteResource(res.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </Draggable>
+                                              ))}
+                                              {resProvided.placeholder}
+                                            </div>
+                                          )}
+                                        </Droppable>
+                                      </DragDropContext>
+                                    ) : (
+                                      <p className="text-sm text-muted-foreground mb-4 italic">No resources yet. Add one below.</p>
+                                    )}
+                                    <div className="flex gap-2">
+                                      <Input placeholder="Resource title" className="flex-1" value={newResEventId === event.id ? newResTitle : ""} onFocus={() => setNewResEventId(event.id)} onChange={e => { setNewResEventId(event.id); setNewResTitle(e.target.value); }} />
+                                      <Input placeholder="Link (URL)" className="flex-1" value={newResEventId === event.id ? newResLink : ""} onFocus={() => setNewResEventId(event.id)} onChange={e => { setNewResEventId(event.id); setNewResLink(e.target.value); }} />
+                                      <Button size="sm" onClick={addResource}><Plus className="h-3.5 w-3.5" /></Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {eventsDropProvided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </div>
           )}
 

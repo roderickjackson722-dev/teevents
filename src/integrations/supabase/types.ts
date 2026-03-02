@@ -259,6 +259,53 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_budget_items: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_paid: boolean | null
+          notes: string | null
+          sort_order: number | null
+          tournament_id: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_paid?: boolean | null
+          notes?: string | null
+          sort_order?: number | null
+          tournament_id: string
+          type?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_paid?: boolean | null
+          notes?: string | null
+          sort_order?: number | null
+          tournament_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_budget_items_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_checklist_items: {
         Row: {
           category: string
@@ -355,6 +402,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_sponsors: {
+        Row: {
+          amount: number | null
+          created_at: string
+          description: string | null
+          id: string
+          is_paid: boolean | null
+          logo_url: string | null
+          name: string
+          sort_order: number | null
+          tier: string
+          tournament_id: string
+          website_url: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_paid?: boolean | null
+          logo_url?: string | null
+          name: string
+          sort_order?: number | null
+          tier?: string
+          tournament_id: string
+          website_url?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_paid?: boolean | null
+          logo_url?: string | null
+          name?: string
+          sort_order?: number | null
+          tier?: string
+          tournament_id?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_sponsors_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"

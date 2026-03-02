@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -13,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2 } from "lucide-react";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe } from "lucide-react";
 
 interface Tournament {
   id: string;
@@ -199,6 +200,15 @@ const Tournaments = () => {
                   })}
                 </p>
               )}
+              <div className="mt-4 pt-3 border-t border-border">
+                <Link
+                  to={`/dashboard/tournaments/${t.id}/site-builder`}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  Edit Site
+                </Link>
+              </div>
             </motion.div>
           ))}
         </div>

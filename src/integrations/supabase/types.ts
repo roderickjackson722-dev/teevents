@@ -305,6 +305,8 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          contact_email: string | null
+          contact_phone: string | null
           course_name: string | null
           created_at: string
           date: string | null
@@ -315,12 +317,24 @@ export type Database = {
           max_players: number | null
           organization_id: string
           registration_open: boolean | null
+          registration_url: string | null
+          schedule_info: string | null
+          site_hero_image_url: string | null
+          site_hero_subtitle: string | null
+          site_hero_title: string | null
+          site_logo_url: string | null
+          site_primary_color: string | null
+          site_published: boolean | null
+          site_secondary_color: string | null
+          slug: string | null
           status: string
           template: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
           course_name?: string | null
           created_at?: string
           date?: string | null
@@ -331,12 +345,24 @@ export type Database = {
           max_players?: number | null
           organization_id: string
           registration_open?: boolean | null
+          registration_url?: string | null
+          schedule_info?: string | null
+          site_hero_image_url?: string | null
+          site_hero_subtitle?: string | null
+          site_hero_title?: string | null
+          site_logo_url?: string | null
+          site_primary_color?: string | null
+          site_published?: boolean | null
+          site_secondary_color?: string | null
+          slug?: string | null
           status?: string
           template?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
           course_name?: string | null
           created_at?: string
           date?: string | null
@@ -347,6 +373,16 @@ export type Database = {
           max_players?: number | null
           organization_id?: string
           registration_open?: boolean | null
+          registration_url?: string | null
+          schedule_info?: string | null
+          site_hero_image_url?: string | null
+          site_hero_subtitle?: string | null
+          site_hero_title?: string | null
+          site_logo_url?: string | null
+          site_primary_color?: string | null
+          site_published?: boolean | null
+          site_secondary_color?: string | null
+          slug?: string | null
           status?: string
           template?: string | null
           title?: string

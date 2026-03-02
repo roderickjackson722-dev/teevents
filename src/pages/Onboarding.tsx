@@ -13,20 +13,23 @@ const templates = [
   {
     id: "classic",
     name: "Classic Green",
-    description: "Timeless golf aesthetic with deep greens and gold accents.",
+    description: "Centered logo, timeless golf aesthetic with deep greens and gold accents. 3 CTA buttons in hero.",
     colors: { primary: "#1a5c38", secondary: "#c8a84e" },
+    preview: { navStyle: "centered", heroAlign: "center", ctaCount: 3 },
   },
   {
     id: "modern",
     name: "Modern Navy",
-    description: "Clean and contemporary with navy blue and white.",
+    description: "Logo in navigation, right-aligned hero text with navy blue and bold accents.",
     colors: { primary: "#1e3a5f", secondary: "#e8b931" },
+    preview: { navStyle: "left-logo", heroAlign: "right", ctaCount: 3 },
   },
   {
     id: "charity",
     name: "Charity Warmth",
-    description: "Warm tones perfect for fundraising and nonprofit events.",
+    description: "Centered banner layout with warm tones, perfect for fundraising events. 2 CTA buttons.",
     colors: { primary: "#8b2500", secondary: "#d4a017" },
+    preview: { navStyle: "centered", heroAlign: "center", ctaCount: 2 },
   },
 ];
 
@@ -145,30 +148,62 @@ const Onboarding = () => {
                   <button
                     key={template.id}
                     onClick={() => setSelectedTemplate(template.id)}
-                    className={`relative text-left p-4 rounded-lg border-2 transition-all ${
+                    className={`relative text-left rounded-lg border-2 overflow-hidden transition-all ${
                       selectedTemplate === template.id
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/40"
                     }`}
                   >
                     {selectedTemplate === template.id && (
-                      <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full p-1">
+                      <div className="absolute top-3 right-3 z-10 bg-primary text-primary-foreground rounded-full p-1">
                         <Check className="h-3 w-3" />
                       </div>
                     )}
-                    <div className="flex items-center gap-4">
-                      <div className="flex gap-1.5">
-                        <div
-                          className="w-8 h-8 rounded-full border border-border"
-                          style={{ backgroundColor: template.colors.primary }}
-                        />
-                        <div
-                          className="w-8 h-8 rounded-full border border-border"
-                          style={{ backgroundColor: template.colors.secondary }}
-                        />
+
+                    {/* Mini site preview */}
+                    <div className="relative h-28 w-full" style={{ backgroundColor: template.colors.primary }}>
+                      {/* Mini nav bar */}
+                      <div className="absolute top-0 left-0 right-0 h-5 flex items-center px-3 gap-2" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                        {template.preview.navStyle === "left-logo" && (
+                          <div className="w-4 h-3 rounded-sm" style={{ backgroundColor: "rgba(255,255,255,0.6)" }} />
+                        )}
+                        <div className="flex gap-1.5 mx-auto">
+                          {["", "", "", ""].map((_, i) => (
+                            <div key={i} className="w-6 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.4)" }} />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Hero content */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pt-5" style={{ textAlign: template.preview.heroAlign as any }}>
+                        <div className="w-8 h-8 rounded-full border-2 mb-1" style={{ borderColor: template.colors.secondary, backgroundColor: "rgba(255,255,255,0.15)" }} />
+                        <div className="w-24 h-2 rounded-full mb-1" style={{ backgroundColor: "rgba(255,255,255,0.8)" }} />
+                        <div className="w-16 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.4)" }} />
+                      </div>
+
+                      {/* CTA buttons at bottom */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0">
+                        {Array.from({ length: template.preview.ctaCount }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="w-16 h-4"
+                            style={{
+                              backgroundColor: i === 0 ? template.colors.secondary : i === 1 ? template.colors.primary : "#333",
+                              opacity: i === 0 ? 1 : 0.9,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Template info */}
+                    <div className="p-3 flex items-center gap-3">
+                      <div className="flex gap-1.5 shrink-0">
+                        <div className="w-6 h-6 rounded-full border border-border" style={{ backgroundColor: template.colors.primary }} />
+                        <div className="w-6 h-6 rounded-full border border-border" style={{ backgroundColor: template.colors.secondary }} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">{template.name}</h3>
+                        <h3 className="font-semibold text-sm text-foreground">{template.name}</h3>
                         <p className="text-xs text-muted-foreground">{template.description}</p>
                       </div>
                     </div>

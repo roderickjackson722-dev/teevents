@@ -96,6 +96,7 @@ const SiteBuilder = () => {
         location: settings.location,
         course_name: settings.course_name,
         date: settings.date || null,
+        template: settings.template || "classic",
       })
       .eq("id", settings.id);
 
@@ -295,6 +296,35 @@ const SiteBuilder = () => {
                       Upload Hero Image
                     </span>
                   </label>
+                </div>
+              </div>
+
+              {/* Template Selector */}
+              <div>
+                <Label>Site Template</Label>
+                <div className="mt-2 grid grid-cols-3 gap-3">
+                  {[
+                    { id: "classic", name: "Classic Green", desc: "Centered logo, golf green tones, 3 CTA buttons", colors: ["#1a5c38", "#c8a84e"] },
+                    { id: "modern", name: "Modern Navy", desc: "Logo in nav, right-aligned hero, bold accents", colors: ["#1e3a5f", "#e8b931"] },
+                    { id: "charity", name: "Charity Warmth", desc: "Centered banner, warm tones, 2 CTA buttons", colors: ["#8b2500", "#d4a017"] },
+                  ].map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      onClick={() => updateField("template", tpl.id)}
+                      className={`relative text-left p-3 rounded-lg border-2 transition-all ${
+                        (settings.template || "classic") === tpl.id
+                          ? "border-primary ring-1 ring-primary/30"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="flex gap-1.5 mb-2">
+                        <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: tpl.colors[0] }} />
+                        <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: tpl.colors[1] }} />
+                      </div>
+                      <p className="text-xs font-semibold text-foreground">{tpl.name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{tpl.desc}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
 

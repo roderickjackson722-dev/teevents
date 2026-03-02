@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -107,10 +108,29 @@ export default function Messages() {
     },
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { error } = await supabase
+        .from("tournament_messages")
+        .update({ status: "cancelled" })
+        .eq("id", messageId)
+        .eq("status", "scheduled");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Message cancelled", description: "The scheduled message has been cancelled." });
+      queryClient.invalidateQueries({ queryKey: ["tournament-messages"] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Failed to cancel", description: error.message, variant: "destructive" });
+    },
+  });
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "sent": return "default" as const;
       case "scheduled": return "outline" as const;
+      case "cancelled": return "destructive" as const;
       case "processing": return "secondary" as const;
       default: return "secondary" as const;
     }
@@ -308,6 +328,7 @@ export default function Messages() {
                   <TableHead>Recipients</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Sent / Scheduled</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -322,6 +343,19 @@ export default function Messages() {
                       {msg.status === "scheduled" && msg.scheduled_for
                         ? format(new Date(msg.scheduled_for), "MMM d, h:mm a")
                         : format(new Date(msg.sent_at), "MMM d, h:mm a")}
+                    </TableCell>
+                    <TableCell>
+                      {msg.status === "scheduled" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => cancelMutation.mutate(msg.id)}
+                          disabled={cancelMutation.isPending}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="mr-1 h-3.5 w-3.5" /> Cancel
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -1,0 +1,485 @@
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  CreditCard,
+  MessageSquare,
+  BarChart3,
+  Users,
+  Award,
+  Globe,
+  Check,
+  ArrowRight,
+  Smartphone,
+  ShieldCheck,
+  Zap,
+  LayoutDashboard,
+} from "lucide-react";
+import Layout from "@/components/Layout";
+import HeroSection from "@/components/HeroSection";
+import heroGolf from "@/assets/hero-golf.jpg";
+import logoWhite from "@/assets/logo-white.png";
+
+const features = [
+  {
+    icon: CreditCard,
+    title: "Online Registration & Payments",
+    description:
+      "Accept all major US credit cards, Apple Pay, and Google Pay. Seamless checkout for golfers with automated confirmation emails.",
+  },
+  {
+    icon: MessageSquare,
+    title: "SMS Texting",
+    description:
+      "Send real-time or scheduled SMS updates to golfers, sponsors, and volunteers. Keep everyone informed on tournament day.",
+  },
+  {
+    icon: BarChart3,
+    title: "Real-Time Budget Tracking",
+    description:
+      "Track revenue and expenses in a live budget sheet. Know exactly where your tournament financials stand at any moment.",
+  },
+  {
+    icon: Users,
+    title: "Player Pairings Database",
+    description:
+      "Fast and easy golf pairings with drag-and-drop simplicity. Generate scorecards and cart signs in seconds.",
+  },
+  {
+    icon: Award,
+    title: "Sponsor Recognition Tools",
+    description:
+      "Showcase sponsors with branded pages, logo placement, and digital signage. Maximize sponsor value and retention.",
+  },
+  {
+    icon: Globe,
+    title: "Custom Tournament Website",
+    description:
+      "Your tournament gets its own branded website — no design skills needed. Plug-and-play templates ready in minutes.",
+  },
+];
+
+const additionalFeatures = [
+  "Automated email confirmations",
+  "QR code check-in for golfers",
+  "Live leaderboard & scoring",
+  "Auction & raffle management",
+  "Photo gallery integration",
+  "Volunteer coordination tools",
+  "Custom branded merchandise store",
+  "Post-event survey & analytics",
+];
+
+const plans = [
+  {
+    name: "Starter",
+    price: "$499",
+    period: "per tournament",
+    description: "Perfect for small charity outings and first-time organizers.",
+    features: [
+      "Up to 72 golfers",
+      "Online registration & payments",
+      "Custom tournament website",
+      "Player pairings tool",
+      "Basic budget tracking",
+      "Email support",
+    ],
+    cta: "Get Started",
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: "$999",
+    period: "per tournament",
+    description: "For nonprofits and organizations running polished events.",
+    features: [
+      "Up to 144 golfers",
+      "Everything in Starter",
+      "SMS texting (500 messages)",
+      "Sponsor recognition pages",
+      "Live leaderboard",
+      "Real-time budget dashboard",
+      "Priority support",
+    ],
+    cta: "Start Free Trial",
+    highlighted: true,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "annual license",
+    description: "For organizations running multiple tournaments per year.",
+    features: [
+      "Unlimited golfers",
+      "Everything in Pro",
+      "Unlimited SMS texting",
+      "Dedicated account manager",
+      "White-label branding",
+      "API access",
+      "Custom integrations",
+      "On-site support available",
+    ],
+    cta: "Contact Sales",
+    highlighted: false,
+  },
+];
+
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
+const Platform = () => {
+  return (
+    <Layout>
+      {/* Hero */}
+      <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
+        <img
+          src={logoWhite}
+          alt="TeeVents Golf"
+          className="h-32 w-32 mx-auto mb-4 object-contain"
+        />
+        <h2 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
+          The All-In-One Golf
+          <br />
+          Tournament Platform
+        </h2>
+        <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
+          Everything nonprofits and corporations need to plan, manage, and
+          execute world-class golf tournaments — all in one place.
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            to="/contact"
+            className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
+          >
+            Start Free Trial
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <a
+            href="#features"
+            className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
+          >
+            See Features
+          </a>
+        </div>
+      </HeroSection>
+
+      {/* Trust Bar */}
+      <section className="bg-primary py-6">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 text-primary-foreground/70">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-secondary" />
+              <span className="text-sm font-medium">PCI Compliant</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-secondary" />
+              <span className="text-sm font-medium">Mobile Optimized</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-secondary" />
+              <span className="text-sm font-medium">Setup in Minutes</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <LayoutDashboard className="h-5 w-5 text-secondary" />
+              <span className="text-sm font-medium">No Tech Skills Needed</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="bg-golf-cream py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+              Platform Features
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Everything You Need to Run
+              <br />a Winning Tournament
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              From registration to the awards ceremony, our platform handles
+              every detail so you can focus on your cause.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {features.map((feature) => (
+              <motion.div
+                key={feature.title}
+                variants={fadeUp}
+                className="bg-card p-8 rounded-lg border border-border hover:shadow-lg transition-shadow group"
+              >
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-5 group-hover:bg-secondary/20 transition-colors">
+                  <feature.icon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-display font-bold text-foreground mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Additional Features */}
+      <section className="bg-primary py-20">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-primary-foreground">
+              And So Much More
+            </h2>
+          </motion.div>
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            {additionalFeatures.map((feat) => (
+              <motion.div
+                key={feat}
+                variants={fadeUp}
+                className="flex items-center gap-3 bg-primary-foreground/5 border border-primary-foreground/10 px-4 py-3 rounded-lg"
+              >
+                <Check className="h-4 w-4 text-secondary flex-shrink-0" />
+                <span className="text-sm font-medium text-primary-foreground">
+                  {feat}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="bg-golf-cream py-24">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+              How It Works
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Up and Running in 3 Steps
+            </h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              {
+                step: "01",
+                title: "Choose Your Plan",
+                description:
+                  "Select the plan that fits your tournament size and needs. Start with a free trial — no credit card required.",
+              },
+              {
+                step: "02",
+                title: "Build Your Site",
+                description:
+                  "Use our plug-and-play templates to create your branded tournament website. Add your logo, colors, and event details.",
+              },
+              {
+                step: "03",
+                title: "Launch & Manage",
+                description:
+                  "Open registration, collect payments, send updates via SMS, manage pairings, and track your budget — all from one dashboard.",
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.6 }}
+                className="text-center"
+              >
+                <div className="text-6xl font-display font-bold text-secondary/30 mb-4">
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-display font-bold text-foreground mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {item.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="bg-background py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+              Pricing
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              No hidden fees. No long-term contracts. Just powerful tools for
+              your golf tournament.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {plans.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.6 }}
+                className={`relative rounded-xl p-8 border ${
+                  plan.highlighted
+                    ? "bg-primary text-primary-foreground border-secondary shadow-2xl scale-105"
+                    : "bg-card text-card-foreground border-border"
+                }`}
+              >
+                {plan.highlighted && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
+                    Most Popular
+                  </div>
+                )}
+                <h3 className="text-2xl font-display font-bold mb-1">
+                  {plan.name}
+                </h3>
+                <p
+                  className={`text-sm mb-6 ${
+                    plan.highlighted
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {plan.description}
+                </p>
+                <div className="mb-6">
+                  <span className="text-4xl font-display font-bold">
+                    {plan.price}
+                  </span>
+                  <span
+                    className={`text-sm ml-2 ${
+                      plan.highlighted
+                        ? "text-primary-foreground/60"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {plan.period}
+                  </span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-3">
+                      <Check
+                        className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                          plan.highlighted ? "text-secondary" : "text-primary"
+                        }`}
+                      />
+                      <span
+                        className={`text-sm ${
+                          plan.highlighted
+                            ? "text-primary-foreground/90"
+                            : "text-foreground/80"
+                        }`}
+                      >
+                        {feat}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/contact"
+                  className={`block text-center px-6 py-3 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors ${
+                    plan.highlighted
+                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="bg-primary py-20">
+        <div className="container mx-auto px-4 text-center max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-primary-foreground mb-6">
+              Ready to Elevate Your
+              <br />
+              Golf Tournament?
+            </h2>
+            <p className="text-lg text-primary-foreground/80 mb-8">
+              Join the growing number of nonprofits and corporations using
+              TeeVents to run unforgettable golf events. Start your free trial
+              today.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/contact"
+                className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
+              >
+                Start Free Trial
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/contact"
+                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
+              >
+                Schedule a Demo
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </Layout>
+  );
+};
+
+export default Platform;

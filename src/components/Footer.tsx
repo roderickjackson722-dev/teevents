@@ -20,6 +20,7 @@ const Footer = () => {
             <Link to="/" className="hover:text-secondary transition-colors">Home</Link>
             <Link to="/about" className="hover:text-secondary transition-colors">About</Link>
             <Link to="/services" className="hover:text-secondary transition-colors">Services</Link>
+            <Link to="/platform" className="hover:text-secondary transition-colors">Platform</Link>
             <Link to="/reviews" className="hover:text-secondary transition-colors">Reviews</Link>
             <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
             <Link to="/login" className="hover:text-secondary transition-colors">Coach Login</Link>

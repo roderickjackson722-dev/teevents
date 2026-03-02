@@ -41,6 +41,7 @@ interface SiteSettings {
   contact_phone: string | null;
   schedule_info: string | null;
   registration_url: string | null;
+  registration_open: boolean | null;
   template: string | null;
 }
 
@@ -90,6 +91,7 @@ const SiteBuilder = () => {
         contact_phone: settings.contact_phone,
         schedule_info: settings.schedule_info,
         registration_url: settings.registration_url,
+        registration_open: settings.registration_open,
         description: settings.description,
         location: settings.location,
         course_name: settings.course_name,
@@ -169,7 +171,16 @@ const SiteBuilder = () => {
             Site Builder — {settings.title}
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={!!settings.registration_open}
+              onCheckedChange={(v) => updateField("registration_open", v)}
+            />
+            <span className="text-sm font-medium text-foreground">
+              Registration {settings.registration_open ? "Open" : "Closed"}
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <Switch
               checked={!!settings.site_published}

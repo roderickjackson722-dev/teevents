@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2 } from "lucide-react";
+import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus } from "lucide-react";
+import RegistrationForm from "@/components/RegistrationForm";
 
 interface TournamentSite {
   id: string;
@@ -22,6 +23,7 @@ interface TournamentSite {
   contact_phone: string | null;
   schedule_info: string | null;
   registration_url: string | null;
+  registration_open: boolean | null;
 }
 
 const PublicTournament = () => {
@@ -135,7 +137,7 @@ const PublicTournament = () => {
             )}
           </div>
 
-          {tournament.registration_url && (
+          {tournament.registration_url ? (
             <a
               href={tournament.registration_url}
               target="_blank"
@@ -146,7 +148,16 @@ const PublicTournament = () => {
               Register Now
               <ExternalLink className="h-4 w-4" />
             </a>
-          )}
+          ) : tournament.registration_open ? (
+            <a
+              href="#register"
+              className="inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Register Now
+              <UserPlus className="h-4 w-4" />
+            </a>
+          ) : null}
         </motion.div>
       </section>
 
@@ -199,7 +210,37 @@ const PublicTournament = () => {
         </section>
       )}
 
-      {/* Registration CTA */}
+      {/* Built-in Registration Form */}
+      {tournament.registration_open && !tournament.registration_url && (
+        <section id="register" className="py-16 bg-background">
+          <div className="container mx-auto px-4 max-w-xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-center mb-8">
+                <UserPlus className="h-8 w-8 mx-auto mb-3" style={{ color: secondary }} />
+                <h2 className="text-3xl font-display font-bold text-foreground mb-2">
+                  Register to Play
+                </h2>
+                <p className="text-muted-foreground">
+                  Fill out the form below to secure your spot.
+                </p>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                <RegistrationForm
+                  tournamentId={tournament.id}
+                  primaryColor={primary}
+                  secondaryColor={secondary}
+                />
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* External Registration CTA */}
       {tournament.registration_url && (
         <section className="py-16" style={{ backgroundColor: primary }}>
           <div className="container mx-auto px-4 text-center">

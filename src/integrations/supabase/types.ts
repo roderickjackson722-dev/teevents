@@ -303,6 +303,65 @@ export type Database = {
           },
         ]
       }
+      tournament_registrations: {
+        Row: {
+          created_at: string
+          dietary_restrictions: string | null
+          email: string
+          first_name: string
+          group_number: number | null
+          group_position: number | null
+          handicap: number | null
+          id: string
+          last_name: string
+          notes: string | null
+          payment_status: string
+          phone: string | null
+          shirt_size: string | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          dietary_restrictions?: string | null
+          email: string
+          first_name: string
+          group_number?: number | null
+          group_position?: number | null
+          handicap?: number | null
+          id?: string
+          last_name: string
+          notes?: string | null
+          payment_status?: string
+          phone?: string | null
+          shirt_size?: string | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          dietary_restrictions?: string | null
+          email?: string
+          first_name?: string
+          group_number?: number | null
+          group_position?: number | null
+          handicap?: number | null
+          id?: string
+          last_name?: string
+          notes?: string | null
+          payment_status?: string
+          phone?: string | null
+          shirt_size?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           contact_email: string | null

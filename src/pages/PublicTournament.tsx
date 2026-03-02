@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award } from "lucide-react";
+import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package } from "lucide-react";
 import RegistrationForm from "@/components/RegistrationForm";
 
 interface PublicSponsor {
@@ -11,6 +11,16 @@ interface PublicSponsor {
   tier: string;
   logo_url: string | null;
   website_url: string | null;
+}
+
+interface PublicProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  category: string;
+  purchase_url: string | null;
 }
 
 interface TournamentSite {
@@ -38,6 +48,7 @@ const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
+  const [products, setProducts] = useState<PublicProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -49,20 +60,27 @@ const PublicTournament = () => {
       .eq("slug", slug)
       .eq("site_published", true)
       .single()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error || !data) {
           setNotFound(true);
         } else {
           setTournament(data as unknown as TournamentSite);
-          // Fetch sponsors
-          supabase
-            .from("tournament_sponsors")
-            .select("id, name, tier, logo_url, website_url")
-            .eq("tournament_id", data.id)
-            .order("sort_order", { ascending: true })
-            .then(({ data: sponsorData }) => {
-              setSponsors((sponsorData as PublicSponsor[]) || []);
-            });
+          // Fetch sponsors and products in parallel
+          const [sponsorRes, productRes] = await Promise.all([
+            supabase
+              .from("tournament_sponsors")
+              .select("id, name, tier, logo_url, website_url")
+              .eq("tournament_id", data.id)
+              .order("sort_order", { ascending: true }),
+            supabase
+              .from("tournament_store_products")
+              .select("id, name, description, price, image_url, category, purchase_url")
+              .eq("tournament_id", data.id)
+              .eq("is_active", true)
+              .order("sort_order", { ascending: true }),
+          ]);
+          setSponsors((sponsorRes.data as PublicSponsor[]) || []);
+          setProducts((productRes.data as PublicProduct[]) || []);
         }
         setLoading(false);
       });
@@ -288,7 +306,73 @@ const PublicTournament = () => {
         </section>
       )}
 
-      {/* Sponsors */}
+      {/* Store */}
+      {products.length > 0 && (
+        <section className="py-16 bg-background">
+          <div className="container mx-auto px-4 max-w-5xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2
+                className="text-sm font-bold tracking-[0.3em] uppercase mb-2 text-center"
+                style={{ color: secondary }}
+              >
+                <ShoppingBag className="h-4 w-4 inline mr-2" />
+                Tournament Store
+              </h2>
+              <p className="text-center text-muted-foreground mb-10 text-sm">
+                Support the tournament with merchandise and gear
+              </p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05 }}
+                    className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg transition-shadow group"
+                  >
+                    {p.image_url ? (
+                      <div className="aspect-square bg-muted overflow-hidden">
+                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    ) : (
+                      <div className="aspect-square bg-muted flex items-center justify-center">
+                        <Package className="h-12 w-12 text-muted-foreground/20" />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="font-display font-bold text-foreground">{p.name}</h3>
+                      <p className="text-lg font-semibold mt-1" style={{ color: primary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(p.price)}
+                      </p>
+                      {p.description && (
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{p.description}</p>
+                      )}
+                      {p.purchase_url && (
+                        <a
+                          href={p.purchase_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90"
+                          style={{ backgroundColor: primary, color: "white" }}
+                        >
+                          Buy Now
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {sponsors.length > 0 && (
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4 max-w-4xl">

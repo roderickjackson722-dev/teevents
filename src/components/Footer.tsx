@@ -27,7 +27,11 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-center text-xs text-primary-foreground/40">
+        <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
+          <div className="flex gap-4">
+            <Link to="/privacy-policy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="hover:text-secondary transition-colors">Terms of Service</Link>
+          </div>
           <p>&copy; {new Date().getFullYear()} TeeVents Golf Management. All rights reserved.</p>
         </div>
       </div>

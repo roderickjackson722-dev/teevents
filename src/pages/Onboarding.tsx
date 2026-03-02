@@ -63,17 +63,17 @@ const Onboarding = () => {
       .replace(/^-|-$/g, "");
 
     const template = templates.find((t) => t.id === selectedTemplate)!;
+    const orgId = crypto.randomUUID();
 
-    const { data: org, error: orgError } = await supabase
+    const { error: orgError } = await supabase
       .from("organizations")
       .insert({
+        id: orgId,
         name: orgName,
         subdomain,
         primary_color: template.colors.primary,
         secondary_color: template.colors.secondary,
-      })
-      .select()
-      .single();
+      });
 
     if (orgError) {
       toast({ title: "Error", description: orgError.message, variant: "destructive" });
@@ -83,7 +83,7 @@ const Onboarding = () => {
 
     const { error: memberError } = await supabase
       .from("org_members")
-      .insert({ user_id: userId, organization_id: org.id, role: "owner" });
+      .insert({ user_id: userId, organization_id: orgId, role: "owner" });
 
     if (memberError) {
       toast({ title: "Error", description: memberError.message, variant: "destructive" });

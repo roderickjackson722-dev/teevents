@@ -45,10 +45,16 @@ const Navbar = () => {
           ))}
           <Link
             to="/login"
+            className="text-sm font-medium tracking-wider uppercase text-primary-foreground/80 hover:text-secondary transition-colors"
+          >
+            Event Login
+          </Link>
+          <Link
+            to="/get-started"
             className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-secondary/90 transition-colors"
           >
             <LogIn className="h-4 w-4" />
-            Event Login
+            Sign In
           </Link>
         </div>
 
@@ -88,10 +94,17 @@ const Navbar = () => {
               <Link
                 to="/login"
                 onClick={() => setMobileOpen(false)}
+                className="text-sm font-medium tracking-wider uppercase py-2 text-primary-foreground/80 hover:text-secondary transition-colors"
+              >
+                Event Login
+              </Link>
+              <Link
+                to="/get-started"
+                onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase mt-2 w-fit"
               >
                 <LogIn className="h-4 w-4" />
-                Event Login
+                Sign In
               </Link>
             </div>
           </motion.div>

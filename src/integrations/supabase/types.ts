@@ -350,6 +350,47 @@ export type Database = {
           },
         ]
       }
+      tournament_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          recipient_count: number
+          sent_at: string
+          status: string
+          subject: string
+          tournament_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          recipient_count?: number
+          sent_at?: string
+          status?: string
+          subject?: string
+          tournament_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          recipient_count?: number
+          sent_at?: string
+          status?: string
+          subject?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_messages_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_registrations: {
         Row: {
           created_at: string

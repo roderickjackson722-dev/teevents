@@ -26,6 +26,7 @@ import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
 import Store from "./pages/dashboard/Store";
+import Messages from "./pages/dashboard/Messages";
 import PublicTournament from "./pages/PublicTournament";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +60,7 @@ const App = () => (
           <Route path="/dashboard/budget" element={<DashboardLayout><Budget /></DashboardLayout>} />
           <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><Store /></DashboardLayout>} />
+          <Route path="/dashboard/messages" element={<DashboardLayout><Messages /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><ComingSoon title="Settings" description="Organization settings and branding customization coming soon." /></DashboardLayout>} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="*" element={<NotFound />} />

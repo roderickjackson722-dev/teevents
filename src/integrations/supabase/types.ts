@@ -244,6 +244,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          plan: string
           primary_color: string | null
           secondary_color: string | null
           subdomain: string | null
@@ -254,6 +255,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          plan?: string
           primary_color?: string | null
           secondary_color?: string | null
           subdomain?: string | null
@@ -264,6 +266,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          plan?: string
           primary_color?: string | null
           secondary_color?: string | null
           subdomain?: string | null

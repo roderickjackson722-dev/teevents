@@ -17,6 +17,7 @@ import SetupAdmin from "./pages/SetupAdmin";
 import CustomerAuth from "./pages/CustomerAuth";
 import Onboarding from "./pages/Onboarding";
 import DashboardLayout from "./components/DashboardLayout";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import Tournaments from "./pages/dashboard/Tournaments";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/setup-admin" element={<SetupAdmin />} />
           <Route path="/get-started" element={<CustomerAuth />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />

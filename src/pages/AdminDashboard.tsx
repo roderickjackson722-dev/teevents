@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
-  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell
+  Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -21,7 +22,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos">("events");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [editEventTitle, setEditEventTitle] = useState("");
@@ -75,6 +76,21 @@ const AdminDashboard = () => {
   const [editReviewOrg, setEditReviewOrg] = useState("");
   const [editReviewText, setEditReviewText] = useState("");
 
+  // Promo codes state
+  const [promoCodes, setPromoCodes] = useState<any[]>([]);
+  const [newPromoCode, setNewPromoCode] = useState("");
+  const [newPromoType, setNewPromoType] = useState<"percent" | "fixed">("percent");
+  const [newPromoValue, setNewPromoValue] = useState("");
+  const [newPromoMaxUses, setNewPromoMaxUses] = useState("");
+  const [newPromoExpires, setNewPromoExpires] = useState("");
+  const [promoCreating, setPromoCreating] = useState(false);
+
+  // Demo events state
+  const [demoEvents, setDemoEvents] = useState<any[]>([]);
+  const [newDemoLabel, setNewDemoLabel] = useState("");
+  const [newDemoTitle, setNewDemoTitle] = useState("");
+  const [demoCreating, setDemoCreating] = useState(false);
+
   useEffect(() => {
     checkAdmin();
   }, []);
@@ -122,6 +138,8 @@ const AdminDashboard = () => {
       setApprovedEmails(data.approvedEmails || []);
       setResources(data.resources || []);
       setReviews(data.reviews || []);
+      setPromoCodes(data.promoCodes || []);
+      setDemoEvents(data.demoEvents || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
       toast({ title: "Error loading data", description: err.message, variant: "destructive" });
@@ -433,6 +451,74 @@ const AdminDashboard = () => {
     }
   };
 
+  const addPromoCode = async () => {
+    if (!newPromoCode.trim() || !newPromoValue) return;
+    setPromoCreating(true);
+    try {
+      await callAdminApi("add-promo-code", {
+        code: newPromoCode.trim(),
+        discount_type: newPromoType,
+        discount_value: parseFloat(newPromoValue),
+        max_uses: newPromoMaxUses ? parseInt(newPromoMaxUses) : null,
+        expires_at: newPromoExpires || null,
+      });
+      setNewPromoCode(""); setNewPromoValue(""); setNewPromoMaxUses(""); setNewPromoExpires("");
+      await fetchAll();
+      toast({ title: "Promo code created!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setPromoCreating(false);
+    }
+  };
+
+  const togglePromoCode = async (id: string, isActive: boolean) => {
+    try {
+      await callAdminApi("toggle-promo-code", { id, is_active: !isActive });
+      await fetchAll();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const deletePromoCode = async (id: string) => {
+    try {
+      await callAdminApi("delete-promo-code", { id });
+      await fetchAll();
+      toast({ title: "Promo code deleted" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const createDemoEvent = async () => {
+    if (!newDemoTitle.trim()) return;
+    setDemoCreating(true);
+    try {
+      await callAdminApi("create-demo-event", {
+        label: newDemoLabel.trim() || "Demo Event",
+        tournament_title: newDemoTitle.trim(),
+      });
+      setNewDemoLabel(""); setNewDemoTitle("");
+      await fetchAll();
+      toast({ title: "Demo event created!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setDemoCreating(false);
+    }
+  };
+
+  const deleteDemoEvent = async (id: string) => {
+    try {
+      await callAdminApi("delete-demo-event", { id });
+      await fetchAll();
+      toast({ title: "Demo event deleted" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center">
@@ -467,6 +553,8 @@ const AdminDashboard = () => {
               ["requests", "Access Requests", Users],
               ["emails", "Auto-Approve Emails", Mail],
               ["reviews", "Reviews", Star],
+              ["promos", "Promo Codes", Tag],
+              ["demos", "Demo Events", Trophy],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -919,6 +1007,161 @@ const AdminDashboard = () => {
               {reviews.length === 0 && (
                 <p className="text-center text-muted-foreground italic py-8">No reviews yet. Add one above.</p>
               )}
+            </div>
+          )}
+
+          {/* Promo Codes Tab */}
+          {activeTab === "promos" && (
+            <div className="space-y-6">
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-4">Create Promo Code</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <Input placeholder="Code (e.g. GOLF50)" value={newPromoCode} onChange={e => setNewPromoCode(e.target.value)} />
+                  <select
+                    value={newPromoType}
+                    onChange={e => setNewPromoType(e.target.value as "percent" | "fixed")}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="percent">Percentage Off</option>
+                    <option value="fixed">Fixed Amount Off ($)</option>
+                  </select>
+                  <Input
+                    type="number"
+                    placeholder={newPromoType === "percent" ? "Discount %" : "Discount $"}
+                    value={newPromoValue}
+                    onChange={e => setNewPromoValue(e.target.value)}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max uses (blank = unlimited)"
+                    value={newPromoMaxUses}
+                    onChange={e => setNewPromoMaxUses(e.target.value)}
+                  />
+                  <Input
+                    type="datetime-local"
+                    value={newPromoExpires}
+                    onChange={e => setNewPromoExpires(e.target.value)}
+                  />
+                  <Button onClick={addPromoCode} disabled={promoCreating}>
+                    {promoCreating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+                    Create
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Code</th>
+                      <th className="text-left p-3 font-medium">Discount</th>
+                      <th className="text-left p-3 font-medium">Uses</th>
+                      <th className="text-left p-3 font-medium">Expires</th>
+                      <th className="text-left p-3 font-medium">Status</th>
+                      <th className="text-right p-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {promoCodes.map(pc => (
+                      <tr key={pc.id} className="border-t border-border">
+                        <td className="p-3 font-mono font-semibold">{pc.code}</td>
+                        <td className="p-3">
+                          {pc.discount_type === "percent" ? (
+                            <span className="flex items-center gap-1"><Percent className="h-3 w-3" />{pc.discount_value}%</span>
+                          ) : (
+                            <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />{pc.discount_value}</span>
+                          )}
+                        </td>
+                        <td className="p-3">{pc.current_uses}{pc.max_uses ? ` / ${pc.max_uses}` : " / ∞"}</td>
+                        <td className="p-3 text-muted-foreground">
+                          {pc.expires_at ? new Date(pc.expires_at).toLocaleDateString() : "Never"}
+                        </td>
+                        <td className="p-3">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            pc.is_active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                          }`}>
+                            {pc.is_active ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex gap-1 justify-end">
+                            <button onClick={() => togglePromoCode(pc.id, pc.is_active)} className="text-muted-foreground hover:text-foreground" title={pc.is_active ? "Deactivate" : "Activate"}>
+                              {pc.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                            <button onClick={() => deletePromoCode(pc.id)} className="text-muted-foreground hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {promoCodes.length === 0 && (
+                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No promo codes yet</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Demo Events Tab */}
+          {activeTab === "demos" && (
+            <div className="space-y-6">
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-4">Create Demo Event</h2>
+                <p className="text-sm text-muted-foreground mb-4">Create a fully-functional demo tournament that you can manage and show to potential customers.</p>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <Input placeholder="Label (e.g. Sales Demo)" value={newDemoLabel} onChange={e => setNewDemoLabel(e.target.value)} />
+                  <Input placeholder="Tournament Name *" value={newDemoTitle} onChange={e => setNewDemoTitle(e.target.value)} />
+                  <Button onClick={createDemoEvent} disabled={demoCreating}>
+                    {demoCreating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+                    Create Demo
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {demoEvents.map(demo => (
+                  <div key={demo.id} className="bg-card rounded-lg border border-border p-5 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-display font-semibold">{demo.label}</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {demo.tournaments?.title || "Tournament"}
+                        {demo.tournaments?.slug && (
+                          <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded font-mono">/t/{demo.tournaments.slug}</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {demo.tournaments?.slug && (
+                        <a
+                          href={`/t/${demo.tournaments.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-secondary hover:text-secondary/80 font-medium"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" /> View Site
+                        </a>
+                      )}
+                      <a
+                        href={`/dashboard/tournaments/${demo.tournament_id}/site-builder`}
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium"
+                      >
+                        <Pencil className="h-3.5 w-3.5" /> Manage
+                      </a>
+                      <button onClick={() => deleteDemoEvent(demo.id)} className="text-muted-foreground hover:text-destructive ml-2">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {demoEvents.length === 0 && (
+                  <div className="text-center py-12 bg-card rounded-lg border border-border">
+                    <Trophy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                    <p className="text-muted-foreground">No demo events yet. Create one above to get started.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

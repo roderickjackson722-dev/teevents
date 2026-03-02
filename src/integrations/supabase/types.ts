@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_demo_events: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          organization_id: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string
+          organization_id: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          organization_id?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_demo_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_demo_events_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       approved_emails: {
         Row: {
           created_at: string
@@ -229,6 +268,45 @@ export type Database = {
           secondary_color?: string | null
           subdomain?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          applicable_plans: string[] | null
+          code: string
+          created_at: string
+          current_uses: number
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+        }
+        Insert: {
+          applicable_plans?: string[] | null
+          code: string
+          created_at?: string
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+        }
+        Update: {
+          applicable_plans?: string[] | null
+          code?: string
+          created_at?: string
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
         }
         Relationships: []
       }

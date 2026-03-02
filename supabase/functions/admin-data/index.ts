@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use anon client to get user from JWT
     const anonClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -36,10 +35,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role to check admin and fetch data (bypasses RLS)
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Check admin role
     const { data: roleData } = await adminClient
       .from("user_roles")
       .select("role")
@@ -57,10 +54,105 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
+    const jsonRes = (data: unknown, status = 200) =>
+      new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     // Handle mutations
     if (req.method === "POST") {
       const body = await req.json();
 
+      // --- Promo Code Actions ---
+      if (action === "add-promo-code") {
+        const { error } = await adminClient.from("promo_codes").insert({
+          code: (body.code || "").trim().toUpperCase(),
+          discount_type: body.discount_type || "percent",
+          discount_value: body.discount_value || 0,
+          max_uses: body.max_uses || null,
+          is_active: body.is_active !== false,
+          expires_at: body.expires_at || null,
+          applicable_plans: body.applicable_plans || ["starter", "pro"],
+        });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-promo-code") {
+        const { error } = await adminClient.from("promo_codes").update({
+          code: (body.code || "").trim().toUpperCase(),
+          discount_type: body.discount_type,
+          discount_value: body.discount_value,
+          max_uses: body.max_uses || null,
+          is_active: body.is_active,
+          expires_at: body.expires_at || null,
+          applicable_plans: body.applicable_plans,
+        }).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "delete-promo-code") {
+        const { error } = await adminClient.from("promo_codes").delete().eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "toggle-promo-code") {
+        const { error } = await adminClient.from("promo_codes").update({ is_active: body.is_active }).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      // --- Demo Event Actions ---
+      if (action === "create-demo-event") {
+        const orgId = crypto.randomUUID();
+        const { error: orgError } = await adminClient.from("organizations").insert({
+          id: orgId,
+          name: body.label || "Demo Organization",
+        });
+        if (orgError) return jsonRes({ error: orgError.message }, 400);
+
+        // Add admin as org member
+        const { error: memberError } = await adminClient.from("org_members").insert({
+          organization_id: orgId,
+          user_id: user.id,
+          role: "owner",
+        });
+        if (memberError) return jsonRes({ error: memberError.message }, 400);
+
+        const { data: tournament, error: tournError } = await adminClient.from("tournaments").insert({
+          organization_id: orgId,
+          title: body.tournament_title || "Demo Tournament",
+          date: body.date || null,
+          location: body.location || null,
+          course_name: body.course_name || null,
+          site_published: true,
+          registration_open: true,
+        }).select("id").single();
+        if (tournError) return jsonRes({ error: tournError.message }, 400);
+
+        const { error: demoError } = await adminClient.from("admin_demo_events").insert({
+          organization_id: orgId,
+          tournament_id: tournament.id,
+          label: body.label || "Demo Event",
+        });
+        if (demoError) return jsonRes({ error: demoError.message }, 400);
+
+        return jsonRes({ success: true, organization_id: orgId, tournament_id: tournament.id });
+      }
+
+      if (action === "delete-demo-event") {
+        // Get the demo event to find org & tournament
+        const { data: demo } = await adminClient.from("admin_demo_events").select("*").eq("id", body.id).single();
+        if (demo) {
+          await adminClient.from("admin_demo_events").delete().eq("id", body.id);
+          await adminClient.from("tournaments").delete().eq("id", demo.tournament_id);
+          await adminClient.from("org_members").delete().eq("organization_id", demo.organization_id);
+          await adminClient.from("organizations").delete().eq("id", demo.organization_id);
+        }
+        return jsonRes({ success: true });
+      }
+
+      // --- Existing Actions ---
       if (action === "add-resource") {
         const { error } = await adminClient.from("event_resources").insert({
           event_id: body.event_id,
@@ -68,20 +160,20 @@ Deno.serve(async (req) => {
           description: body.description || null,
           link: body.link || null,
         });
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "update-resource-link") {
         const { error } = await adminClient.from("event_resources").update({ link: body.link || null }).eq("id", body.id);
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "delete-resource") {
         const { error } = await adminClient.from("event_resources").delete().eq("id", body.id);
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "reorder-resources") {
@@ -89,7 +181,7 @@ Deno.serve(async (req) => {
         for (const u of updates) {
           await adminClient.from("event_resources").update({ sort_order: u.sort_order }).eq("id", u.id);
         }
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return jsonRes({ success: true });
       }
 
       if (action === "add-review") {
@@ -99,8 +191,8 @@ Deno.serve(async (req) => {
           text: body.text,
           sort_order: body.sort_order ?? 0,
         });
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "update-review") {
@@ -109,14 +201,14 @@ Deno.serve(async (req) => {
           organization: body.organization || "",
           text: body.text,
         }).eq("id", body.id);
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "delete-review") {
         const { error } = await adminClient.from("reviews").delete().eq("id", body.id);
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "reorder-reviews") {
@@ -124,7 +216,7 @@ Deno.serve(async (req) => {
         for (const u of updates) {
           await adminClient.from("reviews").update({ sort_order: u.sort_order }).eq("id", u.id);
         }
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return jsonRes({ success: true });
       }
 
       if (action === "reorder-events") {
@@ -132,13 +224,13 @@ Deno.serve(async (req) => {
         for (const u of updates) {
           await adminClient.from("events").update({ sort_order: u.sort_order }).eq("id", u.id);
         }
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return jsonRes({ success: true });
       }
 
       if (action === "grant-access") {
         const email = (body.email || "").trim().toLowerCase();
         if (!body.event_id || !email || !body.name) {
-          return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return jsonRes({ error: "Missing fields" }, 400);
         }
         const { data: existing } = await adminClient
           .from("event_access_requests")
@@ -149,10 +241,10 @@ Deno.serve(async (req) => {
 
         if (existing) {
           if (existing.status === "approved") {
-            return new Response(JSON.stringify({ error: "Already approved" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return jsonRes({ error: "Already approved" }, 400);
           }
           const { error } = await adminClient.from("event_access_requests").update({ status: "approved" }).eq("id", existing.id);
-          if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          if (error) return jsonRes({ error: error.message }, 400);
         } else {
           const { error } = await adminClient.from("event_access_requests").insert({
             event_id: body.event_id,
@@ -160,32 +252,32 @@ Deno.serve(async (req) => {
             name: body.name.trim(),
             status: "approved",
           });
-          if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          if (error) return jsonRes({ error: error.message }, 400);
         }
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return jsonRes({ success: true });
       }
 
       if (action === "add-approved-email") {
         const email = (body.email || "").trim().toLowerCase();
         if (!body.event_id || !email) {
-          return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return jsonRes({ error: "Missing fields" }, 400);
         }
         const { error } = await adminClient.from("approved_emails").insert({ event_id: body.event_id, email });
-        if (error) return new Response(JSON.stringify({ error: error.code === "23505" ? "Email already added" : error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.code === "23505" ? "Email already added" : error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "delete-approved-email") {
         const { error } = await adminClient.from("approved_emails").delete().eq("id", body.id);
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
       }
 
       if (action === "bulk-add-approved-emails") {
         const emails: string[] = body.emails || [];
         const eventId = body.event_id;
         if (!eventId || !emails.length) {
-          return new Response(JSON.stringify({ error: "Missing event or emails" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return jsonRes({ error: "Missing event or emails" }, 400);
         }
         let added = 0;
         let skipped = 0;
@@ -195,14 +287,14 @@ Deno.serve(async (req) => {
           const { error } = await adminClient.from("approved_emails").insert({ event_id: eventId, email });
           if (error) { skipped++; } else { added++; }
         }
-        return new Response(JSON.stringify({ success: true, added, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return jsonRes({ success: true, added, skipped });
       }
 
       if (action === "bulk-grant-access") {
         const entries: { name: string; email: string }[] = body.entries || [];
         const eventId = body.event_id;
         if (!eventId || !entries.length) {
-          return new Response(JSON.stringify({ error: "Missing event or entries" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return jsonRes({ error: "Missing event or entries" }, 400);
         }
         let granted = 0;
         let skipped = 0;
@@ -226,17 +318,19 @@ Deno.serve(async (req) => {
           }
           granted++;
         }
-        return new Response(JSON.stringify({ success: true, granted, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return jsonRes({ success: true, granted, skipped });
       }
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
       adminClient.from("event_resources").select("*").order("sort_order", { ascending: true }),
       adminClient.from("reviews").select("*").order("sort_order", { ascending: true }),
+      adminClient.from("promo_codes").select("*").order("created_at", { ascending: false }),
+      adminClient.from("admin_demo_events").select("*, tournaments(id, title, slug, site_published)").order("created_at", { ascending: false }),
     ]);
 
     return new Response(
@@ -246,6 +340,8 @@ Deno.serve(async (req) => {
         approvedEmails: emailsRes.data || [],
         resources: resourcesRes.data || [],
         reviews: reviewsRes.data || [],
+        promoCodes: promoCodesRes.data || [],
+        demoEvents: demoEventsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

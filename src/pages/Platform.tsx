@@ -139,6 +139,7 @@ const fadeUp = {
 
 const Platform = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
@@ -149,7 +150,7 @@ const Platform = () => {
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan },
+        body: { plan, promo_code: promoCode.trim() || undefined },
       });
       if (error) throw error;
       if (data?.url) {
@@ -471,6 +472,23 @@ const Platform = () => {
               </motion.div>
             ))}
           </div>
+
+          {/* Promo Code Input */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-10 flex items-center justify-center gap-3"
+          >
+            <label className="text-sm font-medium text-muted-foreground">Have a promo code?</label>
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+              placeholder="ENTER CODE"
+              className="w-40 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm font-mono tracking-wider uppercase placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </motion.div>
         </div>
       </section>
 

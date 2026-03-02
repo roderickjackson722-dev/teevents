@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   CreditCard,
@@ -15,6 +16,8 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
@@ -84,7 +87,7 @@ const plans = [
       "Email support",
     ],
     cta: "Get Started",
-    highlighted: false,
+    plan: "starter",
   },
   {
     name: "Pro",
@@ -100,7 +103,8 @@ const plans = [
       "Real-time budget dashboard",
       "Priority support",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
+    plan: "pro",
     highlighted: true,
   },
   {
@@ -119,7 +123,7 @@ const plans = [
       "On-site support available",
     ],
     cta: "Contact Sales",
-    highlighted: false,
+    plan: "enterprise",
   },
 ];
 
@@ -134,6 +138,30 @@ const fadeUp = {
 };
 
 const Platform = () => {
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleCheckout = async (plan: string) => {
+    if (plan === "enterprise") {
+      window.location.href = "/contact";
+      return;
+    }
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not start checkout.", variant: "destructive" });
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <Layout>
       {/* Hero */}
@@ -154,18 +182,21 @@ const Platform = () => {
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            to="/get-started"
-            className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
-          >
-            Start Free Trial
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <a
-            href="#features"
+            to="#pricing"
+            onClick={(e) => { e.preventDefault(); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}
             className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
           >
-            See Features
-          </a>
+            View Pricing
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <button
+            onClick={() => handleCheckout("pro")}
+            disabled={loadingPlan === "pro"}
+            className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors disabled:opacity-50"
+          >
+            {loadingPlan === "pro" ? "Loading..." : "Get Started"}
+            <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
       </HeroSection>
 
@@ -302,7 +333,7 @@ const Platform = () => {
                 step: "01",
                 title: "Choose Your Plan",
                 description:
-                  "Select the plan that fits your tournament size and needs. Start with a free trial — no credit card required.",
+                  "Select the plan that fits your tournament size and needs. Purchase securely online.",
               },
               {
                 step: "02",
@@ -426,16 +457,17 @@ const Platform = () => {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  to="/get-started"
-                  className={`block text-center px-6 py-3 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors ${
+                <button
+                  onClick={() => handleCheckout(plan.plan)}
+                  disabled={loadingPlan === plan.plan}
+                  className={`block w-full text-center px-6 py-3 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors disabled:opacity-50 ${
                     plan.highlighted
                       ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                 >
-                  {plan.cta}
-                </Link>
+                  {loadingPlan === plan.plan ? "Loading..." : plan.cta}
+                </button>
               </motion.div>
             ))}
           </div>
@@ -457,19 +489,18 @@ const Platform = () => {
             </h2>
             <p className="text-lg text-primary-foreground/80 mb-8">
               Join the growing number of nonprofits and corporations using
-              TeeVents to run unforgettable golf events. Start your free trial
-              today.
+              TeeVents to run unforgettable golf events. Get started today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/get-started"
+              <button
+                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                Start Free Trial
+                View Plans
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </button>
               <Link
-                to="/get-started"
+                to="/contact"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
                 Schedule a Demo

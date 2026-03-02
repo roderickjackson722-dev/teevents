@@ -2,8 +2,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus } from "lucide-react";
+import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award } from "lucide-react";
 import RegistrationForm from "@/components/RegistrationForm";
+
+interface PublicSponsor {
+  id: string;
+  name: string;
+  tier: string;
+  logo_url: string | null;
+  website_url: string | null;
+}
 
 interface TournamentSite {
   id: string;
@@ -29,6 +37,7 @@ interface TournamentSite {
 const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
+  const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -45,6 +54,15 @@ const PublicTournament = () => {
           setNotFound(true);
         } else {
           setTournament(data as unknown as TournamentSite);
+          // Fetch sponsors
+          supabase
+            .from("tournament_sponsors")
+            .select("id, name, tier, logo_url, website_url")
+            .eq("tournament_id", data.id)
+            .order("sort_order", { ascending: true })
+            .then(({ data: sponsorData }) => {
+              setSponsors((sponsorData as PublicSponsor[]) || []);
+            });
         }
         setLoading(false);
       });
@@ -265,6 +283,61 @@ const PublicTournament = () => {
                 Register Now
                 <ExternalLink className="h-4 w-4" />
               </a>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* Sponsors */}
+      {sponsors.length > 0 && (
+        <section className="py-16 bg-background">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2
+                className="text-sm font-bold tracking-[0.3em] uppercase mb-2 text-center"
+                style={{ color: secondary }}
+              >
+                <Award className="h-4 w-4 inline mr-2" />
+                Our Sponsors
+              </h2>
+              <p className="text-center text-muted-foreground mb-10 text-sm">
+                Thank you to our generous sponsors
+              </p>
+              <div className="flex flex-wrap justify-center items-center gap-8">
+                {sponsors.map((s) => (
+                  <motion.div
+                    key={s.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="flex flex-col items-center"
+                  >
+                    {s.website_url ? (
+                      <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="group">
+                        {s.logo_url ? (
+                          <img
+                            src={s.logo_url}
+                            alt={s.name}
+                            className="h-16 w-auto max-w-[140px] object-contain grayscale group-hover:grayscale-0 transition-all"
+                          />
+                        ) : (
+                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                            {s.name}
+                          </span>
+                        )}
+                      </a>
+                    ) : s.logo_url ? (
+                      <img src={s.logo_url} alt={s.name} className="h-16 w-auto max-w-[140px] object-contain" />
+                    ) : (
+                      <span className="text-sm font-semibold text-foreground">{s.name}</span>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </section>

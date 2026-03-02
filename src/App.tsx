@@ -35,6 +35,7 @@ import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
+import Settings from "./pages/dashboard/Settings";
 import PublicTournament from "./pages/PublicTournament";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -79,7 +80,7 @@ const App = () => (
           <Route path="/dashboard/volunteers" element={<DashboardLayout><Volunteers /></DashboardLayout>} />
           <Route path="/dashboard/surveys" element={<DashboardLayout><Surveys /></DashboardLayout>} />
           <Route path="/dashboard/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
-          <Route path="/dashboard/settings" element={<DashboardLayout><ComingSoon title="Settings" description="Organization settings and branding customization coming soon." /></DashboardLayout>} />
+          <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/t/:slug" element={<PublicTournament />} />

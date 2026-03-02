@@ -247,6 +247,7 @@ export type Database = {
           plan: string
           primary_color: string | null
           secondary_color: string | null
+          stripe_account_id: string | null
           subdomain: string | null
           updated_at: string
         }
@@ -258,6 +259,7 @@ export type Database = {
           plan?: string
           primary_color?: string | null
           secondary_color?: string | null
+          stripe_account_id?: string | null
           subdomain?: string | null
           updated_at?: string
         }
@@ -269,6 +271,7 @@ export type Database = {
           plan?: string
           primary_color?: string | null
           secondary_color?: string | null
+          stripe_account_id?: string | null
           subdomain?: string | null
           updated_at?: string
         }

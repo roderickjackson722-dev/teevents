@@ -233,16 +233,17 @@ const PublicTournament = () => {
   const tpl = tournament.template || "classic";
   const style = templateStyles[tpl as keyof typeof templateStyles] || templateStyles.classic;
 
-  // Build nav links dynamically based on available content
+  // Fixed nav tabs
   const navLinks: { label: string; href: string }[] = [
     { label: "Home", href: "#top" },
+    { label: "Event Day Contests", href: "#contests" },
+    { label: "Registration", href: "#register" },
+    { label: "Photos", href: "#photos" },
+    { label: "Location", href: "#location" },
+    { label: "Event Agenda", href: "#schedule" },
+    { label: "Donation", href: "#donation" },
+    { label: "Contact Us", href: "#contact" },
   ];
-  if (tournament.description) navLinks.push({ label: "About", href: "#about" });
-  if (tournament.schedule_info) navLinks.push({ label: "Event Agenda", href: "#schedule" });
-  if (tournament.registration_open || tournament.registration_url) navLinks.push({ label: "Registration", href: "#register" });
-  if (photos.length > 0) navLinks.push({ label: "Photos", href: "#photos" });
-  if (tournament.location) navLinks.push({ label: "Location", href: "#location" });
-  if (auctionItems.length > 0) navLinks.push({ label: "Auction", href: "#auction" });
 
   const scrollTo = (href: string) => {
     setMobileNavOpen(false);
@@ -519,9 +520,36 @@ const PublicTournament = () => {
         </section>
       )}
 
-      {/* ===== SCHEDULE ===== */}
+      {/* ===== EVENT DAY CONTESTS ===== */}
+      <section id="contests" className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>EVENT DAY CONTESTS</h2>
+            <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+            <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Compete for prizes throughout the day</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { icon: "🏌️", title: "Longest Drive", desc: "Hit it the farthest on the designated hole to win a prize." },
+                { icon: "🎯", title: "Closest to the Pin", desc: "Land your tee shot closest to the pin on the par 3." },
+                { icon: "🕳️", title: "Hole-in-One", desc: "Make a hole-in-one on a designated hole for a major prize." },
+                { icon: "🏆", title: "Putting Contest", desc: "Test your putting skills on the practice green before tee-off." },
+                { icon: "💰", title: "Mulligan Package", desc: "Purchase mulligans to improve your score during the round." },
+                { icon: "🎲", title: "50/50 Raffle", desc: "Buy tickets for a chance to win half the pot." },
+              ].map((contest, i) => (
+                <div key={i} className="bg-white rounded-xl border p-5 text-center space-y-2 hover:shadow-md transition-shadow" style={{ borderColor: "#e5e5e5" }}>
+                  <span className="text-3xl">{contest.icon}</span>
+                  <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{contest.title}</h3>
+                  <p className="text-sm" style={{ color: "#666" }}>{contest.desc}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== EVENT AGENDA ===== */}
       {tournament.schedule_info && (
-        <section id="schedule" className="py-16 bg-white">
+        <section id="schedule" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>EVENT AGENDA</h2>
@@ -537,21 +565,19 @@ const PublicTournament = () => {
       )}
 
       {/* ===== LOCATION ===== */}
-      {tournament.location && (
-        <section id="location" className="py-16" style={{ backgroundColor: "#fafafa" }}>
-          <div className="max-w-3xl mx-auto px-4 text-center">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>LOCATION</h2>
-              <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
-              <div className="flex flex-col items-center gap-2">
-                <MapPin className="h-6 w-6" style={{ color: primary }} />
-                {tournament.course_name && <p className="text-lg font-semibold" style={{ color: "#1a1a1a" }}>{tournament.course_name}</p>}
-                <p style={{ color: "#666" }}>{tournament.location}</p>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      <section id="location" className="py-16 bg-white">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>LOCATION</h2>
+            <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
+            <div className="flex flex-col items-center gap-2">
+              <MapPin className="h-6 w-6" style={{ color: primary }} />
+              {tournament.course_name && <p className="text-lg font-semibold" style={{ color: "#1a1a1a" }}>{tournament.course_name}</p>}
+              <p style={{ color: "#666" }}>{tournament.location || "Location coming soon"}</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* ===== LIVE LEADERBOARD ===== */}
       {leaderboard.length > 0 && (
@@ -833,26 +859,62 @@ const PublicTournament = () => {
         </section>
       )}
 
-      {/* ===== CONTACT FOOTER ===== */}
-      {(tournament.contact_email || tournament.contact_phone) && (
-        <section className="py-12" style={{ backgroundColor: "#f5f5f5", borderTop: "1px solid #e5e5e5" }}>
-          <div className="max-w-3xl mx-auto px-4 text-center">
-            <h3 className="text-sm font-bold tracking-[0.3em] uppercase mb-4" style={{ color: secondary }}>Questions?</h3>
-            <div className="flex flex-wrap justify-center gap-6">
-              {tournament.contact_email && (
-                <a href={`mailto:${tournament.contact_email}`} className="inline-flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: "#555" }}>
-                  <Mail className="h-4 w-4" />{tournament.contact_email}
-                </a>
-              )}
-              {tournament.contact_phone && (
-                <a href={`tel:${tournament.contact_phone}`} className="inline-flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: "#555" }}>
-                  <Phone className="h-4 w-4" />{tournament.contact_phone}
-                </a>
+      {/* ===== DONATION ===== */}
+      <section id="donation" className="py-16" style={{ backgroundColor: primary }}>
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">MAKE A DONATION</h2>
+            <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+            <p className="text-white/70 max-w-xl mx-auto mb-8">
+              Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference.
+            </p>
+            <button
+              onClick={() => scrollTo("#contact")}
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: secondary, color: primary }}
+            >
+              Contact Us to Donate
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== CONTACT US ===== */}
+      <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+        <div className="max-w-3xl mx-auto px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>CONTACT US</h2>
+            <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+            <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Have questions? We'd love to hear from you.</p>
+            <div className="bg-white rounded-xl border p-8 space-y-6" style={{ borderColor: "#e5e5e5" }}>
+              <div className="flex flex-wrap justify-center gap-8 mb-4">
+                {tournament.contact_email && (
+                  <a href={`mailto:${tournament.contact_email}`} className="inline-flex items-center gap-3 transition-colors hover:opacity-80" style={{ color: "#333" }}>
+                    <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ backgroundColor: primary }}>
+                      <Mail className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-sm font-medium">{tournament.contact_email}</span>
+                  </a>
+                )}
+                {tournament.contact_phone && (
+                  <a href={`tel:${tournament.contact_phone}`} className="inline-flex items-center gap-3 transition-colors hover:opacity-80" style={{ color: "#333" }}>
+                    <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ backgroundColor: primary }}>
+                      <Phone className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-sm font-medium">{tournament.contact_phone}</span>
+                  </a>
+                )}
+              </div>
+              {tournament.location && (
+                <div className="flex items-center justify-center gap-3" style={{ color: "#555" }}>
+                  <MapPin className="h-5 w-5" style={{ color: primary }} />
+                  <span className="text-sm">{tournament.course_name ? `${tournament.course_name} — ` : ""}{tournament.location}</span>
+                </div>
               )}
             </div>
-          </div>
-        </section>
-      )}
+          </motion.div>
+        </div>
+      </section>
 
       <footer className="py-4 text-center" style={{ borderTop: "1px solid #e5e5e5" }}>
         <p className="text-xs" style={{ color: "#aaa" }}>

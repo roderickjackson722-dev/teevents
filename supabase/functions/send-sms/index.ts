@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -36,7 +35,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_id, message } = await req.json();
+    const { tournament_id, message, scheduled_for } = await req.json();
     if (!tournament_id || !message) {
       return new Response(
         JSON.stringify({ error: "tournament_id and message are required" }),
@@ -44,16 +43,46 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch registrations with phone numbers
+    // If scheduling for later, just insert the record and return
+    if (scheduled_for) {
+      const scheduledDate = new Date(scheduled_for);
+      if (scheduledDate <= new Date()) {
+        return new Response(
+          JSON.stringify({ error: "Scheduled time must be in the future" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Count recipients for display
+      const { count } = await supabase
+        .from("tournament_registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournament_id)
+        .not("phone", "is", null)
+        .neq("phone", "");
+
+      await supabase.from("tournament_messages").insert({
+        tournament_id,
+        body: message,
+        recipient_count: count || 0,
+        status: "scheduled",
+        scheduled_for: scheduled_for,
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, scheduled: true, scheduled_for }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Send immediately
     const { data: registrations, error: regError } = await supabase
       .from("tournament_registrations")
       .select("first_name, last_name, phone")
       .eq("tournament_id", tournament_id)
       .not("phone", "is", null);
 
-    if (regError) {
-      throw new Error(`Failed to fetch registrations: ${regError.message}`);
-    }
+    if (regError) throw new Error(`Failed to fetch registrations: ${regError.message}`);
 
     const recipients = (registrations || []).filter(
       (r: any) => r.phone && r.phone.trim() !== ""
@@ -66,14 +95,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Twilio credentials
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const fromPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
-
-    if (!accountSid || !authToken || !fromPhone) {
-      throw new Error("Twilio credentials not configured");
-    }
+    if (!accountSid || !authToken || !fromPhone) throw new Error("Twilio credentials not configured");
 
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
     const twilioAuth = btoa(`${accountSid}:${authToken}`);
@@ -84,39 +109,24 @@ Deno.serve(async (req) => {
 
     for (const recipient of recipients) {
       try {
-        const body = new URLSearchParams({
-          To: recipient.phone,
-          From: fromPhone,
-          Body: message,
-        });
-
+        const body = new URLSearchParams({ To: recipient.phone, From: fromPhone, Body: message });
         const res = await fetch(twilioUrl, {
           method: "POST",
-          headers: {
-            Authorization: `Basic ${twilioAuth}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+          headers: { Authorization: `Basic ${twilioAuth}`, "Content-Type": "application/x-www-form-urlencoded" },
           body: body.toString(),
         });
-
-        if (res.ok) {
-          successCount++;
-        } else {
+        if (res.ok) { successCount++; }
+        else {
           const errData = await res.json();
           failCount++;
-          errors.push(
-            `${recipient.first_name} ${recipient.last_name}: ${errData.message || res.statusText}`
-          );
+          errors.push(`${recipient.first_name} ${recipient.last_name}: ${errData.message || res.statusText}`);
         }
       } catch (e) {
         failCount++;
-        errors.push(
-          `${recipient.first_name} ${recipient.last_name}: ${e instanceof Error ? e.message : "Unknown error"}`
-        );
+        errors.push(`${recipient.first_name} ${recipient.last_name}: ${e instanceof Error ? e.message : "Unknown error"}`);
       }
     }
 
-    // Log the message
     await supabase.from("tournament_messages").insert({
       tournament_id,
       body: message,
@@ -125,20 +135,14 @@ Deno.serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        sent: successCount,
-        failed: failCount,
-        errors: errors.length > 0 ? errors : undefined,
-      }),
+      JSON.stringify({ success: true, sent: successCount, failed: failCount, errors: errors.length > 0 ? errors : undefined }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error sending SMS:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

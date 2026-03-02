@@ -27,6 +27,12 @@ import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
 import Store from "./pages/dashboard/Store";
 import Messages from "./pages/dashboard/Messages";
+import Leaderboard from "./pages/dashboard/Leaderboard";
+import CheckIn from "./pages/dashboard/CheckIn";
+import Auction from "./pages/dashboard/Auction";
+import Gallery from "./pages/dashboard/Gallery";
+import Volunteers from "./pages/dashboard/Volunteers";
+import Surveys from "./pages/dashboard/Surveys";
 import PublicTournament from "./pages/PublicTournament";
 import NotFound from "./pages/NotFound";
 
@@ -57,10 +63,16 @@ const App = () => (
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />
           <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />
+          <Route path="/dashboard/messages" element={<DashboardLayout><Messages /></DashboardLayout>} />
           <Route path="/dashboard/budget" element={<DashboardLayout><Budget /></DashboardLayout>} />
           <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><Store /></DashboardLayout>} />
-          <Route path="/dashboard/messages" element={<DashboardLayout><Messages /></DashboardLayout>} />
+          <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
+          <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
+          <Route path="/dashboard/auction" element={<DashboardLayout><Auction /></DashboardLayout>} />
+          <Route path="/dashboard/gallery" element={<DashboardLayout><Gallery /></DashboardLayout>} />
+          <Route path="/dashboard/volunteers" element={<DashboardLayout><Volunteers /></DashboardLayout>} />
+          <Route path="/dashboard/surveys" element={<DashboardLayout><Surveys /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><ComingSoon title="Settings" description="Organization settings and branding customization coming soon." /></DashboardLayout>} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="*" element={<NotFound />} />

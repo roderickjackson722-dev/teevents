@@ -9,6 +9,12 @@ import {
   ShoppingBag,
   Settings,
   LogOut,
+  BarChart3,
+  ScanLine,
+  Gavel,
+  ImageIcon,
+  UserCheck,
+  ClipboardList,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -36,10 +42,16 @@ const mainItems = [
 
 const managementItems = [
   { title: "Players", url: "/dashboard/players", icon: Users },
+  { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine },
+  { title: "Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3 },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Budget", url: "/dashboard/budget", icon: DollarSign },
   { title: "Sponsors", url: "/dashboard/sponsors", icon: Award },
   { title: "Store", url: "/dashboard/store", icon: ShoppingBag },
+  { title: "Auction", url: "/dashboard/auction", icon: Gavel },
+  { title: "Gallery", url: "/dashboard/gallery", icon: ImageIcon },
+  { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck },
+  { title: "Surveys", url: "/dashboard/surveys", icon: ClipboardList },
 ];
 
 export function DashboardSidebar() {

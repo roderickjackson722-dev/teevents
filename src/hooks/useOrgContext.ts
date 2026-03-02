@@ -5,6 +5,7 @@ export interface OrgContext {
   orgId: string;
   orgName: string;
   userId: string;
+  plan: string;
 }
 
 export function useOrgContext() {
@@ -27,12 +28,12 @@ export function useOrgContext() {
 
       const { data: orgData } = await supabase
         .from("organizations")
-        .select("id, name")
+        .select("id, name, plan")
         .eq("id", membership.organization_id)
-        .single();
+        .single() as { data: { id: string; name: string; plan: string } | null; error: any };
 
       if (orgData) {
-        setOrg({ orgId: orgData.id, orgName: orgData.name, userId: session.user.id });
+        setOrg({ orgId: orgData.id, orgName: orgData.name, userId: session.user.id, plan: orgData.plan || 'starter' });
       }
       setLoading(false);
     };

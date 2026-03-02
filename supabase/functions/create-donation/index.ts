@@ -29,6 +29,26 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Look up the organizer's connected Stripe account via tournament → organization
+    let connectedAccountId: string | null = null;
+    if (tournament_id) {
+      const { data: tournament } = await supabaseAdmin
+        .from("tournaments")
+        .select("organization_id")
+        .eq("id", tournament_id)
+        .single();
+
+      if (tournament) {
+        const { data: org } = await supabaseAdmin
+          .from("organizations")
+          .select("stripe_account_id")
+          .eq("id", tournament.organization_id)
+          .single();
+
+        connectedAccountId = org?.stripe_account_id || null;
+      }
+    }
+
     // Check for existing Stripe customer
     let customerId: string | undefined;
     if (donor_email) {
@@ -44,7 +64,7 @@ Deno.serve(async (req) => {
     const origin =
       req.headers.get("origin") || "https://teevents.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : donor_email || undefined,
       line_items: [
@@ -67,7 +87,19 @@ Deno.serve(async (req) => {
         tournament_slug: tournament_slug || "",
         tournament_id: tournament_id || "",
       },
-    });
+    };
+
+    // Route payment to connected account with 5% application fee
+    if (connectedAccountId) {
+      sessionParams.payment_intent_data = {
+        application_fee_amount: Math.round(amount_cents * 0.05),
+        transfer_data: {
+          destination: connectedAccountId,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     // Record donation as pending
     if (tournament_id) {

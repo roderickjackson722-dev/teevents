@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.verify-donation]
 verify_jwt = false
+
+[functions.stripe-connect-onboard]
+verify_jwt = false
+
+[functions.stripe-connect-status]
+verify_jwt = false
+
+[functions.stripe-connect-dashboard]
+verify_jwt = false

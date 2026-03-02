@@ -74,6 +74,7 @@ const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const donated = searchParams.get("donated") === "true";
+  const sessionId = searchParams.get("session_id");
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
   const [products, setProducts] = useState<PublicProduct[]>([]);
@@ -181,6 +182,15 @@ const PublicTournament = () => {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [tournament]);
+
+  // Verify donation on return from Stripe
+  useEffect(() => {
+    if (donated && sessionId) {
+      supabase.functions.invoke("verify-donation", {
+        body: { session_id: sessionId },
+      });
+    }
+  }, [donated, sessionId]);
 
   const handlePlaceBid = async () => {
     if (!bidForm) return;
@@ -952,6 +962,7 @@ const PublicTournament = () => {
                           amount_cents: cents,
                           tournament_title: tournament.title,
                           tournament_slug: slug,
+                          tournament_id: tournament.id,
                           donor_email: donorEmail || undefined,
                         },
                       });

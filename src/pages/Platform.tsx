@@ -154,7 +154,7 @@ const Platform = () => {
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            to="/contact"
+            to="/get-started"
             className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
           >
             Start Free Trial
@@ -427,7 +427,7 @@ const Platform = () => {
                   ))}
                 </ul>
                 <Link
-                  to="/contact"
+                  to="/get-started"
                   className={`block text-center px-6 py-3 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors ${
                     plan.highlighted
                       ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
@@ -462,14 +462,14 @@ const Platform = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/contact"
+                to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
                 Start Free Trial
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                to="/contact"
+                to="/get-started"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
                 Schedule a Demo

@@ -167,6 +167,71 @@ export type Database = {
         }
         Relationships: []
       }
+      org_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          secondary_color: string | null
+          subdomain: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          subdomain?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          subdomain?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           author: string
@@ -193,6 +258,109 @@ export type Database = {
           text?: string
         }
         Relationships: []
+      }
+      tournament_checklist_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          is_completed: boolean | null
+          sort_order: number | null
+          title: string
+          tournament_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          sort_order?: number | null
+          title: string
+          tournament_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          sort_order?: number | null
+          title?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_checklist_items_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          course_name: string | null
+          created_at: string
+          date: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          max_players: number | null
+          organization_id: string
+          registration_open: boolean | null
+          status: string
+          template: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_name?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          max_players?: number | null
+          organization_id: string
+          registration_open?: boolean | null
+          status?: string
+          template?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_name?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          max_players?: number | null
+          organization_id?: string
+          registration_open?: boolean | null
+          status?: string
+          template?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -222,6 +390,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_owner: {
+        Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
     }

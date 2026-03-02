@@ -356,6 +356,7 @@ export type Database = {
           created_at: string
           id: string
           recipient_count: number
+          scheduled_for: string | null
           sent_at: string
           status: string
           subject: string
@@ -366,6 +367,7 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_count?: number
+          scheduled_for?: string | null
           sent_at?: string
           status?: string
           subject?: string
@@ -376,6 +378,7 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_count?: number
+          scheduled_for?: string | null
           sent_at?: string
           status?: string
           subject?: string

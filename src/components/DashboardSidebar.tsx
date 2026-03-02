@@ -3,6 +3,7 @@ import {
   Trophy,
   ClipboardCheck,
   Users,
+  MessageSquare,
   DollarSign,
   Award,
   ShoppingBag,
@@ -35,6 +36,7 @@ const mainItems = [
 
 const managementItems = [
   { title: "Players", url: "/dashboard/players", icon: Users },
+  { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Budget", url: "/dashboard/budget", icon: DollarSign },
   { title: "Sponsors", url: "/dashboard/sponsors", icon: Award },
   { title: "Store", url: "/dashboard/store", icon: ShoppingBag },

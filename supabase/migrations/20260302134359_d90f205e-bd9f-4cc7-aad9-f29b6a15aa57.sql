@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN donation_goal_cents integer DEFAULT NULL;

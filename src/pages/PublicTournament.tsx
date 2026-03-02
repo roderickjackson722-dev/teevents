@@ -23,6 +23,7 @@ interface TournamentSite {
   site_secondary_color: string | null; site_hero_image_url: string | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
+  donation_goal_cents: number | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; }
@@ -98,6 +99,7 @@ const PublicTournament = () => {
   const [donorEmail, setDonorEmail] = useState("");
   const [donationLoading, setDonationLoading] = useState(false);
   const [surveySubmitted, setSurveySubmitted] = useState(false);
+  const [donationTotal, setDonationTotal] = useState(0);
 
   useEffect(() => {
     if (!slug) return;
@@ -182,6 +184,20 @@ const PublicTournament = () => {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [tournament]);
+
+  // Fetch donation totals for goal progress
+  useEffect(() => {
+    if (!tournament) return;
+    supabase
+      .from("tournament_donations")
+      .select("amount_cents")
+      .eq("tournament_id", tournament.id)
+      .eq("status", "completed")
+      .then(({ data }) => {
+        const total = (data || []).reduce((sum: number, d: any) => sum + d.amount_cents, 0);
+        setDonationTotal(total);
+      });
+  }, [tournament, donated]);
 
   // Verify donation on return from Stripe
   useEffect(() => {
@@ -896,6 +912,34 @@ const PublicTournament = () => {
                 <p className="text-white/70 max-w-xl mx-auto mb-8">
                   Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference.
                 </p>
+
+                {/* Goal progress bar */}
+                {(tournament as any).donation_goal_cents && (
+                  <div className="max-w-md mx-auto mb-8">
+                    <div className="flex items-baseline justify-between mb-2">
+                      <span className="text-white font-bold text-lg">
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(donationTotal / 100)}
+                      </span>
+                      <span className="text-white/60 text-sm">
+                        of {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((tournament as any).donation_goal_cents / 100)} goal
+                      </span>
+                    </div>
+                    <div className="w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min((donationTotal / (tournament as any).donation_goal_cents) * 100, 100)}%`,
+                          backgroundColor: secondary,
+                        }}
+                      />
+                    </div>
+                    <p className="text-white/50 text-xs mt-2">
+                      {donationTotal >= (tournament as any).donation_goal_cents
+                        ? "🎉 Goal reached!"
+                        : `${Math.round((donationTotal / (tournament as any).donation_goal_cents) * 100)}% of goal`}
+                    </p>
+                  </div>
+                )}
 
                 {/* Preset amounts */}
                 <div className="flex flex-wrap justify-center gap-3 mb-6">

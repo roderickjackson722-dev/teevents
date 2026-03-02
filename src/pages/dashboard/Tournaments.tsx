@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2, Globe } from "lucide-react";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock } from "lucide-react";
 
 interface Tournament {
   id: string;
@@ -81,6 +81,9 @@ const Tournaments = () => {
     completed: "bg-secondary/10 text-secondary",
   };
 
+  const isEnterprise = org?.plan === "enterprise";
+  const canCreateMore = isEnterprise || tournaments.length < 1;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -90,8 +93,8 @@ const Tournaments = () => {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button disabled={!canCreateMore}>
+              {canCreateMore ? <Plus className="h-4 w-4 mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
               New Tournament
             </Button>
           </DialogTrigger>
@@ -145,6 +148,16 @@ const Tournaments = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {!canCreateMore && !loading && (
+        <div className="mb-6 bg-secondary/10 border border-secondary/30 rounded-lg p-4 flex items-center gap-3">
+          <Lock className="h-5 w-5 text-secondary flex-shrink-0" />
+          <p className="text-sm text-foreground">
+            Your <span className="font-semibold capitalize">{org?.plan}</span> plan includes 1 tournament. 
+            Upgrade to <span className="font-semibold">Enterprise</span> for unlimited tournaments.
+          </p>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-12">

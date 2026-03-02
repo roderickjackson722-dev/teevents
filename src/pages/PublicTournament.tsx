@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight, Heart, DollarSign, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,6 +72,8 @@ const templateStyles = {
 
 const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const donated = searchParams.get("donated") === "true";
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
   const [products, setProducts] = useState<PublicProduct[]>([]);
@@ -90,6 +92,10 @@ const PublicTournament = () => {
   const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);
   const [surveyEmail, setSurveyEmail] = useState("");
   const [surveyAnswers, setSurveyAnswers] = useState<Record<string, string>>({});
+  const [donationAmount, setDonationAmount] = useState<number | null>(null);
+  const [customDonation, setCustomDonation] = useState("");
+  const [donorEmail, setDonorEmail] = useState("");
+  const [donationLoading, setDonationLoading] = useState(false);
   const [surveySubmitted, setSurveySubmitted] = useState(false);
 
   useEffect(() => {
@@ -863,18 +869,112 @@ const PublicTournament = () => {
       <section id="donation" className="py-16" style={{ backgroundColor: primary }}>
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">MAKE A DONATION</h2>
-            <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-            <p className="text-white/70 max-w-xl mx-auto mb-8">
-              Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference.
-            </p>
-            <button
-              onClick={() => scrollTo("#contact")}
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90"
-              style={{ backgroundColor: secondary, color: primary }}
-            >
-              Contact Us to Donate
-            </button>
+            {donated ? (
+              <>
+                <CheckCircle className="h-16 w-16 mx-auto mb-4 text-white" />
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">THANK YOU!</h2>
+                <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+                <p className="text-white/70 max-w-xl mx-auto">
+                  Your generous donation has been received. Thank you for supporting our cause!
+                </p>
+              </>
+            ) : (
+              <>
+                <Heart className="h-10 w-10 mx-auto mb-3 text-white/80" />
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">MAKE A DONATION</h2>
+                <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+                <p className="text-white/70 max-w-xl mx-auto mb-8">
+                  Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference.
+                </p>
+
+                {/* Preset amounts */}
+                <div className="flex flex-wrap justify-center gap-3 mb-6">
+                  {[25, 50, 100, 250, 500].map((amt) => (
+                    <button
+                      key={amt}
+                      onClick={() => { setDonationAmount(amt); setCustomDonation(""); }}
+                      className="px-6 py-3 rounded-lg text-lg font-bold transition-all"
+                      style={{
+                        backgroundColor: donationAmount === amt ? secondary : "rgba(255,255,255,0.15)",
+                        color: donationAmount === amt ? primary : "#ffffff",
+                        border: donationAmount === amt ? "none" : "1px solid rgba(255,255,255,0.3)",
+                      }}
+                    >
+                      ${amt}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom amount */}
+                <div className="max-w-xs mx-auto mb-6">
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50" />
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      placeholder="Custom amount"
+                      value={customDonation}
+                      onChange={(e) => {
+                        setCustomDonation(e.target.value);
+                        setDonationAmount(null);
+                      }}
+                      className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/15 border border-white/30 text-white placeholder:text-white/40 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div className="max-w-xs mx-auto mb-6">
+                  <input
+                    type="email"
+                    placeholder="Your email (optional)"
+                    value={donorEmail}
+                    onChange={(e) => setDonorEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-white/15 border border-white/30 text-white placeholder:text-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  />
+                </div>
+
+                <button
+                  disabled={donationLoading || (!donationAmount && !customDonation)}
+                  onClick={async () => {
+                    const cents = donationAmount
+                      ? donationAmount * 100
+                      : Math.round(parseFloat(customDonation) * 100);
+                    if (!cents || cents < 100) {
+                      toast({ title: "Minimum donation is $1.00", variant: "destructive" });
+                      return;
+                    }
+                    setDonationLoading(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke("create-donation", {
+                        body: {
+                          amount_cents: cents,
+                          tournament_title: tournament.title,
+                          tournament_slug: slug,
+                          donor_email: donorEmail || undefined,
+                        },
+                      });
+                      if (error || !data?.url) throw new Error(data?.error || "Failed to create checkout");
+                      window.open(data.url, "_blank");
+                    } catch (err: any) {
+                      toast({ title: "Donation error", description: err.message, variant: "destructive" });
+                    } finally {
+                      setDonationLoading(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-10 py-3.5 rounded-lg text-lg font-bold transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: secondary, color: primary }}
+                >
+                  {donationLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Heart className="h-5 w-5" />
+                  )}
+                  {donationLoading ? "Processing..." : `Donate${donationAmount ? ` $${donationAmount}` : customDonation ? ` $${customDonation}` : ""}`}
+                </button>
+              </>
+            )}
           </motion.div>
         </div>
       </section>

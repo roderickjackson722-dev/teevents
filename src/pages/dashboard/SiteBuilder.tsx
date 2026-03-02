@@ -43,6 +43,7 @@ interface SiteSettings {
   registration_url: string | null;
   registration_open: boolean | null;
   template: string | null;
+  registration_fee_cents: number | null;
 }
 
 const SiteBuilder = () => {
@@ -69,7 +70,7 @@ const SiteBuilder = () => {
       });
   }, [id]);
 
-  const updateField = (field: keyof SiteSettings, value: string | boolean | null) => {
+  const updateField = (field: keyof SiteSettings, value: string | boolean | number | null) => {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
   };
@@ -97,6 +98,7 @@ const SiteBuilder = () => {
         course_name: settings.course_name,
         date: settings.date || null,
         template: settings.template || "classic",
+        registration_fee_cents: settings.registration_fee_cents || 0,
       })
       .eq("id", settings.id);
 
@@ -454,9 +456,33 @@ const SiteBuilder = () => {
                   placeholder="https://..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Link to an external registration page, or leave blank to use built-in registration (coming soon).
+                  Link to an external registration page, or leave blank to use built-in registration.
                 </p>
               </div>
+
+              {!settings.registration_url && (
+                <div>
+                  <Label htmlFor="registrationFee">Registration Fee (USD)</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm text-muted-foreground">$</span>
+                    <Input
+                      id="registrationFee"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={settings.registration_fee_cents ? (settings.registration_fee_cents / 100).toFixed(2) : ""}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        updateField("registration_fee_cents" as any, isNaN(val) ? 0 : Math.round(val * 100));
+                      }}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave at $0 for free registration. Requires Stripe Connect in Settings.
+                  </p>
+                </div>
+              )}
             </>
           )}
 

@@ -23,7 +23,7 @@ interface TournamentSite {
   site_secondary_color: string | null; site_hero_image_url: string | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
-  donation_goal_cents: number | null;
+  donation_goal_cents: number | null; registration_fee_cents: number | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; }
@@ -75,6 +75,7 @@ const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const donated = searchParams.get("donated") === "true";
+  const registered = searchParams.get("registered") === "true";
   const sessionId = searchParams.get("session_id");
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
@@ -207,6 +208,15 @@ const PublicTournament = () => {
       });
     }
   }, [donated, sessionId]);
+
+  // Verify registration payment on return from Stripe
+  useEffect(() => {
+    if (registered && sessionId) {
+      supabase.functions.invoke("verify-registration", {
+        body: { session_id: sessionId },
+      });
+    }
+  }, [registered, sessionId]);
 
   const handlePlaceBid = async () => {
     if (!bidForm) return;
@@ -664,9 +674,17 @@ const PublicTournament = () => {
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
                 <p style={{ color: "#666" }}>Fill out the form below to secure your spot.</p>
               </div>
-              <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
-                <RegistrationForm tournamentId={tournament.id} primaryColor={primary} secondaryColor={secondary} />
-              </div>
+              {registered ? (
+                <div className="bg-white rounded-xl border p-8 shadow-sm text-center" style={{ borderColor: "#e5e5e5" }}>
+                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
+                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>You're Registered!</h3>
+                  <p style={{ color: "#666" }}>Payment confirmed. You'll receive confirmation details via email.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
+                  <RegistrationForm tournamentId={tournament.id} primaryColor={primary} secondaryColor={secondary} registrationFeeCents={tournament.registration_fee_cents || 0} />
+                </div>
+              )}
             </motion.div>
           </div>
         </section>

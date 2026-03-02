@@ -1,0 +1,1 @@
+CREATE POLICY "Public can view donations for published tournaments" ON public.tournament_donations FOR SELECT USING (EXISTS (SELECT 1 FROM tournaments t WHERE t.id = tournament_donations.tournament_id AND t.site_published = true));

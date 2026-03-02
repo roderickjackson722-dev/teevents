@@ -101,6 +101,8 @@ const PublicTournament = () => {
   const [donationLoading, setDonationLoading] = useState(false);
   const [surveySubmitted, setSurveySubmitted] = useState(false);
   const [donationTotal, setDonationTotal] = useState(0);
+  const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
+  const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -252,6 +254,38 @@ const PublicTournament = () => {
     if (error) { toast({ title: "Error submitting survey", variant: "destructive" }); return; }
     toast({ title: "Thank you for your feedback!" });
     setSurveySubmitted(true);
+  };
+
+  const handleStoreBuy = async (productId: string) => {
+    if (!tournament) return;
+    setStoreBuyLoading(productId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-store-checkout", {
+        body: { product_id: productId, tournament_slug: tournament.slug },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
+    } finally {
+      setStoreBuyLoading(null);
+    }
+  };
+
+  const handleAuctionBuyNow = async (itemId: string) => {
+    if (!tournament) return;
+    setAuctionBuyLoading(itemId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-auction-checkout", {
+        body: { item_id: itemId, tournament_slug: tournament.slug },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
+    } finally {
+      setAuctionBuyLoading(null);
+    }
   };
 
   if (loading) {
@@ -743,9 +777,22 @@ const PublicTournament = () => {
                           </div>
                         </div>
                       ) : (
-                        <Button size="sm" variant="outline" onClick={() => setBidForm({ itemId: item.id, name: "", email: "", amount: String(Number(item.current_bid) + 5) })}>
-                          Place Bid
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => setBidForm({ itemId: item.id, name: "", email: "", amount: String(Number(item.current_bid) + 5) })}>
+                            Place Bid
+                          </Button>
+                          {item.buy_now_price && Number(item.buy_now_price) > 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleAuctionBuyNow(item.id)}
+                              disabled={auctionBuyLoading === item.id}
+                              style={{ backgroundColor: secondary, color: primary }}
+                            >
+                              {auctionBuyLoading === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                              Buy Now ${Number(item.buy_now_price).toFixed(0)}
+                            </Button>
+                          )}
+                        </div>
                       )
                     )}
                   </div>
@@ -778,10 +825,20 @@ const PublicTournament = () => {
                       <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{p.name}</h3>
                       <p className="text-lg font-semibold mt-1" style={{ color: primary }}>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(p.price)}</p>
                       {p.description && <p className="text-sm mt-2 line-clamp-2" style={{ color: "#666" }}>{p.description}</p>}
-                      {p.purchase_url && (
+                      {p.purchase_url ? (
                         <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: primary, color: "white" }}>
                           Buy Now <ExternalLink className="h-3.5 w-3.5" />
                         </a>
+                      ) : p.price > 0 && (
+                        <button
+                          onClick={() => handleStoreBuy(p.id)}
+                          disabled={storeBuyLoading === p.id}
+                          className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+                          style={{ backgroundColor: primary, color: "white" }}
+                        >
+                          {storeBuyLoading === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingBag className="h-3.5 w-3.5" />}
+                          Buy Now
+                        </button>
                       )}
                     </div>
                   </motion.div>

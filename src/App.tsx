@@ -22,6 +22,7 @@ import Tournaments from "./pages/dashboard/Tournaments";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import ComingSoon from "./pages/dashboard/ComingSoon";
 import SiteBuilder from "./pages/dashboard/SiteBuilder";
+import Players from "./pages/dashboard/Players";
 import PublicTournament from "./pages/PublicTournament";
 import NotFound from "./pages/NotFound";
 
@@ -51,7 +52,7 @@ const App = () => (
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />
-          <Route path="/dashboard/players" element={<DashboardLayout><ComingSoon title="Player Management" description="Registration forms, player database, and pairings tools coming soon." /></DashboardLayout>} />
+          <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />
           <Route path="/dashboard/budget" element={<DashboardLayout><ComingSoon title="Budget Tracker" description="Real-time revenue and expense tracking coming soon." /></DashboardLayout>} />
           <Route path="/dashboard/sponsors" element={<DashboardLayout><ComingSoon title="Sponsor Management" description="Sponsor recognition tools and logo management coming soon." /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><ComingSoon title="Tournament Store" description="Merchandise and product management coming soon." /></DashboardLayout>} />

@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.stripe-connect-dashboard]
 verify_jwt = false
+
+[functions.create-registration-checkout]
+verify_jwt = false
+
+[functions.verify-registration]
+verify_jwt = false

@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN registration_fee_cents integer DEFAULT 0;

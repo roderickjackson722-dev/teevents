@@ -24,9 +24,10 @@ interface RegistrationFormProps {
   tournamentId: string;
   primaryColor: string;
   secondaryColor: string;
+  registrationFeeCents?: number;
 }
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0 }: RegistrationFormProps) => {
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -40,6 +41,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor }: Regist
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const hasFee = registrationFeeCents > 0;
+  const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,23 +65,58 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor }: Regist
 
     setSubmitting(true);
 
-    const { error } = await supabase.from("tournament_registrations").insert({
-      tournament_id: tournamentId,
-      first_name: parsed.data.first_name,
-      last_name: parsed.data.last_name,
-      email: parsed.data.email,
-      phone: form.phone || null,
-      handicap: form.handicap ? parseInt(form.handicap) : null,
-      shirt_size: form.shirt_size || null,
-      dietary_restrictions: form.dietary_restrictions || null,
-      notes: form.notes || null,
-    });
+    if (hasFee) {
+      // Use edge function for paid registration
+      try {
+        const { data, error } = await supabase.functions.invoke("create-registration-checkout", {
+          body: {
+            tournament_id: tournamentId,
+            first_name: parsed.data.first_name,
+            last_name: parsed.data.last_name,
+            email: parsed.data.email,
+            phone: form.phone || null,
+            handicap: form.handicap ? parseInt(form.handicap) : null,
+            shirt_size: form.shirt_size || null,
+            dietary_restrictions: form.dietary_restrictions || null,
+            notes: form.notes || null,
+          },
+        });
 
-    if (error) {
-      setErrors({ form: "Registration failed. Please try again." });
+        if (error) throw error;
+
+        if (data?.checkout_url) {
+          // Redirect to Stripe Checkout
+          window.location.href = data.checkout_url;
+          return;
+        }
+
+        if (data?.paid) {
+          setSubmitted(true);
+        }
+      } catch (err: any) {
+        setErrors({ form: err.message || "Registration failed. Please try again." });
+      }
     } else {
-      setSubmitted(true);
+      // Free registration — insert directly
+      const { error } = await supabase.from("tournament_registrations").insert({
+        tournament_id: tournamentId,
+        first_name: parsed.data.first_name,
+        last_name: parsed.data.last_name,
+        email: parsed.data.email,
+        phone: form.phone || null,
+        handicap: form.handicap ? parseInt(form.handicap) : null,
+        shirt_size: form.shirt_size || null,
+        dietary_restrictions: form.dietary_restrictions || null,
+        notes: form.notes || null,
+      });
+
+      if (error) {
+        setErrors({ form: "Registration failed. Please try again." });
+      } else {
+        setSubmitted(true);
+      }
     }
+
     setSubmitting(false);
   };
 
@@ -103,6 +142,12 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor }: Regist
     <form onSubmit={handleSubmit} className="space-y-5">
       {errors.form && (
         <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
+      )}
+
+      {hasFee && (
+        <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
+          Registration Fee: {feeDisplay}
+        </div>
       )}
 
       <div className="grid grid-cols-2 gap-4">
@@ -213,7 +258,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor }: Regist
         style={{ backgroundColor: secondaryColor, color: primaryColor }}
       >
         {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-        Complete Registration
+        {hasFee ? `Register & Pay ${feeDisplay}` : "Complete Registration"}
       </Button>
     </form>
   );

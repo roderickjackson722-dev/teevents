@@ -1077,6 +1077,7 @@ export type Database = {
           location: string | null
           max_players: number | null
           organization_id: string
+          registration_fee_cents: number | null
           registration_open: boolean | null
           registration_url: string | null
           schedule_info: string | null
@@ -1107,6 +1108,7 @@ export type Database = {
           location?: string | null
           max_players?: number | null
           organization_id: string
+          registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null
           schedule_info?: string | null
@@ -1137,6 +1139,7 @@ export type Database = {
           location?: string | null
           max_players?: number | null
           organization_id?: string
+          registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null
           schedule_info?: string | null

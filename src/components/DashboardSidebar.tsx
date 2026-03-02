@@ -15,6 +15,7 @@ import {
   ImageIcon,
   UserCheck,
   ClipboardList,
+  Heart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -52,6 +53,7 @@ const managementItems = [
   { title: "Gallery", url: "/dashboard/gallery", icon: ImageIcon },
   { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck },
   { title: "Surveys", url: "/dashboard/surveys", icon: ClipboardList },
+  { title: "Donations", url: "/dashboard/donations", icon: Heart },
 ];
 
 export function DashboardSidebar() {

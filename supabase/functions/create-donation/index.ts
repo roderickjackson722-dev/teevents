@@ -1,4 +1,5 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { amount_cents, tournament_title, tournament_slug, donor_email } =
+    const { amount_cents, tournament_title, tournament_slug, tournament_id, donor_email } =
       await req.json();
 
     if (!amount_cents || amount_cents < 100) {
@@ -23,7 +24,12 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check for existing customer
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    // Check for existing Stripe customer
     let customerId: string | undefined;
     if (donor_email) {
       const customers = await stripe.customers.list({
@@ -54,13 +60,25 @@ Deno.serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${origin}/t/${tournament_slug}?donated=true`,
+      success_url: `${origin}/t/${tournament_slug}?donated=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/t/${tournament_slug}#donation`,
       metadata: {
         type: "donation",
         tournament_slug: tournament_slug || "",
+        tournament_id: tournament_id || "",
       },
     });
+
+    // Record donation as pending
+    if (tournament_id) {
+      await supabaseAdmin.from("tournament_donations").insert({
+        tournament_id,
+        amount_cents,
+        donor_email: donor_email || null,
+        stripe_session_id: session.id,
+        status: "pending",
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

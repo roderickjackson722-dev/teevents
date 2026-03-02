@@ -34,6 +34,7 @@ import Auction from "./pages/dashboard/Auction";
 import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
+import Donations from "./pages/dashboard/Donations";
 import PublicTournament from "./pages/PublicTournament";
 import NotFound from "./pages/NotFound";
 
@@ -75,6 +76,7 @@ const App = () => (
           <Route path="/dashboard/gallery" element={<DashboardLayout><Gallery /></DashboardLayout>} />
           <Route path="/dashboard/volunteers" element={<DashboardLayout><Volunteers /></DashboardLayout>} />
           <Route path="/dashboard/surveys" element={<DashboardLayout><Surveys /></DashboardLayout>} />
+          <Route path="/dashboard/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><ComingSoon title="Settings" description="Organization settings and branding customization coming soon." /></DashboardLayout>} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="*" element={<NotFound />} />

@@ -528,6 +528,44 @@ export type Database = {
           },
         ]
       }
+      tournament_donations: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          donor_email: string | null
+          id: string
+          status: string
+          stripe_session_id: string | null
+          tournament_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          donor_email?: string | null
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          tournament_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          donor_email?: string | null
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_donations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_messages: {
         Row: {
           body: string

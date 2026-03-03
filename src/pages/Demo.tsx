@@ -10,6 +10,12 @@ import Layout from "@/components/Layout";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
+import demoWebsiteBuilder from "@/assets/demo-website-builder.jpg";
+import demoRegistration from "@/assets/demo-registration.jpg";
+import demoPairings from "@/assets/demo-pairings.jpg";
+import demoBudget from "@/assets/demo-budget.jpg";
+import demoSponsors from "@/assets/demo-sponsors.jpg";
+import demoMessaging from "@/assets/demo-messaging.jpg";
 
 const stagger = {
   hidden: {},
@@ -40,6 +46,7 @@ const coreModules = [
   {
     icon: Globe,
     title: "Custom Tournament Website",
+    image: demoWebsiteBuilder,
     bullets: [
       "Three branded templates (Classic Green, Modern Navy, Charity Warmth)",
       "Eight built-in navigation tabs — no coding required",
@@ -49,6 +56,7 @@ const coreModules = [
   {
     icon: CreditCard,
     title: "Online Registration & Payments",
+    image: demoRegistration,
     bullets: [
       "Stripe-powered checkout with Apple Pay & Google Pay",
       "Configurable registration fees per tournament",
@@ -58,6 +66,7 @@ const coreModules = [
   {
     icon: Users,
     title: "Player Management & Pairings",
+    image: demoPairings,
     bullets: [
       "Drag-and-drop player pairings editor",
       "Group assignments with automatic numbering",
@@ -67,6 +76,7 @@ const coreModules = [
   {
     icon: BarChart3,
     title: "Real-Time Budget Tracker",
+    image: demoBudget,
     bullets: [
       "Revenue & expense line items by category",
       "Paid/unpaid status for every item",
@@ -76,6 +86,7 @@ const coreModules = [
   {
     icon: Award,
     title: "Sponsor Management",
+    image: demoSponsors,
     bullets: [
       "Tiered sponsor levels (Platinum, Gold, Silver, Bronze)",
       "Logo uploads and website links per sponsor",
@@ -85,6 +96,7 @@ const coreModules = [
   {
     icon: MessageSquare,
     title: "SMS & Email Messaging",
+    image: demoMessaging,
     bullets: [
       "Bulk SMS to golfers, sponsors, and volunteers",
       "Scheduled messages for tournament day reminders",
@@ -196,16 +208,15 @@ const Demo = () => {
                   viewport={{ once: true, margin: "-50px" }}
                   className={`flex flex-col md:flex-row items-center gap-10 ${!isEven ? "md:flex-row-reverse" : ""}`}
                 >
-                  {/* Icon Visual */}
+                  {/* Screenshot */}
                   <div className="w-full md:w-5/12 flex justify-center">
-                    <div className="relative w-64 h-64 md:w-72 md:h-72">
-                      <div className="absolute inset-0 bg-primary/5 rounded-2xl rotate-6" />
-                      <div className="absolute inset-0 bg-card rounded-2xl border border-border shadow-lg flex flex-col items-center justify-center p-8">
-                        <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
-                          <mod.icon className="h-8 w-8 text-primary" />
-                        </div>
-                        <p className="text-lg font-display font-bold text-foreground text-center">{mod.title}</p>
-                      </div>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/5 rounded-2xl rotate-3 scale-[1.02]" />
+                      <img
+                        src={mod.image}
+                        alt={mod.title}
+                        className="relative rounded-2xl border border-border shadow-lg w-full max-w-sm object-cover"
+                      />
                     </div>
                   </div>
 

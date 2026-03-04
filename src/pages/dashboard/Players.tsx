@@ -5,9 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Users,
   Trophy,
@@ -17,6 +25,7 @@ import {
   UserPlus,
   Download,
   Trash2,
+  Plus,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -59,7 +68,18 @@ const Players = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"roster" | "pairings">("roster");
-
+  const [addPlayerOpen, setAddPlayerOpen] = useState(false);
+  const [addingPlayer, setAddingPlayer] = useState(false);
+  const [newPlayer, setNewPlayer] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    handicap: "",
+    shirt_size: "",
+    payment_status: "paid",
+  });
+  const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
   useEffect(() => {
     if (!org) return;
     supabase
@@ -130,26 +150,56 @@ const Players = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Pairings logic
+  const handleAddPlayer = async () => {
+    if (!selectedTournament || !newPlayer.first_name.trim() || !newPlayer.last_name.trim() || !newPlayer.email.trim()) {
+      toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
+      return;
+    }
+    setAddingPlayer(true);
+    const { data, error } = await supabase.from("tournament_registrations").insert({
+      tournament_id: selectedTournament,
+      first_name: newPlayer.first_name.trim(),
+      last_name: newPlayer.last_name.trim(),
+      email: newPlayer.email.trim().toLowerCase(),
+      phone: newPlayer.phone.trim() || null,
+      handicap: newPlayer.handicap ? parseInt(newPlayer.handicap) : null,
+      shirt_size: newPlayer.shirt_size || null,
+      payment_status: newPlayer.payment_status,
+    }).select("*").single();
+    setAddingPlayer(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else if (data) {
+      setPlayers((prev) => [...prev, data as Registration]);
+      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid" });
+      setAddPlayerOpen(false);
+      toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
+    }
+  };
+
+
   const maxGroupSize = 4;
   const unassigned = players.filter((p) => p.group_number === null);
   const groupNumbers = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
-  const groups = groupNumbers.map((num) => ({
+  const groupsFromPlayers = groupNumbers.map((num) => ({
     number: num,
     players: players
       .filter((p) => p.group_number === num)
       .sort((a, b) => (a.group_position || 0) - (b.group_position || 0)),
   }));
 
-  const nextGroupNumber = groupNumbers.length > 0 ? Math.max(...groupNumbers) + 1 : 1;
+  // Merge empty groups that have no players yet
+  const allGroupNumbers = [...new Set([...groupNumbers, ...emptyGroups])].sort((a, b) => a - b);
+  const groups = allGroupNumbers.map((num) => {
+    const existing = groupsFromPlayers.find((g) => g.number === num);
+    return existing || { number: num, players: [] };
+  });
+
+  const nextGroupNumber = allGroupNumbers.length > 0 ? Math.max(...allGroupNumbers) + 1 : 1;
 
   const handleAddGroup = () => {
-    // Just create an empty group by assigning the first unassigned player
-    if (unassigned.length === 0) {
-      toast({ title: "No unassigned players to add" });
-      return;
-    }
-    handleAssignPlayer(unassigned[0].id, nextGroupNumber, 1);
+    setEmptyGroups((prev) => [...prev, nextGroupNumber]);
+    toast({ title: `Group ${nextGroupNumber} created` });
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {
@@ -348,6 +398,73 @@ const Players = () => {
               />
             </div>
           )}
+          <Dialog open={addPlayerOpen} onOpenChange={setAddPlayerOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add Player
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Player Manually</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="ap-first">First Name *</Label>
+                    <Input id="ap-first" value={newPlayer.first_name} onChange={(e) => setNewPlayer((p) => ({ ...p, first_name: e.target.value }))} placeholder="John" />
+                  </div>
+                  <div>
+                    <Label htmlFor="ap-last">Last Name *</Label>
+                    <Input id="ap-last" value={newPlayer.last_name} onChange={(e) => setNewPlayer((p) => ({ ...p, last_name: e.target.value }))} placeholder="Smith" />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="ap-email">Email *</Label>
+                  <Input id="ap-email" type="email" value={newPlayer.email} onChange={(e) => setNewPlayer((p) => ({ ...p, email: e.target.value }))} placeholder="john@example.com" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="ap-phone">Phone</Label>
+                    <Input id="ap-phone" value={newPlayer.phone} onChange={(e) => setNewPlayer((p) => ({ ...p, phone: e.target.value }))} placeholder="(555) 123-4567" />
+                  </div>
+                  <div>
+                    <Label htmlFor="ap-hcp">Handicap</Label>
+                    <Input id="ap-hcp" type="number" value={newPlayer.handicap} onChange={(e) => setNewPlayer((p) => ({ ...p, handicap: e.target.value }))} placeholder="12" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="ap-shirt">Shirt Size</Label>
+                    <Select value={newPlayer.shirt_size} onValueChange={(v) => setNewPlayer((p) => ({ ...p, shirt_size: v }))}>
+                      <SelectTrigger id="ap-shirt"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {["S", "M", "L", "XL", "XXL"].map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="ap-payment">Payment Status</Label>
+                    <Select value={newPlayer.payment_status} onValueChange={(v) => setNewPlayer((p) => ({ ...p, payment_status: v }))}>
+                      <SelectTrigger id="ap-payment"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="comp">Comp</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button onClick={handleAddPlayer} disabled={addingPlayer} className="w-full">
+                  {addingPlayer ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                  Add Player
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV
@@ -364,11 +481,12 @@ const Players = () => {
           <UserPlus className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
           <h3 className="text-lg font-display font-bold text-foreground mb-2">No registrations yet</h3>
           <p className="text-muted-foreground mb-4">
-            Players will appear here once they register on your tournament page.
+            Players will appear here once they register, or you can add them manually.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Make sure your tournament is published and registration is open.
-          </p>
+          <Button onClick={() => setAddPlayerOpen(true)}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Add First Player
+          </Button>
         </div>
       ) : view === "roster" ? (
         /* Roster View */

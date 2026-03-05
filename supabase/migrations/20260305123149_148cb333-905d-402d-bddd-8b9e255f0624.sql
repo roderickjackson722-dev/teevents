@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN custom_domain text DEFAULT NULL;

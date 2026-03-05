@@ -44,6 +44,7 @@ interface SiteSettings {
   registration_open: boolean | null;
   template: string | null;
   registration_fee_cents: number | null;
+  custom_domain: string | null;
 }
 
 const SiteBuilder = () => {
@@ -55,7 +56,7 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain">("branding");
 
   useEffect(() => {
     if (!id) return;
@@ -99,6 +100,7 @@ const SiteBuilder = () => {
         date: settings.date || null,
         template: settings.template || "classic",
         registration_fee_cents: settings.registration_fee_cents || 0,
+        custom_domain: settings.custom_domain || null,
       })
       .eq("id", settings.id);
 
@@ -144,6 +146,7 @@ const SiteBuilder = () => {
     { key: "branding" as const, label: "Branding", icon: Palette },
     { key: "content" as const, label: "Content", icon: Type },
     { key: "contact" as const, label: "Contact", icon: Phone },
+    { key: "domain" as const, label: "Domain", icon: Globe },
   ];
 
   if (loading) {
@@ -509,6 +512,111 @@ const SiteBuilder = () => {
                   onChange={(e) => updateField("contact_phone", e.target.value)}
                   placeholder="(555) 123-4567"
                 />
+              </div>
+            </>
+          )}
+
+          {activeTab === "domain" && (
+            <>
+              <h2 className="text-lg font-display font-bold text-foreground">Domain Settings</h2>
+
+              {/* Default Subdomain */}
+              <div className="bg-muted/50 rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-semibold">Default Subdomain</Label>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Your tournament is automatically available at:
+                </p>
+                {settings.slug ? (
+                  <div className="flex items-center gap-2">
+                    <code className="bg-background border border-border rounded px-3 py-1.5 text-sm font-mono text-foreground">
+                      {window.location.origin}/t/{settings.slug}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/t/${settings.slug}`);
+                        toast({ title: "Copied!", description: "URL copied to clipboard." });
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">Slug will be generated when you save.</p>
+                )}
+              </div>
+
+              {/* Custom Domain */}
+              <div className="border border-border rounded-lg p-4 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-semibold">Custom Domain</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Connect your own domain so visitors can access your tournament at a custom URL like{" "}
+                  <span className="font-mono text-foreground">golf.yourcharity.org</span>.
+                </p>
+
+                <div>
+                  <Label htmlFor="customDomain">Domain Name</Label>
+                  <Input
+                    id="customDomain"
+                    value={settings.custom_domain || ""}
+                    onChange={(e) => updateField("custom_domain" as keyof SiteSettings, e.target.value.toLowerCase().trim())}
+                    placeholder="golf.yourcharity.org"
+                    className="font-mono"
+                  />
+                </div>
+
+                {settings.custom_domain && (
+                  <div className="bg-muted/50 rounded-lg border border-border p-4 space-y-3">
+                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">!</span>
+                      DNS Setup Required
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      To connect <span className="font-mono font-semibold text-foreground">{settings.custom_domain}</span>, add these DNS records at your domain registrar:
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border">
+                            <th className="text-left py-2 pr-4 font-semibold text-foreground">Type</th>
+                            <th className="text-left py-2 pr-4 font-semibold text-foreground">Name</th>
+                            <th className="text-left py-2 font-semibold text-foreground">Value</th>
+                          </tr>
+                        </thead>
+                        <tbody className="font-mono text-xs">
+                          <tr className="border-b border-border/50">
+                            <td className="py-2 pr-4">CNAME</td>
+                            <td className="py-2 pr-4">{settings.custom_domain.split('.')[0]}</td>
+                            <td className="py-2">teevents.lovable.app</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="bg-background border border-border rounded-md p-3">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Note:</strong> DNS changes can take up to 48 hours to propagate. After adding the record, save your settings and check back later. 
+                        If you're using a root domain (e.g. yourcharity.org), use an <strong>A record</strong> pointing to <code className="bg-muted px-1 rounded">185.158.133.1</code> instead.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        updateField("custom_domain" as keyof SiteSettings, null);
+                      }}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      Remove Custom Domain
+                    </Button>
+                  </div>
+                )}
               </div>
             </>
           )}

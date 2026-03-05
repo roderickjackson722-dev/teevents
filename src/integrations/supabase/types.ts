@@ -1069,6 +1069,7 @@ export type Database = {
           course_name: string | null
           course_par: number | null
           created_at: string
+          custom_domain: string | null
           date: string | null
           description: string | null
           donation_goal_cents: number | null
@@ -1100,6 +1101,7 @@ export type Database = {
           course_name?: string | null
           course_par?: number | null
           created_at?: string
+          custom_domain?: string | null
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
@@ -1131,6 +1133,7 @@ export type Database = {
           course_name?: string | null
           course_par?: number | null
           created_at?: string
+          custom_domain?: string | null
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null

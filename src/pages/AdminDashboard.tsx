@@ -150,6 +150,8 @@ const AdminDashboard = () => {
       setPromoCodes(data.promoCodes || []);
       setDemoEvents(data.demoEvents || []);
       setOrganizations(data.organizations || []);
+      setAdminProspects(data.prospects || []);
+      setProspectActivities(data.prospectActivities || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
       toast({ title: "Error loading data", description: err.message, variant: "destructive" });
@@ -571,7 +573,7 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
           <div className="flex flex-wrap gap-2 mb-8 border-b border-border pb-2">
-            {([
+             {([
               ["events", "Tournaments", Calendar],
               ["requests", "Access Requests", Users],
               ["emails", "Auto-Approve Emails", Mail],
@@ -579,6 +581,7 @@ const AdminDashboard = () => {
               ["promos", "Promo Codes", Tag],
               ["demos", "Demo Events", Trophy],
               ["orgs", "Organizations", Building2],
+              ["prospects", "Prospects", Target],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}

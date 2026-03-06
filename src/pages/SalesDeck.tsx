@@ -23,7 +23,12 @@ import {
   Check,
 } from "lucide-react";
 import logoBlack from "@/assets/logo-black.png";
+import logoWhite from "@/assets/logo-white.png";
 import heroGolf from "@/assets/hero-golf.jpg";
+import salesHero from "@/assets/sales-hero.jpg";
+import salesCheckin from "@/assets/sales-checkin.jpg";
+import salesScoring from "@/assets/sales-scoring.jpg";
+import salesFundraising from "@/assets/sales-fundraising.jpg";
 import demoWebsite from "@/assets/demo-website-builder.jpg";
 import demoRegistration from "@/assets/demo-registration.jpg";
 import demoPairings from "@/assets/demo-pairings.jpg";
@@ -39,6 +44,7 @@ const slides = [
     heading: "TeeEvents",
     subheading: "The All-In-One Golf Tournament Management Platform",
     tagline: "Plan. Promote. Play. — Everything your tournament needs in one place.",
+    bgImage: salesHero,
   },
   {
     id: "problem",
@@ -92,29 +98,19 @@ const slides = [
   },
   {
     id: "scoring",
-    type: "iconGrid" as const,
+    type: "feature" as const,
     heading: "Live Scoring & Leaderboard",
-    icon: Trophy,
-    description: "Players enter their own scores via a mobile-friendly scoring page. Real-time leaderboard updates automatically. Share the scoring link with your entire field.",
-    gridItems: [
-      { icon: Trophy, label: "Live Leaderboard" },
-      { icon: Users, label: "Group-Based Login" },
-      { icon: Globe, label: "Public Scoring Page" },
-      { icon: QrCode, label: "Shareable Link" },
-    ],
+    description: "Players enter their own scores via a mobile-friendly scoring page. They log in with their group number or email — no app download needed. The leaderboard updates in real-time as scores come in.",
+    image: salesScoring,
+    highlights: ["Live Leaderboard", "Group-Based Login", "Public Scoring Page", "Shareable Link"],
   },
   {
     id: "checkin",
-    type: "iconGrid" as const,
+    type: "feature" as const,
     heading: "QR Code Check-In",
-    icon: QrCode,
-    description: "Print QR codes for every player. Staff scan at check-in using any device. Dedicated scan station page with real-time status updates and manual search fallback.",
-    gridItems: [
-      { icon: QrCode, label: "QR Code Generation" },
-      { icon: UserCheck, label: "Scan Station" },
-      { icon: Users, label: "Real-Time Count" },
-      { icon: ClipboardList, label: "Manual Fallback" },
-    ],
+    description: "Print QR codes for every player. Staff scan at check-in using any device with our dedicated Scan Station page. Real-time check-in counter with manual search fallback.",
+    image: salesCheckin,
+    highlights: ["QR Code Generation", "Dedicated Scan Station", "Real-Time Counter", "Manual Search"],
   },
   {
     id: "sponsors",
@@ -199,24 +195,29 @@ const slides = [
     subheading: "Join organizers who save 20+ hours per event with TeeEvents.",
     cta: "Get Started Free",
     url: "/get-started",
+    bgImage: salesHero,
   },
 ];
 
 // ── Slide Components ────────────────────────────────────────
 function TitleSlide({ data }: { data: typeof slides[0] }) {
+  const bgImg = (data as any).bgImage;
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-[120px]"
-      style={{ backgroundImage: `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.85) 100%)` }}>
-      <motion.img src={logoBlack} alt="TeeEvents" className="h-[80px] mb-[40px] brightness-0 invert" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} />
-      <motion.h1 className="text-[72px] font-bold text-white leading-tight" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        {data.heading}
-      </motion.h1>
-      <motion.p className="text-[36px] text-white/80 mt-[16px] font-light" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-        {"subheading" in data ? (data as any).subheading : ""}
-      </motion.p>
-      <motion.p className="text-[22px] text-white/60 mt-[24px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-        {"tagline" in data ? (data as any).tagline : ""}
-      </motion.p>
+    <div className="relative flex flex-col items-center justify-center h-full text-center px-[120px]">
+      {bgImg && <img src={bgImg} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+      <div className="relative z-10 flex flex-col items-center">
+        <motion.img src={logoWhite} alt="TeeEvents" className="h-[80px] mb-[40px]" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} />
+        <motion.h1 className="text-[72px] font-bold text-white leading-tight drop-shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          {data.heading}
+        </motion.h1>
+        <motion.p className="text-[36px] text-white/90 mt-[16px] font-light drop-shadow-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          {"subheading" in data ? (data as any).subheading : ""}
+        </motion.p>
+        <motion.p className="text-[22px] text-white/70 mt-[24px] drop-shadow-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+          {"tagline" in data ? (data as any).tagline : ""}
+        </motion.p>
+      </div>
     </div>
   );
 }
@@ -322,17 +323,20 @@ function PricingSlide({ data }: { data: any }) {
 
 function CTASlide({ data }: { data: any }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-[120px]"
-      style={{ backgroundImage: `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.85) 100%)` }}>
-      <motion.h2 className="text-[60px] font-bold text-white mb-[20px]" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        {data.heading}
-      </motion.h2>
-      <motion.p className="text-[28px] text-white/70 mb-[48px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-        {data.subheading}
-      </motion.p>
-      <motion.a href={data.url} className="inline-flex items-center gap-[12px] bg-white text-primary px-[48px] py-[20px] rounded-full text-[24px] font-bold hover:bg-white/90 transition-colors" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
-        {data.cta} <ArrowRight className="w-[24px] h-[24px]" />
-      </motion.a>
+    <div className="relative flex flex-col items-center justify-center h-full text-center px-[120px]">
+      {data.bgImage && <img src={data.bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+      <div className="relative z-10 flex flex-col items-center">
+        <motion.h2 className="text-[60px] font-bold text-white mb-[20px] drop-shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          {data.heading}
+        </motion.h2>
+        <motion.p className="text-[28px] text-white/80 mb-[48px] drop-shadow-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          {data.subheading}
+        </motion.p>
+        <motion.a href={data.url} className="inline-flex items-center gap-[12px] bg-secondary text-secondary-foreground px-[48px] py-[20px] rounded-full text-[24px] font-bold hover:bg-secondary/90 transition-colors shadow-xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
+          {data.cta} <ArrowRight className="w-[24px] h-[24px]" />
+        </motion.a>
+      </div>
     </div>
   );
 }

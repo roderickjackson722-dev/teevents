@@ -17,7 +17,6 @@ import {
   ClipboardList,
   Heart,
   Lock,
-  Target,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -46,7 +45,6 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
   { title: "Tournaments", url: "/dashboard/tournaments", icon: Trophy, feature: null },
   { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
-  { title: "Prospects", url: "/dashboard/prospects", icon: Target, feature: null },
 ];
 
 const managementItems = [

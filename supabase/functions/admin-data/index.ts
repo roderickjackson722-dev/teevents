@@ -61,6 +61,60 @@ Deno.serve(async (req) => {
     if (req.method === "POST") {
       const body = await req.json();
 
+      // --- Prospect Actions ---
+      if (action === "add-prospect") {
+        const { error } = await adminClient.from("prospects").insert({
+          organization_id: null,
+          tournament_name: body.tournament_name || "",
+          organizer_name: body.organizer_name || "",
+          contact_name: body.contact_name || "",
+          contact_email: body.contact_email || "",
+          contact_phone: body.contact_phone || "",
+          location: body.location || "",
+          event_date: body.event_date || "",
+          source: body.source || "eventbrite",
+          source_url: body.source_url || "",
+          status: body.status || "new",
+          notes: body.notes || "",
+          next_follow_up: body.next_follow_up || null,
+        });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-prospect") {
+        const updates: Record<string, unknown> = {};
+        for (const key of ["tournament_name", "organizer_name", "contact_name", "contact_email", "contact_phone", "location", "event_date", "source", "source_url", "status", "notes", "next_follow_up"]) {
+          if (body[key] !== undefined) updates[key] = body[key];
+        }
+        if (body.status === "contacted") updates.last_contacted_at = new Date().toISOString();
+        const { error } = await adminClient.from("prospects").update(updates).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "delete-prospect") {
+        const { error } = await adminClient.from("prospects").delete().eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "add-prospect-activity") {
+        const { error } = await adminClient.from("prospect_activities").insert({
+          prospect_id: body.prospect_id,
+          type: body.type || "note",
+          description: body.description || "",
+        });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "delete-prospect-activity") {
+        const { error } = await adminClient.from("prospect_activities").delete().eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       // --- Promo Code Actions ---
       if (action === "add-promo-code") {
         const { error } = await adminClient.from("promo_codes").insert({
@@ -339,7 +393,7 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
@@ -348,6 +402,8 @@ Deno.serve(async (req) => {
       adminClient.from("promo_codes").select("*").order("created_at", { ascending: false }),
       adminClient.from("admin_demo_events").select("*, tournaments(id, title, slug, site_published)").order("created_at", { ascending: false }),
       adminClient.from("organizations").select("*, tournaments(id, title)").order("created_at", { ascending: false }),
+      adminClient.from("prospects").select("*").is("organization_id", null).order("created_at", { ascending: false }),
+      adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
     ]);
 
     return new Response(
@@ -360,6 +416,8 @@ Deno.serve(async (req) => {
         promoCodes: promoCodesRes.data || [],
         demoEvents: demoEventsRes.data || [],
         organizations: orgsRes.data || [],
+        prospects: prospectsRes.data || [],
+        prospectActivities: activitiesRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

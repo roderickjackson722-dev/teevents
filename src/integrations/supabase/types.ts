@@ -316,6 +316,38 @@ export type Database = {
         }
         Relationships: []
       }
+      prospect_activities: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          prospect_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          prospect_id: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          prospect_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_activities_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospects: {
         Row: {
           contact_email: string | null
@@ -328,7 +360,7 @@ export type Database = {
           location: string | null
           next_follow_up: string | null
           notes: string | null
-          organization_id: string
+          organization_id: string | null
           organizer_name: string | null
           source: string | null
           source_url: string | null
@@ -347,7 +379,7 @@ export type Database = {
           location?: string | null
           next_follow_up?: string | null
           notes?: string | null
-          organization_id: string
+          organization_id?: string | null
           organizer_name?: string | null
           source?: string | null
           source_url?: string | null
@@ -366,7 +398,7 @@ export type Database = {
           location?: string | null
           next_follow_up?: string | null
           notes?: string | null
-          organization_id?: string
+          organization_id?: string | null
           organizer_name?: string | null
           source?: string | null
           source_url?: string | null

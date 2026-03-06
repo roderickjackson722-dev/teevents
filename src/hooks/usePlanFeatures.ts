@@ -1,0 +1,66 @@
+import { useOrgContext } from "./useOrgContext";
+
+// Feature access by plan tier
+const PLAN_FEATURES: Record<string, string[]> = {
+  base: [
+    "tournaments",
+    "registration",
+    "website",
+    "players",
+    "check-in",
+    "leaderboard",
+    "planning-guide",
+    "email-messaging",
+  ],
+  starter: [
+    // Everything in base +
+    "custom-domain",
+    "sponsors",
+    "budget",
+    "donations",
+    "gallery",
+    "sms-messaging",
+    "all-templates",
+  ],
+  pro: [
+    // Everything in starter +
+    "store",
+    "auction",
+    "surveys",
+    "volunteers",
+    "priority-support",
+  ],
+  enterprise: [
+    // Everything in pro +
+    "multiple-tournaments",
+    "unlimited-sms",
+    "white-label",
+    "api-access",
+  ],
+};
+
+const PLAN_HIERARCHY = ["base", "starter", "pro", "enterprise"];
+
+export function usePlanFeatures() {
+  const { org, loading } = useOrgContext();
+  const plan = org?.plan || "base";
+
+  const hasFeature = (feature: string): boolean => {
+    const planIndex = PLAN_HIERARCHY.indexOf(plan);
+    // Check this plan and all lower plans
+    for (let i = 0; i <= planIndex; i++) {
+      const tierFeatures = PLAN_FEATURES[PLAN_HIERARCHY[i]];
+      if (tierFeatures?.includes(feature)) return true;
+    }
+    return false;
+  };
+
+  const requiredPlan = (feature: string): string => {
+    for (const tier of PLAN_HIERARCHY) {
+      if (PLAN_FEATURES[tier]?.includes(feature)) return tier;
+    }
+    return "enterprise";
+  };
+
+  return { plan, hasFeature, requiredPlan, loading };
+}

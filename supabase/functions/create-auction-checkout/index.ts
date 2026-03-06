@@ -41,13 +41,16 @@ Deno.serve(async (req) => {
       .single();
 
     let connectedAccountId: string | null = null;
+    let feeRate = 0.05;
     if (tournament) {
       const { data: org } = await supabaseAdmin
         .from("organizations")
-        .select("stripe_account_id")
+        .select("stripe_account_id, plan")
         .eq("id", tournament.organization_id)
         .single();
       connectedAccountId = org?.stripe_account_id || null;
+      const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0.03, pro: 0.02, enterprise: 0.01 };
+      feeRate = FEE_RATES[org?.plan || "base"] ?? 0.05;
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -94,7 +97,7 @@ Deno.serve(async (req) => {
 
     if (connectedAccountId) {
       sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(priceCents * 0.05),
+        application_fee_amount: Math.round(priceCents * feeRate),
         transfer_data: { destination: connectedAccountId },
       };
     }

@@ -74,17 +74,39 @@ const additionalFeatures = [
 
 const plans = [
   {
+    name: "Base",
+    price: "Free",
+    period: "forever",
+    description: "Everything you need to get started. We only earn when you do.",
+    fee: "5% transaction fee",
+    features: [
+      "1 tournament",
+      "Online registration & payments",
+      "Custom tournament website (1 template)",
+      "Player pairings tool",
+      "Check-in & QR codes",
+      "Leaderboard & scoring",
+      "Planning guide & checklist",
+      "Email messaging",
+    ],
+    cta: "Get Started Free",
+    plan: "base",
+  },
+  {
     name: "Starter",
     price: "$499",
     period: "per tournament",
-    description: "Perfect for small charity outings and first-time organizers.",
+    description: "Unlock advanced tools and lower your transaction fees.",
+    fee: "3% transaction fee",
     features: [
-      "Up to 72 golfers",
-      "Online registration & payments",
-      "Custom tournament website",
-      "Player pairings tool",
-      "Basic budget tracking",
-      "Email support",
+      "Everything in Base",
+      "All templates + custom colors",
+      "Custom domain support",
+      "Sponsor recognition pages",
+      "Budget tracking",
+      "Donations page",
+      "Photo gallery",
+      "SMS texting (500 messages)",
     ],
     cta: "Get Started",
     plan: "starter",
@@ -93,14 +115,15 @@ const plans = [
     name: "Pro",
     price: "$999",
     period: "per tournament",
-    description: "For nonprofits and organizations running polished events.",
+    description: "For nonprofits running polished, full-featured events.",
+    fee: "2% transaction fee",
     features: [
-      "Up to 144 golfers",
       "Everything in Starter",
-      "SMS texting (500 messages)",
-      "Sponsor recognition pages",
-      "Live leaderboard",
-      "Real-time budget dashboard",
+      "Up to 144 golfers",
+      "Merchandise store",
+      "Auction & raffle management",
+      "Surveys & analytics",
+      "Volunteer coordination",
       "Priority support",
     ],
     cta: "Get Started",
@@ -112,15 +135,15 @@ const plans = [
     price: "Custom",
     period: "annual license",
     description: "For organizations running multiple tournaments per year.",
+    fee: "1% transaction fee",
     features: [
-      "Unlimited golfers",
       "Everything in Pro",
+      "Unlimited tournaments",
       "Unlimited SMS texting",
       "Dedicated account manager",
       "White-label branding",
       "API access",
       "Custom integrations",
-      "On-site support available",
     ],
     cta: "Contact Sales",
     plan: "enterprise",
@@ -145,6 +168,11 @@ const Platform = () => {
   const handleCheckout = async (plan: string) => {
     if (plan === "enterprise") {
       window.location.href = "/contact";
+      return;
+    }
+    if (plan === "base") {
+      // Free plan — go directly to signup
+      window.location.href = "/get-started";
       return;
     }
     setLoadingPlan(plan);
@@ -191,11 +219,10 @@ const Platform = () => {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <button
-            onClick={() => handleCheckout("pro")}
-            disabled={loadingPlan === "pro"}
-            className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors disabled:opacity-50"
+            onClick={() => handleCheckout("base")}
+            className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
           >
-            {loadingPlan === "pro" ? "Loading..." : "Get Started"}
+            Get Started Free
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -332,9 +359,9 @@ const Platform = () => {
             {[
               {
                 step: "01",
-                title: "Choose Your Plan",
+                title: "Sign Up Free",
                 description:
-                  "Select the plan that fits your tournament size and needs. Purchase securely online.",
+                  "Create your free account in seconds. No credit card required. Upgrade anytime for more features and lower fees.",
               },
               {
                 step: "02",
@@ -388,12 +415,12 @@ const Platform = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              No hidden fees. No long-term contracts. Just powerful tools for
-              your golf tournament.
+              Start free and only pay when you grow. Every plan includes a small
+              transaction fee so we succeed when you succeed.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
@@ -416,7 +443,7 @@ const Platform = () => {
                   {plan.name}
                 </h3>
                 <p
-                  className={`text-sm mb-6 ${
+                  className={`text-sm mb-4 ${
                     plan.highlighted
                       ? "text-primary-foreground/70"
                       : "text-muted-foreground"
@@ -424,7 +451,7 @@ const Platform = () => {
                 >
                   {plan.description}
                 </p>
-                <div className="mb-6">
+                <div className="mb-2">
                   <span className="text-4xl font-display font-bold">
                     {plan.price}
                   </span>
@@ -438,6 +465,11 @@ const Platform = () => {
                     {plan.period}
                   </span>
                 </div>
+                <p className={`text-xs font-semibold mb-6 ${
+                  plan.highlighted ? "text-secondary" : "text-primary"
+                }`}>
+                  + {plan.fee}
+                </p>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-3">

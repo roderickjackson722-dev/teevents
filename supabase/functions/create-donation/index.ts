@@ -29,8 +29,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Look up the organizer's connected Stripe account via tournament → organization
+    // Look up the organizer's connected Stripe account and plan via tournament → organization
     let connectedAccountId: string | null = null;
+    let feeRate = 0.05;
     if (tournament_id) {
       const { data: tournament } = await supabaseAdmin
         .from("tournaments")
@@ -41,11 +42,13 @@ Deno.serve(async (req) => {
       if (tournament) {
         const { data: org } = await supabaseAdmin
           .from("organizations")
-          .select("stripe_account_id")
+          .select("stripe_account_id, plan")
           .eq("id", tournament.organization_id)
           .single();
 
         connectedAccountId = org?.stripe_account_id || null;
+        const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0.03, pro: 0.02, enterprise: 0.01 };
+        feeRate = FEE_RATES[org?.plan || "base"] ?? 0.05;
       }
     }
 
@@ -89,10 +92,10 @@ Deno.serve(async (req) => {
       },
     };
 
-    // Route payment to connected account with 5% application fee
+    // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
       sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(amount_cents * 0.05),
+        application_fee_amount: Math.round(amount_cents * feeRate),
         transfer_data: {
           destination: connectedAccountId,
         },

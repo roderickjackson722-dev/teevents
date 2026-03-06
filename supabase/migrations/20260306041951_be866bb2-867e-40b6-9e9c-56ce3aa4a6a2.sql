@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ALTER COLUMN plan SET DEFAULT 'base';

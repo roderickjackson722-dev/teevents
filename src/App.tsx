@@ -46,6 +46,7 @@ import PlanGate from "./components/PlanGate";
 import LiveScoring from "./pages/LiveScoring";
 import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
+import Flyer from "./pages/Flyer";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +96,7 @@ const App = () => (
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/sales-deck" element={<SalesDeck />} />
+          <Route path="/flyer" element={<Flyer />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

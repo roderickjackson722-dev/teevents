@@ -133,9 +133,16 @@ export default function CheckIn() {
         </Select>
 
         {selectedTournament && players && players.length > 0 && (
-          <Button variant="outline" size="sm" onClick={handleDownloadQRCodes}>
-            <Download className="mr-2 h-4 w-4" /> Print QR Codes
-          </Button>
+          <>
+            <Button variant="outline" size="sm" onClick={handleDownloadQRCodes}>
+              <Download className="mr-2 h-4 w-4" /> Print QR Codes
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <a href={`/checkin/${selectedTournament}`} target="_blank" rel="noopener noreferrer">
+                <ScanLine className="mr-2 h-4 w-4" /> Open Scan Station
+              </a>
+            </Button>
+          </>
         )}
       </div>
 

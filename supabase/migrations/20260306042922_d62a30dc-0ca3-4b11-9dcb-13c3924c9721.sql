@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS tournament_scores_reg_hole_unique ON public.tournament_scores (registration_id, hole_number);

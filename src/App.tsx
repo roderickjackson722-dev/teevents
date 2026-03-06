@@ -43,6 +43,8 @@ import TermsOfService from "./pages/TermsOfService";
 import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 import PlanGate from "./components/PlanGate";
+import LiveScoring from "./pages/LiveScoring";
+import ScanCheckIn from "./pages/ScanCheckIn";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +91,8 @@ const App = () => (
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/demo" element={<Demo />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
+          <Route path="/t/:slug/scoring" element={<LiveScoring />} />
+          <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -36,11 +36,13 @@ import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
 import Settings from "./pages/dashboard/Settings";
+import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PublicTournament from "./pages/PublicTournament";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
+import PlanGate from "./components/PlanGate";
 
 const queryClient = new QueryClient();
 
@@ -71,17 +73,18 @@ const App = () => (
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />
           <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />
           <Route path="/dashboard/messages" element={<DashboardLayout><Messages /></DashboardLayout>} />
-          <Route path="/dashboard/budget" element={<DashboardLayout><Budget /></DashboardLayout>} />
-          <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
-          <Route path="/dashboard/store" element={<DashboardLayout><Store /></DashboardLayout>} />
+          <Route path="/dashboard/budget" element={<DashboardLayout><PlanGate feature="budget"><Budget /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/sponsors" element={<DashboardLayout><PlanGate feature="sponsors"><Sponsors /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
-          <Route path="/dashboard/auction" element={<DashboardLayout><Auction /></DashboardLayout>} />
-          <Route path="/dashboard/gallery" element={<DashboardLayout><Gallery /></DashboardLayout>} />
-          <Route path="/dashboard/volunteers" element={<DashboardLayout><Volunteers /></DashboardLayout>} />
-          <Route path="/dashboard/surveys" element={<DashboardLayout><Surveys /></DashboardLayout>} />
-          <Route path="/dashboard/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
+          <Route path="/dashboard/auction" element={<DashboardLayout><PlanGate feature="auction"><Auction /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/gallery" element={<DashboardLayout><PlanGate feature="gallery"><Gallery /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/volunteers" element={<DashboardLayout><PlanGate feature="volunteers"><Volunteers /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/donations" element={<DashboardLayout><PlanGate feature="donations"><Donations /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/demo" element={<Demo />} />

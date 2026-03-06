@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -10,6 +11,8 @@ import {
   Loader2,
   Building2,
   Palette,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -192,7 +195,19 @@ const Settings = () => {
           </div>
           <div>
             <span className="text-sm text-muted-foreground">Plan</span>
-            <p className="font-medium text-foreground capitalize">{org?.plan || "—"}</p>
+            <div className="flex items-center gap-3">
+              <p className="font-medium text-foreground capitalize">{org?.plan || "—"}</p>
+              {org?.plan && org.plan !== "enterprise" && (
+                <Link
+                  to="/dashboard/upgrade"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-secondary hover:text-secondary/80 transition-colors"
+                >
+                  <Zap className="h-3 w-3" />
+                  Upgrade
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>

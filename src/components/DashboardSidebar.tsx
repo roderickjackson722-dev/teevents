@@ -83,18 +83,24 @@ export function DashboardSidebar() {
         <SidebarMenuItem key={item.title}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 px-2 py-1.5 text-primary-foreground/30 cursor-not-allowed text-sm">
-                <item.icon className="mr-2 h-4 w-4" />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1">{item.title}</span>
-                    <Lock className="h-3 w-3" />
-                  </>
-                )}
-              </div>
+              <SidebarMenuButton asChild>
+                <NavLink
+                  to={item.url}
+                  className="text-primary-foreground/40 hover:bg-primary-foreground/5 hover:text-primary-foreground/50"
+                  activeClassName="bg-primary-foreground/10 text-primary-foreground/50"
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1">{item.title}</span>
+                      <Lock className="h-3 w-3 text-primary-foreground/30" />
+                    </>
+                  )}
+                </NavLink>
+              </SidebarMenuButton>
             </TooltipTrigger>
             <TooltipContent side="right">
-              <p className="text-xs">Requires <span className="font-semibold capitalize">{tier}</span> plan</p>
+              <p className="text-xs">Requires <span className="font-semibold capitalize">{tier}</span> plan — click to learn more</p>
             </TooltipContent>
           </Tooltip>
         </SidebarMenuItem>

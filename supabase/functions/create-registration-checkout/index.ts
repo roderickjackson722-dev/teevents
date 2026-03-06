@@ -46,6 +46,22 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
+    // Fetch organization plan to determine fee rate
+    const { data: org } = await supabaseAdmin
+      .from("organizations")
+      .select("stripe_account_id, plan")
+      .eq("id", tournament.organization_id)
+      .single();
+
+    const orgPlan = org?.plan || "base";
+    const FEE_RATES: Record<string, number> = {
+      base: 0.05,
+      starter: 0.03,
+      pro: 0.02,
+      enterprise: 0.01,
+    };
+    const feeRate = FEE_RATES[orgPlan] ?? 0.05;
+
     const feeCents = tournament.registration_fee_cents || 0;
 
     // Insert the registration record
@@ -83,12 +99,6 @@ Deno.serve(async (req) => {
 
     // Look up organizer's connected Stripe account
     let connectedAccountId: string | null = null;
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("stripe_account_id")
-      .eq("id", tournament.organization_id)
-      .single();
-
     connectedAccountId = org?.stripe_account_id || null;
 
     // Check for existing Stripe customer
@@ -126,10 +136,10 @@ Deno.serve(async (req) => {
       },
     };
 
-    // Route payment to connected account with 5% application fee
+    // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
       sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(feeCents * 0.05),
+        application_fee_amount: Math.round(feeCents * feeRate),
         transfer_data: {
           destination: connectedAccountId,
         },

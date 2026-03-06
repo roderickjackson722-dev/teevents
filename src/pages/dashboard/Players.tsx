@@ -27,6 +27,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
+import PlayerImport from "@/components/PlayerImport";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -397,6 +398,19 @@ const Players = () => {
                 className="pl-9 w-[200px] bg-card"
               />
             </div>
+          )}
+          {selectedTournament && (
+            <PlayerImport
+              tournamentId={selectedTournament}
+              onImported={() => {
+                supabase
+                  .from("tournament_registrations")
+                  .select("*")
+                  .eq("tournament_id", selectedTournament)
+                  .order("created_at", { ascending: true })
+                  .then(({ data }) => setPlayers((data as Registration[]) || []));
+              }}
+            />
           )}
           <Dialog open={addPlayerOpen} onOpenChange={setAddPlayerOpen}>
             <DialogTrigger asChild>

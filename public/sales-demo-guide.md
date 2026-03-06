@@ -1,7 +1,7 @@
-# TeeEvents — Sales Demo Feature Guide & Video Script
+# TeeVents — Sales Demo Feature Guide & Video Script
 
 ## Overview
-TeeEvents is the all-in-one golf tournament management platform. This document outlines every feature for your sales demo video and screenshots.
+TeeVents is the all-in-one golf tournament management platform. This document outlines every feature for your sales demo video and screenshots.
 
 ---
 
@@ -15,7 +15,7 @@ TeeEvents is the all-in-one golf tournament management platform. This document o
 ---
 
 ### 2. PLATFORM OVERVIEW (1 min)
-**Talk Track:** "TeeEvents gives organizers everything they need in one dashboard — from creating a branded tournament website to live scoring on game day."
+**Talk Track:** "TeeVents gives organizers everything they need in one dashboard — from creating a branded tournament website to live scoring on game day."
 
 **Screenshots:**
 - `/platform` — Show the 4-tier pricing section
@@ -211,7 +211,7 @@ TeeEvents is the all-in-one golf tournament management platform. This document o
 ---
 
 ### 14. CLOSING — Call to Action (30 sec)
-**Talk Track:** "TeeEvents takes the complexity out of tournament management. Start free today and see the difference an all-in-one platform makes."
+**Talk Track:** "TeeVents takes the complexity out of tournament management. Start free today and see the difference an all-in-one platform makes."
 
 **Screenshot:** Show CTA section or `/get-started` page
 

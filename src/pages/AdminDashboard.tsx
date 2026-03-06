@@ -1262,6 +1262,16 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {/* Prospects Tab */}
+          {activeTab === "prospects" && (
+            <AdminProspects
+              prospects={adminProspects}
+              activities={prospectActivities}
+              onRefresh={fetchAll}
+              callAdminApi={callAdminApi}
+            />
+          )}
         </div>
       </section>
     </Layout>

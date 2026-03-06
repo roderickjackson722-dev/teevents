@@ -316,6 +316,74 @@ export type Database = {
         }
         Relationships: []
       }
+      prospects: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          event_date: string | null
+          id: string
+          last_contacted_at: string | null
+          location: string | null
+          next_follow_up: string | null
+          notes: string | null
+          organization_id: string
+          organizer_name: string | null
+          source: string | null
+          source_url: string | null
+          status: string
+          tournament_name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          location?: string | null
+          next_follow_up?: string | null
+          notes?: string | null
+          organization_id: string
+          organizer_name?: string | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          tournament_name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          location?: string | null
+          next_follow_up?: string | null
+          notes?: string | null
+          organization_id?: string
+          organizer_name?: string | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          tournament_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           author: string

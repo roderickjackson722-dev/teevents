@@ -76,9 +76,9 @@ const slides = [
     id: "website",
     type: "feature" as const,
     heading: "Tournament Website Builder",
-    description: "Create a beautiful, branded tournament website in minutes. Choose from 3 professional templates, customize colors and content, and publish with one click.",
+    description: "Create a beautiful, branded tournament website in minutes. Choose from 3 professional templates, customize colors and content, publish with one click, and connect your own custom domain for a fully branded experience.",
     image: demoWebsite,
-    highlights: ["3 Pro Templates", "Custom Branding", "One-Click Publish", "Mobile Responsive"],
+    highlights: ["3 Pro Templates", "Custom Domain Support", "One-Click Publish", "Mobile Responsive"],
   },
   {
     id: "registration",

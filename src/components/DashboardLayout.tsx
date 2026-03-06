@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { DashboardChatAssistant } from "./DashboardChatAssistant";
 import { Loader2 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -89,6 +90,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             {children}
           </main>
         </div>
+        <DashboardChatAssistant />
       </div>
     </SidebarProvider>
   );

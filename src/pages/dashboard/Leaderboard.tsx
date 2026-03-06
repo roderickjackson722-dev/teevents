@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save } from "lucide-react";
+import { Trophy, Loader2, Save, Share2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface PlayerScore {
@@ -31,7 +31,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, course_par")
+        .select("id, title, course_par, slug, site_published")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -158,16 +158,43 @@ export default function Leaderboard() {
         )}
       </div>
 
-      <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-        <SelectTrigger className="w-[300px]">
-          <SelectValue placeholder="Select a tournament" />
-        </SelectTrigger>
-        <SelectContent>
-          {tournaments?.map((t) => (
-            <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center gap-3 flex-wrap">
+        <Select value={selectedTournament} onValueChange={setSelectedTournament}>
+          <SelectTrigger className="w-[300px]">
+            <SelectValue placeholder="Select a tournament" />
+          </SelectTrigger>
+          <SelectContent>
+            {tournaments?.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedTournamentData?.slug && selectedTournamentData?.site_published && (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const url = `${window.location.origin}/t/${selectedTournamentData.slug}/scoring`;
+                navigator.clipboard.writeText(url);
+                toast({ title: "Link copied!", description: "Share this with your players so they can enter scores." });
+              }}
+            >
+              <Copy className="h-4 w-4 mr-1.5" /> Copy Scoring Link
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+            >
+              <a href={`/t/${selectedTournamentData.slug}/scoring`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4 mr-1.5" /> Preview
+              </a>
+            </Button>
+          </>
+        )}
+      </div>
 
       {selectedTournament && (
         <Card>

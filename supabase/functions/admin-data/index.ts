@@ -140,6 +140,22 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true, organization_id: orgId, tournament_id: tournament.id });
       }
 
+      if (action === "update-org-plan") {
+        if (!body.organization_id || !body.plan) {
+          return jsonRes({ error: "Missing organization_id or plan" }, 400);
+        }
+        const validPlans = ["base", "starter", "pro", "enterprise"];
+        if (!validPlans.includes(body.plan)) {
+          return jsonRes({ error: "Invalid plan" }, 400);
+        }
+        const { error } = await adminClient
+          .from("organizations")
+          .update({ plan: body.plan })
+          .eq("id", body.organization_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       if (action === "delete-demo-event") {
         // Get the demo event to find org & tournament
         const { data: demo } = await adminClient.from("admin_demo_events").select("*").eq("id", body.id).single();
@@ -323,7 +339,7 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
@@ -331,6 +347,7 @@ Deno.serve(async (req) => {
       adminClient.from("reviews").select("*").order("sort_order", { ascending: true }),
       adminClient.from("promo_codes").select("*").order("created_at", { ascending: false }),
       adminClient.from("admin_demo_events").select("*, tournaments(id, title, slug, site_published)").order("created_at", { ascending: false }),
+      adminClient.from("organizations").select("*, tournaments(id, title)").order("created_at", { ascending: false }),
     ]);
 
     return new Response(
@@ -342,6 +359,7 @@ Deno.serve(async (req) => {
         reviews: reviewsRes.data || [],
         promoCodes: promoCodesRes.data || [],
         demoEvents: demoEventsRes.data || [],
+        organizations: orgsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

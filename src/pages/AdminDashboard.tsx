@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs">("events");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [editEventTitle, setEditEventTitle] = useState("");
@@ -91,6 +91,10 @@ const AdminDashboard = () => {
   const [newDemoTitle, setNewDemoTitle] = useState("");
   const [demoCreating, setDemoCreating] = useState(false);
 
+  // Organizations state
+  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [updatingOrgPlan, setUpdatingOrgPlan] = useState<string | null>(null);
+
   useEffect(() => {
     checkAdmin();
   }, []);
@@ -140,6 +144,7 @@ const AdminDashboard = () => {
       setReviews(data.reviews || []);
       setPromoCodes(data.promoCodes || []);
       setDemoEvents(data.demoEvents || []);
+      setOrganizations(data.organizations || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
       toast({ title: "Error loading data", description: err.message, variant: "destructive" });
@@ -519,6 +524,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateOrgPlan = async (orgId: string, newPlan: string) => {
+    setUpdatingOrgPlan(orgId);
+    try {
+      await callAdminApi("update-org-plan", { organization_id: orgId, plan: newPlan });
+      await fetchAll();
+      toast({ title: "Plan updated!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setUpdatingOrgPlan(null);
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center">
@@ -555,6 +573,7 @@ const AdminDashboard = () => {
               ["reviews", "Reviews", Star],
               ["promos", "Promo Codes", Tag],
               ["demos", "Demo Events", Trophy],
+              ["orgs", "Organizations", Building2],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -1161,6 +1180,77 @@ const AdminDashboard = () => {
                     <p className="text-muted-foreground">No demo events yet. Create one above to get started.</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Organizations Tab */}
+          {activeTab === "orgs" && (
+            <div className="space-y-6">
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-2">Manage Organizations</h2>
+                <p className="text-sm text-muted-foreground mb-4">View all organizations and upgrade/downgrade their plans.</p>
+              </div>
+
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Organization</th>
+                      <th className="text-left p-3 font-medium">Tournaments</th>
+                      <th className="text-left p-3 font-medium">Current Plan</th>
+                      <th className="text-left p-3 font-medium">Change Plan</th>
+                      <th className="text-left p-3 font-medium">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {organizations.map(org => (
+                      <tr key={org.id} className="border-t border-border">
+                        <td className="p-3">
+                          <span className="font-semibold">{org.name}</span>
+                          {org.stripe_account_id && (
+                            <span className="ml-2 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe Connected</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-muted-foreground">
+                          {org.tournaments?.length || 0} tournament{(org.tournaments?.length || 0) !== 1 ? "s" : ""}
+                        </td>
+                        <td className="p-3">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase tracking-wide ${
+                            org.plan === "enterprise" ? "bg-secondary/20 text-secondary" :
+                            org.plan === "pro" ? "bg-primary/15 text-primary" :
+                            org.plan === "starter" ? "bg-blue-100 text-blue-800" :
+                            "bg-muted text-muted-foreground"
+                          }`}>
+                            {org.plan}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={org.plan}
+                              onChange={e => updateOrgPlan(org.id, e.target.value)}
+                              disabled={updatingOrgPlan === org.id}
+                              className="flex h-8 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                            >
+                              <option value="base">Base (Free)</option>
+                              <option value="starter">Starter</option>
+                              <option value="pro">Pro</option>
+                              <option value="enterprise">Enterprise</option>
+                            </select>
+                            {updatingOrgPlan === org.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
+                          </div>
+                        </td>
+                        <td className="p-3 text-muted-foreground text-xs">
+                          {new Date(org.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                    {organizations.length === 0 && (
+                      <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No organizations yet</td></tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

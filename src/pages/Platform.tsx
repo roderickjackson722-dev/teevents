@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -203,6 +204,7 @@ const Platform = () => {
 
   return (
     <Layout>
+      <SEO title="Platform" description="Discover the all-in-one golf tournament management platform — websites, registration, payments, pairings, scoring, and more." path="/platform" />
       {/* Hero */}
       <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
         <img

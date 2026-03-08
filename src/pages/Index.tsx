@@ -13,6 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
@@ -76,6 +77,7 @@ const fadeUp = {
 const Index = () => {
   return (
     <Layout>
+      <SEO title="Home" description="The all-in-one platform for nonprofits and corporations to plan, manage, and execute world-class golf tournaments." path="/" />
       {/* Hero */}
       <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
         <motion.div

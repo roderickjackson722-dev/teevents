@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, MapPin, ExternalLink, Image, Trophy } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import aboutBg from "@/assets/golf-about-bg.jpg";
@@ -103,6 +104,7 @@ const Events = () => {
 
   return (
     <Layout>
+      <SEO title="Events" description="Browse upcoming and past golf tournaments managed by TeeVents — view results, galleries, and event details." path="/events" />
       {/* Hero */}
       <section className="relative py-24 md:py-32">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${aboutBg})` }} />

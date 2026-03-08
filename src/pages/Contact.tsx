@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import servicesBg from "@/assets/golf-services-bg.jpg";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const Contact = () => {
 
   return (
     <Layout>
+      <SEO title="Contact Us" description="Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." path="/contact" />
       <HeroSection
         backgroundImage={servicesBg}
         title="Contact Us"

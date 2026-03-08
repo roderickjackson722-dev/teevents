@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 
@@ -33,6 +34,7 @@ const sections = [
 const About = () => {
   return (
     <Layout>
+      <SEO title="About Us" description="TeeVents Golf Management is a full-service company that helps create, plan, fundraise, and manage golf events across the United States." path="/about" />
       <HeroSection
         backgroundImage={aboutBg}
         title="About Us"

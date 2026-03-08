@@ -7,6 +7,7 @@ import {
   LayoutDashboard, PieChart, Send, UserCheck
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
@@ -135,6 +136,7 @@ const whyTeeVents = [
 const Demo = () => {
   return (
     <Layout>
+      <SEO title="Demo" description="Explore the TeeVents platform with an interactive demo — see registration, pairings, sponsors, budget tools, and more." path="/demo" />
       {/* Hero */}
       <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>

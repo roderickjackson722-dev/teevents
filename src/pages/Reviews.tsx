@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Star, Quote, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,7 @@ const Reviews = () => {
 
   return (
     <Layout>
+      <SEO title="Reviews" description="See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." path="/reviews" />
       <HeroSection
         backgroundImage={heroGolf}
         title="Reviews"

@@ -407,6 +407,38 @@ const SiteBuilder = () => {
                     />
                   </div>
                 </div>
+               </div>
+
+              {/* Countdown Timer Style */}
+              <div>
+                <Label>Countdown Timer Style</Label>
+                <p className="text-xs text-muted-foreground mb-2">Choose how the event countdown appears on your tournament page.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: "glass", name: "Glass", desc: "Frosted glass cards" },
+                    { id: "solid", name: "Solid", desc: "Branded color blocks" },
+                    { id: "minimal", name: "Minimal", desc: "Clean text with dividers" },
+                    { id: "circle", name: "Circle", desc: "Circular countdown rings" },
+                  ].map((style) => (
+                    <button
+                      key={style.id}
+                      onClick={() => updateField("countdown_style", style.id)}
+                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                        (settings.countdown_style || "glass") === style.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-foreground">{style.name}</span>
+                        {(settings.countdown_style || "glass") === style.id && (
+                          <div className="bg-primary text-primary-foreground rounded-full p-0.5"><Check className="h-3 w-3" /></div>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">{style.desc}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
             </>
           )}

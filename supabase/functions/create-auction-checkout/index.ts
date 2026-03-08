@@ -114,6 +114,23 @@ Deno.serve(async (req) => {
       })
       .eq("id", item_id);
 
+    // Send notification emails
+    try {
+      if (tournament) {
+        const { data: notifEmails } = await supabaseAdmin
+          .from("notification_emails")
+          .select("email")
+          .eq("organization_id", tournament.organization_id)
+          .eq("notify_auction_bid", true);
+
+        if (notifEmails && notifEmails.length > 0) {
+          console.log(`[Notification] Auction buy-now: ${item.title} by ${buyer_name || buyer_email || "unknown"} → ${notifEmails.map((n: any) => n.email).join(", ")}`);
+        }
+      }
+    } catch (e) {
+      console.error("Notification error:", e);
+    }
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

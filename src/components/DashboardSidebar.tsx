@@ -21,10 +21,11 @@ import {
   Printer,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logoWhite from "@/assets/logo-white.png";
 import { usePlanFeatures } from "@/hooks/usePlanFeatures";
+import { useOrgContext } from "@/hooks/useOrgContext";
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +43,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+// Map sidebar features to permission keys
+const FEATURE_PERMISSION_MAP: Record<string, string> = {
+  "registration": "manage_registration",
+  "players": "manage_players",
+  "check-in": "manage_check_in",
+  "leaderboard": "manage_leaderboard",
+  "email-messaging": "manage_messages",
+  "budget": "manage_budget",
+  "sponsors": "manage_sponsors",
+  "store": "manage_store",
+  "auction": "manage_auction",
+  "gallery": "manage_gallery",
+  "volunteers": "manage_volunteers",
+  "surveys": "manage_surveys",
+  "donations": "manage_donations",
+};
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
@@ -69,14 +87,25 @@ const managementItems = [
 export function DashboardSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
   const navigate = useNavigate();
   const { hasFeature, requiredPlan } = usePlanFeatures();
+  const { org } = useOrgContext();
+
+  const isOwner = !org || org.role === "owner";
+  const permissions = org?.permissions || [];
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
+
+  // Filter management items based on permissions (owners see everything)
+  const visibleManagementItems = managementItems.filter((item) => {
+    if (isOwner) return true;
+    const permKey = item.feature ? FEATURE_PERMISSION_MAP[item.feature] : null;
+    if (!permKey) return true;
+    return permissions.includes(permKey);
+  });
 
   const renderItem = (item: typeof managementItems[0]) => {
     const locked = item.feature && !hasFeature(item.feature);
@@ -127,6 +156,9 @@ export function DashboardSidebar() {
     );
   };
 
+  // Only show settings for owners or editors with manage_settings permission
+  const showSettings = isOwner || permissions.includes("manage_settings");
+
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent className="bg-primary text-primary-foreground">
@@ -164,35 +196,39 @@ export function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-primary-foreground/50 text-xs tracking-widest uppercase">
-            Management
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {managementItems.map(renderItem)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {visibleManagementItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-primary-foreground/50 text-xs tracking-widest uppercase">
+              Management
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleManagementItems.map(renderItem)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/dashboard/settings"
-                    className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-                    activeClassName="bg-primary-foreground/15 text-secondary font-medium"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    {!collapsed && <span>Settings</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {showSettings && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/dashboard/settings"
+                      className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                      activeClassName="bg-primary-foreground/15 text-secondary font-medium"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Settings</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3">

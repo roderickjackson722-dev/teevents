@@ -49,6 +49,7 @@ import LiveScoring from "./pages/LiveScoring";
 import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
+import AcceptInvitation from "./pages/AcceptInvitation";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,7 @@ const App = () => (
           <Route path="/deck" element={<SalesDeck />} />
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />
+          <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

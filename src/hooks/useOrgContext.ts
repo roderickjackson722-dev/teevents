@@ -6,6 +6,8 @@ export interface OrgContext {
   orgName: string;
   userId: string;
   plan: string;
+  role: string;
+  permissions: string[];
 }
 
 export function useOrgContext() {
@@ -19,7 +21,7 @@ export function useOrgContext() {
 
       const { data: membership } = await supabase
         .from("org_members")
-        .select("organization_id")
+        .select("organization_id, role, permissions")
         .eq("user_id", session.user.id)
         .limit(1)
         .single();
@@ -33,7 +35,14 @@ export function useOrgContext() {
         .single() as { data: { id: string; name: string; plan: string } | null; error: any };
 
       if (orgData) {
-        setOrg({ orgId: orgData.id, orgName: orgData.name, userId: session.user.id, plan: orgData.plan || 'starter' });
+        setOrg({
+          orgId: orgData.id,
+          orgName: orgData.name,
+          userId: session.user.id,
+          plan: orgData.plan || 'starter',
+          role: (membership as any).role || 'owner',
+          permissions: (membership as any).permissions || [],
+        });
       }
       setLoading(false);
     };

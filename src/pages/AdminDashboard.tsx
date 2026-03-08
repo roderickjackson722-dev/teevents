@@ -153,6 +153,7 @@ const AdminDashboard = () => {
       setOrganizations(data.organizations || []);
       setAdminProspects(data.prospects || []);
       setProspectActivities(data.prospectActivities || []);
+      setOutreachTemplates(data.outreachTemplates || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
       toast({ title: "Error loading data", description: err.message, variant: "destructive" });

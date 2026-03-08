@@ -243,6 +243,15 @@ const Tournaments = () => {
                   })}
                 </p>
               )}
+              {(() => {
+                const fmt = SCORING_FORMATS.find(f => f.id === (t as any).scoring_format);
+                return fmt ? (
+                  <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5">
+                    <Users className="h-3 w-3" />
+                    {fmt.name}
+                  </p>
+                ) : null;
+              })()}
               <div className="mt-4 pt-3 border-t border-border">
                 <Link
                   to={`/dashboard/tournaments/${t.id}/site-builder`}

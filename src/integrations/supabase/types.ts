@@ -387,7 +387,9 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string
+          email_response_status: string | null
           event_date: string | null
+          follow_up_count: number | null
           id: string
           last_contacted_at: string | null
           last_email_sent_at: string | null
@@ -408,7 +410,9 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          email_response_status?: string | null
           event_date?: string | null
+          follow_up_count?: number | null
           id?: string
           last_contacted_at?: string | null
           last_email_sent_at?: string | null
@@ -429,7 +433,9 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          email_response_status?: string | null
           event_date?: string | null
+          follow_up_count?: number | null
           id?: string
           last_contacted_at?: string | null
           last_email_sent_at?: string | null

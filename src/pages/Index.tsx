@@ -13,6 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";

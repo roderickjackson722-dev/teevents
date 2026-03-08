@@ -489,6 +489,58 @@ const Sponsors = () => {
           ))}
         </div>
       )}
+
+      {/* Leaderboard Sponsor Settings */}
+      {selectedTournament && sponsors.some(s => s.show_on_leaderboard) && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Trophy className="h-4 w-4" /> Leaderboard Sponsor Display
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div>
+              <Label className="text-sm mb-2 block">Display Style</Label>
+              <Select value={lbStyle} onValueChange={(val) => setLbStyle(val)}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="banner">Rotating Banner</SelectItem>
+                  <SelectItem value="ticker">Scrolling Ticker</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {lbStyle === "banner" && (
+              <div>
+                <Label className="text-sm mb-2 block">Rotation Speed: {(lbInterval / 1000).toFixed(1)}s</Label>
+                <Slider
+                  value={[lbInterval]}
+                  onValueChange={([v]) => setLbInterval(v)}
+                  min={2000}
+                  max={15000}
+                  step={500}
+                  className="w-64"
+                />
+                <p className="text-xs text-muted-foreground mt-1">How long each sponsor is shown before rotating.</p>
+              </div>
+            )}
+            <Button
+              size="sm"
+              onClick={async () => {
+                const { error } = await supabase.from("tournaments").update({
+                  leaderboard_sponsor_interval_ms: lbInterval,
+                  leaderboard_sponsor_style: lbStyle,
+                } as any).eq("id", selectedTournament);
+                if (error) { toast({ title: "Error saving", description: error.message, variant: "destructive" }); }
+                else { toast({ title: "Leaderboard settings saved!" }); }
+              }}
+            >
+              Save Display Settings
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

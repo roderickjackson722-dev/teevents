@@ -122,7 +122,7 @@ const Printables = () => {
           <CartSignsTab tournament={tournament} registrations={registrations} loading={loading} />
         </TabsContent>
         <TabsContent value="scorecards">
-          <ScorecardsTab tournament={tournament} registrations={registrations} loading={loading} />
+          <ScorecardsTab tournament={tournament} registrations={registrations} loading={loading} slug={tournament?.slug || undefined} />
         </TabsContent>
         <TabsContent value="name-badges">
           <NameBadgesTab tournament={tournament} registrations={registrations} loading={loading} />

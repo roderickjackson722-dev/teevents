@@ -4,7 +4,7 @@ import {
   Globe, CreditCard, Users, BarChart3, Award, MessageSquare,
   CheckCircle, Trophy, Camera, ShoppingBag, Gavel, Heart,
   QrCode, ClipboardList, ArrowRight, Smartphone, Star, Zap,
-  LayoutDashboard, PieChart, Send, UserCheck
+  LayoutDashboard, PieChart, Send, UserCheck, FileText, Printer
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
@@ -60,8 +60,8 @@ const coreModules = [
     image: demoRegistration,
     bullets: [
       "Stripe-powered checkout with Apple Pay & Google Pay",
-      "Configurable registration fees per tournament",
-      "Automated email confirmations on signup",
+      "Registration add-ons (mulligans, dinner tickets, hole packages)",
+      "Custom fields, promo codes & automated email confirmations",
     ],
   },
   {
@@ -113,8 +113,9 @@ const advancedFeatures = [
   { icon: Heart, title: "Donation Portal", desc: "Fundraising goal tracking with progress bars and Stripe-powered donations." },
   { icon: ShoppingBag, title: "Merchandise Store", desc: "Sell branded apparel and gear with integrated checkout." },
   { icon: Camera, title: "Photo Gallery", desc: "Upload and showcase tournament photos with captions." },
-  { icon: ClipboardList, title: "Planning Guide", desc: "Pre-built checklist system to keep organizers on track." },
+  { icon: ClipboardList, title: "Planning Guide", desc: "Pre-built 30-item checklist system to keep organizers on track." },
   { icon: UserCheck, title: "Volunteer Coordinator", desc: "Define roles, time slots, and manage volunteer signups." },
+  { icon: FileText, title: "6 Printable Types", desc: "Scorecards, cart signs, name badges, sponsor signs, alpha list & hole assignments." },
 ];
 
 const sellingPoints = [

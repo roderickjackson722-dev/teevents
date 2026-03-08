@@ -25,7 +25,7 @@ import salesHero from "@/assets/sales-hero.jpg";
 
 const features = [
   { icon: Globe, title: "Website Builder", desc: "6 pro templates, custom branding, one-click publish & custom domain support" },
-  { icon: Users, title: "Registration & Payments", desc: "Online signups, Stripe payments, auto confirmations & guest checkout" },
+  { icon: Users, title: "Registration & Payments", desc: "Online signups, add-ons, promo codes, Stripe payments & auto confirmations" },
   { icon: Trophy, title: "Live Scoring & Leaderboard", desc: "8 formats: Scramble, Best Ball, Stableford, Alternate Shot, Shamble & more" },
   { icon: QrCode, title: "QR Code Check-In", desc: "Print QR badges, scan on any device, real-time attendance counter" },
   { icon: BarChart3, title: "Pairings & Groups", desc: "Drag-and-drop foursomes, auto-assign, CSV import/export" },
@@ -36,7 +36,7 @@ const features = [
   { icon: Gavel, title: "Auction & Raffle", desc: "Silent auction, raffle tickets, buy-now & winner tracking" },
   { icon: Camera, title: "Photo Gallery", desc: "Upload event photos with captions to your tournament site" },
   { icon: Heart, title: "Donations Page", desc: "Fundraising goals, progress bar & Stripe payment processing" },
-  { icon: Printer, title: "Printable Materials", desc: "Scorecards (9/18 hole), cart signs, name badges & sponsor signs with custom fonts" },
+  { icon: Printer, title: "6 Printable Types", desc: "Scorecards, cart signs, name badges, sponsor signs, alpha list & hole assignments" },
   { icon: Timer, title: "Countdown Styles", desc: "4 timer designs: Glass, Solid, Minimal & Circle on your event page" },
   { icon: ClipboardList, title: "Planning Guide", desc: "30-item checklist from 12 months out to post-event" },
   { icon: UserCheck, title: "Volunteers & Surveys", desc: "Define roles, track signups & collect post-event feedback" },
@@ -225,12 +225,12 @@ function QuickFlyer() {
               "Silent auction & raffle management",
               "Photo gallery on your event site",
               "Donation page with fundraising goals",
-              "Printable scorecards, cart signs & badges",
-              "4 countdown timer styles",
+              "6 printable types: scorecards, cart signs, badges & more",
+              "Registration add-ons & tournament promo codes",
               "Volunteer coordination & signups",
               "Post-event surveys & feedback",
               "30-item planning checklist",
-              "Hole-by-hole par customization",
+              "Custom registration fields & hole-by-hole pars",
             ].map((f, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />

@@ -286,7 +286,7 @@ function IconGridSlide({ data }: { data: any }) {
       <motion.p className="text-xs md:text-[20px] text-muted-foreground mb-4 md:mb-[40px] max-w-[900px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
         {data.description}
       </motion.p>
-      <div className={`grid grid-cols-2 md:${data.gridItems.length > 4 ? "grid-cols-3" : "grid-cols-4"} gap-3 md:gap-[28px]`}>
+      <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-[28px]`}>
         {data.gridItems.map((item: any, i: number) => {
           const Icon = item.icon;
           return (

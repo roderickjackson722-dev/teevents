@@ -577,6 +577,34 @@ const Players = () => {
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
+                      {editingScoringCode === p.id ? (
+                        <div className="flex items-center gap-1 justify-center">
+                          <Input
+                            value={scoringCodeInput}
+                            onChange={(e) => setScoringCodeInput(e.target.value.toUpperCase())}
+                            className="w-20 h-7 text-xs text-center font-mono uppercase"
+                            maxLength={8}
+                            onKeyDown={(e) => e.key === "Enter" && handleSaveScoringCode(p.id)}
+                          />
+                          <button onClick={() => handleSaveScoringCode(p.id)} className="text-primary hover:text-primary/80">
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => setEditingScoringCode(null)} className="text-muted-foreground hover:text-foreground">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
+                          className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                          title="Click to edit scoring code"
+                        >
+                          {p.scoring_code || "—"}
+                          <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
                         {p.payment_status}
                       </span>

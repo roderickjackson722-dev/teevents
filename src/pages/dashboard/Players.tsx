@@ -88,6 +88,7 @@ const Players = () => {
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
   const [editingScoringCode, setEditingScoringCode] = useState<string | null>(null);
   const [scoringCodeInput, setScoringCodeInput] = useState("");
+  const [regenerating, setRegenerating] = useState(false);
   useEffect(() => {
     if (!org) return;
     supabase

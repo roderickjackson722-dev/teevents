@@ -9,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
 import { toast } from "@/hooks/use-toast";
+import { SponsorBanner } from "@/components/SponsorBanner";
 
 interface PublicSponsor {
-  id: string; name: string; tier: string; logo_url: string | null; website_url: string | null;
+  id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
 }
 interface PublicProduct {
   id: string; name: string; description: string | null; price: number; image_url: string | null; category: string; purchase_url: string | null;
@@ -24,6 +25,7 @@ interface TournamentSite {
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
+  leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; }
@@ -118,7 +120,7 @@ const PublicTournament = () => {
         setTournament(t);
 
         const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes] = await Promise.all([
-          supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url").eq("tournament_id", t.id).order("sort_order"),
+          supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name)").eq("tournament_id", t.id),
           supabase.from("tournament_auction_items").select("*").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
@@ -664,7 +666,31 @@ const PublicTournament = () => {
                 LIVE LEADERBOARD
               </h2>
               <div className="w-16 h-0.5 mx-auto mb-2" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-8" style={{ color: "#888" }}>Par {coursePar} • Updates in real-time</p>
+              <p className="text-center text-sm mb-4" style={{ color: "#888" }}>Par {coursePar} • Updates in real-time</p>
+              {(() => {
+                const lbSponsors = sponsors.filter(s => s.show_on_leaderboard);
+                const style = tournament.leaderboard_sponsor_style || 'banner';
+                const interval = tournament.leaderboard_sponsor_interval_ms || 5000;
+                if (lbSponsors.length === 0) return null;
+                if (style === 'ticker') {
+                  return (
+                    <div className="mb-6 overflow-hidden rounded-lg border" style={{ borderColor: "#e5e5e5" }}>
+                      <div className="flex animate-marquee items-center gap-8 py-2 px-4 bg-white">
+                        {[...lbSponsors, ...lbSponsors].map((s, i) => (
+                          <div key={i} className="flex items-center gap-2 shrink-0">
+                            {s.logo_url ? (
+                              <img src={s.logo_url} alt={s.name} className="h-6 max-w-[80px] object-contain" />
+                            ) : (
+                              <span className="text-xs font-semibold" style={{ color: primary }}>{s.name}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors} intervalMs={interval} /></div>;
+              })()}
               <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: "#e5e5e5" }}>
                 <table className="w-full text-sm">
                   <thead>

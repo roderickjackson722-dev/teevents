@@ -1242,7 +1242,10 @@ const AdminDashboard = () => {
                     <tr>
                       <th className="text-left p-3 font-medium">Tournament</th>
                       <th className="text-left p-3 font-medium">Organization</th>
+                      <th className="text-center p-3 font-medium">Players</th>
                       <th className="text-left p-3 font-medium">Plan</th>
+                      <th className="text-center p-3 font-medium">Published</th>
+                      <th className="text-center p-3 font-medium">Reg Open</th>
                       <th className="text-left p-3 font-medium">Status</th>
                       <th className="text-left p-3 font-medium">Date</th>
                       <th className="text-left p-3 font-medium">Actions</th>

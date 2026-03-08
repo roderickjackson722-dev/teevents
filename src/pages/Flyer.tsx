@@ -25,7 +25,7 @@ import salesHero from "@/assets/sales-hero.jpg";
 
 const features = [
   { icon: Globe, title: "Website Builder", desc: "6 pro templates, custom branding, one-click publish & custom domain support" },
-  { icon: Users, title: "Registration & Payments", desc: "Online signups, Stripe payments, auto confirmations & guest checkout" },
+  { icon: Users, title: "Registration & Payments", desc: "Online signups, add-ons, promo codes, Stripe payments & auto confirmations" },
   { icon: Trophy, title: "Live Scoring & Leaderboard", desc: "8 formats: Scramble, Best Ball, Stableford, Alternate Shot, Shamble & more" },
   { icon: QrCode, title: "QR Code Check-In", desc: "Print QR badges, scan on any device, real-time attendance counter" },
   { icon: BarChart3, title: "Pairings & Groups", desc: "Drag-and-drop foursomes, auto-assign, CSV import/export" },

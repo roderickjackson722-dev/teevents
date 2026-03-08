@@ -11,7 +11,7 @@ import RegistrationForm from "@/components/RegistrationForm";
 import { toast } from "@/hooks/use-toast";
 
 interface PublicSponsor {
-  id: string; name: string; tier: string; logo_url: string | null; website_url: string | null;
+  id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
 }
 interface PublicProduct {
   id: string; name: string; description: string | null; price: number; image_url: string | null; category: string; purchase_url: string | null;

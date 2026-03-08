@@ -107,8 +107,8 @@ const coreModules = [
 ];
 
 const advancedFeatures = [
-  { icon: Trophy, title: "Live Leaderboard", desc: "Hole-by-hole scoring with real-time standings and course par integration." },
-  { icon: QrCode, title: "QR Code Check-In", desc: "Instant player check-in on tournament day — no paper lists." },
+  { icon: Trophy, title: "Live Leaderboard", desc: "Hole-by-hole scoring with real-time standings, QR code auto-login, and 8 scoring formats." },
+  { icon: QrCode, title: "QR Code Check-In & Scoring", desc: "Players scan QR codes on their scorecard to check in and instantly access live scoring — zero friction." },
   { icon: Gavel, title: "Auction & Raffle", desc: "Silent auctions with Buy Now, bid tracking, and online raffle ticket sales." },
   { icon: Heart, title: "Donation Portal", desc: "Fundraising goal tracking with progress bars and Stripe-powered donations." },
   { icon: ShoppingBag, title: "Merchandise Store", desc: "Sell branded apparel and gear with integrated checkout." },
@@ -239,6 +239,59 @@ const Demo = () => {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* QR Code Live Scoring Walkthrough */}
+      <section className="bg-background py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Player Experience</h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Scan. Score. Done.
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Every player gets a personalized QR code on their scorecard. One scan opens their group's live scoring page — no logins, no apps, no friction.
+            </p>
+          </motion.div>
+
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-4 gap-6">
+            {[
+              { step: "1", icon: Printer, title: "Print Scorecards", desc: "Generate professional scorecards with embedded QR codes from the Printables dashboard — one click." },
+              { step: "2", icon: QrCode, title: "Player Scans QR", desc: "Each QR code is unique to the player and links directly to their assigned group's scoring page." },
+              { step: "3", icon: Smartphone, title: "Score on Any Device", desc: "Players enter scores hole-by-hole on their phone. Supports 8 formats including Scramble and Best Ball." },
+              { step: "4", icon: Trophy, title: "Live Leaderboard", desc: "Scores update in real-time on the tournament leaderboard with sponsor logo rotations." },
+            ].map((item, i) => (
+              <motion.div key={item.step} variants={fadeUp} className="relative bg-card border border-border rounded-xl p-8 text-center group hover:border-secondary/40 transition-colors">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
+                  {item.step}
+                </div>
+                {i < 3 && (
+                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 border-t-2 border-dashed border-secondary/30" />
+                )}
+                <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-5 mt-2 group-hover:bg-secondary/20 transition-colors">
+                  <item.icon className="h-7 w-7 text-secondary" />
+                </div>
+                <h4 className="text-lg font-display font-bold text-foreground mb-2">{item.title}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-14 bg-primary rounded-xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-shrink-0 w-20 h-20 bg-secondary/20 rounded-2xl flex items-center justify-center">
+              <QrCode className="h-10 w-10 text-secondary" />
+            </div>
+            <div className="text-center md:text-left">
+              <h4 className="text-xl font-display font-bold text-primary-foreground mb-2">Zero Friction for Players</h4>
+              <p className="text-primary-foreground/70 leading-relaxed">
+                No app downloads. No account creation. No manual group lookups. Each player's QR code is auto-generated and tied to their registration — admins can regenerate codes at any time from the Players dashboard.
+              </p>
+            </div>
+            <Link to="/platform#pricing" className="flex-shrink-0 inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md font-semibold text-sm hover:bg-secondary/90 transition-colors whitespace-nowrap">
+              Get Started <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 

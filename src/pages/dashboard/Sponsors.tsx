@@ -366,7 +366,17 @@ const Sponsors = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={saving}>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show_on_leaderboard"
+                  checked={form.show_on_leaderboard}
+                  onCheckedChange={(checked) => setForm({ ...form, show_on_leaderboard: !!checked })}
+                />
+                <Label htmlFor="show_on_leaderboard" className="text-sm font-normal cursor-pointer">
+                  Show on Live Scoreboard & Leaderboard
+                </Label>
+              </div>
+
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {editSponsor ? "Update Sponsor" : "Add Sponsor"}
               </Button>

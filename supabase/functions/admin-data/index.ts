@@ -462,6 +462,7 @@ Deno.serve(async (req) => {
         prospects: prospectsRes.data || [],
         prospectActivities: activitiesRes.data || [],
         outreachTemplates: templatesRes.data || [],
+        allTournaments: allTournamentsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

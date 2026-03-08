@@ -147,7 +147,7 @@ const slides = [
       { icon: Gavel, label: "Auction & Raffle" },
       { icon: Camera, label: "Photo Gallery" },
       { icon: Heart, label: "Donation Page" },
-      { icon: ClipboardList, label: "Post-Event Surveys" },
+      { icon: ClipboardList, label: "Printable Materials" },
       { icon: UserCheck, label: "Volunteer Coordination" },
     ],
   },

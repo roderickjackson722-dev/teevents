@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Save, Trophy, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { SponsorBanner } from "@/components/SponsorBanner";
 
 interface Player {
   id: string;

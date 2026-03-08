@@ -21,6 +21,9 @@ import {
   Shield,
   ArrowRight,
   Check,
+  Timer,
+  Printer,
+  FileText,
 } from "lucide-react";
 import logoBlack from "@/assets/logo-black.png";
 import logoWhite from "@/assets/logo-white.png";
@@ -100,9 +103,9 @@ const slides = [
     id: "scoring",
     type: "feature" as const,
     heading: "Live Scoring & Leaderboard",
-    description: "Players enter their own scores via a mobile-friendly scoring page. They log in with their group number or email — no app download needed. The leaderboard updates in real-time as scores come in.",
+    description: "Players enter their own scores via a mobile-friendly scoring page — no app download needed. Supports 8 formats including Scramble, Best Ball, Stableford, Alternate Shot, and Shamble. The leaderboard updates in real-time with sponsor rotations.",
     image: salesScoring,
-    highlights: ["Live Leaderboard", "8 Scoring Formats", "Public Scoring Page", "Stableford & Best Ball"],
+    highlights: ["8 Scoring Formats", "Real-Time Leaderboard", "Stableford Points", "Sponsor Rotations"],
   },
   {
     id: "checkin",
@@ -147,21 +150,25 @@ const slides = [
       { icon: Gavel, label: "Auction & Raffle" },
       { icon: Camera, label: "Photo Gallery" },
       { icon: Heart, label: "Donation Page" },
-      { icon: ClipboardList, label: "Printable Materials" },
+      { icon: Printer, label: "Printable Materials" },
       { icon: UserCheck, label: "Volunteer Coordination" },
+      { icon: Timer, label: "Countdown Styles" },
+      { icon: FileText, label: "Surveys & Feedback" },
+      { icon: ClipboardList, label: "Planning Guide" },
     ],
   },
   {
     id: "planning",
     type: "bullets" as const,
-    heading: "Built-In Planning Guide",
+    heading: "Built-In Planning & Printables",
     icon: ClipboardList,
     color: "hsl(var(--primary))",
     bullets: [
-      "30-item tournament planning checklist auto-generated for each event",
-      "Organized by timeline: 12 months out → Post-event",
-      "Track completion, set due dates, and never miss a detail",
-      "Industry best practices baked into every new tournament",
+      "30-item planning checklist auto-generated for every tournament",
+      "Printable scorecards (9 or 18 holes), cart signs, name badges & sponsor signs",
+      "Customize print materials with font choices and layout presets from Site Builder",
+      "4 countdown timer styles: Glass, Solid, Minimal, and Circle",
+      "Hole-by-hole par customization for accurate scorecards",
     ],
   },
   {
@@ -169,9 +176,9 @@ const slides = [
     type: "pricing" as const,
     heading: "Simple, Transparent Pricing",
     plans: [
-      { name: "Base", price: "Free", fee: "5%", highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Leaderboard (Stroke Play & Best Ball)"] },
-      { name: "Starter", price: "$499", fee: "3%", popular: true, highlights: ["All 6 templates + colors", "8 scoring formats", "Sponsors & budget", "Printables & SMS"] },
-      { name: "Pro", price: "$999", fee: "2%", highlights: ["Merch store & auctions", "Surveys & volunteers", "Custom print styles", "Priority support"] },
+      { name: "Base", price: "Free", fee: "5%", highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Leaderboard (Stroke Play & Best Ball)", "QR check-in & planning guide"] },
+      { name: "Starter", price: "$499", fee: "3%", popular: true, highlights: ["All 6 templates + custom colors", "All 8 scoring formats", "Sponsors, budget & donations", "Printables, SMS & countdown styles"] },
+      { name: "Pro", price: "$999", fee: "2%", highlights: ["Merch store & auctions", "Surveys & volunteers", "Custom print fonts & layouts", "Priority support"] },
       { name: "Enterprise", price: "Custom", fee: "1%", highlights: ["Unlimited tournaments", "Unlimited SMS", "White-label branding", "API access"] },
     ],
   },
@@ -279,7 +286,7 @@ function IconGridSlide({ data }: { data: any }) {
       <motion.p className="text-xs md:text-[20px] text-muted-foreground mb-4 md:mb-[40px] max-w-[900px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
         {data.description}
       </motion.p>
-      <div className={`grid grid-cols-2 md:${data.gridItems.length > 4 ? "grid-cols-3" : "grid-cols-4"} gap-3 md:gap-[28px]`}>
+      <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-[28px]`}>
         {data.gridItems.map((item: any, i: number) => {
           const Icon = item.icon;
           return (

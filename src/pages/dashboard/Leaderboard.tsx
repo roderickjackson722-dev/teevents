@@ -34,7 +34,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published")
+        .select("id, title, course_par, slug, site_published, scoring_format")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;

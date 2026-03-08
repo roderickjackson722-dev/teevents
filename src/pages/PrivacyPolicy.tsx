@@ -4,6 +4,7 @@ import SEO from "@/components/SEO";
 const PrivacyPolicy = () => {
   return (
     <Layout>
+      <SEO title="Privacy Policy" description="TeeVents privacy policy — how we collect, use, and protect your personal information." path="/privacy-policy" />
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 max-w-3xl">
           <h1 className="font-display text-4xl font-bold text-foreground mb-8">Privacy Policy</h1>

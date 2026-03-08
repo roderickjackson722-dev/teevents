@@ -30,6 +30,7 @@ const Contact = () => {
 
   return (
     <Layout>
+      <SEO title="Contact Us" description="Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." path="/contact" />
       <HeroSection
         backgroundImage={servicesBg}
         title="Contact Us"

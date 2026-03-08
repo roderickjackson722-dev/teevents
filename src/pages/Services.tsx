@@ -39,6 +39,7 @@ const clientTypes = [
 const Services = () => {
   return (
     <Layout>
+      <SEO title="Services" description="Full-service golf tournament consulting — from course selection and vendor management to day-of coordination and sponsor strategy." path="/services" />
       <HeroSection
         backgroundImage={servicesBg}
         title="Our Services"

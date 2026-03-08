@@ -104,6 +104,7 @@ const Events = () => {
 
   return (
     <Layout>
+      <SEO title="Events" description="Browse upcoming and past golf tournaments managed by TeeVents — view results, galleries, and event details." path="/events" />
       {/* Hero */}
       <section className="relative py-24 md:py-32">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${aboutBg})` }} />

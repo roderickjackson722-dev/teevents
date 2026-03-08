@@ -33,6 +33,7 @@ const Reviews = () => {
 
   return (
     <Layout>
+      <SEO title="Reviews" description="See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." path="/reviews" />
       <HeroSection
         backgroundImage={heroGolf}
         title="Reviews"

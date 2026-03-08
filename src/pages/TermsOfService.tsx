@@ -4,6 +4,7 @@ import SEO from "@/components/SEO";
 const TermsOfService = () => {
   return (
     <Layout>
+      <SEO title="Terms of Service" description="TeeVents terms of service — the rules and guidelines for using our golf tournament platform." path="/terms-of-service" />
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 max-w-3xl">
           <h1 className="font-display text-4xl font-bold text-foreground mb-8">Terms of Service</h1>

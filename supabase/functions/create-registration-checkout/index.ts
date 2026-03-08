@@ -84,6 +84,21 @@ Deno.serve(async (req) => {
 
     if (regErr) throw new Error(regErr.message);
 
+    // Send notification emails
+    try {
+      const { data: notifEmails } = await supabaseAdmin
+        .from("notification_emails")
+        .select("email")
+        .eq("organization_id", tournament.organization_id)
+        .eq("notify_registration", true);
+
+      if (notifEmails && notifEmails.length > 0) {
+        console.log(`[Notification] New registration: ${first_name} ${last_name} (${email}) for ${tournament.title} → ${notifEmails.map((n: any) => n.email).join(", ")}`);
+      }
+    } catch (e) {
+      console.error("Notification error:", e);
+    }
+
     // If no fee, registration is complete
     if (feeCents <= 0) {
       return new Response(

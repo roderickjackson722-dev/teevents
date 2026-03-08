@@ -113,6 +113,29 @@ Deno.serve(async (req) => {
         stripe_session_id: session.id,
         status: "pending",
       });
+
+      // Send notification emails
+      try {
+        const { data: tournament } = await supabaseAdmin
+          .from("tournaments")
+          .select("organization_id, title")
+          .eq("id", tournament_id)
+          .single();
+
+        if (tournament) {
+          const { data: notifEmails } = await supabaseAdmin
+            .from("notification_emails")
+            .select("email")
+            .eq("organization_id", tournament.organization_id)
+            .eq("notify_donation", true);
+
+          if (notifEmails && notifEmails.length > 0) {
+            console.log(`[Notification] New donation: $${(amount_cents / 100).toFixed(2)} from ${donor_email || "anonymous"} for ${tournament.title} → ${notifEmails.map((n: any) => n.email).join(", ")}`);
+          }
+        }
+      } catch (e) {
+        console.error("Notification error:", e);
+      }
     }
 
     return new Response(JSON.stringify({ url: session.url }), {

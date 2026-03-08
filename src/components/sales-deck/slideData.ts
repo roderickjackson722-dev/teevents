@@ -90,6 +90,14 @@ export const slides = [
     highlights: ["QR Code Auto-Login", "8 Scoring Formats", "Real-Time Leaderboard", "Sponsor Rotations"],
   },
   {
+    id: "printable-scorecard",
+    type: "feature" as const,
+    heading: "Print-Ready Scorecards with QR Codes",
+    description: "Every scorecard comes with an embedded QR code that players scan to instantly log in to live scoring. No usernames, no passwords—just scan, play, and score in real-time. Choose from 6 customizable scorecard layouts and print directly from the platform.",
+    image: salesCheckin,
+    highlights: ["Embedded QR Codes", "Instant Player Login", "6 Layout Options", "Print-Ready PDF", "Custom Branding"],
+  },
+  {
     id: "checkin",
     type: "feature" as const,
     heading: "QR Code Check-In",

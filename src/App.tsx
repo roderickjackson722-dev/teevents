@@ -35,6 +35,7 @@ import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
+import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PublicTournament from "./pages/PublicTournament";

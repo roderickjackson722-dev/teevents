@@ -94,6 +94,7 @@ const Registration = () => {
   const [feeDisplay, setFeeDisplay] = useState<string>("0.00");
   const [feeCents, setFeeCents] = useState<number>(0);
   const [regOpen, setRegOpen] = useState<boolean>(false);
+  const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
 
   /* fetch tournaments */

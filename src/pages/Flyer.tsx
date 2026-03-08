@@ -19,6 +19,7 @@ import {
   Printer,
   FileText,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import logoWhite from "@/assets/logo-white.png";
 import salesHero from "@/assets/sales-hero.jpg";
 

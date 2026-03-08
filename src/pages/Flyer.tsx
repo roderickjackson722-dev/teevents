@@ -19,6 +19,7 @@ import {
   Printer,
   FileText,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import logoWhite from "@/assets/logo-white.png";
 import salesHero from "@/assets/sales-hero.jpg";
 
@@ -155,9 +156,14 @@ function DetailedFlyer() {
           <p className="text-primary-foreground text-lg font-bold font-display">Ready to Elevate Your Tournament?</p>
           <p className="text-primary-foreground/70 text-xs mt-0.5">Start free today — no credit card required</p>
         </div>
-        <div className="text-right">
-          <p className="text-secondary font-bold text-sm">www.teevents.golf</p>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-secondary font-bold text-sm">www.teevents.golf</p>
+            <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
+          </div>
+          <div className="bg-white rounded-lg p-1.5">
+            <QRCodeSVG value="https://teevents.lovable.app/get-started" size={48} />
+          </div>
         </div>
       </div>
     </div>
@@ -263,9 +269,14 @@ function QuickFlyer() {
           <p className="text-primary-foreground text-xl font-bold font-display">Start Free Today</p>
           <p className="text-primary-foreground/70 text-xs mt-0.5">No credit card required · 5 minute setup</p>
         </div>
-        <div className="text-right">
-          <p className="text-secondary font-bold text-lg">www.teevents.golf</p>
-          <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-secondary font-bold text-lg">www.teevents.golf</p>
+            <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
+          </div>
+          <div className="bg-white rounded-lg p-1.5">
+            <QRCodeSVG value="https://teevents.lovable.app/get-started" size={56} />
+          </div>
         </div>
       </div>
     </div>

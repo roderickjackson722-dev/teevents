@@ -23,7 +23,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -101,6 +101,11 @@ const AdminDashboard = () => {
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [updatingOrgPlan, setUpdatingOrgPlan] = useState<string | null>(null);
 
+  // All tournaments state
+  const [allTournaments, setAllTournaments] = useState<any[]>([]);
+  const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
+  const [tournamentSearch, setTournamentSearch] = useState("");
+
   useEffect(() => {
     checkAdmin();
   }, []);
@@ -153,6 +158,8 @@ const AdminDashboard = () => {
       setOrganizations(data.organizations || []);
       setAdminProspects(data.prospects || []);
       setProspectActivities(data.prospectActivities || []);
+      setOutreachTemplates(data.outreachTemplates || []);
+      setAllTournaments(data.allTournaments || []);
       setOutreachTemplates(data.outreachTemplates || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
@@ -575,8 +582,9 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
           <div className="flex flex-wrap gap-2 mb-8 border-b border-border pb-2">
-             {([
+           {([
               ["events", "Tournaments", Calendar],
+              ["all-tournaments", "All User Tournaments", Trophy],
               ["requests", "Access Requests", Users],
               ["emails", "Auto-Approve Emails", Mail],
               ["reviews", "Reviews", Star],
@@ -1190,6 +1198,176 @@ const AdminDashboard = () => {
                     <p className="text-muted-foreground">No demo events yet. Create one above to get started.</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* All User Tournaments Tab */}
+          {activeTab === "all-tournaments" && (
+            <div className="space-y-6">
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h2 className="font-display font-bold text-lg mb-2">All User Tournaments</h2>
+                <p className="text-sm text-muted-foreground mb-4">View every tournament created by users across all organizations. Change an organization's plan to control feature access.</p>
+                <Input
+                  placeholder="Search by tournament name, org, or course..."
+                  value={tournamentSearch}
+                  onChange={e => setTournamentSearch(e.target.value)}
+                  className="max-w-md"
+                />
+              </div>
+
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium">Tournament</th>
+                      <th className="text-left p-3 font-medium">Organization</th>
+                      <th className="text-left p-3 font-medium">Plan</th>
+                      <th className="text-left p-3 font-medium">Status</th>
+                      <th className="text-left p-3 font-medium">Date</th>
+                      <th className="text-left p-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allTournaments
+                      .filter(t => {
+                        if (!tournamentSearch.trim()) return true;
+                        const q = tournamentSearch.toLowerCase();
+                        return (
+                          t.title?.toLowerCase().includes(q) ||
+                          t.organizations?.name?.toLowerCase().includes(q) ||
+                          t.course_name?.toLowerCase().includes(q) ||
+                          t.slug?.toLowerCase().includes(q)
+                        );
+                      })
+                      .map((t: any) => (
+                      <tr key={t.id} className="border-t border-border group">
+                        <td className="p-3">
+                          <div>
+                            <span className="font-semibold">{t.title}</span>
+                            {t.course_name && <span className="text-xs text-muted-foreground ml-2">@ {t.course_name}</span>}
+                          </div>
+                          {t.slug && (
+                            <a href={`/t/${t.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5">
+                              <ExternalLink className="h-3 w-3" />/t/{t.slug}
+                            </a>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <span className="font-medium">{t.organizations?.name || "—"}</span>
+                          {t.organizations?.stripe_account_id && (
+                            <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={t.organizations?.plan || "base"}
+                              onChange={e => updateOrgPlan(t.organization_id, e.target.value)}
+                              disabled={updatingOrgPlan === t.organization_id}
+                              className="flex h-7 rounded-md border border-input bg-background px-2 py-0.5 text-xs"
+                            >
+                              <option value="base">Base (Free)</option>
+                              <option value="starter">Starter</option>
+                              <option value="pro">Pro</option>
+                              <option value="enterprise">Enterprise</option>
+                            </select>
+                            {updatingOrgPlan === t.organization_id && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            t.status === "active" ? "bg-primary/15 text-primary" :
+                            t.status === "completed" ? "bg-muted text-muted-foreground" :
+                            "bg-secondary/15 text-secondary"
+                          }`}>
+                            {t.status}
+                          </span>
+                          {t.site_published && <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Published</span>}
+                        </td>
+                        <td className="p-3 text-muted-foreground text-xs">
+                          {t.date ? new Date(t.date).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="p-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setExpandedTournament(expandedTournament === t.id ? null : t.id)}
+                          >
+                            {expandedTournament === t.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                    {allTournaments.length === 0 && (
+                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No tournaments found</td></tr>
+                    )}
+                  </tbody>
+                </table>
+
+                {/* Expanded tournament details */}
+                {expandedTournament && (() => {
+                  const t = allTournaments.find((x: any) => x.id === expandedTournament);
+                  if (!t) return null;
+                  return (
+                    <div className="border-t border-border bg-muted/30 p-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground text-xs">Location</span>
+                          <p className="font-medium">{t.location || "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Max Players</span>
+                          <p className="font-medium">{t.max_players || "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Registration Fee</span>
+                          <p className="font-medium">{t.registration_fee_cents ? `$${(t.registration_fee_cents / 100).toFixed(2)}` : "Free"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Registration</span>
+                          <p className="font-medium">{t.registration_open ? "Open" : "Closed"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Scoring Format</span>
+                          <p className="font-medium capitalize">{(t.scoring_format || "stroke_play").replace(/_/g, " ")}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Course Par</span>
+                          <p className="font-medium">{t.course_par || 72}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Template</span>
+                          <p className="font-medium capitalize">{t.template || "classic"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Countdown Style</span>
+                          <p className="font-medium capitalize">{t.countdown_style || "glass"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Contact Email</span>
+                          <p className="font-medium">{t.contact_email || "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Donation Goal</span>
+                          <p className="font-medium">{t.donation_goal_cents ? `$${(t.donation_goal_cents / 100).toFixed(0)}` : "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Printable Font</span>
+                          <p className="font-medium capitalize">{t.printable_font || "georgia"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Created</span>
+                          <p className="font-medium">{new Date(t.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <div className="text-xs text-muted-foreground text-right">
+                {allTournaments.length} tournament{allTournaments.length !== 1 ? "s" : ""} total
               </div>
             </div>
           )}

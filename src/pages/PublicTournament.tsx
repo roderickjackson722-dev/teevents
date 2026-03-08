@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;

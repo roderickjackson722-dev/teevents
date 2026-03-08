@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Save, Trophy, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { SponsorBanner } from "@/components/SponsorBanner";
 
 interface Player {
   id: string;
@@ -19,6 +20,7 @@ interface Player {
 export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
   const [tournament, setTournament] = useState<{ id: string; title: string; course_par: number | null } | null>(null);
+  const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);
   const [groupInput, setGroupInput] = useState("");
@@ -41,6 +43,15 @@ export default function LiveScoring() {
       .then(({ data }) => {
         setTournament(data);
         setLoading(false);
+        if (data) {
+          supabase
+            .from("tournament_sponsors")
+            .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
+            .eq("tournament_id", data.id)
+            .eq("show_on_leaderboard", true)
+            .order("sort_order")
+            .then(({ data: sp }) => setSponsors(sp || []));
+        }
       });
   }, [slug]);
 
@@ -207,6 +218,11 @@ export default function LiveScoring() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-5xl mx-auto space-y-4">
+        {sponsors.length > 0 && (
+          <div className="mb-2">
+            <SponsorBanner sponsors={sponsors} />
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div>
             <button onClick={() => setLoginMode(true)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-1">

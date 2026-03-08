@@ -870,6 +870,7 @@ export type Database = {
           is_paid: boolean | null
           logo_url: string | null
           name: string
+          show_on_leaderboard: boolean
           sort_order: number | null
           tier: string
           tournament_id: string
@@ -883,6 +884,7 @@ export type Database = {
           is_paid?: boolean | null
           logo_url?: string | null
           name: string
+          show_on_leaderboard?: boolean
           sort_order?: number | null
           tier?: string
           tournament_id: string
@@ -896,6 +898,7 @@ export type Database = {
           is_paid?: boolean | null
           logo_url?: string | null
           name?: string
+          show_on_leaderboard?: boolean
           sort_order?: number | null
           tier?: string
           tournament_id?: string

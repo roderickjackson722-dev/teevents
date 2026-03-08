@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -50,6 +51,7 @@ interface Sponsor {
   amount: number | null;
   is_paid: boolean | null;
   sort_order: number | null;
+  show_on_leaderboard: boolean;
 }
 
 interface Tournament {
@@ -87,6 +89,7 @@ const Sponsors = () => {
     website_url: "",
     description: "",
     amount: "",
+    show_on_leaderboard: true,
   });
 
   useEffect(() => {
@@ -121,7 +124,7 @@ const Sponsors = () => {
   }, [selectedTournament]);
 
   const resetForm = () => {
-    setForm({ name: "", tier: "silver", logo_url: "", website_url: "", description: "", amount: "" });
+    setForm({ name: "", tier: "silver", logo_url: "", website_url: "", description: "", amount: "", show_on_leaderboard: true });
     setEditSponsor(null);
   };
 
@@ -134,6 +137,7 @@ const Sponsors = () => {
       website_url: sponsor.website_url || "",
       description: sponsor.description || "",
       amount: sponsor.amount?.toString() || "",
+      show_on_leaderboard: sponsor.show_on_leaderboard ?? true,
     });
     setDialogOpen(true);
   };
@@ -170,6 +174,7 @@ const Sponsors = () => {
       website_url: form.website_url || null,
       description: form.description.trim() || null,
       amount: form.amount ? parseFloat(form.amount) : null,
+      show_on_leaderboard: form.show_on_leaderboard,
     };
 
     if (editSponsor) {
@@ -359,6 +364,17 @@ const Sponsors = () => {
                   rows={2}
                   maxLength={500}
                 />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show_on_leaderboard"
+                  checked={form.show_on_leaderboard}
+                  onCheckedChange={(checked) => setForm({ ...form, show_on_leaderboard: !!checked })}
+                />
+                <Label htmlFor="show_on_leaderboard" className="text-sm font-normal cursor-pointer">
+                  Show on Live Scoreboard & Leaderboard
+                </Label>
               </div>
 
               <Button type="submit" className="w-full" disabled={saving}>

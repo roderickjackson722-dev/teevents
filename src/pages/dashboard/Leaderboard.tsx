@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy, Loader2, Save, Share2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { SponsorBanner } from "@/components/SponsorBanner";
 
 interface PlayerScore {
   registration_id: string;
@@ -63,6 +64,21 @@ export default function Leaderboard() {
         .from("tournament_scores")
         .select("registration_id, hole_number, strokes")
         .eq("tournament_id", selectedTournament);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const { data: leaderboardSponsors } = useQuery({
+    queryKey: ["leaderboard-sponsors", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournament_sponsors")
+        .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
+        .eq("tournament_id", selectedTournament)
+        .eq("show_on_leaderboard", true)
+        .order("sort_order");
       if (error) throw error;
       return data;
     },
@@ -195,6 +211,10 @@ export default function Leaderboard() {
           </>
         )}
       </div>
+
+      {selectedTournament && leaderboardSponsors && leaderboardSponsors.length > 0 && (
+        <SponsorBanner sponsors={leaderboardSponsors} />
+      )}
 
       {selectedTournament && (
         <Card>

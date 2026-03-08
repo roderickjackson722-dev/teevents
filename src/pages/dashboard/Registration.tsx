@@ -124,7 +124,9 @@ const Registration = () => {
       setFeeCents(cents);
       setFeeDisplay((cents / 100).toFixed(2));
       setRegOpen(tournament.registration_open || false);
-      setMaxPlayers(tournament.max_players || 144);
+      const mp = tournament.max_players || 144;
+      setMaxPlayers(mp);
+      setMaxPlayersDisplay(String(mp));
     }
 
     const [fieldsRes, addonsRes, promoRes] = await Promise.all([

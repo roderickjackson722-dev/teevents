@@ -102,7 +102,7 @@ const slides = [
     heading: "Live Scoring & Leaderboard",
     description: "Players enter their own scores via a mobile-friendly scoring page. They log in with their group number or email — no app download needed. The leaderboard updates in real-time as scores come in.",
     image: salesScoring,
-    highlights: ["Live Leaderboard", "Group-Based Login", "Public Scoring Page", "Shareable Link"],
+    highlights: ["Live Leaderboard", "8 Scoring Formats", "Public Scoring Page", "Stableford & Best Ball"],
   },
   {
     id: "checkin",

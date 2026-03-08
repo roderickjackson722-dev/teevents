@@ -185,8 +185,8 @@ const AdminProspects = ({ prospects, activities, outreachTemplates, onRefresh, c
     let subject = template.subject;
     let body = template.body;
     for (const [key, val] of Object.entries(replacements)) {
-      subject = subject.replaceAll(key, val);
-      body = body.replaceAll(key, val);
+      subject = subject.split(key).join(val);
+      body = body.split(key).join(val);
     }
     return { subject, body };
   };

@@ -22,6 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
+import { TeamManagement } from "@/components/settings/TeamManagement";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 
 interface ConnectStatus {
   connected: boolean;

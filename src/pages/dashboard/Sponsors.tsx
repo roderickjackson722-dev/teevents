@@ -125,6 +125,15 @@ const Sponsors = () => {
 
   useEffect(() => {
     fetchSponsors();
+    // Fetch leaderboard settings
+    if (selectedTournament) {
+      supabase.from("tournaments").select("leaderboard_sponsor_interval_ms, leaderboard_sponsor_style").eq("id", selectedTournament).single().then(({ data }) => {
+        if (data) {
+          setLbInterval((data as any).leaderboard_sponsor_interval_ms ?? 5000);
+          setLbStyle((data as any).leaderboard_sponsor_style ?? "banner");
+        }
+      });
+    }
   }, [selectedTournament]);
 
   const resetForm = () => {

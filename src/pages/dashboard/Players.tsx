@@ -156,7 +156,7 @@ const Players = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment"];
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment", "Scoring Code"];
     const rows = players.map((p) => [
       p.first_name,
       p.last_name,
@@ -166,6 +166,7 @@ const Players = () => {
       p.shirt_size || "",
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
+      p.scoring_code || "",
     ]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });

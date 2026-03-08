@@ -84,6 +84,8 @@ const Sponsors = () => {
   const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [lbInterval, setLbInterval] = useState(5000);
+  const [lbStyle, setLbStyle] = useState("banner");
   const [form, setForm] = useState({
     name: "",
     tier: "silver",

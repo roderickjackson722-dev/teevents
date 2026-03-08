@@ -229,26 +229,27 @@ TeeVents is the all-in-one golf tournament management platform. This document ou
 3. ☐ Customer dashboard home (`/dashboard`)
 4. ☐ Site Builder with template preview
 5. ☐ Published tournament site (`/t/{slug}`)
-6. ☐ Player roster table
-7. ☐ Import players dialog
+6. ☐ Player roster table with scoring codes
+7. ☐ Scorecard printable with QR codes enabled
 8. ☐ Pairings drag-and-drop view
 9. ☐ Admin leaderboard & scoring
-10. ☐ Player-facing scoring login
-11. ☐ Player scoring scorecard
-12. ☐ Check-in dashboard
-13. ☐ Scan station page
-14. ☐ Sponsor management
-15. ☐ Budget tracking
-16. ☐ Messaging center
-17. ☐ Merchandise store
-18. ☐ Auction management
-19. ☐ Photo gallery
-20. ☐ Donation page with progress bar
-21. ☐ Survey builder
-22. ☐ Volunteer roles
-23. ☐ Planning guide checklist
-24. ☐ Upgrade plan page (`/dashboard/upgrade`)
-25. ☐ Mobile responsive views (registration, scoring, check-in)
+10. ☐ QR code on scorecard (mobile view)
+11. ☐ Player scanning QR code
+12. ☐ Player scoring interface (auto-loaded via QR)
+13. ☐ Check-in dashboard
+14. ☐ Scan station page
+15. ☐ Sponsor management
+16. ☐ Budget tracking
+17. ☐ Messaging center
+18. ☐ Merchandise store
+19. ☐ Auction management
+20. ☐ Photo gallery
+21. ☐ Donation page with progress bar
+22. ☐ Survey builder
+23. ☐ Volunteer roles
+24. ☐ Planning guide checklist
+25. ☐ Upgrade plan page (`/dashboard/upgrade`)
+26. ☐ Mobile responsive views (registration, QR scoring, check-in)
 
 ---
 

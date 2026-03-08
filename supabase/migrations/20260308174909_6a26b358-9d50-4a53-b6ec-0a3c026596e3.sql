@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS countdown_style text NOT NULL DEFAULT 'glass';

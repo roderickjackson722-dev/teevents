@@ -6,6 +6,7 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -14,7 +15,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2 } from "lucide-react";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface Tournament {
@@ -37,6 +48,9 @@ const Tournaments = () => {
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ title: "", date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+  const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchTournaments = async () => {
     if (!org) return;
@@ -76,6 +90,21 @@ const Tournaments = () => {
       fetchTournaments();
     }
     setCreating(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget || !deleteConfirmed) return;
+    setDeleting(true);
+    const { error } = await supabase.from("tournaments").delete().eq("id", deleteTarget.id);
+    if (error) {
+      toast({ title: "Error deleting tournament", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Tournament deleted", description: `"${deleteTarget.title}" and all associated data has been permanently removed.` });
+      fetchTournaments();
+    }
+    setDeleting(false);
+    setDeleteTarget(null);
+    setDeleteConfirmed(false);
   };
 
   const statusColors: Record<string, string> = {
@@ -179,6 +208,52 @@ const Tournaments = () => {
         </Dialog>
       </div>
 
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteConfirmed(false); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive font-display">Delete Tournament</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                You are about to permanently delete <strong className="text-foreground">"{deleteTarget?.title}"</strong>.
+              </p>
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive">
+                <strong>⚠️ Warning:</strong> This action cannot be undone. The following data will be permanently lost:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>All player registrations</li>
+                  <li>Scores and leaderboard data</li>
+                  <li>Sponsors and budget items</li>
+                  <li>Messages, photos, and surveys</li>
+                  <li>Auction items and donations</li>
+                  <li>Tournament website and all settings</li>
+                </ul>
+              </div>
+              <div className="flex items-start gap-2 pt-2">
+                <Checkbox
+                  id="confirm-delete"
+                  checked={deleteConfirmed}
+                  onCheckedChange={(v) => setDeleteConfirmed(v === true)}
+                />
+                <label htmlFor="confirm-delete" className="text-sm text-foreground cursor-pointer leading-tight">
+                  I understand that all tournament data will be permanently deleted and cannot be recovered.
+                </label>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={!deleteConfirmed || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {!canCreateMore && !loading && (
         <div className="mb-6 bg-secondary/10 border border-secondary/30 rounded-lg p-4 flex items-center gap-3">
           <Lock className="h-5 w-5 text-secondary flex-shrink-0" />
@@ -252,7 +327,7 @@ const Tournaments = () => {
                   </p>
                 ) : null;
               })()}
-              <div className="mt-4 pt-3 border-t border-border">
+              <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                 <Link
                   to={`/dashboard/tournaments/${t.id}/site-builder`}
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
@@ -260,6 +335,13 @@ const Tournaments = () => {
                   <Globe className="h-3.5 w-3.5" />
                   Edit Site
                 </Link>
+                <button
+                  onClick={() => setDeleteTarget(t)}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete
+                </button>
               </div>
             </motion.div>
           ))}

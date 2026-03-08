@@ -137,18 +137,7 @@ const PublicTournament = () => {
         setPhotos((photoRes.data as Photo[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
-          const playerScores: Record<string, { name: string; total: number; holes: number }> = {};
-          (scoresRes.data as any[]).forEach((s) => {
-            const key = s.registration_id;
-            if (!playerScores[key]) {
-              const reg = s.tournament_registrations;
-              playerScores[key] = { name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown", total: 0, holes: 0 };
-            }
-            playerScores[key].total += s.strokes;
-            playerScores[key].holes += 1;
-          });
-          const lb = Object.values(playerScores).sort((a, b) => a.total - b.total);
-          setLeaderboard(lb.map((p) => ({ name: p.name, total: p.total, thru: p.holes })));
+          setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
         }
 
         if (roleRes.data) {

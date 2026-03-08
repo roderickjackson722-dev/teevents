@@ -21,8 +21,10 @@ import {
   ArrowLeft,
   ExternalLink,
   Check,
+  Printer,
 } from "lucide-react";
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
+import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 
 interface SiteSettings {
   id: string;

@@ -89,7 +89,7 @@ const plans = [
       "Tournament website (1 template)",
       "Player pairings tool",
       "Check-in & QR codes",
-      "Live leaderboard (Stroke Play)",
+      "Live leaderboard (Stroke Play & Best Ball)",
       "Planning guide & checklist",
       "Email messaging",
       "Event countdown timer",

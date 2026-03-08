@@ -277,6 +277,39 @@ export type Database = {
         }
         Relationships: []
       }
+      outreach_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          sort_order: number | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number | null
+          subject?: string
+        }
+        Relationships: []
+      }
       promo_codes: {
         Row: {
           applicable_plans: string[] | null
@@ -357,6 +390,8 @@ export type Database = {
           event_date: string | null
           id: string
           last_contacted_at: string | null
+          last_email_sent_at: string | null
+          last_email_template: string | null
           location: string | null
           next_follow_up: string | null
           notes: string | null
@@ -376,6 +411,8 @@ export type Database = {
           event_date?: string | null
           id?: string
           last_contacted_at?: string | null
+          last_email_sent_at?: string | null
+          last_email_template?: string | null
           location?: string | null
           next_follow_up?: string | null
           notes?: string | null
@@ -395,6 +432,8 @@ export type Database = {
           event_date?: string | null
           id?: string
           last_contacted_at?: string | null
+          last_email_sent_at?: string | null
+          last_email_template?: string | null
           location?: string | null
           next_follow_up?: string | null
           notes?: string | null

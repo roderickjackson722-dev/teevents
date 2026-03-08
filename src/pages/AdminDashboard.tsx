@@ -1270,6 +1270,7 @@ const AdminDashboard = () => {
             <AdminProspects
               prospects={adminProspects}
               activities={prospectActivities}
+              outreachTemplates={outreachTemplates}
               onRefresh={fetchAll}
               callAdminApi={callAdminApi}
             />

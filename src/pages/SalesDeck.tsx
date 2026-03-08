@@ -21,6 +21,9 @@ import {
   Shield,
   ArrowRight,
   Check,
+  Timer,
+  Printer,
+  FileText,
 } from "lucide-react";
 import logoBlack from "@/assets/logo-black.png";
 import logoWhite from "@/assets/logo-white.png";

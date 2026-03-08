@@ -545,6 +545,10 @@ const Players = () => {
               </div>
             </DialogContent>
           </Dialog>
+          <Button variant="outline" size="sm" onClick={handleRegenerateAllCodes} disabled={regenerating || players.length === 0}>
+            {regenerating ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <QrCode className="h-4 w-4 mr-1.5" />}
+            Regenerate Codes
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV

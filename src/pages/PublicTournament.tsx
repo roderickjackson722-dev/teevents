@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
 import { toast } from "@/hooks/use-toast";
+import { SponsorBanner } from "@/components/SponsorBanner";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;

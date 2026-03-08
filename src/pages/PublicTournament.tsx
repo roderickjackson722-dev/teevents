@@ -253,20 +253,9 @@ const PublicTournament = () => {
     const channel = supabase
       .channel("live-scores")
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, () => {
-        supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name)").eq("tournament_id", tournament.id).then(({ data }) => {
+        supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", tournament.id).then(({ data }) => {
           if (!data) return;
-          const playerScores: Record<string, { name: string; total: number; holes: number }> = {};
-          (data as any[]).forEach((s) => {
-            const key = s.registration_id;
-            if (!playerScores[key]) {
-              const reg = s.tournament_registrations;
-              playerScores[key] = { name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown", total: 0, holes: 0 };
-            }
-            playerScores[key].total += s.strokes;
-            playerScores[key].holes += 1;
-          });
-          const lb = Object.values(playerScores).sort((a, b) => a.total - b.total);
-          setLeaderboard(lb.map((p) => ({ name: p.name, total: p.total, thru: p.holes })));
+          setLeaderboard(buildLeaderboard(data as any[], tournament));
         });
       })
       .subscribe();

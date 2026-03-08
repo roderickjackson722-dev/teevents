@@ -79,7 +79,7 @@ const SiteBuilder = () => {
       });
   }, [id]);
 
-  const updateField = (field: keyof SiteSettings, value: string | boolean | number | null) => {
+  const updateField = (field: keyof SiteSettings, value: string | boolean | number | number[] | null) => {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
   };

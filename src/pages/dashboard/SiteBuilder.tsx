@@ -53,6 +53,7 @@ interface SiteSettings {
   printable_font: string | null;
   printable_layout: string | null;
   hole_pars: number[] | null;
+  countdown_style: string | null;
 }
 
 const SiteBuilder = () => {

@@ -796,6 +796,141 @@ export type Database = {
           },
         ]
       }
+      tournament_promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          tournament_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          tournament_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_promo_codes_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_registration_addons: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          sort_order: number | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents?: number
+          sort_order?: number | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          sort_order?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registration_addons_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_registration_fields: {
+        Row: {
+          created_at: string
+          field_type: string
+          id: string
+          is_default: boolean
+          is_enabled: boolean
+          is_required: boolean
+          label: string
+          options: Json | null
+          sort_order: number | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          field_type?: string
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          label: string
+          options?: Json | null
+          sort_order?: number | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          field_type?: string
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          label?: string
+          options?: Json | null
+          sort_order?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registration_fields_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_registrations: {
         Row: {
           check_in_time: string | null

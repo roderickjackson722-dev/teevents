@@ -36,6 +36,9 @@ const Settings = () => {
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [onboarding, setOnboarding] = useState(false);
+  const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string }[]>([]);
+  const [formatEdits, setFormatEdits] = useState<Record<string, string>>({});
+  const [savingFormat, setSavingFormat] = useState<string | null>(null);
 
   useEffect(() => {
     fetchConnectStatus();

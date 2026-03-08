@@ -157,6 +157,7 @@ const SiteBuilder = () => {
     { key: "branding" as const, label: "Branding", icon: Palette },
     { key: "content" as const, label: "Content", icon: Type },
     { key: "contact" as const, label: "Contact", icon: Phone },
+    { key: "printables" as const, label: "Printables", icon: Printer },
     { key: "domain" as const, label: "Domain", icon: Globe },
   ];
 

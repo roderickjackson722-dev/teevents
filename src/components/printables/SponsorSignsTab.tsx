@@ -3,6 +3,7 @@ import { Printer, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Sponsor } from "./types";
+import { getPrimaryColor, getSecondaryColor } from "./types";
 
 interface Props {
   tournament: Tournament | null;
@@ -11,10 +12,12 @@ interface Props {
 }
 
 function sponsorSignHtml(s: Sponsor, tournament: Tournament | null) {
+  const primary = getPrimaryColor(tournament);
+  const secondary = getSecondaryColor(tournament);
   const tierColors: Record<string, string> = {
-    platinum: "#1a1a1a", gold: "#b8860b", silver: "#6b7280", bronze: "#92400e",
+    platinum: "#1a1a1a", gold: secondary, silver: "#6b7280", bronze: "#92400e",
   };
-  const color = tierColors[s.tier] || "#1a5c38";
+  const color = tierColors[s.tier] || primary;
 
   return `
     <div style="page-break-after:always;width:100%;height:7in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid ${color};border-radius:12px;padding:40px;text-align:center;">

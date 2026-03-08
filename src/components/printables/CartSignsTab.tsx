@@ -1,9 +1,9 @@
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { getPrimaryColor } from "./types";
 
 interface Props {
   tournament: Tournament | null;
@@ -12,12 +12,13 @@ interface Props {
 }
 
 function cartSignHtml(r: Registration, tournament: Tournament | null) {
+  const color = getPrimaryColor(tournament);
   return `
-    <div style="width:100%;height:5in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #1a5c38;border-radius:12px;padding:24px;text-align:center;position:relative;">
+    <div style="width:100%;height:5in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid ${color};border-radius:12px;padding:24px;text-align:center;position:relative;">
       ${tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" alt="" style="height:60px;object-fit:contain;margin-bottom:16px;" />` : ""}
       <div style="font-size:14px;font-weight:600;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">${tournament?.title ?? ""}</div>
       <div style="font-size:32px;font-weight:bold;color:#1a1a1a;margin-bottom:12px;">${r.first_name} ${r.last_name}</div>
-      ${r.group_number != null ? `<div style="font-size:18px;color:#1a5c38;font-weight:600;">Starting Hole: ${r.group_number}</div>` : ""}
+      ${r.group_number != null ? `<div style="font-size:18px;color:${color};font-weight:600;">Starting Hole: ${r.group_number}</div>` : ""}
     </div>`;
 }
 

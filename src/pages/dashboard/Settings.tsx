@@ -259,6 +259,16 @@ const Settings = () => {
         </div>
       </motion.div>
 
+      {/* Team Management */}
+      {org && (
+        <TeamManagement orgId={org.orgId} userId={org.userId} />
+      )}
+
+      {/* Email Notifications */}
+      {org && (
+        <NotificationSettings orgId={org.orgId} />
+      )}
+
       {/* Tournament Scoring Formats */}
       {tournaments.length > 0 && (
         <motion.div

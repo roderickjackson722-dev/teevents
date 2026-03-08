@@ -123,7 +123,7 @@ const Sponsors = () => {
   }, [selectedTournament]);
 
   const resetForm = () => {
-    setForm({ name: "", tier: "silver", logo_url: "", website_url: "", description: "", amount: "" });
+    setForm({ name: "", tier: "silver", logo_url: "", website_url: "", description: "", amount: "", show_on_leaderboard: true });
     setEditSponsor(null);
   };
 

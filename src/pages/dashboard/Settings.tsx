@@ -22,6 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
+import { TeamManagement } from "@/components/settings/TeamManagement";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 
 interface ConnectStatus {
   connected: boolean;
@@ -146,7 +148,7 @@ const Settings = () => {
     (!connectStatus?.charges_enabled || !connectStatus?.payouts_enabled);
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-1">
@@ -256,6 +258,16 @@ const Settings = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Team Management */}
+      {org && (
+        <TeamManagement orgId={org.orgId} userId={org.userId} />
+      )}
+
+      {/* Email Notifications */}
+      {org && (
+        <NotificationSettings orgId={org.orgId} />
+      )}
 
       {/* Tournament Scoring Formats */}
       {tournaments.length > 0 && (

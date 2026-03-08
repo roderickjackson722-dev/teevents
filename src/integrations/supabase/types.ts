@@ -947,6 +947,7 @@ export type Database = {
           notes: string | null
           payment_status: string
           phone: string | null
+          scoring_code: string | null
           shirt_size: string | null
           tournament_id: string
         }
@@ -965,6 +966,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           phone?: string | null
+          scoring_code?: string | null
           shirt_size?: string | null
           tournament_id: string
         }
@@ -983,6 +985,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           phone?: string | null
+          scoring_code?: string | null
           shirt_size?: string | null
           tournament_id?: string
         }

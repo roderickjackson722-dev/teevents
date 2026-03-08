@@ -26,6 +26,10 @@ import {
   Download,
   Trash2,
   Plus,
+  QrCode,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import {
@@ -52,6 +56,7 @@ interface Registration {
   group_number: number | null;
   group_position: number | null;
   created_at: string;
+  scoring_code: string | null;
 }
 
 interface Tournament {
@@ -81,6 +86,8 @@ const Players = () => {
     payment_status: "paid",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
+  const [editingScoringCode, setEditingScoringCode] = useState<string | null>(null);
+  const [scoringCodeInput, setScoringCodeInput] = useState("");
   useEffect(() => {
     if (!org) return;
     supabase
@@ -129,8 +136,27 @@ const Players = () => {
     }
   };
 
+  const handleSaveScoringCode = async (playerId: string) => {
+    const code = scoringCodeInput.trim().toUpperCase();
+    if (!code) {
+      toast({ title: "Code cannot be empty", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ scoring_code: code })
+      .eq("id", playerId);
+    if (error) {
+      toast({ title: "Error", description: error.message.includes("unique") ? "This code is already in use" : error.message, variant: "destructive" });
+    } else {
+      setPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
+      setEditingScoringCode(null);
+      toast({ title: "Scoring code updated" });
+    }
+  };
+
   const handleExportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment"];
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment", "Scoring Code"];
     const rows = players.map((p) => [
       p.first_name,
       p.last_name,
@@ -140,6 +166,7 @@ const Players = () => {
       p.shirt_size || "",
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
+      p.scoring_code || "",
     ]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -515,6 +542,9 @@ const Players = () => {
                   <th className="text-center font-semibold px-4 py-3">HCP</th>
                   <th className="text-center font-semibold px-4 py-3">Shirt</th>
                   <th className="text-center font-semibold px-4 py-3">Group</th>
+                  <th className="text-center font-semibold px-4 py-3">
+                    <span className="flex items-center justify-center gap-1"><QrCode className="h-3.5 w-3.5" /> Code</span>
+                  </th>
                   <th className="text-center font-semibold px-4 py-3">Payment</th>
                   <th className="text-center font-semibold px-4 py-3 w-12"></th>
                 </tr>
@@ -544,6 +574,34 @@ const Players = () => {
                         </span>
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {editingScoringCode === p.id ? (
+                        <div className="flex items-center gap-1 justify-center">
+                          <Input
+                            value={scoringCodeInput}
+                            onChange={(e) => setScoringCodeInput(e.target.value.toUpperCase())}
+                            className="w-20 h-7 text-xs text-center font-mono uppercase"
+                            maxLength={8}
+                            onKeyDown={(e) => e.key === "Enter" && handleSaveScoringCode(p.id)}
+                          />
+                          <button onClick={() => handleSaveScoringCode(p.id)} className="text-primary hover:text-primary/80">
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => setEditingScoringCode(null)} className="text-muted-foreground hover:text-foreground">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
+                          className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                          title="Click to edit scoring code"
+                        >
+                          {p.scoring_code || "—"}
+                          <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
+                        </button>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">

@@ -165,10 +165,10 @@ const slides = [
     color: "hsl(var(--primary))",
     bullets: [
       "30-item planning checklist auto-generated for every tournament",
-      "Printable scorecards (9 or 18 holes), cart signs, name badges & sponsor signs",
-      "Customize print materials with font choices and layout presets from Site Builder",
-      "4 countdown timer styles: Glass, Solid, Minimal, and Circle",
-      "Hole-by-hole par customization for accurate scorecards",
+      "6 printable types: scorecards, cart signs, name badges, sponsor signs, alpha list & hole assignments",
+      "Registration add-ons (mulligans, dinner tickets) and tournament promo codes",
+      "Custom registration fields — collect exactly the data you need",
+      "4 countdown timer styles and hole-by-hole par customization",
     ],
   },
   {

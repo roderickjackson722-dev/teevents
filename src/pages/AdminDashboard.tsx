@@ -1282,6 +1282,15 @@ const AdminDashboard = () => {
                             <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
                           )}
                         </td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="font-semibold">{t.tournament_registrations?.length || 0}</span>
+                            {t.max_players && (
+                              <span className="text-muted-foreground text-xs">/ {t.max_players}</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <select
@@ -1298,6 +1307,34 @@ const AdminDashboard = () => {
                             {updatingOrgPlan === t.organization_id && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
                           </div>
                         </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => toggleTournamentPublished(t.id, !!t.site_published)}
+                            className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium transition-colors cursor-pointer ${
+                              t.site_published
+                                ? "bg-primary/15 text-primary hover:bg-primary/25"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                            title={t.site_published ? "Click to unpublish" : "Click to publish"}
+                          >
+                            {t.site_published ? <Globe className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            {t.site_published ? "Live" : "Draft"}
+                          </button>
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => toggleTournamentRegistration(t.id, !!t.registration_open)}
+                            className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium transition-colors cursor-pointer ${
+                              t.registration_open
+                                ? "bg-primary/15 text-primary hover:bg-primary/25"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                            title={t.registration_open ? "Click to close registration" : "Click to open registration"}
+                          >
+                            {t.registration_open ? <UserCheck className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            {t.registration_open ? "Open" : "Closed"}
+                          </button>
+                        </td>
                         <td className="p-3">
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                             t.status === "active" ? "bg-primary/15 text-primary" :
@@ -1306,7 +1343,6 @@ const AdminDashboard = () => {
                           }`}>
                             {t.status}
                           </span>
-                          {t.site_published && <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Published</span>}
                         </td>
                         <td className="p-3 text-muted-foreground text-xs">
                           {t.date ? new Date(t.date).toLocaleDateString() : "—"}

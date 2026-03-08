@@ -1359,7 +1359,7 @@ const AdminDashboard = () => {
                       </tr>
                     ))}
                     {allTournaments.length === 0 && (
-                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No tournaments found</td></tr>
+                      <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">No tournaments found</td></tr>
                     )}
                   </tbody>
                 </table>

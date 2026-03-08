@@ -13,9 +13,15 @@ import {
   Palette,
   ArrowRight,
   Zap,
+  Trophy,
+  Users,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface ConnectStatus {
   connected: boolean;

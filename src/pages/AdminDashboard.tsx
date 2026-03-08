@@ -28,6 +28,7 @@ const AdminDashboard = () => {
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
   const [prospectActivities, setProspectActivities] = useState<any[]>([]);
+  const [outreachTemplates, setOutreachTemplates] = useState<any[]>([]);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [editEventTitle, setEditEventTitle] = useState("");

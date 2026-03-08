@@ -36,7 +36,7 @@ const features = [
   { icon: Gavel, title: "Auction & Raffle", desc: "Silent auction, raffle tickets, buy-now & winner tracking" },
   { icon: Camera, title: "Photo Gallery", desc: "Upload event photos with captions to your tournament site" },
   { icon: Heart, title: "Donations Page", desc: "Fundraising goals, progress bar & Stripe payment processing" },
-  { icon: Printer, title: "Printable Materials", desc: "Scorecards (9/18 hole), cart signs, name badges & sponsor signs with custom fonts" },
+  { icon: Printer, title: "6 Printable Types", desc: "Scorecards, cart signs, name badges, sponsor signs, alpha list & hole assignments" },
   { icon: Timer, title: "Countdown Styles", desc: "4 timer designs: Glass, Solid, Minimal & Circle on your event page" },
   { icon: ClipboardList, title: "Planning Guide", desc: "30-item checklist from 12 months out to post-event" },
   { icon: UserCheck, title: "Volunteers & Surveys", desc: "Define roles, track signups & collect post-event feedback" },

@@ -1187,6 +1187,7 @@ export type Database = {
           registration_open: boolean | null
           registration_url: string | null
           schedule_info: string | null
+          scoring_format: string
           site_hero_image_url: string | null
           site_hero_subtitle: string | null
           site_hero_title: string | null
@@ -1221,6 +1222,7 @@ export type Database = {
           registration_open?: boolean | null
           registration_url?: string | null
           schedule_info?: string | null
+          scoring_format?: string
           site_hero_image_url?: string | null
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
@@ -1255,6 +1257,7 @@ export type Database = {
           registration_open?: boolean | null
           registration_url?: string | null
           schedule_info?: string | null
+          scoring_format?: string
           site_hero_image_url?: string | null
           site_hero_subtitle?: string | null
           site_hero_title?: string | null

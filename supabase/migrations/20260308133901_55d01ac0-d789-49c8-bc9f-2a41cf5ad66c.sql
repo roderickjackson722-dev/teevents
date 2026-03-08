@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN scoring_format text NOT NULL DEFAULT 'stroke_play';

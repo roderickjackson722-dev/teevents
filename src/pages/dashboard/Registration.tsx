@@ -399,8 +399,13 @@ const Registration = () => {
                   <Input
                     type="number"
                     min="1"
-                    value={maxPlayers}
-                    onChange={(e) => setMaxPlayers(parseInt(e.target.value) || 144)}
+                    value={maxPlayersDisplay}
+                    onChange={(e) => {
+                      setMaxPlayersDisplay(e.target.value);
+                      const parsed = parseInt(e.target.value);
+                      if (!isNaN(parsed) && parsed > 0) setMaxPlayers(parsed);
+                    }}
+                    onBlur={() => setMaxPlayersDisplay(String(maxPlayers))}
                   />
                 </div>
                 <div className="flex flex-col gap-2">

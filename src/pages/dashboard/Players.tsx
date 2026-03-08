@@ -26,6 +26,10 @@ import {
   Download,
   Trash2,
   Plus,
+  QrCode,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import {

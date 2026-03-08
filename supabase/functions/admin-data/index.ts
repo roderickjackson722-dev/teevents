@@ -433,7 +433,7 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes, templatesRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
@@ -444,6 +444,7 @@ Deno.serve(async (req) => {
       adminClient.from("organizations").select("*, tournaments(id, title)").order("created_at", { ascending: false }),
       adminClient.from("prospects").select("*").is("organization_id", null).order("created_at", { ascending: false }),
       adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
+      adminClient.from("outreach_templates").select("*").order("sort_order", { ascending: true }),
     ]);
 
     return new Response(
@@ -458,6 +459,7 @@ Deno.serve(async (req) => {
         organizations: orgsRes.data || [],
         prospects: prospectsRes.data || [],
         prospectActivities: activitiesRes.data || [],
+        outreachTemplates: templatesRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

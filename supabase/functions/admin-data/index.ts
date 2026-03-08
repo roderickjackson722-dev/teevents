@@ -434,7 +434,7 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes, templatesRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes, templatesRes, allTournamentsRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
@@ -446,6 +446,7 @@ Deno.serve(async (req) => {
       adminClient.from("prospects").select("*").is("organization_id", null).order("created_at", { ascending: false }),
       adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
       adminClient.from("outreach_templates").select("*").order("sort_order", { ascending: true }),
+      adminClient.from("tournaments").select("*, organizations(id, name, plan, stripe_account_id)").order("created_at", { ascending: false }),
     ]);
 
     return new Response(

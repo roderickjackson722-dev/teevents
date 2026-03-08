@@ -21,6 +21,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import Tournaments from "./pages/dashboard/Tournaments";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
+import Printables from "./pages/dashboard/Printables";
 import ComingSoon from "./pages/dashboard/ComingSoon";
 import SiteBuilder from "./pages/dashboard/SiteBuilder";
 import Players from "./pages/dashboard/Players";

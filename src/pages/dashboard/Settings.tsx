@@ -42,7 +42,32 @@ const Settings = () => {
 
   useEffect(() => {
     fetchConnectStatus();
-  }, []);
+    if (org) {
+      supabase
+        .from("tournaments")
+        .select("id, title, scoring_format")
+        .eq("organization_id", org.orgId)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => setTournaments((data as any) || []));
+    }
+  }, [org]);
+
+  const handleSaveFormat = async (tournamentId: string) => {
+    const newFormat = formatEdits[tournamentId];
+    if (!newFormat) return;
+    setSavingFormat(tournamentId);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ scoring_format: newFormat } as any)
+      .eq("id", tournamentId);
+    if (error) { toast.error(error.message); }
+    else {
+      toast.success("Scoring format updated!");
+      setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, scoring_format: newFormat } : t));
+      setFormatEdits((prev) => { const n = { ...prev }; delete n[tournamentId]; return n; });
+    }
+    setSavingFormat(null);
+  };
 
   const fetchConnectStatus = async () => {
     try {

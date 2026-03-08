@@ -34,6 +34,7 @@ interface SiteSettings {
   date: string | null;
   location: string | null;
   course_name: string | null;
+  course_par: number | null;
   site_published: boolean | null;
   site_logo_url: string | null;
   site_hero_title: string | null;
@@ -49,6 +50,9 @@ interface SiteSettings {
   template: string | null;
   registration_fee_cents: number | null;
   custom_domain: string | null;
+  printable_font: string | null;
+  printable_layout: string | null;
+  hole_pars: number[] | null;
 }
 
 const SiteBuilder = () => {

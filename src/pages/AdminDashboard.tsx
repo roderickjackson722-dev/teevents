@@ -28,6 +28,7 @@ const AdminDashboard = () => {
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
   const [prospectActivities, setProspectActivities] = useState<any[]>([]);
+  const [outreachTemplates, setOutreachTemplates] = useState<any[]>([]);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [editEventTitle, setEditEventTitle] = useState("");
@@ -152,6 +153,7 @@ const AdminDashboard = () => {
       setOrganizations(data.organizations || []);
       setAdminProspects(data.prospects || []);
       setProspectActivities(data.prospectActivities || []);
+      setOutreachTemplates(data.outreachTemplates || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
       toast({ title: "Error loading data", description: err.message, variant: "destructive" });
@@ -1268,6 +1270,7 @@ const AdminDashboard = () => {
             <AdminProspects
               prospects={adminProspects}
               activities={prospectActivities}
+              outreachTemplates={outreachTemplates}
               onRefresh={fetchAll}
               callAdminApi={callAdminApi}
             />

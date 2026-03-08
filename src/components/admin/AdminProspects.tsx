@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +44,10 @@ import {
   Plus, Search, Loader2, Trash2, Edit, ExternalLink,
   Phone, Mail, MapPin, CalendarIcon, Download, Filter,
   LayoutGrid, List, MessageSquare, PhoneCall, Video, FileText,
-  ArrowRightLeft, Clock,
+  ArrowRightLeft, Clock, Send, Copy, Check, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Prospect {
   id: string;
@@ -64,6 +65,8 @@ interface Prospect {
   notes: string;
   last_contacted_at: string | null;
   next_follow_up: string | null;
+  last_email_template: string | null;
+  last_email_sent_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -74,6 +77,16 @@ interface Activity {
   type: string;
   description: string;
   created_at: string;
+}
+
+interface OutreachTemplate {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  subject: string;
+  body: string;
+  sort_order: number;
 }
 
 const STATUSES = [
@@ -96,6 +109,14 @@ const ACTIVITY_TYPES = [
   { value: "status_change", label: "Status Change", icon: ArrowRightLeft },
 ];
 
+const TEMPLATE_CATEGORIES: Record<string, { label: string; color: string }> = {
+  no_website: { label: "No Website", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" },
+  outdated_website: { label: "Outdated Site", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" },
+  new_tournament: { label: "New Organizer", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" },
+  annual_tournament: { label: "Annual Event", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
+  custom: { label: "Custom", color: "bg-muted text-muted-foreground" },
+};
+
 const emptyProspect = {
   tournament_name: "",
   organizer_name: "",
@@ -114,11 +135,12 @@ const emptyProspect = {
 interface AdminProspectsProps {
   prospects: Prospect[];
   activities: Activity[];
+  outreachTemplates: OutreachTemplate[];
   onRefresh: () => void;
   callAdminApi: (action?: string, body?: Record<string, unknown>) => Promise<any>;
 }
 
-const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: AdminProspectsProps) => {
+const AdminProspects = ({ prospects, activities, outreachTemplates, onRefresh, callAdminApi }: AdminProspectsProps) => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -131,6 +153,15 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
   const [newActivityDesc, setNewActivityDesc] = useState("");
   const [addingActivity, setAddingActivity] = useState(false);
 
+  // Email template state
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailProspect, setEmailProspect] = useState<Prospect | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<OutreachTemplate | null>(null);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [copied, setCopied] = useState<"subject" | "body" | "all" | null>(null);
+  const [markingSent, setMarkingSent] = useState(false);
+
   const filtered = prospects.filter((p) => {
     const q = search.toLowerCase();
     const matchesSearch =
@@ -142,6 +173,70 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
     const matchesStatus = statusFilter === "all" || p.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const fillTemplate = (template: OutreachTemplate, prospect: Prospect) => {
+    const replacements: Record<string, string> = {
+      "{{tournament_name}}": prospect.tournament_name || "your tournament",
+      "{{contact_name}}": prospect.contact_name || "there",
+      "{{organizer_name}}": prospect.organizer_name || "",
+      "{{sender_name}}": "TeeVents Team",
+      "{{sender_email}}": "hello@teevents.com",
+    };
+    let subject = template.subject;
+    let body = template.body;
+    for (const [key, val] of Object.entries(replacements)) {
+      subject = subject.split(key).join(val);
+      body = body.split(key).join(val);
+    }
+    return { subject, body };
+  };
+
+  const openEmailDialog = (prospect: Prospect) => {
+    setEmailProspect(prospect);
+    setSelectedTemplate(null);
+    setEmailSubject("");
+    setEmailBody("");
+    setCopied(null);
+    setEmailDialogOpen(true);
+  };
+
+  const selectTemplate = (template: OutreachTemplate) => {
+    setSelectedTemplate(template);
+    if (emailProspect) {
+      const { subject, body } = fillTemplate(template, emailProspect);
+      setEmailSubject(subject);
+      setEmailBody(body);
+    }
+    setCopied(null);
+  };
+
+  const handleCopy = async (type: "subject" | "body" | "all") => {
+    const text = type === "subject" ? emailSubject : type === "body" ? emailBody : `Subject: ${emailSubject}\n\n${emailBody}`;
+    await navigator.clipboard.writeText(text);
+    setCopied(type);
+    toast({ title: "Copied to clipboard!" });
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handleMarkAsSent = async () => {
+    if (!emailProspect || !selectedTemplate) return;
+    setMarkingSent(true);
+    try {
+      await callAdminApi("log-email-sent", {
+        prospect_id: emailProspect.id,
+        template_slug: selectedTemplate.slug,
+        template_name: selectedTemplate.name,
+        new_status: emailProspect.status === "new" ? "contacted" : undefined,
+      });
+      toast({ title: "Email logged", description: `Outreach tracked for ${emailProspect.tournament_name}` });
+      setEmailDialogOpen(false);
+      onRefresh();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setMarkingSent(false);
+    }
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -346,7 +441,7 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
                 <TableHead>Tournament</TableHead>
                 <TableHead className="hidden md:table-cell">Location</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Source</TableHead>
+                <TableHead className="hidden md:table-cell">Last Outreach</TableHead>
                 <TableHead className="hidden lg:table-cell">Follow Up</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -380,12 +475,28 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground capitalize text-xs">{(p.source || "").replace("_", " ")}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {p.last_email_sent_at ? (
+                        <div className="text-xs">
+                          <p className="text-muted-foreground">{format(new Date(p.last_email_sent_at), "MMM d")}</p>
+                          {p.last_email_template && (
+                            <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", TEMPLATE_CATEGORIES[outreachTemplates.find(t => t.slug === p.last_email_template)?.category || "custom"]?.color || "bg-muted text-muted-foreground")}>
+                              {outreachTemplates.find(t => t.slug === p.last_email_template)?.name?.slice(0, 20) || p.last_email_template}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground text-xs">
                       {p.next_follow_up ? format(new Date(p.next_follow_up), "MMM d, yyyy") : "—"}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="Send Outreach Email" onClick={() => openEmailDialog(p)}>
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
                         {p.source_url && (
                           <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
                             <a href={p.source_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
@@ -437,6 +548,11 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
                         <p className="font-medium text-sm text-foreground">{p.tournament_name}</p>
                         {p.organizer_name && <p className="text-xs text-muted-foreground mt-0.5">{p.organizer_name}</p>}
                         {p.location && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" />{p.location}</p>}
+                        <div className="flex items-center justify-between mt-2">
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-primary" onClick={(e) => { e.stopPropagation(); openEmailDialog(p); }}>
+                            <Send className="h-3 w-3 mr-1" />Email
+                          </Button>
+                        </div>
                       </Card>
                     </motion.div>
                   ))}
@@ -511,6 +627,11 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
                 <Label className="text-xs">Notes</Label>
                 <Textarea value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} rows={2} />
               </div>
+              {editing && (
+                <Button variant="outline" className="w-full" onClick={() => { setDialogOpen(false); openEmailDialog(editing); }}>
+                  <Send className="h-4 w-4 mr-2" />Send Outreach Email
+                </Button>
+              )}
               <Button onClick={handleSave} disabled={saving} className="w-full">
                 {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {editing ? "Update Prospect" : "Add Prospect"}
@@ -547,7 +668,6 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
                   ) : (
                     prospectActivities.map((a, i) => (
                       <div key={a.id} className="flex gap-3 group relative">
-                        {/* Timeline line */}
                         {i < prospectActivities.length - 1 && (
                           <div className="absolute left-[11px] top-8 bottom-0 w-px bg-border" />
                         )}
@@ -579,6 +699,134 @@ const AdminProspects = ({ prospects, activities, onRefresh, callAdminApi }: Admi
                 </div>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Outreach Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-primary" />
+              Outreach Email — {emailProspect?.tournament_name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 pt-2">
+            {/* Left: Template picker */}
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Choose Template</Label>
+              <div className="space-y-2">
+                {outreachTemplates.map((t) => {
+                  const cat = TEMPLATE_CATEGORIES[t.category] || TEMPLATE_CATEGORIES.custom;
+                  const isSelected = selectedTemplate?.id === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => selectTemplate(t)}
+                      className={cn(
+                        "w-full text-left p-3 rounded-lg border transition-all",
+                        isSelected
+                          ? "border-primary bg-primary/5 ring-1 ring-primary"
+                          : "border-border bg-card hover:border-primary/50"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-foreground">{t.name}</span>
+                        {isSelected && <Check className="h-4 w-4 text-primary" />}
+                      </div>
+                      <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", cat.color)}>
+                        {cat.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {emailProspect?.contact_email && (
+                <div className="bg-muted/50 rounded-lg p-3 mt-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Recipient</p>
+                  <p className="text-sm font-medium text-foreground">{emailProspect.contact_name || "Unknown"}</p>
+                  <p className="text-xs text-muted-foreground">{emailProspect.contact_email}</p>
+                </div>
+              )}
+
+              {emailProspect?.last_email_sent_at && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300 mb-1">Previous Outreach</p>
+                  <p className="text-xs text-amber-800 dark:text-amber-200">
+                    Sent {format(new Date(emailProspect.last_email_sent_at), "MMM d, yyyy")}
+                  </p>
+                  {emailProspect.last_email_template && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                      Template: {outreachTemplates.find(t => t.slug === emailProspect.last_email_template)?.name || emailProspect.last_email_template}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Email preview / editor */}
+            <div className="space-y-4">
+              {!selectedTemplate ? (
+                <div className="flex items-center justify-center h-64 border border-dashed border-border rounded-lg">
+                  <div className="text-center text-muted-foreground">
+                    <Mail className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Select a template to get started</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Subject */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs">Subject Line</Label>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => handleCopy("subject")}>
+                        {copied === "subject" ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                        Copy
+                      </Button>
+                    </div>
+                    <Input value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="font-medium" />
+                  </div>
+
+                  {/* Body */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs">Email Body</Label>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => handleCopy("body")}>
+                        {copied === "body" ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                        Copy
+                      </Button>
+                    </div>
+                    <Textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} rows={14} className="text-sm leading-relaxed font-mono" />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                    <Button onClick={() => handleCopy("all")} variant="outline" className="flex-1">
+                      {copied === "all" ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                      Copy Full Email
+                    </Button>
+                    {emailProspect?.contact_email && (
+                      <Button asChild variant="outline" className="flex-1">
+                        <a href={`mailto:${emailProspect.contact_email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`} target="_blank" rel="noopener noreferrer">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Open in Mail App
+                        </a>
+                      </Button>
+                    )}
+                    <Button onClick={handleMarkAsSent} disabled={markingSent} className="flex-1">
+                      {markingSent ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                      Mark as Sent
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Copy the email and paste into your email client, or click "Open in Mail App". Then click "Mark as Sent" to log this outreach in the activity timeline.
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

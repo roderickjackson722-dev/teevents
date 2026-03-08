@@ -115,6 +115,46 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true });
       }
 
+      if (action === "log-email-sent") {
+        // Update prospect with template info
+        const updates: Record<string, unknown> = {
+          last_email_template: body.template_slug,
+          last_email_sent_at: new Date().toISOString(),
+          status: body.new_status || undefined,
+        };
+        if (body.new_status === "contacted") updates.last_contacted_at = new Date().toISOString();
+        await adminClient.from("prospects").update(updates).eq("id", body.prospect_id);
+        // Log activity
+        await adminClient.from("prospect_activities").insert({
+          prospect_id: body.prospect_id,
+          type: "email",
+          description: `Outreach email sent: "${body.template_name}"`,
+        });
+        return jsonRes({ success: true });
+      }
+
+      if (action === "save-outreach-template") {
+        if (body.id) {
+          const { error } = await adminClient.from("outreach_templates").update({
+            name: body.name, subject: body.subject, body: body.body, category: body.category,
+          }).eq("id", body.id);
+          if (error) return jsonRes({ error: error.message }, 400);
+        } else {
+          const slug = (body.name || "custom").toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 50) + "_" + Date.now();
+          const { error } = await adminClient.from("outreach_templates").insert({
+            slug, name: body.name, subject: body.subject, body: body.body, category: body.category || "custom", sort_order: 99,
+          });
+          if (error) return jsonRes({ error: error.message }, 400);
+        }
+        return jsonRes({ success: true });
+      }
+
+      if (action === "delete-outreach-template") {
+        const { error } = await adminClient.from("outreach_templates").delete().eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       // --- Promo Code Actions ---
       if (action === "add-promo-code") {
         const { error } = await adminClient.from("promo_codes").insert({
@@ -393,7 +433,7 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes, templatesRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
@@ -404,6 +444,7 @@ Deno.serve(async (req) => {
       adminClient.from("organizations").select("*, tournaments(id, title)").order("created_at", { ascending: false }),
       adminClient.from("prospects").select("*").is("organization_id", null).order("created_at", { ascending: false }),
       adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
+      adminClient.from("outreach_templates").select("*").order("sort_order", { ascending: true }),
     ]);
 
     return new Response(
@@ -418,6 +459,7 @@ Deno.serve(async (req) => {
         organizations: orgsRes.data || [],
         prospects: prospectsRes.data || [],
         prospectActivities: activitiesRes.data || [],
+        outreachTemplates: templatesRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

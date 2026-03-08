@@ -115,18 +115,20 @@ Deno.serve(async (req) => {
       })
       .eq("id", item_id);
 
-    // Send notification emails
+    // Send notification emails via Resend
     try {
       if (tournament) {
-        const { data: notifEmails } = await supabaseAdmin
-          .from("notification_emails")
-          .select("email")
-          .eq("organization_id", tournament.organization_id)
-          .eq("notify_auction_bid", true);
-
-        if (notifEmails && notifEmails.length > 0) {
-          console.log(`[Notification] Auction buy-now: ${item.title} by ${buyer_name || buyer_email || "unknown"} → ${notifEmails.map((n: any) => n.email).join(", ")}`);
-        }
+        await sendNotificationEmails(
+          supabaseAdmin,
+          tournament.organization_id,
+          "notify_auction_bid",
+          `Auction Buy Now — ${item.title}`,
+          buildNotificationHtml("Auction Item Purchased", [
+            `<strong>${item.title}</strong> was purchased via Buy Now for <strong>$${item.buy_now_price!.toFixed(2)}</strong>.`,
+            buyer_name ? `👤 ${buyer_name}` : "",
+            buyer_email ? `📧 ${buyer_email}` : "",
+          ].filter(Boolean)),
+        );
       }
     } catch (e) {
       console.error("Notification error:", e);

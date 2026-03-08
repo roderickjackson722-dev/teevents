@@ -115,24 +115,25 @@ Deno.serve(async (req) => {
         status: "pending",
       });
 
-      // Send notification emails
+      // Send notification emails via Resend
       try {
-        const { data: tournament } = await supabaseAdmin
+        const { data: tournamentData } = await supabaseAdmin
           .from("tournaments")
           .select("organization_id, title")
           .eq("id", tournament_id)
           .single();
 
-        if (tournament) {
-          const { data: notifEmails } = await supabaseAdmin
-            .from("notification_emails")
-            .select("email")
-            .eq("organization_id", tournament.organization_id)
-            .eq("notify_donation", true);
-
-          if (notifEmails && notifEmails.length > 0) {
-            console.log(`[Notification] New donation: $${(amount_cents / 100).toFixed(2)} from ${donor_email || "anonymous"} for ${tournament.title} → ${notifEmails.map((n: any) => n.email).join(", ")}`);
-          }
+        if (tournamentData) {
+          await sendNotificationEmails(
+            supabaseAdmin,
+            tournamentData.organization_id,
+            "notify_donation",
+            `New Donation — ${tournamentData.title}`,
+            buildNotificationHtml("New Donation Received", [
+              `A donation of <strong>$${(amount_cents / 100).toFixed(2)}</strong> was made for <strong>${tournamentData.title}</strong>.`,
+              donor_email ? `📧 Donor: ${donor_email}` : "👤 Anonymous donor",
+            ]),
+          );
         }
       } catch (e) {
         console.error("Notification error:", e);

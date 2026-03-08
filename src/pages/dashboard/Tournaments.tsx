@@ -63,7 +63,8 @@ const Tournaments = () => {
       date: form.date || null,
       location: form.location || null,
       course_name: form.course_name || null,
-    });
+      scoring_format: form.scoring_format,
+    } as any);
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

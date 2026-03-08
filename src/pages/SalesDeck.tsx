@@ -87,9 +87,9 @@ const slides = [
     id: "registration",
     type: "feature" as const,
     heading: "Online Registration & Payments",
-    description: "Accept player registrations and payments online. Automated email confirmations, payment tracking, and roster management — all built in.",
+    description: "Accept player registrations and payments online with Stripe Connect. Customize your form with add-on items (mulligans, dinner tickets), custom fields, and tournament promo codes. Automated confirmations and real-time payment tracking.",
     image: demoRegistration,
-    highlights: ["Stripe Payments", "Auto Confirmations", "Payment Tracking", "Guest Checkout"],
+    highlights: ["Registration Add-Ons", "Custom Fields & Promo Codes", "Stripe Payments", "Auto Confirmations"],
   },
   {
     id: "pairings",

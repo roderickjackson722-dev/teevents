@@ -309,27 +309,51 @@ const SiteBuilder = () => {
               {/* Template Selector */}
               <div>
                 <Label>Site Template</Label>
-                <div className="mt-2 grid grid-cols-3 gap-3">
-                  {[
-                    { id: "classic", name: "Classic Green", desc: "Centered logo, golf green tones, 3 CTA buttons", colors: ["#1a5c38", "#c8a84e"] },
-                    { id: "modern", name: "Modern Navy", desc: "Logo in nav, right-aligned hero, bold accents", colors: ["#1e3a5f", "#e8b931"] },
-                    { id: "charity", name: "Charity Warmth", desc: "Centered banner, warm tones, 2 CTA buttons", colors: ["#8b2500", "#d4a017"] },
-                  ].map((tpl) => (
+                <p className="text-xs text-muted-foreground mb-2">Change your site layout at any time.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {SITE_TEMPLATES.map((tpl) => (
                     <button
                       key={tpl.id}
                       onClick={() => updateField("template", tpl.id)}
-                      className={`relative text-left p-3 rounded-lg border-2 transition-all ${
+                      className={`relative text-left rounded-lg border-2 overflow-hidden transition-all ${
                         (settings.template || "classic") === tpl.id
                           ? "border-primary ring-1 ring-primary/30"
                           : "border-border hover:border-primary/40"
                       }`}
                     >
-                      <div className="flex gap-1.5 mb-2">
-                        <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: tpl.colors[0] }} />
-                        <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: tpl.colors[1] }} />
+                      {(settings.template || "classic") === tpl.id && (
+                        <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5">
+                          <Check className="h-3 w-3" />
+                        </div>
+                      )}
+                      {/* Mini preview */}
+                      <div className="relative h-16 w-full" style={{ backgroundColor: tpl.colors.primary }}>
+                        <div className="absolute top-0 left-0 right-0 h-3 flex items-center px-2" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                          {tpl.preview.navStyle === "left-logo" && (
+                            <div className="w-3 h-2 rounded-sm" style={{ backgroundColor: "rgba(255,255,255,0.6)" }} />
+                          )}
+                          <div className="flex gap-1 mx-auto">
+                            {[0,1,2].map((i) => (
+                              <div key={i} className="w-4 h-0.5 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.4)" }} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0">
+                          {Array.from({ length: tpl.preview.ctaCount }).map((_, i) => (
+                            <div key={i} className="w-10 h-3" style={{ backgroundColor: i === 0 ? tpl.colors.secondary : tpl.colors.primary, opacity: i === 0 ? 1 : 0.8 }} />
+                          ))}
+                        </div>
                       </div>
-                      <p className="text-xs font-semibold text-foreground">{tpl.name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{tpl.desc}</p>
+                      <div className="p-2 flex items-center gap-2">
+                        <div className="flex gap-1 shrink-0">
+                          <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: tpl.colors.primary }} />
+                          <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: tpl.colors.secondary }} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">{tpl.name}</p>
+                          <p className="text-[10px] text-muted-foreground leading-tight">{tpl.description}</p>
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>

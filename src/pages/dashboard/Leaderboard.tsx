@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Share2, Copy, ExternalLink } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
-import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
 import { Badge } from "@/components/ui/badge";
 
 interface PlayerScore {
@@ -18,8 +18,39 @@ interface PlayerScore {
   first_name: string;
   last_name: string;
   handicap: number | null;
+  group_number: number | null;
   scores: Record<number, number>;
   total: number;
+}
+
+interface TeamScore {
+  groupNumber: number;
+  players: PlayerScore[];
+  holeScores: Record<number, number>;
+  total: number;
+}
+
+const DEFAULT_HOLE_PAR = 4;
+
+function computeTeamHoleScore(
+  players: PlayerScore[],
+  hole: number,
+  format: ScoringFormat,
+  editedScores: Record<string, Record<number, number>>
+): number | null {
+  const strokes = players
+    .map((p) => editedScores[p.registration_id]?.[hole] ?? p.scores[hole])
+    .filter((v): v is number => v !== undefined && v !== null);
+  if (strokes.length === 0) return null;
+
+  if (format.scoring === "best_ball" || format.scoring === "shamble") {
+    return Math.min(...strokes);
+  }
+  // scramble — there should be one score per hole per team, take the min (or first)
+  if (format.scoring === "scramble") {
+    return Math.min(...strokes);
+  }
+  return null;
 }
 
 export default function Leaderboard() {
@@ -44,13 +75,18 @@ export default function Leaderboard() {
   });
 
   const selectedTournamentData = tournaments?.find((t) => t.id === selectedTournament);
+  const scoringFormat = getFormatById((selectedTournamentData as any)?.scoring_format || "stroke_play");
+  const isTeamFormat = scoringFormat && scoringFormat.teamSize > 1;
+  const isStableford = scoringFormat?.scoring === "stableford";
+  const coursePar = selectedTournamentData?.course_par || 72;
+  const holePar = coursePar / 18;
 
   const { data: registrations } = useQuery({
     queryKey: ["leaderboard-players", selectedTournament],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, handicap")
+        .select("id, first_name, last_name, handicap, group_number")
         .eq("tournament_id", selectedTournament)
         .order("last_name");
       if (error) throw error;
@@ -100,10 +136,12 @@ export default function Leaderboard() {
       first_name: r.first_name,
       last_name: r.last_name,
       handicap: r.handicap,
+      group_number: r.group_number,
       scores: scoreMap[r.id] || {},
       total: Object.values(scoreMap[r.id] || {}).reduce((sum, s) => sum + s, 0),
     }));
 
+    // Sort: for stableford highest first, else lowest first
     ps.sort((a, b) => {
       if (a.total === 0 && b.total === 0) return 0;
       if (a.total === 0) return 1;
@@ -113,6 +151,60 @@ export default function Leaderboard() {
 
     setPlayerScores(ps);
   }, [registrations, scores]);
+
+  // Team leaderboard grouping
+  const teamScores = useMemo<TeamScore[]>(() => {
+    if (!isTeamFormat || !scoringFormat) return [];
+    const groups: Record<number, PlayerScore[]> = {};
+    playerScores.forEach((ps) => {
+      if (ps.group_number != null) {
+        if (!groups[ps.group_number]) groups[ps.group_number] = [];
+        groups[ps.group_number].push(ps);
+      }
+    });
+
+    return Object.entries(groups)
+      .map(([gn, players]) => {
+        const holeScores: Record<number, number> = {};
+        let total = 0;
+        holes.forEach((h) => {
+          const val = computeTeamHoleScore(players, h, scoringFormat, editedScores);
+          if (val != null) {
+            holeScores[h] = val;
+            total += val;
+          }
+        });
+        return { groupNumber: parseInt(gn), players, holeScores, total };
+      })
+      .sort((a, b) => {
+        if (a.total === 0 && b.total === 0) return 0;
+        if (a.total === 0) return 1;
+        if (b.total === 0) return -1;
+        return a.total - b.total;
+      });
+  }, [playerScores, isTeamFormat, scoringFormat, editedScores]);
+
+  // Stableford leaderboard
+  const stablefordScores = useMemo(() => {
+    if (!isStableford) return [];
+    return playerScores
+      .map((ps) => {
+        let points = 0;
+        holes.forEach((h) => {
+          const strokes = editedScores[ps.registration_id]?.[h] ?? ps.scores[h];
+          if (strokes != null) {
+            points += stablefordPoints(strokes, Math.round(holePar));
+          }
+        });
+        return { ...ps, points };
+      })
+      .sort((a, b) => {
+        if (a.points === 0 && b.points === 0) return 0;
+        if (a.points === 0) return 1;
+        if (b.points === 0) return -1;
+        return b.points - a.points; // Highest first
+      });
+  }, [playerScores, isStableford, editedScores, holePar]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -161,6 +253,16 @@ export default function Leaderboard() {
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 
+  const renderStablefordCell = (strokes: number | "", hole: number) => {
+    if (strokes === "" || typeof strokes !== "number") return null;
+    const pts = stablefordPoints(strokes, Math.round(holePar));
+    return (
+      <span className={`text-[10px] block mt-0.5 font-semibold ${pts >= 3 ? "text-primary" : pts === 0 ? "text-destructive" : "text-muted-foreground"}`}>
+        {pts}pt
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -201,11 +303,7 @@ export default function Leaderboard() {
             >
               <Copy className="h-4 w-4 mr-1.5" /> Copy Scoring Link
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-            >
+            <Button variant="ghost" size="sm" asChild>
               <a href={`/t/${selectedTournamentData.slug}/scoring`} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4 mr-1.5" /> Preview
               </a>
@@ -218,20 +316,145 @@ export default function Leaderboard() {
         <SponsorBanner sponsors={leaderboardSponsors} />
       )}
 
+      {/* ===== TEAM LEADERBOARD ===== */}
+      {selectedTournament && isTeamFormat && teamScores.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 flex-wrap">
+              <Users className="h-5 w-5" /> Team Leaderboard
+              <Badge variant="secondary" className="text-xs font-normal">{scoringFormat?.name}</Badge>
+              <span className="text-sm font-normal text-muted-foreground ml-2">Par {coursePar}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10 text-center">#</TableHead>
+                    <TableHead className="min-w-[180px]">Team</TableHead>
+                    {holes.map((h) => (
+                      <TableHead key={h} className="text-center w-10 min-w-[40px] text-xs">{h}</TableHead>
+                    ))}
+                    <TableHead className="text-center font-bold min-w-[60px]">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teamScores.map((team, i) => (
+                    <TableRow key={team.groupNumber}>
+                      <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="font-semibold">Group {team.groupNumber}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
+                        </div>
+                      </TableCell>
+                      {holes.map((h) => (
+                        <TableCell key={h} className="text-center text-sm p-1">
+                          {team.holeScores[h] != null ? (
+                            <span className={
+                              team.holeScores[h] < Math.round(holePar) ? "text-primary font-bold" :
+                              team.holeScores[h] > Math.round(holePar) ? "text-destructive" : ""
+                            }>
+                              {team.holeScores[h]}
+                            </span>
+                          ) : "—"}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-center font-bold text-lg">
+                        {team.total > 0 ? team.total : "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ===== STABLEFORD LEADERBOARD ===== */}
+      {selectedTournament && isStableford && stablefordScores.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 flex-wrap">
+              <Trophy className="h-5 w-5" /> Stableford Leaderboard
+              <Badge variant="secondary" className="text-xs font-normal">Stableford</Badge>
+              <span className="text-sm font-normal text-muted-foreground ml-2">Par {coursePar}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xs text-muted-foreground mb-3 flex gap-4">
+              <span>Eagle+ = 4pt</span>
+              <span>Birdie = 3pt</span>
+              <span className="font-semibold">Par = 2pt</span>
+              <span>Bogey = 1pt</span>
+              <span>Double+ = 0pt</span>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10 text-center">#</TableHead>
+                    <TableHead className="sticky left-0 bg-card z-10 min-w-[150px]">Player</TableHead>
+                    {holes.map((h) => (
+                      <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
+                    ))}
+                    <TableHead className="text-center font-bold min-w-[60px]">Points</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stablefordScores.map((ps, i) => (
+                    <TableRow key={ps.registration_id}>
+                      <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="sticky left-0 bg-card z-10 font-medium">
+                        {ps.first_name} {ps.last_name}
+                        {ps.handicap !== null && (
+                          <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
+                        )}
+                      </TableCell>
+                      {holes.map((h) => {
+                        const val = getScore(ps, h);
+                        return (
+                          <TableCell key={h} className="p-1 text-center">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={20}
+                              value={val}
+                              onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
+                              className="w-12 h-8 text-center text-sm p-0"
+                            />
+                            {renderStablefordCell(val, h)}
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell className="text-center font-bold text-lg text-primary">
+                        {ps.points > 0 ? ps.points : "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ===== INDIVIDUAL SCORECARD (stroke play or score entry for team formats) ===== */}
       {selectedTournament && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">
-              <Trophy className="h-5 w-5" /> Scorecard
-              {selectedTournamentData && (
+              <Trophy className="h-5 w-5" /> {isTeamFormat ? "Individual Score Entry" : "Scorecard"}
+              {selectedTournamentData && !isTeamFormat && !isStableford && (
                 <>
                   <span className="text-sm font-normal text-muted-foreground ml-2">
-                    Par {selectedTournamentData.course_par || 72}
+                    Par {coursePar}
                   </span>
-                  {(() => {
-                    const fmt = getFormatById((selectedTournamentData as any).scoring_format || "stroke_play");
-                    return fmt ? <Badge variant="secondary" className="text-xs font-normal">{fmt.name}</Badge> : null;
-                  })()}
+                  {scoringFormat && (
+                    <Badge variant="secondary" className="text-xs font-normal">{scoringFormat.name}</Badge>
+                  )}
                 </>
               )}
             </CardTitle>
@@ -247,6 +470,7 @@ export default function Leaderboard() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="sticky left-0 bg-card z-10 min-w-[150px]">Player</TableHead>
+                      {isTeamFormat && <TableHead className="text-center w-14">Grp</TableHead>}
                       {holes.map((h) => (
                         <TableHead key={h} className="text-center w-12 min-w-[48px]">{h}</TableHead>
                       ))}
@@ -267,6 +491,11 @@ export default function Leaderboard() {
                               <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
                             )}
                           </TableCell>
+                          {isTeamFormat && (
+                            <TableCell className="text-center text-xs text-muted-foreground">
+                              {ps.group_number ?? "—"}
+                            </TableCell>
+                          )}
                           {holes.map((h) => (
                             <TableCell key={h} className="p-1 text-center">
                               <Input

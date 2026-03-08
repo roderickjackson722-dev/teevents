@@ -1349,6 +1349,7 @@ export type Database = {
         Row: {
           contact_email: string | null
           contact_phone: string | null
+          countdown_style: string
           course_name: string | null
           course_par: number | null
           created_at: string
@@ -1387,6 +1388,7 @@ export type Database = {
         Insert: {
           contact_email?: string | null
           contact_phone?: string | null
+          countdown_style?: string
           course_name?: string | null
           course_par?: number | null
           created_at?: string
@@ -1425,6 +1427,7 @@ export type Database = {
         Update: {
           contact_email?: string | null
           contact_phone?: string | null
+          countdown_style?: string
           course_name?: string | null
           course_par?: number | null
           created_at?: string

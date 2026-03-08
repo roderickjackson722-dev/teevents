@@ -57,7 +57,7 @@ const features = [
     icon: Globe,
     title: "Custom Tournament Website",
     description:
-      "Your tournament gets its own branded website — no design skills needed. Plug-and-play templates ready in minutes.",
+      "Choose from 6 professional templates with custom colors, logos, countdown timers, and optional custom domain support — no design skills needed.",
   },
 ];
 

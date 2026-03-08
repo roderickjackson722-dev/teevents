@@ -666,7 +666,31 @@ const PublicTournament = () => {
                 LIVE LEADERBOARD
               </h2>
               <div className="w-16 h-0.5 mx-auto mb-2" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-8" style={{ color: "#888" }}>Par {coursePar} • Updates in real-time</p>
+              <p className="text-center text-sm mb-4" style={{ color: "#888" }}>Par {coursePar} • Updates in real-time</p>
+              {(() => {
+                const lbSponsors = sponsors.filter(s => s.show_on_leaderboard);
+                const style = tournament.leaderboard_sponsor_style || 'banner';
+                const interval = tournament.leaderboard_sponsor_interval_ms || 5000;
+                if (lbSponsors.length === 0) return null;
+                if (style === 'ticker') {
+                  return (
+                    <div className="mb-6 overflow-hidden rounded-lg border" style={{ borderColor: "#e5e5e5" }}>
+                      <div className="flex animate-marquee items-center gap-8 py-2 px-4 bg-white">
+                        {[...lbSponsors, ...lbSponsors].map((s, i) => (
+                          <div key={i} className="flex items-center gap-2 shrink-0">
+                            {s.logo_url ? (
+                              <img src={s.logo_url} alt={s.name} className="h-6 max-w-[80px] object-contain" />
+                            ) : (
+                              <span className="text-xs font-semibold" style={{ color: primary }}>{s.name}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors} intervalMs={interval} /></div>;
+              })()}
               <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: "#e5e5e5" }}>
                 <table className="w-full text-sm">
                   <thead>

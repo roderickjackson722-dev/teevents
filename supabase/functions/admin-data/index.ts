@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
         const updates: Record<string, unknown> = {
           last_email_template: body.template_slug,
           last_email_sent_at: new Date().toISOString(),
+          email_response_status: "sent",
           status: body.new_status || undefined,
         };
         if (body.new_status === "contacted") updates.last_contacted_at = new Date().toISOString();

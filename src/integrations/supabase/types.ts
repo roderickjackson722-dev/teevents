@@ -1178,6 +1178,8 @@ export type Database = {
           donation_goal_cents: number | null
           id: string
           image_url: string | null
+          leaderboard_sponsor_interval_ms: number
+          leaderboard_sponsor_style: string
           location: string | null
           max_players: number | null
           organization_id: string
@@ -1210,6 +1212,8 @@ export type Database = {
           donation_goal_cents?: number | null
           id?: string
           image_url?: string | null
+          leaderboard_sponsor_interval_ms?: number
+          leaderboard_sponsor_style?: string
           location?: string | null
           max_players?: number | null
           organization_id: string
@@ -1242,6 +1246,8 @@ export type Database = {
           donation_goal_cents?: number | null
           id?: string
           image_url?: string | null
+          leaderboard_sponsor_interval_ms?: number
+          leaderboard_sponsor_style?: string
           location?: string | null
           max_players?: number | null
           organization_id?: string

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -26,9 +27,10 @@ interface TournamentSite {
   registration_open: boolean | null; course_par: number | null; template: string | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
+  scoring_format: string;
 }
 
-interface LeaderboardEntry { name: string; total: number; thru: number; }
+interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
 interface AuctionItem {
   id: string; title: string; description: string | null; type: string;
   starting_bid: number; current_bid: number; buy_now_price: number | null;
@@ -72,6 +74,98 @@ const templateStyles = {
     footerStyle: "charity",
   },
 };
+
+function buildLeaderboard(scoresData: any[], t: TournamentSite): LeaderboardEntry[] {
+  const fmt = getFormatById(t.scoring_format || "stroke_play");
+  const isTeam = fmt && fmt.teamSize > 1;
+  const isStableford = fmt?.scoring === "stableford";
+  const cPar = t.course_par || 72;
+  const holePar = Math.round(cPar / 18);
+
+  // Build per-player data
+  const playerData: Record<string, { name: string; group: number | null; holes: Record<number, number> }> = {};
+  scoresData.forEach((s: any) => {
+    const key = s.registration_id;
+    if (!playerData[key]) {
+      const reg = s.tournament_registrations;
+      playerData[key] = {
+        name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown",
+        group: reg?.group_number ?? null,
+        holes: {},
+      };
+    }
+    playerData[key].holes[s.hole_number] = s.strokes;
+  });
+
+  if (isTeam && (fmt.scoring === "best_ball" || fmt.scoring === "scramble" || fmt.scoring === "shamble")) {
+    // Group by group_number
+    const groups: Record<number, typeof playerData[string][]> = {};
+    Object.values(playerData).forEach((p) => {
+      if (p.group != null) {
+        if (!groups[p.group]) groups[p.group] = [];
+        groups[p.group].push(p);
+      }
+    });
+
+    return Object.entries(groups)
+      .map(([gn, players]) => {
+        let total = 0;
+        let holesPlayed = 0;
+        for (let h = 1; h <= 18; h++) {
+          const strokes = players.map((p) => p.holes[h]).filter((v) => v != null);
+          if (strokes.length > 0) {
+            total += Math.min(...strokes);
+            holesPlayed++;
+          }
+        }
+        return {
+          name: `Group ${gn}`,
+          total,
+          thru: holesPlayed,
+          isTeam: true,
+          players: players.map((p) => p.name),
+        };
+      })
+      .sort((a, b) => {
+        if (a.total === 0 && b.total === 0) return 0;
+        if (a.total === 0) return 1;
+        if (b.total === 0) return -1;
+        return a.total - b.total;
+      });
+  }
+
+  if (isStableford) {
+    return Object.values(playerData)
+      .map((p) => {
+        let points = 0;
+        const holesPlayed = Object.keys(p.holes).length;
+        Object.values(p.holes).forEach((strokes) => {
+          points += stablefordPoints(strokes, holePar);
+        });
+        return { name: p.name, total: points, thru: holesPlayed, points };
+      })
+      .sort((a, b) => {
+        if (a.total === 0 && b.total === 0) return 0;
+        if (a.total === 0) return 1;
+        if (b.total === 0) return -1;
+        return b.total - a.total; // Highest first
+      });
+  }
+
+  // Default stroke play
+  return Object.values(playerData)
+    .map((p) => ({
+      name: p.name,
+      total: Object.values(p.holes).reduce((s, v) => s + v, 0),
+      thru: Object.keys(p.holes).length,
+    }))
+    .sort((a, b) => {
+      if (a.total === 0 && b.total === 0) return 0;
+      if (a.total === 0) return 1;
+      if (b.total === 0) return -1;
+      return a.total - b.total;
+    });
+}
 
 const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -122,7 +216,7 @@ const PublicTournament = () => {
         const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
-          supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name)").eq("tournament_id", t.id),
+          supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
           supabase.from("tournament_auction_items").select("*").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_photos").select("id, image_url, caption").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_volunteer_roles").select("*, tournament_volunteers(id)").eq("tournament_id", t.id).order("sort_order"),
@@ -135,18 +229,7 @@ const PublicTournament = () => {
         setPhotos((photoRes.data as Photo[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
-          const playerScores: Record<string, { name: string; total: number; holes: number }> = {};
-          (scoresRes.data as any[]).forEach((s) => {
-            const key = s.registration_id;
-            if (!playerScores[key]) {
-              const reg = s.tournament_registrations;
-              playerScores[key] = { name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown", total: 0, holes: 0 };
-            }
-            playerScores[key].total += s.strokes;
-            playerScores[key].holes += 1;
-          });
-          const lb = Object.values(playerScores).sort((a, b) => a.total - b.total);
-          setLeaderboard(lb.map((p) => ({ name: p.name, total: p.total, thru: p.holes })));
+          setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
         }
 
         if (roleRes.data) {
@@ -170,20 +253,9 @@ const PublicTournament = () => {
     const channel = supabase
       .channel("live-scores")
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, () => {
-        supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name)").eq("tournament_id", tournament.id).then(({ data }) => {
+        supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", tournament.id).then(({ data }) => {
           if (!data) return;
-          const playerScores: Record<string, { name: string; total: number; holes: number }> = {};
-          (data as any[]).forEach((s) => {
-            const key = s.registration_id;
-            if (!playerScores[key]) {
-              const reg = s.tournament_registrations;
-              playerScores[key] = { name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown", total: 0, holes: 0 };
-            }
-            playerScores[key].total += s.strokes;
-            playerScores[key].holes += 1;
-          });
-          const lb = Object.values(playerScores).sort((a, b) => a.total - b.total);
-          setLeaderboard(lb.map((p) => ({ name: p.name, total: p.total, thru: p.holes })));
+          setLeaderboard(buildLeaderboard(data as any[], tournament));
         });
       })
       .subscribe();
@@ -658,7 +730,11 @@ const PublicTournament = () => {
       </section>
 
       {/* ===== LIVE LEADERBOARD ===== */}
-      {leaderboard.length > 0 && (
+      {leaderboard.length > 0 && (() => {
+        const fmt = getFormatById(tournament.scoring_format || "stroke_play");
+        const isStableford = fmt?.scoring === "stableford";
+        const isTeam = leaderboard[0]?.isTeam;
+        return (
         <section className="py-16 bg-white">
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -666,7 +742,14 @@ const PublicTournament = () => {
                 LIVE LEADERBOARD
               </h2>
               <div className="w-16 h-0.5 mx-auto mb-2" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-4" style={{ color: "#888" }}>Par {coursePar} • Updates in real-time</p>
+              <p className="text-center text-sm mb-1" style={{ color: "#888" }}>
+                Par {coursePar} • Updates in real-time
+              </p>
+              {fmt && fmt.id !== "stroke_play" && (
+                <p className="text-center text-xs mb-4 font-semibold" style={{ color: secondary }}>
+                  {fmt.name}
+                </p>
+              )}
               {(() => {
                 const lbSponsors = sponsors.filter(s => s.show_on_leaderboard);
                 const style = tournament.leaderboard_sponsor_style || 'banner';
@@ -691,27 +774,47 @@ const PublicTournament = () => {
                 }
                 return <div className="mb-6"><SponsorBanner sponsors={lbSponsors} intervalMs={interval} /></div>;
               })()}
+
+              {isStableford && (
+                <div className="flex justify-center gap-3 mb-4 text-xs" style={{ color: "#888" }}>
+                  <span>Eagle+ = 4pt</span>
+                  <span>Birdie = 3pt</span>
+                  <span className="font-semibold" style={{ color: "#333" }}>Par = 2pt</span>
+                  <span>Bogey = 1pt</span>
+                  <span>Double+ = 0pt</span>
+                </div>
+              )}
+
               <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: "#e5e5e5" }}>
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ backgroundColor: primary + "10", borderBottom: "1px solid #e5e5e5" }}>
                       <th className="text-left px-4 py-3 font-semibold">Pos</th>
-                      <th className="text-left px-4 py-3 font-semibold">Player</th>
-                      <th className="text-center px-4 py-3 font-semibold">Score</th>
-                      <th className="text-center px-4 py-3 font-semibold">To Par</th>
+                      <th className="text-left px-4 py-3 font-semibold">{isTeam ? "Team" : "Player"}</th>
+                      <th className="text-center px-4 py-3 font-semibold">{isStableford ? "Points" : "Score"}</th>
+                      {!isStableford && <th className="text-center px-4 py-3 font-semibold">To Par</th>}
                       <th className="text-center px-4 py-3 font-semibold">Thru</th>
                     </tr>
                   </thead>
                   <tbody>
                     {leaderboard.map((entry, i) => {
-                      const toPar = entry.total - Math.round((coursePar / 18) * entry.thru);
+                      const toPar = isStableford ? 0 : entry.total - Math.round((coursePar / 18) * entry.thru);
                       const toParStr = toPar === 0 ? "E" : toPar > 0 ? `+${toPar}` : `${toPar}`;
                       return (
                         <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                           <td className="px-4 py-3 font-bold" style={{ color: i < 3 ? secondary : "#333" }}>{i + 1}</td>
-                          <td className="px-4 py-3 font-medium" style={{ color: "#333" }}>{entry.name}</td>
-                          <td className="px-4 py-3 text-center font-bold" style={{ color: "#333" }}>{entry.total}</td>
-                          <td className="px-4 py-3 text-center" style={{ color: toPar < 0 ? "#dc2626" : toPar > 0 ? "#059669" : "#666" }}>{toParStr}</td>
+                          <td className="px-4 py-3" style={{ color: "#333" }}>
+                            <span className="font-medium">{entry.name}</span>
+                            {entry.isTeam && entry.players && (
+                              <span className="block text-xs mt-0.5" style={{ color: "#999" }}>
+                                {entry.players.join(", ")}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center font-bold" style={{ color: isStableford ? primary : "#333" }}>{entry.total}</td>
+                          {!isStableford && (
+                            <td className="px-4 py-3 text-center" style={{ color: toPar < 0 ? "#dc2626" : toPar > 0 ? "#059669" : "#666" }}>{toParStr}</td>
+                          )}
                           <td className="px-4 py-3 text-center" style={{ color: "#888" }}>{entry.thru}</td>
                         </tr>
                       );
@@ -722,7 +825,8 @@ const PublicTournament = () => {
             </motion.div>
           </div>
         </section>
-      )}
+        );
+      })()}
 
       {/* ===== REGISTRATION ===== */}
       {tournament.registration_open && !tournament.registration_url && (

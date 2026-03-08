@@ -25,7 +25,8 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.split(" ")[1]?.trim();
+    if (!token) throw new Error("Unauthorized");
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) throw new Error("Unauthorized");
 

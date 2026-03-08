@@ -64,7 +64,7 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables">("branding");
 
   useEffect(() => {
     if (!id) return;

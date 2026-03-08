@@ -12,11 +12,15 @@ import ScorecardsTab from "@/components/printables/ScorecardsTab";
 import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 
+interface TournamentWithSlug extends Tournament {
+  slug: string | null;
+}
+
 const Printables = () => {
   const { org } = useOrgContext();
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentWithSlug[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
-  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [tournament, setTournament] = useState<TournamentWithSlug | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,11 +29,11 @@ const Printables = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars")
+      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const list = (data || []) as Tournament[];
+        const list = (data || []) as TournamentWithSlug[];
         setTournaments(list);
         if (list.length > 0) setSelectedTournament(list[0].id);
         setLoading(false);
@@ -45,7 +49,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, group_number, group_position")
+        .select("id, first_name, last_name, email, group_number, group_position, scoring_code")
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase

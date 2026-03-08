@@ -122,7 +122,7 @@ const Onboarding = () => {
           {step === 2 && (
             <div className="space-y-6">
               <div className="grid gap-4">
-                {templates.map((template) => (
+                {SITE_TEMPLATES.map((template) => (
                   <button
                     key={template.id}
                     onClick={() => setSelectedTemplate(template.id)}

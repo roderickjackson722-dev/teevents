@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,18 +103,19 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    // Send notification emails
+    // Send notification emails via Resend
     try {
       if (tournament) {
-        const { data: notifEmails } = await supabaseAdmin
-          .from("notification_emails")
-          .select("email")
-          .eq("organization_id", tournament.organization_id)
-          .eq("notify_store_purchase", true);
-
-        if (notifEmails && notifEmails.length > 0) {
-          console.log(`[Notification] Store purchase: ${product.name} by ${buyer_email || "unknown"} → ${notifEmails.map((n: any) => n.email).join(", ")}`);
-        }
+        await sendNotificationEmails(
+          supabaseAdmin,
+          tournament.organization_id,
+          "notify_store_purchase",
+          `New Store Purchase — ${product.name}`,
+          buildNotificationHtml("New Store Purchase", [
+            `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>.`,
+            buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Unknown buyer",
+          ]),
+        );
       }
     } catch (e) {
       console.error("Notification error:", e);

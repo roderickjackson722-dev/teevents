@@ -86,6 +86,8 @@ const Players = () => {
     payment_status: "paid",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
+  const [editingScoringCode, setEditingScoringCode] = useState<string | null>(null);
+  const [scoringCodeInput, setScoringCodeInput] = useState("");
   useEffect(() => {
     if (!org) return;
     supabase

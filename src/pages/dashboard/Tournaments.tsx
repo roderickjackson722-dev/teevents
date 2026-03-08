@@ -26,6 +26,7 @@ interface Tournament {
   status: string;
   max_players: number | null;
   registration_open: boolean | null;
+  scoring_format: string;
 }
 
 const Tournaments = () => {

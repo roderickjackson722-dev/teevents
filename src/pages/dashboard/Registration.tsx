@@ -119,7 +119,9 @@ const Registration = () => {
 
     const tournament = tournaments.find((t) => t.id === tid);
     if (tournament) {
-      setFeeCents(tournament.registration_fee_cents || 0);
+      const cents = tournament.registration_fee_cents || 0;
+      setFeeCents(cents);
+      setFeeDisplay((cents / 100).toFixed(2));
       setRegOpen(tournament.registration_open || false);
       setMaxPlayers(tournament.max_players || 144);
     }

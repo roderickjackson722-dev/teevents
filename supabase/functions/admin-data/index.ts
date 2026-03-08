@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
       if (action === "update-prospect") {
         const updates: Record<string, unknown> = {};
-        for (const key of ["tournament_name", "organizer_name", "contact_name", "contact_email", "contact_phone", "location", "event_date", "source", "source_url", "status", "notes", "next_follow_up"]) {
+        for (const key of ["tournament_name", "organizer_name", "contact_name", "contact_email", "contact_phone", "location", "event_date", "source", "source_url", "status", "notes", "next_follow_up", "email_response_status", "follow_up_count"]) {
           if (body[key] !== undefined) updates[key] = body[key];
         }
         if (body.status === "contacted") updates.last_contacted_at = new Date().toISOString();

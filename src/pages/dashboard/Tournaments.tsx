@@ -14,7 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock } from "lucide-react";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users } from "lucide-react";
+import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface Tournament {
   id: string;

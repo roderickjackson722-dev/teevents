@@ -128,12 +128,14 @@ const DashboardHome = () => {
           <h2 className="text-lg font-display font-bold text-foreground">Quick Actions</h2>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link to="/dashboard/tournaments">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Tournament
-            </Link>
-          </Button>
+          {latestTournament && (
+            <Button asChild>
+              <Link to="/dashboard/players">
+                <Users className="h-4 w-4 mr-2" />
+                Players & Pairings
+              </Link>
+            </Button>
+          )}
           {latestTournament && latestTournament.slug && (
             <Button variant="outline" asChild>
               <Link to={`/t/${latestTournament.slug}`}>

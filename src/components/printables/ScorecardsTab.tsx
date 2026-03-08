@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Printer, Download, Loader2, Pencil, Check, X } from "lucide-react";
+import { Printer, Download, Loader2, Pencil, Check, X, QrCode } from "lucide-react";
 import { motion } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor } from "./types";
@@ -12,6 +14,7 @@ interface Props {
   tournament: Tournament | null;
   registrations: Registration[];
   loading: boolean;
+  slug?: string;
 }
 
 interface EditableReg extends Registration {
@@ -35,7 +38,12 @@ function getTotalPar(tournament: Tournament | null, numHoles: number): number {
   return tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
 }
 
-function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions) {
+function getScoringUrl(slug: string | undefined, scoringCode: string | undefined): string {
+  if (!slug || !scoringCode) return "";
+  return `${window.location.origin}/t/${slug}/scoring?code=${scoringCode}`;
+}
+
+function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string) {
   const color = getPrimaryColor(tournament);
   const fontMap: Record<string, string> = {
     georgia: "'Georgia', serif",
@@ -55,6 +63,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const firstName = r.customFirstName ?? r.first_name;
   const lastName = r.customLastName ?? r.last_name;
   const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : r.group_number;
+  const scoringCode = (r as any).scoring_code;
+  const scoringUrl = getScoringUrl(slug, scoringCode);
 
   const holeCells = Array.from({ length: numHoles }, (_, i) =>
     `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:600;width:36px;">${i + 1}</td>`
@@ -67,6 +77,15 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const emptyCells = Array.from({ length: numHoles }, () =>
     `<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td>`
   ).join("");
+
+  const qrSection = showScoringQR && scoringUrl ? `
+    <div style="display:flex;align-items:center;gap:12px;padding:0 16px 12px;">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(scoringUrl)}" style="width:80px;height:80px;" />
+      <div>
+        <div style="font-size:11px;font-weight:600;color:${color};">Scan to Enter Scores</div>
+        <div style="font-size:10px;color:#888;">Code: ${scoringCode}</div>
+      </div>
+    </div>` : "";
 
   return `
     <div style="page-break-inside:avoid;margin-bottom:24px;border:${borderStyle};border-radius:8px;overflow:hidden;font-family:${font};">
@@ -85,16 +104,18 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
           <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
         </table>
       </div>
-      ${opts.showStartingHole && groupNum != null ? `<div style="padding:0 16px 12px;font-size:11px;color:${color};">Starting Hole: ${groupNum}</div>` : ""}
+      ${opts.showStartingHole && groupNum != null ? `<div style="padding:0 16px ${showScoringQR ? '8px' : '12px'};font-size:11px;color:${color};">Starting Hole: ${groupNum}</div>` : ""}
+      ${qrSection}
     </div>`;
 }
 
-export default function ScorecardsTab({ tournament, registrations, loading }: Props) {
+export default function ScorecardsTab({ tournament, registrations, loading, slug }: Props) {
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, EditableReg>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ firstName: "", lastName: "", groupNumber: "" });
+  const [showScoringQR, setShowScoringQR] = useState(false);
 
   const totalPar = getTotalPar(tournament, numHoles);
   const fontImport = getFontImport(opts.font);
@@ -127,7 +148,7 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
   const cancelEdit = () => setEditingId(null);
 
   const editableRegs = registrations.map(getEditableReg);
-  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts)).join("");
+  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug)).join("");
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (registrations.length === 0) return <div className="text-center py-12 bg-card rounded-lg border border-border"><p className="text-muted-foreground">No registered players yet.</p></div>;
@@ -137,17 +158,25 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
       <PrintableSettings options={opts} onChange={setOpts} showCourseName />
 
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">Holes:</span>
-          <div className="inline-flex rounded-lg border border-border overflow-hidden">
-            <button onClick={() => setNumHoles(9)}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${numHoles === 9 ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}>
-              9 Holes
-            </button>
-            <button onClick={() => setNumHoles(18)}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${numHoles === 18 ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}>
-              18 Holes
-            </button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground">Holes:</span>
+            <div className="inline-flex rounded-lg border border-border overflow-hidden">
+              <button onClick={() => setNumHoles(9)}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${numHoles === 9 ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+                9 Holes
+              </button>
+              <button onClick={() => setNumHoles(18)}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${numHoles === 18 ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+                18 Holes
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={showScoringQR} onCheckedChange={setShowScoringQR} id="toggle-scoring-qr" />
+            <Label htmlFor="toggle-scoring-qr" className="text-xs cursor-pointer flex items-center gap-1">
+              <QrCode className="h-3.5 w-3.5" /> Scoring QR Code
+            </Label>
           </div>
         </div>
         <div className="flex gap-2">
@@ -180,6 +209,8 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
           const firstName = er.customFirstName ?? er.first_name;
           const lastName = er.customLastName ?? er.last_name;
           const groupNum = er.customGroupNumber !== undefined ? er.customGroupNumber : er.group_number;
+          const scoringCode = (r as any).scoring_code as string | undefined;
+          const scoringUrl = getScoringUrl(slug, scoringCode);
 
           return (
             <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -245,6 +276,23 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
                 </table>
               </div>
               {!isEditing && opts.showStartingHole && groupNum != null && <p className="text-xs text-primary mt-2">Starting Hole: {groupNum}</p>}
+              
+              {/* Scoring QR Code */}
+              {!isEditing && showScoringQR && scoringCode && scoringUrl && (
+                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(scoringUrl)}`} 
+                    alt="Scoring QR" 
+                    className="w-16 h-16" 
+                  />
+                  <div>
+                    <p className="text-xs font-semibold text-primary flex items-center gap-1">
+                      <QrCode className="h-3 w-3" /> Scan to Enter Scores
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Code: {scoringCode}</p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           );
         })}

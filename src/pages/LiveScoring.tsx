@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ interface Player {
 
 export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const [tournament, setTournament] = useState<{ id: string; title: string; course_par: number | null; scoring_format?: string } | null>(null);
   const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,7 @@ export default function LiveScoring() {
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [autoLogging, setAutoLogging] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -55,6 +57,63 @@ export default function LiveScoring() {
       });
   }, [slug]);
 
+  // Auto-login via scoring code from QR
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (!code || !tournament || autoLogging) return;
+    setAutoLogging(true);
+    
+    (async () => {
+      const { data } = await supabase
+        .from("tournament_registrations")
+        .select("group_number")
+        .eq("tournament_id", tournament.id)
+        .eq("scoring_code", code.toUpperCase())
+        .single();
+
+      if (data?.group_number) {
+        await loadGroup(data.group_number);
+      } else {
+        setError("Invalid scoring code or player not assigned to a group.");
+        setAutoLogging(false);
+      }
+    })();
+  }, [tournament, searchParams]);
+
+  const loadGroup = async (gNum: number) => {
+    if (!tournament) return;
+
+    const { data: groupPlayers } = await supabase
+      .from("tournament_registrations")
+      .select("id, first_name, last_name, handicap, group_number")
+      .eq("tournament_id", tournament.id)
+      .eq("group_number", gNum)
+      .order("group_position");
+
+    if (!groupPlayers || groupPlayers.length === 0) {
+      setError(`No players found in Group ${gNum}.`);
+      return;
+    }
+
+    const regIds = groupPlayers.map((p) => p.id);
+    const { data: existingScores } = await supabase
+      .from("tournament_scores")
+      .select("registration_id, hole_number, strokes")
+      .eq("tournament_id", tournament.id)
+      .in("registration_id", regIds);
+
+    const scoreMap: Record<string, Record<number, number>> = {};
+    existingScores?.forEach((s) => {
+      if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
+      scoreMap[s.registration_id][s.hole_number] = s.strokes;
+    });
+
+    setPlayers(groupPlayers);
+    setScores(scoreMap);
+    setGroupNumber(gNum);
+    setLoginMode(false);
+  };
+
   const handleLogin = async () => {
     if (!tournament) return;
     setError("");
@@ -76,35 +135,10 @@ export default function LiveScoring() {
       setError("Enter a group number or your email."); return;
     }
 
-    const { data: groupPlayers } = await supabase
-      .from("tournament_registrations")
-      .select("id, first_name, last_name, handicap, group_number")
-      .eq("tournament_id", tournament.id)
-      .eq("group_number", gNum)
-      .order("group_position");
-
-    if (!groupPlayers || groupPlayers.length === 0) {
-      setError(`No players found in Group ${gNum}.`); return;
+    await loadGroup(gNum);
+    if (players.length === 0 && error === "") {
+      setError(`No players found in Group ${gNum}.`);
     }
-
-    // Load existing scores
-    const regIds = groupPlayers.map((p) => p.id);
-    const { data: existingScores } = await supabase
-      .from("tournament_scores")
-      .select("registration_id, hole_number, strokes")
-      .eq("tournament_id", tournament.id)
-      .in("registration_id", regIds);
-
-    const scoreMap: Record<string, Record<number, number>> = {};
-    existingScores?.forEach((s) => {
-      if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
-      scoreMap[s.registration_id][s.hole_number] = s.strokes;
-    });
-
-    setPlayers(groupPlayers);
-    setScores(scoreMap);
-    setGroupNumber(gNum);
-    setLoginMode(false);
   };
 
   const updateScore = (regId: string, hole: number, value: string) => {
@@ -136,7 +170,6 @@ export default function LiveScoring() {
       });
       if (error) { toast.error(error.message); }
       else {
-        // Merge edited into scores
         setScores((prev) => {
           const next = { ...prev };
           Object.entries(editedScores).forEach(([regId, holes]) => {
@@ -154,7 +187,7 @@ export default function LiveScoring() {
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const hasEdits = Object.keys(editedScores).length > 0;
 
-  if (loading) {
+  if (loading || autoLogging) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

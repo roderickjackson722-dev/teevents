@@ -377,6 +377,7 @@ const Sponsors = () => {
                 </Label>
               </div>
 
+              <Button type="submit" className="w-full" disabled={saving}>
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {editSponsor ? "Update Sponsor" : "Add Sponsor"}
               </Button>

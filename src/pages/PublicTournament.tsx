@@ -562,6 +562,42 @@ const PublicTournament = () => {
               </span>
             )}
           </div>
+
+          {/* Countdown Timer */}
+          {countdown && !countdown.passed && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-8 flex items-center gap-4 sm:gap-6"
+            >
+              {[
+                { value: countdown.days, label: "Days" },
+                { value: countdown.hours, label: "Hours" },
+                { value: countdown.minutes, label: "Min" },
+                { value: countdown.seconds, label: "Sec" },
+              ].map((unit) => (
+                <div key={unit.label} className="text-center">
+                  <div
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center backdrop-blur-md"
+                    style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }}
+                  >
+                    <span className="text-2xl sm:text-3xl font-display font-bold" style={{ color: "#ffffff" }}>
+                      {String(unit.value).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-wider mt-2" style={{ color: "rgba(255,255,255,0.7)" }}>
+                    {unit.label}
+                  </p>
+                </div>
+              ))}
+            </motion.div>
+          )}
+          {countdown?.passed && (
+            <p className="mt-8 text-lg font-bold" style={{ color: secondary }}>
+              🎉 Event Day is Here!
+            </p>
+          )}
         </motion.div>
 
         {/* ===== CTA BUTTONS AT BOTTOM OF HERO ===== */}

@@ -101,6 +101,11 @@ const AdminDashboard = () => {
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [updatingOrgPlan, setUpdatingOrgPlan] = useState<string | null>(null);
 
+  // All tournaments state
+  const [allTournaments, setAllTournaments] = useState<any[]>([]);
+  const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
+  const [tournamentSearch, setTournamentSearch] = useState("");
+
   useEffect(() => {
     checkAdmin();
   }, []);

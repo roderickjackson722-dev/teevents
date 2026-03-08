@@ -132,7 +132,7 @@ const Settings = () => {
         window.open(data.url, "_blank");
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to open Stripe dashboard");
+      toast.error(getFunctionErrorMessage(err, "Failed to open Stripe dashboard"));
     }
   };
 

@@ -70,6 +70,21 @@ export default function Leaderboard() {
     enabled: !!selectedTournament,
   });
 
+  const { data: leaderboardSponsors } = useQuery({
+    queryKey: ["leaderboard-sponsors", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournament_sponsors")
+        .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
+        .eq("tournament_id", selectedTournament)
+        .eq("show_on_leaderboard", true)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
   useEffect(() => {
     if (!registrations || !scores) return;
     const scoreMap: Record<string, Record<number, number>> = {};

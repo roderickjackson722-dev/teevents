@@ -75,6 +75,98 @@ const templateStyles = {
   },
 };
 
+function buildLeaderboard(scoresData: any[], t: TournamentSite): LeaderboardEntry[] {
+  const fmt = getFormatById(t.scoring_format || "stroke_play");
+  const isTeam = fmt && fmt.teamSize > 1;
+  const isStableford = fmt?.scoring === "stableford";
+  const cPar = t.course_par || 72;
+  const holePar = Math.round(cPar / 18);
+
+  // Build per-player data
+  const playerData: Record<string, { name: string; group: number | null; holes: Record<number, number> }> = {};
+  scoresData.forEach((s: any) => {
+    const key = s.registration_id;
+    if (!playerData[key]) {
+      const reg = s.tournament_registrations;
+      playerData[key] = {
+        name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown",
+        group: reg?.group_number ?? null,
+        holes: {},
+      };
+    }
+    playerData[key].holes[s.hole_number] = s.strokes;
+  });
+
+  if (isTeam && (fmt.scoring === "best_ball" || fmt.scoring === "scramble" || fmt.scoring === "shamble")) {
+    // Group by group_number
+    const groups: Record<number, typeof playerData[string][]> = {};
+    Object.values(playerData).forEach((p) => {
+      if (p.group != null) {
+        if (!groups[p.group]) groups[p.group] = [];
+        groups[p.group].push(p);
+      }
+    });
+
+    return Object.entries(groups)
+      .map(([gn, players]) => {
+        let total = 0;
+        let holesPlayed = 0;
+        for (let h = 1; h <= 18; h++) {
+          const strokes = players.map((p) => p.holes[h]).filter((v) => v != null);
+          if (strokes.length > 0) {
+            total += Math.min(...strokes);
+            holesPlayed++;
+          }
+        }
+        return {
+          name: `Group ${gn}`,
+          total,
+          thru: holesPlayed,
+          isTeam: true,
+          players: players.map((p) => p.name),
+        };
+      })
+      .sort((a, b) => {
+        if (a.total === 0 && b.total === 0) return 0;
+        if (a.total === 0) return 1;
+        if (b.total === 0) return -1;
+        return a.total - b.total;
+      });
+  }
+
+  if (isStableford) {
+    return Object.values(playerData)
+      .map((p) => {
+        let points = 0;
+        const holesPlayed = Object.keys(p.holes).length;
+        Object.values(p.holes).forEach((strokes) => {
+          points += stablefordPoints(strokes, holePar);
+        });
+        return { name: p.name, total: points, thru: holesPlayed, points };
+      })
+      .sort((a, b) => {
+        if (a.total === 0 && b.total === 0) return 0;
+        if (a.total === 0) return 1;
+        if (b.total === 0) return -1;
+        return b.total - a.total; // Highest first
+      });
+  }
+
+  // Default stroke play
+  return Object.values(playerData)
+    .map((p) => ({
+      name: p.name,
+      total: Object.values(p.holes).reduce((s, v) => s + v, 0),
+      thru: Object.keys(p.holes).length,
+    }))
+    .sort((a, b) => {
+      if (a.total === 0 && b.total === 0) return 0;
+      if (a.total === 0) return 1;
+      if (b.total === 0) return -1;
+      return a.total - b.total;
+    });
+}
+
 const PublicTournament = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();

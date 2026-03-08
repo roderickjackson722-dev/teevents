@@ -23,9 +23,19 @@ Deno.serve(async (req) => {
     );
 
     const token = authHeader.split(" ")[1]?.trim();
-    if (!token) throw new Error("Unauthorized");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !user) throw new Error("Unauthorized");
+    let user = null;
+
+    if (token) {
+      const { data, error } = await supabaseClient.auth.getUser(token);
+      if (!error) user = data.user;
+    }
+
+    if (!user) {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (!error) user = data.user;
+    }
+
+    if (!user) throw new Error("Unauthorized");
 
     const userId = user.id;
 

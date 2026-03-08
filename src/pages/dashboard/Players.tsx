@@ -52,6 +52,7 @@ interface Registration {
   group_number: number | null;
   group_position: number | null;
   created_at: string;
+  scoring_code: string | null;
 }
 
 interface Tournament {

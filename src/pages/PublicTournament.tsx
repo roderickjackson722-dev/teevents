@@ -24,6 +24,7 @@ interface TournamentSite {
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
+  leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; }

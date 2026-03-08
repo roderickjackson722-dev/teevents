@@ -730,7 +730,11 @@ const PublicTournament = () => {
       </section>
 
       {/* ===== LIVE LEADERBOARD ===== */}
-      {leaderboard.length > 0 && (
+      {leaderboard.length > 0 && (() => {
+        const fmt = getFormatById(tournament.scoring_format || "stroke_play");
+        const isStableford = fmt?.scoring === "stableford";
+        const isTeam = leaderboard[0]?.isTeam;
+        return (
         <section className="py-16 bg-white">
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -738,7 +742,14 @@ const PublicTournament = () => {
                 LIVE LEADERBOARD
               </h2>
               <div className="w-16 h-0.5 mx-auto mb-2" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-4" style={{ color: "#888" }}>Par {coursePar} • Updates in real-time</p>
+              <p className="text-center text-sm mb-1" style={{ color: "#888" }}>
+                Par {coursePar} • Updates in real-time
+              </p>
+              {fmt && fmt.id !== "stroke_play" && (
+                <p className="text-center text-xs mb-4 font-semibold" style={{ color: secondary }}>
+                  {fmt.name}
+                </p>
+              )}
               {(() => {
                 const lbSponsors = sponsors.filter(s => s.show_on_leaderboard);
                 const style = tournament.leaderboard_sponsor_style || 'banner';
@@ -763,27 +774,47 @@ const PublicTournament = () => {
                 }
                 return <div className="mb-6"><SponsorBanner sponsors={lbSponsors} intervalMs={interval} /></div>;
               })()}
+
+              {isStableford && (
+                <div className="flex justify-center gap-3 mb-4 text-xs" style={{ color: "#888" }}>
+                  <span>Eagle+ = 4pt</span>
+                  <span>Birdie = 3pt</span>
+                  <span className="font-semibold" style={{ color: "#333" }}>Par = 2pt</span>
+                  <span>Bogey = 1pt</span>
+                  <span>Double+ = 0pt</span>
+                </div>
+              )}
+
               <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: "#e5e5e5" }}>
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ backgroundColor: primary + "10", borderBottom: "1px solid #e5e5e5" }}>
                       <th className="text-left px-4 py-3 font-semibold">Pos</th>
-                      <th className="text-left px-4 py-3 font-semibold">Player</th>
-                      <th className="text-center px-4 py-3 font-semibold">Score</th>
-                      <th className="text-center px-4 py-3 font-semibold">To Par</th>
+                      <th className="text-left px-4 py-3 font-semibold">{isTeam ? "Team" : "Player"}</th>
+                      <th className="text-center px-4 py-3 font-semibold">{isStableford ? "Points" : "Score"}</th>
+                      {!isStableford && <th className="text-center px-4 py-3 font-semibold">To Par</th>}
                       <th className="text-center px-4 py-3 font-semibold">Thru</th>
                     </tr>
                   </thead>
                   <tbody>
                     {leaderboard.map((entry, i) => {
-                      const toPar = entry.total - Math.round((coursePar / 18) * entry.thru);
+                      const toPar = isStableford ? 0 : entry.total - Math.round((coursePar / 18) * entry.thru);
                       const toParStr = toPar === 0 ? "E" : toPar > 0 ? `+${toPar}` : `${toPar}`;
                       return (
                         <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                           <td className="px-4 py-3 font-bold" style={{ color: i < 3 ? secondary : "#333" }}>{i + 1}</td>
-                          <td className="px-4 py-3 font-medium" style={{ color: "#333" }}>{entry.name}</td>
-                          <td className="px-4 py-3 text-center font-bold" style={{ color: "#333" }}>{entry.total}</td>
-                          <td className="px-4 py-3 text-center" style={{ color: toPar < 0 ? "#dc2626" : toPar > 0 ? "#059669" : "#666" }}>{toParStr}</td>
+                          <td className="px-4 py-3" style={{ color: "#333" }}>
+                            <span className="font-medium">{entry.name}</span>
+                            {entry.isTeam && entry.players && (
+                              <span className="block text-xs mt-0.5" style={{ color: "#999" }}>
+                                {entry.players.join(", ")}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center font-bold" style={{ color: isStableford ? primary : "#333" }}>{entry.total}</td>
+                          {!isStableford && (
+                            <td className="px-4 py-3 text-center" style={{ color: toPar < 0 ? "#dc2626" : toPar > 0 ? "#059669" : "#666" }}>{toParStr}</td>
+                          )}
                           <td className="px-4 py-3 text-center" style={{ color: "#888" }}>{entry.thru}</td>
                         </tr>
                       );
@@ -794,7 +825,8 @@ const PublicTournament = () => {
             </motion.div>
           </div>
         </section>
-      )}
+        );
+      })()}
 
       {/* ===== REGISTRATION ===== */}
       {tournament.registration_open && !tournament.registration_url && (

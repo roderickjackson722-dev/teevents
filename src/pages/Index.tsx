@@ -77,6 +77,7 @@ const fadeUp = {
 const Index = () => {
   return (
     <Layout>
+      <SEO title="Home" description="The all-in-one platform for nonprofits and corporations to plan, manage, and execute world-class golf tournaments." path="/" />
       {/* Hero */}
       <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
         <motion.div

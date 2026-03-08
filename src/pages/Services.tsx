@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import servicesBg from "@/assets/golf-services-bg.jpg";
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import servicesBg from "@/assets/golf-services-bg.jpg";
 import { Button } from "@/components/ui/button";

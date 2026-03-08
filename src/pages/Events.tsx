@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, MapPin, ExternalLink, Image, Trophy } from "lucide-react";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import aboutBg from "@/assets/golf-about-bg.jpg";

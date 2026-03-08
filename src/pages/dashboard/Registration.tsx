@@ -94,6 +94,7 @@ const Registration = () => {
   const [feeDisplay, setFeeDisplay] = useState<string>("0.00");
   const [feeCents, setFeeCents] = useState<number>(0);
   const [regOpen, setRegOpen] = useState<boolean>(false);
+  const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
 
   /* fetch tournaments */
@@ -123,7 +124,9 @@ const Registration = () => {
       setFeeCents(cents);
       setFeeDisplay((cents / 100).toFixed(2));
       setRegOpen(tournament.registration_open || false);
-      setMaxPlayers(tournament.max_players || 144);
+      const mp = tournament.max_players || 144;
+      setMaxPlayers(mp);
+      setMaxPlayersDisplay(String(mp));
     }
 
     const [fieldsRes, addonsRes, promoRes] = await Promise.all([
@@ -396,8 +399,13 @@ const Registration = () => {
                   <Input
                     type="number"
                     min="1"
-                    value={maxPlayers}
-                    onChange={(e) => setMaxPlayers(parseInt(e.target.value) || 144)}
+                    value={maxPlayersDisplay}
+                    onChange={(e) => {
+                      setMaxPlayersDisplay(e.target.value);
+                      const parsed = parseInt(e.target.value);
+                      if (!isNaN(parsed) && parsed > 0) setMaxPlayers(parsed);
+                    }}
+                    onBlur={() => setMaxPlayersDisplay(String(maxPlayers))}
                   />
                 </div>
                 <div className="flex flex-col gap-2">

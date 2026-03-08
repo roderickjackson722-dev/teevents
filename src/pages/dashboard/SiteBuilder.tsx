@@ -113,6 +113,7 @@ const SiteBuilder = () => {
         printable_font: settings.printable_font || "georgia",
         printable_layout: settings.printable_layout || "classic",
         hole_pars: settings.hole_pars || null,
+        countdown_style: settings.countdown_style || "glass",
       } as any)
       .eq("id", settings.id);
 

@@ -19,7 +19,7 @@ interface Player {
 
 export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
-  const [tournament, setTournament] = useState<{ id: string; title: string; course_par: number | null } | null>(null);
+  const [tournament, setTournament] = useState<{ id: string; title: string; course_par: number | null; scoring_format?: string } | null>(null);
   const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);

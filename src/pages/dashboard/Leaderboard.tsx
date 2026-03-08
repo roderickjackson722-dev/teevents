@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trophy, Loader2, Save, Share2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { Badge } from "@/components/ui/badge";
 
 interface PlayerScore {
   registration_id: string;
@@ -32,7 +34,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published")
+        .select("id, title, course_par, slug, site_published, scoring_format")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -219,12 +221,18 @@ export default function Leaderboard() {
       {selectedTournament && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 flex-wrap">
               <Trophy className="h-5 w-5" /> Scorecard
               {selectedTournamentData && (
-                <span className="text-sm font-normal text-muted-foreground ml-2">
-                  Par {selectedTournamentData.course_par || 72}
-                </span>
+                <>
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    Par {selectedTournamentData.course_par || 72}
+                  </span>
+                  {(() => {
+                    const fmt = getFormatById((selectedTournamentData as any).scoring_format || "stroke_play");
+                    return fmt ? <Badge variant="secondary" className="text-xs font-normal">{fmt.name}</Badge> : null;
+                  })()}
+                </>
               )}
             </CardTitle>
           </CardHeader>

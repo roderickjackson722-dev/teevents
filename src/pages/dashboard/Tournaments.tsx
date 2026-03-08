@@ -14,7 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock } from "lucide-react";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users } from "lucide-react";
+import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface Tournament {
   id: string;
@@ -25,6 +26,7 @@ interface Tournament {
   status: string;
   max_players: number | null;
   registration_open: boolean | null;
+  scoring_format: string;
 }
 
 const Tournaments = () => {
@@ -34,13 +36,13 @@ const Tournaments = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", date: "", location: "", course_name: "" });
+  const [form, setForm] = useState({ title: "", date: "", location: "", course_name: "", scoring_format: "scramble_4" });
 
   const fetchTournaments = async () => {
     if (!org) return;
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, status, max_players, registration_open")
+      .select("id, title, date, location, course_name, status, max_players, registration_open, scoring_format")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false });
     setTournaments(data || []);
@@ -62,13 +64,14 @@ const Tournaments = () => {
       date: form.date || null,
       location: form.location || null,
       course_name: form.course_name || null,
-    });
+      scoring_format: form.scoring_format,
+    } as any);
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Tournament created!", description: "Your planning checklist has been generated." });
-      setForm({ title: "", date: "", location: "", course_name: "" });
+      setForm({ title: "", date: "", location: "", course_name: "", scoring_format: "scramble_4" });
       setDialogOpen(false);
       fetchTournaments();
     }
@@ -139,6 +142,33 @@ const Tournaments = () => {
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
                   placeholder="e.g. Dallas, TX"
                 />
+              </div>
+              <div>
+                <Label className="mb-2 block">Scoring Format</Label>
+                <div className="grid gap-2 max-h-[240px] overflow-y-auto pr-1">
+                  {SCORING_FORMATS.map((fmt) => (
+                    <button
+                      type="button"
+                      key={fmt.id}
+                      onClick={() => setForm({ ...form, scoring_format: fmt.id })}
+                      className={`text-left rounded-lg border-2 p-3 transition-all ${
+                        form.scoring_format === fmt.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-foreground">{fmt.name}</span>
+                        {fmt.teamSize > 1 && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            <Users className="h-2.5 w-2.5" />{fmt.teamSize}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{fmt.description}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={creating}>
                 {creating && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -213,6 +243,15 @@ const Tournaments = () => {
                   })}
                 </p>
               )}
+              {(() => {
+                const fmt = SCORING_FORMATS.find(f => f.id === (t as any).scoring_format);
+                return fmt ? (
+                  <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5">
+                    <Users className="h-3 w-3" />
+                    {fmt.name}
+                  </p>
+                ) : null;
+              })()}
               <div className="mt-4 pt-3 border-t border-border">
                 <Link
                   to={`/dashboard/tournaments/${t.id}/site-builder`}

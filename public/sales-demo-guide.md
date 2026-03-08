@@ -69,23 +69,28 @@ TeeVents is the all-in-one golf tournament management platform. This document ou
 ---
 
 ### 6. LIVE SCORING & LEADERBOARD (1.5 min)
-**Talk Track:** "On tournament day, share a scoring link with your players. They log in with their group number or email and enter scores hole by hole. The leaderboard updates in real-time."
+**Talk Track:** "On tournament day, print scorecards with embedded QR codes. Players simply scan the code with their phone and get instant access to their group's scoring page — no login required. They enter scores hole by hole, and the leaderboard updates live."
 
 **Demo Paths:**
 - `/dashboard/leaderboard` — Admin scoring & leaderboard view
 - `/t/{slug}/scoring` — Player-facing scoring page
+- `/dashboard/printables` → Scorecards tab — Show QR code generation
 
 **Key Points:**
-- **Copy Scoring Link** button for organizers to share
-- Players enter group number OR email to access scoring
+- **Scoring QR Codes** printed on scorecards for instant player access
+- Print QR codes on scorecards from the Printables tab
+- Admin can regenerate all codes for security/reassignments
+- Players scan code → instant group access (no login)
 - 18-hole scorecard input per player
-- Real-time leaderboard sorted by total strokes
+- Real-time leaderboard with sponsor rotations
+- Alternative: players can still manually enter group number or email
 
 **Screenshots:**
+- Scorecard with embedded QR code
 - Admin leaderboard with scoring grid
-- "Copy Scoring Link" and "Preview" buttons
-- Player login screen (group number + email)
-- Player scoring interface
+- Printables page showing QR code toggle
+- Player scanning QR code on mobile
+- Player scoring interface with group auto-loaded
 
 ---
 
@@ -224,26 +229,27 @@ TeeVents is the all-in-one golf tournament management platform. This document ou
 3. ☐ Customer dashboard home (`/dashboard`)
 4. ☐ Site Builder with template preview
 5. ☐ Published tournament site (`/t/{slug}`)
-6. ☐ Player roster table
-7. ☐ Import players dialog
+6. ☐ Player roster table with scoring codes
+7. ☐ Scorecard printable with QR codes enabled
 8. ☐ Pairings drag-and-drop view
 9. ☐ Admin leaderboard & scoring
-10. ☐ Player-facing scoring login
-11. ☐ Player scoring scorecard
-12. ☐ Check-in dashboard
-13. ☐ Scan station page
-14. ☐ Sponsor management
-15. ☐ Budget tracking
-16. ☐ Messaging center
-17. ☐ Merchandise store
-18. ☐ Auction management
-19. ☐ Photo gallery
-20. ☐ Donation page with progress bar
-21. ☐ Survey builder
-22. ☐ Volunteer roles
-23. ☐ Planning guide checklist
-24. ☐ Upgrade plan page (`/dashboard/upgrade`)
-25. ☐ Mobile responsive views (registration, scoring, check-in)
+10. ☐ QR code on scorecard (mobile view)
+11. ☐ Player scanning QR code
+12. ☐ Player scoring interface (auto-loaded via QR)
+13. ☐ Check-in dashboard
+14. ☐ Scan station page
+15. ☐ Sponsor management
+16. ☐ Budget tracking
+17. ☐ Messaging center
+18. ☐ Merchandise store
+19. ☐ Auction management
+20. ☐ Photo gallery
+21. ☐ Donation page with progress bar
+22. ☐ Survey builder
+23. ☐ Volunteer roles
+24. ☐ Planning guide checklist
+25. ☐ Upgrade plan page (`/dashboard/upgrade`)
+26. ☐ Mobile responsive views (registration, QR scoring, check-in)
 
 ---
 

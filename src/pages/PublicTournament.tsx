@@ -199,6 +199,7 @@ const PublicTournament = () => {
   const [donationTotal, setDonationTotal] = useState(0);
   const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
   const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
 
   useEffect(() => {
     if (!slug) return;

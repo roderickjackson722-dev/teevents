@@ -91,6 +91,7 @@ const Registration = () => {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
 
   /* tournament settings */
+  const [feeDisplay, setFeeDisplay] = useState<string>("0.00");
   const [feeCents, setFeeCents] = useState<number>(0);
   const [regOpen, setRegOpen] = useState<boolean>(false);
   const [maxPlayers, setMaxPlayers] = useState<number>(144);

@@ -43,9 +43,9 @@ const features = [
   },
   {
     icon: Users,
-    title: "Player Pairings Database",
+    title: "Player Pairings & 8 Scoring Formats",
     description:
-      "Fast and easy golf pairings with drag-and-drop simplicity. Generate scorecards and cart signs in seconds.",
+      "Drag-and-drop pairings with support for Scramble, Best Ball, Stableford, Alternate Shot, Shamble, and Stroke Play. Generate scorecards and cart signs in seconds.",
   },
   {
     icon: Award,

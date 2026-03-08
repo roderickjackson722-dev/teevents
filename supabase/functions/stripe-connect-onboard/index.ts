@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   try {
     // Authenticate the organizer
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    if (!authHeader?.toLowerCase().startsWith("bearer ")) {
       throw new Error("Unauthorized");
     }
 
@@ -25,9 +25,20 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !user) throw new Error("Unauthorized");
+    const token = authHeader.split(" ")[1]?.trim();
+    let user = null;
+
+    if (token) {
+      const { data, error } = await supabaseClient.auth.getUser(token);
+      if (!error) user = data.user;
+    }
+
+    if (!user) {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (!error) user = data.user;
+    }
+
+    if (!user) throw new Error("Unauthorized");
 
     const userId = user.id;
 
@@ -78,9 +89,12 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("stripe-connect-onboard error:", message);
+    const status = message === "Unauthorized" ? 401 : 500;
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status,
     });
   }
 });

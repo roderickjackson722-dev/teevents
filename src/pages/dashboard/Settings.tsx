@@ -52,6 +52,17 @@ const Settings = () => {
     }
   }, [org]);
 
+  const getFunctionErrorMessage = (err: any, fallback: string) => {
+    const apiError = err?.context?.json?.error;
+    if (typeof apiError === "string" && apiError.length > 0) return apiError;
+
+    if (typeof err?.message === "string" && !err.message.includes("non-2xx")) {
+      return err.message;
+    }
+
+    return fallback;
+  };
+
   const handleSaveFormat = async (tournamentId: string) => {
     const newFormat = formatEdits[tournamentId];
     if (!newFormat) return;
@@ -102,7 +113,7 @@ const Settings = () => {
         window.location.href = data.url;
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to start Stripe onboarding");
+      toast.error(getFunctionErrorMessage(err, "Failed to start Stripe onboarding"));
       setOnboarding(false);
     }
   };
@@ -121,7 +132,7 @@ const Settings = () => {
         window.open(data.url, "_blank");
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to open Stripe dashboard");
+      toast.error(getFunctionErrorMessage(err, "Failed to open Stripe dashboard"));
     }
   };
 

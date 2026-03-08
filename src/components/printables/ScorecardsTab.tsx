@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor } from "./types";
+import { getPrimaryColor, getFontFamily } from "./types";
 
 interface Props {
   tournament: Tournament | null;
@@ -12,17 +13,37 @@ interface Props {
   loading: boolean;
 }
 
+function getHolePar(tournament: Tournament | null, holeIndex: number, numHoles: number): number {
+  if (tournament?.hole_pars && Array.isArray(tournament.hole_pars) && tournament.hole_pars[holeIndex] != null) {
+    return tournament.hole_pars[holeIndex];
+  }
+  const totalPar = tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
+  return Math.round(totalPar / numHoles);
+}
+
+function getTotalPar(tournament: Tournament | null, numHoles: number): number {
+  if (tournament?.hole_pars && Array.isArray(tournament.hole_pars)) {
+    return tournament.hole_pars.slice(0, numHoles).reduce((sum, p) => sum + (p || 0), 0);
+  }
+  return tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
+}
+
 function scorecardHtml(r: Registration, tournament: Tournament | null, numHoles: number) {
-  const par = tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
-  const parPerHole = Math.round(par / numHoles);
   const color = getPrimaryColor(tournament);
+  const font = getFontFamily(tournament);
+  const layout = tournament?.printable_layout || "classic";
+  const totalPar = getTotalPar(tournament, numHoles);
+
+  const borderStyle = layout === "bold" ? `3px solid ${color}` : layout === "modern" ? `1px solid #e0e0e0` : `2px solid ${color}`;
+  const headerBg = layout === "bold" ? color : "transparent";
+  const headerColor = layout === "bold" ? "#fff" : "#1a1a1a";
 
   const holeCells = Array.from({ length: numHoles }, (_, i) =>
     `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:600;width:36px;">${i + 1}</td>`
   ).join("");
 
-  const parCells = Array.from({ length: numHoles }, () =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${parPerHole}</td>`
+  const parCells = Array.from({ length: numHoles }, (_, i) =>
+    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles)}</td>`
   ).join("");
 
   const emptyCells = Array.from({ length: numHoles }, () =>
@@ -30,30 +51,30 @@ function scorecardHtml(r: Registration, tournament: Tournament | null, numHoles:
   ).join("");
 
   return `
-    <div style="page-break-inside:avoid;margin-bottom:24px;border:2px solid ${color};border-radius:8px;padding:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div style="page-break-inside:avoid;margin-bottom:24px;border:${borderStyle};border-radius:8px;overflow:hidden;font-family:${font};">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:${headerBg};color:${headerColor};">
         <div>
-          <div style="font-size:10px;font-weight:600;color:#666;letter-spacing:2px;text-transform:uppercase;">${tournament?.title ?? ""}</div>
+          <div style="font-size:10px;font-weight:600;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};letter-spacing:2px;text-transform:uppercase;">${tournament?.title ?? ""}</div>
           <div style="font-size:18px;font-weight:bold;">${r.first_name} ${r.last_name}</div>
-          ${tournament?.course_name ? `<div style="font-size:12px;color:#666;">${tournament.course_name} &bull; Par ${par} &bull; ${numHoles} Holes</div>` : ""}
+          ${tournament?.course_name ? `<div style="font-size:12px;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};">${tournament.course_name} &bull; Par ${totalPar} &bull; ${numHoles} Holes</div>` : ""}
         </div>
-        ${tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" style="height:40px;object-fit:contain;" />` : ""}
+        ${tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" style="height:40px;object-fit:contain;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
       </div>
-      <div style="overflow-x:auto;">
+      <div style="padding:0 16px 16px;overflow-x:auto;">
         <table style="border-collapse:collapse;width:100%;">
           <tr style="background:#f5f5f5;">${holeCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:700;background:#e8e8e8;">TOT</td></tr>
-          <tr>${parCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;font-weight:600;">${par}</td></tr>
+          <tr>${parCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;font-weight:600;">${totalPar}</td></tr>
           <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
         </table>
       </div>
-      ${r.group_number != null ? `<div style="margin-top:8px;font-size:11px;color:${color};">Starting Hole: ${r.group_number}</div>` : ""}
+      ${r.group_number != null ? `<div style="padding:0 16px 12px;font-size:11px;color:${color};">Starting Hole: ${r.group_number}</div>` : ""}
     </div>`;
 }
 
 export default function ScorecardsTab({ tournament, registrations, loading }: Props) {
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
-  const par = tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
-  const parPerHole = Math.round(par / numHoles);
+  const totalPar = getTotalPar(tournament, numHoles);
+  const fontImport = getFontImport(tournament?.printable_font ?? null);
 
   const allHtml = registrations.map((r) => scorecardHtml(r, tournament, numHoles)).join("");
 
@@ -81,14 +102,29 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Scorecards - ${tournament?.title}`, allHtml)}>
+          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Scorecards - ${tournament?.title}`, allHtml, fontImport)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Scorecards - ${tournament?.title}`, allHtml)}>
+          <Button onClick={() => openPrintWindow(`Scorecards - ${tournament?.title}`, allHtml, fontImport)}>
             <Printer className="h-4 w-4 mr-2" /> Print Scorecards
           </Button>
         </div>
       </div>
+
+      {/* Per-hole par display */}
+      {tournament?.hole_pars && tournament.hole_pars.length > 0 && (
+        <div className="mb-4 p-3 bg-muted/50 rounded-lg border border-border">
+          <p className="text-xs font-semibold text-muted-foreground mb-2">Custom Hole Pars (edit in Site Builder)</p>
+          <div className="flex flex-wrap gap-1">
+            {Array.from({ length: numHoles }, (_, i) => (
+              <span key={i} className="inline-flex items-center justify-center w-8 h-8 text-xs font-medium bg-card border border-border rounded">
+                {getHolePar(tournament, i, numHoles)}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4">
         {registrations.map((r) => (
           <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -98,7 +134,7 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
                 <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">{tournament?.title}</p>
                 <p className="text-lg font-display font-bold text-foreground">{r.first_name} {r.last_name}</p>
                 {tournament?.course_name && (
-                  <p className="text-xs text-muted-foreground">{tournament.course_name} &bull; Par {par} &bull; {numHoles} Holes</p>
+                  <p className="text-xs text-muted-foreground">{tournament.course_name} &bull; Par {totalPar} &bull; {numHoles} Holes</p>
                 )}
               </div>
               {tournament?.site_logo_url && <img src={tournament.site_logo_url} alt="" className="h-8 object-contain" />}
@@ -116,9 +152,11 @@ export default function ScorecardsTab({ tournament, registrations, loading }: Pr
                 <tbody>
                   <tr>
                     {Array.from({ length: numHoles }, (_, i) => (
-                      <td key={i} className="border border-border px-1.5 py-1 text-center text-muted-foreground">{parPerHole}</td>
+                      <td key={i} className="border border-border px-1.5 py-1 text-center text-muted-foreground">
+                        {getHolePar(tournament, i, numHoles)}
+                      </td>
                     ))}
-                    <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{par}</td>
+                    <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{totalPar}</td>
                   </tr>
                   <tr>
                     {Array.from({ length: numHoles + 1 }, (_, i) => (

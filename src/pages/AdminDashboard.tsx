@@ -553,6 +553,26 @@ const AdminDashboard = () => {
     }
   };
 
+  const toggleTournamentPublished = async (tournamentId: string, currentValue: boolean) => {
+    try {
+      await callAdminApi("toggle-tournament-published", { tournament_id: tournamentId, site_published: !currentValue });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, site_published: !currentValue } : t));
+      toast({ title: !currentValue ? "Tournament published!" : "Tournament unpublished" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleTournamentRegistration = async (tournamentId: string, currentValue: boolean) => {
+    try {
+      await callAdminApi("toggle-tournament-registration", { tournament_id: tournamentId, registration_open: !currentValue });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, registration_open: !currentValue } : t));
+      toast({ title: !currentValue ? "Registration opened!" : "Registration closed" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center">

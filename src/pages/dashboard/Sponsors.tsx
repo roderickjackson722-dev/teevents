@@ -173,6 +173,7 @@ const Sponsors = () => {
       website_url: form.website_url || null,
       description: form.description.trim() || null,
       amount: form.amount ? parseFloat(form.amount) : null,
+      show_on_leaderboard: form.show_on_leaderboard,
     };
 
     if (editSponsor) {

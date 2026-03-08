@@ -148,7 +148,7 @@ const Settings = () => {
     (!connectStatus?.charges_enabled || !connectStatus?.payouts_enabled);
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-1">

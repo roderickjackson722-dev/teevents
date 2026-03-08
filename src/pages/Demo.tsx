@@ -107,8 +107,8 @@ const coreModules = [
 ];
 
 const advancedFeatures = [
-  { icon: Trophy, title: "Live Leaderboard", desc: "Hole-by-hole scoring with real-time standings and course par integration." },
-  { icon: QrCode, title: "QR Code Check-In", desc: "Instant player check-in on tournament day — no paper lists." },
+  { icon: Trophy, title: "Live Leaderboard", desc: "Hole-by-hole scoring with real-time standings, QR code auto-login, and 8 scoring formats." },
+  { icon: QrCode, title: "QR Code Check-In & Scoring", desc: "Players scan QR codes on their scorecard to check in and instantly access live scoring — zero friction." },
   { icon: Gavel, title: "Auction & Raffle", desc: "Silent auctions with Buy Now, bid tracking, and online raffle ticket sales." },
   { icon: Heart, title: "Donation Portal", desc: "Fundraising goal tracking with progress bars and Stripe-powered donations." },
   { icon: ShoppingBag, title: "Merchandise Store", desc: "Sell branded apparel and gear with integrated checkout." },

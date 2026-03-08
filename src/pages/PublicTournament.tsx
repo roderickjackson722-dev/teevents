@@ -30,7 +30,7 @@ interface TournamentSite {
   scoring_format: string;
 }
 
-interface LeaderboardEntry { name: string; total: number; thru: number; }
+interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
 interface AuctionItem {
   id: string; title: string; description: string | null; type: string;
   starting_bid: number; current_bid: number; buy_now_price: number | null;

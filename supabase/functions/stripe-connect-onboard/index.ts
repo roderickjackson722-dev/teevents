@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   try {
     // Authenticate the organizer
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    if (!authHeader?.toLowerCase().startsWith("bearer ")) {
       throw new Error("Unauthorized");
     }
 

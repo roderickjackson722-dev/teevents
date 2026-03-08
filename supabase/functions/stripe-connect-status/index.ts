@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) throw new Error("Unauthorized");
+    if (!authHeader?.toLowerCase().startsWith("bearer ")) throw new Error("Unauthorized");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL")!,

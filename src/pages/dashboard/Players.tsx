@@ -206,6 +206,44 @@ const Players = () => {
     }
   };
 
+  const handleRegenerateAllCodes = async () => {
+    if (players.length === 0) return;
+    setRegenerating(true);
+    const generateCode = () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      return code;
+    };
+
+    const usedCodes = new Set<string>();
+    const updates: { id: string; code: string }[] = [];
+    for (const p of players) {
+      let code = generateCode();
+      while (usedCodes.has(code)) code = generateCode();
+      usedCodes.add(code);
+      updates.push({ id: p.id, code });
+    }
+
+    let success = 0;
+    for (const u of updates) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ scoring_code: u.code })
+        .eq("id", u.id);
+      if (!error) success++;
+    }
+
+    setPlayers((prev) =>
+      prev.map((p) => {
+        const u = updates.find((u) => u.id === p.id);
+        return u ? { ...p, scoring_code: u.code } : p;
+      })
+    );
+    setRegenerating(false);
+    toast({ title: "Codes regenerated", description: `${success} scoring codes updated.` });
+  };
+
 
   const maxGroupSize = 4;
   const unassigned = players.filter((p) => p.group_number === null);

@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trophy, Loader2, Save, Share2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { Badge } from "@/components/ui/badge";
 
 interface PlayerScore {
   registration_id: string;

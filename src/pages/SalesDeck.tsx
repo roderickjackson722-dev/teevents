@@ -169,7 +169,7 @@ const slides = [
     type: "pricing" as const,
     heading: "Simple, Transparent Pricing",
     plans: [
-      { name: "Base", price: "Free", fee: "5%", highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Leaderboard (Stroke Play)"] },
+      { name: "Base", price: "Free", fee: "5%", highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Leaderboard (Stroke Play & Best Ball)"] },
       { name: "Starter", price: "$499", fee: "3%", popular: true, highlights: ["All 6 templates + colors", "8 scoring formats", "Sponsors & budget", "Printables & SMS"] },
       { name: "Pro", price: "$999", fee: "2%", highlights: ["Merch store & auctions", "Surveys & volunteers", "Custom print styles", "Priority support"] },
       { name: "Enterprise", price: "Custom", fee: "1%", highlights: ["Unlimited tournaments", "Unlimited SMS", "White-label branding", "API access"] },

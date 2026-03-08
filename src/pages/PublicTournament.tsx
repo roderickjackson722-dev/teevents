@@ -295,6 +295,30 @@ const PublicTournament = () => {
     }
   }, [registered, sessionId]);
 
+  // Event countdown timer
+  useEffect(() => {
+    if (!tournament?.date) return;
+    const update = () => {
+      const now = new Date();
+      const event = new Date(tournament.date + "T08:00:00");
+      const diff = event.getTime() - now.getTime();
+      if (diff <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, passed: true });
+        return;
+      }
+      setCountdown({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        passed: false,
+      });
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [tournament]);
+
   const handlePlaceBid = async () => {
     if (!bidForm) return;
     const amount = parseFloat(bidForm.amount);

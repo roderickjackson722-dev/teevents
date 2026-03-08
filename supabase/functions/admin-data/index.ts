@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
       if (action === "update-prospect") {
         const updates: Record<string, unknown> = {};
-        for (const key of ["tournament_name", "organizer_name", "contact_name", "contact_email", "contact_phone", "location", "event_date", "source", "source_url", "status", "notes", "next_follow_up"]) {
+        for (const key of ["tournament_name", "organizer_name", "contact_name", "contact_email", "contact_phone", "location", "event_date", "source", "source_url", "status", "notes", "next_follow_up", "email_response_status", "follow_up_count"]) {
           if (body[key] !== undefined) updates[key] = body[key];
         }
         if (body.status === "contacted") updates.last_contacted_at = new Date().toISOString();
@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
         const updates: Record<string, unknown> = {
           last_email_template: body.template_slug,
           last_email_sent_at: new Date().toISOString(),
+          email_response_status: "sent",
           status: body.new_status || undefined,
         };
         if (body.new_status === "contacted") updates.last_contacted_at = new Date().toISOString();

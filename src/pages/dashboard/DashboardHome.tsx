@@ -47,7 +47,6 @@ const DashboardHome = () => {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Tournaments", value: tournamentCount, icon: Trophy, color: "text-primary" },
-          { label: "Planning Guide", value: "View", icon: ClipboardCheck, color: "text-secondary" },
           { label: "Players", value: "—", icon: Users, color: "text-primary" },
           { label: "Revenue", value: "—", icon: DollarSign, color: "text-secondary" },
         ].map((stat, i) => (

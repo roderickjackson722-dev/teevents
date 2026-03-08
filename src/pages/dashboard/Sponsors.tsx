@@ -136,6 +136,7 @@ const Sponsors = () => {
       website_url: sponsor.website_url || "",
       description: sponsor.description || "",
       amount: sponsor.amount?.toString() || "",
+      show_on_leaderboard: sponsor.show_on_leaderboard ?? true,
     });
     setDialogOpen(true);
   };

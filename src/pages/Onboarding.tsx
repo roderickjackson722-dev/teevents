@@ -8,30 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Check } from "lucide-react";
 import logoBlack from "@/assets/logo-black.png";
-
-const templates = [
-  {
-    id: "classic",
-    name: "Classic Green",
-    description: "Centered logo, timeless golf aesthetic with deep greens and gold accents. 3 CTA buttons in hero.",
-    colors: { primary: "#1a5c38", secondary: "#c8a84e" },
-    preview: { navStyle: "centered", heroAlign: "center", ctaCount: 3 },
-  },
-  {
-    id: "modern",
-    name: "Modern Navy",
-    description: "Logo in navigation, right-aligned hero text with navy blue and bold accents.",
-    colors: { primary: "#1e3a5f", secondary: "#e8b931" },
-    preview: { navStyle: "left-logo", heroAlign: "right", ctaCount: 3 },
-  },
-  {
-    id: "charity",
-    name: "Charity Warmth",
-    description: "Centered banner layout with warm tones, perfect for fundraising events. 2 CTA buttons.",
-    colors: { primary: "#8b2500", secondary: "#d4a017" },
-    preview: { navStyle: "centered", heroAlign: "center", ctaCount: 2 },
-  },
-];
+import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -65,7 +42,7 @@ const Onboarding = () => {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
-    const template = templates.find((t) => t.id === selectedTemplate)!;
+    const template = SITE_TEMPLATES.find((t) => t.id === selectedTemplate)!;
     const orgId = crypto.randomUUID();
 
     const { error: orgError } = await supabase
@@ -145,7 +122,7 @@ const Onboarding = () => {
           {step === 2 && (
             <div className="space-y-6">
               <div className="grid gap-4">
-                {templates.map((template) => (
+                {SITE_TEMPLATES.map((template) => (
                   <button
                     key={template.id}
                     onClick={() => setSelectedTemplate(template.id)}

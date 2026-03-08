@@ -88,6 +88,7 @@ const Sponsors = () => {
     website_url: "",
     description: "",
     amount: "",
+    show_on_leaderboard: true,
   });
 
   useEffect(() => {

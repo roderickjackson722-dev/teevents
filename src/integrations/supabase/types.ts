@@ -1356,6 +1356,7 @@ export type Database = {
           date: string | null
           description: string | null
           donation_goal_cents: number | null
+          hole_pars: Json | null
           id: string
           image_url: string | null
           leaderboard_sponsor_interval_ms: number
@@ -1363,6 +1364,8 @@ export type Database = {
           location: string | null
           max_players: number | null
           organization_id: string
+          printable_font: string
+          printable_layout: string
           registration_fee_cents: number | null
           registration_open: boolean | null
           registration_url: string | null
@@ -1391,6 +1394,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
+          hole_pars?: Json | null
           id?: string
           image_url?: string | null
           leaderboard_sponsor_interval_ms?: number
@@ -1398,6 +1402,8 @@ export type Database = {
           location?: string | null
           max_players?: number | null
           organization_id: string
+          printable_font?: string
+          printable_layout?: string
           registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null
@@ -1426,6 +1432,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
+          hole_pars?: Json | null
           id?: string
           image_url?: string | null
           leaderboard_sponsor_interval_ms?: number
@@ -1433,6 +1440,8 @@ export type Database = {
           location?: string | null
           max_players?: number | null
           organization_id?: string
+          printable_font?: string
+          printable_layout?: string
           registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null

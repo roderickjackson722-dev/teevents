@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils";
 import type { Tournament, Sponsor } from "./types";
-import { getPrimaryColor, getSecondaryColor } from "./types";
+import { getPrimaryColor, getSecondaryColor, getFontFamily } from "./types";
 
 interface Props {
   tournament: Tournament | null;
@@ -14,13 +14,14 @@ interface Props {
 function sponsorSignHtml(s: Sponsor, tournament: Tournament | null) {
   const primary = getPrimaryColor(tournament);
   const secondary = getSecondaryColor(tournament);
+  const font = getFontFamily(tournament);
   const tierColors: Record<string, string> = {
     platinum: "#1a1a1a", gold: secondary, silver: "#6b7280", bronze: "#92400e",
   };
   const color = tierColors[s.tier] || primary;
 
   return `
-    <div style="page-break-after:always;width:100%;height:7in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid ${color};border-radius:12px;padding:40px;text-align:center;">
+    <div style="page-break-after:always;width:100%;height:7in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid ${color};border-radius:12px;padding:40px;text-align:center;font-family:${font};">
       ${tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" alt="" style="height:50px;object-fit:contain;margin-bottom:16px;" />` : ""}
       <div style="font-size:12px;font-weight:600;color:#666;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">${tournament?.title ?? ""}</div>
       <div style="font-size:14px;font-weight:600;color:${color};letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;">${s.tier} Sponsor</div>
@@ -32,6 +33,7 @@ function sponsorSignHtml(s: Sponsor, tournament: Tournament | null) {
 }
 
 export default function SponsorSignsTab({ tournament, sponsors, loading }: Props) {
+  const fontImport = getFontImport(tournament?.printable_font ?? null);
   const allHtml = sponsors.map((s) => sponsorSignHtml(s, tournament)).join("");
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -43,10 +45,10 @@ export default function SponsorSignsTab({ tournament, sponsors, loading }: Props
   return (
     <>
       <div className="flex justify-end gap-2 mb-4">
-        <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Sponsor Signs - ${tournament?.title}`, allHtml)}>
+        <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Sponsor Signs - ${tournament?.title}`, allHtml, fontImport)}>
           <Download className="h-4 w-4 mr-2" /> Save as PDF
         </Button>
-        <Button onClick={() => openPrintWindow(`Sponsor Signs - ${tournament?.title}`, allHtml)}>
+        <Button onClick={() => openPrintWindow(`Sponsor Signs - ${tournament?.title}`, allHtml, fontImport)}>
           <Printer className="h-4 w-4 mr-2" /> Print Sponsor Signs
         </Button>
       </div>

@@ -21,8 +21,10 @@ import {
   ArrowLeft,
   ExternalLink,
   Check,
+  Printer,
 } from "lucide-react";
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
+import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 
 interface SiteSettings {
   id: string;
@@ -32,6 +34,7 @@ interface SiteSettings {
   date: string | null;
   location: string | null;
   course_name: string | null;
+  course_par: number | null;
   site_published: boolean | null;
   site_logo_url: string | null;
   site_hero_title: string | null;
@@ -47,6 +50,9 @@ interface SiteSettings {
   template: string | null;
   registration_fee_cents: number | null;
   custom_domain: string | null;
+  printable_font: string | null;
+  printable_layout: string | null;
+  hole_pars: number[] | null;
 }
 
 const SiteBuilder = () => {
@@ -58,7 +64,7 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables">("branding");
 
   useEffect(() => {
     if (!id) return;
@@ -73,7 +79,7 @@ const SiteBuilder = () => {
       });
   }, [id]);
 
-  const updateField = (field: keyof SiteSettings, value: string | boolean | number | null) => {
+  const updateField = (field: keyof SiteSettings, value: string | boolean | number | number[] | null) => {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
   };
@@ -103,7 +109,10 @@ const SiteBuilder = () => {
         template: settings.template || "classic",
         registration_fee_cents: settings.registration_fee_cents || 0,
         custom_domain: settings.custom_domain || null,
-      })
+        printable_font: settings.printable_font || "georgia",
+        printable_layout: settings.printable_layout || "classic",
+        hole_pars: settings.hole_pars || null,
+      } as any)
       .eq("id", settings.id);
 
     if (error) {
@@ -148,6 +157,7 @@ const SiteBuilder = () => {
     { key: "branding" as const, label: "Branding", icon: Palette },
     { key: "content" as const, label: "Content", icon: Type },
     { key: "contact" as const, label: "Contact", icon: Phone },
+    { key: "printables" as const, label: "Printables", icon: Printer },
     { key: "domain" as const, label: "Domain", icon: Globe },
   ];
 
@@ -538,6 +548,128 @@ const SiteBuilder = () => {
                   onChange={(e) => updateField("contact_phone", e.target.value)}
                   placeholder="(555) 123-4567"
                 />
+              </div>
+            </>
+          )}
+
+          {activeTab === "printables" && (
+            <>
+              <h2 className="text-lg font-display font-bold text-foreground">Printable Style</h2>
+              <p className="text-sm text-muted-foreground -mt-4">
+                Customize the look of printed materials like cart signs, scorecards, and badges.
+              </p>
+
+              {/* Font Selection */}
+              <div>
+                <Label>Print Font</Label>
+                <p className="text-xs text-muted-foreground mb-2">Choose a typeface for all printed materials.</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {PRINTABLE_FONTS.map((font) => (
+                    <button
+                      key={font.id}
+                      onClick={() => updateField("printable_font", font.id)}
+                      className={`flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all text-left ${
+                        (settings.printable_font || "georgia") === font.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div>
+                        <span className="text-sm font-semibold text-foreground">{font.name}</span>
+                        <span className="block text-xs text-muted-foreground" style={{ fontFamily: font.preview }}>
+                          The quick brown fox jumps over the lazy dog
+                        </span>
+                      </div>
+                      {(settings.printable_font || "georgia") === font.id && (
+                        <div className="bg-primary text-primary-foreground rounded-full p-0.5"><Check className="h-3 w-3" /></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Layout Selection */}
+              <div>
+                <Label>Layout Preset</Label>
+                <p className="text-xs text-muted-foreground mb-2">Choose a visual style for scorecards and signs.</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {PRINTABLE_LAYOUTS.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => updateField("printable_layout", layout.id)}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${
+                        (settings.printable_layout || "classic") === layout.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="mb-1">
+                        {layout.id === "classic" && (
+                          <div className="mx-auto w-12 h-8 border-2 rounded" style={{ borderColor: settings.site_primary_color || "#1a5c38" }} />
+                        )}
+                        {layout.id === "modern" && (
+                          <div className="mx-auto w-12 h-8 border rounded border-gray-200 bg-gray-50" />
+                        )}
+                        {layout.id === "bold" && (
+                          <div className="mx-auto w-12 h-8 rounded" style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }} />
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold text-foreground">{layout.name}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">{layout.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hole-by-Hole Par */}
+              <div>
+                <Label>Hole-by-Hole Par</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Set individual par values per hole. Leave blank to use course par ÷ holes.
+                </p>
+                <div className="grid grid-cols-9 gap-1.5">
+                  {Array.from({ length: 18 }, (_, i) => {
+                    const currentPars = settings.hole_pars || [];
+                    return (
+                      <div key={i} className="text-center">
+                        <span className="block text-[10px] font-semibold text-muted-foreground mb-0.5">{i + 1}</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="7"
+                          className="h-8 px-1 text-center text-sm"
+                          value={currentPars[i] ?? ""}
+                          placeholder={String(Math.round((settings.course_par || 72) / 18))}
+                          onChange={(e) => {
+                            const val = e.target.value ? parseInt(e.target.value) : null;
+                            const newPars = [...(settings.hole_pars || Array(18).fill(null))];
+                            // Ensure array is 18 long
+                            while (newPars.length < 18) newPars.push(null);
+                            newPars[i] = val;
+                            // If all null, clear the array
+                            const allNull = newPars.every((p) => p === null);
+                            updateField("hole_pars", allNull ? null : newPars as any);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                {settings.hole_pars && settings.hole_pars.some((p) => p != null) && (
+                  <div className="flex items-center justify-between mt-3 p-2 bg-muted/50 rounded-lg">
+                    <span className="text-xs text-muted-foreground">
+                      Total Par: <strong className="text-foreground">
+                        {settings.hole_pars.reduce((sum, p, i) => sum + (p ?? Math.round((settings.course_par || 72) / 18)), 0)}
+                      </strong>
+                    </span>
+                    <button
+                      onClick={() => updateField("hole_pars", null)}
+                      className="text-xs text-destructive hover:underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           )}

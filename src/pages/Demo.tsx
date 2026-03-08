@@ -60,8 +60,8 @@ const coreModules = [
     image: demoRegistration,
     bullets: [
       "Stripe-powered checkout with Apple Pay & Google Pay",
-      "Configurable registration fees per tournament",
-      "Automated email confirmations on signup",
+      "Registration add-ons (mulligans, dinner tickets, hole packages)",
+      "Custom fields, promo codes & automated email confirmations",
     ],
   },
   {

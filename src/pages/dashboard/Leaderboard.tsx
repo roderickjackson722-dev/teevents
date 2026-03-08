@@ -212,6 +212,10 @@ export default function Leaderboard() {
         )}
       </div>
 
+      {selectedTournament && leaderboardSponsors && leaderboardSponsors.length > 0 && (
+        <SponsorBanner sponsors={leaderboardSponsors} />
+      )}
+
       {selectedTournament && (
         <Card>
           <CardHeader>

@@ -1,0 +1,1 @@
+ALTER TABLE public.tournament_sponsors ADD COLUMN show_on_leaderboard boolean NOT NULL DEFAULT true;

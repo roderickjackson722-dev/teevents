@@ -50,6 +50,7 @@ interface Sponsor {
   amount: number | null;
   is_paid: boolean | null;
   sort_order: number | null;
+  show_on_leaderboard: boolean;
 }
 
 interface Tournament {

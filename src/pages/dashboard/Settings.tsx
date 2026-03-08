@@ -13,9 +13,15 @@ import {
   Palette,
   ArrowRight,
   Zap,
+  Trophy,
+  Users,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface ConnectStatus {
   connected: boolean;
@@ -30,10 +36,38 @@ const Settings = () => {
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [onboarding, setOnboarding] = useState(false);
+  const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string }[]>([]);
+  const [formatEdits, setFormatEdits] = useState<Record<string, string>>({});
+  const [savingFormat, setSavingFormat] = useState<string | null>(null);
 
   useEffect(() => {
     fetchConnectStatus();
-  }, []);
+    if (org) {
+      supabase
+        .from("tournaments")
+        .select("id, title, scoring_format")
+        .eq("organization_id", org.orgId)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => setTournaments((data as any) || []));
+    }
+  }, [org]);
+
+  const handleSaveFormat = async (tournamentId: string) => {
+    const newFormat = formatEdits[tournamentId];
+    if (!newFormat) return;
+    setSavingFormat(tournamentId);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ scoring_format: newFormat } as any)
+      .eq("id", tournamentId);
+    if (error) { toast.error(error.message); }
+    else {
+      toast.success("Scoring format updated!");
+      setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, scoring_format: newFormat } : t));
+      setFormatEdits((prev) => { const n = { ...prev }; delete n[tournamentId]; return n; });
+    }
+    setSavingFormat(null);
+  };
 
   const fetchConnectStatus = async () => {
     try {
@@ -211,6 +245,70 @@ const Settings = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Tournament Scoring Formats */}
+      {tournaments.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-card rounded-lg border border-border p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <Trophy className="h-6 w-6 text-primary" />
+            <h2 className="text-lg font-display font-bold text-foreground">Scoring Formats</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Change the scoring format for any tournament. This affects how the leaderboard calculates and displays results.
+          </p>
+          <div className="space-y-4">
+            {tournaments.map((t) => {
+              const currentFormat = formatEdits[t.id] ?? t.scoring_format;
+              const hasChange = formatEdits[t.id] != null && formatEdits[t.id] !== t.scoring_format;
+              const fmt = SCORING_FORMATS.find((f) => f.id === currentFormat);
+              return (
+                <div key={t.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border border-border">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground text-sm truncate">{t.title}</p>
+                    {fmt && <p className="text-xs text-muted-foreground mt-0.5">{fmt.description}</p>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={currentFormat}
+                      onValueChange={(val) => setFormatEdits((prev) => ({ ...prev, [t.id]: val }))}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SCORING_FORMATS.map((f) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            <div className="flex items-center gap-1.5">
+                              {f.name}
+                              {f.teamSize > 1 && (
+                                <span className="text-[10px] text-muted-foreground">({f.teamSize}p)</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {hasChange && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveFormat(t.id)}
+                        disabled={savingFormat === t.id}
+                      >
+                        {savingFormat === t.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

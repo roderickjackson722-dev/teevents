@@ -142,6 +142,33 @@ const Tournaments = () => {
                   placeholder="e.g. Dallas, TX"
                 />
               </div>
+              <div>
+                <Label className="mb-2 block">Scoring Format</Label>
+                <div className="grid gap-2 max-h-[240px] overflow-y-auto pr-1">
+                  {SCORING_FORMATS.map((fmt) => (
+                    <button
+                      type="button"
+                      key={fmt.id}
+                      onClick={() => setForm({ ...form, scoring_format: fmt.id })}
+                      className={`text-left rounded-lg border-2 p-3 transition-all ${
+                        form.scoring_format === fmt.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-foreground">{fmt.name}</span>
+                        {fmt.teamSize > 1 && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            <Users className="h-2.5 w-2.5" />{fmt.teamSize}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{fmt.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button type="submit" className="w-full" disabled={creating}>
                 {creating && <Loader2 className="h-4 w-4 animate-spin" />}
                 Create Tournament

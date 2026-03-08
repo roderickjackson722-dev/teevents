@@ -52,6 +52,17 @@ const Settings = () => {
     }
   }, [org]);
 
+  const getFunctionErrorMessage = (err: any, fallback: string) => {
+    const apiError = err?.context?.json?.error;
+    if (typeof apiError === "string" && apiError.length > 0) return apiError;
+
+    if (typeof err?.message === "string" && !err.message.includes("non-2xx")) {
+      return err.message;
+    }
+
+    return fallback;
+  };
+
   const handleSaveFormat = async (tournamentId: string) => {
     const newFormat = formatEdits[tournamentId];
     if (!newFormat) return;

@@ -4,7 +4,7 @@ import {
   Globe, CreditCard, Users, BarChart3, Award, MessageSquare,
   CheckCircle, Trophy, Camera, ShoppingBag, Gavel, Heart,
   QrCode, ClipboardList, ArrowRight, Smartphone, Star, Zap,
-  LayoutDashboard, PieChart, Send, UserCheck
+  LayoutDashboard, PieChart, Send, UserCheck, FileText, Printer
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";

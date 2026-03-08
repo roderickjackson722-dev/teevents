@@ -225,12 +225,12 @@ function QuickFlyer() {
               "Silent auction & raffle management",
               "Photo gallery on your event site",
               "Donation page with fundraising goals",
-              "Printable scorecards, cart signs & badges",
-              "4 countdown timer styles",
+              "6 printable types: scorecards, cart signs, badges & more",
+              "Registration add-ons & tournament promo codes",
               "Volunteer coordination & signups",
               "Post-event surveys & feedback",
               "30-item planning checklist",
-              "Hole-by-hole par customization",
+              "Custom registration fields & hole-by-hole pars",
             ].map((f, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />

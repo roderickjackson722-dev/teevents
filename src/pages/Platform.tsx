@@ -65,11 +65,15 @@ const additionalFeatures = [
   "Automated email confirmations",
   "QR code check-in for golfers",
   "Live leaderboard & scoring",
+  "8 scoring formats (Scramble, Best Ball, Stableford & more)",
   "Auction & raffle management",
   "Photo gallery integration",
   "Volunteer coordination tools",
   "Custom branded merchandise store",
   "Post-event survey & analytics",
+  "Printable scorecards, cart signs & badges",
+  "Event countdown timer (4 styles)",
+  "Hole-by-hole par customization",
 ];
 
 const plans = [

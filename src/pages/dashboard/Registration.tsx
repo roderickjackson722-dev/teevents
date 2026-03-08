@@ -380,8 +380,13 @@ const Registration = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={(feeCents / 100).toFixed(2)}
-                    onChange={(e) => setFeeCents(Math.round(parseFloat(e.target.value || "0") * 100))}
+                    value={feeDisplay}
+                    onChange={(e) => {
+                      setFeeDisplay(e.target.value);
+                      const parsed = parseFloat(e.target.value);
+                      if (!isNaN(parsed)) setFeeCents(Math.round(parsed * 100));
+                    }}
+                    onBlur={() => setFeeDisplay((feeCents / 100).toFixed(2))}
                     placeholder="0.00"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Set to $0 for free registration</p>

@@ -42,7 +42,7 @@ const Onboarding = () => {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
-    const template = templates.find((t) => t.id === selectedTemplate)!;
+    const template = SITE_TEMPLATES.find((t) => t.id === selectedTemplate)!;
     const orgId = crypto.randomUUID();
 
     const { error: orgError } = await supabase

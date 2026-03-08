@@ -552,6 +552,128 @@ const SiteBuilder = () => {
             </>
           )}
 
+          {activeTab === "printables" && (
+            <>
+              <h2 className="text-lg font-display font-bold text-foreground">Printable Style</h2>
+              <p className="text-sm text-muted-foreground -mt-4">
+                Customize the look of printed materials like cart signs, scorecards, and badges.
+              </p>
+
+              {/* Font Selection */}
+              <div>
+                <Label>Print Font</Label>
+                <p className="text-xs text-muted-foreground mb-2">Choose a typeface for all printed materials.</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {PRINTABLE_FONTS.map((font) => (
+                    <button
+                      key={font.id}
+                      onClick={() => updateField("printable_font", font.id)}
+                      className={`flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all text-left ${
+                        (settings.printable_font || "georgia") === font.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div>
+                        <span className="text-sm font-semibold text-foreground">{font.name}</span>
+                        <span className="block text-xs text-muted-foreground" style={{ fontFamily: font.preview }}>
+                          The quick brown fox jumps over the lazy dog
+                        </span>
+                      </div>
+                      {(settings.printable_font || "georgia") === font.id && (
+                        <div className="bg-primary text-primary-foreground rounded-full p-0.5"><Check className="h-3 w-3" /></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Layout Selection */}
+              <div>
+                <Label>Layout Preset</Label>
+                <p className="text-xs text-muted-foreground mb-2">Choose a visual style for scorecards and signs.</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {PRINTABLE_LAYOUTS.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => updateField("printable_layout", layout.id)}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${
+                        (settings.printable_layout || "classic") === layout.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="mb-1">
+                        {layout.id === "classic" && (
+                          <div className="mx-auto w-12 h-8 border-2 rounded" style={{ borderColor: settings.site_primary_color || "#1a5c38" }} />
+                        )}
+                        {layout.id === "modern" && (
+                          <div className="mx-auto w-12 h-8 border rounded border-gray-200 bg-gray-50" />
+                        )}
+                        {layout.id === "bold" && (
+                          <div className="mx-auto w-12 h-8 rounded" style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }} />
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold text-foreground">{layout.name}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">{layout.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hole-by-Hole Par */}
+              <div>
+                <Label>Hole-by-Hole Par</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Set individual par values per hole. Leave blank to use course par ÷ holes.
+                </p>
+                <div className="grid grid-cols-9 gap-1.5">
+                  {Array.from({ length: 18 }, (_, i) => {
+                    const currentPars = settings.hole_pars || [];
+                    return (
+                      <div key={i} className="text-center">
+                        <span className="block text-[10px] font-semibold text-muted-foreground mb-0.5">{i + 1}</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="7"
+                          className="h-8 px-1 text-center text-sm"
+                          value={currentPars[i] ?? ""}
+                          placeholder={String(Math.round((settings.course_par || 72) / 18))}
+                          onChange={(e) => {
+                            const val = e.target.value ? parseInt(e.target.value) : null;
+                            const newPars = [...(settings.hole_pars || Array(18).fill(null))];
+                            // Ensure array is 18 long
+                            while (newPars.length < 18) newPars.push(null);
+                            newPars[i] = val;
+                            // If all null, clear the array
+                            const allNull = newPars.every((p) => p === null);
+                            updateField("hole_pars", allNull ? null : newPars as any);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                {settings.hole_pars && settings.hole_pars.some((p) => p != null) && (
+                  <div className="flex items-center justify-between mt-3 p-2 bg-muted/50 rounded-lg">
+                    <span className="text-xs text-muted-foreground">
+                      Total Par: <strong className="text-foreground">
+                        {settings.hole_pars.reduce((sum, p, i) => sum + (p ?? Math.round((settings.course_par || 72) / 18)), 0)}
+                      </strong>
+                    </span>
+                    <button
+                      onClick={() => updateField("hole_pars", null)}
+                      className="text-xs text-destructive hover:underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
           {activeTab === "domain" && (
             <>
               <h2 className="text-lg font-display font-bold text-foreground">Domain Settings</h2>

@@ -113,7 +113,7 @@ const Settings = () => {
         window.location.href = data.url;
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to start Stripe onboarding");
+      toast.error(getFunctionErrorMessage(err, "Failed to start Stripe onboarding"));
       setOnboarding(false);
     }
   };

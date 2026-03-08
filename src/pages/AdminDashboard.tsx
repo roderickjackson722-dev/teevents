@@ -582,8 +582,9 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
           <div className="flex flex-wrap gap-2 mb-8 border-b border-border pb-2">
-             {([
+           {([
               ["events", "Tournaments", Calendar],
+              ["all-tournaments", "All User Tournaments", Trophy],
               ["requests", "Access Requests", Users],
               ["emails", "Auto-Approve Emails", Mail],
               ["reviews", "Reviews", Star],

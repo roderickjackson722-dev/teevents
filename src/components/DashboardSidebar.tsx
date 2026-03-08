@@ -47,6 +47,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
   { title: "Tournaments", url: "/dashboard/tournaments", icon: Trophy, feature: null },
   { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
+  { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null },
 ];
 
 const managementItems = [

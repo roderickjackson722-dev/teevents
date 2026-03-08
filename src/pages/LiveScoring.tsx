@@ -218,6 +218,11 @@ export default function LiveScoring() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-5xl mx-auto space-y-4">
+        {sponsors.length > 0 && (
+          <div className="mb-2">
+            <SponsorBanner sponsors={sponsors} />
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div>
             <button onClick={() => setLoginMode(true)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-1">

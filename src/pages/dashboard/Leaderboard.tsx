@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy, Loader2, Save, Share2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { SponsorBanner } from "@/components/SponsorBanner";
 
 interface PlayerScore {
   registration_id: string;

@@ -3,20 +3,34 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
-import { Trophy, Plus, ClipboardCheck, Users, DollarSign } from "lucide-react";
+import { Trophy, Plus, ClipboardCheck, Users, DollarSign, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+interface Tournament {
+  id: string;
+  slug: string | null;
+  title: string;
+}
 
 const DashboardHome = () => {
   const { org } = useOrgContext();
   const [tournamentCount, setTournamentCount] = useState(0);
+  const [latestTournament, setLatestTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id", { count: "exact", head: true })
+      .select("id, slug, title", { count: "exact" })
       .eq("organization_id", org.orgId)
-      .then(({ count }) => setTournamentCount(count ?? 0));
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .then(({ data, count }) => {
+        setTournamentCount(count ?? 0);
+        if (data && data.length > 0) {
+          setLatestTournament(data[0]);
+        }
+      });
   }, [org]);
 
   return (
@@ -70,6 +84,14 @@ const DashboardHome = () => {
               Planning Guide
             </Link>
           </Button>
+          {latestTournament && latestTournament.slug && (
+            <Button variant="outline" asChild>
+              <Link to={`/t/${latestTournament.slug}`}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Tournament
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     </div>

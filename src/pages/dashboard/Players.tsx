@@ -136,6 +136,25 @@ const Players = () => {
     }
   };
 
+  const handleSaveScoringCode = async (playerId: string) => {
+    const code = scoringCodeInput.trim().toUpperCase();
+    if (!code) {
+      toast({ title: "Code cannot be empty", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ scoring_code: code })
+      .eq("id", playerId);
+    if (error) {
+      toast({ title: "Error", description: error.message.includes("unique") ? "This code is already in use" : error.message, variant: "destructive" });
+    } else {
+      setPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
+      setEditingScoringCode(null);
+      toast({ title: "Scoring code updated" });
+    }
+  };
+
   const handleExportCSV = () => {
     const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment"];
     const rows = players.map((p) => [

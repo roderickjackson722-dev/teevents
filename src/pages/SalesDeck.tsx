@@ -103,9 +103,9 @@ const slides = [
     id: "scoring",
     type: "feature" as const,
     heading: "Live Scoring & Leaderboard",
-    description: "Players enter their own scores via a mobile-friendly scoring page. They log in with their group number or email — no app download needed. The leaderboard updates in real-time as scores come in.",
+    description: "Players enter their own scores via a mobile-friendly scoring page — no app download needed. Supports 8 formats including Scramble, Best Ball, Stableford, Alternate Shot, and Shamble. The leaderboard updates in real-time with sponsor rotations.",
     image: salesScoring,
-    highlights: ["Live Leaderboard", "8 Scoring Formats", "Public Scoring Page", "Stableford & Best Ball"],
+    highlights: ["8 Scoring Formats", "Real-Time Leaderboard", "Stableford Points", "Sponsor Rotations"],
   },
   {
     id: "checkin",

@@ -18,6 +18,7 @@ import {
   Heart,
   Lock,
   FileEdit,
+  Printer,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -46,6 +47,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
   { title: "Tournaments", url: "/dashboard/tournaments", icon: Trophy, feature: null },
   { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
+  { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null },
 ];
 
 const managementItems = [

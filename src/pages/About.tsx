@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
+import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 

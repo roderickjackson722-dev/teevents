@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
@@ -550,6 +550,26 @@ const AdminDashboard = () => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setUpdatingOrgPlan(null);
+    }
+  };
+
+  const toggleTournamentPublished = async (tournamentId: string, currentValue: boolean) => {
+    try {
+      await callAdminApi("toggle-tournament-published", { tournament_id: tournamentId, site_published: !currentValue });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, site_published: !currentValue } : t));
+      toast({ title: !currentValue ? "Tournament published!" : "Tournament unpublished" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleTournamentRegistration = async (tournamentId: string, currentValue: boolean) => {
+    try {
+      await callAdminApi("toggle-tournament-registration", { tournament_id: tournamentId, registration_open: !currentValue });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, registration_open: !currentValue } : t));
+      toast({ title: !currentValue ? "Registration opened!" : "Registration closed" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
@@ -1222,7 +1242,10 @@ const AdminDashboard = () => {
                     <tr>
                       <th className="text-left p-3 font-medium">Tournament</th>
                       <th className="text-left p-3 font-medium">Organization</th>
+                      <th className="text-center p-3 font-medium">Players</th>
                       <th className="text-left p-3 font-medium">Plan</th>
+                      <th className="text-center p-3 font-medium">Published</th>
+                      <th className="text-center p-3 font-medium">Reg Open</th>
                       <th className="text-left p-3 font-medium">Status</th>
                       <th className="text-left p-3 font-medium">Date</th>
                       <th className="text-left p-3 font-medium">Actions</th>
@@ -1259,6 +1282,15 @@ const AdminDashboard = () => {
                             <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
                           )}
                         </td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="font-semibold">{t.tournament_registrations?.length || 0}</span>
+                            {t.max_players && (
+                              <span className="text-muted-foreground text-xs">/ {t.max_players}</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <select
@@ -1275,6 +1307,34 @@ const AdminDashboard = () => {
                             {updatingOrgPlan === t.organization_id && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
                           </div>
                         </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => toggleTournamentPublished(t.id, !!t.site_published)}
+                            className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium transition-colors cursor-pointer ${
+                              t.site_published
+                                ? "bg-primary/15 text-primary hover:bg-primary/25"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                            title={t.site_published ? "Click to unpublish" : "Click to publish"}
+                          >
+                            {t.site_published ? <Globe className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            {t.site_published ? "Live" : "Draft"}
+                          </button>
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => toggleTournamentRegistration(t.id, !!t.registration_open)}
+                            className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium transition-colors cursor-pointer ${
+                              t.registration_open
+                                ? "bg-primary/15 text-primary hover:bg-primary/25"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                            title={t.registration_open ? "Click to close registration" : "Click to open registration"}
+                          >
+                            {t.registration_open ? <UserCheck className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                            {t.registration_open ? "Open" : "Closed"}
+                          </button>
+                        </td>
                         <td className="p-3">
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                             t.status === "active" ? "bg-primary/15 text-primary" :
@@ -1283,7 +1343,6 @@ const AdminDashboard = () => {
                           }`}>
                             {t.status}
                           </span>
-                          {t.site_published && <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Published</span>}
                         </td>
                         <td className="p-3 text-muted-foreground text-xs">
                           {t.date ? new Date(t.date).toLocaleDateString() : "—"}
@@ -1300,7 +1359,7 @@ const AdminDashboard = () => {
                       </tr>
                     ))}
                     {allTournaments.length === 0 && (
-                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No tournaments found</td></tr>
+                      <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">No tournaments found</td></tr>
                     )}
                   </tbody>
                 </table>

@@ -150,8 +150,11 @@ const slides = [
       { icon: Gavel, label: "Auction & Raffle" },
       { icon: Camera, label: "Photo Gallery" },
       { icon: Heart, label: "Donation Page" },
-      { icon: ClipboardList, label: "Printable Materials" },
+      { icon: Printer, label: "Printable Materials" },
       { icon: UserCheck, label: "Volunteer Coordination" },
+      { icon: Timer, label: "Countdown Styles" },
+      { icon: FileText, label: "Surveys & Feedback" },
+      { icon: ClipboardList, label: "Planning Guide" },
     ],
   },
   {

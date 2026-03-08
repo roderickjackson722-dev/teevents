@@ -221,12 +221,18 @@ export default function Leaderboard() {
       {selectedTournament && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 flex-wrap">
               <Trophy className="h-5 w-5" /> Scorecard
               {selectedTournamentData && (
-                <span className="text-sm font-normal text-muted-foreground ml-2">
-                  Par {selectedTournamentData.course_par || 72}
-                </span>
+                <>
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    Par {selectedTournamentData.course_par || 72}
+                  </span>
+                  {(() => {
+                    const fmt = getFormatById((selectedTournamentData as any).scoring_format || "stroke_play");
+                    return fmt ? <Badge variant="secondary" className="text-xs font-normal">{fmt.name}</Badge> : null;
+                  })()}
+                </>
               )}
             </CardTitle>
           </CardHeader>

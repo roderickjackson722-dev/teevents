@@ -109,7 +109,10 @@ const SiteBuilder = () => {
         template: settings.template || "classic",
         registration_fee_cents: settings.registration_fee_cents || 0,
         custom_domain: settings.custom_domain || null,
-      })
+        printable_font: settings.printable_font || "georgia",
+        printable_layout: settings.printable_layout || "classic",
+        hole_pars: settings.hole_pars || null,
+      } as any)
       .eq("id", settings.id);
 
     if (error) {

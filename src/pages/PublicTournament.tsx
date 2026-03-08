@@ -27,7 +27,7 @@ interface TournamentSite {
   registration_open: boolean | null; course_par: number | null; template: string | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
-  scoring_format: string;
+  scoring_format: string; countdown_style: string | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }

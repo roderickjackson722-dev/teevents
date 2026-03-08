@@ -206,11 +206,100 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notify_auction_bid: boolean
+          notify_donation: boolean
+          notify_registration: boolean
+          notify_store_purchase: boolean
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notify_auction_bid?: boolean
+          notify_donation?: boolean
+          notify_registration?: boolean
+          notify_store_purchase?: boolean
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notify_auction_bid?: boolean
+          notify_donation?: boolean
+          notify_registration?: boolean
+          notify_store_purchase?: boolean
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_emails_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          organization_id: string
+          permissions: Database["public"]["Enums"]["org_permission"][]
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          organization_id: string
+          permissions?: Database["public"]["Enums"]["org_permission"][]
+          role?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          organization_id?: string
+          permissions?: Database["public"]["Enums"]["org_permission"][]
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           created_at: string
           id: string
           organization_id: string
+          permissions: Database["public"]["Enums"]["org_permission"][]
           role: string
           user_id: string
         }
@@ -218,6 +307,7 @@ export type Database = {
           created_at?: string
           id?: string
           organization_id: string
+          permissions?: Database["public"]["Enums"]["org_permission"][]
           role?: string
           user_id: string
         }
@@ -225,6 +315,7 @@ export type Database = {
           created_at?: string
           id?: string
           organization_id?: string
+          permissions?: Database["public"]["Enums"]["org_permission"][]
           role?: string
           user_id?: string
         }
@@ -1517,6 +1608,21 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      org_permission:
+        | "manage_players"
+        | "manage_registration"
+        | "manage_budget"
+        | "manage_sponsors"
+        | "manage_messages"
+        | "manage_leaderboard"
+        | "manage_store"
+        | "manage_auction"
+        | "manage_gallery"
+        | "manage_volunteers"
+        | "manage_surveys"
+        | "manage_donations"
+        | "manage_check_in"
+        | "manage_settings"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1645,6 +1751,22 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      org_permission: [
+        "manage_players",
+        "manage_registration",
+        "manage_budget",
+        "manage_sponsors",
+        "manage_messages",
+        "manage_leaderboard",
+        "manage_store",
+        "manage_auction",
+        "manage_gallery",
+        "manage_volunteers",
+        "manage_surveys",
+        "manage_donations",
+        "manage_check_in",
+        "manage_settings",
+      ],
     },
   },
 } as const

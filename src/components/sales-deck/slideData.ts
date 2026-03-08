@@ -85,9 +85,9 @@ export const slides = [
     id: "scoring",
     type: "feature" as const,
     heading: "Live Scoring & Leaderboard",
-    description: "Players enter their own scores via a mobile-friendly scoring page — no app download needed. Supports 8 formats including Scramble, Best Ball, Stableford, Alternate Shot, and Shamble. The leaderboard updates in real-time with sponsor rotations.",
+    description: "Players scan a QR code printed on their scorecard to instantly access their group's scoring page — no manual login needed. They enter scores hole by hole on any device. Supports 8 formats including Scramble, Best Ball, Stableford, Alternate Shot, and Shamble. Leaderboard updates in real-time with sponsor rotations.",
     image: salesScoring,
-    highlights: ["8 Scoring Formats", "Real-Time Leaderboard", "Stableford Points", "Sponsor Rotations"],
+    highlights: ["QR Code Auto-Login", "8 Scoring Formats", "Real-Time Leaderboard", "Sponsor Rotations"],
   },
   {
     id: "checkin",

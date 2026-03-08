@@ -69,23 +69,28 @@ TeeVents is the all-in-one golf tournament management platform. This document ou
 ---
 
 ### 6. LIVE SCORING & LEADERBOARD (1.5 min)
-**Talk Track:** "On tournament day, share a scoring link with your players. They log in with their group number or email and enter scores hole by hole. The leaderboard updates in real-time."
+**Talk Track:** "On tournament day, print scorecards with embedded QR codes. Players simply scan the code with their phone and get instant access to their group's scoring page — no login required. They enter scores hole by hole, and the leaderboard updates live."
 
 **Demo Paths:**
 - `/dashboard/leaderboard` — Admin scoring & leaderboard view
 - `/t/{slug}/scoring` — Player-facing scoring page
+- `/dashboard/printables` → Scorecards tab — Show QR code generation
 
 **Key Points:**
-- **Copy Scoring Link** button for organizers to share
-- Players enter group number OR email to access scoring
+- **Scoring QR Codes** printed on scorecards for instant player access
+- Print QR codes on scorecards from the Printables tab
+- Admin can regenerate all codes for security/reassignments
+- Players scan code → instant group access (no login)
 - 18-hole scorecard input per player
-- Real-time leaderboard sorted by total strokes
+- Real-time leaderboard with sponsor rotations
+- Alternative: players can still manually enter group number or email
 
 **Screenshots:**
+- Scorecard with embedded QR code
 - Admin leaderboard with scoring grid
-- "Copy Scoring Link" and "Preview" buttons
-- Player login screen (group number + email)
-- Player scoring interface
+- Printables page showing QR code toggle
+- Player scanning QR code on mobile
+- Player scoring interface with group auto-loaded
 
 ---
 

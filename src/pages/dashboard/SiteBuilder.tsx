@@ -20,7 +20,9 @@ import {
   Globe,
   ArrowLeft,
   ExternalLink,
+  Check,
 } from "lucide-react";
+import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 
 interface SiteSettings {
   id: string;

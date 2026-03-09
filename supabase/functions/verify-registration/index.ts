@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
         const { data: reg } = await supabaseAdmin
           .from("tournament_registrations")
           .select("first_name, last_name, email, tournament_id")
-          .eq("id", registrationId)
+          .eq("id", registrationIds[0])
           .single();
 
         if (reg) {

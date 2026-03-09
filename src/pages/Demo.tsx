@@ -360,14 +360,21 @@ const Demo = () => {
                     <span className="font-display font-bold text-foreground text-xl">$150.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">Platform fee (5%)</span>
+                    <span className="text-muted-foreground">Stripe processing (2.9% + $0.30)</span>
+                    <span className="font-display font-bold text-destructive">−$4.65</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
                     <span className="font-display font-bold text-destructive">−$7.50</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$142.50</span>
+                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all payments. This is charged by Stripe, not TeeVents.
+                </p>
               </div>
             </motion.div>
           </div>

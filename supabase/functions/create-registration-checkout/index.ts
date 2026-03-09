@@ -99,16 +99,18 @@ Deno.serve(async (req) => {
 
     // Send notification emails via Resend
     try {
+      const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
       await sendNotificationEmails(
         supabaseAdmin,
         tournament.organization_id,
         "notify_registration",
         `New Registration — ${tournament.title}`,
         buildNotificationHtml("New Player Registration", [
-          `<strong>${first_name} ${last_name}</strong> has registered for <strong>${tournament.title}</strong>.`,
-          `📧 ${email}${phone ? ` • 📱 ${phone}` : ""}`,
-          feeCents > 0 ? `💳 Registration fee: $${(feeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
-        ]),
+          `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
+          `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
+          isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
+          feeCents > 0 ? `💳 Registration fee: $${(totalFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+        ].filter(Boolean)),
       );
     } catch (e) {
       console.error("Notification error:", e);

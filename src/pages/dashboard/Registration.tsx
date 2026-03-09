@@ -421,6 +421,14 @@ const Registration = () => {
                 </div>
               </div>
 
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">Foursome Registration</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register as a group of up to 4</p>
+                </div>
+                <Switch checked={foursomeReg} onCheckedChange={setFoursomeReg} />
+              </div>
+
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings

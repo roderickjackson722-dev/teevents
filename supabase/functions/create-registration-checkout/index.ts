@@ -181,16 +181,16 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add processing fee line item if donor is covering fees
-    if (stripeFee > 0) {
+    // Add fee coverage line item if donor is covering fees
+    if (coverageAmount > 0) {
       lineItems.push({
         price_data: {
           currency: "usd",
           product_data: {
-            name: "Processing Fee Coverage",
+            name: "Fee Coverage",
             description: "Voluntary fee coverage so 100% goes to the organization",
           },
-          unit_amount: stripeFee,
+          unit_amount: coverageAmount,
         },
         quantity: 1,
       });

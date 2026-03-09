@@ -121,26 +121,31 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     setSubmitting(false);
   };
 
-  if (submitted) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-12"
-      >
-        <CheckCircle2 className="h-16 w-16 mx-auto mb-4" style={{ color: secondaryColor }} />
-        <h3 className="text-2xl font-display font-bold text-foreground mb-2">
-          You're Registered!
-        </h3>
-        <p className="text-muted-foreground">
-          Thank you for signing up. You'll receive confirmation details via email.
-        </p>
-      </motion.div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-6">
+      <AnimatePresence>
+        {submitted && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+            animate={{ opacity: 1, height: "auto", scale: 1 }}
+            className="text-center p-6 rounded-xl border-2 overflow-hidden"
+            style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}10` }}
+          >
+            <CheckCircle2 className="h-12 w-12 mx-auto mb-3" style={{ color: secondaryColor }} />
+            <h3 className="text-xl font-display font-bold text-foreground mb-2">
+              You're Registered!
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Thank you for signing up. You'll receive confirmation details via email.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <form 
+        onSubmit={handleSubmit} 
+        className={cn("space-y-5 transition-all duration-500", submitted ? "opacity-40 pointer-events-none grayscale-[50%]" : "")}
+      >
       {errors.form && (
         <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
       )}

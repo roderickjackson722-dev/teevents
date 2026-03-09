@@ -24,7 +24,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments" | "analytics">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);

@@ -129,12 +129,32 @@ const DashboardHome = () => {
         </div>
         <div className="flex flex-wrap gap-3">
           {latestTournament && (
-            <Button asChild>
-              <Link to="/dashboard/players">
-                <Users className="h-4 w-4 mr-2" />
-                Players & Pairings
-              </Link>
-            </Button>
+            <>
+              <Button asChild>
+                <Link to="/dashboard/players">
+                  <Users className="h-4 w-4 mr-2" />
+                  Players & Pairings
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/check-in">
+                  <ScanLine className="h-4 w-4 mr-2" />
+                  Check-In
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/messages">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Messages
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/leaderboard">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Leaderboard
+                </Link>
+              </Button>
+            </>
           )}
           {latestTournament && latestTournament.slug && (
             <Button variant="outline" asChild>

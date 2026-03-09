@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const isFoursome = body.foursome === true && Array.isArray(body.players);
+    const coverFees = body.cover_fees === true;
 
     // Extract player data
     const players = isFoursome

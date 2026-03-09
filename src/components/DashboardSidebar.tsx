@@ -19,6 +19,7 @@ import {
   Lock,
   FileEdit,
   Printer,
+  PenLine,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -73,6 +74,7 @@ const managementItems = [
   { title: "Players", url: "/dashboard/players", icon: Users, feature: "players" },
   { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in" },
   { title: "Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard" },
+  { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard" },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
   { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget" },
   { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },

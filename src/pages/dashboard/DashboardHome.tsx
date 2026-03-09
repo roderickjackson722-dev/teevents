@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
-import { Trophy, Users, DollarSign, Eye, Clock } from "lucide-react";
+import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Tournament {
@@ -129,12 +129,32 @@ const DashboardHome = () => {
         </div>
         <div className="flex flex-wrap gap-3">
           {latestTournament && (
-            <Button asChild>
-              <Link to="/dashboard/players">
-                <Users className="h-4 w-4 mr-2" />
-                Players & Pairings
-              </Link>
-            </Button>
+            <>
+              <Button asChild>
+                <Link to="/dashboard/players">
+                  <Users className="h-4 w-4 mr-2" />
+                  Players & Pairings
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/check-in">
+                  <ScanLine className="h-4 w-4 mr-2" />
+                  Check-In
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/messages">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Messages
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/leaderboard">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Leaderboard
+                </Link>
+              </Button>
+            </>
           )}
           {latestTournament && latestTournament.slug && (
             <Button variant="outline" asChild>

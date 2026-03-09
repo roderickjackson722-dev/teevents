@@ -332,9 +332,13 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          ein: string | null
           id: string
+          is_nonprofit: boolean
           logo_url: string | null
           name: string
+          nonprofit_name: string | null
+          nonprofit_verified: boolean
           plan: string
           primary_color: string | null
           secondary_color: string | null
@@ -344,9 +348,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          ein?: string | null
           id?: string
+          is_nonprofit?: boolean
           logo_url?: string | null
           name: string
+          nonprofit_name?: string | null
+          nonprofit_verified?: boolean
           plan?: string
           primary_color?: string | null
           secondary_color?: string | null
@@ -356,9 +364,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          ein?: string | null
           id?: string
+          is_nonprofit?: boolean
           logo_url?: string | null
           name?: string
+          nonprofit_name?: string | null
+          nonprofit_verified?: boolean
           plan?: string
           primary_color?: string | null
           secondary_color?: string | null

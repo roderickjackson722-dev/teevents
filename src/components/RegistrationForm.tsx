@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, UserPlus, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2, Heart } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
 
 const playerSchema = z.object({
@@ -27,6 +28,9 @@ interface RegistrationFormProps {
   secondaryColor: string;
   registrationFeeCents?: number;
   foursomeMode?: boolean;
+  isNonprofit?: boolean;
+  nonprofitName?: string;
+  ein?: string;
 }
 
 const emptyPlayer = () => ({
@@ -103,17 +107,22 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [coverFees, setCoverFees] = useState(false);
 
   const hasFee = registrationFeeCents > 0;
-  const totalFee = hasFee ? registrationFeeCents * (foursomeMode ? players.length : 1) : 0;
+  const playerCount = foursomeMode ? players.length : 1;
+  const baseTotalCents = hasFee ? registrationFeeCents * playerCount : 0;
+  // Stripe fee: 2.9% + $0.30 per transaction
+  const stripeFee = baseTotalCents > 0 ? Math.round(baseTotalCents * 0.029 + 30) : 0;
+  const totalWithCoveredFees = coverFees ? baseTotalCents + stripeFee : baseTotalCents;
   const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
-  const totalDisplay = totalFee > 0 ? `$${(totalFee / 100).toFixed(2)}` : null;
+  const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
   const updatePlayer = (index: number, player: PlayerForm) => {
     setPlayers((prev) => prev.map((p, i) => (i === index ? player : p)));
@@ -161,6 +170,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           ? {
               tournament_id: tournamentId,
               foursome: true,
+              cover_fees: coverFees,
               players: parsedPlayers.map((p, i) => ({
                 first_name: p!.first_name,
                 last_name: p!.last_name,
@@ -174,6 +184,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             }
           : {
               tournament_id: tournamentId,
+              cover_fees: coverFees,
               first_name: parsedPlayers[0]!.first_name,
               last_name: parsedPlayers[0]!.last_name,
               email: parsedPlayers[0]!.email,
@@ -314,6 +325,43 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {/* Cover Fees Option for Nonprofits */}
+        {isNonprofit && hasFee && (
+          <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="cover_fees"
+                checked={coverFees}
+                onCheckedChange={(checked) => setCoverFees(checked === true)}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <label htmlFor="cover_fees" className="text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-destructive" />
+                  I'd like to cover the processing fees
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Adding ${(stripeFee / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
+                </p>
+              </div>
+            </div>
+            {coverFees && (
+              <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
+                <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
+                <p>Processing fee: ${(stripeFee / 100).toFixed(2)}</p>
+                <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tax-Exempt Notice */}
+        {isNonprofit && (
+          <p className="text-xs text-muted-foreground text-center">
+            🧾 {nonprofitName || "This organization"} is a registered 501(c)(3) nonprofit{ein ? ` (EIN: ${ein})` : ""}. Your registration may be tax-deductible. A receipt will be emailed to you.
+          </p>
+        )}
+
         <Button
           type="submit"
           disabled={submitting || submitted}
@@ -322,7 +370,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? `Register & Pay ${foursomeMode && players.length > 1 ? totalDisplay : feeDisplay}`
+            ? `Register & Pay ${totalDisplay}`
             : foursomeMode
               ? `Register Foursome (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}

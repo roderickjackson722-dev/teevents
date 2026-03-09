@@ -184,6 +184,7 @@ const PublicTournament = () => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string }>({ isNonprofit: false });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sponsorIndex, setSponsorIndex] = useState(0);
 
@@ -214,6 +215,19 @@ const PublicTournament = () => {
         if (error || !data) { setNotFound(true); setLoading(false); return; }
         const t = data as unknown as TournamentSite;
         setTournament(t);
+
+        // Fetch nonprofit status for the org
+        supabase.functions.invoke("get-nonprofit-status", { body: { tournament_id: t.id } })
+          .then(({ data: npData }) => {
+            if (npData?.is_nonprofit) {
+              setNonprofitInfo({
+                isNonprofit: true,
+                nonprofitName: npData.nonprofit_name || undefined,
+                ein: npData.ein || undefined,
+              });
+            }
+          })
+          .catch(() => {});
 
         const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
@@ -981,6 +995,9 @@ const PublicTournament = () => {
                     secondaryColor={secondary}
                     registrationFeeCents={tournament.registration_fee_cents || 0}
                     foursomeMode={tournament.foursome_registration}
+                    isNonprofit={nonprofitInfo.isNonprofit}
+                    nonprofitName={nonprofitInfo.nonprofitName}
+                    ein={nonprofitInfo.ein}
                   />
                 </div>
               )}

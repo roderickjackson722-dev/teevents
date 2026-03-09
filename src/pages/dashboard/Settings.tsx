@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import { TeamManagement } from "@/components/settings/TeamManagement";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
 
 interface ConnectStatus {
   connected: boolean;
@@ -262,6 +263,11 @@ const Settings = () => {
       {/* Team Management */}
       {org && (
         <TeamManagement orgId={org.orgId} userId={org.userId} />
+      )}
+
+      {/* Nonprofit Settings */}
+      {org && (
+        <NonprofitSettings orgId={org.orgId} />
       )}
 
       {/* Email Notifications */}

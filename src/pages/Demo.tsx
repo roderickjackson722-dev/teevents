@@ -333,10 +333,10 @@ const Demo = () => {
               <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Revenue Model</h3>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
                 You Keep Your Revenue.
-                <br />We Take a Simple 5%.
+                <br />Only Stripe Fees Apply.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account — minus a transparent 5% platform fee. No invoices, no delays.
+                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account — minus only Stripe's standard processing fee. No platform fees, no invoices, no delays.
               </p>
               <div className="space-y-3">
                 {[
@@ -365,13 +365,9 @@ const Demo = () => {
                     <span className="text-muted-foreground">Stripe processing (2.9% + $0.30)</span>
                     <span className="font-display font-bold text-destructive">−$4.65</span>
                   </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
-                    <span className="font-display font-bold text-destructive">−$7.50</span>
-                  </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
+                    <span className="font-display font-bold text-primary text-2xl">$145.35</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">

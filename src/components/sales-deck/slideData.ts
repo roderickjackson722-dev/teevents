@@ -166,10 +166,10 @@ export const slides = [
     type: "pricing" as const,
     heading: "Simple, Transparent Pricing",
     plans: [
-      { name: "Base", price: "Free", fee: "5%", highlights: ["1 tournament", "Registration with add-ons & promo codes", "Website (1 template)", "Leaderboard (Stroke Play & Best Ball)", "QR check-in & planning guide"] },
-      { name: "Starter", price: "$499", fee: "3%", popular: true, highlights: ["All 6 templates + custom colors", "All 8 scoring formats", "Sponsors, budget & donations", "6 printable types, SMS & countdown styles"] },
-      { name: "Pro", price: "$999", fee: "2%", highlights: ["Merch store & auctions", "Surveys & volunteers", "Custom print fonts & layouts", "Priority support"] },
-      { name: "Enterprise", price: "Custom", fee: "1%", highlights: ["Unlimited tournaments", "Unlimited SMS", "White-label branding", "API access"] },
+      { name: "Base", price: "Free", fee: "Stripe fees only", highlights: ["1 tournament", "Registration with add-ons & promo codes", "Website (1 template)", "Leaderboard (Stroke Play & Best Ball)", "QR check-in & planning guide"] },
+      { name: "Starter", price: "$499", fee: "Stripe fees only", popular: true, highlights: ["All 6 templates + custom colors", "All 8 scoring formats", "Sponsors, budget & donations", "6 printable types, SMS & countdown styles"] },
+      { name: "Pro", price: "$999", fee: "Stripe fees only", highlights: ["Merch store & auctions", "Surveys & volunteers", "Custom print fonts & layouts", "Priority support"] },
+      { name: "Enterprise", price: "Custom", fee: "Stripe fees only", highlights: ["Unlimited tournaments", "Unlimited SMS", "White-label branding", "API access"] },
     ],
   },
   {

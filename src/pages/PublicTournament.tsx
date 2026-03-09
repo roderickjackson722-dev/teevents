@@ -224,6 +224,7 @@ const PublicTournament = () => {
                 isNonprofit: true,
                 nonprofitName: npData.nonprofit_name || undefined,
                 ein: npData.ein || undefined,
+                platformFeeRate: npData.platform_fee_rate ?? 0.05,
               });
             }
           })

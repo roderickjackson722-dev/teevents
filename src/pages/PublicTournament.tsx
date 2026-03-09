@@ -216,6 +216,19 @@ const PublicTournament = () => {
         const t = data as unknown as TournamentSite;
         setTournament(t);
 
+        // Fetch nonprofit status for the org
+        supabase.functions.invoke("get-nonprofit-status", { body: { tournament_id: t.id } })
+          .then(({ data: npData }) => {
+            if (npData?.is_nonprofit) {
+              setNonprofitInfo({
+                isNonprofit: true,
+                nonprofitName: npData.nonprofit_name || undefined,
+                ein: npData.ein || undefined,
+              });
+            }
+          })
+          .catch(() => {});
+
         const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),

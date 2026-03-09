@@ -169,6 +169,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           ? {
               tournament_id: tournamentId,
               foursome: true,
+              cover_fees: coverFees,
               players: parsedPlayers.map((p, i) => ({
                 first_name: p!.first_name,
                 last_name: p!.last_name,
@@ -182,6 +183,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             }
           : {
               tournament_id: tournamentId,
+              cover_fees: coverFees,
               first_name: parsedPlayers[0]!.first_name,
               last_name: parsedPlayers[0]!.last_name,
               email: parsedPlayers[0]!.email,

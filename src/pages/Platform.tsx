@@ -83,7 +83,7 @@ const plans = [
     price: "Free",
     period: "forever",
     description: "Get started with the essentials. No credit card required.",
-    fee: "Stripe fees only   features: [
+    fee: "Stripe fees only features: [
       "1 tournament",
       "Online registration & payments",
       "Tournament website (1 template)",
@@ -102,7 +102,7 @@ const plans = [
     price: "$499",
     period: "per tournament",
     description: "Unlock powerful tools and lower your transaction fees.",
-    fee: "3%StStripe fees only features: [
+    fee: "3%StStStripe fees onlytures: [
       "Everything in Base",
       "All 6 templates + custom colors",
       "All 8 scoring formats",
@@ -125,7 +125,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "For nonprofits running polished, full-featured events.",
-    fee: "2% tStripe fees only   features: [
+    fee: "2% tStriStripe fees onlytures: [
       "Everything in Starter",
       "Up to 288 golfers",
       "Merchandise store",
@@ -143,8 +143,7 @@ const plans = [
     price: "Custom",
     period: "annual license",
     description: "For organizations running multiple tournaments per year.",
-    fee: "1% transaction fee",
-    features: [
+    fee: "1% traStripe fees only features: [
       "Everything in Pro",
       "Unlimited tournaments",
       "Unlimited SMS texting",

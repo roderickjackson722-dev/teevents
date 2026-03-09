@@ -27,6 +27,9 @@ interface RegistrationFormProps {
   secondaryColor: string;
   registrationFeeCents?: number;
   foursomeMode?: boolean;
+  isNonprofit?: boolean;
+  nonprofitName?: string;
+  ein?: string;
 }
 
 const emptyPlayer = () => ({

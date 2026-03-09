@@ -58,24 +58,31 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
-    // Fetch organization plan to determine fee rate
+    // Fetch organization plan and nonprofit status
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("stripe_account_id, plan")
+      .select("stripe_account_id, plan, is_nonprofit, ein, nonprofit_name, nonprofit_verified")
       .eq("id", tournament.organization_id)
       .single();
 
     const orgPlan = org?.plan || "base";
+    const isNonprofit = org?.is_nonprofit === true;
+
+    // Nonprofits get zero platform fee
     const FEE_RATES: Record<string, number> = {
       base: 0.05,
       starter: 0.03,
       pro: 0.02,
       enterprise: 0.01,
     };
-    const feeRate = FEE_RATES[orgPlan] ?? 0.05;
+    const feeRate = isNonprofit ? 0 : (FEE_RATES[orgPlan] ?? 0.05);
 
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;
+
+    // If donor is covering fees, calculate the Stripe processing fee
+    const stripeFee = coverFees && totalFeeCents > 0 ? Math.round(totalFeeCents * 0.029 + 30) : 0;
+    const chargeTotal = totalFeeCents + stripeFee;
 
     // Insert registration records for all players
     const registrationInserts = players.map((p: any) => ({

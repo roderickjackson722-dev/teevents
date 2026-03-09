@@ -325,6 +325,43 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {/* Cover Fees Option for Nonprofits */}
+        {isNonprofit && hasFee && (
+          <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="cover_fees"
+                checked={coverFees}
+                onCheckedChange={(checked) => setCoverFees(checked === true)}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <label htmlFor="cover_fees" className="text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-destructive" />
+                  I'd like to cover the processing fees
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Adding ${(stripeFee / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
+                </p>
+              </div>
+            </div>
+            {coverFees && (
+              <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
+                <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
+                <p>Processing fee: ${(stripeFee / 100).toFixed(2)}</p>
+                <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tax-Exempt Notice */}
+        {isNonprofit && (
+          <p className="text-xs text-muted-foreground text-center">
+            🧾 {nonprofitName || "This organization"} is a registered 501(c)(3) nonprofit{ein ? ` (EIN: ${ein})` : ""}. Your registration may be tax-deductible. A receipt will be emailed to you.
+          </p>
+        )}
+
         <Button
           type="submit"
           disabled={submitting || submitted}
@@ -333,7 +370,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? `Register & Pay ${foursomeMode && players.length > 1 ? totalDisplay : feeDisplay}`
+            ? `Register & Pay ${totalDisplay}`
             : foursomeMode
               ? `Register Foursome (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}

@@ -18,18 +18,53 @@ Deno.serve(async (req) => {
   try {
     const { page_url, referrer, user_agent } = await req.json();
 
+    // Get visitor IP from request headers
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || req.headers.get("cf-connecting-ip")
+      || req.headers.get("x-real-ip")
+      || "unknown";
+
+    // Lookup IP geolocation using free ip-api.com
+    let city = null;
+    let region = null;
+    let country = null;
+    let isp = null;
+    let locationDisplay = "Unknown location";
+
+    if (ip && ip !== "unknown" && ip !== "127.0.0.1") {
+      try {
+        const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,isp`);
+        if (geoRes.ok) {
+          const geo = await geoRes.json();
+          if (geo.status === "success") {
+            city = geo.city || null;
+            region = geo.regionName || null;
+            country = geo.country || null;
+            isp = geo.isp || null;
+            const parts = [city, region, country].filter(Boolean);
+            locationDisplay = parts.length > 0 ? parts.join(", ") : "Unknown location";
+          }
+        }
+      } catch (e) {
+        console.warn("Geo lookup failed:", e);
+      }
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Insert visit record
+    // Insert visit record with location data
     const { error: insertError } = await supabaseAdmin
       .from("site_visits")
       .insert({
         page_url: page_url || "unknown",
         referrer: referrer || "Direct / No referrer",
         user_agent: user_agent || null,
+        ip_address: ip,
+        city: city,
+        country: country,
       });
 
     if (insertError) {
@@ -85,15 +120,27 @@ Deno.serve(async (req) => {
           </p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:6px;border:1px solid #e5e7eb;">
             <tr>
-              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;width:120px;">Page</td>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;width:120px;">📍 Location</td>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:14px;font-weight:500;">${locationDisplay}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;">🌐 IP Address</td>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:14px;font-weight:500;">${ip}</td>
+            </tr>${isp ? `
+            <tr>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;">📡 ISP</td>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:14px;font-weight:500;">${isp}</td>
+            </tr>` : ""}
+            <tr>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;">📄 Page</td>
               <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:14px;font-weight:500;">${page_url || "/"}</td>
             </tr>
             <tr>
-              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;">Came From</td>
+              <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:13px;">🔗 Came From</td>
               <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;color:#111827;font-size:14px;font-weight:500;">${referrerDisplay}</td>
             </tr>
             <tr>
-              <td style="padding:12px 16px;color:#6b7280;font-size:13px;">Time</td>
+              <td style="padding:12px 16px;color:#6b7280;font-size:13px;">🕐 Time</td>
               <td style="padding:12px 16px;color:#111827;font-size:14px;font-weight:500;">${timeStr} ET</td>
             </tr>
           </table>
@@ -119,7 +166,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
           to: [NOTIFY_EMAIL],
-          subject: `🌐 Visitor: ${page_url || "/"} — from ${referrerDisplay}`,
+          subject: `🌐 Visitor from ${locationDisplay} — ${page_url || "/"}`,
           html,
         }),
       });

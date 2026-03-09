@@ -439,12 +439,14 @@ const Demo = () => {
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                to="/contact"
+              <a
+                href="https://calendly.com/teevents/teevents-demo"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary/90 transition-colors"
               >
-                Contact Sales
-              </Link>
+                Book a Demo
+              </a>
             </div>
           </motion.div>
         </div>

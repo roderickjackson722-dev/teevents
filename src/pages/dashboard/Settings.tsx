@@ -265,6 +265,11 @@ const Settings = () => {
         <TeamManagement orgId={org.orgId} userId={org.userId} />
       )}
 
+      {/* Nonprofit Settings */}
+      {org && (
+        <NonprofitSettings orgId={org.orgId} />
+      )}
+
       {/* Email Notifications */}
       {org && (
         <NotificationSettings orgId={org.orgId} />

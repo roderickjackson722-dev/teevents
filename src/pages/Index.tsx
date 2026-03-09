@@ -108,10 +108,10 @@ const Index = () => {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/platform"
+              to="/demo"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              Explore Features
+              See Platform Demo
             </Link>
           </div>
         </motion.div>

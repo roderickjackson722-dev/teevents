@@ -1514,6 +1514,9 @@ const AdminDashboard = () => {
               callAdminApi={callAdminApi}
             />
           )}
+
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && <AdminAnalytics />}
         </div>
       </section>
     </Layout>

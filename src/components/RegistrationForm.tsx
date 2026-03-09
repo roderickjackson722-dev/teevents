@@ -108,7 +108,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05 }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,9 +119,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const hasFee = registrationFeeCents > 0;
   const playerCount = foursomeMode ? players.length : 1;
   const baseTotalCents = hasFee ? registrationFeeCents * playerCount : 0;
-  // Stripe fee: 2.9% + $0.30 per transaction
-  const stripeFee = baseTotalCents > 0 ? Math.round(baseTotalCents * 0.029 + 30) : 0;
-  const totalWithCoveredFees = coverFees ? baseTotalCents + stripeFee : baseTotalCents;
+  const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
+  // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
+  const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
+  const coverageAmount = stripeFee + platformFeeCents;
+  const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
   const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 

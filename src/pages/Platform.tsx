@@ -430,6 +430,9 @@ const Platform = () => {
               Start free and only pay when you grow. Every plan includes a small
               transaction fee so we succeed when you succeed.
             </p>
+            <p className="mt-3 text-sm text-muted-foreground/70">
+              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

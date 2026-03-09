@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
+import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments" | "analytics">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -612,6 +613,7 @@ const AdminDashboard = () => {
               ["demos", "Demo Events", Trophy],
               ["orgs", "Organizations", Building2],
               ["prospects", "Prospects", Target],
+              ["analytics", "Analytics", BarChart3],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -1512,6 +1514,9 @@ const AdminDashboard = () => {
               callAdminApi={callAdminApi}
             />
           )}
+
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && <AdminAnalytics />}
         </div>
       </section>
     </Layout>

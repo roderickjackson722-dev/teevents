@@ -135,13 +135,15 @@ const DashboardHome = () => {
                   <Users className="h-4 w-4 mr-2" />
                   Players & Pairings
                 </Link>
-               </Button>
-               <Button variant="outline" asChild>
-                 <Link to="/dashboard/registration">
-                   <ClipboardList className="h-4 w-4 mr-2" />
-                   Registration
-                 </Link>
-
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/registration">
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Registration
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/check-in">
                   <ScanLine className="h-4 w-4 mr-2" />
                   Check-In
                 </Link>

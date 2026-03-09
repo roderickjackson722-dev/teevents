@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
     const feeRate = FEE_RATES[orgPlan] ?? 0.05;
 
     const feeCents = tournament.registration_fee_cents || 0;
+    const totalFeeCents = feeCents * players.length;
 
     // Insert registration records for all players
     const registrationInserts = players.map((p: any) => ({

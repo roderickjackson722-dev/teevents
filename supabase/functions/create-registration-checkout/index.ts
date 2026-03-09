@@ -79,9 +79,11 @@ Deno.serve(async (req) => {
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;
 
-    // If donor is covering fees, calculate the Stripe processing fee
-    const stripeFee = coverFees && totalFeeCents > 0 ? Math.round(totalFeeCents * 0.029 + 30) : 0;
-    const chargeTotal = totalFeeCents + stripeFee;
+    // If donor is covering fees, calculate the Stripe processing fee + platform fee
+    const platformFeeCents = Math.round(totalFeeCents * feeRate);
+    const stripeFee = coverFees && totalFeeCents > 0 ? Math.round((totalFeeCents + platformFeeCents) * 0.029 + 30) : 0;
+    const coverageAmount = coverFees ? stripeFee + platformFeeCents : 0;
+    const chargeTotal = totalFeeCents + coverageAmount;
 
     // Insert registration records for all players
     const registrationInserts = players.map((p: any) => ({

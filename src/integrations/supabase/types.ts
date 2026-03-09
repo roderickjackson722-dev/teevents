@@ -401,6 +401,56 @@ export type Database = {
         }
         Relationships: []
       }
+      product_templates: {
+        Row: {
+          category: string
+          created_at: string
+          default_price: number
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          organization_id: string
+          vendor_name: string | null
+          vendor_notes: string | null
+          vendor_url: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          default_price?: number
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          organization_id: string
+          vendor_name?: string | null
+          vendor_notes?: string | null
+          vendor_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          default_price?: number
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          organization_id?: string
+          vendor_name?: string | null
+          vendor_notes?: string | null
+          vendor_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promo_codes: {
         Row: {
           applicable_plans: string[] | null
@@ -1200,7 +1250,10 @@ export type Database = {
           price: number
           purchase_url: string | null
           sort_order: number | null
+          template_id: string | null
           tournament_id: string
+          vendor_name: string | null
+          vendor_url: string | null
         }
         Insert: {
           category?: string
@@ -1213,7 +1266,10 @@ export type Database = {
           price?: number
           purchase_url?: string | null
           sort_order?: number | null
+          template_id?: string | null
           tournament_id: string
+          vendor_name?: string | null
+          vendor_url?: string | null
         }
         Update: {
           category?: string
@@ -1226,9 +1282,19 @@ export type Database = {
           price?: number
           purchase_url?: string | null
           sort_order?: number | null
+          template_id?: string | null
           tournament_id?: string
+          vendor_name?: string | null
+          vendor_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_store_products_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "product_templates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_store_products_tournament_id_fkey"
             columns: ["tournament_id"]

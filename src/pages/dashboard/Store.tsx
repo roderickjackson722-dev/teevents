@@ -1,73 +1,22 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  ShoppingBag,
-  Trophy,
-  Plus,
-  Loader2,
-  Upload,
-  Image,
-  Trash2,
-  Pencil,
-  ExternalLink,
-  DollarSign,
-  Package,
-  Tag,
+  ShoppingBag, Trophy, Plus, Loader2, Trash2, Pencil, ExternalLink,
+  Package, Tag, Store as StoreIcon,
 } from "lucide-react";
-
-interface Product {
-  id: string;
-  tournament_id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  image_url: string | null;
-  category: string;
-  is_active: boolean | null;
-  purchase_url: string | null;
-  sort_order: number | null;
-}
-
-interface Tournament {
-  id: string;
-  title: string;
-}
-
-const categories = [
-  { value: "merchandise", label: "Merchandise" },
-  { value: "apparel", label: "Apparel" },
-  { value: "accessories", label: "Accessories" },
-  { value: "tickets", label: "Tickets & Packages" },
-  { value: "donations", label: "Donations" },
-  { value: "other", label: "Other" },
-];
+import { type Product, type Tournament, categoryLabel, fmt } from "@/components/store/types";
+import ProductFormDialog from "@/components/store/ProductFormDialog";
+import TemplateLibrary from "@/components/store/TemplateLibrary";
 
 const Store = () => {
   const { org } = useOrgContext();
@@ -78,17 +27,6 @@ const Store = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    image_url: "",
-    category: "merchandise",
-    is_active: true,
-    purchase_url: "",
-  });
 
   useEffect(() => {
     if (!org) return;
@@ -117,78 +55,11 @@ const Store = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedTournament]);
-
-  const resetForm = () => {
-    setForm({ name: "", description: "", price: "", image_url: "", category: "merchandise", is_active: true, purchase_url: "" });
-    setEditProduct(null);
-  };
+  useEffect(() => { fetchProducts(); }, [selectedTournament]);
 
   const handleOpenEdit = (product: Product) => {
     setEditProduct(product);
-    setForm({
-      name: product.name,
-      description: product.description || "",
-      price: product.price.toString(),
-      image_url: product.image_url || "",
-      category: product.category,
-      is_active: product.is_active ?? true,
-      purchase_url: product.purchase_url || "",
-    });
     setDialogOpen(true);
-  };
-
-  const handleImageUpload = useCallback(
-    async (file: File) => {
-      if (!org || !selectedTournament) return;
-      setUploading(true);
-      const ext = file.name.split(".").pop();
-      const path = `${org.orgId}/${selectedTournament}/store/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
-      if (error) {
-        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-        setUploading(false);
-        return;
-      }
-      const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-      setForm((prev) => ({ ...prev, image_url: urlData.publicUrl }));
-      setUploading(false);
-    },
-    [org, selectedTournament, toast]
-  );
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTournament || !form.name.trim()) return;
-    setSaving(true);
-
-    const payload = {
-      tournament_id: selectedTournament,
-      name: form.name.trim(),
-      description: form.description.trim() || null,
-      price: parseFloat(form.price) || 0,
-      image_url: form.image_url || null,
-      category: form.category,
-      is_active: form.is_active,
-      purchase_url: form.purchase_url.trim() || null,
-    };
-
-    if (editProduct) {
-      const { error } = await supabase.from("tournament_store_products").update(payload).eq("id", editProduct.id);
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-      else toast({ title: "Product updated" });
-    } else {
-      const { error } = await supabase.from("tournament_store_products").insert(payload);
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-      else toast({ title: "Product added" });
-    }
-
-    resetForm();
-    setDialogOpen(false);
-    fetchProducts();
-    setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -203,10 +74,7 @@ const Store = () => {
     setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_active: newVal } : p));
   };
 
-  const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
   const activeCount = products.filter((p) => p.is_active).length;
-
-  const categoryLabel = (val: string) => categories.find((c) => c.value === val)?.label || val;
 
   if (loading && tournaments.length === 0) {
     return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -270,115 +138,24 @@ const Store = () => {
         </motion.div>
       </div>
 
+      {/* Template Library */}
+      <TemplateLibrary selectedTournament={selectedTournament} onQuickAdd={fetchProducts} />
+
       {/* Add Button */}
       <div className="mb-6">
-        <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-1.5" />Add Product</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="font-display">{editProduct ? "Edit Product" : "Add Product"}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSave} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Product Name *</Label>
-                  <Input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Tournament Polo"
-                    required
-                    maxLength={200}
-                  />
-                </div>
-                <div>
-                  <Label>Category</Label>
-                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Price ($) *</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.price}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-                <div className="flex items-end pb-2 gap-3">
-                  <Switch
-                    checked={form.is_active}
-                    onCheckedChange={(v) => setForm({ ...form, is_active: v })}
-                    id="active-toggle"
-                  />
-                  <Label htmlFor="active-toggle" className="text-sm cursor-pointer">
-                    {form.is_active ? "Active" : "Inactive"}
-                  </Label>
-                </div>
-              </div>
-
-              {/* Image Upload */}
-              <div>
-                <Label>Product Image</Label>
-                <div className="mt-2 flex items-center gap-4">
-                  {form.image_url ? (
-                    <img src={form.image_url} alt="" className="h-16 w-16 object-cover rounded border border-border bg-muted" />
-                  ) : (
-                    <div className="h-16 w-16 bg-muted rounded border border-dashed border-border flex items-center justify-center">
-                      <Image className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                    <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted transition-colors">
-                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                      Upload
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <Label>Purchase URL</Label>
-                <Input
-                  value={form.purchase_url}
-                  onChange={(e) => setForm({ ...form, purchase_url: e.target.value })}
-                  placeholder="https://store.example.com/product"
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground mt-1">Link to external store or checkout page</p>
-              </div>
-
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Product details, sizes available, etc."
-                  rows={2}
-                  maxLength={500}
-                />
-              </div>
-
-              <Button type="submit" className="w-full" disabled={saving}>
-                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                {editProduct ? "Update Product" : "Add Product"}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => { setEditProduct(null); setDialogOpen(true); }}>
+          <Plus className="h-4 w-4 mr-1.5" />Add Product
+        </Button>
       </div>
+
+      {/* Product Form Dialog */}
+      <ProductFormDialog
+        open={dialogOpen}
+        onOpenChange={(v) => { setDialogOpen(v); if (!v) setEditProduct(null); }}
+        editProduct={editProduct}
+        selectedTournament={selectedTournament}
+        onSaved={fetchProducts}
+      />
 
       {/* Products Grid */}
       {loading ? (
@@ -416,13 +193,19 @@ const Store = () => {
                     {fmt(product.price)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
                     {categoryLabel(product.category)}
                   </span>
                   {!product.is_active && (
                     <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
                       Inactive
+                    </span>
+                  )}
+                  {product.vendor_name && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                      <StoreIcon className="h-3 w-3" />
+                      {product.vendor_name}
                     </span>
                   )}
                 </div>
@@ -433,6 +216,11 @@ const Store = () => {
                   {product.purchase_url && (
                     <a href={product.purchase_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                       <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                  {product.vendor_url && (
+                    <a href={product.vendor_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-secondary transition-colors" title={`Visit ${product.vendor_name || "vendor"}`}>
+                      <StoreIcon className="h-4 w-4" />
                     </a>
                   )}
                   <div className="flex items-center gap-1 ml-auto">

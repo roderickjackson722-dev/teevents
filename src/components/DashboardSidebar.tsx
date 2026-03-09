@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Trophy,
+  Trophy,
   ClipboardCheck,
   Users,
   MessageSquare,

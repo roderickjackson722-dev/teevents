@@ -216,7 +216,9 @@ Deno.serve(async (req) => {
 
     // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
-      const applicationFee = Math.round(chargeTotal * feeRate);
+      // If donor covered fees, platform gets the full platform fee + Stripe fee from coverage
+      // If not covering, platform takes its cut from the base amount
+      const applicationFee = coverFees ? (platformFeeCents + stripeFee) : Math.round(chargeTotal * feeRate);
       console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
       console.log(`[Registration Checkout] Organizer payout: $${((chargeTotal - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
       

@@ -166,6 +166,7 @@ const Registration = () => {
         registration_fee_cents: feeCents,
         registration_open: regOpen,
         max_players: maxPlayers,
+        foursome_registration: foursomeReg,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);

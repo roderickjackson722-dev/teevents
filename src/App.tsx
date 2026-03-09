@@ -51,6 +51,7 @@ import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import VisitTracker from "./components/VisitTracker";
 
 const queryClient = new QueryClient();
 

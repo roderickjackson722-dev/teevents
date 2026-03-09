@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
+import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     // Fetch tournament details
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location")
       .eq("id", tournament_id)
       .single();
 
@@ -102,8 +102,17 @@ Deno.serve(async (req) => {
       console.error("Notification error:", e);
     }
 
-    // If no fee, registration is complete
+    // If no fee, registration is complete — send confirmation to registrant
     if (feeCents <= 0) {
+      try {
+        await sendRegistrantConfirmationEmail(
+          first_name, last_name, email.trim(),
+          tournament.title, tournament.date, tournament.location,
+        );
+      } catch (e) {
+        console.error("Registrant confirmation error:", e);
+      }
+
       return new Response(
         JSON.stringify({ success: true, paid: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

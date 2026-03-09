@@ -53,7 +53,63 @@ export async function sendNotificationEmails(
   }
 }
 
-// HTML email template helper
+// Send a registration confirmation email to the registrant
+export async function sendRegistrantConfirmationEmail(
+  firstName: string,
+  lastName: string,
+  recipientEmail: string,
+  tournamentTitle: string,
+  tournamentDate: string | null,
+  tournamentLocation: string | null,
+) {
+  try {
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      console.warn("RESEND_API_KEY not set, skipping registrant confirmation email");
+      return;
+    }
+
+    const dateStr = tournamentDate
+      ? new Date(tournamentDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+      : null;
+
+    const lines = [
+      `Hi <strong>${firstName}</strong>,`,
+      `We've received your registration for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
+      dateStr ? `📅 <strong>Date:</strong> ${dateStr}` : "",
+      tournamentLocation ? `📍 <strong>Location:</strong> ${tournamentLocation}` : "",
+      dateStr ? `We look forward to seeing you on <strong>${dateStr}</strong>. Keep an eye on your inbox for any updates leading up to the event.` : "We look forward to seeing you there! Keep an eye on your inbox for any updates leading up to the event.",
+      "See you on the course! ⛳",
+    ].filter(Boolean);
+
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[]);
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        to: [recipientEmail],
+        subject: `You're Registered — ${tournamentTitle}`,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(`Resend API error (${res.status}):`, err);
+    } else {
+      console.log(`[Confirmation] Registration confirmation sent to ${recipientEmail}`);
+    }
+  } catch (err) {
+    console.error("Failed to send registrant confirmation email:", err);
+  }
+}
+
+// HTML email template helper for admin notifications
 export function buildNotificationHtml(title: string, lines: string[]): string {
   return `
 <!DOCTYPE html>
@@ -71,6 +127,33 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
         </td></tr>
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+// HTML email template for registrant confirmations (friendlier design)
+function buildConfirmationHtml(title: string, lines: string[]): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+        <tr><td style="background:#1a5c38;padding:28px 32px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:32px;">⛳</p>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${title}</h1>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          ${lines.map(l => `<p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">${l}</p>`).join("")}
+        </td></tr>
+        <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
         </td></tr>
       </table>
     </td></tr>

@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +36,32 @@ Deno.serve(async (req) => {
         .from("tournament_registrations")
         .update({ payment_status: "paid" })
         .eq("id", registrationId);
+
+      // Send confirmation email to the registrant
+      try {
+        const { data: reg } = await supabaseAdmin
+          .from("tournament_registrations")
+          .select("first_name, last_name, email, tournament_id")
+          .eq("id", registrationId)
+          .single();
+
+        if (reg) {
+          const { data: tournament } = await supabaseAdmin
+            .from("tournaments")
+            .select("title, date, location")
+            .eq("id", reg.tournament_id)
+            .single();
+
+          if (tournament) {
+            await sendRegistrantConfirmationEmail(
+              reg.first_name, reg.last_name, reg.email,
+              tournament.title, tournament.date, tournament.location,
+            );
+          }
+        }
+      } catch (e) {
+        console.error("Registrant confirmation error:", e);
+      }
 
       return new Response(
         JSON.stringify({ verified: true, status: "paid" }),

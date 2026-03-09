@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SENDER_EMAIL = "notifications@teevents.golf";
+const SENDER_EMAIL = "notifications@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents";
 
 // Send notification emails via Resend to configured recipients

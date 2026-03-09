@@ -24,18 +24,25 @@ Deno.serve(async (req) => {
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
     if (session.payment_status === "paid") {
-      const registrationId = session.metadata?.registration_id;
-      if (!registrationId) throw new Error("Missing registration_id in session metadata");
+      // Support both single registration_id and comma-separated registration_ids
+      const registrationIds = session.metadata?.registration_ids
+        ? session.metadata.registration_ids.split(",")
+        : session.metadata?.registration_id
+          ? [session.metadata.registration_id]
+          : [];
+
+      if (registrationIds.length === 0) throw new Error("Missing registration IDs in session metadata");
 
       const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
 
+      // Update all registrations to paid
       await supabaseAdmin
         .from("tournament_registrations")
         .update({ payment_status: "paid" })
-        .eq("id", registrationId);
+        .in("id", registrationIds);
 
       // Send confirmation email to the registrant
       try {

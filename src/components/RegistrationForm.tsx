@@ -328,7 +328,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {/* Cover Fees Option for Nonprofits */}
+        {/* Cover Fees Option */}
         {isNonprofit && hasFee && (
           <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
             <div className="flex items-start gap-3">
@@ -341,16 +341,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               <div className="flex-1">
                 <label htmlFor="cover_fees" className="text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
                   <Heart className="h-4 w-4 text-destructive" />
-                  I'd like to cover the processing fees
+                  I'd like to cover the fees
                 </label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Adding ${(stripeFee / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
+                  Adding ${(coverageAmount / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
                 </p>
               </div>
             </div>
             {coverFees && (
               <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
                 <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
+                <p>Platform fee: ${(platformFeeCents / 100).toFixed(2)}</p>
                 <p>Processing fee: ${(stripeFee / 100).toFixed(2)}</p>
                 <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
               </div>

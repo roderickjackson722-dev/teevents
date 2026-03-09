@@ -109,6 +109,7 @@ const App = () => (
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/nonprofits" element={<Nonprofits />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

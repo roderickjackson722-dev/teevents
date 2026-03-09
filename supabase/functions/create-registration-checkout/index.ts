@@ -68,14 +68,13 @@ Deno.serve(async (req) => {
     const orgPlan = org?.plan || "base";
     const isNonprofit = org?.is_nonprofit === true;
 
-    // Nonprofits get zero platform fee
     const FEE_RATES: Record<string, number> = {
       base: 0.05,
       starter: 0.03,
       pro: 0.02,
       enterprise: 0.01,
     };
-    const feeRate = isNonprofit ? 0 : (FEE_RATES[orgPlan] ?? 0.05);
+    const feeRate = FEE_RATES[orgPlan] ?? 0.05;
 
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;

@@ -115,9 +115,13 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [coverFees, setCoverFees] = useState(false);
 
   const hasFee = registrationFeeCents > 0;
-  const totalFee = hasFee ? registrationFeeCents * (foursomeMode ? players.length : 1) : 0;
+  const playerCount = foursomeMode ? players.length : 1;
+  const baseTotalCents = hasFee ? registrationFeeCents * playerCount : 0;
+  // Stripe fee: 2.9% + $0.30 per transaction
+  const stripeFee = baseTotalCents > 0 ? Math.round(baseTotalCents * 0.029 + 30) : 0;
+  const totalWithCoveredFees = coverFees ? baseTotalCents + stripeFee : baseTotalCents;
   const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
-  const totalDisplay = totalFee > 0 ? `$${(totalFee / 100).toFixed(2)}` : null;
+  const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
   const updatePlayer = (index: number, player: PlayerForm) => {
     setPlayers((prev) => prev.map((p, i) => (i === index ? player : p)));

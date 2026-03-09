@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     const connectedAccountId = org?.stripe_account_id || null;
     
     console.log(`[Registration Checkout] Tournament: ${tournament.title}`);
-    console.log(`[Registration Checkout] Fee: $${(feeCents / 100).toFixed(2)}, Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
+    console.log(`[Registration Checkout] Fee: $${(totalFeeCents / 100).toFixed(2)} (${players.length} players × $${(feeCents / 100).toFixed(2)}), Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
     console.log(`[Registration Checkout] Connected Account: ${connectedAccountId || "NONE"}`);
 
     // Check for existing Stripe customer
@@ -155,6 +155,8 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
+    const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
+
     const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),
@@ -164,11 +166,11 @@ Deno.serve(async (req) => {
             currency: "usd",
             product_data: {
               name: `Registration — ${tournament.title}`,
-              description: `${first_name} ${last_name}`,
+              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
             },
             unit_amount: feeCents,
           },
-          quantity: 1,
+          quantity: players.length,
         },
       ],
       mode: "payment",
@@ -177,7 +179,7 @@ Deno.serve(async (req) => {
       metadata: {
         type: "registration",
         tournament_id,
-        registration_id: registration.id,
+        registration_ids: registrationIds.join(","),
       },
     };
 

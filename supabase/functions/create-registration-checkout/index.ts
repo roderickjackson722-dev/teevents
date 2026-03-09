@@ -102,8 +102,17 @@ Deno.serve(async (req) => {
       console.error("Notification error:", e);
     }
 
-    // If no fee, registration is complete
+    // If no fee, registration is complete — send confirmation to registrant
     if (feeCents <= 0) {
+      try {
+        await sendRegistrantConfirmationEmail(
+          first_name, last_name, email.trim(),
+          tournament.title, tournament.date, tournament.location,
+        );
+      } catch (e) {
+        console.error("Registrant confirmation error:", e);
+      }
+
       return new Response(
         JSON.stringify({ success: true, paid: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

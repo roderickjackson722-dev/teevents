@@ -175,7 +175,7 @@ const Registration = () => {
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
-            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers }
+            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg }
             : t,
         ),
       );

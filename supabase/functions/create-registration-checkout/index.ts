@@ -151,7 +151,8 @@ Deno.serve(async (req) => {
     const connectedAccountId = org?.stripe_account_id || null;
     
     console.log(`[Registration Checkout] Tournament: ${tournament.title}`);
-    console.log(`[Registration Checkout] Fee: $${(totalFeeCents / 100).toFixed(2)} (${players.length} players × $${(feeCents / 100).toFixed(2)}), Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
+    console.log(`[Registration Checkout] Fee: $${(chargeTotal / 100).toFixed(2)} (base: $${(totalFeeCents / 100).toFixed(2)}, cover fees: $${(stripeFee / 100).toFixed(2)})`);
+    console.log(`[Registration Checkout] Nonprofit: ${isNonprofit}, Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
     console.log(`[Registration Checkout] Connected Account: ${connectedAccountId || "NONE"}`);
 
     // Check for existing Stripe customer
@@ -165,22 +166,39 @@ Deno.serve(async (req) => {
 
     const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
 
+    const lineItems: any[] = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Registration — ${tournament.title}`,
+            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+          },
+          unit_amount: feeCents,
+        },
+        quantity: players.length,
+      },
+    ];
+
+    // Add processing fee line item if donor is covering fees
+    if (stripeFee > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Processing Fee Coverage",
+            description: "Voluntary fee coverage so 100% goes to the organization",
+          },
+          unit_amount: stripeFee,
+        },
+        quantity: 1,
+      });
+    }
+
     const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Registration — ${tournament.title}`,
-              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
-            },
-            unit_amount: feeCents,
-          },
-          quantity: players.length,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
@@ -188,14 +206,18 @@ Deno.serve(async (req) => {
         type: "registration",
         tournament_id,
         registration_ids: registrationIds.join(","),
+        is_nonprofit: isNonprofit ? "true" : "false",
+        ein: org?.ein || "",
+        nonprofit_name: org?.nonprofit_name || "",
+        cover_fees: coverFees ? "true" : "false",
       },
     };
 
     // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
-      const applicationFee = Math.round(totalFeeCents * feeRate);
+      const applicationFee = Math.round(chargeTotal * feeRate);
       console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
-      console.log(`[Registration Checkout] Organizer payout: $${((totalFeeCents - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
+      console.log(`[Registration Checkout] Organizer payout: $${((chargeTotal - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
       
       sessionParams.payment_intent_data = {
         application_fee_amount: applicationFee,

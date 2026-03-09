@@ -162,7 +162,7 @@ function DetailedFlyer() {
             <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
           </div>
           <div className="bg-white rounded-lg p-1.5">
-            <QRCodeSVG value="https://teevents.lovable.app/get-started" size={48} />
+            <QRCodeSVG value="https://teevents.golf/get-started" size={48} />
           </div>
         </div>
       </div>

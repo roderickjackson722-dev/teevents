@@ -351,8 +351,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             {coverFees && (
               <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
                 <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
-                <p>Platform fee: ${(platformFeeCents / 100).toFixed(2)}</p>
-                <p>Processing fee: ${(stripeFee / 100).toFixed(2)}</p>
+                <p>Fees: ${(coverageAmount / 100).toFixed(2)}</p>
                 <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
               </div>
             )}

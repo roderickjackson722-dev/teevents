@@ -999,6 +999,7 @@ const PublicTournament = () => {
                     isNonprofit={nonprofitInfo.isNonprofit}
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
+                    platformFeeRate={nonprofitInfo.platformFeeRate}
                   />
                 </div>
               )}

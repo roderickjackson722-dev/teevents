@@ -51,6 +51,7 @@ import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import Nonprofits from "./pages/Nonprofits";
 import VisitTracker from "./components/VisitTracker";
 
 const queryClient = new QueryClient();
@@ -108,6 +109,7 @@ const App = () => (
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/nonprofits" element={<Nonprofits />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

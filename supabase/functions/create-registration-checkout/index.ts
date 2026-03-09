@@ -68,21 +68,22 @@ Deno.serve(async (req) => {
     const orgPlan = org?.plan || "base";
     const isNonprofit = org?.is_nonprofit === true;
 
-    // Nonprofits get zero platform fee
     const FEE_RATES: Record<string, number> = {
       base: 0.05,
       starter: 0.03,
       pro: 0.02,
       enterprise: 0.01,
     };
-    const feeRate = isNonprofit ? 0 : (FEE_RATES[orgPlan] ?? 0.05);
+    const feeRate = FEE_RATES[orgPlan] ?? 0.05;
 
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;
 
-    // If donor is covering fees, calculate the Stripe processing fee
-    const stripeFee = coverFees && totalFeeCents > 0 ? Math.round(totalFeeCents * 0.029 + 30) : 0;
-    const chargeTotal = totalFeeCents + stripeFee;
+    // If donor is covering fees, calculate the Stripe processing fee + platform fee
+    const platformFeeCents = Math.round(totalFeeCents * feeRate);
+    const stripeFee = coverFees && totalFeeCents > 0 ? Math.round((totalFeeCents + platformFeeCents) * 0.029 + 30) : 0;
+    const coverageAmount = coverFees ? stripeFee + platformFeeCents : 0;
+    const chargeTotal = totalFeeCents + coverageAmount;
 
     // Insert registration records for all players
     const registrationInserts = players.map((p: any) => ({
@@ -180,16 +181,16 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add processing fee line item if donor is covering fees
-    if (stripeFee > 0) {
+    // Add fee coverage line item if donor is covering fees
+    if (coverageAmount > 0) {
       lineItems.push({
         price_data: {
           currency: "usd",
           product_data: {
-            name: "Processing Fee Coverage",
+            name: "Fee Coverage",
             description: "Voluntary fee coverage so 100% goes to the organization",
           },
-          unit_amount: stripeFee,
+          unit_amount: coverageAmount,
         },
         quantity: 1,
       });
@@ -215,7 +216,9 @@ Deno.serve(async (req) => {
 
     // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
-      const applicationFee = Math.round(chargeTotal * feeRate);
+      // If donor covered fees, platform gets the full platform fee + Stripe fee from coverage
+      // If not covering, platform takes its cut from the base amount
+      const applicationFee = coverFees ? (platformFeeCents + stripeFee) : Math.round(chargeTotal * feeRate);
       console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
       console.log(`[Registration Checkout] Organizer payout: $${((chargeTotal - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
       

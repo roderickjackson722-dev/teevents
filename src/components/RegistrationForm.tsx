@@ -31,6 +31,7 @@ interface RegistrationFormProps {
   isNonprofit?: boolean;
   nonprofitName?: string;
   ein?: string;
+  platformFeeRate?: number;
 }
 
 const emptyPlayer = () => ({
@@ -107,7 +108,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05 }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -118,9 +119,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const hasFee = registrationFeeCents > 0;
   const playerCount = foursomeMode ? players.length : 1;
   const baseTotalCents = hasFee ? registrationFeeCents * playerCount : 0;
-  // Stripe fee: 2.9% + $0.30 per transaction
-  const stripeFee = baseTotalCents > 0 ? Math.round(baseTotalCents * 0.029 + 30) : 0;
-  const totalWithCoveredFees = coverFees ? baseTotalCents + stripeFee : baseTotalCents;
+  const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
+  // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
+  const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
+  const coverageAmount = stripeFee + platformFeeCents;
+  const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
   const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
@@ -325,7 +328,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {/* Cover Fees Option for Nonprofits */}
+        {/* Cover Fees Option */}
         {isNonprofit && hasFee && (
           <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
             <div className="flex items-start gap-3">
@@ -338,16 +341,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               <div className="flex-1">
                 <label htmlFor="cover_fees" className="text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
                   <Heart className="h-4 w-4 text-destructive" />
-                  I'd like to cover the processing fees
+                  I'd like to cover the fees
                 </label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Adding ${(stripeFee / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
+                  Adding ${(coverageAmount / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
                 </p>
               </div>
             </div>
             {coverFees && (
               <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
                 <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
+                <p>Platform fee: ${(platformFeeCents / 100).toFixed(2)}</p>
                 <p>Processing fee: ${(stripeFee / 100).toFixed(2)}</p>
                 <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
               </div>

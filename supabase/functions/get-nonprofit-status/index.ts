@@ -31,9 +31,12 @@ Deno.serve(async (req) => {
 
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified")
+      .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, plan")
       .eq("id", tournament.organization_id)
       .single();
+
+    const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0.03, pro: 0.02, enterprise: 0.01 };
+    const feeRate = FEE_RATES[org?.plan || "base"] ?? 0.05;
 
     return new Response(
       JSON.stringify({
@@ -41,6 +44,7 @@ Deno.serve(async (req) => {
         nonprofit_name: org?.nonprofit_name || null,
         ein: org?.ein || null,
         nonprofit_verified: org?.nonprofit_verified || false,
+        platform_fee_rate: feeRate,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );

@@ -184,7 +184,7 @@ const PublicTournament = () => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string }>({ isNonprofit: false });
+  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sponsorIndex, setSponsorIndex] = useState(0);
 
@@ -224,6 +224,7 @@ const PublicTournament = () => {
                 isNonprofit: true,
                 nonprofitName: npData.nonprofit_name || undefined,
                 ein: npData.ein || undefined,
+                platformFeeRate: npData.platform_fee_rate ?? 0.05,
               });
             }
           })
@@ -998,6 +999,7 @@ const PublicTournament = () => {
                     isNonprofit={nonprofitInfo.isNonprofit}
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
+                    platformFeeRate={nonprofitInfo.platformFeeRate}
                   />
                 </div>
               )}

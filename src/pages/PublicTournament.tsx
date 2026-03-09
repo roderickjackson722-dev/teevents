@@ -961,7 +961,11 @@ const PublicTournament = () => {
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-                <p style={{ color: "#666" }}>Fill out the form below to secure your spot.</p>
+                <p style={{ color: "#666" }}>
+                  {tournament.foursome_registration
+                    ? "Register your foursome below to secure your spots."
+                    : "Fill out the form below to secure your spot."}
+                </p>
               </div>
               {registered ? (
                 <div className="bg-white rounded-xl border p-8 shadow-sm text-center" style={{ borderColor: "#e5e5e5" }}>
@@ -971,7 +975,13 @@ const PublicTournament = () => {
                 </div>
               ) : (
                 <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
-                  <RegistrationForm tournamentId={tournament.id} primaryColor={primary} secondaryColor={secondary} registrationFeeCents={tournament.registration_fee_cents || 0} />
+                  <RegistrationForm
+                    tournamentId={tournament.id}
+                    primaryColor={primary}
+                    secondaryColor={secondary}
+                    registrationFeeCents={tournament.registration_fee_cents || 0}
+                    foursomeMode={tournament.foursome_registration}
+                  />
                 </div>
               )}
             </motion.div>

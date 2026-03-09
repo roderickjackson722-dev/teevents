@@ -83,7 +83,7 @@ const plans = [
     price: "Free",
     period: "forever",
     description: "Get started with the essentials. No credit card required.",
-    fee: "Stripe fees only",
+    fee: "Stripe fees only
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -103,7 +103,7 @@ const plans = [
     price: "$499",
     period: "per tournament",
     description: "Unlock powerful tools and lower your transaction fees.",
-    fee: "3% transaction fee",
+    fee: "3%Stripe fees only
     features: [
       "Everything in Base",
       "All 6 templates + custom colors",

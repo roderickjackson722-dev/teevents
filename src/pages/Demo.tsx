@@ -161,12 +161,14 @@ const Demo = () => {
               View Plans & Pricing
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              to="/contact"
+            <a
+              href="https://calendly.com/teevents/teevents-demo"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              Schedule a Walkthrough
-            </Link>
+              Book a Demo
+            </a>
           </div>
         </motion.div>
       </HeroSection>
@@ -360,14 +362,21 @@ const Demo = () => {
                     <span className="font-display font-bold text-foreground text-xl">$150.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">Platform fee (5%)</span>
+                    <span className="text-muted-foreground">Stripe processing (2.9% + $0.30)</span>
+                    <span className="font-display font-bold text-destructive">−$4.65</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
                     <span className="font-display font-bold text-destructive">−$7.50</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$142.50</span>
+                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all payments. This is charged by Stripe, not TeeVents.
+                </p>
               </div>
             </motion.div>
           </div>
@@ -430,12 +439,14 @@ const Demo = () => {
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                to="/contact"
+              <a
+                href="https://calendly.com/teevents/teevents-demo"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary/90 transition-colors"
               >
-                Contact Sales
-              </Link>
+                Book a Demo
+              </a>
             </div>
           </motion.div>
         </div>

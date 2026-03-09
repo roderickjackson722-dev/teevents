@@ -430,6 +430,9 @@ const Platform = () => {
               Start free and only pay when you grow. Every plan includes a small
               transaction fee so we succeed when you succeed.
             </p>
+            <p className="mt-3 text-sm text-muted-foreground/70">
+              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -561,12 +564,14 @@ const Platform = () => {
                 View Plans
                 <ArrowRight className="h-4 w-4" />
               </button>
-              <Link
-                to="/contact"
+              <a
+                href="https://calendly.com/teevents/teevents-demo"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
-                Schedule a Demo
-              </Link>
+                Book a Demo
+              </a>
             </div>
           </motion.div>
         </div>

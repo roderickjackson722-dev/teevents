@@ -108,10 +108,10 @@ const Index = () => {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/platform"
+              to="/demo"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              Explore Features
+              See Platform Demo
             </Link>
           </div>
         </motion.div>
@@ -364,7 +364,7 @@ const Index = () => {
               Join the growing number of nonprofits and corporations using
               TeeVents to run unforgettable golf events.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+           <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/platform#pricing"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
@@ -372,12 +372,14 @@ const Index = () => {
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                to="/contact"
+              <a
+                href="https://calendly.com/teevents/teevents-demo"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
-                Contact Us
-              </Link>
+                Book a Demo
+              </a>
             </div>
           </motion.div>
         </div>

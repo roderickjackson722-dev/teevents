@@ -119,7 +119,7 @@ const advancedFeatures = [
 ];
 
 const sellingPoints = [
-  { stat: "5 min", label: "Average setup time", icon: Zap },
+  { stat: "30 min", label: "Average setup time", icon: Zap },
   { stat: "100%", label: "Mobile optimized", icon: Smartphone },
   { stat: "0", label: "Tech skills needed", icon: LayoutDashboard },
   { stat: "5%", label: "Simple platform fee", icon: PieChart },

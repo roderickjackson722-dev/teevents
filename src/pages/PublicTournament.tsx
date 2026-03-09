@@ -995,6 +995,9 @@ const PublicTournament = () => {
                     secondaryColor={secondary}
                     registrationFeeCents={tournament.registration_fee_cents || 0}
                     foursomeMode={tournament.foursome_registration}
+                    isNonprofit={nonprofitInfo.isNonprofit}
+                    nonprofitName={nonprofitInfo.nonprofitName}
+                    ein={nonprofitInfo.ein}
                   />
                 </div>
               )}

@@ -125,8 +125,11 @@ Deno.serve(async (req) => {
     });
 
     // Look up organizer's connected Stripe account
-    let connectedAccountId: string | null = null;
-    connectedAccountId = org?.stripe_account_id || null;
+    const connectedAccountId = org?.stripe_account_id || null;
+    
+    console.log(`[Registration Checkout] Tournament: ${tournament.title}`);
+    console.log(`[Registration Checkout] Fee: $${(feeCents / 100).toFixed(2)}, Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
+    console.log(`[Registration Checkout] Connected Account: ${connectedAccountId || "NONE"}`);
 
     // Check for existing Stripe customer
     let customerId: string | undefined;
@@ -165,15 +168,22 @@ Deno.serve(async (req) => {
 
     // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
+      const applicationFee = Math.round(feeCents * feeRate);
+      console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
+      console.log(`[Registration Checkout] Organizer payout: $${((feeCents - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
+      
       sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(feeCents * feeRate),
+        application_fee_amount: applicationFee,
         transfer_data: {
           destination: connectedAccountId,
         },
       };
+    } else {
+      console.log(`[Registration Checkout] No connected account — full payment goes to platform`);
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
+    console.log(`[Registration Checkout] Session created: ${session.id}`);
 
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),

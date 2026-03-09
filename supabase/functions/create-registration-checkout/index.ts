@@ -14,17 +14,27 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const {
-      tournament_id,
-      first_name,
-      last_name,
-      email,
-      phone,
-      handicap,
-      shirt_size,
-      dietary_restrictions,
-      notes,
-    } = await req.json();
+    const body = await req.json();
+    const isFoursome = body.foursome === true && Array.isArray(body.players);
+
+    // Extract player data
+    const players = isFoursome
+      ? body.players
+      : [{
+          first_name: body.first_name,
+          last_name: body.last_name,
+          email: body.email,
+          phone: body.phone,
+          handicap: body.handicap,
+          shirt_size: body.shirt_size,
+          dietary_restrictions: body.dietary_restrictions,
+          notes: body.notes,
+        }];
+
+    const tournament_id = body.tournament_id;
+    const first_name = players[0].first_name;
+    const last_name = players[0].last_name;
+    const email = players[0].email;
 
     if (!tournament_id || !first_name || !last_name || !email) {
       throw new Error("Missing required fields");
@@ -64,39 +74,44 @@ Deno.serve(async (req) => {
     const feeRate = FEE_RATES[orgPlan] ?? 0.05;
 
     const feeCents = tournament.registration_fee_cents || 0;
+    const totalFeeCents = feeCents * players.length;
 
-    // Insert the registration record
-    const { data: registration, error: regErr } = await supabaseAdmin
+    // Insert registration records for all players
+    const registrationInserts = players.map((p: any) => ({
+      tournament_id,
+      first_name: (p.first_name || "").trim(),
+      last_name: (p.last_name || "").trim(),
+      email: (p.email || "").trim(),
+      phone: p.phone || null,
+      handicap: p.handicap ?? null,
+      shirt_size: p.shirt_size || null,
+      dietary_restrictions: p.dietary_restrictions || null,
+      notes: p.notes || null,
+      payment_status: feeCents > 0 ? "pending" : "paid",
+    }));
+
+    const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .insert({
-        tournament_id,
-        first_name: first_name.trim(),
-        last_name: last_name.trim(),
-        email: email.trim(),
-        phone: phone || null,
-        handicap: handicap ?? null,
-        shirt_size: shirt_size || null,
-        dietary_restrictions: dietary_restrictions || null,
-        notes: notes || null,
-        payment_status: feeCents > 0 ? "pending" : "paid",
-      })
-      .select("id")
-      .single();
+      .insert(registrationInserts)
+      .select("id");
 
     if (regErr) throw new Error(regErr.message);
+    const registrationIds = (registrations || []).map((r: any) => r.id);
 
     // Send notification emails via Resend
     try {
+      const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
       await sendNotificationEmails(
         supabaseAdmin,
         tournament.organization_id,
         "notify_registration",
         `New Registration — ${tournament.title}`,
         buildNotificationHtml("New Player Registration", [
-          `<strong>${first_name} ${last_name}</strong> has registered for <strong>${tournament.title}</strong>.`,
-          `📧 ${email}${phone ? ` • 📱 ${phone}` : ""}`,
-          feeCents > 0 ? `💳 Registration fee: $${(feeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
-        ]),
+          `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
+          `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
+          isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
+          feeCents > 0 ? `💳 Registration fee: $${(totalFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+        ].filter(Boolean)),
       );
     } catch (e) {
       console.error("Notification error:", e);
@@ -128,7 +143,7 @@ Deno.serve(async (req) => {
     const connectedAccountId = org?.stripe_account_id || null;
     
     console.log(`[Registration Checkout] Tournament: ${tournament.title}`);
-    console.log(`[Registration Checkout] Fee: $${(feeCents / 100).toFixed(2)}, Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
+    console.log(`[Registration Checkout] Fee: $${(totalFeeCents / 100).toFixed(2)} (${players.length} players × $${(feeCents / 100).toFixed(2)}), Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
     console.log(`[Registration Checkout] Connected Account: ${connectedAccountId || "NONE"}`);
 
     // Check for existing Stripe customer
@@ -140,6 +155,8 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
+    const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
+
     const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),
@@ -149,11 +166,11 @@ Deno.serve(async (req) => {
             currency: "usd",
             product_data: {
               name: `Registration — ${tournament.title}`,
-              description: `${first_name} ${last_name}`,
+              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
             },
             unit_amount: feeCents,
           },
-          quantity: 1,
+          quantity: players.length,
         },
       ],
       mode: "payment",
@@ -162,15 +179,15 @@ Deno.serve(async (req) => {
       metadata: {
         type: "registration",
         tournament_id,
-        registration_id: registration.id,
+        registration_ids: registrationIds.join(","),
       },
     };
 
     // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
-      const applicationFee = Math.round(feeCents * feeRate);
+      const applicationFee = Math.round(totalFeeCents * feeRate);
       console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
-      console.log(`[Registration Checkout] Organizer payout: $${((feeCents - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
+      console.log(`[Registration Checkout] Organizer payout: $${((totalFeeCents - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
       
       sessionParams.payment_intent_data = {
         application_fee_amount: applicationFee,

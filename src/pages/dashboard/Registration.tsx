@@ -31,6 +31,7 @@ interface Tournament {
   registration_fee_cents: number | null;
   registration_open: boolean | null;
   max_players: number | null;
+  foursome_registration: boolean;
 }
 
 interface RegField {
@@ -96,13 +97,14 @@ const Registration = () => {
   const [regOpen, setRegOpen] = useState<boolean>(false);
   const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
+  const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
 
   /* fetch tournaments */
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -127,6 +129,7 @@ const Registration = () => {
       const mp = tournament.max_players || 144;
       setMaxPlayers(mp);
       setMaxPlayersDisplay(String(mp));
+      setFoursomeReg(tournament.foursome_registration || false);
     }
 
     const [fieldsRes, addonsRes, promoRes] = await Promise.all([
@@ -163,6 +166,7 @@ const Registration = () => {
         registration_fee_cents: feeCents,
         registration_open: regOpen,
         max_players: maxPlayers,
+        foursome_registration: foursomeReg,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);
@@ -171,7 +175,7 @@ const Registration = () => {
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
-            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers }
+            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg }
             : t,
         ),
       );
@@ -415,6 +419,14 @@ const Registration = () => {
                     <span className="text-sm font-medium text-foreground">{regOpen ? "Open" : "Closed"}</span>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">Foursome Registration</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register as a group of up to 4</p>
+                </div>
+                <Switch checked={foursomeReg} onCheckedChange={setFoursomeReg} />
               </div>
 
               <Button onClick={saveSettings} disabled={saving}>

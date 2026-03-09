@@ -57,15 +57,15 @@ function DetailedFlyer() {
         <img src={salesHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(152,45%,22%)] via-[hsl(152,45%,22%,0.85)] to-[hsl(152,45%,22%,0.7)]" />
         <div className="relative z-10 h-full flex items-center px-10">
-          <div className="flex items-center gap-5">
-            <img src={logoWhite} alt="TeeVents" className="h-14 w-auto" />
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <img src={logoWhite} alt="TeeVents" className="h-12 w-auto" />
             <div>
-              <h1 className="text-3xl font-bold text-white font-display tracking-tight">TeeVents</h1>
-              <p className="text-white/80 text-sm mt-0.5">The All-In-One Golf Tournament Management Platform</p>
+              <h1 className="text-2xl font-bold text-white font-display tracking-tight leading-none">TeeVents</h1>
+              <p className="text-white/80 text-xs mt-1">The All-In-One Golf Tournament<br />Management Platform</p>
             </div>
           </div>
-          <div className="ml-auto text-right">
-            <p className="text-white/90 text-lg font-semibold">Plan. Promote. Play.</p>
+          <div className="ml-auto text-right flex-shrink-0">
+            <p className="text-white/90 text-base font-semibold">Plan. Promote. Play.</p>
             <p className="text-secondary text-sm font-medium mt-0.5">www.teevents.golf</p>
           </div>
         </div>
@@ -162,7 +162,7 @@ function DetailedFlyer() {
             <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
           </div>
           <div className="bg-white rounded-lg p-1.5">
-            <QRCodeSVG value="https://teevents.lovable.app/get-started" size={48} />
+            <QRCodeSVG value="https://teevents.golfarted" size={48} />
           </div>
         </div>
       </div>
@@ -275,7 +275,7 @@ function QuickFlyer() {
             <p className="text-primary-foreground/60 text-xs mt-0.5">info@teevents.golf</p>
           </div>
           <div className="bg-white rounded-lg p-1.5">
-            <QRCodeSVG value="https://teevents.lovable.app/get-started" size={56} />
+            <QRCodeSVG value="https://teevents.lovablegolfarted" size={56} />
           </div>
         </div>
       </div>

@@ -1517,6 +1517,7 @@ export type Database = {
           date: string | null
           description: string | null
           donation_goal_cents: number | null
+          foursome_registration: boolean
           hole_pars: Json | null
           id: string
           image_url: string | null
@@ -1556,6 +1557,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
+          foursome_registration?: boolean
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
@@ -1595,6 +1597,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
+          foursome_registration?: boolean
           hole_pars?: Json | null
           id?: string
           image_url?: string | null

@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2 } from "lucide-react";
 import { z } from "zod";
 
-const registrationSchema = z.object({
+const playerSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(100),
   last_name: z.string().trim().min(1, "Last name is required").max(100),
   email: z.string().trim().email("Invalid email address").max(255),
@@ -26,40 +26,129 @@ interface RegistrationFormProps {
   primaryColor: string;
   secondaryColor: string;
   registrationFeeCents?: number;
+  foursomeMode?: boolean;
 }
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0 }: RegistrationFormProps) => {
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    handicap: "",
-    shirt_size: "",
-    dietary_restrictions: "",
-    notes: "",
-  });
+const emptyPlayer = () => ({
+  first_name: "", last_name: "", email: "", phone: "",
+  handicap: "", shirt_size: "", dietary_restrictions: "", notes: "",
+});
+
+type PlayerForm = ReturnType<typeof emptyPlayer>;
+
+const PlayerFields = ({
+  player, index, onChange, errors, showRemove, onRemove,
+}: {
+  player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
+  errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
+}) => {
+  const prefix = index > 0 ? `p${index}_` : "";
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-foreground">
+          {index === 0 ? "Player 1 (Captain)" : `Player ${index + 1}`}
+        </h4>
+        {showRemove && onRemove && (
+          <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-destructive h-7 px-2">
+            <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+          </Button>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>First Name *</Label>
+          <Input value={player.first_name} onChange={(e) => onChange({ ...player, first_name: e.target.value })} placeholder="John" maxLength={100} />
+          {errors[`${prefix}first_name`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}first_name`]}</p>}
+        </div>
+        <div>
+          <Label>Last Name *</Label>
+          <Input value={player.last_name} onChange={(e) => onChange({ ...player, last_name: e.target.value })} placeholder="Doe" maxLength={100} />
+          {errors[`${prefix}last_name`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}last_name`]}</p>}
+        </div>
+      </div>
+      <div>
+        <Label>Email *</Label>
+        <Input type="email" value={player.email} onChange={(e) => onChange({ ...player, email: e.target.value })} placeholder="john@example.com" maxLength={255} />
+        {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Phone</Label>
+          <Input value={player.phone} onChange={(e) => onChange({ ...player, phone: e.target.value })} placeholder="(555) 123-4567" maxLength={20} />
+        </div>
+        <div>
+          <Label>Handicap</Label>
+          <Input type="number" min="0" max="54" value={player.handicap} onChange={(e) => onChange({ ...player, handicap: e.target.value })} placeholder="e.g. 15" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Shirt Size</Label>
+          <Select value={player.shirt_size} onValueChange={(v) => onChange({ ...player, shirt_size: v })}>
+            <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+            <SelectContent>
+              {["XS", "S", "M", "L", "XL", "2XL", "3XL"].map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Dietary Restrictions</Label>
+          <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false }: RegistrationFormProps) => {
+  const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
+  const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const hasFee = registrationFeeCents > 0;
+  const totalFee = hasFee ? registrationFeeCents * (foursomeMode ? players.length : 1) : 0;
   const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
+  const totalDisplay = totalFee > 0 ? `$${(totalFee / 100).toFixed(2)}` : null;
+
+  const updatePlayer = (index: number, player: PlayerForm) => {
+    setPlayers((prev) => prev.map((p, i) => (i === index ? player : p)));
+  };
+
+  const addPlayer = () => {
+    if (players.length < 4) setPlayers((prev) => [...prev, emptyPlayer()]);
+  };
+
+  const removePlayer = (index: number) => {
+    if (players.length > 1) setPlayers((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
-    const parsed = registrationSchema.safeParse({
-      ...form,
-      handicap: form.handicap ? parseInt(form.handicap) : undefined,
+    const fieldErrors: Record<string, string> = {};
+
+    const parsedPlayers = players.map((player, i) => {
+      const prefix = i > 0 ? `p${i}_` : "";
+      const parsed = playerSchema.safeParse({
+        ...player,
+        handicap: player.handicap ? parseInt(player.handicap) : undefined,
+      });
+      if (!parsed.success) {
+        parsed.error.errors.forEach((err) => {
+          if (err.path[0]) fieldErrors[`${prefix}${err.path[0]}`] = err.message;
+        });
+        return null;
+      }
+      return parsed.data;
     });
 
-    if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {};
-      parsed.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
-      });
+    if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return;
     }
@@ -67,49 +156,57 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     setSubmitting(true);
 
     if (hasFee) {
-      // Use edge function for paid registration
       try {
-        const { data, error } = await supabase.functions.invoke("create-registration-checkout", {
-          body: {
-            tournament_id: tournamentId,
-            first_name: parsed.data.first_name,
-            last_name: parsed.data.last_name,
-            email: parsed.data.email,
-            phone: form.phone || null,
-            handicap: form.handicap ? parseInt(form.handicap) : null,
-            shirt_size: form.shirt_size || null,
-            dietary_restrictions: form.dietary_restrictions || null,
-            notes: form.notes || null,
-          },
-        });
+        const body = foursomeMode
+          ? {
+              tournament_id: tournamentId,
+              foursome: true,
+              players: parsedPlayers.map((p, i) => ({
+                first_name: p!.first_name,
+                last_name: p!.last_name,
+                email: p!.email,
+                phone: players[i].phone || null,
+                handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
+                shirt_size: players[i].shirt_size || null,
+                dietary_restrictions: players[i].dietary_restrictions || null,
+                notes: i === 0 ? groupNotes || null : null,
+              })),
+            }
+          : {
+              tournament_id: tournamentId,
+              first_name: parsedPlayers[0]!.first_name,
+              last_name: parsedPlayers[0]!.last_name,
+              email: parsedPlayers[0]!.email,
+              phone: players[0].phone || null,
+              handicap: players[0].handicap ? parseInt(players[0].handicap) : null,
+              shirt_size: players[0].shirt_size || null,
+              dietary_restrictions: players[0].dietary_restrictions || null,
+              notes: groupNotes || players[0].notes || null,
+            };
+
+        const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
 
         if (error) throw error;
-
-        if (data?.checkout_url) {
-          // Redirect to Stripe Checkout
-          window.location.href = data.checkout_url;
-          return;
-        }
-
-        if (data?.paid) {
-          setSubmitted(true);
-        }
+        if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
+        if (data?.paid) setSubmitted(true);
       } catch (err: any) {
         setErrors({ form: err.message || "Registration failed. Please try again." });
       }
     } else {
       // Free registration — insert directly
-      const { error } = await supabase.from("tournament_registrations").insert({
+      const inserts = (foursomeMode ? parsedPlayers : [parsedPlayers[0]]).map((p, i) => ({
         tournament_id: tournamentId,
-        first_name: parsed.data.first_name,
-        last_name: parsed.data.last_name,
-        email: parsed.data.email,
-        phone: form.phone || null,
-        handicap: form.handicap ? parseInt(form.handicap) : null,
-        shirt_size: form.shirt_size || null,
-        dietary_restrictions: form.dietary_restrictions || null,
-        notes: form.notes || null,
-      });
+        first_name: p!.first_name,
+        last_name: p!.last_name,
+        email: p!.email,
+        phone: players[i].phone || null,
+        handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
+        shirt_size: players[i].shirt_size || null,
+        dietary_restrictions: players[i].dietary_restrictions || null,
+        notes: i === 0 ? groupNotes || null : null,
+      }));
+
+      const { error } = await supabase.from("tournament_registrations").insert(inserts);
 
       if (error) {
         setErrors({ form: "Registration failed. Please try again." });
@@ -142,131 +239,95 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         )}
       </AnimatePresence>
 
-      <form 
-        onSubmit={handleSubmit} 
+      <form
+        onSubmit={handleSubmit}
         className={cn("space-y-5 transition-all duration-500", submitted ? "opacity-40 pointer-events-none grayscale-[50%]" : "")}
       >
-      {errors.form && (
-        <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
-      )}
+        {errors.form && (
+          <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
+        )}
 
-      {hasFee && (
-        <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
-          Registration Fee: {feeDisplay}
-        </div>
-      )}
+        {hasFee && (
+          <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
+            Registration Fee: {feeDisplay} per player
+            {foursomeMode && players.length > 1 && (
+              <span className="block text-xs mt-1 opacity-80">
+                {players.length} players × {feeDisplay} = {totalDisplay}
+              </span>
+            )}
+          </div>
+        )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="reg_first_name">First Name *</Label>
-          <Input
-            id="reg_first_name"
-            value={form.first_name}
-            onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-            placeholder="John"
-            maxLength={100}
-          />
-          {errors.first_name && <p className="text-xs text-destructive mt-1">{errors.first_name}</p>}
-        </div>
-        <div>
-          <Label htmlFor="reg_last_name">Last Name *</Label>
-          <Input
-            id="reg_last_name"
-            value={form.last_name}
-            onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-            placeholder="Doe"
-            maxLength={100}
-          />
-          {errors.last_name && <p className="text-xs text-destructive mt-1">{errors.last_name}</p>}
-        </div>
-      </div>
+        {foursomeMode && (
+          <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
+            <p className="font-semibold text-foreground">Foursome Registration</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Register up to 4 players. At least 1 player is required.</p>
+          </div>
+        )}
 
-      <div>
-        <Label htmlFor="reg_email">Email *</Label>
-        <Input
-          id="reg_email"
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          placeholder="john@example.com"
-          maxLength={255}
-        />
-        {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
-      </div>
+        {players.map((player, i) => (
+          <div key={i}>
+            {i > 0 && <div className="border-t border-border my-4" />}
+            <PlayerFields
+              player={player}
+              index={i}
+              onChange={(p) => updatePlayer(i, p)}
+              errors={errors}
+              showRemove={foursomeMode && i > 0}
+              onRemove={() => removePlayer(i)}
+            />
+          </div>
+        ))}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="reg_phone">Phone</Label>
-          <Input
-            id="reg_phone"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="(555) 123-4567"
-            maxLength={20}
-          />
-        </div>
-        <div>
-          <Label htmlFor="reg_handicap">Handicap</Label>
-          <Input
-            id="reg_handicap"
-            type="number"
-            min="0"
-            max="54"
-            value={form.handicap}
-            onChange={(e) => setForm({ ...form, handicap: e.target.value })}
-            placeholder="e.g. 15"
-          />
-        </div>
-      </div>
+        {foursomeMode && players.length < 4 && (
+          <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Player {players.length + 1}
+          </Button>
+        )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Shirt Size</Label>
-          <Select value={form.shirt_size} onValueChange={(v) => setForm({ ...form, shirt_size: v })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select size" />
-            </SelectTrigger>
-            <SelectContent>
-              {["XS", "S", "M", "L", "XL", "2XL", "3XL"].map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="reg_dietary">Dietary Restrictions</Label>
-          <Input
-            id="reg_dietary"
-            value={form.dietary_restrictions}
-            onChange={(e) => setForm({ ...form, dietary_restrictions: e.target.value })}
-            placeholder="e.g. Vegetarian"
-            maxLength={500}
-          />
-        </div>
-      </div>
+        {!foursomeMode && (
+          <div>
+            <Label htmlFor="reg_notes">Additional Notes</Label>
+            <Textarea
+              id="reg_notes"
+              value={players[0].notes}
+              onChange={(e) => updatePlayer(0, { ...players[0], notes: e.target.value })}
+              placeholder="Preferred playing partners, special requests, etc."
+              rows={3}
+              maxLength={1000}
+            />
+          </div>
+        )}
 
-      <div>
-        <Label htmlFor="reg_notes">Additional Notes</Label>
-        <Textarea
-          id="reg_notes"
-          value={form.notes}
-          onChange={(e) => setForm({ ...form, notes: e.target.value })}
-          placeholder="Preferred playing partners, special requests, etc."
-          rows={3}
-          maxLength={1000}
-        />
-      </div>
+        {foursomeMode && (
+          <div>
+            <Label htmlFor="group_notes">Group Notes</Label>
+            <Textarea
+              id="group_notes"
+              value={groupNotes}
+              onChange={(e) => setGroupNotes(e.target.value)}
+              placeholder="Special requests for the group, etc."
+              rows={3}
+              maxLength={1000}
+            />
+          </div>
+        )}
 
-      <Button
-        type="submit"
-        disabled={submitting || submitted}
-        className="w-full text-base py-3"
-        style={{ backgroundColor: secondaryColor, color: primaryColor }}
-      >
-        {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-        {hasFee ? `Register & Pay ${feeDisplay}` : "Complete Registration"}
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          disabled={submitting || submitted}
+          className="w-full text-base py-3"
+          style={{ backgroundColor: secondaryColor, color: primaryColor }}
+        >
+          {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+          {hasFee
+            ? `Register & Pay ${foursomeMode && players.length > 1 ? totalDisplay : feeDisplay}`
+            : foursomeMode
+              ? `Register Foursome (${players.length} player${players.length > 1 ? "s" : ""})`
+              : "Complete Registration"}
+        </Button>
+      </form>
     </div>
   );
 };

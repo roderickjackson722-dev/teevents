@@ -83,7 +83,7 @@ const plans = [
     price: "Free",
     period: "forever",
     description: "Get started with the essentials. No credit card required.",
-    fee: "5% transaction fee",
+    fee: "Stripe fees only",
     features: [
       "1 tournament",
       "Online registration & payments",

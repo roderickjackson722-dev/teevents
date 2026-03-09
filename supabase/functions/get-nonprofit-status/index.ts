@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       .single();
 
     const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0.03, pro: 0.02, enterprise: 0.01 };
-    const feeRate = FEE_RATES[org?.plan || "base"] ?? 0.05;
+    const feeRate = org?.is_nonprofit ? 0.05 : (FEE_RATES[org?.plan || "base"] ?? 0.05);
 
     return new Response(
       JSON.stringify({

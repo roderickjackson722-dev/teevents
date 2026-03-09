@@ -74,7 +74,8 @@ Deno.serve(async (req) => {
       pro: 0.02,
       enterprise: 0.01,
     };
-    const feeRate = FEE_RATES[orgPlan] ?? 0.05;
+    // Nonprofits always pay 5% platform fee regardless of plan
+    const feeRate = isNonprofit ? 0.05 : (FEE_RATES[orgPlan] ?? 0.05);
 
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;

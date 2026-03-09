@@ -435,6 +435,22 @@ const PublicTournament = () => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#ffffff" }} id="top">
+      {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}
+      {registered && (
+        <div className="fixed top-14 left-0 right-0 z-40">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-xl mx-auto m-4"
+          >
+            <div className="bg-white rounded-xl border-2 p-8 shadow-2xl text-center" style={{ borderColor: `${secondary}40` }}>
+              <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
+              <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>You're Registered!</h3>
+              <p style={{ color: "#666" }}>Payment confirmed. You'll receive confirmation details via email.</p>
+            </div>
+          </motion.div>
+        </div>
+      )}
       {/* ===== TOP NAVIGATION BAR ===== */}
       <nav
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b"

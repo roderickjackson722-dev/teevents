@@ -259,7 +259,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
       <Button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || submitted}
         className="w-full text-base py-3"
         style={{ backgroundColor: secondaryColor, color: primaryColor }}
       >
@@ -267,6 +267,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         {hasFee ? `Register & Pay ${feeDisplay}` : "Complete Registration"}
       </Button>
     </form>
+    </div>
   );
 };
 

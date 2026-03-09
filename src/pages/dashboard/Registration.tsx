@@ -31,6 +31,7 @@ interface Tournament {
   registration_fee_cents: number | null;
   registration_open: boolean | null;
   max_players: number | null;
+  foursome_registration: boolean;
 }
 
 interface RegField {

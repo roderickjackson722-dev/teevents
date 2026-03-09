@@ -14,17 +14,27 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const {
-      tournament_id,
-      first_name,
-      last_name,
-      email,
-      phone,
-      handicap,
-      shirt_size,
-      dietary_restrictions,
-      notes,
-    } = await req.json();
+    const body = await req.json();
+    const isFoursome = body.foursome === true && Array.isArray(body.players);
+
+    // Extract player data
+    const players = isFoursome
+      ? body.players
+      : [{
+          first_name: body.first_name,
+          last_name: body.last_name,
+          email: body.email,
+          phone: body.phone,
+          handicap: body.handicap,
+          shirt_size: body.shirt_size,
+          dietary_restrictions: body.dietary_restrictions,
+          notes: body.notes,
+        }];
+
+    const tournament_id = body.tournament_id;
+    const first_name = players[0].first_name;
+    const last_name = players[0].last_name;
+    const email = players[0].email;
 
     if (!tournament_id || !first_name || !last_name || !email) {
       throw new Error("Missing required fields");

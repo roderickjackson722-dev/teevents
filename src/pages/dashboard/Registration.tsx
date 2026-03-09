@@ -129,6 +129,7 @@ const Registration = () => {
       const mp = tournament.max_players || 144;
       setMaxPlayers(mp);
       setMaxPlayersDisplay(String(mp));
+      setFoursomeReg(tournament.foursome_registration || false);
     }
 
     const [fieldsRes, addonsRes, promoRes] = await Promise.all([

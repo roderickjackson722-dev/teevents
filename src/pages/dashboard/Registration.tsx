@@ -97,6 +97,7 @@ const Registration = () => {
   const [regOpen, setRegOpen] = useState<boolean>(false);
   const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
+  const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
 
   /* fetch tournaments */
   useEffect(() => {

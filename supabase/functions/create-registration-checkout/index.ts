@@ -75,25 +75,27 @@ Deno.serve(async (req) => {
 
     const feeCents = tournament.registration_fee_cents || 0;
 
-    // Insert the registration record
-    const { data: registration, error: regErr } = await supabaseAdmin
+    // Insert registration records for all players
+    const registrationInserts = players.map((p: any) => ({
+      tournament_id,
+      first_name: (p.first_name || "").trim(),
+      last_name: (p.last_name || "").trim(),
+      email: (p.email || "").trim(),
+      phone: p.phone || null,
+      handicap: p.handicap ?? null,
+      shirt_size: p.shirt_size || null,
+      dietary_restrictions: p.dietary_restrictions || null,
+      notes: p.notes || null,
+      payment_status: feeCents > 0 ? "pending" : "paid",
+    }));
+
+    const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .insert({
-        tournament_id,
-        first_name: first_name.trim(),
-        last_name: last_name.trim(),
-        email: email.trim(),
-        phone: phone || null,
-        handicap: handicap ?? null,
-        shirt_size: shirt_size || null,
-        dietary_restrictions: dietary_restrictions || null,
-        notes: notes || null,
-        payment_status: feeCents > 0 ? "pending" : "paid",
-      })
-      .select("id")
-      .single();
+      .insert(registrationInserts)
+      .select("id");
 
     if (regErr) throw new Error(regErr.message);
+    const registrationIds = (registrations || []).map((r: any) => r.id);
 
     // Send notification emails via Resend
     try {

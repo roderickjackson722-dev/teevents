@@ -19,6 +19,7 @@ import {
   Lock,
   FileEdit,
   Printer,
+  PenLine,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";

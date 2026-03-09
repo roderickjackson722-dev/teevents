@@ -185,9 +185,9 @@ Deno.serve(async (req) => {
 
     // Route payment to connected account with plan-based application fee
     if (connectedAccountId) {
-      const applicationFee = Math.round(feeCents * feeRate);
+      const applicationFee = Math.round(totalFeeCents * feeRate);
       console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
-      console.log(`[Registration Checkout] Organizer payout: $${((feeCents - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
+      console.log(`[Registration Checkout] Organizer payout: $${((totalFeeCents - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
       
       sessionParams.payment_intent_data = {
         application_fee_amount: applicationFee,

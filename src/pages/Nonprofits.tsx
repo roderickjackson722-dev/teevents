@@ -108,7 +108,7 @@ const Nonprofits = () => {
               Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-          <Button size="lg" variant="outline" asChild className="text-base px-8 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10">
+          <Button size="lg" variant="outline" asChild className="text-base px-8 border-primary-foreground text-primary-foreground font-bold hover:bg-primary-foreground/10">
             <Link to="/demo">See a Live Demo</Link>
           </Button>
         </div>

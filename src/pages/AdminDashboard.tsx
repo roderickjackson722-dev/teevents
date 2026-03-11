@@ -1519,6 +1519,11 @@ const AdminDashboard = () => {
             />
           )}
 
+          {/* Store Tab */}
+          {activeTab === "store" && (
+            <AdminStore products={platformProducts} callAdminApi={callAdminApi} onRefresh={fetchAll} />
+          )}
+
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AdminAnalytics />}
         </div>

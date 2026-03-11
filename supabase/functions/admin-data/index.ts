@@ -251,6 +251,42 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true });
       }
 
+      // --- Platform Store Actions ---
+      if (action === "add-platform-product") {
+        const { error } = await adminClient.from("platform_store_products").insert({
+          name: body.name,
+          description: body.description || null,
+          price: body.price || 0,
+          image_url: body.image_url || null,
+          category: body.category || "merchandise",
+          sort_order: body.sort_order ?? 0,
+        });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-platform-product") {
+        const updates: Record<string, unknown> = {};
+        for (const key of ["name", "description", "price", "image_url", "category", "sort_order"]) {
+          if (body[key] !== undefined) updates[key] = body[key];
+        }
+        const { error } = await adminClient.from("platform_store_products").update(updates).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "toggle-platform-product") {
+        const { error } = await adminClient.from("platform_store_products").update({ is_active: body.is_active }).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "delete-platform-product") {
+        const { error } = await adminClient.from("platform_store_products").delete().eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       if (action === "toggle-tournament-published") {
         if (!body.tournament_id) return jsonRes({ error: "Missing tournament_id" }, 400);
         const { error } = await adminClient

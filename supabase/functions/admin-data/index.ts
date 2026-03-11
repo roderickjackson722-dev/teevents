@@ -520,6 +520,7 @@ Deno.serve(async (req) => {
         prospectActivities: activitiesRes.data || [],
         outreachTemplates: templatesRes.data || [],
         allTournaments: allTournamentsRes.data || [],
+        platformProducts: platformProductsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -616,6 +616,7 @@ const AdminDashboard = () => {
               ["demos", "Demo Events", Trophy],
               ["orgs", "Organizations", Building2],
               ["prospects", "Prospects", Target],
+              ["store", "Store", ShoppingBag],
               ["analytics", "Analytics", BarChart3],
             ] as const).map(([key, label, Icon]) => (
               <button

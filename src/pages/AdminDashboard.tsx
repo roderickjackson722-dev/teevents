@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
+import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -24,7 +25,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments" | "analytics">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments" | "analytics" | "store">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -104,6 +105,7 @@ const AdminDashboard = () => {
 
   // All tournaments state
   const [allTournaments, setAllTournaments] = useState<any[]>([]);
+  const [platformProducts, setPlatformProducts] = useState<any[]>([]);
   const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
   const [tournamentSearch, setTournamentSearch] = useState("");
 
@@ -161,6 +163,7 @@ const AdminDashboard = () => {
       setProspectActivities(data.prospectActivities || []);
       setOutreachTemplates(data.outreachTemplates || []);
       setAllTournaments(data.allTournaments || []);
+      setPlatformProducts(data.platformProducts || []);
       setOutreachTemplates(data.outreachTemplates || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
@@ -613,6 +616,7 @@ const AdminDashboard = () => {
               ["demos", "Demo Events", Trophy],
               ["orgs", "Organizations", Building2],
               ["prospects", "Prospects", Target],
+              ["store", "Store", ShoppingBag],
               ["analytics", "Analytics", BarChart3],
             ] as const).map(([key, label, Icon]) => (
               <button
@@ -1513,6 +1517,11 @@ const AdminDashboard = () => {
               onRefresh={fetchAll}
               callAdminApi={callAdminApi}
             />
+          )}
+
+          {/* Store Tab */}
+          {activeTab === "store" && (
+            <AdminStore products={platformProducts} callAdminApi={callAdminApi} onRefresh={fetchAll} />
           )}
 
           {/* Analytics Tab */}

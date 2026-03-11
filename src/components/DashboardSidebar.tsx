@@ -78,7 +78,7 @@ const managementItems = [
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
   { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget" },
   { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
-  { title: "Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store" },
+  
   { title: "Auction", url: "/dashboard/auction", icon: Gavel, feature: "auction" },
   { title: "Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery" },
   { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers" },

@@ -251,6 +251,42 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true });
       }
 
+      // --- Platform Store Actions ---
+      if (action === "add-platform-product") {
+        const { error } = await adminClient.from("platform_store_products").insert({
+          name: body.name,
+          description: body.description || null,
+          price: body.price || 0,
+          image_url: body.image_url || null,
+          category: body.category || "merchandise",
+          sort_order: body.sort_order ?? 0,
+        });
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-platform-product") {
+        const updates: Record<string, unknown> = {};
+        for (const key of ["name", "description", "price", "image_url", "category", "sort_order"]) {
+          if (body[key] !== undefined) updates[key] = body[key];
+        }
+        const { error } = await adminClient.from("platform_store_products").update(updates).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "toggle-platform-product") {
+        const { error } = await adminClient.from("platform_store_products").update({ is_active: body.is_active }).eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "delete-platform-product") {
+        const { error } = await adminClient.from("platform_store_products").delete().eq("id", body.id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       if (action === "toggle-tournament-published") {
         if (!body.tournament_id) return jsonRes({ error: "Missing tournament_id" }, 400);
         const { error } = await adminClient
@@ -454,7 +490,7 @@ Deno.serve(async (req) => {
     }
 
     // Default: fetch all admin data
-    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes, templatesRes, allTournamentsRes] = await Promise.all([
+    const [eventsRes, requestsRes, emailsRes, resourcesRes, reviewsRes, promoCodesRes, demoEventsRes, orgsRes, prospectsRes, activitiesRes, templatesRes, allTournamentsRes, platformProductsRes] = await Promise.all([
       adminClient.from("events").select("*").order("sort_order", { ascending: true }),
       adminClient.from("event_access_requests").select("*").order("created_at", { ascending: false }),
       adminClient.from("approved_emails").select("*").order("created_at", { ascending: false }),
@@ -467,6 +503,7 @@ Deno.serve(async (req) => {
       adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
       adminClient.from("outreach_templates").select("*").order("sort_order", { ascending: true }),
       adminClient.from("tournaments").select("*, organizations(id, name, plan, stripe_account_id), tournament_registrations(id)").order("created_at", { ascending: false }),
+      adminClient.from("platform_store_products").select("*").order("sort_order", { ascending: true }),
     ]);
 
     return new Response(
@@ -483,6 +520,7 @@ Deno.serve(async (req) => {
         prospectActivities: activitiesRes.data || [],
         outreachTemplates: templatesRes.data || [],
         allTournaments: allTournamentsRes.data || [],
+        platformProducts: platformProductsRes.data || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

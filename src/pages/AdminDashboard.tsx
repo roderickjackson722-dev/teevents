@@ -6,6 +6,7 @@ import {
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
+import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";

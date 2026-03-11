@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminStore from "@/components/admin/AdminStore";

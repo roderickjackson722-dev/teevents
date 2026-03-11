@@ -163,6 +163,7 @@ const AdminDashboard = () => {
       setProspectActivities(data.prospectActivities || []);
       setOutreachTemplates(data.outreachTemplates || []);
       setAllTournaments(data.allTournaments || []);
+      setPlatformProducts(data.platformProducts || []);
       setOutreachTemplates(data.outreachTemplates || []);
     } catch (err: any) {
       console.error("Failed to fetch admin data:", err);

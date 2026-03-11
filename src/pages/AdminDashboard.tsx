@@ -105,6 +105,7 @@ const AdminDashboard = () => {
 
   // All tournaments state
   const [allTournaments, setAllTournaments] = useState<any[]>([]);
+  const [platformProducts, setPlatformProducts] = useState<any[]>([]);
   const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
   const [tournamentSearch, setTournamentSearch] = useState("");
 

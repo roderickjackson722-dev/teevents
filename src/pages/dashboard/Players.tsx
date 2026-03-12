@@ -756,7 +756,7 @@ const Players = () => {
                   <div key={group.number}>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-bold text-foreground">
-                        Group {group.number}
+                        Hole {group.number}
                       </h4>
                       <span className="text-xs text-muted-foreground">
                         {group.players.length}/{maxGroupSize}

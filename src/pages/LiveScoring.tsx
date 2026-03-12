@@ -132,7 +132,7 @@ export default function LiveScoring() {
       if (!data?.group_number) { setError("Player not found or not assigned to a hole."); return; }
       gNum = data.group_number;
     } else {
-      setError("Enter a group number or your email."); return;
+      setError("Enter a hole number or your email."); return;
     }
 
     await loadGroup(gNum);

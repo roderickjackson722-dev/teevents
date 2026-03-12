@@ -797,6 +797,49 @@ const SiteBuilder = () => {
                         If you're using a root domain (e.g. yourcharity.org), use an <strong>A record</strong> pointing to <code className="bg-muted px-1 rounded">185.158.133.1</code> instead.
                       </p>
                     </div>
+                    {/* Step-by-step instructions */}
+                    <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
+                      <h4 className="text-sm font-semibold text-foreground">📋 Step-by-Step Setup Guide</h4>
+                      <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                        <li>
+                          <strong className="text-foreground">Log in to your domain registrar</strong> — This is where you purchased your domain (e.g. GoDaddy, Namecheap, Google Domains, Cloudflare).
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Navigate to DNS settings</strong> — Look for "DNS Management," "DNS Records," or "Advanced DNS" in your registrar's dashboard.
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Add a CNAME record</strong> (for subdomains like <span className="font-mono text-xs">golf.yourcharity.org</span>):
+                          <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
+                            <li><strong>Type:</strong> CNAME</li>
+                            <li><strong>Name / Host:</strong> <span className="font-mono">{settings.custom_domain?.split('.')[0] || 'golf'}</span></li>
+                            <li><strong>Value / Points to:</strong> <span className="font-mono">teevents.lovable.app</span></li>
+                            <li><strong>TTL:</strong> Auto or 3600</li>
+                          </ul>
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Or add an A record</strong> (for root domains like <span className="font-mono text-xs">yourcharity.org</span>):
+                          <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
+                            <li><strong>Type:</strong> A</li>
+                            <li><strong>Name / Host:</strong> <span className="font-mono">@</span></li>
+                            <li><strong>Value / Points to:</strong> <span className="font-mono">185.158.133.1</span></li>
+                            <li><strong>TTL:</strong> Auto or 3600</li>
+                          </ul>
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Save your DNS changes</strong> — Click save or confirm in your registrar's dashboard.
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Come back here and click Save</strong> — Make sure your domain name is entered above, then save your Site Builder settings.
+                        </li>
+                        <li>
+                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes can take 15 minutes to 48 hours. Your domain will begin working automatically once propagation completes and SSL is provisioned.
+                        </li>
+                      </ol>
+                      <p className="text-xs text-muted-foreground italic">
+                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">teevents.lovable.app</span>.
+                      </p>
+                    </div>
+
                     <Button
                       variant="outline"
                       size="sm"

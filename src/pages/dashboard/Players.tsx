@@ -750,7 +750,7 @@ const Players = () => {
               {/* Groups */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Groups ({groups.length})
+                  Holes ({groups.length})
                 </h3>
                 {groups.map((group) => (
                   <div key={group.number}>

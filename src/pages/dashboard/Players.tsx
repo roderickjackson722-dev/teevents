@@ -266,7 +266,7 @@ const Players = () => {
 
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
-    toast({ title: `Group ${nextGroupNumber} created` });
+    toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {

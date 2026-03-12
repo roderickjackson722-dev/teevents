@@ -692,7 +692,7 @@ const Players = () => {
               New Hole
             </Button>
             <span className="text-sm text-muted-foreground ml-auto">
-              Drag and drop players between groups
+              Drag and drop players between holes
             </span>
           </div>
 

@@ -25,6 +25,70 @@ import {
 } from "lucide-react";
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
+import { Badge } from "@/components/ui/badge";
+
+const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
+  const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
+  const [dnsMessage, setDnsMessage] = useState("");
+
+  const checkDns = async () => {
+    if (!domain) return;
+    setDnsStatus("checking");
+    setDnsMessage("");
+    try {
+      const res = await supabase.functions.invoke("check-dns", {
+        body: { domain },
+      });
+      if (res.error) throw res.error;
+      const data = res.data as { status: string; message: string };
+      setDnsStatus(data.status as any);
+      setDnsMessage(data.message);
+    } catch {
+      setDnsStatus("error");
+      setDnsMessage("Unable to check DNS status. Please try again later.");
+    }
+  };
+
+  const statusConfig = {
+    idle: { color: "secondary" as const, label: "Not Checked" },
+    checking: { color: "secondary" as const, label: "Checking…" },
+    connected: { color: "default" as const, label: "✅ Connected" },
+    misconfigured: { color: "destructive" as const, label: "⚠️ Misconfigured" },
+    not_found: { color: "secondary" as const, label: "⏳ Pending" },
+    error: { color: "destructive" as const, label: "Error" },
+  };
+
+  const cfg = statusConfig[dnsStatus];
+
+  return (
+    <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-foreground">🔍 DNS Status</h4>
+        <Badge variant={cfg.color}>{cfg.label}</Badge>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={checkDns}
+          disabled={dnsStatus === "checking"}
+        >
+          {dnsStatus === "checking" ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+          ) : (
+            <Globe className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          Check DNS Status
+        </Button>
+      </div>
+      {dnsMessage && (
+        <p className={`text-xs ${dnsStatus === "connected" ? "text-primary" : dnsStatus === "misconfigured" ? "text-destructive" : "text-muted-foreground"}`}>
+          {dnsMessage}
+        </p>
+      )}
+    </div>
+  );
+};
 
 interface SiteSettings {
   id: string;
@@ -839,6 +903,9 @@ const SiteBuilder = () => {
                         💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">teevents.lovable.app</span>.
                       </p>
                     </div>
+
+                    {/* DNS Status Checker */}
+                    <DnsStatusChecker domain={settings.custom_domain} />
 
                     <Button
                       variant="outline"

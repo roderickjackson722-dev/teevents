@@ -840,6 +840,9 @@ const SiteBuilder = () => {
                       </p>
                     </div>
 
+                    {/* DNS Status Checker */}
+                    <DnsStatusChecker domain={settings.custom_domain} />
+
                     <Button
                       variant="outline"
                       size="sm"

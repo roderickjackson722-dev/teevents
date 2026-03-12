@@ -157,7 +157,7 @@ const Players = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment", "Scoring Code"];
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Hole", "Payment", "Scoring Code"];
     const rows = players.map((p) => [
       p.first_name,
       p.last_name,

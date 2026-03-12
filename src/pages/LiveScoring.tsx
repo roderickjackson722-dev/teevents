@@ -210,7 +210,7 @@ export default function LiveScoring() {
           <CardHeader className="text-center">
             <Trophy className="h-10 w-10 text-primary mx-auto mb-2" />
             <CardTitle className="text-xl">{tournament.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">Live Scoring — Enter your group to begin</p>
+            <p className="text-sm text-muted-foreground">Live Scoring — Enter your hole to begin</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>

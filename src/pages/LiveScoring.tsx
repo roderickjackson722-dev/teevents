@@ -74,7 +74,7 @@ export default function LiveScoring() {
       if (data?.group_number) {
         await loadGroup(data.group_number);
       } else {
-        setError("Invalid scoring code or player not assigned to a group.");
+        setError("Invalid scoring code or player not assigned to a hole.");
         setAutoLogging(false);
       }
     })();
@@ -91,7 +91,7 @@ export default function LiveScoring() {
       .order("group_position");
 
     if (!groupPlayers || groupPlayers.length === 0) {
-      setError(`No players found in Group ${gNum}.`);
+      setError(`No players found in Hole ${gNum}.`);
       return;
     }
 
@@ -129,15 +129,15 @@ export default function LiveScoring() {
         .eq("tournament_id", tournament.id)
         .eq("email", emailInput.trim().toLowerCase())
         .single();
-      if (!data?.group_number) { setError("Player not found or not assigned to a group."); return; }
+      if (!data?.group_number) { setError("Player not found or not assigned to a hole."); return; }
       gNum = data.group_number;
     } else {
-      setError("Enter a group number or your email."); return;
+      setError("Enter a hole number or your email."); return;
     }
 
     await loadGroup(gNum);
     if (players.length === 0 && error === "") {
-      setError(`No players found in Group ${gNum}.`);
+      setError(`No players found in Hole ${gNum}.`);
     }
   };
 
@@ -210,11 +210,11 @@ export default function LiveScoring() {
           <CardHeader className="text-center">
             <Trophy className="h-10 w-10 text-primary mx-auto mb-2" />
             <CardTitle className="text-xl">{tournament.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">Live Scoring — Enter your group to begin</p>
+            <p className="text-sm text-muted-foreground">Live Scoring — Enter your hole to begin</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Group Number</label>
+              <label className="text-sm font-medium mb-1 block">Hole Number</label>
               <Input
                 type="number"
                 placeholder="e.g. 3"
@@ -259,9 +259,9 @@ export default function LiveScoring() {
         <div className="flex items-center justify-between">
           <div>
             <button onClick={() => setLoginMode(true)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-1">
-              <ArrowLeft className="h-3.5 w-3.5" /> Change Group
+              <ArrowLeft className="h-3.5 w-3.5" /> Change Hole
             </button>
-            <h1 className="text-xl font-bold">{tournament.title} — Group {groupNumber}</h1>
+            <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
             <p className="text-xs text-muted-foreground">Par {tournament.course_par || 72}</p>
           </div>
           {hasEdits && (

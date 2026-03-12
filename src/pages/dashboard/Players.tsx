@@ -157,7 +157,7 @@ const Players = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Group", "Payment", "Scoring Code"];
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Hole", "Payment", "Scoring Code"];
     const rows = players.map((p) => [
       p.first_name,
       p.last_name,
@@ -266,7 +266,7 @@ const Players = () => {
 
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
-    toast({ title: `Group ${nextGroupNumber} created` });
+    toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {
@@ -344,7 +344,7 @@ const Players = () => {
       })
     );
 
-    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to groups.` });
+    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes.` });
   };
 
   const onDragEnd = async (result: DropResult) => {
@@ -370,7 +370,7 @@ const Players = () => {
       const currentSize = destGroup ? destGroup.players.length : 0;
       const isMovingWithinSameGroup = sourceId === destId;
       if (!isMovingWithinSameGroup && currentSize >= maxGroupSize) {
-        toast({ title: "Group is full", description: "Maximum 4 players per group.", variant: "destructive" });
+        toast({ title: "Hole is full", description: "Maximum 4 players per hole.", variant: "destructive" });
         return;
       }
     }
@@ -584,7 +584,7 @@ const Players = () => {
                   <th className="text-left font-semibold px-4 py-3">Phone</th>
                   <th className="text-center font-semibold px-4 py-3">HCP</th>
                   <th className="text-center font-semibold px-4 py-3">Shirt</th>
-                  <th className="text-center font-semibold px-4 py-3">Group</th>
+                  <th className="text-center font-semibold px-4 py-3">Hole</th>
                   <th className="text-center font-semibold px-4 py-3">
                     <span className="flex items-center justify-center gap-1"><QrCode className="h-3.5 w-3.5" /> Code</span>
                   </th>
@@ -689,10 +689,10 @@ const Players = () => {
               Auto-Assign All
             </Button>
             <Button onClick={handleAddGroup} variant="outline" size="sm">
-              New Group
+              New Hole
             </Button>
             <span className="text-sm text-muted-foreground ml-auto">
-              Drag and drop players between groups
+              Drag and drop players between holes
             </span>
           </div>
 
@@ -750,13 +750,13 @@ const Players = () => {
               {/* Groups */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Groups ({groups.length})
+                  Holes ({groups.length})
                 </h3>
                 {groups.map((group) => (
                   <div key={group.number}>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-bold text-foreground">
-                        Group {group.number}
+                        Hole {group.number}
                       </h4>
                       <span className="text-xs text-muted-foreground">
                         {group.players.length}/{maxGroupSize}
@@ -806,7 +806,7 @@ const Players = () => {
                 {groups.length === 0 && (
                   <div className="text-center py-8 bg-card rounded-lg border border-dashed border-border">
                     <p className="text-sm text-muted-foreground">
-                      No groups yet. Click "Auto-Assign All" or "New Group" to start.
+                      No holes yet. Click "Auto-Assign All" or "New Hole" to start.
                     </p>
                   </div>
                 )}

@@ -196,7 +196,7 @@ export default function CheckIn() {
                       <p className="font-semibold">{p.first_name} {p.last_name}</p>
                       <p className="text-xs text-muted-foreground">{p.email}</p>
                       {p.group_number && (
-                        <Badge variant="outline" className="mt-1 text-xs">Group #{p.group_number}</Badge>
+                        <Badge variant="outline" className="mt-1 text-xs">Hole #{p.group_number}</Badge>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-2">

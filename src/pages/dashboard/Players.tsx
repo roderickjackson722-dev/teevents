@@ -689,7 +689,7 @@ const Players = () => {
               Auto-Assign All
             </Button>
             <Button onClick={handleAddGroup} variant="outline" size="sm">
-              New Group
+              New Hole
             </Button>
             <span className="text-sm text-muted-foreground ml-auto">
               Drag and drop players between groups

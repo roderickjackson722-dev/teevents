@@ -344,7 +344,7 @@ const Players = () => {
       })
     );
 
-    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to groups.` });
+    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes.` });
   };
 
   const onDragEnd = async (result: DropResult) => {

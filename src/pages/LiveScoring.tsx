@@ -137,7 +137,7 @@ export default function LiveScoring() {
 
     await loadGroup(gNum);
     if (players.length === 0 && error === "") {
-      setError(`No players found in Group ${gNum}.`);
+      setError(`No players found in Hole ${gNum}.`);
     }
   };
 

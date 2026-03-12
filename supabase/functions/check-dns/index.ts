@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const expectedIp = "185.158.133.1";
 
     const cnameCorrect = cnameRecords.some(
-      (r: string) => r.toLowerCase() === expectedCname
+      (r: string) => expectedCnames.includes(r.toLowerCase())
     );
     const aCorrect = aRecords.some((r: string) => r === expectedIp);
 

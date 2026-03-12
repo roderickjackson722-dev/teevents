@@ -584,7 +584,7 @@ const Players = () => {
                   <th className="text-left font-semibold px-4 py-3">Phone</th>
                   <th className="text-center font-semibold px-4 py-3">HCP</th>
                   <th className="text-center font-semibold px-4 py-3">Shirt</th>
-                  <th className="text-center font-semibold px-4 py-3">Group</th>
+                  <th className="text-center font-semibold px-4 py-3">Hole</th>
                   <th className="text-center font-semibold px-4 py-3">
                     <span className="flex items-center justify-center gap-1"><QrCode className="h-3.5 w-3.5" /> Code</span>
                   </th>

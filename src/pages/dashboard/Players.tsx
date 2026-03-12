@@ -806,7 +806,7 @@ const Players = () => {
                 {groups.length === 0 && (
                   <div className="text-center py-8 bg-card rounded-lg border border-dashed border-border">
                     <p className="text-sm text-muted-foreground">
-                      No groups yet. Click "Auto-Assign All" or "New Group" to start.
+                      No holes yet. Click "Auto-Assign All" or "New Hole" to start.
                     </p>
                   </div>
                 )}

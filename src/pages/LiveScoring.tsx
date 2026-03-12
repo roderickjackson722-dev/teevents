@@ -74,7 +74,7 @@ export default function LiveScoring() {
       if (data?.group_number) {
         await loadGroup(data.group_number);
       } else {
-        setError("Invalid scoring code or player not assigned to a group.");
+        setError("Invalid scoring code or player not assigned to a hole.");
         setAutoLogging(false);
       }
     })();

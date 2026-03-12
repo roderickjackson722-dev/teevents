@@ -896,7 +896,10 @@ const SiteBuilder = () => {
                           <strong className="text-foreground">Come back here and click Save</strong> — Make sure your domain name is entered above, then save your Site Builder settings.
                         </li>
                         <li>
-                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes can take 15 minutes to 48 hours. Your domain will begin working automatically once propagation completes and SSL is provisioned.
+                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes can take 15 minutes to 48 hours. Use the "Check DNS Status" button below to verify your records are resolving.
+                        </li>
+                        <li>
+                          <strong className="text-foreground">SSL certificate provisioning</strong> — Once DNS propagates, an SSL certificate is automatically generated. During this time (usually 5–30 minutes), you may see a browser error like <span className="font-mono text-xs">"ERR_SSL_VERSION_OR_CIPHER_MISMATCH"</span> or <span className="font-mono text-xs">"This site can't provide a secure connection."</span> <strong>This is normal</strong> — simply wait and try again shortly. No action is needed on your part.
                         </li>
                       </ol>
                       <p className="text-xs text-muted-foreground italic">

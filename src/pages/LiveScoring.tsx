@@ -91,7 +91,7 @@ export default function LiveScoring() {
       .order("group_position");
 
     if (!groupPlayers || groupPlayers.length === 0) {
-      setError(`No players found in Group ${gNum}.`);
+      setError(`No players found in Hole ${gNum}.`);
       return;
     }
 

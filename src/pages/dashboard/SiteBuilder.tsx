@@ -876,7 +876,7 @@ const SiteBuilder = () => {
                           <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
                             <li><strong>Type:</strong> CNAME</li>
                             <li><strong>Name / Host:</strong> <span className="font-mono">{settings.custom_domain?.split('.')[0] || 'golf'}</span></li>
-                            <li><strong>Value / Points to:</strong> <span className="font-mono">teevents.lovable.app</span></li>
+                            <li><strong>Value / Points to:</strong> <span className="font-mono">www.teevents.golf</span></li>
                             <li><strong>TTL:</strong> Auto or 3600</li>
                           </ul>
                         </li>

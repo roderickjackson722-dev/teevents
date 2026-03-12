@@ -370,7 +370,7 @@ const Players = () => {
       const currentSize = destGroup ? destGroup.players.length : 0;
       const isMovingWithinSameGroup = sourceId === destId;
       if (!isMovingWithinSameGroup && currentSize >= maxGroupSize) {
-        toast({ title: "Group is full", description: "Maximum 4 players per group.", variant: "destructive" });
+        toast({ title: "Hole is full", description: "Maximum 4 players per hole.", variant: "destructive" });
         return;
       }
     }

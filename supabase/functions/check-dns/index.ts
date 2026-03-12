@@ -37,11 +37,11 @@ Deno.serve(async (req) => {
       .filter((r: any) => r.type === 5)
       .map((r: any) => r.data?.replace(/\.$/, ""));
 
-    const expectedCname = "teevents.lovable.app";
+    const expectedCnames = ["teevents.lovable.app", "www.teevents.golf", "teevents.golf"];
     const expectedIp = "185.158.133.1";
 
     const cnameCorrect = cnameRecords.some(
-      (r: string) => r.toLowerCase() === expectedCname
+      (r: string) => expectedCnames.includes(r.toLowerCase())
     );
     const aCorrect = aRecords.some((r: string) => r === expectedIp);
 

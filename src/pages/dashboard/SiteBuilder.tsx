@@ -850,7 +850,7 @@ const SiteBuilder = () => {
                           <tr className="border-b border-border/50">
                             <td className="py-2 pr-4">CNAME</td>
                             <td className="py-2 pr-4">{settings.custom_domain.split('.')[0]}</td>
-                            <td className="py-2">teevents.lovable.app</td>
+                            <td className="py-2">www.teevents.golf</td>
                           </tr>
                         </tbody>
                       </table>
@@ -876,7 +876,7 @@ const SiteBuilder = () => {
                           <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
                             <li><strong>Type:</strong> CNAME</li>
                             <li><strong>Name / Host:</strong> <span className="font-mono">{settings.custom_domain?.split('.')[0] || 'golf'}</span></li>
-                            <li><strong>Value / Points to:</strong> <span className="font-mono">teevents.lovable.app</span></li>
+                            <li><strong>Value / Points to:</strong> <span className="font-mono">www.teevents.golf</span></li>
                             <li><strong>TTL:</strong> Auto or 3600</li>
                           </ul>
                         </li>
@@ -900,7 +900,7 @@ const SiteBuilder = () => {
                         </li>
                       </ol>
                       <p className="text-xs text-muted-foreground italic">
-                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">teevents.lovable.app</span>.
+                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">www.teevents.golf</span>.
                       </p>
                     </div>
 

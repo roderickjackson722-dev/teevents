@@ -900,7 +900,7 @@ const SiteBuilder = () => {
                         </li>
                       </ol>
                       <p className="text-xs text-muted-foreground italic">
-                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">teevents.lovable.app</span>.
+                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">www.teevents.golf</span>.
                       </p>
                     </div>
 

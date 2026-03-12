@@ -850,7 +850,7 @@ const SiteBuilder = () => {
                           <tr className="border-b border-border/50">
                             <td className="py-2 pr-4">CNAME</td>
                             <td className="py-2 pr-4">{settings.custom_domain.split('.')[0]}</td>
-                            <td className="py-2">teevents.lovable.app</td>
+                            <td className="py-2">www.teevents.golf</td>
                           </tr>
                         </tbody>
                       </table>

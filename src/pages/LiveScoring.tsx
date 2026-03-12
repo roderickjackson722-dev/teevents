@@ -214,7 +214,7 @@ export default function LiveScoring() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Group Number</label>
+              <label className="text-sm font-medium mb-1 block">Hole Number</label>
               <Input
                 type="number"
                 placeholder="e.g. 3"

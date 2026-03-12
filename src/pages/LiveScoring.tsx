@@ -261,7 +261,7 @@ export default function LiveScoring() {
             <button onClick={() => setLoginMode(true)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-1">
               <ArrowLeft className="h-3.5 w-3.5" /> Change Hole
             </button>
-            <h1 className="text-xl font-bold">{tournament.title} — Group {groupNumber}</h1>
+            <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
             <p className="text-xs text-muted-foreground">Par {tournament.course_par || 72}</p>
           </div>
           {hasEdits && (

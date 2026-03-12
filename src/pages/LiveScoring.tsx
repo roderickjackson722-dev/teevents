@@ -129,7 +129,7 @@ export default function LiveScoring() {
         .eq("tournament_id", tournament.id)
         .eq("email", emailInput.trim().toLowerCase())
         .single();
-      if (!data?.group_number) { setError("Player not found or not assigned to a group."); return; }
+      if (!data?.group_number) { setError("Player not found or not assigned to a hole."); return; }
       gNum = data.group_number;
     } else {
       setError("Enter a group number or your email."); return;

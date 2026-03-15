@@ -90,6 +90,64 @@ const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   );
 };
 
+const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tournamentId: string }) => {
+  const [cfStatus, setCfStatus] = useState<"idle" | "checking" | "done">("idle");
+  const [statusData, setStatusData] = useState<any>(null);
+
+  const checkCfStatus = async () => {
+    if (!domain) return;
+    setCfStatus("checking");
+    try {
+      const res = await supabase.functions.invoke("manage-custom-hostname", {
+        body: { action: "status", tournament_id: tournamentId, hostname: domain },
+      });
+      if (res.error) throw res.error;
+      setStatusData(res.data);
+    } catch (err) {
+      setStatusData({ status: "error", message: "Failed to check Cloudflare status." });
+    }
+    setCfStatus("done");
+  };
+
+  const statusColors: Record<string, string> = {
+    active: "text-primary",
+    pending: "text-yellow-600",
+    not_registered: "text-muted-foreground",
+    error: "text-destructive",
+  };
+
+  return (
+    <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-foreground">☁️ SSL & Hostname Status</h4>
+        {statusData && (
+          <Badge variant={statusData.status === "active" ? "default" : "secondary"}>
+            {statusData.status === "active" ? "✅ Active" : statusData.status || "Unknown"}
+          </Badge>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={checkCfStatus} disabled={cfStatus === "checking"}>
+          {cfStatus === "checking" ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+          ) : (
+            <Globe className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          Check SSL Status
+        </Button>
+      </div>
+      {statusData && (
+        <p className={`text-xs ${statusColors[statusData.status] || "text-muted-foreground"}`}>
+          {statusData.message}
+          {statusData.ssl_status && statusData.ssl_status !== "unknown" && (
+            <span className="block mt-1">SSL: {statusData.ssl_status}</span>
+          )}
+        </p>
+      )}
+    </div>
+  );
+};
+
 interface SiteSettings {
   id: string;
   title: string;

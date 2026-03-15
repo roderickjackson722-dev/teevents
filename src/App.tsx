@@ -64,7 +64,7 @@ const App = () => (
       <BrowserRouter>
         <VisitTracker />
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<CustomDomainRouter />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/platform" element={<Platform />} />

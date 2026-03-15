@@ -183,6 +183,7 @@ const SiteBuilder = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [originalDomain, setOriginalDomain] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);

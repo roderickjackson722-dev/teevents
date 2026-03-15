@@ -90,6 +90,64 @@ const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   );
 };
 
+const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tournamentId: string }) => {
+  const [cfStatus, setCfStatus] = useState<"idle" | "checking" | "done">("idle");
+  const [statusData, setStatusData] = useState<any>(null);
+
+  const checkCfStatus = async () => {
+    if (!domain) return;
+    setCfStatus("checking");
+    try {
+      const res = await supabase.functions.invoke("manage-custom-hostname", {
+        body: { action: "status", tournament_id: tournamentId, hostname: domain },
+      });
+      if (res.error) throw res.error;
+      setStatusData(res.data);
+    } catch (err) {
+      setStatusData({ status: "error", message: "Failed to check Cloudflare status." });
+    }
+    setCfStatus("done");
+  };
+
+  const statusColors: Record<string, string> = {
+    active: "text-primary",
+    pending: "text-yellow-600",
+    not_registered: "text-muted-foreground",
+    error: "text-destructive",
+  };
+
+  return (
+    <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-foreground">☁️ SSL & Hostname Status</h4>
+        {statusData && (
+          <Badge variant={statusData.status === "active" ? "default" : "secondary"}>
+            {statusData.status === "active" ? "✅ Active" : statusData.status || "Unknown"}
+          </Badge>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={checkCfStatus} disabled={cfStatus === "checking"}>
+          {cfStatus === "checking" ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+          ) : (
+            <Globe className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          Check SSL Status
+        </Button>
+      </div>
+      {statusData && (
+        <p className={`text-xs ${statusColors[statusData.status] || "text-muted-foreground"}`}>
+          {statusData.message}
+          {statusData.ssl_status && statusData.ssl_status !== "unknown" && (
+            <span className="block mt-1">SSL: {statusData.ssl_status}</span>
+          )}
+        </p>
+      )}
+    </div>
+  );
+};
+
 interface SiteSettings {
   id: string;
   title: string;
@@ -125,6 +183,7 @@ const SiteBuilder = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [originalDomain, setOriginalDomain] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -139,7 +198,10 @@ const SiteBuilder = () => {
       .eq("id", id)
       .single()
       .then(({ data }) => {
-        if (data) setSettings(data as unknown as SiteSettings);
+        if (data) {
+          setSettings(data as unknown as SiteSettings);
+          setOriginalDomain((data as any).custom_domain || null);
+        }
         setLoading(false);
       });
   }, [id]);
@@ -152,6 +214,11 @@ const SiteBuilder = () => {
   const handleSave = async () => {
     if (!settings) return;
     setSaving(true);
+
+    const newDomain = settings.custom_domain || null;
+    const domainChanged = newDomain !== originalDomain;
+
+    // Save to database first
     const { error } = await supabase
       .from("tournaments")
       .update({
@@ -183,9 +250,49 @@ const SiteBuilder = () => {
 
     if (error) {
       toast({ title: "Error saving", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Site saved!", description: "Your changes have been saved." });
+      setSaving(false);
+      return;
     }
+
+    // Manage Cloudflare custom hostname if domain changed
+    if (domainChanged) {
+      try {
+        // Remove old hostname if there was one
+        if (originalDomain) {
+          await supabase.functions.invoke("manage-custom-hostname", {
+            body: { action: "delete", tournament_id: settings.id, hostname: originalDomain },
+          });
+        }
+        // Register new hostname if there is one
+        if (newDomain) {
+          const res = await supabase.functions.invoke("manage-custom-hostname", {
+            body: { action: "create", tournament_id: settings.id, hostname: newDomain },
+          });
+          if (res.data?.success) {
+            toast({
+              title: "Custom domain registered!",
+              description: "SSL certificate is being provisioned. This may take a few minutes.",
+            });
+          } else if (res.data?.error) {
+            toast({
+              title: "Domain registration issue",
+              description: res.data.error,
+              variant: "destructive",
+            });
+          }
+        }
+        setOriginalDomain(newDomain);
+      } catch (cfErr) {
+        console.error("Cloudflare hostname error:", cfErr);
+        toast({
+          title: "Domain saved, but registration pending",
+          description: "Settings saved. Custom domain registration will be retried.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    toast({ title: "Site saved!", description: "Your changes have been saved." });
     setSaving(false);
   };
 
@@ -910,11 +1017,25 @@ const SiteBuilder = () => {
                     {/* DNS Status Checker */}
                     <DnsStatusChecker domain={settings.custom_domain} />
 
+                    {/* Cloudflare SSL Status */}
+                    <CloudflareStatus domain={settings.custom_domain} tournamentId={settings.id} />
+
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
+                      onClick={async () => {
+                        // Remove from Cloudflare first
+                        if (settings.custom_domain) {
+                          try {
+                            await supabase.functions.invoke("manage-custom-hostname", {
+                              body: { action: "delete", tournament_id: settings.id, hostname: settings.custom_domain },
+                            });
+                          } catch (err) {
+                            console.error("Failed to remove hostname from Cloudflare:", err);
+                          }
+                        }
                         updateField("custom_domain" as keyof SiteSettings, null);
+                        setOriginalDomain(null);
                       }}
                       className="text-destructive hover:text-destructive"
                     >

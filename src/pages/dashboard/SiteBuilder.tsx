@@ -957,7 +957,7 @@ const SiteBuilder = () => {
                           <tr className="border-b border-border/50">
                             <td className="py-2 pr-4">CNAME</td>
                             <td className="py-2 pr-4">{settings.custom_domain.split('.')[0]}</td>
-                            <td className="py-2">www.teevents.golf</td>
+                            <td className="py-2">custom-domains.teevents.golf</td>
                           </tr>
                         </tbody>
                       </table>
@@ -983,7 +983,7 @@ const SiteBuilder = () => {
                           <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
                             <li><strong>Type:</strong> CNAME</li>
                             <li><strong>Name / Host:</strong> <span className="font-mono">{settings.custom_domain?.split('.')[0] || 'golf'}</span></li>
-                            <li><strong>Value / Points to:</strong> <span className="font-mono">www.teevents.golf</span></li>
+                            <li><strong>Value / Points to:</strong> <span className="font-mono">custom-domains.teevents.golf</span></li>
                             <li><strong>TTL:</strong> Auto or 3600</li>
                           </ul>
                         </li>
@@ -1000,17 +1000,17 @@ const SiteBuilder = () => {
                           <strong className="text-foreground">Save your DNS changes</strong> — Click save or confirm in your registrar's dashboard.
                         </li>
                         <li>
-                          <strong className="text-foreground">Come back here and click Save</strong> — Make sure your domain name is entered above, then save your Site Builder settings.
+                          <strong className="text-foreground">Come back here and click Save</strong> — Make sure your domain name is entered above, then save your Site Builder settings. This will automatically register your domain for SSL.
                         </li>
                         <li>
-                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes can take 15 minutes to 48 hours. Use the "Check DNS Status" button below to verify your records are resolving.
+                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes can take 15 minutes to 48 hours. Use the "Check DNS Status" and "Check SSL Status" buttons below to verify.
                         </li>
                         <li>
-                          <strong className="text-foreground">SSL certificate provisioning</strong> — Once DNS propagates, an SSL certificate is automatically generated. During this time (usually 5–30 minutes), you may see a browser error like <span className="font-mono text-xs">"ERR_SSL_VERSION_OR_CIPHER_MISMATCH"</span> or <span className="font-mono text-xs">"This site can't provide a secure connection."</span> <strong>This is normal</strong> — simply wait and try again shortly. No action is needed on your part.
+                          <strong className="text-foreground">SSL certificate provisioning</strong> — Once DNS propagates, an SSL certificate is automatically generated. During this time (usually 5–30 minutes), you may see a browser error like <span className="font-mono text-xs">"ERR_SSL_VERSION_OR_CIPHER_MISMATCH"</span>. <strong>This is normal</strong> — simply wait and try again shortly.
                         </li>
                       </ol>
                       <p className="text-xs text-muted-foreground italic">
-                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">www.teevents.golf</span>.
+                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">custom-domains.teevents.golf</span>.
                       </p>
                     </div>
 

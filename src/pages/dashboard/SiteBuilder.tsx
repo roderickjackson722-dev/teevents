@@ -1017,11 +1017,25 @@ const SiteBuilder = () => {
                     {/* DNS Status Checker */}
                     <DnsStatusChecker domain={settings.custom_domain} />
 
+                    {/* Cloudflare SSL Status */}
+                    <CloudflareStatus domain={settings.custom_domain} tournamentId={settings.id} />
+
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
+                      onClick={async () => {
+                        // Remove from Cloudflare first
+                        if (settings.custom_domain) {
+                          try {
+                            await supabase.functions.invoke("manage-custom-hostname", {
+                              body: { action: "delete", tournament_id: settings.id, hostname: settings.custom_domain },
+                            });
+                          } catch (err) {
+                            console.error("Failed to remove hostname from Cloudflare:", err);
+                          }
+                        }
                         updateField("custom_domain" as keyof SiteSettings, null);
+                        setOriginalDomain(null);
                       }}
                       className="text-destructive hover:text-destructive"
                     >

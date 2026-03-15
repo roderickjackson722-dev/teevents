@@ -168,8 +168,9 @@ function buildLeaderboard(scoresData: any[], t: TournamentSite): LeaderboardEntr
     });
 }
 
-const PublicTournament = () => {
-  const { slug } = useParams<{ slug: string }>();
+const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = slugOverride || paramSlug;
   const [searchParams] = useSearchParams();
   const donated = searchParams.get("donated") === "true";
   const registered = searchParams.get("registered") === "true";

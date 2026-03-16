@@ -218,7 +218,6 @@ const SiteBuilder = () => {
     const newDomain = settings.custom_domain || null;
     const domainChanged = newDomain !== originalDomain;
 
-    // Save to database first
     const { error } = await supabase
       .from("tournaments")
       .update({
@@ -254,42 +253,45 @@ const SiteBuilder = () => {
       return;
     }
 
-    // Manage Cloudflare custom hostname if domain changed
-    if (domainChanged) {
-      try {
-        // Remove old hostname if there was one
-        if (originalDomain) {
-          await supabase.functions.invoke("manage-custom-hostname", {
-            body: { action: "delete", tournament_id: settings.id, hostname: originalDomain },
-          });
-        }
-        // Register new hostname if there is one
-        if (newDomain) {
-          const res = await supabase.functions.invoke("manage-custom-hostname", {
-            body: { action: "create", tournament_id: settings.id, hostname: newDomain },
-          });
-          if (res.data?.success) {
-            toast({
-              title: "Custom domain registered!",
-              description: "SSL certificate is being provisioned. This may take a few minutes.",
-            });
-          } else if (res.data?.error) {
-            toast({
-              title: "Domain registration issue",
-              description: res.data.error,
-              variant: "destructive",
-            });
-          }
-        }
-        setOriginalDomain(newDomain);
-      } catch (cfErr) {
-        console.error("Cloudflare hostname error:", cfErr);
-        toast({
-          title: "Domain saved, but registration pending",
-          description: "Settings saved. Custom domain registration will be retried.",
-          variant: "destructive",
+    try {
+      if (domainChanged && originalDomain) {
+        await supabase.functions.invoke("manage-custom-hostname", {
+          body: { action: "delete", tournament_id: settings.id, hostname: originalDomain },
         });
       }
+
+      if (newDomain) {
+        const res = await supabase.functions.invoke("manage-custom-hostname", {
+          body: { action: "create", tournament_id: settings.id, hostname: newDomain },
+        });
+
+        if (res.error) {
+          throw res.error;
+        }
+
+        if (res.data?.success) {
+          toast({
+            title: "Custom domain synced",
+            description:
+              res.data.message || "Hostname registered. SSL certificate provisioning may take a few minutes.",
+          });
+        } else if (res.data?.error) {
+          toast({
+            title: "Domain registration issue",
+            description: res.data.error,
+            variant: "destructive",
+          });
+        }
+      }
+
+      setOriginalDomain(newDomain);
+    } catch (cfErr) {
+      console.error("Cloudflare hostname error:", cfErr);
+      toast({
+        title: "Domain saved, but registration failed",
+        description: "Save succeeded, but the hostname could not be synced yet. Try saving again.",
+        variant: "destructive",
+      });
     }
 
     toast({ title: "Site saved!", description: "Your changes have been saved." });

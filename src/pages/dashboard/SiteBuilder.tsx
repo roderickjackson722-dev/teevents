@@ -91,7 +91,7 @@ const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
 };
 
 const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tournamentId: string }) => {
-  const [cfStatus, setCfStatus] = useState<"idle" | "checking" | "done">("idle");
+  const [cfStatus, setCfStatus] = useState<"idle" | "checking" | "syncing" | "done">("idle");
   const [statusData, setStatusData] = useState<any>(null);
 
   const checkCfStatus = async () => {
@@ -103,22 +103,37 @@ const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tou
       });
       if (res.error) throw res.error;
       setStatusData(res.data);
-    } catch (err) {
-      setStatusData({ status: "error", message: "Failed to check Cloudflare status." });
+    } catch {
+      setStatusData({ status: "error", message: "Failed to check SSL hostname status." });
+    }
+    setCfStatus("done");
+  };
+
+  const syncHostname = async () => {
+    if (!domain) return;
+    setCfStatus("syncing");
+    try {
+      const res = await supabase.functions.invoke("manage-custom-hostname", {
+        body: { action: "create", tournament_id: tournamentId, hostname: domain },
+      });
+      if (res.error) throw res.error;
+      setStatusData(res.data);
+    } catch {
+      setStatusData({ status: "error", message: "Failed to register this hostname. Try saving again." });
     }
     setCfStatus("done");
   };
 
   const statusColors: Record<string, string> = {
     active: "text-primary",
-    pending: "text-yellow-600",
+    pending: "text-muted-foreground",
     not_registered: "text-muted-foreground",
     error: "text-destructive",
   };
 
   return (
     <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground">☁️ SSL & Hostname Status</h4>
         {statusData && (
           <Badge variant={statusData.status === "active" ? "default" : "secondary"}>
@@ -126,14 +141,22 @@ const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tou
           </Badge>
         )}
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={checkCfStatus} disabled={cfStatus === "checking"}>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" onClick={checkCfStatus} disabled={cfStatus === "checking" || cfStatus === "syncing"}>
           {cfStatus === "checking" ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
           ) : (
             <Globe className="h-3.5 w-3.5 mr-1.5" />
           )}
           Check SSL Status
+        </Button>
+        <Button size="sm" onClick={syncHostname} disabled={cfStatus === "checking" || cfStatus === "syncing"}>
+          {cfStatus === "syncing" ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+          ) : (
+            <Check className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          Register / Retry SSL
         </Button>
       </div>
       {statusData && (
@@ -218,7 +241,6 @@ const SiteBuilder = () => {
     const newDomain = settings.custom_domain || null;
     const domainChanged = newDomain !== originalDomain;
 
-    // Save to database first
     const { error } = await supabase
       .from("tournaments")
       .update({
@@ -254,42 +276,45 @@ const SiteBuilder = () => {
       return;
     }
 
-    // Manage Cloudflare custom hostname if domain changed
-    if (domainChanged) {
-      try {
-        // Remove old hostname if there was one
-        if (originalDomain) {
-          await supabase.functions.invoke("manage-custom-hostname", {
-            body: { action: "delete", tournament_id: settings.id, hostname: originalDomain },
-          });
-        }
-        // Register new hostname if there is one
-        if (newDomain) {
-          const res = await supabase.functions.invoke("manage-custom-hostname", {
-            body: { action: "create", tournament_id: settings.id, hostname: newDomain },
-          });
-          if (res.data?.success) {
-            toast({
-              title: "Custom domain registered!",
-              description: "SSL certificate is being provisioned. This may take a few minutes.",
-            });
-          } else if (res.data?.error) {
-            toast({
-              title: "Domain registration issue",
-              description: res.data.error,
-              variant: "destructive",
-            });
-          }
-        }
-        setOriginalDomain(newDomain);
-      } catch (cfErr) {
-        console.error("Cloudflare hostname error:", cfErr);
-        toast({
-          title: "Domain saved, but registration pending",
-          description: "Settings saved. Custom domain registration will be retried.",
-          variant: "destructive",
+    try {
+      if (domainChanged && originalDomain) {
+        await supabase.functions.invoke("manage-custom-hostname", {
+          body: { action: "delete", tournament_id: settings.id, hostname: originalDomain },
         });
       }
+
+      if (newDomain) {
+        const res = await supabase.functions.invoke("manage-custom-hostname", {
+          body: { action: "create", tournament_id: settings.id, hostname: newDomain },
+        });
+
+        if (res.error) {
+          throw res.error;
+        }
+
+        if (res.data?.success) {
+          toast({
+            title: "Custom domain synced",
+            description:
+              res.data.message || "Hostname registered. SSL certificate provisioning may take a few minutes.",
+          });
+        } else if (res.data?.error) {
+          toast({
+            title: "Domain registration issue",
+            description: res.data.error,
+            variant: "destructive",
+          });
+        }
+      }
+
+      setOriginalDomain(newDomain);
+    } catch (cfErr) {
+      console.error("Cloudflare hostname error:", cfErr);
+      toast({
+        title: "Domain saved, but registration failed",
+        description: "Save succeeded, but the hostname could not be synced yet. Try saving again.",
+        variant: "destructive",
+      });
     }
 
     toast({ title: "Site saved!", description: "Your changes have been saved." });

@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CustomDomainRouter from "./components/CustomDomainRouter";
 import About from "./pages/About";
 import Services from "./pages/Services";
-import Platform from "./pages/Platform";
 import Events from "./pages/Events";
 import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";

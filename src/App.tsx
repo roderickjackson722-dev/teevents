@@ -67,7 +67,7 @@ const App = () => (
           <Route path="/" element={<CustomDomainRouter />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/platform" element={<Platform />} />
+          <Route path="/platform" element={<Navigate to="/how-it-works" replace />} />
           <Route path="/events" element={<Events />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/contact" element={<Contact />} />

@@ -43,7 +43,7 @@ import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PublicTournament from "./pages/PublicTournament";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
-import Demo from "./pages/Demo";
+import { Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import PlanGate from "./components/PlanGate";
 import LiveScoring from "./pages/LiveScoring";

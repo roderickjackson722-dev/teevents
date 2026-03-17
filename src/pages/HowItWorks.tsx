@@ -1,15 +1,17 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Globe, CreditCard, Users, QrCode, Trophy, Megaphone, HandCoins,
   ShoppingBag, Gavel, Camera, Heart, ClipboardList, UserCheck,
-  BarChart3, ArrowRight, CheckCircle, CheckCircle2, Zap, Clock,
+  BarChart3, ArrowRight, CheckCircle, CheckCircle2, Check, Zap, Clock,
   DollarSign, Smartphone, LayoutDashboard, PieChart, Send,
-  Star, Printer, FileText, MessageSquare, Award,
+  Star, Printer, FileText, MessageSquare, Award, ShieldCheck,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";

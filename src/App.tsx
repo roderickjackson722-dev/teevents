@@ -102,7 +102,7 @@ const App = () => (
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/demo" element={<Demo />} />
+          <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

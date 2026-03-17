@@ -52,6 +52,7 @@ import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import Nonprofits from "./pages/Nonprofits";
+import HowItWorks from "./pages/HowItWorks";
 import VisitTracker from "./components/VisitTracker";
 
 const queryClient = new QueryClient();

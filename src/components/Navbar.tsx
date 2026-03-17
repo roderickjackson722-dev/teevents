@@ -7,7 +7,6 @@ import logoWhite from "@/assets/logo-white.png";
 const navLinks = [
   { label: "Home", to: "/" },
   { label: "How It Works", to: "/how-it-works" },
-  { label: "Tournament Platform", to: "/platform" },
   { label: "About Us", to: "/about" },
   { label: "Services", to: "/services" },
   { label: "Events", to: "/events" },

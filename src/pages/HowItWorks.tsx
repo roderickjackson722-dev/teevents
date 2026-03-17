@@ -1,15 +1,17 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Globe, CreditCard, Users, QrCode, Trophy, Megaphone, HandCoins,
   ShoppingBag, Gavel, Camera, Heart, ClipboardList, UserCheck,
-  BarChart3, ArrowRight, CheckCircle, CheckCircle2, Zap, Clock,
+  BarChart3, ArrowRight, CheckCircle, CheckCircle2, Check, Zap, Clock,
   DollarSign, Smartphone, LayoutDashboard, PieChart, Send,
-  Star, Printer, FileText, MessageSquare, Award,
+  Star, Printer, FileText, MessageSquare, Award, ShieldCheck,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
@@ -154,32 +156,116 @@ const plans = [
   {
     name: "Base",
     price: "Free",
-    fee: "5%",
-    highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Live leaderboard", "Planning guide"],
+    period: "forever",
+    description: "Get started with the essentials. No credit card required.",
+    fee: "5% transaction fee",
+    features: [
+      "1 tournament",
+      "Online registration & payments",
+      "Tournament website (1 template)",
+      "Player pairings tool",
+      "Check-in & QR codes",
+      "Live leaderboard (Stroke Play & Best Ball)",
+      "Planning guide & checklist",
+      "Email messaging",
+      "Event countdown timer",
+    ],
+    cta: "Get Started Free",
+    plan: "base",
   },
   {
     name: "Starter",
     price: "$499",
-    fee: "3%",
-    highlights: ["All templates", "Sponsors & budget", "Donations & gallery", "SMS messaging (500)", "Custom domain"],
-    popular: true,
+    period: "per tournament",
+    description: "Unlock powerful tools and lower your transaction fees.",
+    fee: "3% transaction fee",
+    features: [
+      "Everything in Base",
+      "All 6 templates + custom colors",
+      "All 8 scoring formats",
+      "Custom domain support",
+      "Sponsor management & recognition",
+      "Budget tracking",
+      "Donations page",
+      "Photo gallery",
+      "Printable scorecards, signs & badges",
+      "Countdown timer style options",
+      "Hole-by-hole par customization",
+      "SMS texting (500 messages)",
+    ],
+    cta: "Get Started",
+    plan: "starter",
+    highlighted: true,
   },
   {
     name: "Pro",
     price: "$999",
-    fee: "2%",
-    highlights: ["Merch store", "Auction & raffle", "Surveys & volunteers", "Priority support"],
+    period: "per tournament",
+    description: "For nonprofits running polished, full-featured events.",
+    fee: "2% transaction fee",
+    features: [
+      "Everything in Starter",
+      "Up to 288 golfers",
+      "Merchandise store",
+      "Auction & raffle management",
+      "Surveys & analytics",
+      "Volunteer coordination",
+      "Custom printable fonts & layouts",
+      "Priority support",
+    ],
+    cta: "Get Started",
+    plan: "pro",
   },
   {
     name: "Enterprise",
     price: "Custom",
-    fee: "1%",
-    highlights: ["Unlimited tournaments", "Unlimited SMS", "White-label branding", "API access"],
+    period: "annual license",
+    description: "For organizations running multiple tournaments per year.",
+    fee: "1% transaction fee",
+    features: [
+      "Everything in Pro",
+      "Unlimited tournaments",
+      "Unlimited SMS texting",
+      "Dedicated account manager",
+      "White-label branding",
+      "API access",
+      "Custom integrations",
+    ],
+    cta: "Contact Sales",
+    plan: "enterprise",
   },
 ];
 
 /* ─── Component ─── */
 const HowItWorks = () => {
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const { toast } = useToast();
+
+  const handleCheckout = async (plan: string) => {
+    if (plan === "enterprise") {
+      window.location.href = "/contact";
+      return;
+    }
+    if (plan === "base") {
+      window.location.href = "/get-started";
+      return;
+    }
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan, promo_code: promoCode.trim() || undefined },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not start checkout.", variant: "destructive" });
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
   return (
     <Layout>
       <SEO
@@ -439,55 +525,131 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* Pricing Snapshot */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-14 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground font-serif mb-4">
+      {/* Pricing */}
+      <section id="pricing" className="bg-background py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+              Pricing
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-muted-foreground text-lg font-sans">
-              Start free. Upgrade when you're ready. No hidden fees.
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Start free and only pay when you grow. Every plan includes a small
+              transaction fee so we succeed when you succeed.
             </p>
-          </div>
+            <p className="mt-3 text-sm text-muted-foreground/70">
+              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+            </p>
+          </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                variants={fadeUp}
-                className={`relative rounded-xl border p-6 bg-card flex flex-col ${
-                  plan.popular ? "border-secondary shadow-lg ring-2 ring-secondary/20" : "border-border"
+                transition={{ delay: i * 0.1, duration: 0.6 }}
+                className={`relative rounded-xl p-8 border ${
+                  plan.highlighted
+                    ? "bg-primary text-primary-foreground border-secondary shadow-2xl scale-105"
+                    : "bg-card text-card-foreground border-border"
                 }`}
               >
-                {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold">
+                {plan.highlighted && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
                     Most Popular
-                  </span>
+                  </div>
                 )}
-                <h3 className="text-lg font-bold text-foreground font-serif">{plan.name}</h3>
-                <div className="mt-2 mb-1">
-                  <span className="text-3xl font-bold text-foreground font-serif">{plan.price}</span>
-                  {plan.price !== "Free" && plan.price !== "Custom" && (
-                    <span className="text-muted-foreground text-sm font-sans"> /event</span>
-                  )}
+                <h3 className="text-2xl font-display font-bold mb-1">
+                  {plan.name}
+                </h3>
+                <p
+                  className={`text-sm mb-4 ${
+                    plan.highlighted
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {plan.description}
+                </p>
+                <div className="mb-2">
+                  <span className="text-4xl font-display font-bold">
+                    {plan.price}
+                  </span>
+                  <span
+                    className={`text-sm ml-2 ${
+                      plan.highlighted
+                        ? "text-primary-foreground/60"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {plan.period}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground font-sans mb-4">{plan.fee} transaction fee</p>
-                <ul className="space-y-2 flex-1">
-                  {plan.highlights.map((h) => (
-                    <li key={h} className="flex items-start gap-2 text-sm text-foreground font-sans">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      {h}
+                <p className={`text-xs font-semibold mb-6 ${
+                  plan.highlighted ? "text-secondary" : "text-primary"
+                }`}>
+                  + {plan.fee}
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-3">
+                      <Check
+                        className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                          plan.highlighted ? "text-secondary" : "text-primary"
+                        }`}
+                      />
+                      <span
+                        className={`text-sm ${
+                          plan.highlighted
+                            ? "text-primary-foreground/90"
+                            : "text-foreground/80"
+                        }`}
+                      >
+                        {feat}
+                      </span>
                     </li>
                   ))}
                 </ul>
+                <button
+                  onClick={() => handleCheckout(plan.plan)}
+                  disabled={loadingPlan === plan.plan}
+                  className={`block w-full text-center px-6 py-3 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors disabled:opacity-50 ${
+                    plan.highlighted
+                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
+                >
+                  {loadingPlan === plan.plan ? "Loading..." : plan.cta}
+                </button>
               </motion.div>
             ))}
           </div>
+
+          {/* Promo Code Input */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-10 flex items-center justify-center gap-3"
+          >
+            <label className="text-sm font-medium text-muted-foreground">Have a promo code?</label>
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+              placeholder="ENTER CODE"
+              className="w-40 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm font-mono tracking-wider uppercase placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </motion.div>
         </div>
       </section>
 

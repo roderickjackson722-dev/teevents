@@ -101,17 +101,17 @@ const Index = () => {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/platform#pricing"
+              to="/how-it-works#pricing"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
               View Plans & Pricing
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/demo"
+              to="/how-it-works"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              See Platform Demo
+              See How It Works
             </Link>
           </div>
         </motion.div>
@@ -212,7 +212,7 @@ const Index = () => {
 
           <div className="text-center mt-12">
             <Link
-              to="/platform"
+              to="/how-it-works"
               className="inline-flex items-center gap-2 text-primary font-semibold hover:text-secondary transition-colors"
             >
               See All Features
@@ -366,7 +366,7 @@ const Index = () => {
             </p>
            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/platform#pricing"
+                to="/how-it-works#pricing"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
                 Get Started

@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const cleanHostname = domainToCheck.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").trim().toLowerCase();
+      const cleanHostname = domainToCheck.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
 
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {
         headers: { Authorization: `Bearer ${CF_API_TOKEN}`, "Content-Type": "application/json" },

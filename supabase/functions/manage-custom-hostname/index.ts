@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const cleanHostname = hostname.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").trim().toLowerCase();
+      const cleanHostname = hostname.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
 
       // Check if hostname already exists in Cloudflare
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const cleanHostname = domainToDelete.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").trim().toLowerCase();
+      const cleanHostname = domainToDelete.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
 
       // Find the hostname in Cloudflare
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {
@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const cleanHostname = domainToCheck.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").trim().toLowerCase();
+      const cleanHostname = domainToCheck.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
 
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {
         headers: { Authorization: `Bearer ${CF_API_TOKEN}`, "Content-Type": "application/json" },

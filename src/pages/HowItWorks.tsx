@@ -238,6 +238,34 @@ const plans = [
 
 /* ─── Component ─── */
 const HowItWorks = () => {
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const { toast } = useToast();
+
+  const handleCheckout = async (plan: string) => {
+    if (plan === "enterprise") {
+      window.location.href = "/contact";
+      return;
+    }
+    if (plan === "base") {
+      window.location.href = "/get-started";
+      return;
+    }
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan, promo_code: promoCode.trim() || undefined },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not start checkout.", variant: "destructive" });
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
   return (
     <Layout>
       <SEO

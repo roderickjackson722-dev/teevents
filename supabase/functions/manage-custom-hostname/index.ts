@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const cleanHostname = hostname.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").trim().toLowerCase();
+      const cleanHostname = hostname.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
 
       // Check if hostname already exists in Cloudflare
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {

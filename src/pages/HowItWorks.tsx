@@ -1,121 +1,153 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Globe,
-  CreditCard,
-  Users,
-  QrCode,
-  Trophy,
-  Megaphone,
-  HandCoins,
-  ShoppingBag,
-  Gavel,
-  Camera,
-  Heart,
-  ClipboardList,
-  UserCheck,
-  BarChart3,
-  ArrowRight,
-  CheckCircle2,
-  Zap,
-  Clock,
-  DollarSign,
+  Globe, CreditCard, Users, QrCode, Trophy, Megaphone, HandCoins,
+  ShoppingBag, Gavel, Camera, Heart, ClipboardList, UserCheck,
+  BarChart3, ArrowRight, CheckCircle, CheckCircle2, Zap, Clock,
+  DollarSign, Smartphone, LayoutDashboard, PieChart, Send,
+  Star, Printer, FileText, MessageSquare, Award,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
+import HeroSection from "@/components/HeroSection";
+import heroGolf from "@/assets/hero-golf.jpg";
+import logoWhite from "@/assets/logo-white.png";
+import demoWebsiteBuilder from "@/assets/demo-website-builder.jpg";
+import demoRegistration from "@/assets/demo-registration.jpg";
+import demoPairings from "@/assets/demo-pairings.jpg";
+import demoBudget from "@/assets/demo-budget.jpg";
+import demoSponsors from "@/assets/demo-sponsors.jpg";
+import demoMessaging from "@/assets/demo-messaging.jpg";
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
+  visible: (i?: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5 },
+    transition: { delay: typeof i === "number" ? i * 0.08 : 0, duration: 0.5 },
   }),
 };
 
-const steps = [
+const slideLeft = {
+  hidden: { opacity: 0, x: 60 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7 } },
+};
+
+const slideRight = {
+  hidden: { opacity: 0, x: -60 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7 } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5 } },
+};
+
+/* ─── Data ─── */
+const sellingPoints = [
+  { stat: "30 min", label: "Average setup time", icon: Clock },
+  { stat: "100%", label: "Mobile optimized", icon: Smartphone },
+  { stat: "0", label: "Tech skills needed", icon: LayoutDashboard },
+  { stat: "$0", label: "Startup cost", icon: DollarSign },
+];
+
+const coreModules = [
   {
     icon: Globe,
-    title: "Professional Tournament Website",
-    description:
-      "Choose from ready-made templates, customize your branding and colors, and publish a stunning tournament site in minutes — with your own custom domain.",
+    title: "Custom Tournament Website",
+    image: demoWebsiteBuilder,
+    bullets: [
+      "Three branded templates (Classic Green, Modern Navy, Charity Warmth)",
+      "Eight built-in navigation tabs — no coding required",
+      "Mobile-responsive out of the box",
+      "Connect your own custom domain",
+    ],
   },
   {
     icon: CreditCard,
     title: "Online Registration & Payments",
-    description:
-      "Accept registrations and payments online through Stripe. Players get instant email confirmations, and you track everything in real-time.",
+    image: demoRegistration,
+    bullets: [
+      "Stripe-powered checkout with Apple Pay & Google Pay",
+      "Registration add-ons (mulligans, dinner tickets, hole packages)",
+      "Custom fields, promo codes & automated email confirmations",
+    ],
   },
   {
     icon: Users,
     title: "Player Management & Pairings",
-    description:
-      "Import players via CSV, drag-and-drop them into foursomes, and auto-assign groups with one click. Support for 8 scoring formats.",
-  },
-  {
-    icon: QrCode,
-    title: "QR Code Check-In",
-    description:
-      "Print QR codes for every player. On event day, open the Scan Station on any phone or tablet and check players in instantly.",
-  },
-  {
-    icon: Trophy,
-    title: "Live Scoring & Leaderboard",
-    description:
-      "Print scorecards with embedded QR codes. Players scan, enter scores hole-by-hole, and the leaderboard updates live — no app download required.",
-  },
-  {
-    icon: HandCoins,
-    title: "Sponsor Management",
-    description:
-      "Track sponsors by tier — Title, Gold, Silver, Bronze. Manage payments and automatically display logos on your website and rotating leaderboard.",
-  },
-  {
-    icon: Megaphone,
-    title: "Email & SMS Messaging",
-    description:
-      "Send email blasts or SMS texts to your entire field in seconds. Schedule messages in advance and track delivery.",
+    image: demoPairings,
+    bullets: [
+      "Drag-and-drop player pairings editor",
+      "Import players via CSV or paste from spreadsheet",
+      "Group assignments with automatic numbering",
+      "Handicap, shirt size, and dietary tracking",
+    ],
   },
   {
     icon: BarChart3,
-    title: "Budget Tracking",
-    description:
-      "Track income and expenses by category. Mark items as paid, and see your budget health at a glance with real-time totals.",
+    title: "Real-Time Budget Tracker",
+    image: demoBudget,
+    bullets: [
+      "Revenue & expense line items by category",
+      "Paid/unpaid status for every item",
+      "Live profit/loss summary dashboard",
+    ],
+  },
+  {
+    icon: Award,
+    title: "Sponsor Management",
+    image: demoSponsors,
+    bullets: [
+      "Tiered sponsor levels (Title, Gold, Silver, Bronze)",
+      "Logo uploads and website links per sponsor",
+      "Payment tracking and leaderboard logo rotation",
+    ],
+  },
+  {
+    icon: MessageSquare,
+    title: "SMS & Email Messaging",
+    image: demoMessaging,
+    bullets: [
+      "Bulk SMS to golfers, sponsors, and volunteers",
+      "Scheduled messages for tournament day reminders",
+      "Full message history and delivery tracking",
+    ],
   },
 ];
 
+const scoringSteps = [
+  { step: "1", icon: Printer, title: "Print Scorecards", desc: "Generate professional scorecards with embedded QR codes from the Printables dashboard — one click." },
+  { step: "2", icon: QrCode, title: "Player Scans QR", desc: "Each QR code is unique to the player and links directly to their assigned group's scoring page." },
+  { step: "3", icon: Smartphone, title: "Score on Any Device", desc: "Players enter scores hole-by-hole on their phone. Supports 8 formats including Scramble and Best Ball." },
+  { step: "4", icon: Trophy, title: "Live Leaderboard", desc: "Scores update in real-time on the tournament leaderboard with sponsor logo rotations." },
+];
+
 const advancedFeatures = [
-  {
-    icon: ShoppingBag,
-    title: "Merchandise Store",
-    description: "Sell branded gear with Stripe checkout on your tournament site.",
-  },
-  {
-    icon: Gavel,
-    title: "Auction & Raffle",
-    description: "Run silent auctions with online bidding and Buy Now options.",
-  },
-  {
-    icon: Camera,
-    title: "Photo Gallery",
-    description: "Upload and showcase event photos on your public tournament page.",
-  },
-  {
-    icon: Heart,
-    title: "Donation Page",
-    description: "Accept donations with a progress bar toward your fundraising goal.",
-  },
-  {
-    icon: ClipboardList,
-    title: "Post-Event Surveys",
-    description: "Gather feedback with rating, text, and multiple-choice questions.",
-  },
-  {
-    icon: UserCheck,
-    title: "Volunteer Coordination",
-    description: "Define roles, time slots, and track volunteer signups and capacity.",
-  },
+  { icon: Trophy, title: "Live Leaderboard", desc: "Hole-by-hole scoring with real-time standings and 8 scoring formats." },
+  { icon: QrCode, title: "QR Code Check-In", desc: "Players scan QR codes to check in instantly — zero friction on event day." },
+  { icon: Gavel, title: "Auction & Raffle", desc: "Silent auctions with Buy Now, bid tracking, and online raffle ticket sales." },
+  { icon: Heart, title: "Donation Portal", desc: "Fundraising goal tracking with progress bars and Stripe-powered donations." },
+  { icon: ShoppingBag, title: "Merchandise Store", desc: "Sell branded apparel and gear with integrated checkout." },
+  { icon: Camera, title: "Photo Gallery", desc: "Upload and showcase tournament photos with captions." },
+  { icon: ClipboardList, title: "Planning Guide", desc: "Pre-built 30-item checklist system to keep organizers on track." },
+  { icon: UserCheck, title: "Volunteer Coordinator", desc: "Define roles, time slots, and manage volunteer signups." },
+  { icon: FileText, title: "6 Printable Types", desc: "Scorecards, cart signs, name badges, sponsor signs, alpha list & hole assignments." },
+];
+
+const whyTeeVents = [
+  "Replace 10+ tools with one platform",
+  "Organizers keep full control of their revenue via Stripe Connect",
+  "No monthly subscriptions — pay per tournament",
+  "White-label branding for every event",
+  "Built for nonprofits, corporations, and golf communities",
+  "Dedicated support from golf industry professionals",
 ];
 
 const plans = [
@@ -146,164 +178,269 @@ const plans = [
   },
 ];
 
+/* ─── Component ─── */
 const HowItWorks = () => {
   return (
     <Layout>
       <SEO
         title="How It Works | TeeVents — Golf Tournament Management Made Simple"
         description="See how TeeVents replaces 10+ tools with one platform purpose-built for golf tournament organizers. From registration to live scoring, everything in one place."
+        path="/how-it-works"
       />
 
       {/* Hero */}
-      <section className="relative bg-primary py-24 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--secondary)/0.15),transparent_70%)]" />
-        <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
-          <motion.span
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-block mb-4 px-4 py-1.5 rounded-full bg-secondary/20 text-secondary font-medium text-sm tracking-wide font-sans"
-          >
-            Purpose-Built for Golf
-          </motion.span>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-bold text-primary-foreground font-serif mb-6"
-          >
-            One Platform. <br className="hidden md:block" />
-            Every Tournament Need.
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-primary-foreground/80 font-sans max-w-2xl mx-auto mb-10"
-          >
+      <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <img src={logoWhite} alt="TeeVents" className="h-28 w-28 mx-auto mb-4 object-contain" />
+          <p className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+            How It Works
+          </p>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
+            One Platform. <br />
+            <span className="text-secondary">Every Tournament Need.</span>
+          </h1>
+          <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
             Stop juggling spreadsheets, email chains, and separate payment processors. TeeVents gives organizers everything they need — from branded websites to live scoring on game day.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-base px-8" asChild>
-              <Link to="/get-started">
-                Start Free <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-semibold text-base px-8" asChild>
-              <Link to="/demo">See Demo</Link>
-            </Button>
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/get-started"
+              className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
+            >
+              Start Free <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a
+              href="https://calendly.com/teevents/teevents-demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
+            >
+              Book a Demo
+            </a>
+          </div>
+        </motion.div>
+      </HeroSection>
+
+      {/* Stats Bar */}
+      <section className="bg-primary py-8 border-b border-primary-foreground/10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {sellingPoints.map((s) => (
+              <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
+                <s.icon className="h-6 w-6 text-secondary mx-auto mb-2" />
+                <p className="text-3xl md:text-4xl font-display font-bold text-primary-foreground">{s.stat}</p>
+                <p className="text-sm text-primary-foreground/60 mt-1">{s.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Modules — Alternating Layout with Screenshots */}
+      <section className="bg-muted/30 py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Core Modules</h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Six Powerful Tools, One Dashboard
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Each module is purpose-built for golf tournament organizers — no bloat, no complexity.
+            </p>
+          </motion.div>
+
+          <div className="space-y-20">
+            {coreModules.map((mod, i) => {
+              const isEven = i % 2 === 0;
+              return (
+                <motion.div
+                  key={mod.title}
+                  variants={isEven ? slideRight : slideLeft}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-50px" }}
+                  className={`flex flex-col md:flex-row items-center gap-10 ${!isEven ? "md:flex-row-reverse" : ""}`}
+                >
+                  <div className="w-full md:w-5/12 flex justify-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/5 rounded-2xl rotate-3 scale-[1.02]" />
+                      <img src={mod.image} alt={mod.title} className="relative rounded-2xl border border-border shadow-lg w-full max-w-sm object-cover" />
+                    </div>
+                  </div>
+                  <div className="w-full md:w-7/12">
+                    <h3 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4">{mod.title}</h3>
+                    <ul className="space-y-3">
+                      {mod.bullets.map((b) => (
+                        <li key={b} className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground leading-relaxed">{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* QR Code Live Scoring Walkthrough */}
+      <section className="bg-background py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Player Experience</h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Scan. Score. Done.
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Every player gets a personalized QR code on their scorecard. One scan opens their group's live scoring page — no logins, no apps, no friction.
+            </p>
+          </motion.div>
+
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid md:grid-cols-4 gap-6">
+            {scoringSteps.map((item, i) => (
+              <motion.div key={item.step} variants={fadeUp} className="relative bg-card border border-border rounded-xl p-8 text-center group hover:border-secondary/40 transition-colors">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-sm font-bold">
+                  {item.step}
+                </div>
+                {i < 3 && (
+                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 border-t-2 border-dashed border-secondary/30" />
+                )}
+                <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-5 mt-2 group-hover:bg-secondary/20 transition-colors">
+                  <item.icon className="h-7 w-7 text-secondary" />
+                </div>
+                <h4 className="text-lg font-display font-bold text-foreground mb-2">{item.title}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-14 bg-primary rounded-xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-shrink-0 w-20 h-20 bg-secondary/20 rounded-2xl flex items-center justify-center">
+              <QrCode className="h-10 w-10 text-secondary" />
+            </div>
+            <div className="text-center md:text-left">
+              <h4 className="text-xl font-display font-bold text-primary-foreground mb-2">Zero Friction for Players</h4>
+              <p className="text-primary-foreground/70 leading-relaxed">
+                No app downloads. No account creation. No manual group lookups. Each player's QR code is auto-generated and tied to their registration — admins can regenerate codes at any time.
+              </p>
+            </div>
+            <Link to="/get-started" className="flex-shrink-0 inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md font-semibold text-sm hover:bg-secondary/90 transition-colors whitespace-nowrap">
+              Get Started <ArrowRight className="h-4 w-4" />
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Value Props */}
-      <section className="py-16 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {[
-              { icon: DollarSign, label: "$0 to start", sub: "Free Base plan, no credit card" },
-              { icon: Clock, label: "30-minute setup", sub: "Publish your site same day" },
-              { icon: Zap, label: "Replaces 10+ tools", sub: "One dashboard for everything" },
-            ].map((item, i) => (
+      {/* Advanced Features Grid */}
+      <section className="bg-primary py-24">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Advanced Features</h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-primary-foreground">
+              Go Beyond the Basics
+            </h2>
+          </motion.div>
+
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {advancedFeatures.map((f) => (
               <motion.div
-                key={item.label}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
+                key={f.title}
                 variants={fadeUp}
-                className="flex flex-col items-center text-center p-6"
+                className="bg-primary-foreground/5 border border-primary-foreground/10 rounded-xl p-6 hover:bg-primary-foreground/10 transition-colors group"
               >
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <item.icon className="h-7 w-7 text-primary" />
+                <div className="w-11 h-11 bg-secondary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-secondary/30 transition-colors">
+                  <f.icon className="h-5 w-5 text-secondary" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground font-serif mb-1">{item.label}</h3>
-                <p className="text-muted-foreground text-sm font-sans">{item.sub}</p>
+                <h4 className="text-lg font-display font-bold text-primary-foreground mb-2">{f.title}</h4>
+                <p className="text-sm text-primary-foreground/60 leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Revenue Model */}
+      <section className="bg-background py-24">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <motion.div variants={slideRight} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+              <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Revenue Model</h3>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
+                You Keep Your Revenue.<br />We Take a Simple Fee.
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account — minus a transparent platform fee. No invoices, no delays.
+              </p>
+              <div className="space-y-3">
+                {[
+                  "Registration payments → organizer's Stripe",
+                  "Store purchases → organizer's Stripe",
+                  "Auction Buy Now → organizer's Stripe",
+                  "Donations → organizer's Stripe",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <Send className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-sm text-foreground/80">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div variants={slideLeft} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+              <div className="bg-card border border-border rounded-xl p-8 shadow-lg">
+                <h4 className="font-display font-bold text-foreground text-lg mb-6">Example: $150 Registration Fee</h4>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-muted-foreground">Golfer pays</span>
+                    <span className="font-display font-bold text-foreground text-xl">$150.00</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-muted-foreground">Stripe processing (2.9% + $0.30)</span>
+                    <span className="font-display font-bold text-destructive">−$4.65</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
+                    <span className="font-display font-bold text-destructive">−$7.50</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="font-semibold text-foreground">Organizer receives</span>
+                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Stripe's standard processing fee of 2.9% + $0.30 per transaction applies. This is charged by Stripe, not TeeVents.
+                </p>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Core Features */}
-      <section className="py-20 md:py-28">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground font-serif mb-4">
-              Everything You Need, Built In
+      {/* Why TeeVents */}
+      <section className="bg-muted/30 py-24">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Why Choose Us</h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Built for Tournament Organizers
             </h2>
-            <p className="text-muted-foreground text-lg font-sans">
-              From the first registration to the final scorecard — TeeVents handles it all.
-            </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {steps.map((step, i) => (
-              <motion.div
-                key={step.title}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={fadeUp}
-                className="flex gap-5 p-6 rounded-xl border border-border bg-card hover:shadow-lg transition-shadow"
-              >
-                <div className="h-12 w-12 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <step.icon className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground font-serif mb-1">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm font-sans leading-relaxed">{step.description}</p>
-                </div>
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid sm:grid-cols-2 gap-4">
+            {whyTeeVents.map((reason) => (
+              <motion.div key={reason} variants={fadeUp} className="flex items-start gap-3 bg-card border border-border rounded-lg p-5">
+                <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-foreground/80 leading-relaxed">{reason}</span>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Advanced Features */}
-      <section className="py-20 bg-primary/[0.03]">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-14 max-w-2xl mx-auto">
-            <span className="inline-block mb-3 px-3 py-1 rounded-full bg-secondary/15 text-secondary font-medium text-xs tracking-wide uppercase font-sans">
-              Pro & Enterprise
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground font-serif mb-4">
-              Unlock More as You Grow
-            </h2>
-            <p className="text-muted-foreground text-lg font-sans">
-              Upgrade to access powerful tools that maximize your event's impact and revenue.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {advancedFeatures.map((feat, i) => (
-              <motion.div
-                key={feat.title}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-30px" }}
-                variants={fadeUp}
-                className="flex gap-4 p-5 rounded-xl border border-border bg-card"
-              >
-                <feat.icon className="h-5 w-5 text-secondary mt-0.5 shrink-0" />
-                <div>
-                  <h4 className="font-bold text-foreground text-sm font-serif mb-0.5">{feat.title}</h4>
-                  <p className="text-muted-foreground text-xs font-sans leading-relaxed">{feat.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Pricing Snapshot */}
-      <section className="py-20 md:py-28">
+      <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-14 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground font-serif mb-4">
@@ -351,34 +488,53 @@ const HowItWorks = () => {
               </motion.div>
             ))}
           </div>
-
-          <div className="text-center mt-10">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-10" asChild>
-              <Link to="/get-started">
-                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-primary">
+      {/* Testimonial */}
+      <section className="bg-primary py-20">
+        <div className="container mx-auto px-4 max-w-3xl text-center">
+          <motion.div variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <div className="flex justify-center gap-1 mb-6">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-5 w-5 fill-secondary text-secondary" />
+              ))}
+            </div>
+            <blockquote className="text-xl md:text-2xl font-display italic text-primary-foreground leading-relaxed">
+              "TeeVents made planning our charity golf tournament effortless. The registration, pairings, and sponsor tools saved us countless hours of work."
+            </blockquote>
+            <p className="mt-6 text-primary-foreground/60 font-medium">— Tournament Organizer</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="bg-background py-20 border-t border-border">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground font-serif mb-4">
-            Ready to Simplify Your Tournament?
-          </h2>
-          <p className="text-primary-foreground/80 text-lg font-sans mb-8">
-            Join organizers who've switched from spreadsheets and scattered tools to one unified platform. Set up in 30 minutes — your next tournament will thank you.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-base px-8" asChild>
-              <Link to="/get-started">Start Free Today</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-semibold text-base px-8" asChild>
-              <Link to="/contact">Contact Sales</Link>
-            </Button>
-          </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-6">
+              Ready to Simplify Your Tournament?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Join organizers who've switched from spreadsheets and scattered tools to one unified platform. Set up in 30 minutes.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/get-started"
+                className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
+              >
+                Get Started Free <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="https://calendly.com/teevents/teevents-demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary/90 transition-colors"
+              >
+                Book a Demo
+              </a>
+            </div>
+          </motion.div>
         </div>
       </section>
     </Layout>

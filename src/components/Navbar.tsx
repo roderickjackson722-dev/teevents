@@ -8,7 +8,6 @@ const navLinks = [
   { label: "Home", to: "/" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Tournament Platform", to: "/platform" },
-  { label: "Demo", to: "/demo" },
   { label: "About Us", to: "/about" },
   { label: "Services", to: "/services" },
   { label: "Events", to: "/events" },

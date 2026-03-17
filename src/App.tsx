@@ -43,7 +43,7 @@ import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PublicTournament from "./pages/PublicTournament";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
-import Demo from "./pages/Demo";
+import { Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import PlanGate from "./components/PlanGate";
 import LiveScoring from "./pages/LiveScoring";
@@ -102,7 +102,7 @@ const App = () => (
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/demo" element={<Demo />} />
+          <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

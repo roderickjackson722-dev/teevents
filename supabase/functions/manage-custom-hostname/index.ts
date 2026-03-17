@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const cleanHostname = domainToDelete.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").trim().toLowerCase();
+      const cleanHostname = domainToDelete.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
 
       // Find the hostname in Cloudflare
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {

@@ -1,14 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import logoBlack from "@/assets/logo-black.png";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const plan = searchParams.get("plan") || "starter";
+  const sessionId = searchParams.get("session_id");
   const navigate = useNavigate();
+  const [verifying, setVerifying] = useState(!!sessionId);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    supabase.functions
+      .invoke("verify-plan-purchase", { body: { session_id: sessionId } })
+      .then(({ error }) => {
+        if (error) console.error("Verification error:", error);
+      })
+      .finally(() => setVerifying(false));
+  }, [sessionId]);
 
   return (
     <div className="min-h-screen bg-golf-cream flex items-center justify-center px-4">
@@ -33,9 +46,15 @@ const PaymentSuccess = () => {
           <p className="text-muted-foreground mb-2">
             You've purchased the <span className="font-semibold capitalize">{plan}</span> plan.
           </p>
-          <p className="text-sm text-muted-foreground mb-8">
-            Now create your account to start building your tournament.
-          </p>
+          {verifying ? (
+            <p className="text-sm text-muted-foreground mb-8 flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Confirming your purchase…
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground mb-8">
+              Now create your account to start building your tournament.
+            </p>
+          )}
           <Button
             size="lg"
             className="w-full"

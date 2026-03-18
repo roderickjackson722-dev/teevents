@@ -330,31 +330,50 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         )}
 
         {/* Cover Fees Option */}
-        {isNonprofit && hasFee && (
+        {(isNonprofit || passFeesToRegistrants) && hasFee && (
           <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="cover_fees"
-                checked={coverFees}
-                onCheckedChange={(checked) => setCoverFees(checked === true)}
-                className="mt-0.5"
-              />
-              <div className="flex-1">
-                <label htmlFor="cover_fees" className="text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
+            {passFeesToRegistrants && !isNonprofit ? (
+              <>
+                <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-destructive" />
-                  I'd like to cover the fees
-                </label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Adding ${(coverageAmount / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
+                  <span className="text-sm font-semibold text-foreground">Processing fees included</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  A small fee of ${(coverageAmount / 100).toFixed(2)} is added to cover processing costs.
                 </p>
-              </div>
-            </div>
-            {coverFees && (
-              <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
-                <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
-                <p>Fees: ${(coverageAmount / 100).toFixed(2)}</p>
-                <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
-              </div>
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                  <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
+                  <p>Fees: ${(coverageAmount / 100).toFixed(2)}</p>
+                  <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="cover_fees"
+                    checked={coverFees}
+                    onCheckedChange={(checked) => setCoverFees(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="cover_fees" className="text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
+                      <Heart className="h-4 w-4 text-destructive" />
+                      I'd like to cover the fees
+                    </label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Adding ${(coverageAmount / 100).toFixed(2)} ensures 100% of your ${(baseTotalCents / 100).toFixed(2)} registration goes directly to {nonprofitName || "the organization"}.
+                    </p>
+                  </div>
+                </div>
+                {coverFees && (
+                  <div className="ml-7 text-xs text-muted-foreground space-y-0.5">
+                    <p>Registration: ${(baseTotalCents / 100).toFixed(2)}</p>
+                    <p>Fees: ${(coverageAmount / 100).toFixed(2)}</p>
+                    <p className="font-semibold text-foreground">Total: {totalDisplay}</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

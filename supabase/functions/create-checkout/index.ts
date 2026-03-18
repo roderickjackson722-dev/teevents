@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         discounts: [{ coupon: coupon.id }],
-        success_url: `${origin}/payment-success?plan=${plan}`,
-        cancel_url: `${origin}/platform#pricing`,
+        success_url: `${origin}/payment-success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing`,
         metadata: { plan, promo_code: promo_code.trim().toUpperCase() },
       });
 

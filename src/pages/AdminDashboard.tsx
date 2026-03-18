@@ -577,6 +577,16 @@ const AdminDashboard = () => {
     }
   };
 
+  const togglePassFees = async (tournamentId: string, currentValue: boolean) => {
+    try {
+      await callAdminApi("toggle-pass-fees", { tournament_id: tournamentId, pass_fees_to_registrants: !currentValue });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, pass_fees_to_registrants: !currentValue } : t));
+      toast({ title: !currentValue ? "Fees will be passed to registrants" : "Fees reverted to organizer" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center">

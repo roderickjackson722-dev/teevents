@@ -65,6 +65,7 @@ const Store = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (demoGuard()) return;
     await supabase.from("tournament_store_products").delete().eq("id", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
     toast({ title: "Product removed" });

@@ -113,6 +113,7 @@ const App = () => (
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
            <Route path="/how-it-works" element={<HowItWorks />} />
+           <Route path="/pricing" element={<Pricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="*" element={<NotFound />} />
         </Routes>

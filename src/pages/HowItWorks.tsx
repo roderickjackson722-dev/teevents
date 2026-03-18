@@ -73,9 +73,10 @@ const coreModules = [
   },
   {
     icon: CreditCard,
-    title: "Online Registration & Payments",
+    title: "Online Registration",
     image: demoRegistration,
     bullets: [
+      "Register now for the annual golf tournament",
       "Stripe-powered checkout with Apple Pay & Google Pay",
       "Registration add-ons (mulligans, dinner tickets, hole packages)",
       "Custom fields, promo codes & automated email confirmations",
@@ -88,7 +89,7 @@ const coreModules = [
     bullets: [
       "Drag-and-drop player pairings editor",
       "Import players via CSV or paste from spreadsheet",
-      "Group assignments with automatic numbering",
+      "Hole assignments with automatic numbering",
       "Handicap, shirt size, and dietary tracking",
     ],
   },
@@ -117,7 +118,7 @@ const coreModules = [
     title: "SMS & Email Messaging",
     image: demoMessaging,
     bullets: [
-      "Bulk SMS to golfers, sponsors, and volunteers",
+      "Bulk email and SMS to golfers, sponsors, and volunteers",
       "Scheduled messages for tournament day reminders",
       "Full message history and delivery tracking",
     ],

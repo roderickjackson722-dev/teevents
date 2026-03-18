@@ -161,6 +161,7 @@ const Registration = () => {
 
   /* ── save helpers ── */
   const saveSettings = async () => {
+    if (demoGuard()) return;
     setSaving(true);
     const { error } = await supabase
       .from("tournaments")

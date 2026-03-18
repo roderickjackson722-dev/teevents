@@ -332,6 +332,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          dashboard_name: string | null
           ein: string | null
           id: string
           is_nonprofit: boolean
@@ -348,6 +349,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dashboard_name?: string | null
           ein?: string | null
           id?: string
           is_nonprofit?: boolean
@@ -364,6 +366,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dashboard_name?: string | null
           ein?: string | null
           id?: string
           is_nonprofit?: boolean

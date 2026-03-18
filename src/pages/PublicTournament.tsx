@@ -29,6 +29,7 @@ interface TournamentSite {
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean;
+  pass_fees_to_registrants?: boolean;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }

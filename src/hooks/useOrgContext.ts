@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface OrgContext {
@@ -13,11 +14,38 @@ export interface OrgContext {
 export function useOrgContext() {
   const [org, setOrg] = useState<OrgContext | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setLoading(false); return; }
+
+      // Admin override via query param
+      const adminOrgId = searchParams.get("admin_org");
+      if (adminOrgId) {
+        const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+        if (isAdmin) {
+          const { data: orgData } = await supabase
+            .from("organizations")
+            .select("id, name, plan")
+            .eq("id", adminOrgId)
+            .single() as { data: { id: string; name: string; plan: string } | null; error: any };
+
+          if (orgData) {
+            setOrg({
+              orgId: orgData.id,
+              orgName: orgData.name,
+              userId: session.user.id,
+              plan: orgData.plan || 'starter',
+              role: 'owner', // Admin gets full access
+              permissions: [],
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      }
 
       const { data: membership } = await supabase
         .from("org_members")
@@ -48,7 +76,7 @@ export function useOrgContext() {
     };
 
     init();
-  }, []);
+  }, [searchParams]);
 
   return { org, loading };
 }

@@ -1354,13 +1354,21 @@ const AdminDashboard = () => {
                           {t.date ? new Date(t.date).toLocaleDateString() : "—"}
                         </td>
                         <td className="p-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setExpandedTournament(expandedTournament === t.id ? null : t.id)}
-                          >
-                            {expandedTournament === t.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <a
+                              href={`/dashboard?admin_org=${t.organization_id}`}
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium whitespace-nowrap"
+                            >
+                              <Pencil className="h-3 w-3" /> Manage
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setExpandedTournament(expandedTournament === t.id ? null : t.id)}
+                            >
+                              {expandedTournament === t.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

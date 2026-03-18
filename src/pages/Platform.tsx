@@ -102,7 +102,7 @@ const plans = [
     name: "Starter",
     price: "$499",
     period: "per tournament",
-    description: "Unlock powerful tools and lower your transaction fees.",
+    description: "We build your tournament platform for you.",
     fee: "3% transaction fee",
     features: [
       "Everything in Base",

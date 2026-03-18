@@ -144,7 +144,7 @@ const Budget = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTournament || !form.description.trim() || !form.amount) return;
+    if (!selectedTournament || !form.description.trim() || !form.amount || demoGuard()) return;
     setSaving(true);
 
     const payload = {

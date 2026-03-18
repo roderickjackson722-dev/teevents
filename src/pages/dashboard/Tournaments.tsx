@@ -44,6 +44,7 @@ interface Tournament {
 
 const Tournaments = () => {
   const { org } = useOrgContext();
+  const { buildLink } = useAdminLink();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);

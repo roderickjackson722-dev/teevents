@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function CheckIn() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [search, setSearch] = useState("");

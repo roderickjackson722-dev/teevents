@@ -52,6 +52,7 @@ import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import Nonprofits from "./pages/Nonprofits";
 import HowItWorks from "./pages/HowItWorks";
+import SampleOrganizer from "./pages/SampleOrganizer";
 import VisitTracker from "./components/VisitTracker";
 
 const queryClient = new QueryClient();
@@ -111,6 +112,7 @@ const App = () => (
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
            <Route path="/how-it-works" element={<HowItWorks />} />
+           <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -55,6 +55,7 @@ export default function Auction() {
 
   const addMutation = useMutation({
     mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_auction_items").insert({
         tournament_id: selectedTournament,
         title: form.title,

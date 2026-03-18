@@ -113,6 +113,7 @@ export default function Messages() {
 
   const cancelMutation = useMutation({
     mutationFn: async (messageId: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase
         .from("tournament_messages")
         .update({ status: "cancelled" })

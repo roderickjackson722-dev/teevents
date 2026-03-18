@@ -105,6 +105,7 @@ const Settings = () => {
   };
 
   const handleConnectStripe = async () => {
+    if (demoGuard()) return;
     setOnboarding(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();

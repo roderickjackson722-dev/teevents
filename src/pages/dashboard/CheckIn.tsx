@@ -65,6 +65,7 @@ export default function CheckIn() {
   };
 
   const handleUndoCheckIn = async (playerId: string) => {
+    if (demoGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ checked_in: false, check_in_time: null })

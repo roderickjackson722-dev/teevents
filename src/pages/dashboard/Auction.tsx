@@ -78,6 +78,7 @@ export default function Auction() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_auction_items").delete().eq("id", id);
       if (error) throw error;
     },

@@ -81,6 +81,7 @@ const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [
 /* ── main component ── */
 const Registration = () => {
   const { org } = useOrgContext();
+  const { demoGuard } = useDemoMode();
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>("");

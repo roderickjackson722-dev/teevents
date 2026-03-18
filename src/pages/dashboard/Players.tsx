@@ -141,6 +141,7 @@ const Players = () => {
   };
 
   const handleSaveScoringCode = async (playerId: string) => {
+    if (demoGuard()) return;
     const code = scoringCodeInput.trim().toUpperCase();
     if (!code) {
       toast({ title: "Code cannot be empty", variant: "destructive" });

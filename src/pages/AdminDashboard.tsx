@@ -1284,6 +1284,7 @@ const AdminDashboard = () => {
                   <tbody>
                     {allTournaments
                       .filter(t => {
+                        if (orgFilter && t.organization_id !== orgFilter) return false;
                         if (!tournamentSearch.trim()) return true;
                         const q = tournamentSearch.toLowerCase();
                         return (

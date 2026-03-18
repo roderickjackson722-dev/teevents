@@ -60,14 +60,15 @@ export function useOrgContext() {
 
       const { data: orgData } = await supabase
         .from("organizations")
-        .select("id, name, plan")
+        .select("id, name, plan, dashboard_name")
         .eq("id", membership.organization_id)
-        .single() as { data: { id: string; name: string; plan: string } | null; error: any };
+        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null } | null; error: any };
 
       if (orgData) {
         setOrg({
           orgId: orgData.id,
           orgName: orgData.name,
+          dashboardName: orgData.dashboard_name,
           userId: session.user.id,
           plan: orgData.plan || 'starter',
           role: (membership as any).role || 'owner',

@@ -130,6 +130,7 @@ const Players = () => {
   });
 
   const handleDeletePlayer = async (id: string) => {
+    if (demoGuard()) return;
     const { error } = await supabase.from("tournament_registrations").delete().eq("id", id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

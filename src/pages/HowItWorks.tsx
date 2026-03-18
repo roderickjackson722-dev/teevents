@@ -118,7 +118,7 @@ const coreModules = [
     title: "SMS & Email Messaging",
     image: demoMessaging,
     bullets: [
-      "Bulk SMS to golfers, sponsors, and volunteers",
+      "Bulk email and SMS to golfers, sponsors, and volunteers",
       "Scheduled messages for tournament day reminders",
       "Full message history and delivery tracking",
     ],

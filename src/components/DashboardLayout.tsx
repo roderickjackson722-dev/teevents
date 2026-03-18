@@ -137,6 +137,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   </div>
                 )}
               </div>
+              {isAdminOverride && (
+                <Link
+                  to="/admin"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Admin
+                </Link>
+              )}
             </header>
             <main className="flex-1 bg-golf-cream p-6">
               {children}

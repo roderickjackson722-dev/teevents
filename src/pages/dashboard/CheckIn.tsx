@@ -50,6 +50,7 @@ export default function CheckIn() {
   });
 
   const handleCheckIn = async (playerId: string) => {
+    if (demoGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ checked_in: true, check_in_time: new Date().toISOString() })

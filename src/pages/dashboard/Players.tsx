@@ -184,6 +184,7 @@ const Players = () => {
   };
 
   const handleAddPlayer = async () => {
+    if (demoGuard()) return;
     if (!selectedTournament || !newPlayer.first_name.trim() || !newPlayer.last_name.trim() || !newPlayer.email.trim()) {
       toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
       return;

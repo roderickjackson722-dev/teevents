@@ -108,6 +108,7 @@ const AdminDashboard = () => {
   const [platformProducts, setPlatformProducts] = useState<any[]>([]);
   const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
   const [tournamentSearch, setTournamentSearch] = useState("");
+  const [orgFilter, setOrgFilter] = useState("");
 
   useEffect(() => {
     checkAdmin();

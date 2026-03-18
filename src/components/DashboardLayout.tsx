@@ -19,7 +19,9 @@ export interface OrgContext {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [loading, setLoading] = useState(true);
   const [orgContext, setOrgContext] = useState<OrgContext | null>(null);
+  const [isAdminOverride, setIsAdminOverride] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isDemoMode } = useDemoMode();
 
   useEffect(() => {
@@ -34,6 +36,26 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       if (!session) {
         navigate("/get-started");
         return;
+      }
+
+      // Check for admin org override
+      const adminOrgId = searchParams.get("admin_org");
+      if (adminOrgId) {
+        const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+        if (isAdmin) {
+          const { data: org } = await supabase
+            .from("organizations")
+            .select("id, name")
+            .eq("id", adminOrgId)
+            .single();
+
+          if (org) {
+            setOrgContext({ orgId: org.id, orgName: org.name });
+            setIsAdminOverride(true);
+            setLoading(false);
+            return;
+          }
+        }
       }
 
       const { data: membership } = await supabase
@@ -63,7 +85,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     init();
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   if (loading) {
     return (

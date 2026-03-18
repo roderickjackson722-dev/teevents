@@ -44,7 +44,7 @@ const features = [
 
 const plans = [
   { name: "Base", price: "Free", fee: "5%", note: "1 tournament, Stroke Play & Best Ball" },
-  { name: "Starter", price: "$499", fee: "3%", note: "All templates, 8 formats, SMS", popular: true },
+  { name: "Starter", price: "$499", fee: "3%", note: "We build it for you + all templates", popular: true },
   { name: "Pro", price: "$999", fee: "2%", note: "Store, auction, custom prints" },
   { name: "Enterprise", price: "Custom", fee: "1%", note: "Unlimited everything" },
 ];

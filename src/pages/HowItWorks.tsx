@@ -53,7 +53,7 @@ const fadeIn = {
 
 /* ─── Data ─── */
 const sellingPoints = [
-  { stat: "30 min", label: "Average setup time", icon: Clock },
+  { stat: "✓", label: "Custom domain support", icon: Globe },
   { stat: "100%", label: "Mobile optimized", icon: Smartphone },
   { stat: "0", label: "Tech skills needed", icon: LayoutDashboard },
   { stat: "$0", label: "Startup cost", icon: DollarSign },
@@ -178,7 +178,7 @@ const plans = [
     name: "Starter",
     price: "$499",
     period: "per tournament",
-    description: "Unlock powerful tools and lower your transaction fees.",
+    description: "We build your tournament platform for you.",
     fee: "3% transaction fee",
     features: [
       "Everything in Base",
@@ -679,7 +679,7 @@ const HowItWorks = () => {
               Ready to Simplify Your Tournament?
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Join organizers who've switched from spreadsheets and scattered tools to one unified platform. Set up in 30 minutes.
+              Join organizers who've switched from spreadsheets and scattered tools to one unified platform. Bring your own custom domain.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

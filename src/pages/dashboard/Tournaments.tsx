@@ -71,7 +71,7 @@ const Tournaments = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!org) return;
+    if (!org || demoGuard()) return;
     setCreating(true);
 
     const { error } = await supabase.from("tournaments").insert({

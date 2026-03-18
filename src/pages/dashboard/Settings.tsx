@@ -19,6 +19,7 @@ import {
   Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -44,10 +45,13 @@ const Settings = () => {
   const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string }[]>([]);
   const [formatEdits, setFormatEdits] = useState<Record<string, string>>({});
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
+  const [dashboardName, setDashboardName] = useState("");
+  const [savingDashboardName, setSavingDashboardName] = useState(false);
 
   useEffect(() => {
     fetchConnectStatus();
     if (org) {
+      setDashboardName(org.dashboardName || "");
       supabase
         .from("tournaments")
         .select("id, title, scoring_format")
@@ -56,6 +60,18 @@ const Settings = () => {
         .then(({ data }) => setTournaments((data as any) || []));
     }
   }, [org]);
+
+  const handleSaveDashboardName = async () => {
+    if (demoGuard() || !org) return;
+    setSavingDashboardName(true);
+    const { error } = await supabase
+      .from("organizations")
+      .update({ dashboard_name: dashboardName.trim() || null } as any)
+      .eq("id", org.orgId);
+    if (error) toast.error(error.message);
+    else toast.success("Dashboard name updated!");
+    setSavingDashboardName(false);
+  };
 
   const getFunctionErrorMessage = (err: any, fallback: string) => {
     const apiError = err?.context?.json?.error;
@@ -240,7 +256,7 @@ const Settings = () => {
           <Building2 className="h-6 w-6 text-secondary" />
           <h2 className="text-lg font-display font-bold text-foreground">Organization</h2>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-sm text-muted-foreground">Name</span>
             <p className="font-medium text-foreground">{org?.orgName || "—"}</p>
@@ -260,6 +276,30 @@ const Settings = () => {
                 </Link>
               )}
             </div>
+          </div>
+        </div>
+        <div className="border-t border-border pt-4">
+          <Label htmlFor="dashboard-name" className="text-sm text-muted-foreground">
+            Dashboard Display Name
+          </Label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Customize the name shown in "Welcome back, ..." on your dashboard. Leave blank to use your organization name.
+          </p>
+          <div className="flex items-center gap-2 max-w-md">
+            <Input
+              id="dashboard-name"
+              value={dashboardName}
+              onChange={(e) => setDashboardName(e.target.value)}
+              placeholder={org?.orgName || "Organization name"}
+              className="flex-1"
+            />
+            <Button
+              size="sm"
+              onClick={handleSaveDashboardName}
+              disabled={savingDashboardName}
+            >
+              {savingDashboardName ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            </Button>
           </div>
         </div>
       </motion.div>

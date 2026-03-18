@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface OrgContext {
   orgId: string;
   orgName: string;
+  dashboardName: string | null;
   userId: string;
   plan: string;
   role: string;
@@ -26,19 +27,20 @@ export function useOrgContext() {
       if (adminOrgId) {
         const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
         if (isAdmin) {
-          const { data: orgData } = await supabase
+        const { data: orgData } = await supabase
             .from("organizations")
-            .select("id, name, plan")
+            .select("id, name, plan, dashboard_name")
             .eq("id", adminOrgId)
-            .single() as { data: { id: string; name: string; plan: string } | null; error: any };
+            .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null } | null; error: any };
 
           if (orgData) {
             setOrg({
               orgId: orgData.id,
               orgName: orgData.name,
+              dashboardName: orgData.dashboard_name,
               userId: session.user.id,
               plan: orgData.plan || 'starter',
-              role: 'owner', // Admin gets full access
+              role: 'owner',
               permissions: [],
             });
             setLoading(false);
@@ -58,14 +60,15 @@ export function useOrgContext() {
 
       const { data: orgData } = await supabase
         .from("organizations")
-        .select("id, name, plan")
+        .select("id, name, plan, dashboard_name")
         .eq("id", membership.organization_id)
-        .single() as { data: { id: string; name: string; plan: string } | null; error: any };
+        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null } | null; error: any };
 
       if (orgData) {
         setOrg({
           orgId: orgData.id,
           orgName: orgData.name,
+          dashboardName: orgData.dashboard_name,
           userId: session.user.id,
           plan: orgData.plan || 'starter',
           role: (membership as any).role || 'owner',

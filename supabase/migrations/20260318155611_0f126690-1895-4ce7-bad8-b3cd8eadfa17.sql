@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN dashboard_name text DEFAULT NULL;

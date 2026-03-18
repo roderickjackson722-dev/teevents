@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface OrgContext {
   orgId: string;
   orgName: string;
+  dashboardName: string | null;
   userId: string;
   plan: string;
   role: string;

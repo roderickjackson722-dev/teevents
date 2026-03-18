@@ -73,9 +73,10 @@ const coreModules = [
   },
   {
     icon: CreditCard,
-    title: "Online Registration & Payments",
+    title: "Online Registration",
     image: demoRegistration,
     bullets: [
+      "Register now for the annual golf tournament",
       "Stripe-powered checkout with Apple Pay & Google Pay",
       "Registration add-ons (mulligans, dinner tickets, hole packages)",
       "Custom fields, promo codes & automated email confirmations",

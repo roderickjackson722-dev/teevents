@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Gallery() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [uploading, setUploading] = useState(false);

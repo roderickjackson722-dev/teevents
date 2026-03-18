@@ -914,7 +914,7 @@ const SiteBuilder = () => {
               <div className="bg-muted/50 rounded-lg border border-border p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-semibold">Default Subdomain</Label>
+                  <Label className="text-sm font-semibold">Default URL (always active)</Label>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">
                   Your tournament is automatically available at:
@@ -940,15 +940,83 @@ const SiteBuilder = () => {
                 )}
               </div>
 
-              {/* Custom Domain */}
+              {/* "Already have a website?" explainer */}
+              <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  🌐 Already have a website?
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  If your organization already has a website, you don't need to replace it. Here's how to connect your tournament:
+                </p>
+
+                <div className="space-y-3">
+                  {/* Option 1 */}
+                  <div className="bg-background border border-border rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5">1</span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Subdomain (Recommended)</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Create a subdomain like <span className="font-mono text-foreground">golf.yourwebsite.com</span> or{" "}
+                          <span className="font-mono text-foreground">tournament.yourwebsite.com</span> and point it here.
+                          Your main website stays completely untouched — just add a "View Our Tournament" link that goes to the subdomain.
+                        </p>
+                        <p className="text-xs text-primary font-medium mt-1">
+                          ✅ Best of both worlds — branded URL + your existing site is unaffected
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Option 2 */}
+                  <div className="bg-background border border-border rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold shrink-0 mt-0.5">2</span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Link from your existing site</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          No DNS changes needed — simply add a link or button on your current website (e.g. on a{" "}
+                          <span className="font-mono text-foreground">yourwebsite.com/golf-tournament</span> page) that links to your default TeeVents URL above.
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium mt-1">
+                          ⚡ Fastest setup — zero DNS configuration required
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Option 3 */}
+                  <div className="bg-background border border-border rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold shrink-0 mt-0.5">3</span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Dedicated domain</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Purchase a separate domain (e.g. <span className="font-mono text-foreground">mycharitygolf.com</span>) and point it entirely to TeeVents.
+                          Great for annual events that deserve their own identity.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-background border border-border rounded-md p-3">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>⚠️ Important:</strong> You cannot use a URL <em>path</em> like{" "}
+                    <span className="font-mono">yourwebsite.com/tournaments</span> as a custom domain — DNS works at the domain level, not the page level.
+                    Use a <strong>subdomain</strong> (Option 1) or a <strong>link</strong> (Option 2) instead.
+                  </p>
+                </div>
+              </div>
+
+              {/* Custom Domain Input */}
               <div className="border border-border rounded-lg p-4 space-y-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-semibold">Custom Domain</Label>
+                  <Label className="text-sm font-semibold">Connect Custom Domain</Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Connect your own domain so visitors can access your tournament at a custom URL like{" "}
-                  <span className="font-mono text-foreground">golf.yourcharity.org</span>.
+                  For Option 1 or 3 above, enter the subdomain or domain you'd like to connect:
                 </p>
 
                 <div>
@@ -960,6 +1028,9 @@ const SiteBuilder = () => {
                     placeholder="golf.yourcharity.org"
                     className="font-mono"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Examples: <span className="font-mono">golf.yourwebsite.com</span>, <span className="font-mono">tournament.yourcharity.org</span>, or <span className="font-mono">mycharitygolf.com</span>
+                  </p>
                 </div>
 
                 {settings.custom_domain && (
@@ -969,75 +1040,86 @@ const SiteBuilder = () => {
                       DNS Setup Required
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      To connect <span className="font-mono font-semibold text-foreground">{settings.custom_domain}</span>, add these DNS records at your domain registrar:
+                      To connect <span className="font-mono font-semibold text-foreground">{settings.custom_domain}</span>, add this DNS record at your domain registrar:
                     </p>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="text-left py-2 pr-4 font-semibold text-foreground">Type</th>
-                            <th className="text-left py-2 pr-4 font-semibold text-foreground">Name</th>
-                            <th className="text-left py-2 font-semibold text-foreground">Value</th>
-                          </tr>
-                        </thead>
-                        <tbody className="font-mono text-xs">
-                          <tr className="border-b border-border/50">
-                            <td className="py-2 pr-4">CNAME</td>
-                            <td className="py-2 pr-4">{settings.custom_domain.split('.')[0]}</td>
-                            <td className="py-2">custom-domains.teevents.golf</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="bg-background border border-border rounded-md p-3">
-                      <p className="text-xs text-muted-foreground">
-                        <strong>Note:</strong> DNS changes can take up to 48 hours to propagate. After adding the record, save your settings and check back later. 
-                        If you're using a root domain (e.g. yourcharity.org), use an <strong>A record</strong> pointing to <code className="bg-muted px-1 rounded">185.158.133.1</code> instead.
-                      </p>
-                    </div>
+
+                    {/* Determine if subdomain or root domain */}
+                    {(() => {
+                      const parts = settings.custom_domain!.replace(/^www\./, "").split(".");
+                      const isSubdomain = parts.length > 2;
+                      return (
+                        <div className="space-y-3">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-border">
+                                  <th className="text-left py-2 pr-4 font-semibold text-foreground">Type</th>
+                                  <th className="text-left py-2 pr-4 font-semibold text-foreground">Name</th>
+                                  <th className="text-left py-2 font-semibold text-foreground">Value</th>
+                                </tr>
+                              </thead>
+                              <tbody className="font-mono text-xs">
+                                {isSubdomain ? (
+                                  <tr className="border-b border-border/50">
+                                    <td className="py-2 pr-4">CNAME</td>
+                                    <td className="py-2 pr-4">{parts[0]}</td>
+                                    <td className="py-2">custom-domains.teevents.golf</td>
+                                  </tr>
+                                ) : (
+                                  <tr className="border-b border-border/50">
+                                    <td className="py-2 pr-4">A</td>
+                                    <td className="py-2 pr-4">@</td>
+                                    <td className="py-2">185.158.133.1</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="bg-background border border-border rounded-md p-3">
+                            <p className="text-xs text-muted-foreground">
+                              {isSubdomain ? (
+                                <>
+                                  <strong>Subdomain detected.</strong> Add a <strong>CNAME</strong> record pointing{" "}
+                                  <span className="font-mono text-foreground">{parts[0]}</span> to{" "}
+                                  <span className="font-mono text-foreground">custom-domains.teevents.golf</span>.
+                                  Do <strong>not</strong> use an A record for subdomains.
+                                </>
+                              ) : (
+                                <>
+                                  <strong>Root domain detected.</strong> Add an <strong>A record</strong> pointing to{" "}
+                                  <span className="font-mono text-foreground">185.158.133.1</span>.
+                                  If you also want <span className="font-mono">www.{settings.custom_domain}</span>, add a CNAME for{" "}
+                                  <span className="font-mono">www</span> → <span className="font-mono">custom-domains.teevents.golf</span>.
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Step-by-step instructions */}
                     <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
-                      <h4 className="text-sm font-semibold text-foreground">📋 Step-by-Step Setup Guide</h4>
+                      <h4 className="text-sm font-semibold text-foreground">📋 Step-by-Step Setup</h4>
                       <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
                         <li>
-                          <strong className="text-foreground">Log in to your domain registrar</strong> — This is where you purchased your domain (e.g. GoDaddy, Namecheap, Google Domains, Cloudflare).
+                          <strong className="text-foreground">Log in to your domain registrar</strong> — where you purchased your domain (GoDaddy, Namecheap, Cloudflare, etc.)
                         </li>
                         <li>
-                          <strong className="text-foreground">Navigate to DNS settings</strong> — Look for "DNS Management," "DNS Records," or "Advanced DNS" in your registrar's dashboard.
+                          <strong className="text-foreground">Find DNS settings</strong> — look for "DNS Management" or "Advanced DNS"
                         </li>
                         <li>
-                          <strong className="text-foreground">Add a CNAME record</strong> (for subdomains like <span className="font-mono text-xs">golf.yourcharity.org</span>):
-                          <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
-                            <li><strong>Type:</strong> CNAME</li>
-                            <li><strong>Name / Host:</strong> <span className="font-mono">{settings.custom_domain?.split('.')[0] || 'golf'}</span></li>
-                            <li><strong>Value / Points to:</strong> <span className="font-mono">custom-domains.teevents.golf</span></li>
-                            <li><strong>TTL:</strong> Auto or 3600</li>
-                          </ul>
+                          <strong className="text-foreground">Add the DNS record</strong> shown in the table above
                         </li>
                         <li>
-                          <strong className="text-foreground">Or add an A record</strong> (for root domains like <span className="font-mono text-xs">yourcharity.org</span>):
-                          <ul className="mt-1 ml-4 space-y-0.5 text-xs list-disc list-inside">
-                            <li><strong>Type:</strong> A</li>
-                            <li><strong>Name / Host:</strong> <span className="font-mono">@</span></li>
-                            <li><strong>Value / Points to:</strong> <span className="font-mono">185.158.133.1</span></li>
-                            <li><strong>TTL:</strong> Auto or 3600</li>
-                          </ul>
+                          <strong className="text-foreground">Save here</strong> — click Save above to register your domain for SSL
                         </li>
                         <li>
-                          <strong className="text-foreground">Save your DNS changes</strong> — Click save or confirm in your registrar's dashboard.
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Come back here and click Save</strong> — Make sure your domain name is entered above, then save your Site Builder settings. This will automatically register your domain for SSL.
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes can take 15 minutes to 48 hours. Use the "Check DNS Status" and "Check SSL Status" buttons below to verify.
-                        </li>
-                        <li>
-                          <strong className="text-foreground">SSL certificate provisioning</strong> — Once DNS propagates, an SSL certificate is automatically generated. During this time (usually 5–30 minutes), you may see a browser error like <span className="font-mono text-xs">"ERR_SSL_VERSION_OR_CIPHER_MISMATCH"</span>. <strong>This is normal</strong> — simply wait and try again shortly.
+                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes take 15 minutes to 48 hours. Use the status buttons below to verify.
                         </li>
                       </ol>
                       <p className="text-xs text-muted-foreground italic">
-                        💡 Tip: If you also want <span className="font-mono">www.{settings.custom_domain}</span> to work, add a second CNAME record with <strong>Name</strong> set to <span className="font-mono">www</span> pointing to <span className="font-mono">custom-domains.teevents.golf</span>.
+                        💡 SSL certificates are provisioned automatically (5–30 min). During this time you may see a browser error — this is normal, just wait.
                       </p>
                     </div>
 

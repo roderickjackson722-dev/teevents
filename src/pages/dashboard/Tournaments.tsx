@@ -44,6 +44,7 @@ interface Tournament {
 const Tournaments = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);

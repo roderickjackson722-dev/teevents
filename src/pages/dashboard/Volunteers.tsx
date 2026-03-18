@@ -16,6 +16,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Volunteers() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);

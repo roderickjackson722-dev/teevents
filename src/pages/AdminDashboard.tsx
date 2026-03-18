@@ -1444,6 +1444,24 @@ const AdminDashboard = () => {
                           <p className="font-medium">{new Date(t.created_at).toLocaleDateString()}</p>
                         </div>
                       </div>
+                      <div className="mt-4 pt-4 border-t border-border flex items-center gap-4">
+                        <button
+                          onClick={() => togglePassFees(t.id, !!t.pass_fees_to_registrants)}
+                          className={`inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
+                            t.pass_fees_to_registrants
+                              ? "bg-primary/15 text-primary hover:bg-primary/25"
+                              : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          }`}
+                        >
+                          <DollarSign className="h-4 w-4" />
+                          {t.pass_fees_to_registrants ? "Fees Passed to Registrants ✓" : "Pass Fees to Registrants"}
+                        </button>
+                        <span className="text-xs text-muted-foreground">
+                          {t.pass_fees_to_registrants
+                            ? "Platform + Stripe fees are automatically added to the registration total."
+                            : "Organizer absorbs the platform + Stripe fees."}
+                        </span>
+                      </div>
                     </div>
                   );
                 })()}

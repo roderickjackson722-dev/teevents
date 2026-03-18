@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardChatAssistant } from "./DashboardChatAssistant";
-import { Loader2, Eye, ArrowRight, ArrowLeft } from "lucide-react";
+import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 
 interface DashboardLayoutProps {

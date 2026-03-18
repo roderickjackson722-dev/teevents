@@ -37,6 +37,7 @@ interface ConnectStatus {
 
 const Settings = () => {
   const { org } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [onboarding, setOnboarding] = useState(false);

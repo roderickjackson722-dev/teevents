@@ -1161,11 +1161,27 @@ const SiteBuilder = () => {
         <div className="bg-card rounded-lg border border-border overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
             <Eye className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-muted-foreground">Live Preview</span>
+            {publicUrl ? (
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Live Preview
+              </a>
+            ) : (
+              <span className="text-sm font-medium text-muted-foreground">Live Preview</span>
+            )}
             {publicUrl && (
-              <span className="text-xs text-muted-foreground ml-auto">
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground hover:text-primary ml-auto"
+              >
                 {window.location.origin}{publicUrl}
-              </span>
+              </a>
             )}
           </div>
           <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 220px)" }}>

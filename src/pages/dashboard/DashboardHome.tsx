@@ -28,6 +28,7 @@ function getCountdown(dateStr: string | null) {
 
 const DashboardHome = () => {
   const { org } = useOrgContext();
+  const { buildLink } = useAdminLink();
   const [tournamentCount, setTournamentCount] = useState(0);
   const [latestTournament, setLatestTournament] = useState<Tournament | null>(null);
   const [countdown, setCountdown] = useState<ReturnType<typeof getCountdown>>(null);

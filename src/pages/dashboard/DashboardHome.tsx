@@ -133,31 +133,31 @@ const DashboardHome = () => {
           {latestTournament && (
             <>
               <Button asChild>
-                <Link to="/dashboard/players">
+                <Link to={buildLink("/dashboard/players")}>
                   <Users className="h-4 w-4 mr-2" />
                   Players & Pairings
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/registration">
+                <Link to={buildLink("/dashboard/registration")}>
                   <ClipboardList className="h-4 w-4 mr-2" />
                   Registration
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/check-in">
+                <Link to={buildLink("/dashboard/check-in")}>
                   <ScanLine className="h-4 w-4 mr-2" />
                   Check-In
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/messages">
+                <Link to={buildLink("/dashboard/messages")}>
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Messages
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/leaderboard">
+                <Link to={buildLink("/dashboard/leaderboard")}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Leaderboard
                 </Link>

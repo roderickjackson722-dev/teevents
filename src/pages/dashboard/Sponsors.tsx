@@ -178,7 +178,7 @@ const Sponsors = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTournament || !form.name.trim()) return;
+    if (!selectedTournament || !form.name.trim() || demoGuard()) return;
     setSaving(true);
 
     const payload = {

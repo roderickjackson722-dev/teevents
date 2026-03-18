@@ -1293,9 +1293,21 @@ const AdminDashboard = () => {
                         </td>
                         <td className="p-3">
                           <span className="font-medium">{t.organizations?.name || "—"}</span>
-                          {t.organizations?.stripe_account_id && (
-                            <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
-                          )}
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {t.organizations?.stripe_account_id && (
+                              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
+                            )}
+                            {t.organizations?.is_nonprofit && (
+                              <span className="text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded">
+                                Nonprofit{t.organizations?.nonprofit_verified ? " ✓" : ""}
+                              </span>
+                            )}
+                            {t.organizations?.ein && (
+                              <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                                EIN: {t.organizations.ein}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-3 text-center">
                           <div className="flex items-center justify-center gap-1">

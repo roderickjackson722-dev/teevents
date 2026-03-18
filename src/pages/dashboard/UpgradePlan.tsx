@@ -186,6 +186,11 @@ const UpgradePlan = () => {
               )}
 
               <h3 className="text-xl font-display font-bold mb-1 mt-1">{plan.name}</h3>
+              {"subtitle" in plan && (plan as any).subtitle && (
+                <p className={`text-xs font-semibold mb-1 ${plan.highlighted && !isCurrent ? "text-secondary" : "text-primary"}`}>
+                  {(plan as any).subtitle}
+                </p>
+              )}
               <div className="mb-1">
                 <span className="text-3xl font-display font-bold">{plan.price}</span>
                 <span className={`text-xs ml-1.5 ${plan.highlighted && !isCurrent ? "text-primary-foreground/60" : "text-muted-foreground"}`}>

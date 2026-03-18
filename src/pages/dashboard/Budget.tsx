@@ -176,6 +176,7 @@ const Budget = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (demoGuard()) return;
     await supabase.from("tournament_budget_items").delete().eq("id", id);
     setItems((prev) => prev.filter((i) => i.id !== id));
     toast({ title: "Item removed" });

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 export default function Messages() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [message, setMessage] = useState("");

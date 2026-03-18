@@ -98,6 +98,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full">
+        {isAdminOverride && (
+          <div className="bg-destructive text-destructive-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
+            <ShieldCheck className="h-4 w-4 flex-shrink-0" />
+            <span>Admin Mode — Editing <strong>{orgContext?.orgName}</strong>'s dashboard</span>
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1 bg-destructive-foreground/20 hover:bg-destructive-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
+            >
+              <ArrowLeft className="h-3 w-3" /> Back to Admin
+            </Link>
+          </div>
+        )}
         {isDemoMode && (
           <div className="bg-secondary text-secondary-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
             <Eye className="h-4 w-4 flex-shrink-0" />

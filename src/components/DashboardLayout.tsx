@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardChatAssistant } from "./DashboardChatAssistant";
-import { Loader2, Eye, ArrowRight } from "lucide-react";
+import { Loader2, Eye, ArrowRight, ArrowLeft } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 
 interface DashboardLayoutProps {
@@ -95,9 +95,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <div className="flex items-center gap-3">
                 <SidebarTrigger />
                 {orgContext && (
-                  <span className="text-sm font-medium text-foreground">
-                    {orgContext.orgName}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">
+                      {orgContext.orgName} Dashboard
+                    </span>
+                  </div>
                 )}
               </div>
             </header>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, Building2, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminStore from "@/components/admin/AdminStore";
@@ -25,7 +25,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "orgs" | "prospects" | "all-tournaments" | "analytics" | "store">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "prospects" | "all-tournaments" | "analytics" | "store">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -624,7 +624,6 @@ const AdminDashboard = () => {
               ["reviews", "Reviews", Star],
               ["promos", "Promo Codes", Tag],
               ["demos", "Demo Events", Trophy],
-              ["orgs", "Organizations", Building2],
               ["prospects", "Prospects", Target],
               ["store", "Store", ShoppingBag],
               ["analytics", "Analytics", BarChart3],
@@ -1294,9 +1293,21 @@ const AdminDashboard = () => {
                         </td>
                         <td className="p-3">
                           <span className="font-medium">{t.organizations?.name || "—"}</span>
-                          {t.organizations?.stripe_account_id && (
-                            <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
-                          )}
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {t.organizations?.stripe_account_id && (
+                              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe</span>
+                            )}
+                            {t.organizations?.is_nonprofit && (
+                              <span className="text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded">
+                                Nonprofit{t.organizations?.nonprofit_verified ? " ✓" : ""}
+                              </span>
+                            )}
+                            {t.organizations?.ein && (
+                              <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                                EIN: {t.organizations.ein}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-3 text-center">
                           <div className="flex items-center justify-center gap-1">
@@ -1473,76 +1484,6 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* Organizations Tab */}
-          {activeTab === "orgs" && (
-            <div className="space-y-6">
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="font-display font-bold text-lg mb-2">Manage Organizations</h2>
-                <p className="text-sm text-muted-foreground mb-4">View all organizations and upgrade/downgrade their plans.</p>
-              </div>
-
-              <div className="bg-card rounded-lg border border-border overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="text-left p-3 font-medium">Organization</th>
-                      <th className="text-left p-3 font-medium">Tournaments</th>
-                      <th className="text-left p-3 font-medium">Current Plan</th>
-                      <th className="text-left p-3 font-medium">Change Plan</th>
-                      <th className="text-left p-3 font-medium">Created</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {organizations.map(org => (
-                      <tr key={org.id} className="border-t border-border">
-                        <td className="p-3">
-                          <span className="font-semibold">{org.name}</span>
-                          {org.stripe_account_id && (
-                            <span className="ml-2 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">Stripe Connected</span>
-                          )}
-                        </td>
-                        <td className="p-3 text-muted-foreground">
-                          {org.tournaments?.length || 0} tournament{(org.tournaments?.length || 0) !== 1 ? "s" : ""}
-                        </td>
-                        <td className="p-3">
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase tracking-wide ${
-                            org.plan === "enterprise" ? "bg-secondary/20 text-secondary" :
-                            org.plan === "pro" ? "bg-primary/15 text-primary" :
-                            org.plan === "starter" ? "bg-blue-100 text-blue-800" :
-                            "bg-muted text-muted-foreground"
-                          }`}>
-                            {org.plan}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex items-center gap-2">
-                            <select
-                              value={org.plan}
-                              onChange={e => updateOrgPlan(org.id, e.target.value)}
-                              disabled={updatingOrgPlan === org.id}
-                              className="flex h-8 rounded-md border border-input bg-background px-2 py-1 text-xs"
-                            >
-                              <option value="base">Base (Free)</option>
-                              <option value="starter">Starter</option>
-                              <option value="pro">Pro</option>
-                              <option value="enterprise">Enterprise</option>
-                            </select>
-                            {updatingOrgPlan === org.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
-                          </div>
-                        </td>
-                        <td className="p-3 text-muted-foreground text-xs">
-                          {new Date(org.created_at).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                    {organizations.length === 0 && (
-                      <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No organizations yet</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
 
           {/* Prospects Tab */}
           {activeTab === "prospects" && (

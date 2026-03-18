@@ -237,7 +237,7 @@ const SiteBuilder = () => {
   };
 
   const handleSave = async () => {
-    if (!settings) return;
+    if (!settings || demoGuard()) return;
     setSaving(true);
 
     const newDomain = settings.custom_domain || null;

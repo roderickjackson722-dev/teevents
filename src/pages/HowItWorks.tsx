@@ -688,11 +688,17 @@ const HowItWorks = () => {
               >
                 Get Started Free <ArrowRight className="h-4 w-4" />
               </Link>
+              <Link
+                to="/sample-organizer"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary/90 transition-colors"
+              >
+                Try Sample Dashboard
+              </Link>
               <a
                 href="https://calendly.com/teevents/teevents-demo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/20 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
                 Book a Demo
               </a>

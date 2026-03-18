@@ -62,7 +62,7 @@ const DashboardHome = () => {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-foreground">
-          Welcome back{org ? `, ${org.orgName}` : ""}
+          Welcome back{org ? `, ${org.dashboardName || org.orgName}` : ""}
         </h1>
         <p className="text-muted-foreground mt-1">
           Manage your golf tournaments from one place.

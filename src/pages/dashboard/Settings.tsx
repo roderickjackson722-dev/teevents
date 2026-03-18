@@ -50,6 +50,7 @@ const Settings = () => {
   useEffect(() => {
     fetchConnectStatus();
     if (org) {
+      setDashboardName(org.dashboardName || "");
       supabase
         .from("tournaments")
         .select("id, title, scoring_format")
@@ -58,6 +59,18 @@ const Settings = () => {
         .then(({ data }) => setTournaments((data as any) || []));
     }
   }, [org]);
+
+  const handleSaveDashboardName = async () => {
+    if (demoGuard() || !org) return;
+    setSavingDashboardName(true);
+    const { error } = await supabase
+      .from("organizations")
+      .update({ dashboard_name: dashboardName.trim() || null } as any)
+      .eq("id", org.orgId);
+    if (error) toast.error(error.message);
+    else toast.success("Dashboard name updated!");
+    setSavingDashboardName(false);
+  };
 
   const getFunctionErrorMessage = (err: any, fallback: string) => {
     const apiError = err?.context?.json?.error;

@@ -206,6 +206,7 @@ const SiteBuilder = () => {
   const { id } = useParams<{ id: string }>();
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [originalDomain, setOriginalDomain] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

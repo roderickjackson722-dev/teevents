@@ -1244,12 +1244,26 @@ const AdminDashboard = () => {
               <div className="bg-card rounded-lg border border-border p-6">
                 <h2 className="font-display font-bold text-lg mb-2">All User Tournaments</h2>
                 <p className="text-sm text-muted-foreground mb-4">View every tournament created by users across all organizations. Change an organization's plan to control feature access.</p>
-                <Input
-                  placeholder="Search by tournament name, org, or course..."
-                  value={tournamentSearch}
-                  onChange={e => setTournamentSearch(e.target.value)}
-                  className="max-w-md"
-                />
+                <div className="flex flex-wrap gap-3">
+                  <Input
+                    placeholder="Search by tournament name, org, or course..."
+                    value={tournamentSearch}
+                    onChange={e => setTournamentSearch(e.target.value)}
+                    className="max-w-sm"
+                  />
+                  <select
+                    value={orgFilter}
+                    onChange={e => setOrgFilter(e.target.value)}
+                    className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm max-w-xs"
+                  >
+                    <option value="">All Organizations</option>
+                    {[...new Map(allTournaments.map(t => [t.organization_id, t.organizations?.name || "Unknown"])).entries()]
+                      .sort((a, b) => a[1].localeCompare(b[1]))
+                      .map(([id, name]) => (
+                        <option key={id} value={id}>{name}</option>
+                      ))}
+                  </select>
+                </div>
               </div>
 
               <div className="bg-card rounded-lg border border-border overflow-hidden">

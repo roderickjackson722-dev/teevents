@@ -73,6 +73,7 @@ export default function Messages() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
       let scheduled_for: string | undefined;
       if (sendMode === "schedule" && scheduleDate) {
         const [hours, minutes] = scheduleTime.split(":").map(Number);

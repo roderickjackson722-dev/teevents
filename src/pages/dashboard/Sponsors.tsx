@@ -77,6 +77,7 @@ const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silv
 const Sponsors = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);

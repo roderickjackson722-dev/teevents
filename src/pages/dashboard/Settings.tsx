@@ -44,6 +44,8 @@ const Settings = () => {
   const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string }[]>([]);
   const [formatEdits, setFormatEdits] = useState<Record<string, string>>({});
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
+  const [dashboardName, setDashboardName] = useState("");
+  const [savingDashboardName, setSavingDashboardName] = useState(false);
 
   useEffect(() => {
     fetchConnectStatus();

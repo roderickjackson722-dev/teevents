@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";

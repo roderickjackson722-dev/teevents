@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";

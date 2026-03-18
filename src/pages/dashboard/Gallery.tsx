@@ -62,6 +62,7 @@ export default function Gallery() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_photos").delete().eq("id", id);
       if (error) throw error;
     },

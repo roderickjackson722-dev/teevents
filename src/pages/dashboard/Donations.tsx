@@ -87,6 +87,7 @@ const Donations = () => {
   }, [selectedTournament]);
 
   const saveGoal = async () => {
+    if (demoGuard()) return;
     const cents = goalInput ? Math.round(parseFloat(goalInput) * 100) : null;
     await supabase.from("tournaments").update({ donation_goal_cents: cents } as any).eq("id", selectedTournament);
     setDonationGoal(cents);

@@ -72,6 +72,7 @@ const Store = () => {
   };
 
   const handleToggleActive = async (product: Product) => {
+    if (demoGuard()) return;
     const newVal = !product.is_active;
     await supabase.from("tournament_store_products").update({ is_active: newVal }).eq("id", product.id);
     setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_active: newVal } : p));

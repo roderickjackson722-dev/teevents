@@ -198,6 +198,7 @@ const Registration = () => {
   };
 
   const toggleFieldRequired = async (field: RegField) => {
+    if (demoGuard()) return;
     const updated = !field.is_required;
     const { error } = await supabase
       .from("tournament_registration_fields")

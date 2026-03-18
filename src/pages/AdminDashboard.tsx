@@ -624,7 +624,6 @@ const AdminDashboard = () => {
               ["reviews", "Reviews", Star],
               ["promos", "Promo Codes", Tag],
               ["demos", "Demo Events", Trophy],
-              ["orgs", "Organizations", Building2],
               ["prospects", "Prospects", Target],
               ["store", "Store", ShoppingBag],
               ["analytics", "Analytics", BarChart3],

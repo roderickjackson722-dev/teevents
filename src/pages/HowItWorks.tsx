@@ -53,7 +53,7 @@ const fadeIn = {
 
 /* ─── Data ─── */
 const sellingPoints = [
-  { stat: "30 min", label: "Average setup time", icon: Clock },
+  { stat: "✓", label: "Custom domain support", icon: Globe },
   { stat: "100%", label: "Mobile optimized", icon: Smartphone },
   { stat: "0", label: "Tech skills needed", icon: LayoutDashboard },
   { stat: "$0", label: "Startup cost", icon: DollarSign },

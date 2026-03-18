@@ -89,7 +89,7 @@ const coreModules = [
     bullets: [
       "Drag-and-drop player pairings editor",
       "Import players via CSV or paste from spreadsheet",
-      "Group assignments with automatic numbering",
+      "Hole assignments with automatic numbering",
       "Handicap, shirt size, and dietary tracking",
     ],
   },

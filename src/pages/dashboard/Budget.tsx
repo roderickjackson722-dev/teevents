@@ -76,6 +76,7 @@ const categories = [
 const Budget = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [items, setItems] = useState<BudgetItem[]>([]);

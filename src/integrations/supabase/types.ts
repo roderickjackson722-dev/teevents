@@ -1607,6 +1607,7 @@ export type Database = {
           location: string | null
           max_players: number | null
           organization_id: string
+          pass_fees_to_registrants: boolean
           printable_font: string
           printable_layout: string
           registration_fee_cents: number | null
@@ -1647,6 +1648,7 @@ export type Database = {
           location?: string | null
           max_players?: number | null
           organization_id: string
+          pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
           registration_fee_cents?: number | null
@@ -1687,6 +1689,7 @@ export type Database = {
           location?: string | null
           max_players?: number | null
           organization_id?: string
+          pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
           registration_fee_cents?: number | null

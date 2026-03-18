@@ -307,6 +307,16 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true });
       }
 
+      if (action === "toggle-pass-fees") {
+        if (!body.tournament_id) return jsonRes({ error: "Missing tournament_id" }, 400);
+        const { error } = await adminClient
+          .from("tournaments")
+          .update({ pass_fees_to_registrants: body.pass_fees_to_registrants })
+          .eq("id", body.tournament_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       if (action === "delete-demo-event") {
         // Get the demo event to find org & tournament
         const { data: demo } = await adminClient.from("admin_demo_events").select("*").eq("id", body.id).single();

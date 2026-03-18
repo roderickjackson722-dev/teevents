@@ -29,6 +29,7 @@ interface TournamentSite {
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean;
+  pass_fees_to_registrants?: boolean;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
@@ -1001,6 +1002,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
+                    passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
                   />
                 </div>
               )}

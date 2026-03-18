@@ -36,7 +36,7 @@ export default function Gallery() {
   });
 
   const handleUpload = async (files: FileList | null) => {
-    if (!files || !selectedTournament) return;
+    if (!files || !selectedTournament || demoGuard()) return;
     setUploading(true);
 
     for (const file of Array.from(files)) {

@@ -679,7 +679,7 @@ const HowItWorks = () => {
               Ready to Simplify Your Tournament?
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Join organizers who've switched from spreadsheets and scattered tools to one unified platform. Set up in 30 minutes.
+              Join organizers who've switched from spreadsheets and scattered tools to one unified platform. Bring your own custom domain.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

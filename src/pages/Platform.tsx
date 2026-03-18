@@ -253,8 +253,8 @@ const Platform = () => {
               <span className="text-sm font-medium">Mobile Optimized</span>
             </div>
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-secondary" />
-              <span className="text-sm font-medium">Setup in Minutes</span>
+              <Globe className="h-5 w-5 text-secondary" />
+              <span className="text-sm font-medium">Custom Domain Support</span>
             </div>
             <div className="flex items-center gap-2">
               <LayoutDashboard className="h-5 w-5 text-secondary" />

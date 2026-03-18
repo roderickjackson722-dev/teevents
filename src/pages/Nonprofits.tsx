@@ -120,7 +120,7 @@ const Nonprofits = () => {
           <span>✓ Verified 501(c)(3) Support</span>
           <span>✓ Locked 5% Fee — All Plans</span>
           <span>✓ $0 to Start</span>
-          <span>✓ Setup in 30 Minutes</span>
+          <span>✓ Custom Domain Support</span>
         </div>
       </section>
 

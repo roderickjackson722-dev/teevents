@@ -7,7 +7,7 @@ import { Loader2, Monitor, Users, Trophy, CreditCard, BarChart3, ArrowRight } fr
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";
 
-const DEMO_EMAIL = "demo@teevents.com";
+const DEMO_EMAIL = "info@teevents.golf";
 const DEMO_PASSWORD = "demo2026";
 
 const features = [

@@ -69,6 +69,7 @@ const Settings = () => {
   };
 
   const handleSaveFormat = async (tournamentId: string) => {
+    if (demoGuard()) return;
     const newFormat = formatEdits[tournamentId];
     if (!newFormat) return;
     setSavingFormat(tournamentId);

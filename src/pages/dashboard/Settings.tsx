@@ -256,7 +256,7 @@ const Settings = () => {
           <Building2 className="h-6 w-6 text-secondary" />
           <h2 className="text-lg font-display font-bold text-foreground">Organization</h2>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-sm text-muted-foreground">Name</span>
             <p className="font-medium text-foreground">{org?.orgName || "—"}</p>
@@ -276,6 +276,30 @@ const Settings = () => {
                 </Link>
               )}
             </div>
+          </div>
+        </div>
+        <div className="border-t border-border pt-4">
+          <Label htmlFor="dashboard-name" className="text-sm text-muted-foreground">
+            Dashboard Display Name
+          </Label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Customize the name shown in "Welcome back, ..." on your dashboard. Leave blank to use your organization name.
+          </p>
+          <div className="flex items-center gap-2 max-w-md">
+            <Input
+              id="dashboard-name"
+              value={dashboardName}
+              onChange={(e) => setDashboardName(e.target.value)}
+              placeholder={org?.orgName || "Organization name"}
+              className="flex-1"
+            />
+            <Button
+              size="sm"
+              onClick={handleSaveDashboardName}
+              disabled={savingDashboardName}
+            >
+              {savingDashboardName ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            </Button>
           </div>
         </div>
       </motion.div>

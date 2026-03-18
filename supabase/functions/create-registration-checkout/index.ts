@@ -49,13 +49,18 @@ Deno.serve(async (req) => {
     // Fetch tournament details
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location, pass_fees_to_registrants")
       .eq("id", tournament_id)
       .single();
 
     if (tErr || !tournament) throw new Error("Tournament not found");
     if (!tournament.registration_open || !tournament.site_published) {
       throw new Error("Registration is not open for this tournament");
+    }
+
+    // If tournament is set to pass fees to registrants, force cover_fees
+    if ((tournament as any).pass_fees_to_registrants) {
+      coverFees = true;
     }
 
     // Fetch organization plan and nonprofit status

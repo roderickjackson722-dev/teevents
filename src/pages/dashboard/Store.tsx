@@ -22,6 +22,7 @@ import TemplateLibrary from "@/components/store/TemplateLibrary";
 const Store = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [products, setProducts] = useState<Product[]>([]);

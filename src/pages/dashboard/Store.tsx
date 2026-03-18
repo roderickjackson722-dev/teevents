@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -21,6 +22,7 @@ import TemplateLibrary from "@/components/store/TemplateLibrary";
 const Store = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -63,12 +65,14 @@ const Store = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (demoGuard()) return;
     await supabase.from("tournament_store_products").delete().eq("id", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
     toast({ title: "Product removed" });
   };
 
   const handleToggleActive = async (product: Product) => {
+    if (demoGuard()) return;
     const newVal = !product.is_active;
     await supabase.from("tournament_store_products").update({ is_active: newVal }).eq("id", product.id);
     setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_active: newVal } : p));

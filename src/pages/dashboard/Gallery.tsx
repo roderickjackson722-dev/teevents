@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -10,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Gallery() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -34,7 +36,7 @@ export default function Gallery() {
   });
 
   const handleUpload = async (files: FileList | null) => {
-    if (!files || !selectedTournament) return;
+    if (!files || !selectedTournament || demoGuard()) return;
     setUploading(true);
 
     for (const file of Array.from(files)) {
@@ -60,6 +62,7 @@ export default function Gallery() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_photos").delete().eq("id", id);
       if (error) throw error;
     },

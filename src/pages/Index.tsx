@@ -113,6 +113,12 @@ const Index = () => {
             >
               See How It Works
             </Link>
+            <Link
+              to="/sample-organizer"
+              className="inline-flex items-center justify-center gap-2 border border-secondary/50 text-secondary px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/10 transition-colors"
+            >
+              Try Sample Dashboard
+            </Link>
           </div>
         </motion.div>
       </HeroSection>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -80,6 +81,7 @@ const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [
 /* ── main component ── */
 const Registration = () => {
   const { org } = useOrgContext();
+  const { demoGuard } = useDemoMode();
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>("");
@@ -159,6 +161,7 @@ const Registration = () => {
 
   /* ── save helpers ── */
   const saveSettings = async () => {
+    if (demoGuard()) return;
     setSaving(true);
     const { error } = await supabase
       .from("tournaments")
@@ -184,6 +187,7 @@ const Registration = () => {
   };
 
   const toggleField = async (field: RegField) => {
+    if (demoGuard()) return;
     const updated = !field.is_enabled;
     const { error } = await supabase
       .from("tournament_registration_fields")
@@ -194,6 +198,7 @@ const Registration = () => {
   };
 
   const toggleFieldRequired = async (field: RegField) => {
+    if (demoGuard()) return;
     const updated = !field.is_required;
     const { error } = await supabase
       .from("tournament_registration_fields")

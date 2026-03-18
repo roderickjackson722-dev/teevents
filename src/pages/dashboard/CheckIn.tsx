@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -13,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function CheckIn() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [search, setSearch] = useState("");
@@ -48,6 +50,7 @@ export default function CheckIn() {
   });
 
   const handleCheckIn = async (playerId: string) => {
+    if (demoGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ checked_in: true, check_in_time: new Date().toISOString() })
@@ -62,6 +65,7 @@ export default function CheckIn() {
   };
 
   const handleUndoCheckIn = async (playerId: string) => {
+    if (demoGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ checked_in: false, check_in_time: null })

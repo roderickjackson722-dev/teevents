@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -205,6 +206,7 @@ const SiteBuilder = () => {
   const { id } = useParams<{ id: string }>();
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [originalDomain, setOriginalDomain] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -235,7 +237,7 @@ const SiteBuilder = () => {
   };
 
   const handleSave = async () => {
-    if (!settings) return;
+    if (!settings || demoGuard()) return;
     setSaving(true);
 
     const newDomain = settings.custom_domain || null;

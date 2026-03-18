@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,6 +69,7 @@ interface Tournament {
 const Players = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [players, setPlayers] = useState<Registration[]>([]);
@@ -128,6 +130,7 @@ const Players = () => {
   });
 
   const handleDeletePlayer = async (id: string) => {
+    if (demoGuard()) return;
     const { error } = await supabase.from("tournament_registrations").delete().eq("id", id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -138,6 +141,7 @@ const Players = () => {
   };
 
   const handleSaveScoringCode = async (playerId: string) => {
+    if (demoGuard()) return;
     const code = scoringCodeInput.trim().toUpperCase();
     if (!code) {
       toast({ title: "Code cannot be empty", variant: "destructive" });
@@ -180,6 +184,7 @@ const Players = () => {
   };
 
   const handleAddPlayer = async () => {
+    if (demoGuard()) return;
     if (!selectedTournament || !newPlayer.first_name.trim() || !newPlayer.last_name.trim() || !newPlayer.email.trim()) {
       toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
       return;
@@ -207,7 +212,7 @@ const Players = () => {
   };
 
   const handleRegenerateAllCodes = async () => {
-    if (players.length === 0) return;
+    if (players.length === 0 || demoGuard()) return;
     setRegenerating(true);
     const generateCode = () => {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

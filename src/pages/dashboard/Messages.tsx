@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 export default function Messages() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [message, setMessage] = useState("");
@@ -71,6 +73,7 @@ export default function Messages() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
       let scheduled_for: string | undefined;
       if (sendMode === "schedule" && scheduleDate) {
         const [hours, minutes] = scheduleTime.split(":").map(Number);
@@ -110,6 +113,7 @@ export default function Messages() {
 
   const cancelMutation = useMutation({
     mutationFn: async (messageId: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase
         .from("tournament_messages")
         .update({ status: "cancelled" })

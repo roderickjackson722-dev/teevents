@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -75,6 +76,7 @@ const categories = [
 const Budget = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [items, setItems] = useState<BudgetItem[]>([]);
@@ -142,7 +144,7 @@ const Budget = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTournament || !form.description.trim() || !form.amount) return;
+    if (!selectedTournament || !form.description.trim() || !form.amount || demoGuard()) return;
     setSaving(true);
 
     const payload = {
@@ -174,12 +176,14 @@ const Budget = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (demoGuard()) return;
     await supabase.from("tournament_budget_items").delete().eq("id", id);
     setItems((prev) => prev.filter((i) => i.id !== id));
     toast({ title: "Item removed" });
   };
 
   const togglePaid = async (item: BudgetItem) => {
+    if (demoGuard()) return;
     const newVal = !item.is_paid;
     await supabase.from("tournament_budget_items").update({ is_paid: newVal }).eq("id", item.id);
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_paid: newVal } : i)));

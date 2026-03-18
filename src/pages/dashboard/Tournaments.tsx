@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,7 @@ interface Tournament {
 const Tournaments = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -69,7 +71,7 @@ const Tournaments = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!org) return;
+    if (!org || demoGuard()) return;
     setCreating(true);
 
     const { error } = await supabase.from("tournaments").insert({
@@ -93,7 +95,7 @@ const Tournaments = () => {
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget || !deleteConfirmed) return;
+    if (!deleteTarget || !deleteConfirmed || demoGuard()) return;
     setDeleting(true);
     const { error } = await supabase.from("tournaments").delete().eq("id", deleteTarget.id);
     if (error) {

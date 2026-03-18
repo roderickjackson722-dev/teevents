@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,7 @@ interface ConnectStatus {
 
 const Settings = () => {
   const { org } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [onboarding, setOnboarding] = useState(false);
@@ -67,6 +69,7 @@ const Settings = () => {
   };
 
   const handleSaveFormat = async (tournamentId: string) => {
+    if (demoGuard()) return;
     const newFormat = formatEdits[tournamentId];
     if (!newFormat) return;
     setSavingFormat(tournamentId);
@@ -102,6 +105,7 @@ const Settings = () => {
   };
 
   const handleConnectStripe = async () => {
+    if (demoGuard()) return;
     setOnboarding(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();

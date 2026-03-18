@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -76,6 +77,7 @@ const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silv
 const Sponsors = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState("");
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
@@ -176,7 +178,7 @@ const Sponsors = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTournament || !form.name.trim()) return;
+    if (!selectedTournament || !form.name.trim() || demoGuard()) return;
     setSaving(true);
 
     const payload = {
@@ -207,6 +209,7 @@ const Sponsors = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (demoGuard()) return;
     await supabase.from("tournament_sponsors").delete().eq("id", id);
     setSponsors((prev) => prev.filter((s) => s.id !== id));
     toast({ title: "Sponsor removed" });

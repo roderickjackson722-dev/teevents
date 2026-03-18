@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -15,6 +16,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Volunteers() {
   const { org, loading: orgLoading } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -49,6 +51,7 @@ export default function Volunteers() {
 
   const addRoleMutation = useMutation({
     mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_volunteer_roles").insert({
         tournament_id: selectedTournament,
         title: form.title,
@@ -69,6 +72,7 @@ export default function Volunteers() {
 
   const deleteRoleMutation = useMutation({
     mutationFn: async (id: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_volunteer_roles").delete().eq("id", id);
       if (error) throw error;
     },

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { useAdminLink } from "@/hooks/useAdminLink";
 import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChart3, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +28,7 @@ function getCountdown(dateStr: string | null) {
 
 const DashboardHome = () => {
   const { org } = useOrgContext();
+  const { buildLink } = useAdminLink();
   const [tournamentCount, setTournamentCount] = useState(0);
   const [latestTournament, setLatestTournament] = useState<Tournament | null>(null);
   const [countdown, setCountdown] = useState<ReturnType<typeof getCountdown>>(null);
@@ -131,31 +133,31 @@ const DashboardHome = () => {
           {latestTournament && (
             <>
               <Button asChild>
-                <Link to="/dashboard/players">
+                <Link to={buildLink("/dashboard/players")}>
                   <Users className="h-4 w-4 mr-2" />
                   Players & Pairings
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/registration">
+                <Link to={buildLink("/dashboard/registration")}>
                   <ClipboardList className="h-4 w-4 mr-2" />
                   Registration
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/check-in">
+                <Link to={buildLink("/dashboard/check-in")}>
                   <ScanLine className="h-4 w-4 mr-2" />
                   Check-In
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/messages">
+                <Link to={buildLink("/dashboard/messages")}>
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Messages
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/dashboard/leaderboard">
+                <Link to={buildLink("/dashboard/leaderboard")}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Leaderboard
                 </Link>

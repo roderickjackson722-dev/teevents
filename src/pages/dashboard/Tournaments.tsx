@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { useAdminLink } from "@/hooks/useAdminLink";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +44,7 @@ interface Tournament {
 
 const Tournaments = () => {
   const { org } = useOrgContext();
+  const { buildLink } = useAdminLink();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -331,7 +333,7 @@ const Tournaments = () => {
               })()}
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                 <Link
-                  to={`/dashboard/tournaments/${t.id}/site-builder`}
+                  to={buildLink(`/dashboard/tournaments/${t.id}/site-builder`)}
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   <Globe className="h-3.5 w-3.5" />

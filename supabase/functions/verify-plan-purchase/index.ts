@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents";
-const ADMIN_EMAIL = "support@teevents.golf";
+const ADMIN_EMAIL = "info@teevents.golf";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {

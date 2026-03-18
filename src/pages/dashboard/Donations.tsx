@@ -38,6 +38,7 @@ interface Tournament {
 
 const Donations = () => {
   const { org } = useOrgContext();
+  const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [donations, setDonations] = useState<Donation[]>([]);

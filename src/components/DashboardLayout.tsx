@@ -95,9 +95,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <div className="flex items-center gap-3">
                 <SidebarTrigger />
                 {orgContext && (
-                  <span className="text-sm font-medium text-foreground">
-                    {orgContext.orgName}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">
+                      {orgContext.orgName} Dashboard
+                    </span>
+                  </div>
                 )}
               </div>
             </header>

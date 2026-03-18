@@ -51,6 +51,7 @@ export default function Volunteers() {
 
   const addRoleMutation = useMutation({
     mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
       const { error } = await supabase.from("tournament_volunteer_roles").insert({
         tournament_id: selectedTournament,
         title: form.title,

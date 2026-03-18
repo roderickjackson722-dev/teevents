@@ -183,6 +183,7 @@ const Budget = () => {
   };
 
   const togglePaid = async (item: BudgetItem) => {
+    if (demoGuard()) return;
     const newVal = !item.is_paid;
     await supabase.from("tournament_budget_items").update({ is_paid: newVal }).eq("id", item.id);
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_paid: newVal } : i)));

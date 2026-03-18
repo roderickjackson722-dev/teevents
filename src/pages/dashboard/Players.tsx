@@ -212,7 +212,7 @@ const Players = () => {
   };
 
   const handleRegenerateAllCodes = async () => {
-    if (players.length === 0) return;
+    if (players.length === 0 || demoGuard()) return;
     setRegenerating(true);
     const generateCode = () => {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

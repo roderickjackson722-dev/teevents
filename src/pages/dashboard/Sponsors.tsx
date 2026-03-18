@@ -209,6 +209,7 @@ const Sponsors = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (demoGuard()) return;
     await supabase.from("tournament_sponsors").delete().eq("id", id);
     setSponsors((prev) => prev.filter((s) => s.id !== id));
     toast({ title: "Sponsor removed" });

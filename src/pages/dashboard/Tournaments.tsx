@@ -95,7 +95,7 @@ const Tournaments = () => {
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget || !deleteConfirmed) return;
+    if (!deleteTarget || !deleteConfirmed || demoGuard()) return;
     setDeleting(true);
     const { error } = await supabase.from("tournaments").delete().eq("id", deleteTarget.id);
     if (error) {

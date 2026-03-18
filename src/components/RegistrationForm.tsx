@@ -32,6 +32,7 @@ interface RegistrationFormProps {
   nonprofitName?: string;
   ein?: string;
   platformFeeRate?: number;
+  passFeesToRegistrants?: boolean;
 }
 
 const emptyPlayer = () => ({

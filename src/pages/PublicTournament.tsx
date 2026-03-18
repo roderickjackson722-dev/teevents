@@ -1002,6 +1002,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
+                    passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
                   />
                 </div>
               )}

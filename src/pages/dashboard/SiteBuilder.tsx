@@ -178,6 +178,7 @@ interface SiteSettings {
   slug: string | null;
   description: string | null;
   date: string | null;
+  end_date: string | null;
   location: string | null;
   course_name: string | null;
   course_par: number | null;
@@ -262,6 +263,7 @@ const SiteBuilder = () => {
         location: settings.location,
         course_name: settings.course_name,
         date: settings.date || null,
+        end_date: (settings as any).end_date || null,
         template: settings.template || "classic",
         registration_fee_cents: settings.registration_fee_cents || 0,
         custom_domain: settings.custom_domain || null,
@@ -697,14 +699,27 @@ const SiteBuilder = () => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="eventDate">Event Date</Label>
-                <Input
-                  id="eventDate"
-                  type="date"
-                  value={settings.date || ""}
-                  onChange={(e) => updateField("date", e.target.value)}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="eventDate">Start Date</Label>
+                  <Input
+                    id="eventDate"
+                    type="date"
+                    value={settings.date || ""}
+                    onChange={(e) => updateField("date", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={(settings as any).end_date || ""}
+                    onChange={(e) => updateField("end_date" as any, e.target.value || null)}
+                    min={settings.date || undefined}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Leave blank for single-day events</p>
+                </div>
               </div>
 
               <div>

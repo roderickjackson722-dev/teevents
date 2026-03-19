@@ -52,7 +52,7 @@ const Tournaments = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+  const [form, setForm] = useState({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
   const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);

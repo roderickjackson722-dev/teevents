@@ -335,6 +335,16 @@ const Tournaments = () => {
                     day: "numeric",
                     year: "numeric",
                   })}
+                  {t.end_date && t.end_date !== t.date && (
+                    <span>
+                      {" – "}
+                      {new Date(t.end_date + "T00:00:00").toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  )}
                 </p>
               )}
               {(() => {

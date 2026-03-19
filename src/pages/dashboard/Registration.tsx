@@ -33,6 +33,19 @@ interface Tournament {
   registration_open: boolean | null;
   max_players: number | null;
   foursome_registration: boolean;
+  max_group_size: number;
+}
+
+interface RegistrationTier {
+  id?: string;
+  tournament_id: string;
+  name: string;
+  description: string | null;
+  eligibility_description: string | null;
+  price_cents: number;
+  max_registrants: number | null;
+  sort_order: number;
+  is_active: boolean;
 }
 
 interface RegField {

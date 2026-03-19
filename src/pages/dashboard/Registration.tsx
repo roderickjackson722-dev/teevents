@@ -448,10 +448,31 @@ const Registration = () => {
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
                 <div>
-                  <Label className="text-sm font-semibold">Foursome Registration</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register as a group of up to 4</p>
+                  <Label className="text-sm font-semibold">Group Registration</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register multiple players at once</p>
                 </div>
-                <Switch checked={foursomeReg} onCheckedChange={setFoursomeReg} />
+                <div className="flex items-center gap-3">
+                  <Select
+                    value={String(maxGroupSize)}
+                    onValueChange={(v) => {
+                      const val = parseInt(v);
+                      setMaxGroupSize(val);
+                      setFoursomeReg(val > 1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Individual Only</SelectItem>
+                      <SelectItem value="2">Up to 2</SelectItem>
+                      <SelectItem value="3">Up to 3</SelectItem>
+                      <SelectItem value="4">Up to 4 (Foursome)</SelectItem>
+                      <SelectItem value="5">Up to 5</SelectItem>
+                      <SelectItem value="6">Up to 6</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <Button onClick={saveSettings} disabled={saving}>

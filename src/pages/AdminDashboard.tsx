@@ -1524,15 +1524,32 @@ const AdminDashboard = () => {
           )}
 
 
-          {/* Prospects Tab */}
-          {activeTab === "prospects" && (
-            <AdminProspects
-              prospects={adminProspects}
-              activities={prospectActivities}
-              outreachTemplates={outreachTemplates}
-              onRefresh={fetchAll}
-              callAdminApi={callAdminApi}
-            />
+          {/* Sales Hub Tab — Prospects + Email Scripts + Demo Script */}
+          {activeTab === "sales-hub" && (
+            <div className="space-y-6">
+              <Tabs defaultValue="prospects" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="prospects" className="gap-2"><Target className="h-4 w-4" /> Prospects</TabsTrigger>
+                  <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Email Scripts</TabsTrigger>
+                  <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
+                </TabsList>
+                <TabsContent value="prospects">
+                  <AdminProspects
+                    prospects={adminProspects}
+                    activities={prospectActivities}
+                    outreachTemplates={outreachTemplates}
+                    onRefresh={fetchAll}
+                    callAdminApi={callAdminApi}
+                  />
+                </TabsContent>
+                <TabsContent value="email-scripts">
+                  <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
+                </TabsContent>
+                <TabsContent value="demo-script">
+                  <AdminDemoScript />
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
 
           {/* Store Tab */}
@@ -1542,9 +1559,6 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AdminAnalytics />}
-
-          {/* Demo Script Tab */}
-          {activeTab === "demo-script" && <AdminDemoScript />}
         </div>
       </section>
     </Layout>

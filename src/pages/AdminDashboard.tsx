@@ -1181,7 +1181,8 @@ const AdminDashboard = () => {
 
           {/* Demo Events Tab */}
           {activeTab === "demos" && (
-            <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-5 flex items-center justify-between">
+            <>
+            <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-5 flex items-center justify-between mb-6">
               <div>
                 <h3 className="font-display font-semibold text-foreground">Sample Organizer Dashboard</h3>
                 <p className="text-sm text-muted-foreground mt-0.5">

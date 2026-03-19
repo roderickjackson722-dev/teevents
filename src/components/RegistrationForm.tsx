@@ -28,11 +28,13 @@ interface RegistrationFormProps {
   secondaryColor: string;
   registrationFeeCents?: number;
   foursomeMode?: boolean;
+  maxGroupSize?: number;
   isNonprofit?: boolean;
   nonprofitName?: string;
   ein?: string;
   platformFeeRate?: number;
   passFeesToRegistrants?: boolean;
+  tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
 }
 
 const emptyPlayer = () => ({

@@ -1259,6 +1259,7 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
+            </>
           )}
 
           {/* All User Tournaments Tab */}

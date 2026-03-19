@@ -389,8 +389,9 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full max-w-lg">
+          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="tiers">Tiers</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
             <TabsTrigger value="addons">Add-ons</TabsTrigger>
             <TabsTrigger value="promos">Promo Codes</TabsTrigger>

@@ -43,7 +43,7 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
 
   const saveEdit = async (id: string) => {
     try {
-      await callAdminApi("update-outreach-template", {
+      await callAdminApi("save-outreach-template", {
         id,
         subject: editSubject,
         body: editBody,

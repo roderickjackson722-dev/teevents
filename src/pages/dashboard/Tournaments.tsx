@@ -61,7 +61,7 @@ const Tournaments = () => {
     if (!org) return;
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, status, max_players, registration_open, scoring_format")
+      .select("id, title, date, end_date, location, course_name, status, max_players, registration_open, scoring_format")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false });
     setTournaments(data || []);

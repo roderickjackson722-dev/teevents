@@ -111,23 +111,29 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [] }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [showEligibility, setShowEligibility] = useState<string | null>(null);
 
-  const hasFee = registrationFeeCents > 0;
-  const playerCount = foursomeMode ? players.length : 1;
-  const baseTotalCents = hasFee ? registrationFeeCents * playerCount : 0;
+  const allowGroup = maxGroupSize > 1;
+  const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);
+  const activeFee = selectedTier
+    ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
+    : registrationFeeCents;
+  const playerCount = allowGroup ? players.length : 1;
+  const baseTotalCents = activeFee ? activeFee * playerCount : 0;
   const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
   const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
   const coverageAmount = stripeFee + platformFeeCents;
   const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
-  const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
+  const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
   const updatePlayer = (index: number, player: PlayerForm) => {

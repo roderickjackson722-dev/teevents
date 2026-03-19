@@ -375,7 +375,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </Button>
         )}
 
-        {!foursomeMode && (
+        {!allowGroup && (
           <div>
             <Label htmlFor="reg_notes">Additional Notes</Label>
             <Textarea

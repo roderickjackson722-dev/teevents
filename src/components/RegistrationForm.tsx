@@ -389,7 +389,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {foursomeMode && (
+        {allowGroup && (
           <div>
             <Label htmlFor="group_notes">Group Notes</Label>
             <Textarea

@@ -141,7 +141,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   };
 
   const addPlayer = () => {
-    if (players.length < 4) setPlayers((prev) => [...prev, emptyPlayer()]);
+    if (players.length < maxGroupSize) setPlayers((prev) => [...prev, emptyPlayer()]);
   };
 
   const removePlayer = (index: number) => {

@@ -1156,6 +1156,53 @@ export type Database = {
           },
         ]
       }
+      tournament_registration_tiers: {
+        Row: {
+          created_at: string
+          description: string | null
+          eligibility_description: string | null
+          id: string
+          is_active: boolean
+          max_registrants: number | null
+          name: string
+          price_cents: number
+          sort_order: number | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          eligibility_description?: string | null
+          id?: string
+          is_active?: boolean
+          max_registrants?: number | null
+          name: string
+          price_cents?: number
+          sort_order?: number | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          eligibility_description?: string | null
+          id?: string
+          is_active?: boolean
+          max_registrants?: number | null
+          name?: string
+          price_cents?: number
+          sort_order?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registration_tiers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_registrations: {
         Row: {
           check_in_time: string | null
@@ -1174,6 +1221,7 @@ export type Database = {
           phone: string | null
           scoring_code: string | null
           shirt_size: string | null
+          tier_id: string | null
           tournament_id: string
         }
         Insert: {
@@ -1193,6 +1241,7 @@ export type Database = {
           phone?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
+          tier_id?: string | null
           tournament_id: string
         }
         Update: {
@@ -1212,9 +1261,17 @@ export type Database = {
           phone?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
+          tier_id?: string | null
           tournament_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registration_tiers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_registrations_tournament_id_fkey"
             columns: ["tournament_id"]
@@ -1601,6 +1658,7 @@ export type Database = {
           date: string | null
           description: string | null
           donation_goal_cents: number | null
+          end_date: string | null
           foursome_registration: boolean
           hole_pars: Json | null
           id: string
@@ -1608,6 +1666,7 @@ export type Database = {
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
           location: string | null
+          max_group_size: number
           max_players: number | null
           organization_id: string
           pass_fees_to_registrants: boolean
@@ -1642,6 +1701,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
+          end_date?: string | null
           foursome_registration?: boolean
           hole_pars?: Json | null
           id?: string
@@ -1649,6 +1709,7 @@ export type Database = {
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           location?: string | null
+          max_group_size?: number
           max_players?: number | null
           organization_id: string
           pass_fees_to_registrants?: boolean
@@ -1683,6 +1744,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
+          end_date?: string | null
           foursome_registration?: boolean
           hole_pars?: Json | null
           id?: string
@@ -1690,6 +1752,7 @@ export type Database = {
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           location?: string | null
+          max_group_size?: number
           max_players?: number | null
           organization_id?: string
           pass_fees_to_registrants?: boolean

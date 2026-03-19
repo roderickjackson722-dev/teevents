@@ -533,6 +533,102 @@ const Registration = () => {
             </motion.div>
           </TabsContent>
 
+          {/* ── Tiers Tab ── */}
+          <TabsContent value="tiers">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-6 space-y-6">
+              <div className="flex items-center gap-3">
+                <Crown className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-display font-bold text-foreground">Registration Tiers</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Create different registration categories (e.g., Pro, Amateur, Celebrity). Each tier can have its own pricing,
+                capacity limit, and eligibility requirements shown to registrants before they select.
+              </p>
+
+              {tiers.length > 0 && (
+                <div className="space-y-3">
+                  {tiers.map((tier) => (
+                    <div key={tier.id} className="p-4 rounded-lg border border-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Switch checked={tier.is_active} onCheckedChange={() => toggleTier(tier)} />
+                          <div>
+                            <span className="font-semibold text-foreground text-sm">{tier.name}</span>
+                            {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                            {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                          </Badge>
+                          {tier.max_registrants && (
+                            <span className="text-xs text-muted-foreground">{tier.max_registrants} max</span>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => deleteTier(tier.id!)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {tier.eligibility_description && (
+                        <div className="flex items-start gap-2 bg-muted/30 rounded-md p-2.5 ml-10">
+                          <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-muted-foreground">{tier.eligibility_description}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="border border-dashed border-border rounded-lg p-4 space-y-3">
+                <p className="text-sm font-medium text-foreground">Add a Registration Tier</p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Tier name (e.g., Pro Division)"
+                    value={newTierName}
+                    onChange={(e) => setNewTierName(e.target.value)}
+                    maxLength={100}
+                  />
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Price ($) — 0 for free"
+                    value={newTierPrice}
+                    onChange={(e) => setNewTierPrice(e.target.value)}
+                  />
+                </div>
+                <Textarea
+                  placeholder="Description (shown on registration page)"
+                  value={newTierDesc}
+                  onChange={(e) => setNewTierDesc(e.target.value)}
+                  rows={2}
+                  maxLength={500}
+                />
+                <Textarea
+                  placeholder="Eligibility requirements (shown in a popup before registrant selects this tier)"
+                  value={newTierEligibility}
+                  onChange={(e) => setNewTierEligibility(e.target.value)}
+                  rows={2}
+                  maxLength={1000}
+                />
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="Max registrants (optional)"
+                    value={newTierMax}
+                    onChange={(e) => setNewTierMax(e.target.value)}
+                    className="max-w-[200px]"
+                  />
+                  <Button onClick={addTier} disabled={!newTierName.trim()}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Tier
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </TabsContent>
+
           {/* ── Fields Tab ── */}
           <TabsContent value="fields">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">

@@ -497,6 +497,13 @@ Deno.serve(async (req) => {
         }
         return jsonRes({ success: true, granted, skipped });
       }
+
+      if (action === "update-outreach-template") {
+        const { id, subject, body: templateBody } = await req.json();
+        const { error } = await adminClient.from("outreach_templates").update({ subject, body: templateBody }).eq("id", id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
     }
 
     // Default: fetch all admin data

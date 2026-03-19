@@ -9,6 +9,8 @@ import AdminProspects from "@/components/admin/AdminProspects";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
+import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "prospects" | "all-tournaments" | "analytics" | "store" | "demo-script">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -626,10 +628,9 @@ const AdminDashboard = () => {
               ["reviews", "Reviews", Star],
               ["promos", "Promo Codes", Tag],
               ["demos", "Demo Events", Trophy],
-              ["prospects", "Prospects", Target],
+              ["sales-hub", "Sales Hub", Target],
               ["store", "Store", ShoppingBag],
               ["analytics", "Analytics", BarChart3],
-              ["demo-script", "Demo Script", FileText],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -1525,15 +1526,32 @@ const AdminDashboard = () => {
           )}
 
 
-          {/* Prospects Tab */}
-          {activeTab === "prospects" && (
-            <AdminProspects
-              prospects={adminProspects}
-              activities={prospectActivities}
-              outreachTemplates={outreachTemplates}
-              onRefresh={fetchAll}
-              callAdminApi={callAdminApi}
-            />
+          {/* Sales Hub Tab — Prospects + Email Scripts + Demo Script */}
+          {activeTab === "sales-hub" && (
+            <div className="space-y-6">
+              <Tabs defaultValue="prospects" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="prospects" className="gap-2"><Target className="h-4 w-4" /> Prospects</TabsTrigger>
+                  <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Email Scripts</TabsTrigger>
+                  <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
+                </TabsList>
+                <TabsContent value="prospects">
+                  <AdminProspects
+                    prospects={adminProspects}
+                    activities={prospectActivities}
+                    outreachTemplates={outreachTemplates}
+                    onRefresh={fetchAll}
+                    callAdminApi={callAdminApi}
+                  />
+                </TabsContent>
+                <TabsContent value="email-scripts">
+                  <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
+                </TabsContent>
+                <TabsContent value="demo-script">
+                  <AdminDemoScript />
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
 
           {/* Store Tab */}
@@ -1543,9 +1561,6 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AdminAnalytics />}
-
-          {/* Demo Script Tab */}
-          {activeTab === "demo-script" && <AdminDemoScript />}
         </div>
       </section>
     </Layout>

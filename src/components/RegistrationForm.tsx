@@ -218,7 +218,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       }
     } else {
       // Free registration — insert directly
-      const inserts = (foursomeMode ? parsedPlayers : [parsedPlayers[0]]).map((p, i) => ({
+      const inserts = (allowGroup ? parsedPlayers : [parsedPlayers[0]]).map((p, i) => ({
         tournament_id: tournamentId,
         first_name: p!.first_name,
         last_name: p!.last_name,

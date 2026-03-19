@@ -34,6 +34,7 @@ interface Tournament {
   id: string;
   title: string;
   date: string | null;
+  end_date: string | null;
   location: string | null;
   course_name: string | null;
   status: string;

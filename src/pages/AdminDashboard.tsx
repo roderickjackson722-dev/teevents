@@ -8,6 +8,7 @@ import {
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
+import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";

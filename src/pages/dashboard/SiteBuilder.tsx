@@ -263,6 +263,7 @@ const SiteBuilder = () => {
         location: settings.location,
         course_name: settings.course_name,
         date: settings.date || null,
+        end_date: (settings as any).end_date || null,
         template: settings.template || "classic",
         registration_fee_cents: settings.registration_fee_cents || 0,
         custom_domain: settings.custom_domain || null,

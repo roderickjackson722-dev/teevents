@@ -188,6 +188,7 @@ const Registration = () => {
         registration_open: regOpen,
         max_players: maxPlayers,
         foursome_registration: foursomeReg,
+        max_group_size: maxGroupSize,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);
@@ -196,7 +197,7 @@ const Registration = () => {
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
-            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg }
+            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg, max_group_size: maxGroupSize }
             : t,
         ),
       );

@@ -179,7 +179,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     if (hasFee) {
       try {
-        const body = foursomeMode
+        const body = allowGroup
           ? {
               tournament_id: tournamentId,
               foursome: true,

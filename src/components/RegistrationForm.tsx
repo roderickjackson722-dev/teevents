@@ -270,10 +270,75 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
         )}
 
+        {/* Tier Selection */}
+        {tiers.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Select Registration Tier *</p>
+            <div className="grid gap-2">
+              {tiers.map((tier) => (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => {
+                    if (tier.eligibility_description) {
+                      setShowEligibility(tier.id);
+                    } else {
+                      setSelectedTier(tier.id);
+                    }
+                  }}
+                  className={cn(
+                    "text-left rounded-lg border-2 p-3 transition-all",
+                    selectedTier === tier.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm text-foreground">{tier.name}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                    </Badge>
+                  </div>
+                  {tier.description && <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>}
+                  {tier.eligibility_description && (
+                    <p className="text-[10px] text-primary mt-1 flex items-center gap-1">
+                      <Info className="h-3 w-3" /> Eligibility requirements apply
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Eligibility Confirmation Dialog */}
+        {showEligibility && (() => {
+          const tier = tiers.find(t => t.id === showEligibility);
+          return tier ? (
+            <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+              <p className="text-sm font-semibold text-foreground">Eligibility Requirements — {tier.name}</p>
+              <p className="text-sm text-muted-foreground">{tier.eligibility_description}</p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => { setSelectedTier(tier.id); setShowEligibility(null); }}
+                  style={{ backgroundColor: secondaryColor, color: primaryColor }}
+                >
+                  I Confirm I'm Eligible
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setShowEligibility(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         {hasFee && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
             Registration Fee: {feeDisplay} per player
-            {foursomeMode && players.length > 1 && (
+            {allowGroup && players.length > 1 && (
               <span className="block text-xs mt-1 opacity-80">
                 {players.length} players × {feeDisplay} = {totalDisplay}
               </span>
@@ -281,10 +346,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {foursomeMode && (
+        {allowGroup && (
           <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
-            <p className="font-semibold text-foreground">Foursome Registration</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Register up to 4 players. At least 1 player is required.</p>
+            <p className="font-semibold text-foreground">Group Registration</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Register up to {maxGroupSize} players. At least 1 player is required.</p>
           </div>
         )}
 
@@ -296,13 +361,13 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               index={i}
               onChange={(p) => updatePlayer(i, p)}
               errors={errors}
-              showRemove={foursomeMode && i > 0}
+              showRemove={allowGroup && i > 0}
               onRemove={() => removePlayer(i)}
             />
           </div>
         ))}
 
-        {foursomeMode && players.length < 4 && (
+        {allowGroup && players.length < maxGroupSize && (
           <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>
             <UserPlus className="h-4 w-4 mr-2" />
             Add Player {players.length + 1}

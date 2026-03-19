@@ -178,6 +178,7 @@ interface SiteSettings {
   slug: string | null;
   description: string | null;
   date: string | null;
+  end_date: string | null;
   location: string | null;
   course_name: string | null;
   course_par: number | null;

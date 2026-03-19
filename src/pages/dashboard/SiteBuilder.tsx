@@ -699,14 +699,27 @@ const SiteBuilder = () => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="eventDate">Event Date</Label>
-                <Input
-                  id="eventDate"
-                  type="date"
-                  value={settings.date || ""}
-                  onChange={(e) => updateField("date", e.target.value)}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="eventDate">Start Date</Label>
+                  <Input
+                    id="eventDate"
+                    type="date"
+                    value={settings.date || ""}
+                    onChange={(e) => updateField("date", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={(settings as any).end_date || ""}
+                    onChange={(e) => updateField("end_date" as any, e.target.value || null)}
+                    min={settings.date || undefined}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Leave blank for single-day events</p>
+                </div>
               </div>
 
               <div>

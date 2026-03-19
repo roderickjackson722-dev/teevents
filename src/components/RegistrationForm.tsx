@@ -468,8 +468,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
             ? `Register & Pay ${totalDisplay}`
-            : foursomeMode
-              ? `Register Foursome (${players.length} player${players.length > 1 ? "s" : ""})`
+            : allowGroup
+              ? `Register Group (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}
         </Button>
       </form>

@@ -150,10 +150,11 @@ const Registration = () => {
       setMaxGroupSize(tournament.max_group_size || 1);
     }
 
-    const [fieldsRes, addonsRes, promoRes] = await Promise.all([
+    const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([
       supabase.from("tournament_registration_fields").select("*").eq("tournament_id", tid).order("sort_order"),
       supabase.from("tournament_registration_addons").select("*").eq("tournament_id", tid).order("sort_order"),
       supabase.from("tournament_promo_codes").select("*").eq("tournament_id", tid).order("created_at", { ascending: false }),
+      supabase.from("tournament_registration_tiers").select("*").eq("tournament_id", tid).order("sort_order"),
     ]);
 
     let loadedFields = (fieldsRes.data as RegField[]) || [];
@@ -168,6 +169,7 @@ const Registration = () => {
     setFields(loadedFields);
     setAddons((addonsRes.data as Addon[]) || []);
     setPromoCodes((promoRes.data as PromoCode[]) || []);
+    setTiers((tiersRes.data as RegistrationTier[]) || []);
     setLoading(false);
   }, [tournaments]);
 

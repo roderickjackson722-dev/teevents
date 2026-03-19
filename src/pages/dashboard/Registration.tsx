@@ -22,6 +22,8 @@ import {
   Package,
   GripVertical,
   ToggleLeft,
+  Info,
+  Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 

@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, UserPlus, Trash2, Heart } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 
 const playerSchema = z.object({
@@ -28,11 +29,13 @@ interface RegistrationFormProps {
   secondaryColor: string;
   registrationFeeCents?: number;
   foursomeMode?: boolean;
+  maxGroupSize?: number;
   isNonprofit?: boolean;
   nonprofitName?: string;
   ein?: string;
   platformFeeRate?: number;
   passFeesToRegistrants?: boolean;
+  tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
 }
 
 const emptyPlayer = () => ({
@@ -109,23 +112,29 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [] }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [showEligibility, setShowEligibility] = useState<string | null>(null);
 
-  const hasFee = registrationFeeCents > 0;
-  const playerCount = foursomeMode ? players.length : 1;
-  const baseTotalCents = hasFee ? registrationFeeCents * playerCount : 0;
+  const allowGroup = maxGroupSize > 1;
+  const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);
+  const activeFee = selectedTier
+    ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
+    : registrationFeeCents;
+  const playerCount = allowGroup ? players.length : 1;
+  const baseTotalCents = activeFee ? activeFee * playerCount : 0;
   const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
   const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
   const coverageAmount = stripeFee + platformFeeCents;
   const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
-  const feeDisplay = hasFee ? `$${(registrationFeeCents / 100).toFixed(2)}` : null;
+  const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
   const updatePlayer = (index: number, player: PlayerForm) => {
@@ -133,7 +142,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   };
 
   const addPlayer = () => {
-    if (players.length < 4) setPlayers((prev) => [...prev, emptyPlayer()]);
+    if (players.length < maxGroupSize) setPlayers((prev) => [...prev, emptyPlayer()]);
   };
 
   const removePlayer = (index: number) => {
@@ -170,7 +179,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     if (hasFee) {
       try {
-        const body = foursomeMode
+        const body = allowGroup
           ? {
               tournament_id: tournamentId,
               foursome: true,
@@ -209,7 +218,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       }
     } else {
       // Free registration — insert directly
-      const inserts = (foursomeMode ? parsedPlayers : [parsedPlayers[0]]).map((p, i) => ({
+      const inserts = (allowGroup ? parsedPlayers : [parsedPlayers[0]]).map((p, i) => ({
         tournament_id: tournamentId,
         first_name: p!.first_name,
         last_name: p!.last_name,
@@ -262,10 +271,75 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
         )}
 
+        {/* Tier Selection */}
+        {tiers.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Select Registration Tier *</p>
+            <div className="grid gap-2">
+              {tiers.map((tier) => (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => {
+                    if (tier.eligibility_description) {
+                      setShowEligibility(tier.id);
+                    } else {
+                      setSelectedTier(tier.id);
+                    }
+                  }}
+                  className={cn(
+                    "text-left rounded-lg border-2 p-3 transition-all",
+                    selectedTier === tier.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm text-foreground">{tier.name}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                    </Badge>
+                  </div>
+                  {tier.description && <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>}
+                  {tier.eligibility_description && (
+                    <p className="text-[10px] text-primary mt-1 flex items-center gap-1">
+                      <Info className="h-3 w-3" /> Eligibility requirements apply
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Eligibility Confirmation Dialog */}
+        {showEligibility && (() => {
+          const tier = tiers.find(t => t.id === showEligibility);
+          return tier ? (
+            <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+              <p className="text-sm font-semibold text-foreground">Eligibility Requirements — {tier.name}</p>
+              <p className="text-sm text-muted-foreground">{tier.eligibility_description}</p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => { setSelectedTier(tier.id); setShowEligibility(null); }}
+                  style={{ backgroundColor: secondaryColor, color: primaryColor }}
+                >
+                  I Confirm I'm Eligible
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setShowEligibility(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         {hasFee && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
             Registration Fee: {feeDisplay} per player
-            {foursomeMode && players.length > 1 && (
+            {allowGroup && players.length > 1 && (
               <span className="block text-xs mt-1 opacity-80">
                 {players.length} players × {feeDisplay} = {totalDisplay}
               </span>
@@ -273,10 +347,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {foursomeMode && (
+        {allowGroup && (
           <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
-            <p className="font-semibold text-foreground">Foursome Registration</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Register up to 4 players. At least 1 player is required.</p>
+            <p className="font-semibold text-foreground">Group Registration</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Register up to {maxGroupSize} players. At least 1 player is required.</p>
           </div>
         )}
 
@@ -288,20 +362,20 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               index={i}
               onChange={(p) => updatePlayer(i, p)}
               errors={errors}
-              showRemove={foursomeMode && i > 0}
+              showRemove={allowGroup && i > 0}
               onRemove={() => removePlayer(i)}
             />
           </div>
         ))}
 
-        {foursomeMode && players.length < 4 && (
+        {allowGroup && players.length < maxGroupSize && (
           <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>
             <UserPlus className="h-4 w-4 mr-2" />
             Add Player {players.length + 1}
           </Button>
         )}
 
-        {!foursomeMode && (
+        {!allowGroup && (
           <div>
             <Label htmlFor="reg_notes">Additional Notes</Label>
             <Textarea
@@ -315,7 +389,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {foursomeMode && (
+        {allowGroup && (
           <div>
             <Label htmlFor="group_notes">Group Notes</Label>
             <Textarea
@@ -394,8 +468,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
             ? `Register & Pay ${totalDisplay}`
-            : foursomeMode
-              ? `Register Foursome (${players.length} player${players.length > 1 ? "s" : ""})`
+            : allowGroup
+              ? `Register Group (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}
         </Button>
       </form>

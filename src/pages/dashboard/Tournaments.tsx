@@ -34,6 +34,7 @@ interface Tournament {
   id: string;
   title: string;
   date: string | null;
+  end_date: string | null;
   location: string | null;
   course_name: string | null;
   status: string;
@@ -51,7 +52,7 @@ const Tournaments = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+  const [form, setForm] = useState({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
   const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -60,7 +61,7 @@ const Tournaments = () => {
     if (!org) return;
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, status, max_players, registration_open, scoring_format")
+      .select("id, title, date, end_date, location, course_name, status, max_players, registration_open, scoring_format")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false });
     setTournaments(data || []);
@@ -80,6 +81,7 @@ const Tournaments = () => {
       organization_id: org.orgId,
       title: form.title,
       date: form.date || null,
+      end_date: form.end_date || null,
       location: form.location || null,
       course_name: form.course_name || null,
       scoring_format: form.scoring_format,
@@ -89,7 +91,7 @@ const Tournaments = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Tournament created!", description: "Your planning checklist has been generated." });
-      setForm({ title: "", date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+      setForm({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
       setDialogOpen(false);
       fetchTournaments();
     }
@@ -149,14 +151,27 @@ const Tournaments = () => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="date">Start Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="end_date">End Date</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    value={form.end_date}
+                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                    min={form.date || undefined}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Leave blank for single-day</p>
+                </div>
               </div>
               <div>
                 <Label htmlFor="course">Golf Course</Label>
@@ -320,6 +335,16 @@ const Tournaments = () => {
                     day: "numeric",
                     year: "numeric",
                   })}
+                  {t.end_date && t.end_date !== t.date && (
+                    <span>
+                      {" – "}
+                      {new Date(t.end_date + "T00:00:00").toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  )}
                 </p>
               )}
               {(() => {

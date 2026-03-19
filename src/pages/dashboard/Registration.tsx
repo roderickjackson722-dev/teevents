@@ -22,6 +22,8 @@ import {
   Package,
   GripVertical,
   ToggleLeft,
+  Info,
+  Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,6 +35,19 @@ interface Tournament {
   registration_open: boolean | null;
   max_players: number | null;
   foursome_registration: boolean;
+  max_group_size: number;
+}
+
+interface RegistrationTier {
+  id?: string;
+  tournament_id: string;
+  name: string;
+  description: string | null;
+  eligibility_description: string | null;
+  price_cents: number;
+  max_registrants: number | null;
+  sort_order: number;
+  is_active: boolean;
 }
 
 interface RegField {
@@ -92,6 +107,7 @@ const Registration = () => {
   const [fields, setFields] = useState<RegField[]>([]);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+  const [tiers, setTiers] = useState<RegistrationTier[]>([]);
 
   /* tournament settings */
   const [feeDisplay, setFeeDisplay] = useState<string>("0.00");
@@ -100,13 +116,14 @@ const Registration = () => {
   const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
+  const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
 
   /* fetch tournaments */
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -132,12 +149,14 @@ const Registration = () => {
       setMaxPlayers(mp);
       setMaxPlayersDisplay(String(mp));
       setFoursomeReg(tournament.foursome_registration || false);
+      setMaxGroupSize(tournament.max_group_size || 1);
     }
 
-    const [fieldsRes, addonsRes, promoRes] = await Promise.all([
+    const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([
       supabase.from("tournament_registration_fields").select("*").eq("tournament_id", tid).order("sort_order"),
       supabase.from("tournament_registration_addons").select("*").eq("tournament_id", tid).order("sort_order"),
       supabase.from("tournament_promo_codes").select("*").eq("tournament_id", tid).order("created_at", { ascending: false }),
+      supabase.from("tournament_registration_tiers").select("*").eq("tournament_id", tid).order("sort_order"),
     ]);
 
     let loadedFields = (fieldsRes.data as RegField[]) || [];
@@ -152,6 +171,7 @@ const Registration = () => {
     setFields(loadedFields);
     setAddons((addonsRes.data as Addon[]) || []);
     setPromoCodes((promoRes.data as PromoCode[]) || []);
+    setTiers((tiersRes.data as RegistrationTier[]) || []);
     setLoading(false);
   }, [tournaments]);
 
@@ -170,6 +190,7 @@ const Registration = () => {
         registration_open: regOpen,
         max_players: maxPlayers,
         foursome_registration: foursomeReg,
+        max_group_size: maxGroupSize,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);
@@ -178,7 +199,7 @@ const Registration = () => {
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
-            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg }
+            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg, max_group_size: maxGroupSize }
             : t,
         ),
       );
@@ -324,6 +345,55 @@ const Registration = () => {
     else setPromoCodes((prev) => prev.filter((p) => p.id !== id));
   };
 
+  /* ── tier CRUD ── */
+  const [newTierName, setNewTierName] = useState("");
+  const [newTierDesc, setNewTierDesc] = useState("");
+  const [newTierEligibility, setNewTierEligibility] = useState("");
+  const [newTierPrice, setNewTierPrice] = useState("");
+  const [newTierMax, setNewTierMax] = useState("");
+
+  const addTier = async () => {
+    if (!newTierName.trim() || demoGuard()) return;
+    const payload: any = {
+      tournament_id: selectedTournament,
+      name: newTierName.trim(),
+      description: newTierDesc.trim() || null,
+      eligibility_description: newTierEligibility.trim() || null,
+      price_cents: Math.round(parseFloat(newTierPrice || "0") * 100),
+      max_registrants: newTierMax ? parseInt(newTierMax) : null,
+      sort_order: tiers.length,
+      is_active: true,
+    };
+    const { data, error } = await supabase.from("tournament_registration_tiers").insert(payload).select("*").single();
+    if (error) toast.error(error.message);
+    else {
+      setTiers((prev) => [...prev, data as RegistrationTier]);
+      setNewTierName("");
+      setNewTierDesc("");
+      setNewTierEligibility("");
+      setNewTierPrice("");
+      setNewTierMax("");
+      toast.success("Registration tier created!");
+    }
+  };
+
+  const toggleTier = async (tier: RegistrationTier) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournament_registration_tiers")
+      .update({ is_active: !tier.is_active } as any)
+      .eq("id", tier.id!);
+    if (error) toast.error(error.message);
+    else setTiers((prev) => prev.map((t) => (t.id === tier.id ? { ...t, is_active: !t.is_active } : t)));
+  };
+
+  const deleteTier = async (id: string) => {
+    if (demoGuard()) return;
+    const { error } = await supabase.from("tournament_registration_tiers").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else setTiers((prev) => prev.filter((t) => t.id !== id));
+  };
+
   /* ── render ── */
   if (loading && tournaments.length === 0) {
     return (
@@ -370,8 +440,9 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full max-w-lg">
+          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="tiers">Tiers</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
             <TabsTrigger value="addons">Add-ons</TabsTrigger>
             <TabsTrigger value="promos">Promo Codes</TabsTrigger>
@@ -428,16 +499,133 @@ const Registration = () => {
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
                 <div>
-                  <Label className="text-sm font-semibold">Foursome Registration</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register as a group of up to 4</p>
+                  <Label className="text-sm font-semibold">Group Registration</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register multiple players at once</p>
                 </div>
-                <Switch checked={foursomeReg} onCheckedChange={setFoursomeReg} />
+                <div className="flex items-center gap-3">
+                  <Select
+                    value={String(maxGroupSize)}
+                    onValueChange={(v) => {
+                      const val = parseInt(v);
+                      setMaxGroupSize(val);
+                      setFoursomeReg(val > 1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Individual Only</SelectItem>
+                      <SelectItem value="2">Up to 2</SelectItem>
+                      <SelectItem value="3">Up to 3</SelectItem>
+                      <SelectItem value="4">Up to 4 (Foursome)</SelectItem>
+                      <SelectItem value="5">Up to 5</SelectItem>
+                      <SelectItem value="6">Up to 6</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings
               </Button>
+            </motion.div>
+          </TabsContent>
+
+          {/* ── Tiers Tab ── */}
+          <TabsContent value="tiers">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-6 space-y-6">
+              <div className="flex items-center gap-3">
+                <Crown className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-display font-bold text-foreground">Registration Tiers</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Create different registration categories (e.g., Pro, Amateur, Celebrity). Each tier can have its own pricing,
+                capacity limit, and eligibility requirements shown to registrants before they select.
+              </p>
+
+              {tiers.length > 0 && (
+                <div className="space-y-3">
+                  {tiers.map((tier) => (
+                    <div key={tier.id} className="p-4 rounded-lg border border-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Switch checked={tier.is_active} onCheckedChange={() => toggleTier(tier)} />
+                          <div>
+                            <span className="font-semibold text-foreground text-sm">{tier.name}</span>
+                            {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                            {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                          </Badge>
+                          {tier.max_registrants && (
+                            <span className="text-xs text-muted-foreground">{tier.max_registrants} max</span>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => deleteTier(tier.id!)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {tier.eligibility_description && (
+                        <div className="flex items-start gap-2 bg-muted/30 rounded-md p-2.5 ml-10">
+                          <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-muted-foreground">{tier.eligibility_description}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="border border-dashed border-border rounded-lg p-4 space-y-3">
+                <p className="text-sm font-medium text-foreground">Add a Registration Tier</p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Tier name (e.g., Pro Division)"
+                    value={newTierName}
+                    onChange={(e) => setNewTierName(e.target.value)}
+                    maxLength={100}
+                  />
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Price ($) — 0 for free"
+                    value={newTierPrice}
+                    onChange={(e) => setNewTierPrice(e.target.value)}
+                  />
+                </div>
+                <Textarea
+                  placeholder="Description (shown on registration page)"
+                  value={newTierDesc}
+                  onChange={(e) => setNewTierDesc(e.target.value)}
+                  rows={2}
+                  maxLength={500}
+                />
+                <Textarea
+                  placeholder="Eligibility requirements (shown in a popup before registrant selects this tier)"
+                  value={newTierEligibility}
+                  onChange={(e) => setNewTierEligibility(e.target.value)}
+                  rows={2}
+                  maxLength={1000}
+                />
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="Max registrants (optional)"
+                    value={newTierMax}
+                    onChange={(e) => setNewTierMax(e.target.value)}
+                    className="max-w-[200px]"
+                  />
+                  <Button onClick={addTier} disabled={!newTierName.trim()}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Tier
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           </TabsContent>
 

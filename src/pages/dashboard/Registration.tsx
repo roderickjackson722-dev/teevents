@@ -105,6 +105,7 @@ const Registration = () => {
   const [fields, setFields] = useState<RegField[]>([]);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+  const [tiers, setTiers] = useState<RegistrationTier[]>([]);
 
   /* tournament settings */
   const [feeDisplay, setFeeDisplay] = useState<string>("0.00");
@@ -113,6 +114,7 @@ const Registration = () => {
   const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
+  const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
 
   /* fetch tournaments */
   useEffect(() => {

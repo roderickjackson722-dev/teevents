@@ -343,6 +343,55 @@ const Registration = () => {
     else setPromoCodes((prev) => prev.filter((p) => p.id !== id));
   };
 
+  /* ── tier CRUD ── */
+  const [newTierName, setNewTierName] = useState("");
+  const [newTierDesc, setNewTierDesc] = useState("");
+  const [newTierEligibility, setNewTierEligibility] = useState("");
+  const [newTierPrice, setNewTierPrice] = useState("");
+  const [newTierMax, setNewTierMax] = useState("");
+
+  const addTier = async () => {
+    if (!newTierName.trim() || demoGuard()) return;
+    const payload: any = {
+      tournament_id: selectedTournament,
+      name: newTierName.trim(),
+      description: newTierDesc.trim() || null,
+      eligibility_description: newTierEligibility.trim() || null,
+      price_cents: Math.round(parseFloat(newTierPrice || "0") * 100),
+      max_registrants: newTierMax ? parseInt(newTierMax) : null,
+      sort_order: tiers.length,
+      is_active: true,
+    };
+    const { data, error } = await supabase.from("tournament_registration_tiers").insert(payload).select("*").single();
+    if (error) toast.error(error.message);
+    else {
+      setTiers((prev) => [...prev, data as RegistrationTier]);
+      setNewTierName("");
+      setNewTierDesc("");
+      setNewTierEligibility("");
+      setNewTierPrice("");
+      setNewTierMax("");
+      toast.success("Registration tier created!");
+    }
+  };
+
+  const toggleTier = async (tier: RegistrationTier) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournament_registration_tiers")
+      .update({ is_active: !tier.is_active } as any)
+      .eq("id", tier.id!);
+    if (error) toast.error(error.message);
+    else setTiers((prev) => prev.map((t) => (t.id === tier.id ? { ...t, is_active: !t.is_active } : t)));
+  };
+
+  const deleteTier = async (id: string) => {
+    if (demoGuard()) return;
+    const { error } = await supabase.from("tournament_registration_tiers").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else setTiers((prev) => prev.filter((t) => t.id !== id));
+  };
+
   /* ── render ── */
   if (loading && tournaments.length === 0) {
     return (

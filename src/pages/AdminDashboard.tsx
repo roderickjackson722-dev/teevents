@@ -1521,6 +1521,9 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AdminAnalytics />}
+
+          {/* Demo Script Tab */}
+          {activeTab === "demo-script" && <AdminDemoScript />}
         </div>
       </section>
     </Layout>

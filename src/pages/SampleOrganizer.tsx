@@ -3,25 +3,58 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Monitor, Users, Trophy, CreditCard, BarChart3, ArrowRight } from "lucide-react";
+import {
+  Loader2, Monitor, Users, Trophy, CreditCard, BarChart3, ArrowRight,
+  CalendarRange, Layers, UserPlus, Info
+} from "lucide-react";
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const DEMO_EMAIL = "info@teevents.golf";
 const DEMO_PASSWORD = "demo2026";
 
 const features = [
-  { icon: Monitor, label: "Tournament Website" },
-  { icon: Users, label: "Player Management" },
-  { icon: Trophy, label: "Live Scoring" },
-  { icon: CreditCard, label: "Registration & Payments" },
-  { icon: BarChart3, label: "Budget & Sponsors" },
+  { icon: Monitor, label: "Tournament Website Builder" },
+  { icon: CalendarRange, label: "Multi-Day Event Scheduling" },
+  { icon: Layers, label: "Registration Tiers (Pro, Amateur, VIP)" },
+  { icon: UserPlus, label: "Flexible Group Sizes (1–6 Players)" },
+  { icon: Trophy, label: "Live Scoring & Leaderboard" },
+  { icon: CreditCard, label: "Online Registration & Payments" },
+  { icon: BarChart3, label: "Budget, Sponsors & More" },
+];
+
+const sampleTiers = [
+  {
+    name: "Professional",
+    price: "$250",
+    description: "For PGA professionals and touring pros",
+    eligibility: "Must hold a valid PGA Tour card or equivalent professional certification. Proof of status may be required at check-in.",
+    color: "bg-primary/10 border-primary/30",
+  },
+  {
+    name: "Amateur",
+    price: "$150",
+    description: "Open to all amateur golfers with an established handicap",
+    eligibility: "Must have a USGA handicap index of 36.0 or lower. Handicap verification will be conducted prior to the event.",
+    color: "bg-secondary/10 border-secondary/30",
+  },
+  {
+    name: "Celebrity / VIP",
+    price: "$500",
+    description: "Special tier for celebrity guests and VIP invitees",
+    eligibility: "By invitation only. Contact the tournament director for eligibility and availability.",
+    color: "bg-accent/10 border-accent/30",
+  },
 ];
 
 const SampleOrganizer = () => {
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [selectedTier, setSelectedTier] = useState<typeof sampleTiers[0] | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,7 +69,6 @@ const SampleOrganizer = () => {
       });
 
       if (error) {
-        // If login fails, the demo might not be set up yet
         toast({
           title: "Demo Unavailable",
           description: "The demo environment is being prepared. Please try again in a moment.",
@@ -66,7 +98,7 @@ const SampleOrganizer = () => {
         path="/sample-organizer"
       />
 
-      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-start">
         {/* Left - Info panel */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
@@ -95,6 +127,44 @@ const SampleOrganizer = () => {
             ))}
           </div>
 
+          {/* Registration Tiers Preview */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Sample Registration Tiers
+            </h3>
+            <div className="grid gap-3">
+              {sampleTiers.map((tier) => (
+                <button
+                  key={tier.name}
+                  onClick={() => setSelectedTier(tier)}
+                  className={`flex items-center justify-between p-3 rounded-xl border ${tier.color} hover:shadow-md transition-all text-left group`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <span className="font-semibold text-foreground">{tier.name}</span>
+                      <p className="text-xs text-muted-foreground">{tier.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="font-mono">{tier.price}</Badge>
+                    <Info className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground italic">
+              Click a tier to see its eligibility requirements — just like your players will.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <CalendarRange className="h-4 w-4 flex-shrink-0" />
+            <span>
+              Demo event: <strong className="text-foreground">Mar 1 – Mar 3, 2027</strong> (multi-day)
+              &nbsp;·&nbsp; Groups of up to <strong className="text-foreground">4 players</strong>
+            </span>
+          </div>
+
           <p className="text-sm text-muted-foreground">
             This is a read-only demo. Changes will not be saved.
           </p>
@@ -105,6 +175,7 @@ const SampleOrganizer = () => {
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="lg:sticky lg:top-8"
         >
           <div className="bg-card border border-border rounded-2xl shadow-xl p-8 md:p-10">
             <div className="text-center mb-8">
@@ -121,7 +192,7 @@ const SampleOrganizer = () => {
                 <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
                 <input
                   type="email"
-                  value={email}
+                  value={DEMO_EMAIL}
                   readOnly
                   className="w-full px-4 py-3 rounded-lg border border-border bg-muted/50 text-foreground cursor-default"
                 />
@@ -131,7 +202,7 @@ const SampleOrganizer = () => {
                 <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
                 <input
                   type="password"
-                  value={password}
+                  value={DEMO_PASSWORD}
                   readOnly
                   className="w-full px-4 py-3 rounded-lg border border-border bg-muted/50 text-foreground cursor-default"
                 />
@@ -166,6 +237,41 @@ const SampleOrganizer = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Eligibility Popup Dialog */}
+      <Dialog open={!!selectedTier} onOpenChange={() => setSelectedTier(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-secondary" />
+              {selectedTier?.name} — Eligibility
+            </DialogTitle>
+            <DialogDescription>
+              {selectedTier?.description}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="bg-muted/50 rounded-lg p-4 border border-border">
+              <h4 className="text-sm font-semibold text-foreground mb-2">Requirements</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {selectedTier?.eligibility}
+              </p>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Registration Fee</span>
+              <span className="text-lg font-bold text-foreground">{selectedTier?.price}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedTier(null)}>
+              Close
+            </Button>
+            <Button variant="secondary" onClick={() => setSelectedTier(null)}>
+              Confirm & Register
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

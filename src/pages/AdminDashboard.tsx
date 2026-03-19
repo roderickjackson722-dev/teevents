@@ -1181,6 +1181,26 @@ const AdminDashboard = () => {
 
           {/* Demo Events Tab */}
           {activeTab === "demos" && (
+            <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-5 flex items-center justify-between">
+              <div>
+                <h3 className="font-display font-semibold text-foreground">Sample Organizer Dashboard</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Pre-built demo login page for live sales demos — fully populated sample event.
+                  <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded font-mono">/sample-organizer</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href="/sample-organizer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-semibold hover:bg-secondary/90 transition-colors"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Open Demo
+                </a>
+              </div>
+            </div>
+
             <div className="space-y-6">
               <div className="bg-card rounded-lg border border-border p-6">
                 <h2 className="font-display font-bold text-lg mb-4">Create Demo Event</h2>

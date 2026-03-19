@@ -8,6 +8,7 @@ import {
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
+import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "prospects" | "all-tournaments" | "analytics" | "store">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "prospects" | "all-tournaments" | "analytics" | "store" | "demo-script">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -628,6 +629,7 @@ const AdminDashboard = () => {
               ["prospects", "Prospects", Target],
               ["store", "Store", ShoppingBag],
               ["analytics", "Analytics", BarChart3],
+              ["demo-script", "Demo Script", FileText],
             ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
@@ -1519,6 +1521,9 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AdminAnalytics />}
+
+          {/* Demo Script Tab */}
+          {activeTab === "demo-script" && <AdminDemoScript />}
         </div>
       </section>
     </Layout>

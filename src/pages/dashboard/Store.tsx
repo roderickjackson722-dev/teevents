@@ -18,6 +18,7 @@ import {
 import { type Product, type Tournament, categoryLabel, fmt } from "@/components/store/types";
 import ProductFormDialog from "@/components/store/ProductFormDialog";
 import TemplateLibrary from "@/components/store/TemplateLibrary";
+import PlatformProductsSection from "@/components/store/PlatformProductsSection";
 
 const Store = () => {
   const { org } = useOrgContext();

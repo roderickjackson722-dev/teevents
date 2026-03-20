@@ -11,14 +11,15 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "leaderboard",
     "planning-guide",
     "email-messaging",
-  ],
-  starter: [
-    // Everything in base +
     "custom-domain",
     "sponsors",
     "budget",
-    "donations",
     "gallery",
+    "printables",
+  ],
+  starter: [
+    // Everything in base +
+    "donations",
     "sms-messaging",
     "all-templates",
   ],

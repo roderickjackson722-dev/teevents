@@ -334,6 +334,8 @@ export type Database = {
           created_at: string
           dashboard_name: string | null
           ein: string | null
+          feature_overrides: Json | null
+          fee_override: number | null
           id: string
           is_nonprofit: boolean
           logo_url: string | null
@@ -351,6 +353,8 @@ export type Database = {
           created_at?: string
           dashboard_name?: string | null
           ein?: string | null
+          feature_overrides?: Json | null
+          fee_override?: number | null
           id?: string
           is_nonprofit?: boolean
           logo_url?: string | null
@@ -368,6 +372,8 @@ export type Database = {
           created_at?: string
           dashboard_name?: string | null
           ein?: string | null
+          feature_overrides?: Json | null
+          fee_override?: number | null
           id?: string
           is_nonprofit?: boolean
           logo_url?: string | null

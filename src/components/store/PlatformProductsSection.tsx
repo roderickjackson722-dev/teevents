@@ -98,6 +98,21 @@ export default function PlatformProductsSection() {
         </p>
       </div>
 
+      {/* Artwork disclaimer */}
+      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6 text-sm text-amber-900 dark:text-amber-200">
+        <p className="font-bold mb-1.5">ARTWORK:</p>
+        <p className="mb-2 leading-relaxed">
+          After your order is placed, a representative will contact you within 2 business days to procure all sponsor event logos and creative direction necessary for product development and fulfillment. To maintain brand consistency, your selected products will be specifically designed to reflect and compliment the established logo branding for each sponsor.
+        </p>
+        <p className="mb-2">
+          <span className="font-semibold">Preferred logo file formats:</span> Adobe Illustrator and CorelDraw (AI • EPS • SVG • CDR).{" "}
+          <span className="font-semibold">Other acceptable file formats are high resolution:</span> (JPG • PNG • TIF)
+        </p>
+        <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+          If you are unable to provide each sponsor logo in one of the specified formats our art department can recreate the logo for a fee to ensure proper print quality. TeeVents is not liable for pixelated or blurry art reproduction caused by low resolution logos/graphics provided by the customer. Alternatively, you may opt to have the sponsor's name typed using plain text.
+        </p>
+      </div>
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1 max-w-xs">

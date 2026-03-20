@@ -77,6 +77,8 @@ export function useOrgContext() {
           plan: orgData.plan || 'starter',
           role: (membership as any).role || 'owner',
           permissions: (membership as any).permissions || [],
+          featureOverrides: orgData.feature_overrides || null,
+          feeOverride: orgData.fee_override ?? null,
         });
       }
       setLoading(false);

@@ -97,10 +97,6 @@ const Store = () => {
 
   return (
     <div>
-      {/* Platform Add On Store */}
-      <PlatformProductsSection />
-
-      {/* Organizer's Own Tournament Store */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

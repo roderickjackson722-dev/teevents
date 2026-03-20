@@ -876,6 +876,18 @@ const Registration = () => {
               </div>
             </motion.div>
           </TabsContent>
+
+          {/* ── Refunds Tab ── */}
+          <TabsContent value="refunds">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+              <div className="bg-card rounded-lg border border-border p-6">
+                <RefundPolicySettings tournamentId={selectedTournament} demoGuard={demoGuard} />
+              </div>
+              <div className="bg-card rounded-lg border border-border p-6">
+                <RefundManagement tournamentId={selectedTournament} demoGuard={demoGuard} />
+              </div>
+            </motion.div>
+          </TabsContent>
         </Tabs>
       )}
     </div>

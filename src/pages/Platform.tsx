@@ -161,10 +161,6 @@ const Platform = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "enterprise") {
-      window.location.href = "/contact";
-      return;
-    }
     if (plan === "base") {
       // Free plan — go directly to signup
       window.location.href = "/get-started";

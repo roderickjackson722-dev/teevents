@@ -16,6 +16,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "budget",
     "gallery",
     "printables",
+    "volunteers",
   ],
   starter: [
     // Everything in base +

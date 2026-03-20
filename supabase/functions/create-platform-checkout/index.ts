@@ -10,6 +10,7 @@ const corsHeaders = {
 
 const TAX_RATE = 6.25; // percent
 const SIGNAGE_SHIPPING_CENTS = 3995; // $39.95 flat rate
+const STANDARD_SHIPPING_CENTS = 1299; // $12.99 for non-signage
 const SIGNAGE_CATEGORY = "signage";
 
 Deno.serve(async (req) => {

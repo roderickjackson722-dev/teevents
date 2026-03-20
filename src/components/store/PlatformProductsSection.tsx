@@ -192,7 +192,7 @@ export default function PlatformProductsSection() {
                     {isSignage ? (
                       <span>+$39.95 flat-rate shipping</span>
                     ) : (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">Free shipping</span>
+                      <span>+$12.99 shipping</span>
                     )}
                   </div>
                   {product.description && (
@@ -230,7 +230,7 @@ export default function PlatformProductsSection() {
           <AccordionItem value="shipping">
             <AccordionTrigger className="text-sm font-semibold">Shipping</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-              All golf promotional products and gift items ship <strong>free</strong>. Signage uses a flat rate of <strong>$39.95</strong> for standard ground shipping (UPS, FedEx, and USPS).
+              Signage uses a flat rate of <strong>$39.95</strong> for standard ground shipping (UPS, FedEx, and USPS). All other products ship for <strong>$12.99</strong>.
             </AccordionContent>
           </AccordionItem>
 

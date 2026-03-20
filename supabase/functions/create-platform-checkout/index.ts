@@ -10,6 +10,7 @@ const corsHeaders = {
 
 const TAX_RATE = 6.25; // percent
 const SIGNAGE_SHIPPING_CENTS = 3995; // $39.95 flat rate
+const STANDARD_SHIPPING_CENTS = 1299; // $12.99 for non-signage
 const SIGNAGE_CATEGORY = "signage";
 
 Deno.serve(async (req) => {
@@ -66,20 +67,21 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add shipping for signage category; promotional/gift items ship free
+    // Add shipping
     const isSignage = (product.category || "").toLowerCase() === SIGNAGE_CATEGORY;
-    if (isSignage) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "Shipping — Standard Ground (UPS/FedEx/USPS)",
-          },
-          unit_amount: SIGNAGE_SHIPPING_CENTS,
+    const shippingCents = isSignage ? SIGNAGE_SHIPPING_CENTS : STANDARD_SHIPPING_CENTS;
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: isSignage
+            ? "Shipping — Standard Ground (UPS/FedEx/USPS)"
+            : "Shipping",
         },
-        quantity: 1,
-      });
-    }
+        unit_amount: shippingCents,
+      },
+      quantity: 1,
+    });
 
     // Create a Stripe Tax Rate on-the-fly (or reuse)
     // We'll use automatic_tax off and add a tax line manually via tax_rates
@@ -118,7 +120,7 @@ Deno.serve(async (req) => {
       const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
       if (RESEND_API_KEY) {
         const adminEmail = "info@teevents.golf";
-        const shippingNote = isSignage ? " + $39.95 shipping" : " (free shipping)";
+        const shippingNote = isSignage ? " + $39.95 shipping" : " + $12.99 shipping";
         const html = buildNotificationHtml("New Platform Store Purchase", [
           `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>${shippingNote} + 6.25% tax.`,
           buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Guest buyer (no email provided)",

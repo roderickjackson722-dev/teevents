@@ -44,6 +44,8 @@ export function useOrgContext() {
               plan: orgData.plan || 'starter',
               role: 'owner',
               permissions: [],
+              featureOverrides: orgData.feature_overrides || null,
+              feeOverride: orgData.fee_override ?? null,
             });
             setLoading(false);
             return;

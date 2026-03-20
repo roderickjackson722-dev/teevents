@@ -8,6 +8,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const TAX_RATE = 6.25; // percent
+const SIGNAGE_SHIPPING_CENTS = 3995; // $39.95 flat rate
+const SIGNAGE_CATEGORY = "signage";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,7 +28,7 @@ Deno.serve(async (req) => {
 
     const { data: product, error: pErr } = await supabaseAdmin
       .from("platform_store_products")
-      .select("id, name, description, price, image_url")
+      .select("id, name, description, price, image_url, category")
       .eq("id", product_id)
       .eq("is_active", true)
       .single();
@@ -46,24 +50,60 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
-    // Direct payment to platform owner's Stripe account (no Connect)
+    // Build line items
+    const lineItems: any[] = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: product.name,
+            description: product.description || undefined,
+            images: product.image_url ? [product.image_url] : undefined,
+          },
+          unit_amount: priceCents,
+        },
+        quantity: 1,
+      },
+    ];
+
+    // Add shipping for signage category; promotional/gift items ship free
+    const isSignage = (product.category || "").toLowerCase() === SIGNAGE_CATEGORY;
+    if (isSignage) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Shipping — Standard Ground (UPS/FedEx/USPS)",
+          },
+          unit_amount: SIGNAGE_SHIPPING_CENTS,
+        },
+        quantity: 1,
+      });
+    }
+
+    // Create a Stripe Tax Rate on-the-fly (or reuse)
+    // We'll use automatic_tax off and add a tax line manually via tax_rates
+    const taxRates = await stripe.taxRates.list({ limit: 10, active: true });
+    let taxRateId = taxRates.data.find(
+      (tr) => tr.percentage === TAX_RATE && tr.inclusive === false && tr.display_name === "Sales Tax",
+    )?.id;
+
+    if (!taxRateId) {
+      const newTaxRate = await stripe.taxRates.create({
+        display_name: "Sales Tax",
+        percentage: TAX_RATE,
+        inclusive: false,
+      });
+      taxRateId = newTaxRate.id;
+    }
+
+    // Attach tax rate to product line item (not shipping)
+    lineItems[0].tax_rates = [taxRateId];
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : buyer_email || undefined,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              description: product.description || undefined,
-              images: product.image_url ? [product.image_url] : undefined,
-            },
-            unit_amount: priceCents,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/store?purchased=true`,
       cancel_url: `${origin}/store`,
@@ -78,8 +118,9 @@ Deno.serve(async (req) => {
       const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
       if (RESEND_API_KEY) {
         const adminEmail = "info@teevents.golf";
+        const shippingNote = isSignage ? " + $39.95 shipping" : " (free shipping)";
         const html = buildNotificationHtml("New Platform Store Purchase", [
-          `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>.`,
+          `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>${shippingNote} + 6.25% tax.`,
           buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Guest buyer (no email provided)",
           `🆔 Product ID: ${product.id}`,
         ]);

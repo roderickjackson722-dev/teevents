@@ -64,9 +64,9 @@ export function useOrgContext() {
 
       const { data: orgData } = await supabase
         .from("organizations")
-        .select("id, name, plan, dashboard_name")
+        .select("id, name, plan, dashboard_name, feature_overrides, fee_override")
         .eq("id", membership.organization_id)
-        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null } | null; error: any };
+        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
 
       if (orgData) {
         setOrg({

@@ -1074,6 +1074,63 @@ export type Database = {
           },
         ]
       }
+      tournament_refund_requests: {
+        Row: {
+          admin_notes: string | null
+          amount_cents: number
+          created_at: string
+          id: string
+          reason: string
+          registration_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          stripe_refund_id: string | null
+          tournament_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_cents: number
+          created_at?: string
+          id?: string
+          reason: string
+          registration_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          stripe_refund_id?: string | null
+          tournament_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          reason?: string
+          registration_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          stripe_refund_id?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_refund_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_refund_requests_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_registration_addons: {
         Row: {
           created_at: string
@@ -1678,6 +1735,10 @@ export type Database = {
           pass_fees_to_registrants: boolean
           printable_font: string
           printable_layout: string
+          refund_deadline_days: number | null
+          refund_partial_percent: number | null
+          refund_policy_text: string | null
+          refund_policy_type: string
           registration_fee_cents: number | null
           registration_open: boolean | null
           registration_url: string | null
@@ -1721,6 +1782,10 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
+          refund_deadline_days?: number | null
+          refund_partial_percent?: number | null
+          refund_policy_text?: string | null
+          refund_policy_type?: string
           registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null
@@ -1764,6 +1829,10 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
+          refund_deadline_days?: number | null
+          refund_partial_percent?: number | null
+          refund_policy_text?: string | null
+          refund_policy_type?: string
           registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null

@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
       const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
       if (RESEND_API_KEY) {
         const adminEmail = "info@teevents.golf";
-        const shippingNote = isSignage ? " + $39.95 shipping" : " (free shipping)";
+        const shippingNote = isSignage ? " + $39.95 shipping" : " + $12.99 shipping";
         const html = buildNotificationHtml("New Platform Store Purchase", [
           `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>${shippingNote} + 6.25% tax.`,
           buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Guest buyer (no email provided)",

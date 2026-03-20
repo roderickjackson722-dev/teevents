@@ -92,7 +92,7 @@ export default function PlatformProductsSection() {
       <div className="mb-6">
         <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
           <ShoppingCart className="h-6 w-6 text-primary" />
-          Tournament Add On Store
+          Tournament Director Shop
         </h2>
         <p className="text-muted-foreground mt-1">
           Browse premium tournament products — signage, merchandise, and accessories to elevate your event.

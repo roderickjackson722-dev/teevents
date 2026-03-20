@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,6 +72,35 @@ Deno.serve(async (req) => {
         product_id,
       },
     });
+
+    // Send admin notification email
+    try {
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      if (RESEND_API_KEY) {
+        const adminEmail = "info@teevents.golf";
+        const html = buildNotificationHtml("New Platform Store Purchase", [
+          `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>.`,
+          buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Guest buyer (no email provided)",
+          `🆔 Product ID: ${product.id}`,
+        ]);
+
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: "TeeVents <notifications@notifications.teevents.golf>",
+            to: [adminEmail],
+            subject: `New Store Purchase — ${product.name}`,
+            html,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Notification error:", e);
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

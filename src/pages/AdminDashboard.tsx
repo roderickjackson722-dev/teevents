@@ -1514,6 +1514,17 @@ const AdminDashboard = () => {
                             : "Organizer absorbs the platform + Stripe fees."}
                         </span>
                       </div>
+
+                      {/* Feature Overrides & Fee Override */}
+                      <AdminFeatureToggles
+                        organizationId={t.organization_id}
+                        orgName={t.organizations?.name || "Organization"}
+                        currentPlan={t.organizations?.plan || "base"}
+                        currentOverrides={t.organizations?.feature_overrides || null}
+                        currentFeeOverride={t.organizations?.fee_override ?? null}
+                        callAdminApi={callAdminApi}
+                        onRefresh={fetchAll}
+                      />
                     </div>
                   );
                 })()}

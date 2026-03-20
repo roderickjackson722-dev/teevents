@@ -6,6 +6,7 @@ import {
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
+import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
@@ -1513,6 +1514,17 @@ const AdminDashboard = () => {
                             : "Organizer absorbs the platform + Stripe fees."}
                         </span>
                       </div>
+
+                      {/* Feature Overrides & Fee Override */}
+                      <AdminFeatureToggles
+                        organizationId={t.organization_id}
+                        orgName={t.organizations?.name || "Organization"}
+                        currentPlan={t.organizations?.plan || "base"}
+                        currentOverrides={t.organizations?.feature_overrides || null}
+                        currentFeeOverride={t.organizations?.fee_override ?? null}
+                        callAdminApi={callAdminApi}
+                        onRefresh={fetchAll}
+                      />
                     </div>
                   );
                 })()}

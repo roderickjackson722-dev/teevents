@@ -43,13 +43,15 @@ Deno.serve(async (req) => {
       if (tournament) {
         const { data: org } = await supabaseAdmin
           .from("organizations")
-          .select("stripe_account_id, plan")
+          .select("stripe_account_id, plan, fee_override")
           .eq("id", tournament.organization_id)
           .single();
 
         connectedAccountId = org?.stripe_account_id || null;
-        const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0.03, pro: 0.02, enterprise: 0.01 };
-        feeRate = FEE_RATES[org?.plan || "base"] ?? 0.05;
+        const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0, premium: 0 };
+        feeRate = (org as any)?.fee_override != null
+          ? (org as any).fee_override / 100
+          : (FEE_RATES[org?.plan || "base"] ?? 0.05);
       }
     }
 

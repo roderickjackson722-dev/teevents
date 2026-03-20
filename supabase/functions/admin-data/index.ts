@@ -239,13 +239,37 @@ Deno.serve(async (req) => {
         if (!body.organization_id || !body.plan) {
           return jsonRes({ error: "Missing organization_id or plan" }, 400);
         }
-        const validPlans = ["base", "starter", "pro", "enterprise"];
+        const validPlans = ["base", "starter", "premium"];
         if (!validPlans.includes(body.plan)) {
           return jsonRes({ error: "Invalid plan" }, 400);
         }
         const { error } = await adminClient
           .from("organizations")
           .update({ plan: body.plan })
+          .eq("id", body.organization_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-org-feature-overrides") {
+        if (!body.organization_id) {
+          return jsonRes({ error: "Missing organization_id" }, 400);
+        }
+        const { error } = await adminClient
+          .from("organizations")
+          .update({ feature_overrides: body.feature_overrides || null })
+          .eq("id", body.organization_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-org-fee-override") {
+        if (!body.organization_id) {
+          return jsonRes({ error: "Missing organization_id" }, 400);
+        }
+        const { error } = await adminClient
+          .from("organizations")
+          .update({ fee_override: body.fee_override ?? null })
           .eq("id", body.organization_id);
         if (error) return jsonRes({ error: error.message }, 400);
         return jsonRes({ success: true });
@@ -519,7 +543,7 @@ Deno.serve(async (req) => {
       adminClient.from("prospects").select("*").is("organization_id", null).order("created_at", { ascending: false }),
       adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
       adminClient.from("outreach_templates").select("*").order("sort_order", { ascending: true }),
-      adminClient.from("tournaments").select("*, organizations(id, name, plan, stripe_account_id), tournament_registrations(id)").order("created_at", { ascending: false }),
+      adminClient.from("tournaments").select("*, organizations(id, name, plan, stripe_account_id, is_nonprofit, ein, nonprofit_verified, feature_overrides, fee_override), tournament_registrations(id)").order("created_at", { ascending: false }),
       adminClient.from("platform_store_products").select("*").order("sort_order", { ascending: true }),
     ]);
 

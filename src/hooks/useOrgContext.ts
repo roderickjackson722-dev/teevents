@@ -10,6 +10,8 @@ export interface OrgContext {
   plan: string;
   role: string;
   permissions: string[];
+  featureOverrides: Record<string, boolean> | null;
+  feeOverride: number | null;
 }
 
 export function useOrgContext() {
@@ -29,9 +31,9 @@ export function useOrgContext() {
         if (isAdmin) {
         const { data: orgData } = await supabase
             .from("organizations")
-            .select("id, name, plan, dashboard_name")
+            .select("id, name, plan, dashboard_name, feature_overrides, fee_override")
             .eq("id", adminOrgId)
-            .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null } | null; error: any };
+            .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
 
           if (orgData) {
             setOrg({
@@ -42,6 +44,8 @@ export function useOrgContext() {
               plan: orgData.plan || 'starter',
               role: 'owner',
               permissions: [],
+              featureOverrides: orgData.feature_overrides || null,
+              feeOverride: orgData.fee_override ?? null,
             });
             setLoading(false);
             return;
@@ -60,9 +64,9 @@ export function useOrgContext() {
 
       const { data: orgData } = await supabase
         .from("organizations")
-        .select("id, name, plan, dashboard_name")
+        .select("id, name, plan, dashboard_name, feature_overrides, fee_override")
         .eq("id", membership.organization_id)
-        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null } | null; error: any };
+        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
 
       if (orgData) {
         setOrg({
@@ -73,6 +77,8 @@ export function useOrgContext() {
           plan: orgData.plan || 'starter',
           role: (membership as any).role || 'owner',
           permissions: (membership as any).permissions || [],
+          featureOverrides: orgData.feature_overrides || null,
+          feeOverride: orgData.fee_override ?? null,
         });
       }
       setLoading(false);

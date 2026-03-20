@@ -98,6 +98,7 @@ const plans = [
       "Budget tracking",
       "Photo gallery",
       "Printable scorecards, signs & badges",
+      "Volunteer coordination",
       "Event countdown timer",
     ],
     cta: "Get Started",

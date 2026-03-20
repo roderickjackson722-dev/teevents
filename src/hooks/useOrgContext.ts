@@ -10,6 +10,8 @@ export interface OrgContext {
   plan: string;
   role: string;
   permissions: string[];
+  featureOverrides: Record<string, boolean> | null;
+  feeOverride: number | null;
 }
 
 export function useOrgContext() {

@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const DEMO_EMAIL = "info@teevents.golf";
+const DEMO_EMAIL = "demo@teevents.com";
 const DEMO_PASSWORD = "demo2026";
 
 const features = [

@@ -24,7 +24,10 @@ import {
   ToggleLeft,
   Info,
   Crown,
+  RotateCcw,
 } from "lucide-react";
+import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
+import RefundManagement from "@/components/dashboard/RefundManagement";
 import { toast } from "sonner";
 
 /* ── types ── */
@@ -440,12 +443,16 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="tiers">Tiers</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
             <TabsTrigger value="addons">Add-ons</TabsTrigger>
             <TabsTrigger value="promos">Promo Codes</TabsTrigger>
+            <TabsTrigger value="refunds" className="flex items-center gap-1">
+              <RotateCcw className="h-3.5 w-3.5" />
+              Refunds
+            </TabsTrigger>
           </TabsList>
 
           {/* ── Settings Tab ── */}
@@ -866,6 +873,18 @@ const Registration = () => {
                 <Button onClick={addPromoCode} disabled={!newPromoCode.trim() || !newPromoValue}>
                   <Plus className="h-4 w-4 mr-1" /> Create Code
                 </Button>
+              </div>
+            </motion.div>
+          </TabsContent>
+
+          {/* ── Refunds Tab ── */}
+          <TabsContent value="refunds">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+              <div className="bg-card rounded-lg border border-border p-6">
+                <RefundPolicySettings tournamentId={selectedTournament} demoGuard={demoGuard} />
+              </div>
+              <div className="bg-card rounded-lg border border-border p-6">
+                <RefundManagement tournamentId={selectedTournament} demoGuard={demoGuard} />
               </div>
             </motion.div>
           </TabsContent>

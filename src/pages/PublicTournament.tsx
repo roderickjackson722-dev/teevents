@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
+import RefundRequestForm from "@/components/RefundRequestForm";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
@@ -30,6 +31,7 @@ interface TournamentSite {
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean;
   pass_fees_to_registrants?: boolean;
+  refund_policy_text?: string | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
@@ -1003,6 +1005,23 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
                     passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
+                  />
+                </div>
+              )}
+              {/* Refund Policy Display */}
+              {tournament.refund_policy_text && (
+                <div className="mt-4 p-4 rounded-lg border text-sm" style={{ borderColor: "#e5e5e5", backgroundColor: "#fff" }}>
+                  <p className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: primary }}>Refund Policy</p>
+                  <p style={{ color: "#666" }}>{tournament.refund_policy_text}</p>
+                </div>
+              )}
+              {/* Refund Request Form */}
+              {(tournament.registration_fee_cents || 0) > 0 && (
+                <div className="mt-6 bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
+                  <RefundRequestForm
+                    tournamentId={tournament.id}
+                    primaryColor={primary}
+                    secondaryColor={secondary}
                   />
                 </div>
               )}

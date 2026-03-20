@@ -67,20 +67,21 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add shipping for signage category; promotional/gift items ship free
+    // Add shipping
     const isSignage = (product.category || "").toLowerCase() === SIGNAGE_CATEGORY;
-    if (isSignage) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "Shipping — Standard Ground (UPS/FedEx/USPS)",
-          },
-          unit_amount: SIGNAGE_SHIPPING_CENTS,
+    const shippingCents = isSignage ? SIGNAGE_SHIPPING_CENTS : STANDARD_SHIPPING_CENTS;
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: isSignage
+            ? "Shipping — Standard Ground (UPS/FedEx/USPS)"
+            : "Shipping",
         },
-        quantity: 1,
-      });
-    }
+        unit_amount: shippingCents,
+      },
+      quantity: 1,
+    });
 
     // Create a Stripe Tax Rate on-the-fly (or reuse)
     // We'll use automatic_tax off and add a tax line manually via tax_rates

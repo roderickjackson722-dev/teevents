@@ -167,9 +167,8 @@ export const slides = [
     heading: "Simple, Transparent Pricing",
     plans: [
       { name: "Base", price: "Free", fee: "5%", highlights: ["1 tournament", "Registration with add-ons & promo codes", "Website (1 template)", "Leaderboard (Stroke Play & Best Ball)", "QR check-in & planning guide"] },
-      { name: "Starter", price: "$499", fee: "3%", popular: true, highlights: ["We build your platform for you", "All 6 templates + custom colors", "All 8 scoring formats", "Sponsors, budget & donations", "6 printable types, SMS & countdown styles"] },
-      { name: "Pro", price: "$999", fee: "2%", highlights: ["Merch store & auctions", "Surveys & volunteers", "Custom print fonts & layouts", "Priority support"] },
-      { name: "Enterprise", price: "Custom", fee: "1%", highlights: ["Unlimited tournaments", "Unlimited SMS", "White-label branding", "API access"] },
+      { name: "Starter", price: "$499", fee: "0%", popular: true, highlights: ["We build your platform for you", "All 6 templates + custom colors", "All 8 scoring formats", "Sponsors, budget & donations", "No platform transaction fees"] },
+      { name: "Premium", price: "$1,999", fee: "0%", highlights: ["$25K hole-in-one insurance (72 golfers)", "Auction item included", "Merch store & auction management", "Surveys, volunteers & priority support"] },
     ],
   },
   {

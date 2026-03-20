@@ -44,9 +44,8 @@ const features = [
 
 const plans = [
   { name: "Base", price: "Free", fee: "5%", note: "1 tournament, Stroke Play & Best Ball" },
-  { name: "Starter", price: "$499", fee: "3%", note: "We build it for you + all templates", popular: true },
-  { name: "Pro", price: "$999", fee: "2%", note: "Store, auction, custom prints" },
-  { name: "Enterprise", price: "Custom", fee: "1%", note: "Unlimited everything" },
+  { name: "Starter", price: "$499", fee: "0%", note: "We build it for you + no platform fees", popular: true },
+  { name: "Premium", price: "$1,999", fee: "0%", note: "$25K hole-in-one insurance + auction" },
 ];
 
 function DetailedFlyer() {
@@ -110,7 +109,7 @@ function DetailedFlyer() {
           Simple Pricing
           <span className="w-8 h-0.5 bg-secondary rounded" />
         </h2>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {plans.map((p, i) => (
             <div
               key={i}
@@ -243,7 +242,7 @@ function QuickFlyer() {
 
       {/* Pricing - horizontal */}
       <div className="px-8 pb-5">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {plans.map((p, i) => (
             <div
               key={i}

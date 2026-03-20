@@ -179,9 +179,10 @@ const plans = [
     price: "$499",
     period: "per tournament",
     description: "We build your tournament platform for you.",
-    fee: "3% transaction fee",
+    fee: "0% transaction fee",
     features: [
       "Everything in Base",
+      "We build your website for you",
       "All 6 templates + custom colors",
       "All 8 scoring formats",
       "Custom domain support",
@@ -190,50 +191,33 @@ const plans = [
       "Donations page",
       "Photo gallery",
       "Printable scorecards, signs & badges",
-      "Countdown timer style options",
-      "Hole-by-hole par customization",
       "SMS texting (500 messages)",
+      "No platform transaction fees",
     ],
     cta: "Get Started",
     plan: "starter",
     highlighted: true,
   },
   {
-    name: "Pro",
-    price: "$999",
+    name: "Premium",
+    price: "$1,999",
     period: "per tournament",
-    description: "For nonprofits running polished, full-featured events.",
-    fee: "2% transaction fee",
+    description: "The ultimate package with insurance & auction.",
+    fee: "0% transaction fee",
     features: [
-      "Everything in Starter",
-      "Up to 288 golfers",
+      "Everything in Base & Starter",
+      "$25,000 hole-in-one insurance (up to 72 golfers)",
+      "Auction item included",
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
       "Volunteer coordination",
       "Custom printable fonts & layouts",
       "Priority support",
+      "No platform transaction fees",
     ],
     cta: "Get Started",
-    plan: "pro",
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "annual license",
-    description: "For organizations running multiple tournaments per year.",
-    fee: "1% transaction fee",
-    features: [
-      "Everything in Pro",
-      "Unlimited tournaments",
-      "Unlimited SMS texting",
-      "Dedicated account manager",
-      "White-label branding",
-      "API access",
-      "Custom integrations",
-    ],
-    cta: "Contact Sales",
-    plan: "enterprise",
+    plan: "premium",
   },
 ];
 
@@ -244,10 +228,6 @@ const HowItWorks = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "enterprise") {
-      window.location.href = "/contact";
-      return;
-    }
     if (plan === "base") {
       window.location.href = "/get-started";
       return;
@@ -542,15 +522,14 @@ const HowItWorks = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free and only pay when you grow. Every plan includes a small
-              transaction fee so we succeed when you succeed.
+              Start free with a 5% transaction fee, or upgrade to eliminate fees entirely.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}

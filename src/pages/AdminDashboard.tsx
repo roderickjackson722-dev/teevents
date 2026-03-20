@@ -1369,8 +1369,7 @@ const AdminDashboard = () => {
                             >
                               <option value="base">Base (Free)</option>
                               <option value="starter">Starter</option>
-                              <option value="pro">Pro</option>
-                              <option value="enterprise">Enterprise</option>
+                              <option value="premium">Premium</option>
                             </select>
                             {updatingOrgPlan === t.organization_id && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
                           </div>

@@ -9,9 +9,8 @@ import { toast } from "sonner";
 
 const FEE_RATES: Record<string, string> = {
   base: "5%",
-  starter: "3%",
-  pro: "2%",
-  enterprise: "1%",
+  starter: "0%",
+  premium: "0%",
 };
 
 const plans = [
@@ -37,9 +36,11 @@ const plans = [
     price: "$499",
     period: "per tournament",
     subtitle: "We build it for you",
-    fee: "3% transaction fee",
+    fee: "0% transaction fee",
+    highlighted: true,
     features: [
       "Everything in Base",
+      "We build your website for you",
       "All templates + custom colors",
       "Custom domain support",
       "Sponsor management",
@@ -47,37 +48,25 @@ const plans = [
       "Donations page",
       "Photo gallery",
       "SMS texting (500 messages)",
+      "No platform transaction fees",
     ],
   },
   {
-    key: "pro",
-    name: "Pro",
-    price: "$999",
+    key: "premium",
+    name: "Premium",
+    price: "$1,999",
     period: "per tournament",
-    fee: "2% transaction fee",
-    highlighted: true,
+    fee: "0% transaction fee",
     features: [
-      "Everything in Starter",
+      "Everything in Base & Starter",
+      "$25,000 hole-in-one insurance (up to 72 golfers)",
+      "Auction item included",
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
       "Volunteer coordination",
       "Priority support",
-    ],
-  },
-  {
-    key: "enterprise",
-    name: "Enterprise",
-    price: "Custom",
-    period: "annual license",
-    fee: "1% transaction fee",
-    features: [
-      "Everything in Pro",
-      "Unlimited tournaments",
-      "Unlimited SMS",
-      "Dedicated account manager",
-      "White-label branding",
-      "API access",
+      "No platform transaction fees",
     ],
   },
 ];
@@ -88,14 +77,10 @@ const UpgradePlan = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
 
-  const planIndex = (plan: string) => ["base", "starter", "pro", "enterprise"].indexOf(plan);
+  const planIndex = (plan: string) => ["base", "starter", "premium"].indexOf(plan);
 
   const handleUpgrade = async (plan: string) => {
-    if (plan === "enterprise") {
-      window.location.href = "/contact";
-      return;
-    }
-    if (plan === "base") return; // Can't downgrade in self-serve
+    if (plan === "base") return;
 
     setLoadingPlan(plan);
     try {
@@ -125,21 +110,17 @@ const UpgradePlan = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-foreground">Upgrade Your Plan</h1>
         <p className="text-muted-foreground mt-1">
-          Unlock more features and lower your transaction fees.
+          Unlock more features and eliminate transaction fees.
         </p>
       </div>
 
       {/* Current plan badge */}
       <div className="mb-6 bg-card rounded-lg border border-border p-4 flex items-center gap-3">
         <Zap className="h-5 w-5 text-secondary" />
-        <span className="text-sm text-muted-foreground">
-          Current plan:
-        </span>
-        <span className="text-sm font-bold capitalize text-foreground">
-          {currentPlan}
-        </span>
+        <span className="text-sm text-muted-foreground">Current plan:</span>
+        <span className="text-sm font-bold capitalize text-foreground">{currentPlan}</span>
         <span className="text-xs text-muted-foreground">
-          ({FEE_RATES[currentPlan]} transaction fee)
+          ({FEE_RATES[currentPlan] || "5%"} transaction fee)
         </span>
       </div>
 
@@ -154,10 +135,9 @@ const UpgradePlan = () => {
       </div>
 
       {/* Plans grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid md:grid-cols-3 gap-5">
         {plans.map((plan, i) => {
           const isCurrent = plan.key === currentPlan;
-          const isLower = planIndex(plan.key) <= planIndex(currentPlan);
           const isUpgrade = planIndex(plan.key) > planIndex(currentPlan);
 
           return (
@@ -237,7 +217,7 @@ const UpgradePlan = () => {
                   ) : (
                     <ArrowRight className="h-3.5 w-3.5 mr-1" />
                   )}
-                  {plan.key === "enterprise" ? "Contact Sales" : `Upgrade to ${plan.name}`}
+                  Upgrade to {plan.name}
                 </Button>
               ) : (
                 <Button variant="ghost" disabled className="w-full text-xs text-muted-foreground">

@@ -22,33 +22,26 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "sms-messaging",
     "all-templates",
   ],
-  pro: [
+  premium: [
     // Everything in starter +
     "store",
     "auction",
     "surveys",
     "volunteers",
     "priority-support",
-  ],
-  enterprise: [
-    // Everything in pro +
-    "multiple-tournaments",
-    "unlimited-sms",
-    "white-label",
-    "api-access",
+    "hole-in-one-insurance",
   ],
 };
 
-const PLAN_HIERARCHY = ["base", "starter", "pro", "enterprise"];
+const PLAN_HIERARCHY = ["base", "starter", "premium"];
 
 export function usePlanFeatures() {
   const { org, loading } = useOrgContext();
   const plan = org?.plan || "base";
 
   const hasFeature = (feature: string): boolean => {
-    const planIndex = PLAN_HIERARCHY.indexOf(plan);
-    // Check this plan and all lower plans
-    for (let i = 0; i <= planIndex; i++) {
+    const idx = PLAN_HIERARCHY.indexOf(plan);
+    for (let i = 0; i <= idx; i++) {
       const tierFeatures = PLAN_FEATURES[PLAN_HIERARCHY[i]];
       if (tierFeatures?.includes(feature)) return true;
     }
@@ -59,7 +52,7 @@ export function usePlanFeatures() {
     for (const tier of PLAN_HIERARCHY) {
       if (PLAN_FEATURES[tier]?.includes(feature)) return tier;
     }
-    return "enterprise";
+    return "premium";
   };
 
   return { plan, hasFeature, requiredPlan, loading };

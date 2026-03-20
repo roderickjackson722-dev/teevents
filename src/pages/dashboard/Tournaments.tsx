@@ -119,8 +119,7 @@ const Tournaments = () => {
     completed: "bg-secondary/10 text-secondary",
   };
 
-  const isEnterprise = org?.plan === "enterprise";
-  const canCreateMore = isEnterprise || tournaments.length < 1;
+  const canCreateMore = tournaments.length < 1;
 
   return (
     <div>
@@ -276,9 +275,9 @@ const Tournaments = () => {
       {!canCreateMore && !loading && (
         <div className="mb-6 bg-secondary/10 border border-secondary/30 rounded-lg p-4 flex items-center gap-3">
           <Lock className="h-5 w-5 text-secondary flex-shrink-0" />
-          <p className="text-sm text-foreground">
+           <p className="text-sm text-foreground">
             Your <span className="font-semibold capitalize">{org?.plan}</span> plan includes 1 tournament. 
-            Upgrade to <span className="font-semibold">Enterprise</span> for unlimited tournaments.
+            Contact us for multi-tournament options.
           </p>
         </div>
       )}

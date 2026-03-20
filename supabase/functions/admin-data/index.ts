@@ -239,13 +239,37 @@ Deno.serve(async (req) => {
         if (!body.organization_id || !body.plan) {
           return jsonRes({ error: "Missing organization_id or plan" }, 400);
         }
-        const validPlans = ["base", "starter", "pro", "enterprise"];
+        const validPlans = ["base", "starter", "premium"];
         if (!validPlans.includes(body.plan)) {
           return jsonRes({ error: "Invalid plan" }, 400);
         }
         const { error } = await adminClient
           .from("organizations")
           .update({ plan: body.plan })
+          .eq("id", body.organization_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-org-feature-overrides") {
+        if (!body.organization_id) {
+          return jsonRes({ error: "Missing organization_id" }, 400);
+        }
+        const { error } = await adminClient
+          .from("organizations")
+          .update({ feature_overrides: body.feature_overrides || null })
+          .eq("id", body.organization_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
+      if (action === "update-org-fee-override") {
+        if (!body.organization_id) {
+          return jsonRes({ error: "Missing organization_id" }, 400);
+        }
+        const { error } = await adminClient
+          .from("organizations")
+          .update({ fee_override: body.fee_override ?? null })
           .eq("id", body.organization_id);
         if (error) return jsonRes({ error: error.message }, 400);
         return jsonRes({ success: true });

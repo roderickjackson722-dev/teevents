@@ -192,7 +192,7 @@ export default function PlatformProductsSection() {
                     {isSignage ? (
                       <span>+$39.95 flat-rate shipping</span>
                     ) : (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">Free shipping</span>
+                      <span>+$12.99 shipping</span>
                     )}
                   </div>
                   {product.description && (

@@ -97,11 +97,15 @@ const Store = () => {
 
   return (
     <div>
+      {/* Platform Add On Store */}
+      <PlatformProductsSection />
+
+      {/* Organizer's Own Tournament Store */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Tournament Store</h1>
-          <p className="text-muted-foreground mt-1">Manage merchandise and products for your tournament.</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Your Tournament Products</h1>
+          <p className="text-muted-foreground mt-1">Manage your own merchandise and products for your tournament.</p>
         </div>
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
           <SelectTrigger className="w-[240px] bg-card">

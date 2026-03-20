@@ -66,7 +66,6 @@ const plans = [
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
-      "Volunteer coordination",
       "Priority support",
       "No platform transaction fees",
     ],

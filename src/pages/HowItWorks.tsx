@@ -212,7 +212,6 @@ const plans = [
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
-      "Volunteer coordination",
       "Custom printable fonts & layouts",
       "Priority support",
       "No platform transaction fees",

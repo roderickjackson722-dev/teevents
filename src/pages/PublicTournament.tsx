@@ -31,6 +31,7 @@ interface TournamentSite {
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean;
   pass_fees_to_registrants?: boolean;
+  refund_policy_text?: string | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }

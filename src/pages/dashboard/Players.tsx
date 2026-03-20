@@ -659,27 +659,62 @@ const Players = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <button className="text-muted-foreground hover:text-destructive transition-colors">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Player</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Remove {p.first_name} {p.last_name} from this tournament? This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeletePlayer(p.id)}>
-                              Remove
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex items-center justify-center gap-1">
+                        {p.payment_status === "paid" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button className="text-muted-foreground hover:text-amber-600 transition-colors" title="Refund">
+                                <RotateCcw className="h-4 w-4" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Refund Player</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Process a full refund for {p.first_name} {p.last_name}? This will reverse the payment through Stripe.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={async () => {
+                                  const { data, error } = await supabase.functions.invoke("process-refund", {
+                                    body: { registration_id: p.id },
+                                  });
+                                  if (error || data?.error) {
+                                    toast({ title: "Refund failed", description: data?.error || error?.message, variant: "destructive" });
+                                  } else {
+                                    toast({ title: "Refund processed", description: `${p.first_name} ${p.last_name} has been refunded.` });
+                                    setPlayers((prev) => prev.map((pl) => pl.id === p.id ? { ...pl, payment_status: "refunded" } : pl));
+                                  }
+                                }}>
+                                  Process Refund
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove Player</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Remove {p.first_name} {p.last_name} from this tournament? This cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeletePlayer(p.id)}>
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </td>
                   </motion.tr>
                 ))}

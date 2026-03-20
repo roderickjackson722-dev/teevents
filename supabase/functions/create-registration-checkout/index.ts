@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     // Fetch organization plan and nonprofit status
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("stripe_account_id, plan, is_nonprofit, ein, nonprofit_name, nonprofit_verified")
+      .select("stripe_account_id, plan, is_nonprofit, ein, nonprofit_name, nonprofit_verified, fee_override")
       .eq("id", tournament.organization_id)
       .single();
 
@@ -75,12 +75,14 @@ Deno.serve(async (req) => {
 
     const FEE_RATES: Record<string, number> = {
       base: 0.05,
-      starter: 0.03,
-      pro: 0.02,
-      enterprise: 0.01,
+      starter: 0,
+      premium: 0,
     };
+    // Use fee_override if set by admin, otherwise use plan default
     // Nonprofits always pay 5% platform fee regardless of plan
-    const feeRate = isNonprofit ? 0.05 : (FEE_RATES[orgPlan] ?? 0.05);
+    const feeRate = (org as any)?.fee_override != null
+      ? (org as any).fee_override / 100
+      : isNonprofit ? 0.05 : (FEE_RATES[orgPlan] ?? 0.05);
 
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;

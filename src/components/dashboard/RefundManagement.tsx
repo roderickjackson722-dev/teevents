@@ -98,10 +98,8 @@ export default function RefundManagement({ tournamentId, demoGuard }: RefundMana
     setProcessingId(null);
   };
 
-  const handleDirectRefund = async (registrationId: string, playerName: string) => {
+  const handleDirectRefund = async (registrationId: string) => {
     if (demoGuard()) return;
-    if (!confirm(`Process a full refund for ${playerName}? This will refund the payment via Stripe.`)) return;
-
     setProcessingId(registrationId);
     try {
       const { data, error } = await supabase.functions.invoke("process-refund", {
@@ -109,7 +107,7 @@ export default function RefundManagement({ tournamentId, demoGuard }: RefundMana
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Refund processed for ${playerName}`);
+      toast.success("Refund processed successfully!");
       await fetchRequests();
     } catch (err: any) {
       toast.error(err.message || "Failed to process refund");

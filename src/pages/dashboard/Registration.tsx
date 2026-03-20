@@ -24,7 +24,10 @@ import {
   ToggleLeft,
   Info,
   Crown,
+  RotateCcw,
 } from "lucide-react";
+import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
+import RefundManagement from "@/components/dashboard/RefundManagement";
 import { toast } from "sonner";
 
 /* ── types ── */

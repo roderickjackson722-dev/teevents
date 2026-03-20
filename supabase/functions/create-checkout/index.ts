@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const PRICE_MAP: Record<string, string> = {
   starter: "price_1T6NmGLXW44Q7xfEnpuXOzvZ",
-  pro: "price_1T6NnMLXW44Q7xfECw8H7d9C",
+  premium: "price_1TD0XzLT3p5VmsQsT3qfmU2N",
 };
 
 Deno.serve(async (req) => {
@@ -26,8 +26,7 @@ Deno.serve(async (req) => {
     });
 
     // Validate promo code if provided
-    let discountAmount = 0;
-    let promoCodeId: string | null = null;
+    let couponId: string | undefined;
     if (promo_code) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -45,58 +44,22 @@ Deno.serve(async (req) => {
       if (promo.max_uses && promo.current_uses >= promo.max_uses) throw new Error("Promo code has reached its usage limit");
       if (promo.applicable_plans && !promo.applicable_plans.includes(plan)) throw new Error("Promo code is not valid for this plan");
 
-      promoCodeId = promo.id;
-
-      // Calculate discount for metadata
-      const priceAmount = plan === "starter" ? 49900 : 99900; // cents
-      if (promo.discount_type === "percent") {
-        discountAmount = Math.round(priceAmount * (Number(promo.discount_value) / 100));
-      } else {
-        discountAmount = Math.round(Number(promo.discount_value) * 100);
-      }
-
       // Create a Stripe coupon for this discount
       const coupon = await stripe.coupons.create(
         promo.discount_type === "percent"
           ? { percent_off: Number(promo.discount_value), duration: "once" }
           : { amount_off: Math.round(Number(promo.discount_value) * 100), currency: "usd", duration: "once" }
       );
+      couponId = coupon.id;
 
       // Increment usage
       await adminClient
         .from("promo_codes")
         .update({ current_uses: promo.current_uses + 1 })
         .eq("id", promo.id);
-
-      // Check for existing customer
-      let customerId: string | undefined;
-      if (email) {
-        const customers = await stripe.customers.list({ email, limit: 1 });
-        if (customers.data.length > 0) {
-          customerId = customers.data[0].id;
-        }
-      }
-
-      const origin = req.headers.get("origin") || "https://teevents.lovable.app";
-
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        customer_email: customerId ? undefined : email || undefined,
-        line_items: [{ price: priceId, quantity: 1 }],
-        mode: "payment",
-        discounts: [{ coupon: coupon.id }],
-        success_url: `${origin}/payment-success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pricing`,
-        metadata: { plan, promo_code: promo_code.trim().toUpperCase() },
-      });
-
-      return new Response(JSON.stringify({ url: session.url }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
     }
 
-    // No promo code path
+    // Check for existing customer
     let customerId: string | undefined;
     if (email) {
       const customers = await stripe.customers.list({ email, limit: 1 });
@@ -107,15 +70,21 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email || undefined,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
       success_url: `${origin}/payment-success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
-      metadata: { plan },
-    });
+      metadata: { plan, ...(promo_code ? { promo_code: promo_code.trim().toUpperCase() } : {}) },
+    };
+
+    if (couponId) {
+      sessionParams.discounts = [{ coupon: couponId }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

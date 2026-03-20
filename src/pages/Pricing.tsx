@@ -34,10 +34,11 @@ const plans = [
     price: "$499",
     period: "per tournament",
     description: "We build your tournament platform for you.",
-    fee: "3% transaction fee",
+    fee: "0% transaction fee",
     highlighted: true,
     features: [
       "Everything in Base",
+      "We build your website for you",
       "All 6 templates + custom colors",
       "All 8 scoring formats",
       "Custom domain support",
@@ -46,48 +47,31 @@ const plans = [
       "Donations page",
       "Photo gallery",
       "Printable scorecards, signs & badges",
-      "Countdown timer style options",
-      "Hole-by-hole par customization",
       "SMS texting (500 messages)",
+      "No platform transaction fees",
     ],
     cta: "Buy Starter",
   },
   {
-    key: "pro",
-    name: "Pro",
-    price: "$999",
+    key: "premium",
+    name: "Premium",
+    price: "$1,999",
     period: "per tournament",
-    description: "For nonprofits running polished, full-featured events.",
-    fee: "2% transaction fee",
+    description: "The ultimate tournament package with insurance & auction.",
+    fee: "0% transaction fee",
     features: [
-      "Everything in Starter",
-      "Up to 288 golfers",
+      "Everything in Base & Starter",
+      "$25,000 hole-in-one insurance (up to 72 golfers)",
+      "Auction item included",
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
       "Volunteer coordination",
       "Custom printable fonts & layouts",
       "Priority support",
+      "No platform transaction fees",
     ],
-    cta: "Buy Pro",
-  },
-  {
-    key: "enterprise",
-    name: "Enterprise",
-    price: "Custom",
-    period: "annual license",
-    description: "For organizations running multiple tournaments per year.",
-    fee: "1% transaction fee",
-    features: [
-      "Everything in Pro",
-      "Unlimited tournaments",
-      "Unlimited SMS texting",
-      "Dedicated account manager",
-      "White-label branding",
-      "API access",
-      "Custom integrations",
-    ],
-    cta: "Contact Sales",
+    cta: "Buy Premium",
   },
 ];
 
@@ -97,10 +81,6 @@ const Pricing = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "enterprise") {
-      window.location.href = "/contact";
-      return;
-    }
     if (plan === "base") {
       window.location.href = "/get-started";
       return;
@@ -167,8 +147,8 @@ const Pricing = () => {
 
       {/* Plans */}
       <section className="bg-background py-20">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.key}

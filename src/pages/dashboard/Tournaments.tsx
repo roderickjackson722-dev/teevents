@@ -119,8 +119,7 @@ const Tournaments = () => {
     completed: "bg-secondary/10 text-secondary",
   };
 
-  const isEnterprise = org?.plan === "enterprise";
-  const canCreateMore = isEnterprise || tournaments.length < 1;
+  const canCreateMore = tournaments.length < 1;
 
   return (
     <div>

@@ -33,6 +33,7 @@ const plans = [
       "Budget tracking",
       "Photo gallery",
       "Printable scorecards, signs & badges",
+      "Volunteer coordination",
     ],
   },
   {
@@ -65,7 +66,6 @@ const plans = [
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
-      "Volunteer coordination",
       "Priority support",
       "No platform transaction fees",
     ],

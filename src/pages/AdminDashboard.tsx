@@ -6,6 +6,7 @@ import {
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
+import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";

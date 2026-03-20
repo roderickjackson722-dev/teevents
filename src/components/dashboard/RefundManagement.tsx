@@ -195,25 +195,69 @@ export default function RefundManagement({ tournamentId, demoGuard }: RefundMana
                     className="text-sm"
                   />
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleAction(req.id, "approved")}
-                      disabled={processingId === req.id}
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      {processingId === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <CheckCircle className="h-3.5 w-3.5 mr-1" />}
-                      Approve & Refund
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleAction(req.id, "denied")}
-                      disabled={processingId === req.id}
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <XCircle className="h-3.5 w-3.5 mr-1" />
-                      Deny
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          disabled={processingId === req.id}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          {processingId === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <CheckCircle className="h-3.5 w-3.5 mr-1" />}
+                          Approve & Refund
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to approve a ${(req.amount_cents / 100).toFixed(2)} refund for{" "}
+                            <span className="font-semibold">{req.registration?.first_name} {req.registration?.last_name}</span>?
+                            This will process the refund through Stripe and cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleAction(req.id, "approved")}
+                            className="bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            Yes, Process Refund
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={processingId === req.id}
+                          className="text-destructive border-destructive/20 hover:bg-destructive/10"
+                        >
+                          <XCircle className="h-3.5 w-3.5 mr-1" />
+                          Deny
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Deny Refund Request</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to deny the refund request from{" "}
+                            <span className="font-semibold">{req.registration?.first_name} {req.registration?.last_name}</span>?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleAction(req.id, "denied")}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Yes, Deny Request
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               )}

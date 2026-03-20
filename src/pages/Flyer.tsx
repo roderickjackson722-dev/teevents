@@ -109,7 +109,7 @@ function DetailedFlyer() {
           Simple Pricing
           <span className="w-8 h-0.5 bg-secondary rounded" />
         </h2>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {plans.map((p, i) => (
             <div
               key={i}

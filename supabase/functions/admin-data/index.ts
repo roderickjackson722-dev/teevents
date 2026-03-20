@@ -543,7 +543,7 @@ Deno.serve(async (req) => {
       adminClient.from("prospects").select("*").is("organization_id", null).order("created_at", { ascending: false }),
       adminClient.from("prospect_activities").select("*").order("created_at", { ascending: false }),
       adminClient.from("outreach_templates").select("*").order("sort_order", { ascending: true }),
-      adminClient.from("tournaments").select("*, organizations(id, name, plan, stripe_account_id), tournament_registrations(id)").order("created_at", { ascending: false }),
+      adminClient.from("tournaments").select("*, organizations(id, name, plan, stripe_account_id, is_nonprofit, ein, nonprofit_verified, feature_overrides, fee_override), tournament_registrations(id)").order("created_at", { ascending: false }),
       adminClient.from("platform_store_products").select("*").order("sort_order", { ascending: true }),
     ]);
 

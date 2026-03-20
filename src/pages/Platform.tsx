@@ -407,8 +407,7 @@ const Platform = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free and only pay when you grow. Every plan includes a small
-              transaction fee so we succeed when you succeed.
+              Start free with a 5% transaction fee, or upgrade to eliminate fees entirely.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.

@@ -109,7 +109,7 @@ const Pricing = () => {
     <Layout>
       <SEO
         title="Pricing | TeeVents — Choose Your Tournament Package"
-        description="Pick the perfect TeeVents plan for your golf tournament. Start free or unlock premium features. Simple, transparent pricing with no monthly subscriptions."
+        description="Pick the perfect TeeVents plan for your golf tournament. Start with a full-featured free tier or unlock premium features. Simple, transparent pricing with no monthly subscriptions."
         path="/pricing"
       />
 

@@ -188,26 +188,6 @@ const SampleOrganizer = () => {
             </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-                <input
-                  type="email"
-                  value={DEMO_EMAIL}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-muted/50 text-foreground cursor-default"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-                <input
-                  type="password"
-                  value={DEMO_PASSWORD}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-muted/50 text-foreground cursor-default"
-                />
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}

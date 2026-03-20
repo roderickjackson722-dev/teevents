@@ -228,10 +228,6 @@ const HowItWorks = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "enterprise") {
-      window.location.href = "/contact";
-      return;
-    }
     if (plan === "base") {
       window.location.href = "/get-started";
       return;

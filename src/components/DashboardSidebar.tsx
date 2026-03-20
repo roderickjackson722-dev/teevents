@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   Settings,
   LogOut,
+  ShoppingCart,
   BarChart3,
   ScanLine,
   Gavel,

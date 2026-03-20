@@ -38,6 +38,7 @@ import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
+import DirectorShop from "./pages/dashboard/DirectorShop";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PublicTournament from "./pages/PublicTournament";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -100,6 +101,7 @@ const App = () => (
           <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/donations" element={<DashboardLayout><PlanGate feature="donations"><Donations /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/dashboard/director-shop" element={<DashboardLayout><DirectorShop /></DashboardLayout>} />
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />

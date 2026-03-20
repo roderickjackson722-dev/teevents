@@ -18,7 +18,7 @@ import {
 import { type Product, type Tournament, categoryLabel, fmt } from "@/components/store/types";
 import ProductFormDialog from "@/components/store/ProductFormDialog";
 import TemplateLibrary from "@/components/store/TemplateLibrary";
-import PlatformProductsSection from "@/components/store/PlatformProductsSection";
+
 
 const Store = () => {
   const { org } = useOrgContext();
@@ -97,10 +97,6 @@ const Store = () => {
 
   return (
     <div>
-      {/* Platform Add On Store */}
-      <PlatformProductsSection />
-
-      {/* Organizer's Own Tournament Store */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

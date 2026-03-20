@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   Settings,
   LogOut,
+  ShoppingCart,
   BarChart3,
   ScanLine,
   Gavel,
@@ -225,6 +226,18 @@ export function DashboardSidebar() {
                     >
                       <Settings className="mr-2 h-4 w-4" />
                       {!collapsed && <span>Settings</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/dashboard/director-shop"
+                      className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                      activeClassName="bg-primary-foreground/15 text-secondary font-medium"
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Director Shop</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -272,6 +272,7 @@ export type Database = {
           created_at: string
           description: string | null
           end_date: string | null
+          flyer_url: string | null
           id: string
           location: string | null
           registration_fields: Json | null
@@ -288,6 +289,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string | null
+          flyer_url?: string | null
           id?: string
           location?: string | null
           registration_fields?: Json | null
@@ -304,6 +306,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string | null
+          flyer_url?: string | null
           id?: string
           location?: string | null
           registration_fields?: Json | null

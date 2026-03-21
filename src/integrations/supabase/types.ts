@@ -274,6 +274,7 @@ export type Database = {
           end_date: string | null
           id: string
           location: string | null
+          registration_fields: Json | null
           registration_open: boolean | null
           slug: string | null
           start_date: string | null
@@ -289,6 +290,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           location?: string | null
+          registration_fields?: Json | null
           registration_open?: boolean | null
           slug?: string | null
           start_date?: string | null
@@ -304,6 +306,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           location?: string | null
+          registration_fields?: Json | null
           registration_open?: boolean | null
           slug?: string | null
           start_date?: string | null

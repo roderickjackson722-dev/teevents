@@ -78,6 +78,7 @@ const Settings = () => {
   const [paypalDisconnectDialogOpen, setPaypalDisconnectDialogOpen] = useState(false);
   useEffect(() => {
     fetchConnectStatus();
+    fetchPaypalStatus();
     if (org) {
       setDashboardName(org.dashboardName || "");
       supabase

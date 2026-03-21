@@ -60,6 +60,9 @@ const Settings = () => {
   const [disconnectEmail, setDisconnectEmail] = useState("");
   const [disconnecting, setDisconnecting] = useState(false);
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualAccountId, setManualAccountId] = useState("");
+  const [savingManual, setSavingManual] = useState(false);
 
   useEffect(() => {
     fetchConnectStatus();
@@ -196,6 +199,31 @@ const Settings = () => {
     }
   };
 
+  const handleManualConnect = async () => {
+    if (demoGuard() || !org) return;
+    const trimmed = manualAccountId.trim();
+    if (!trimmed.startsWith("acct_")) {
+      toast.error("Please enter a valid Stripe account ID (starts with acct_)");
+      return;
+    }
+    setSavingManual(true);
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({ stripe_account_id: trimmed } as any)
+        .eq("id", org.orgId);
+      if (error) throw error;
+      toast.success("Stripe account ID saved! Verifying status...");
+      setManualAccountId("");
+      setShowManualEntry(false);
+      await fetchConnectStatus();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save Stripe account ID");
+    } finally {
+      setSavingManual(false);
+    }
+  };
+
   const isFullyConnected =
     connectStatus?.connected &&
     connectStatus?.charges_enabled &&
@@ -312,10 +340,49 @@ const Settings = () => {
             <p className="text-sm text-muted-foreground">
               Please complete your Stripe onboarding to start accepting payments.
             </p>
-            <Button onClick={handleConnectStripe} disabled={onboarding}>
-              {onboarding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Complete Stripe Onboarding
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={handleConnectStripe} disabled={onboarding}>
+                {onboarding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Complete Stripe Onboarding
+              </Button>
+              <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                    <Unlink className="h-4 w-4 mr-2" />
+                    Disconnect & Retry
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Disconnect Stripe Account?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-3">
+                      <p>
+                        This will remove the linked Stripe account so you can start fresh 
+                        or connect a different account.
+                      </p>
+                      <p>To confirm, type your account email address below:</p>
+                      <Input
+                        placeholder="Enter your email to confirm"
+                        value={disconnectEmail}
+                        onChange={(e) => setDisconnectEmail(e.target.value)}
+                        className="mt-2"
+                      />
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDisconnectEmail("")}>Cancel</AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDisconnectStripe}
+                      disabled={disconnecting || !disconnectEmail.trim()}
+                    >
+                      {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Disconnect Account
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -328,6 +395,43 @@ const Settings = () => {
               <CreditCard className="h-4 w-4 mr-2" />
               Connect Stripe Account
             </Button>
+
+            {/* Manual entry fallback */}
+            <div className="border-t border-border pt-4 mt-4">
+              <button
+                onClick={() => setShowManualEntry(!showManualEntry)}
+                className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+              >
+                Having trouble? Enter your Stripe Account ID manually
+              </button>
+              {showManualEntry && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Find your Account ID in your{" "}
+                    <a href="https://dashboard.stripe.com/settings/account" target="_blank" rel="noopener noreferrer" className="underline text-primary">
+                      Stripe Dashboard → Settings
+                    </a>
+                    . It starts with <code className="bg-muted px-1 rounded text-xs">acct_</code>.
+                  </p>
+                  <div className="flex items-center gap-2 max-w-md">
+                    <Input
+                      value={manualAccountId}
+                      onChange={(e) => setManualAccountId(e.target.value)}
+                      placeholder="acct_1234567890"
+                      className="flex-1 font-mono text-sm"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleManualConnect}
+                      disabled={savingManual || !manualAccountId.trim()}
+                    >
+                      {savingManual ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </motion.div>

@@ -58,27 +58,36 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Create a Standard connected account
-    const account = await stripe.accounts.create({
-      type: "standard",
-    });
-
-    // Store the account ID right away
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    await supabaseAdmin
+    // Check if org already has a stripe account linked
+    const { data: orgData } = await supabaseAdmin
       .from("organizations")
-      .update({ stripe_account_id: account.id })
-      .eq("id", organization_id);
+      .select("stripe_account_id")
+      .eq("id", organization_id)
+      .single();
 
-    // Create an account link for onboarding
+    let accountId = orgData?.stripe_account_id;
+
+    if (!accountId) {
+      // Create a new Standard connected account
+      const account = await stripe.accounts.create({ type: "standard" });
+      accountId = account.id;
+
+      await supabaseAdmin
+        .from("organizations")
+        .update({ stripe_account_id: accountId })
+        .eq("id", organization_id);
+    }
+
+    // Create an account link for onboarding (works for new or incomplete accounts)
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
     const accountLink = await stripe.accountLinks.create({
-      account: account.id,
+      account: accountId,
       refresh_url: `${origin}/dashboard/settings`,
       return_url: `${origin}/dashboard/settings?stripe_connected=true`,
       type: "account_onboarding",

@@ -16,6 +16,7 @@ import {
   Trophy,
   Save,
   Unlink,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,11 @@ interface ConnectStatus {
   account_id?: string;
 }
 
+interface PayPalStatus {
+  connected: boolean;
+  merchant_id: string | null;
+}
+
 const Settings = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
@@ -63,7 +69,13 @@ const Settings = () => {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualAccountId, setManualAccountId] = useState("");
   const [savingManual, setSavingManual] = useState(false);
-
+  // PayPal state
+  const [paypalStatus, setPaypalStatus] = useState<PayPalStatus | null>(null);
+  const [paypalLoading, setPaypalLoading] = useState(true);
+  const [paypalMerchantId, setPaypalMerchantId] = useState("");
+  const [connectingPaypal, setConnectingPaypal] = useState(false);
+  const [disconnectingPaypal, setDisconnectingPaypal] = useState(false);
+  const [paypalDisconnectDialogOpen, setPaypalDisconnectDialogOpen] = useState(false);
   useEffect(() => {
     fetchConnectStatus();
     if (org) {

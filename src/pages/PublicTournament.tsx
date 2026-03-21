@@ -224,14 +224,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         // Fetch nonprofit status for the org
         supabase.functions.invoke("get-nonprofit-status", { body: { tournament_id: t.id } })
           .then(({ data: npData }) => {
-            if (npData?.is_nonprofit) {
-              setNonprofitInfo({
-                isNonprofit: true,
-                nonprofitName: npData.nonprofit_name || undefined,
-                ein: npData.ein || undefined,
-                platformFeeRate: npData.platform_fee_rate ?? 0.05,
-              });
-            }
+            setNonprofitInfo({
+              isNonprofit: npData?.is_nonprofit || false,
+              nonprofitName: npData?.nonprofit_name || undefined,
+              ein: npData?.ein || undefined,
+              platformFeeRate: npData?.platform_fee_rate ?? 0.05,
+              hasPaypal: npData?.has_paypal || false,
+            });
           })
           .catch(() => {});
 

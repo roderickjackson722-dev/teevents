@@ -199,6 +199,31 @@ const Settings = () => {
     }
   };
 
+  const handleManualConnect = async () => {
+    if (demoGuard() || !org) return;
+    const trimmed = manualAccountId.trim();
+    if (!trimmed.startsWith("acct_")) {
+      toast.error("Please enter a valid Stripe account ID (starts with acct_)");
+      return;
+    }
+    setSavingManual(true);
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({ stripe_account_id: trimmed } as any)
+        .eq("id", org.orgId);
+      if (error) throw error;
+      toast.success("Stripe account ID saved! Verifying status...");
+      setManualAccountId("");
+      setShowManualEntry(false);
+      await fetchConnectStatus();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save Stripe account ID");
+    } finally {
+      setSavingManual(false);
+    }
+  };
+
   const isFullyConnected =
     connectStatus?.connected &&
     connectStatus?.charges_enabled &&

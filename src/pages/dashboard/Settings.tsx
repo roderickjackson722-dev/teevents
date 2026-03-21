@@ -60,6 +60,9 @@ const Settings = () => {
   const [disconnectEmail, setDisconnectEmail] = useState("");
   const [disconnecting, setDisconnecting] = useState(false);
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualAccountId, setManualAccountId] = useState("");
+  const [savingManual, setSavingManual] = useState(false);
 
   useEffect(() => {
     fetchConnectStatus();

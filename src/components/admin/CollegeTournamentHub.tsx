@@ -222,22 +222,51 @@ const CollegeTournamentHub = () => {
   };
 
   // Invitations
+  const [sendingEmails, setSendingEmails] = useState(false);
+
   const sendInvitation = async () => {
     if (!expandedId || !inviteForm.coach_name || !inviteForm.coach_email || !inviteForm.school_name) return;
-    const { error } = await supabase.from("college_tournament_invitations").insert({
+    const { data, error } = await supabase.from("college_tournament_invitations").insert({
       tournament_id: expandedId,
       coach_name: inviteForm.coach_name,
       coach_email: inviteForm.coach_email,
       school_name: inviteForm.school_name,
-      status: "sent",
-    } as any);
+      status: "pending",
+    } as any).select().single() as any;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Invitation created" });
+      // Send email immediately
+      await sendInvitationEmails([data.id]);
+      toast({ title: "Invitation created & email sent" });
       setInviteForm({ coach_name: "", coach_email: "", school_name: "" });
       fetchTournamentData(expandedId);
     }
+  };
+
+  const sendInvitationEmails = async (invitationIds: string[]) => {
+    if (!expandedId) return;
+    setSendingEmails(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-college-invitation", {
+        body: { invitation_ids: invitationIds, tournament_id: expandedId },
+      });
+      if (error) throw error;
+      toast({ title: `${data.sent} invitation email(s) sent` });
+      fetchTournamentData(expandedId);
+    } catch (err: any) {
+      toast({ title: "Email send failed", description: err.message, variant: "destructive" });
+    }
+    setSendingEmails(false);
+  };
+
+  const sendAllInvitationEmails = async () => {
+    const unsent = invitations.filter(i => i.status !== "sent" || !i.rsvp_response);
+    if (unsent.length === 0) {
+      toast({ title: "All invitations already sent" });
+      return;
+    }
+    await sendInvitationEmails(unsent.map(i => i.id));
   };
 
   const bulkSendInvitations = async () => {
@@ -256,13 +285,17 @@ const CollegeTournamentHub = () => {
       return;
     }
 
-    const { error } = await supabase.from("college_tournament_invitations").insert(
-      entries.map(e => ({ tournament_id: expandedId, ...e, status: "sent" })) as any
-    );
+    const { data, error } = await supabase.from("college_tournament_invitations").insert(
+      entries.map(e => ({ tournament_id: expandedId, ...e, status: "pending" })) as any
+    ).select() as any;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: `${entries.length} invitations created` });
+      // Send emails for all new invitations
+      if (data && data.length > 0) {
+        await sendInvitationEmails(data.map((d: any) => d.id));
+      }
+      toast({ title: `${entries.length} invitations created & emails sent` });
       setBulkInvites("");
       fetchTournamentData(expandedId);
     }

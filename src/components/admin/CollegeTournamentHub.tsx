@@ -692,11 +692,11 @@ const CollegeTournamentHub = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button onClick={() => sendInvitationEmails([inv.id])} className="text-muted-foreground hover:text-primary transition-colors" title="Resend invitation email">
-                                    <RefreshCw className="h-4 w-4" />
-                                  </button>
-                                  <button onClick={() => deleteInvitation(inv.id)} className="text-muted-foreground hover:text-destructive" title="Delete invitation">
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
+                                     <RefreshCw className="h-4 w-4" />
+                                   </button>
+                                   <button onClick={() => setDeleteInvTarget(inv)} className="text-muted-foreground hover:text-destructive" title="Delete invitation">
+                                     <Trash2 className="h-4 w-4" />
+                                   </button>
                                 </div>
                               </div>
                             ))}

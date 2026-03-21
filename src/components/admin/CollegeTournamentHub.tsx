@@ -174,13 +174,26 @@ const CollegeTournamentHub = () => {
     }
 
     setTabs(tabRes.data || []);
+
+    // Load registration fields for this tournament
+    const tournament = tournaments.find(t => t.id === tournamentId);
+    if (tournament?.registration_fields) {
+      setRegFields(tournament.registration_fields);
+    } else {
+      setRegFields([
+        { id: "school_name", label: "School Name", type: "text", required: true, editable: false },
+        { id: "coach_name", label: "Head Coach Name", type: "text", required: true, editable: false },
+        { id: "coach_email", label: "Coach Email", type: "email", required: true, editable: false },
+        { id: "notes", label: "Notes", type: "text", required: false, editable: true },
+      ]);
+    }
   };
 
   useEffect(() => { fetchTournaments(); }, []);
 
   useEffect(() => {
     if (expandedId) fetchTournamentData(expandedId);
-  }, [expandedId]);
+  }, [expandedId, tournaments]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

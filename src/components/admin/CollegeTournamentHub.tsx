@@ -518,12 +518,19 @@ const CollegeTournamentHub = () => {
                         {/* Invitation List */}
                         {invitations.length > 0 ? (
                           <div className="space-y-2">
+                            <div className="flex justify-end mb-2">
+                              <Button size="sm" variant="outline" onClick={sendAllInvitationEmails} disabled={sendingEmails}>
+                                {sendingEmails ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+                                Send All Emails
+                              </Button>
+                            </div>
                             {invitations.map(inv => (
                               <div key={inv.id} className="bg-card rounded-lg border border-border px-4 py-3 flex items-center justify-between">
                                 <div className="flex items-center gap-3 flex-wrap">
                                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                     inv.rsvp_response === "accepted" ? "bg-primary/10 text-primary" :
                                     inv.rsvp_response === "declined" ? "bg-destructive/10 text-destructive" :
+                                    inv.status === "sent" ? "bg-secondary/10 text-secondary" :
                                     "bg-muted text-muted-foreground"
                                   }`}>
                                     {inv.rsvp_response || inv.status}
@@ -532,9 +539,14 @@ const CollegeTournamentHub = () => {
                                   <span className="text-xs text-muted-foreground">{inv.coach_name}</span>
                                   <span className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" />{inv.coach_email}</span>
                                 </div>
-                                <button onClick={() => deleteInvitation(inv.id)} className="text-muted-foreground hover:text-destructive">
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button onClick={() => sendInvitationEmails([inv.id])} className="text-muted-foreground hover:text-primary transition-colors" title="Resend invitation email">
+                                    <RefreshCw className="h-4 w-4" />
+                                  </button>
+                                  <button onClick={() => deleteInvitation(inv.id)} className="text-muted-foreground hover:text-destructive" title="Delete invitation">
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>

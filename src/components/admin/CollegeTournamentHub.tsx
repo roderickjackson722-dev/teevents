@@ -768,6 +768,102 @@ const CollegeTournamentHub = () => {
                           </div>
                         </div>
                       </TabsContent>
+
+                      {/* Registration Fields Tab */}
+                      <TabsContent value="reg-fields" className="space-y-4">
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-1">Registration Form Fields</h4>
+                          <p className="text-xs text-muted-foreground mb-4">Customize the questions coaches see when registering their team. Core fields (School, Coach, Email) cannot be removed.</p>
+
+                          <div className="space-y-2">
+                            {regFields.map((field) => (
+                              <div key={field.id} className="flex items-center gap-3 bg-muted/30 rounded-lg px-4 py-3 border border-border">
+                                {editingFieldId === field.id ? (
+                                  <div className="flex-1 flex items-center gap-2 flex-wrap">
+                                    <Input
+                                      value={editFieldLabel}
+                                      onChange={e => setEditFieldLabel(e.target.value)}
+                                      className="flex-1 min-w-[150px] h-8 text-sm"
+                                      placeholder="Field label"
+                                    />
+                                    <select
+                                      value={editFieldType}
+                                      onChange={e => setEditFieldType(e.target.value)}
+                                      className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                                    >
+                                      <option value="text">Text</option>
+                                      <option value="email">Email</option>
+                                      <option value="number">Number</option>
+                                      <option value="textarea">Textarea</option>
+                                      <option value="select">Dropdown</option>
+                                    </select>
+                                    <label className="flex items-center gap-1.5 text-xs">
+                                      <input type="checkbox" checked={editFieldRequired} onChange={e => setEditFieldRequired(e.target.checked)} />
+                                      Required
+                                    </label>
+                                    <Button size="sm" variant="default" onClick={saveEditRegField} className="h-7 px-2">
+                                      <Save className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingFieldId(null)} className="h-7 px-2">
+                                      <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="flex-1">
+                                      <span className="text-sm font-medium">{field.label}</span>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-xs text-muted-foreground capitalize">{field.type}</span>
+                                        {field.required && <span className="text-xs text-primary font-medium">Required</span>}
+                                        {!field.editable && <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">Core</span>}
+                                      </div>
+                                    </div>
+                                    {field.editable && (
+                                      <div className="flex items-center gap-1">
+                                        <button onClick={() => startEditRegField(field)} className="text-muted-foreground hover:text-foreground" title="Edit field">
+                                          <Pencil className="h-4 w-4" />
+                                        </button>
+                                        <button onClick={() => removeRegField(field.id)} className="text-muted-foreground hover:text-destructive" title="Remove field">
+                                          <Trash2 className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Add New Field */}
+                          <div className="mt-4 border-t border-border pt-4">
+                            <h5 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Add Custom Field</h5>
+                            <div className="flex gap-2 flex-wrap items-end">
+                              <Input
+                                placeholder="Field Label"
+                                value={newFieldLabel}
+                                onChange={e => setNewFieldLabel(e.target.value)}
+                                className="flex-1 min-w-[150px]"
+                              />
+                              <select
+                                value={newFieldType}
+                                onChange={e => setNewFieldType(e.target.value)}
+                                className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              >
+                                <option value="text">Text</option>
+                                <option value="email">Email</option>
+                                <option value="number">Number</option>
+                                <option value="textarea">Textarea</option>
+                                <option value="select">Dropdown</option>
+                              </select>
+                              <label className="flex items-center gap-1.5 text-sm h-10">
+                                <input type="checkbox" checked={newFieldRequired} onChange={e => setNewFieldRequired(e.target.checked)} />
+                                Required
+                              </label>
+                              <Button onClick={addRegField}><Plus className="h-4 w-4 mr-1" /> Add Field</Button>
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
                     </Tabs>
                   </div>
                 )}

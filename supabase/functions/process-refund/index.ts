@@ -109,15 +109,33 @@ Deno.serve(async (req) => {
         payment_intent: targetSession.payment_intent as string,
       };
 
-      // If connected account, refund on their behalf
+      // If connected account, try reverse transfer first, fall back if insufficient balance
       if (org?.stripe_account_id) {
-        refundParams.refund_application_fee = false;
-        refundParams.reverse_transfer = true;
+        try {
+          const refund = await stripe.refunds.create({
+            ...refundParams,
+            reverse_transfer: true,
+            refund_application_fee: false,
+          });
+          refundId = refund.id;
+        } catch (transferErr: any) {
+          if (transferErr.message?.includes("sufficient funds")) {
+            console.log(`[Refund] Connected account has insufficient balance, refunding without reverse transfer`);
+            const refund = await stripe.refunds.create({
+              ...refundParams,
+              reverse_transfer: false,
+            });
+            refundId = refund.id;
+          } else {
+            throw transferErr;
+          }
+        }
+      } else {
+        const refund = await stripe.refunds.create(refundParams);
+        refundId = refund.id;
       }
 
-      const refund = await stripe.refunds.create(refundParams);
-      refundId = refund.id;
-      console.log(`[Refund] Processed refund ${refund.id} for registration ${targetRegistrationId}`);
+      console.log(`[Refund] Processed refund ${refundId} for registration ${targetRegistrationId}`);
     } else {
       console.log(`[Refund] No Stripe session found for registration ${targetRegistrationId} — marking as refunded without Stripe`);
     }

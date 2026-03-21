@@ -997,7 +997,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               {showConfirmation ? (
                 <div className="bg-white rounded-xl border p-8 shadow-sm text-center relative" style={{ borderColor: "#e5e5e5" }}>
                   <button
-                    onClick={() => setRegistered(false)}
+                    onClick={() => setShowConfirmation(false)}
                     className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors"
                     aria-label="Close"
                   >

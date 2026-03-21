@@ -122,6 +122,7 @@ const App = () => (
            <Route path="/how-it-works" element={<HowItWorks />} />
            <Route path="/pricing" element={<Pricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
+           <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, Trash2, Calendar, MapPin, Loader2, Users, Mail, Send,
-  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X,
+  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw,
 } from "lucide-react";
 
 interface CollegeTournament {
@@ -222,22 +222,51 @@ const CollegeTournamentHub = () => {
   };
 
   // Invitations
+  const [sendingEmails, setSendingEmails] = useState(false);
+
   const sendInvitation = async () => {
     if (!expandedId || !inviteForm.coach_name || !inviteForm.coach_email || !inviteForm.school_name) return;
-    const { error } = await supabase.from("college_tournament_invitations").insert({
+    const { data, error } = await supabase.from("college_tournament_invitations").insert({
       tournament_id: expandedId,
       coach_name: inviteForm.coach_name,
       coach_email: inviteForm.coach_email,
       school_name: inviteForm.school_name,
-      status: "sent",
-    } as any);
+      status: "pending",
+    } as any).select().single() as any;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Invitation created" });
+      // Send email immediately
+      await sendInvitationEmails([data.id]);
+      toast({ title: "Invitation created & email sent" });
       setInviteForm({ coach_name: "", coach_email: "", school_name: "" });
       fetchTournamentData(expandedId);
     }
+  };
+
+  const sendInvitationEmails = async (invitationIds: string[]) => {
+    if (!expandedId) return;
+    setSendingEmails(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-college-invitation", {
+        body: { invitation_ids: invitationIds, tournament_id: expandedId },
+      });
+      if (error) throw error;
+      toast({ title: `${data.sent} invitation email(s) sent` });
+      fetchTournamentData(expandedId);
+    } catch (err: any) {
+      toast({ title: "Email send failed", description: err.message, variant: "destructive" });
+    }
+    setSendingEmails(false);
+  };
+
+  const sendAllInvitationEmails = async () => {
+    const unsent = invitations.filter(i => i.status !== "sent" || !i.rsvp_response);
+    if (unsent.length === 0) {
+      toast({ title: "All invitations already sent" });
+      return;
+    }
+    await sendInvitationEmails(unsent.map(i => i.id));
   };
 
   const bulkSendInvitations = async () => {
@@ -256,13 +285,17 @@ const CollegeTournamentHub = () => {
       return;
     }
 
-    const { error } = await supabase.from("college_tournament_invitations").insert(
-      entries.map(e => ({ tournament_id: expandedId, ...e, status: "sent" })) as any
-    );
+    const { data, error } = await supabase.from("college_tournament_invitations").insert(
+      entries.map(e => ({ tournament_id: expandedId, ...e, status: "pending" })) as any
+    ).select() as any;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: `${entries.length} invitations created` });
+      // Send emails for all new invitations
+      if (data && data.length > 0) {
+        await sendInvitationEmails(data.map((d: any) => d.id));
+      }
+      toast({ title: `${entries.length} invitations created & emails sent` });
       setBulkInvites("");
       fetchTournamentData(expandedId);
     }
@@ -418,6 +451,11 @@ const CollegeTournamentHub = () => {
                       {t.registration_open && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">Registration Open</span>}
                     </div>
                     <div className="flex items-center gap-2">
+                      {t.status === "active" && (t as any).slug && (
+                        <a href={`/college/${(t as any).slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80">
+                          <Globe className="h-3.5 w-3.5" /> View Page
+                        </a>
+                      )}
                       <Button size="sm" variant="outline" onClick={() => toggleStatus(t)}>
                         {t.status === "active" ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
                         {t.status === "active" ? "Unpublish" : "Publish"}
@@ -480,12 +518,19 @@ const CollegeTournamentHub = () => {
                         {/* Invitation List */}
                         {invitations.length > 0 ? (
                           <div className="space-y-2">
+                            <div className="flex justify-end mb-2">
+                              <Button size="sm" variant="outline" onClick={sendAllInvitationEmails} disabled={sendingEmails}>
+                                {sendingEmails ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+                                Send All Emails
+                              </Button>
+                            </div>
                             {invitations.map(inv => (
                               <div key={inv.id} className="bg-card rounded-lg border border-border px-4 py-3 flex items-center justify-between">
                                 <div className="flex items-center gap-3 flex-wrap">
                                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                     inv.rsvp_response === "accepted" ? "bg-primary/10 text-primary" :
                                     inv.rsvp_response === "declined" ? "bg-destructive/10 text-destructive" :
+                                    inv.status === "sent" ? "bg-secondary/10 text-secondary" :
                                     "bg-muted text-muted-foreground"
                                   }`}>
                                     {inv.rsvp_response || inv.status}
@@ -494,9 +539,14 @@ const CollegeTournamentHub = () => {
                                   <span className="text-xs text-muted-foreground">{inv.coach_name}</span>
                                   <span className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" />{inv.coach_email}</span>
                                 </div>
-                                <button onClick={() => deleteInvitation(inv.id)} className="text-muted-foreground hover:text-destructive">
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button onClick={() => sendInvitationEmails([inv.id])} className="text-muted-foreground hover:text-primary transition-colors" title="Resend invitation email">
+                                    <RefreshCw className="h-4 w-4" />
+                                  </button>
+                                  <button onClick={() => deleteInvitation(inv.id)} className="text-muted-foreground hover:text-destructive" title="Delete invitation">
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>

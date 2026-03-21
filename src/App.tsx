@@ -58,6 +58,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import VisitTracker from "./components/VisitTracker";
+import CollegeTournament from "./pages/CollegeTournament";
 
 const queryClient = new QueryClient();
 
@@ -121,6 +122,7 @@ const App = () => (
            <Route path="/how-it-works" element={<HowItWorks />} />
            <Route path="/pricing" element={<Pricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
+           <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -451,6 +451,11 @@ const CollegeTournamentHub = () => {
                       {t.registration_open && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">Registration Open</span>}
                     </div>
                     <div className="flex items-center gap-2">
+                      {t.status === "active" && (t as any).slug && (
+                        <a href={`/college/${(t as any).slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80">
+                          <Globe className="h-3.5 w-3.5" /> View Page
+                        </a>
+                      )}
                       <Button size="sm" variant="outline" onClick={() => toggleStatus(t)}>
                         {t.status === "active" ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
                         {t.status === "active" ? "Unpublish" : "Publish"}

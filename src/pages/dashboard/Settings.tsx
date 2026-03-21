@@ -147,6 +147,79 @@ const Settings = () => {
     }
   };
 
+  const fetchPaypalStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase.functions.invoke("paypal-onboard", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: "status" },
+      });
+
+      if (error) throw error;
+      setPaypalStatus(data);
+    } catch (err) {
+      console.error("Failed to fetch PayPal status:", err);
+    } finally {
+      setPaypalLoading(false);
+    }
+  };
+
+  const handleConnectPaypal = async () => {
+    if (demoGuard()) return;
+    if (!paypalMerchantId.trim()) {
+      toast.error("Please enter your PayPal Merchant ID or business email");
+      return;
+    }
+    setConnectingPaypal(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("paypal-onboard", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: "connect", paypal_merchant_id: paypalMerchantId.trim() },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("PayPal account connected successfully!");
+      setPaypalStatus({ connected: true, merchant_id: paypalMerchantId.trim() });
+      setPaypalMerchantId("");
+    } catch (err: any) {
+      toast.error(getFunctionErrorMessage(err, "Failed to connect PayPal"));
+    } finally {
+      setConnectingPaypal(false);
+    }
+  };
+
+  const handleDisconnectPaypal = async () => {
+    if (demoGuard()) return;
+    setDisconnectingPaypal(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("paypal-onboard", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: "disconnect" },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("PayPal account disconnected");
+      setPaypalStatus({ connected: false, merchant_id: null });
+      setPaypalDisconnectDialogOpen(false);
+    } catch (err: any) {
+      toast.error(getFunctionErrorMessage(err, "Failed to disconnect PayPal"));
+    } finally {
+      setDisconnectingPaypal(false);
+    }
+  };
+
   const handleConnectStripe = async () => {
     if (demoGuard()) return;
     setOnboarding(true);

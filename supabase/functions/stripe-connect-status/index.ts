@@ -85,10 +85,33 @@ Deno.serve(async (req) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("stripe-connect-status error:", message);
-    const status = message === "Unauthorized" ? 401 : 500;
+
+    if (message === "Unauthorized") {
+      return new Response(JSON.stringify({ error: message }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    // If Stripe can't access the account, return a structured "invalid" status
+    // so the UI can show a helpful message instead of silently resetting
+    const isAccessError = message.includes("does not have access") || message.includes("does not exist");
+    if (isAccessError) {
+      return new Response(
+        JSON.stringify({
+          connected: false,
+          charges_enabled: false,
+          payouts_enabled: false,
+          invalid_account: true,
+          error_message: "The saved Stripe account could not be verified. It may not be connected to this platform. Please use the 'Connect Stripe Account' button to properly link your account through Stripe's onboarding flow, or disconnect and try again.",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      );
+    }
+
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status,
+      status: 500,
     });
   }
 });

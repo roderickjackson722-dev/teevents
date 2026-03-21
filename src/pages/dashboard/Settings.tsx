@@ -233,6 +233,8 @@ const Settings = () => {
     connectStatus?.connected &&
     (!connectStatus?.charges_enabled || !connectStatus?.payouts_enabled);
 
+  const isInvalidAccount = !!(connectStatus as any)?.invalid_account;
+
   return (
     <div className="space-y-6">
       <div className="mb-8">
@@ -265,6 +267,65 @@ const Settings = () => {
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             Checking payment status...
+          </div>
+        ) : isInvalidAccount ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              <span className="font-medium">
+                Stripe account could not be verified
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The saved account ID could not be accessed by our platform. This usually means the account
+              was entered manually but was never connected through Stripe's onboarding flow. Please click
+              <strong> Connect Stripe Account</strong> below to properly link your account, or disconnect the
+              invalid entry first.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={handleConnectStripe} disabled={onboarding}>
+                {onboarding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <CreditCard className="h-4 w-4 mr-2" />
+                Connect Stripe Account
+              </Button>
+              <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                    <Unlink className="h-4 w-4 mr-2" />
+                    Remove Invalid Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove Invalid Stripe Account?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-3">
+                      <p>
+                        This will clear the invalid Stripe account ID so you can connect a new account
+                        through the proper onboarding flow.
+                      </p>
+                      <p>To confirm, type your account email address below:</p>
+                      <Input
+                        placeholder="Enter your email to confirm"
+                        value={disconnectEmail}
+                        onChange={(e) => setDisconnectEmail(e.target.value)}
+                        className="mt-2"
+                      />
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDisconnectEmail("")}>Cancel</AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDisconnectStripe}
+                      disabled={disconnecting || !disconnectEmail.trim()}
+                    >
+                      {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Remove & Reset
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         ) : isFullyConnected ? (
           <div className="space-y-4">

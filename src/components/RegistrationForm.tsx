@@ -181,40 +181,51 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     if (hasFee) {
       try {
-        const body = allowGroup
-          ? {
-              tournament_id: tournamentId,
-              foursome: true,
-              cover_fees: coverFees,
-              players: parsedPlayers.map((p, i) => ({
-                first_name: p!.first_name,
-                last_name: p!.last_name,
-                email: p!.email,
-                phone: players[i].phone || null,
-                handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
-                shirt_size: players[i].shirt_size || null,
-                dietary_restrictions: players[i].dietary_restrictions || null,
-                notes: i === 0 ? groupNotes || null : null,
-              })),
-            }
-          : {
-              tournament_id: tournamentId,
-              cover_fees: coverFees,
-              first_name: parsedPlayers[0]!.first_name,
-              last_name: parsedPlayers[0]!.last_name,
-              email: parsedPlayers[0]!.email,
-              phone: players[0].phone || null,
-              handicap: players[0].handicap ? parseInt(players[0].handicap) : null,
-              shirt_size: players[0].shirt_size || null,
-              dietary_restrictions: players[0].dietary_restrictions || null,
-              notes: groupNotes || players[0].notes || null,
-            };
+        const playerData = allowGroup
+          ? parsedPlayers.map((p, i) => ({
+              first_name: p!.first_name,
+              last_name: p!.last_name,
+              email: p!.email,
+              phone: players[i].phone || null,
+              handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
+              shirt_size: players[i].shirt_size || null,
+              dietary_restrictions: players[i].dietary_restrictions || null,
+              notes: i === 0 ? groupNotes || null : null,
+            }))
+          : null;
 
-        const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
+        const singleData = !allowGroup ? {
+          first_name: parsedPlayers[0]!.first_name,
+          last_name: parsedPlayers[0]!.last_name,
+          email: parsedPlayers[0]!.email,
+          phone: players[0].phone || null,
+          handicap: players[0].handicap ? parseInt(players[0].handicap) : null,
+          shirt_size: players[0].shirt_size || null,
+          dietary_restrictions: players[0].dietary_restrictions || null,
+          notes: groupNotes || players[0].notes || null,
+        } : null;
 
-        if (error) throw error;
-        if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
-        if (data?.paid) setSubmitted(true);
+        if (paymentMethod === "paypal" && hasPaypal) {
+          // PayPal checkout
+          const body = allowGroup
+            ? { type: "registration", tournament_id: tournamentId, foursome: true, players: playerData }
+            : { type: "registration", tournament_id: tournamentId, ...singleData };
+
+          const { data, error } = await supabase.functions.invoke("create-paypal-order", { body });
+          if (error) throw error;
+          if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
+          if (data?.paid) setSubmitted(true);
+        } else {
+          // Stripe checkout (default)
+          const body = allowGroup
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, players: playerData }
+            : { tournament_id: tournamentId, cover_fees: coverFees, ...singleData };
+
+          const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
+          if (error) throw error;
+          if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
+          if (data?.paid) setSubmitted(true);
+        }
       } catch (err: any) {
         setErrors({ form: err.message || "Registration failed. Please try again." });
       }

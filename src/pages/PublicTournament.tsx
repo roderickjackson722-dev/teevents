@@ -465,7 +465,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           >
             <div className="bg-white rounded-xl border-2 p-8 shadow-2xl text-center relative" style={{ borderColor: `${secondary}40` }}>
               <button
-                onClick={() => setRegistered(false)}
+                onClick={() => setShowConfirmation(false)}
                 className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors"
                 aria-label="Close"
               >

@@ -110,7 +110,7 @@ export default function EmailTemplateEditor() {
       setLoading(false);
     };
     load();
-  }, [org, selectedTournamentId]);
+  }, [org]);
 
   // Load registrations when tournament changes
   useEffect(() => {

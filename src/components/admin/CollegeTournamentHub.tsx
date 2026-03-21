@@ -385,6 +385,54 @@ const CollegeTournamentHub = () => {
     toast({ title: "File uploaded" });
   };
 
+  // Registration Fields CRUD
+  const saveRegFields = async (fields: RegistrationField[]) => {
+    if (!expandedId) return;
+    await supabase.from("college_tournaments").update({ registration_fields: fields } as any).eq("id", expandedId);
+    setRegFields(fields);
+    fetchTournaments();
+    toast({ title: "Registration fields saved" });
+  };
+
+  const addRegField = () => {
+    if (!newFieldLabel.trim()) return;
+    const newField: RegistrationField = {
+      id: `custom_${Date.now()}`,
+      label: newFieldLabel.trim(),
+      type: newFieldType,
+      required: newFieldRequired,
+      editable: true,
+    };
+    const updated = [...regFields, newField];
+    saveRegFields(updated);
+    setNewFieldLabel("");
+    setNewFieldType("text");
+    setNewFieldRequired(false);
+  };
+
+  const removeRegField = (fieldId: string) => {
+    const updated = regFields.filter(f => f.id !== fieldId);
+    saveRegFields(updated);
+  };
+
+  const startEditRegField = (field: RegistrationField) => {
+    setEditingFieldId(field.id);
+    setEditFieldLabel(field.label);
+    setEditFieldType(field.type);
+    setEditFieldRequired(field.required);
+  };
+
+  const saveEditRegField = () => {
+    if (!editingFieldId) return;
+    const updated = regFields.map(f =>
+      f.id === editingFieldId
+        ? { ...f, label: editFieldLabel.trim(), type: editFieldType, required: editFieldRequired }
+        : f
+    );
+    saveRegFields(updated);
+    setEditingFieldId(null);
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (

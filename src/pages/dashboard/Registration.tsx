@@ -25,6 +25,7 @@ import {
   Info,
   Crown,
   RotateCcw,
+  Pencil,
 } from "lucide-react";
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";
@@ -236,6 +237,10 @@ const Registration = () => {
   const [newFieldLabel, setNewFieldLabel] = useState("");
   const [newFieldType, setNewFieldType] = useState("text");
   const [newFieldOptions, setNewFieldOptions] = useState("");
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editFieldLabel, setEditFieldLabel] = useState("");
+  const [editFieldType, setEditFieldType] = useState("text");
+  const [editFieldOptions, setEditFieldOptions] = useState("");
 
   const addCustomField = async () => {
     if (!newFieldLabel.trim()) return;
@@ -256,6 +261,36 @@ const Registration = () => {
       setNewFieldLabel("");
       setNewFieldOptions("");
       toast.success("Custom field added!");
+    }
+  };
+
+  const startEditField = (field: RegField) => {
+    setEditingFieldId(field.id!);
+    setEditFieldLabel(field.label);
+    setEditFieldType(field.field_type);
+    setEditFieldOptions(field.options ? (field.options as string[]).join(", ") : "");
+  };
+
+  const cancelEditField = () => {
+    setEditingFieldId(null);
+    setEditFieldLabel("");
+    setEditFieldType("text");
+    setEditFieldOptions("");
+  };
+
+  const saveEditField = async (id: string) => {
+    if (!editFieldLabel.trim()) return;
+    const updates: any = {
+      label: editFieldLabel.trim(),
+      field_type: editFieldType,
+      options: editFieldType === "dropdown" ? editFieldOptions.split(",").map((o) => o.trim()).filter(Boolean) : null,
+    };
+    const { error } = await supabase.from("tournament_registration_fields").update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+      setEditingFieldId(null);
+      toast.success("Field updated!");
     }
   };
 
@@ -674,25 +709,66 @@ const Registration = () => {
                 {fields.filter((f) => !f.is_default).length > 0 && (
                   <div className="space-y-3 mb-6">
                     {fields.filter((f) => !f.is_default).map((field) => (
-                      <div key={field.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                        <div className="flex items-center gap-3">
-                          <GripVertical className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium text-foreground text-sm">{field.label}</span>
-                          <Badge variant="outline" className="text-[10px]">{field.field_type}</Badge>
-                          {field.is_required && <Badge variant="secondary" className="text-[10px]">Required</Badge>}
-                          {field.options && (
-                            <span className="text-xs text-muted-foreground">{(field.options as string[]).join(", ")}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs text-muted-foreground">Required</span>
-                            <Switch checked={field.is_required} onCheckedChange={() => toggleFieldRequired(field)} />
+                      <div key={field.id} className="p-3 rounded-lg border border-border space-y-2">
+                        {editingFieldId === field.id ? (
+                          <div className="space-y-3">
+                            <div className="grid sm:grid-cols-3 gap-3">
+                              <Input
+                                value={editFieldLabel}
+                                onChange={(e) => setEditFieldLabel(e.target.value)}
+                                placeholder="Question label"
+                                maxLength={100}
+                              />
+                              <Select value={editFieldType} onValueChange={setEditFieldType}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="text">Text</SelectItem>
+                                  <SelectItem value="number">Number</SelectItem>
+                                  <SelectItem value="dropdown">Dropdown</SelectItem>
+                                  <SelectItem value="checkbox">Checkbox</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => saveEditField(field.id!)} disabled={!editFieldLabel.trim()}>
+                                  <Save className="h-3.5 w-3.5 mr-1" /> Save
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={cancelEditField}>Cancel</Button>
+                              </div>
+                            </div>
+                            {editFieldType === "dropdown" && (
+                              <Input
+                                placeholder="Options (comma-separated): Option A, Option B"
+                                value={editFieldOptions}
+                                onChange={(e) => setEditFieldOptions(e.target.value)}
+                                maxLength={500}
+                              />
+                            )}
                           </div>
-                          <Button variant="ghost" size="icon" onClick={() => deleteField(field.id!)} className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <GripVertical className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium text-foreground text-sm">{field.label}</span>
+                              <Badge variant="outline" className="text-[10px]">{field.field_type}</Badge>
+                              {field.is_required && <Badge variant="secondary" className="text-[10px]">Required</Badge>}
+                              {field.options && (
+                                <span className="text-xs text-muted-foreground">{(field.options as string[]).join(", ")}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground">Required</span>
+                                <Switch checked={field.is_required} onCheckedChange={() => toggleFieldRequired(field)} />
+                              </div>
+                              <Button variant="ghost" size="icon" onClick={() => startEditField(field)} className="text-muted-foreground hover:text-foreground" title="Edit field">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => deleteField(field.id!)} className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

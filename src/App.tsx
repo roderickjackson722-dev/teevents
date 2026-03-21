@@ -36,6 +36,7 @@ import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
+import Finances from "./pages/dashboard/Finances";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
 import DirectorShop from "./pages/dashboard/DirectorShop";
@@ -100,6 +101,7 @@ const App = () => (
           <Route path="/dashboard/volunteers" element={<DashboardLayout><PlanGate feature="volunteers"><Volunteers /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/donations" element={<DashboardLayout><PlanGate feature="donations"><Donations /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/director-shop" element={<DashboardLayout><DirectorShop /></DashboardLayout>} />
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />

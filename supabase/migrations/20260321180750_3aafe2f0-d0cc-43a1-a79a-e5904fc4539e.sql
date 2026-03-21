@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS confirmation_email_config jsonb DEFAULT NULL;

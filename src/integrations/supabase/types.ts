@@ -1711,6 +1711,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          confirmation_email_config: Json | null
           contact_email: string | null
           contact_phone: string | null
           countdown_style: string
@@ -1758,6 +1759,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
           countdown_style?: string
@@ -1805,6 +1807,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
           countdown_style?: string

@@ -103,6 +103,7 @@ const App = () => (
           <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/donations" element={<DashboardLayout><PlanGate feature="donations"><Donations /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
+          <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/director-shop" element={<DashboardLayout><DirectorShop /></DashboardLayout>} />
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />

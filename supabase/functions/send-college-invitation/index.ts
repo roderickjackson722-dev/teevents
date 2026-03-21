@@ -58,6 +58,10 @@ Deno.serve(async (req) => {
       ${tournament.course_name ? `<p style="font-size: 14px; color: #666;">📍 <strong>Course:</strong> ${tournament.course_name}</p>` : ""}
       ${tournament.location ? `<p style="font-size: 14px; color: #666;">📍 <strong>Location:</strong> ${tournament.location}</p>` : ""}
       ${tournament.start_date ? `<p style="font-size: 14px; color: #666;">📅 <strong>Date:</strong> ${new Date(tournament.start_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}${tournament.end_date && tournament.end_date !== tournament.start_date ? " – " + new Date(tournament.end_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""}</p>` : ""}
+      ${tournament.flyer_url ? `
+      <div style="text-align: center; margin: 24px 0;">
+        <img src="${tournament.flyer_url}" alt="Event Flyer" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);" />
+      </div>` : ""}
       <div style="text-align: center; margin: 32px 0;">
         <a href="${rsvpUrl}" style="display: inline-block; background: #1a5c38; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
           View Invitation & RSVP

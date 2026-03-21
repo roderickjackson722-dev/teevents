@@ -1,0 +1,1 @@
+ALTER TABLE public.college_tournaments ADD COLUMN flyer_url text DEFAULT NULL;

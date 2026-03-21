@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, Trash2, Calendar, MapPin, Loader2, Users, Mail, Send,
-  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList,
+  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image,
 } from "lucide-react";
 
 interface RegistrationField {
@@ -39,6 +39,7 @@ interface CollegeTournament {
   contact_email: string | null;
   created_at: string;
   registration_fields: RegistrationField[] | null;
+  flyer_url: string | null;
 }
 
 interface Invitation {
@@ -265,6 +266,32 @@ const CollegeTournamentHub = () => {
 
   // Invitations
   const [sendingEmails, setSendingEmails] = useState(false);
+  const [uploadingFlyer, setUploadingFlyer] = useState(false);
+
+  const handleFlyerUpload = async (file: File) => {
+    if (!expandedId) return;
+    setUploadingFlyer(true);
+    const ext = file.name.split(".").pop();
+    const path = `college/${expandedId}/flyer.${ext}`;
+    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    if (upErr) {
+      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+      setUploadingFlyer(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    await supabase.from("college_tournaments").update({ flyer_url: publicUrl } as any).eq("id", expandedId);
+    fetchTournaments();
+    toast({ title: "Flyer uploaded successfully" });
+    setUploadingFlyer(false);
+  };
+
+  const removeFlyer = async () => {
+    if (!expandedId) return;
+    await supabase.from("college_tournaments").update({ flyer_url: null } as any).eq("id", expandedId);
+    fetchTournaments();
+    toast({ title: "Flyer removed" });
+  };
 
   const sendInvitation = async () => {
     if (!expandedId || !inviteForm.coach_name || !inviteForm.coach_email || !inviteForm.school_name) return;
@@ -696,6 +723,38 @@ const CollegeTournamentHub = () => {
 
                       {/* Invitations Tab */}
                       <TabsContent value="invitations" className="space-y-4">
+                        {/* Event Flyer Upload */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Image className="h-4 w-4 text-primary" /> Event Flyer
+                          </h4>
+                          <p className="text-xs text-muted-foreground mb-3">Upload a flyer image to include in invitation emails sent to coaches.</p>
+                          {(() => {
+                            const currentTournament = tournaments.find(ct => ct.id === expandedId);
+                            return currentTournament?.flyer_url ? (
+                              <div className="flex items-start gap-4">
+                                <img src={currentTournament.flyer_url} alt="Event flyer" className="w-40 h-auto rounded-lg border border-border object-contain" />
+                                <div className="space-y-2">
+                                  <p className="text-xs text-muted-foreground">Flyer will be included in invitation emails.</p>
+                                  <div className="flex gap-2">
+                                    <label className="cursor-pointer">
+                                      <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFlyerUpload(e.target.files[0]); }} />
+                                      <Button variant="outline" size="sm" asChild><span><Upload className="h-3.5 w-3.5 mr-1" /> Replace</span></Button>
+                                    </label>
+                                    <Button variant="outline" size="sm" onClick={removeFlyer} className="text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5 mr-1" /> Remove</Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="cursor-pointer inline-flex">
+                                <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFlyerUpload(e.target.files[0]); }} />
+                                <Button variant="outline" size="sm" disabled={uploadingFlyer} asChild>
+                                  <span>{uploadingFlyer ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Upload className="h-3.5 w-3.5 mr-1" />} Upload Flyer</span>
+                                </Button>
+                              </label>
+                            );
+                          })()}
+                        </div>
                         {/* Single Invite */}
                         <div className="bg-card rounded-lg border border-border p-4">
                           <h4 className="font-semibold text-sm mb-3">Send Invitation</h4>

@@ -17,6 +17,15 @@ import {
   FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList,
 } from "lucide-react";
 
+interface RegistrationField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  editable: boolean;
+  options?: string[];
+}
+
 interface CollegeTournament {
   id: string;
   title: string;
@@ -29,6 +38,7 @@ interface CollegeTournament {
   registration_open: boolean;
   contact_email: string | null;
   created_at: string;
+  registration_fields: RegistrationField[] | null;
 }
 
 interface Invitation {

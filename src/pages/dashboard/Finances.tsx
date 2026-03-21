@@ -452,21 +452,25 @@ const Finances = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 text-xs"
+                                  className="h-8 text-xs gap-1"
                                   onClick={() => handleResendConfirmation(reg.id)}
                                   disabled={resendingId === reg.id}
+                                  title="Resend confirmation email"
                                 >
                                   {resendingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                                  <span className="hidden sm:inline">Resend</span>
                                 </Button>
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-8 text-xs text-destructive hover:text-destructive"
+                                      className="h-8 text-xs text-destructive hover:text-destructive gap-1"
                                       disabled={processingId === reg.id}
+                                      title="Issue a refund"
                                     >
                                       {processingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                                      <span className="hidden sm:inline">Refund</span>
                                     </Button>
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>

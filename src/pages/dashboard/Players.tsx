@@ -54,11 +54,14 @@ interface Registration {
   phone: string | null;
   handicap: number | null;
   shirt_size: string | null;
+  dietary_restrictions: string | null;
+  notes: string | null;
   payment_status: string;
   group_number: number | null;
   group_position: number | null;
   created_at: string;
   scoring_code: string | null;
+  tier_id: string | null;
 }
 
 interface Tournament {
@@ -92,6 +95,7 @@ const Players = () => {
   const [editingScoringCode, setEditingScoringCode] = useState<string | null>(null);
   const [scoringCodeInput, setScoringCodeInput] = useState("");
   const [regenerating, setRegenerating] = useState(false);
+  const [viewingPlayer, setViewingPlayer] = useState<Registration | null>(null);
   useEffect(() => {
     if (!org) return;
     supabase
@@ -660,10 +664,17 @@ const Players = () => {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
+                        <button
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                          title="View full registration details"
+                          onClick={() => setViewingPlayer(p)}
+                        >
+                          <Search className="h-4 w-4" />
+                        </button>
                         {p.payment_status === "paid" && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <button className="text-muted-foreground hover:text-amber-600 transition-colors" title="Refund">
+                              <button className="text-muted-foreground hover:text-amber-600 transition-colors" title="Issue refund">
                                 <RotateCcw className="h-4 w-4" />
                               </button>
                             </AlertDialogTrigger>
@@ -695,7 +706,7 @@ const Players = () => {
                         )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <button className="text-muted-foreground hover:text-destructive transition-colors">
+                            <button className="text-muted-foreground hover:text-destructive transition-colors" title="Remove player">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </AlertDialogTrigger>
@@ -856,6 +867,81 @@ const Players = () => {
           </DragDropContext>
         </div>
       )}
+
+      {/* Player Detail Dialog */}
+      <Dialog open={!!viewingPlayer} onOpenChange={(open) => !open && setViewingPlayer(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registration Details</DialogTitle>
+          </DialogHeader>
+          {viewingPlayer && (
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">First Name</p>
+                  <p className="text-sm font-medium text-foreground">{viewingPlayer.first_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Last Name</p>
+                  <p className="text-sm font-medium text-foreground">{viewingPlayer.last_name}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="text-sm font-medium text-foreground">{viewingPlayer.email}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.phone || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Handicap</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.handicap !== null ? viewingPlayer.handicap : "—"}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Shirt Size</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.shirt_size || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Payment Status</p>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[viewingPlayer.payment_status] || paymentColors.pending}`}>
+                    {viewingPlayer.payment_status}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Hole Assignment</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.group_number ? `Hole #${viewingPlayer.group_number}` : "Unassigned"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Scoring Code</p>
+                  <p className="text-sm font-mono text-foreground">{viewingPlayer.scoring_code || "—"}</p>
+                </div>
+              </div>
+              {viewingPlayer.dietary_restrictions && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Dietary Restrictions</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.dietary_restrictions}</p>
+                </div>
+              )}
+              {viewingPlayer.notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Notes / Additional Info</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{viewingPlayer.notes}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground">Registered</p>
+                <p className="text-sm text-foreground">{new Date(viewingPlayer.created_at).toLocaleString()}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -654,6 +654,7 @@ const AdminDashboard = () => {
                 ["promos", "Promo Codes", Tag],
                 ["store", "Store", ShoppingBag],
                 ["analytics", "Analytics", BarChart3],
+                ["college", "College Hub", School],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}

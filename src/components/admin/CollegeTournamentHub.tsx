@@ -706,7 +706,6 @@ const CollegeTournamentHub = () => {
                         )}
                       </TabsContent>
 
-                      {/* Registrations Tab */}
                       <TabsContent value="registrations" className="space-y-4">
                         {registrations.length > 0 ? (
                           registrations.map(reg => (
@@ -714,26 +713,83 @@ const CollegeTournamentHub = () => {
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-3">
                                   <School className="h-5 w-5 text-primary" />
-                                  <div>
-                                    <h4 className="font-semibold">{reg.school_name}</h4>
-                                    <p className="text-xs text-muted-foreground">{reg.coach_name} · {reg.coach_email}</p>
-                                  </div>
+                                  {editingRegId === reg.id ? (
+                                    <div className="flex gap-2 flex-wrap items-center">
+                                      <Input value={editRegForm.school_name} onChange={e => setEditRegForm({ ...editRegForm, school_name: e.target.value })} placeholder="School" className="h-8 text-sm w-40" />
+                                      <Input value={editRegForm.coach_name} onChange={e => setEditRegForm({ ...editRegForm, coach_name: e.target.value })} placeholder="Coach" className="h-8 text-sm w-36" />
+                                      <Input value={editRegForm.coach_email} onChange={e => setEditRegForm({ ...editRegForm, coach_email: e.target.value })} placeholder="Email" className="h-8 text-sm w-48" />
+                                      <Input value={editRegForm.notes} onChange={e => setEditRegForm({ ...editRegForm, notes: e.target.value })} placeholder="Notes" className="h-8 text-sm w-40" />
+                                      <Button size="sm" onClick={saveEditReg} className="h-7"><Save className="h-3.5 w-3.5" /></Button>
+                                      <Button size="sm" variant="ghost" onClick={() => setEditingRegId(null)} className="h-7"><X className="h-3.5 w-3.5" /></Button>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <h4 className="font-semibold">{reg.school_name}</h4>
+                                      <p className="text-xs text-muted-foreground">{reg.coach_name} · {reg.coach_email}</p>
+                                    </div>
+                                  )}
                                 </div>
-                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                  reg.payment_status === "paid" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                                }`}>
-                                  {reg.payment_status}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                    reg.payment_status === "paid" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                                  }`}>
+                                    {reg.payment_status}
+                                  </span>
+                                  {editingRegId !== reg.id && (
+                                    <button onClick={() => startEditReg(reg)} className="text-muted-foreground hover:text-foreground" title="Edit registration">
+                                      <Pencil className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  <button onClick={() => setDeleteRegTarget(reg)} className="text-muted-foreground hover:text-destructive" title="Delete team">
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
                               </div>
                               {reg.players && reg.players.length > 0 ? (
                                 <div className="border-t border-border pt-3">
                                   <h5 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Roster ({reg.players.length} players)</h5>
                                   <div className="grid gap-1">
                                     {reg.players.map(p => (
-                                      <div key={p.id} className="flex items-center gap-3 text-sm">
-                                        <span className="font-medium">{p.first_name} {p.last_name}</span>
-                                        {p.year && <span className="text-xs text-muted-foreground capitalize">{p.year}</span>}
-                                        {p.handicap !== null && <span className="text-xs text-muted-foreground">HCP: {p.handicap}</span>}
+                                      <div key={p.id} className="flex items-center gap-3 text-sm group">
+                                        {editingPlayerId === p.id ? (
+                                          <div className="flex-1 flex items-center gap-2 flex-wrap">
+                                            <Input value={editPlayerForm.first_name} onChange={e => setEditPlayerForm({ ...editPlayerForm, first_name: e.target.value })} placeholder="First" className="h-7 text-sm w-28" />
+                                            <Input value={editPlayerForm.last_name} onChange={e => setEditPlayerForm({ ...editPlayerForm, last_name: e.target.value })} placeholder="Last" className="h-7 text-sm w-28" />
+                                            <select value={editPlayerForm.year} onChange={e => setEditPlayerForm({ ...editPlayerForm, year: e.target.value })} className="h-7 rounded-md border border-input bg-background px-2 text-sm">
+                                              <option value="">Year</option>
+                                              <option value="freshman">FR</option>
+                                              <option value="sophomore">SO</option>
+                                              <option value="junior">JR</option>
+                                              <option value="senior">SR</option>
+                                              <option value="graduate">GR</option>
+                                            </select>
+                                            <select value={editPlayerForm.position} onChange={e => setEditPlayerForm({ ...editPlayerForm, position: e.target.value })} className="h-7 rounded-md border border-input bg-background px-2 text-sm">
+                                              <option value="">Pos</option>
+                                              <option value="1">1</option>
+                                              <option value="2">2</option>
+                                              <option value="3">3</option>
+                                              <option value="4">4</option>
+                                              <option value="5">5</option>
+                                              <option value="alternate">Alt</option>
+                                            </select>
+                                            <Button size="sm" onClick={saveEditPlayer} className="h-6 px-2"><Save className="h-3 w-3" /></Button>
+                                            <Button size="sm" variant="ghost" onClick={() => setEditingPlayerId(null)} className="h-6 px-2"><X className="h-3 w-3" /></Button>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <span className="font-medium">{p.first_name} {p.last_name}</span>
+                                            {p.year && <span className="text-xs text-muted-foreground capitalize">{p.year}</span>}
+                                            {p.position && <span className="text-xs text-muted-foreground">Pos: {p.position === "alternate" ? "Alt" : p.position}</span>}
+                                            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-auto transition-opacity">
+                                              <button onClick={() => startEditPlayer(p)} className="text-muted-foreground hover:text-foreground" title="Edit player">
+                                                <Pencil className="h-3.5 w-3.5" />
+                                              </button>
+                                              <button onClick={() => setDeletePlayerTarget(p)} className="text-muted-foreground hover:text-destructive" title="Remove player">
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                              </button>
+                                            </div>
+                                          </>
+                                        )}
                                       </div>
                                     ))}
                                   </div>
@@ -741,7 +797,7 @@ const CollegeTournamentHub = () => {
                               ) : (
                                 <p className="text-xs text-muted-foreground italic">No players listed yet.</p>
                               )}
-                              {reg.notes && <p className="text-xs text-muted-foreground mt-2 italic">Note: {reg.notes}</p>}
+                              {reg.notes && editingRegId !== reg.id && <p className="text-xs text-muted-foreground mt-2 italic">Note: {reg.notes}</p>}
                             </div>
                           ))
                         ) : (

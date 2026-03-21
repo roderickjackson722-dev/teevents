@@ -82,6 +82,231 @@ export type Database = {
           },
         ]
       }
+      college_tournament_invitations: {
+        Row: {
+          coach_email: string
+          coach_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          rsvp_date: string | null
+          rsvp_response: string | null
+          school_name: string
+          status: string
+          tournament_id: string
+        }
+        Insert: {
+          coach_email: string
+          coach_name: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          rsvp_date?: string | null
+          rsvp_response?: string | null
+          school_name: string
+          status?: string
+          tournament_id: string
+        }
+        Update: {
+          coach_email?: string
+          coach_name?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          rsvp_date?: string | null
+          rsvp_response?: string | null
+          school_name?: string
+          status?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_tournament_invitations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "college_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_tournament_players: {
+        Row: {
+          created_at: string
+          first_name: string
+          handicap: number | null
+          id: string
+          last_name: string
+          registration_id: string
+          year: string | null
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          handicap?: number | null
+          id?: string
+          last_name: string
+          registration_id: string
+          year?: string | null
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          handicap?: number | null
+          id?: string
+          last_name?: string
+          registration_id?: string
+          year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_tournament_players_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "college_tournament_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_tournament_registrations: {
+        Row: {
+          coach_email: string
+          coach_name: string
+          created_at: string
+          id: string
+          invitation_id: string | null
+          notes: string | null
+          payment_status: string | null
+          school_name: string
+          tournament_id: string
+        }
+        Insert: {
+          coach_email: string
+          coach_name: string
+          created_at?: string
+          id?: string
+          invitation_id?: string | null
+          notes?: string | null
+          payment_status?: string | null
+          school_name: string
+          tournament_id: string
+        }
+        Update: {
+          coach_email?: string
+          coach_name?: string
+          created_at?: string
+          id?: string
+          invitation_id?: string | null
+          notes?: string | null
+          payment_status?: string | null
+          school_name?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_tournament_registrations_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "college_tournament_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "college_tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "college_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_tournament_tabs: {
+        Row: {
+          content: string | null
+          content_type: string
+          created_at: string
+          file_url: string | null
+          id: string
+          is_visible: boolean | null
+          sort_order: number | null
+          title: string
+          tournament_id: string
+        }
+        Insert: {
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_visible?: boolean | null
+          sort_order?: number | null
+          title: string
+          tournament_id: string
+        }
+        Update: {
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_visible?: boolean | null
+          sort_order?: number | null
+          title?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_tournament_tabs_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "college_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_tournaments: {
+        Row: {
+          contact_email: string | null
+          course_name: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          location: string | null
+          registration_open: boolean | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          course_name?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          registration_open?: boolean | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          course_name?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          registration_open?: boolean | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_access_requests: {
         Row: {
           created_at: string

@@ -565,6 +565,60 @@ const CollegeTournamentHub = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete Invitation Confirmation */}
+      <AlertDialog open={!!deleteInvTarget} onOpenChange={o => { if (!o) setDeleteInvTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Invitation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove the invitation for <strong>{deleteInvTarget?.school_name}</strong> ({deleteInvTarget?.coach_name})? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteInvitation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Registration Confirmation */}
+      <AlertDialog open={!!deleteRegTarget} onOpenChange={o => { if (!o) setDeleteRegTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Team Registration</AlertDialogTitle>
+            <AlertDialogDescription>
+              Permanently delete the registration for <strong>{deleteRegTarget?.school_name}</strong> and all their roster players? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteRegistration} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <Trash2 className="h-4 w-4 mr-2" /> Delete Team
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Player Confirmation */}
+      <AlertDialog open={!!deletePlayerTarget} onOpenChange={o => { if (!o) setDeletePlayerTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Remove Player</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove <strong>{deletePlayerTarget?.first_name} {deletePlayerTarget?.last_name}</strong> from the roster? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deletePlayer} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <Trash2 className="h-4 w-4 mr-2" /> Remove Player
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Tournament List */}
       {tournaments.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-lg border border-border">

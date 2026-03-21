@@ -660,10 +660,17 @@ const Players = () => {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
+                        <button
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                          title="View full registration details"
+                          onClick={() => setViewingPlayer(p)}
+                        >
+                          <Search className="h-4 w-4" />
+                        </button>
                         {p.payment_status === "paid" && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <button className="text-muted-foreground hover:text-amber-600 transition-colors" title="Refund">
+                              <button className="text-muted-foreground hover:text-amber-600 transition-colors" title="Issue refund">
                                 <RotateCcw className="h-4 w-4" />
                               </button>
                             </AlertDialogTrigger>

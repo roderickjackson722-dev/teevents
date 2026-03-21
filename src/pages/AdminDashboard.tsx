@@ -48,6 +48,7 @@ const AdminDashboard = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newDate, setNewDate] = useState("");
+  const [newEndDate, setNewEndDate] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newLink, setNewLink] = useState("");
   const [newGalleryUrl, setNewGalleryUrl] = useState("");
@@ -201,13 +202,13 @@ const AdminDashboard = () => {
 
     const { error } = await supabase.from("events").insert({
       title: newTitle.trim(), description: newDesc.trim() || null,
-      date: newDate || null, location: newLocation.trim() || null,
+      date: newDate || null, end_date: newEndDate || null, location: newLocation.trim() || null,
       link: newLink.trim() || null, status: newStatus, image_url: imageUrl,
       gallery_url: newGalleryUrl.trim() || null,
       results_url: newResultsUrl.trim() || null,
-    });
+    } as any);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); setUploading(false); return; }
-    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewGalleryUrl(""); setNewResultsUrl(""); setNewImageFile(null);
+    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewEndDate(""); setNewLocation(""); setNewLink(""); setNewGalleryUrl(""); setNewResultsUrl(""); setNewImageFile(null);
     const fileInput = document.getElementById("event-image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     await fetchAll();
@@ -620,34 +621,50 @@ const AdminDashboard = () => {
       <section className="bg-golf-cream min-h-[70vh] py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
-          <div className="flex flex-wrap gap-2 mb-8 border-b border-border pb-2">
-           {([
-              ["events", "Tournaments", Calendar],
-              ["all-tournaments", "All User Tournaments", Trophy],
-              ["requests", "Access Requests", Users],
-              ["emails", "Auto-Approve Emails", Mail],
-              ["reviews", "Reviews", Star],
-              ["promos", "Promo Codes", Tag],
-              ["demos", "Demo Events", Trophy],
-              ["sales-hub", "Sales Hub", Target],
-              ["store", "Store", ShoppingBag],
-              ["analytics", "Analytics", BarChart3],
-            ] as const).map(([key, label, Icon]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                  activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-4 w-4" /> {label}
-                {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
-                  <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
-                    {requests.filter(r => r.status === "pending").length}
-                  </span>
-                )}
-              </button>
-            ))}
+          <div className="mb-8 border-b border-border pb-2 space-y-1">
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["events", "TeeVents Tournaments", Calendar],
+                ["requests", "Access Requests", Users],
+                ["emails", "Auto-Approve Emails", Mail],
+                ["reviews", "Reviews", Star],
+              ] as const).map(([key, label, Icon]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" /> {label}
+                  {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
+                    <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
+                      {requests.filter(r => r.status === "pending").length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["all-tournaments", "All User Tournaments", Trophy],
+                ["demos", "Demo Events", Trophy],
+                ["sales-hub", "Sales Hub", Target],
+                ["promos", "Promo Codes", Tag],
+                ["store", "Store", ShoppingBag],
+                ["analytics", "Analytics", BarChart3],
+              ] as const).map(([key, label, Icon]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" /> {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Events Tab */}
@@ -659,7 +676,8 @@ const AdminDashboard = () => {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <Input placeholder="Title *" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
                   <Input placeholder="Description" value={newDesc} onChange={e => setNewDesc(e.target.value)} />
-                  <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} />
+                  <Input type="date" placeholder="Start Date" value={newDate} onChange={e => setNewDate(e.target.value)} />
+                  <Input type="date" placeholder="End Date" value={newEndDate} onChange={e => setNewEndDate(e.target.value)} min={newDate || undefined} />
                   <Input placeholder="Location" value={newLocation} onChange={e => setNewLocation(e.target.value)} />
                   <Input placeholder="Link (URL)" value={newLink} onChange={e => setNewLink(e.target.value)} />
                   <Input placeholder="Gallery URL (Google Photos)" value={newGalleryUrl} onChange={e => setNewGalleryUrl(e.target.value)} />

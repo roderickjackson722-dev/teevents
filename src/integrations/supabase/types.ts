@@ -163,6 +163,7 @@ export type Database = {
           created_at: string
           date: string | null
           description: string | null
+          end_date: string | null
           gallery_url: string | null
           id: string
           image_url: string | null
@@ -178,6 +179,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           description?: string | null
+          end_date?: string | null
           gallery_url?: string | null
           id?: string
           image_url?: string | null
@@ -193,6 +195,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           description?: string | null
+          end_date?: string | null
           gallery_url?: string | null
           id?: string
           image_url?: string | null

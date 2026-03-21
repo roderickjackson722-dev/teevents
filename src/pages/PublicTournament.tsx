@@ -456,7 +456,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#ffffff" }} id="top">
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}
-      {registered && (
+      {showConfirmation && (
         <div className="fixed top-14 left-0 right-0 z-40">
           <motion.div
             initial={{ opacity: 0, y: -20 }}

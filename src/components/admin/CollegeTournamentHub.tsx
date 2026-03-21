@@ -266,6 +266,32 @@ const CollegeTournamentHub = () => {
 
   // Invitations
   const [sendingEmails, setSendingEmails] = useState(false);
+  const [uploadingFlyer, setUploadingFlyer] = useState(false);
+
+  const handleFlyerUpload = async (file: File) => {
+    if (!expandedId) return;
+    setUploadingFlyer(true);
+    const ext = file.name.split(".").pop();
+    const path = `college/${expandedId}/flyer.${ext}`;
+    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    if (upErr) {
+      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+      setUploadingFlyer(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    await supabase.from("college_tournaments").update({ flyer_url: publicUrl } as any).eq("id", expandedId);
+    fetchTournaments();
+    toast({ title: "Flyer uploaded successfully" });
+    setUploadingFlyer(false);
+  };
+
+  const removeFlyer = async () => {
+    if (!expandedId) return;
+    await supabase.from("college_tournaments").update({ flyer_url: null } as any).eq("id", expandedId);
+    fetchTournaments();
+    toast({ title: "Flyer removed" });
+  };
 
   const sendInvitation = async () => {
     if (!expandedId || !inviteForm.coach_name || !inviteForm.coach_email || !inviteForm.school_name) return;

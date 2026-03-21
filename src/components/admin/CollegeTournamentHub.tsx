@@ -72,7 +72,7 @@ interface Player {
   first_name: string;
   last_name: string;
   year: string | null;
-  handicap: number | null;
+  position: string | null;
 }
 
 interface TournamentTab {

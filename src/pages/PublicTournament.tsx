@@ -994,7 +994,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     : "Fill out the form below to secure your spot."}
                 </p>
               </div>
-              {registered ? (
+              {showConfirmation ? (
                 <div className="bg-white rounded-xl border p-8 shadow-sm text-center relative" style={{ borderColor: "#e5e5e5" }}>
                   <button
                     onClick={() => setRegistered(false)}

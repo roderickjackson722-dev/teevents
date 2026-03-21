@@ -39,6 +39,7 @@ interface CollegeTournament {
   contact_email: string | null;
   created_at: string;
   registration_fields: RegistrationField[] | null;
+  flyer_url: string | null;
 }
 
 interface Invitation {

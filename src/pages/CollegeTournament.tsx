@@ -253,13 +253,18 @@ const CollegeTournament = () => {
       <SEO title={`${tournament.title} | TeeVents College Golf`} description={tournament.description || `${tournament.title} college golf tournament`} />
 
       {/* Hero */}
-      <div className="bg-primary text-primary-foreground py-16">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
+      <div className="relative text-primary-foreground py-24 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${golfCourseHero})` }}
+        />
+        <div className="absolute inset-0 bg-overlay-dark" />
+        <div className="relative z-10 container mx-auto px-4 max-w-4xl text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <School className="h-6 w-6" />
             <span className="text-sm font-medium opacity-80 uppercase tracking-wider">College Golf Tournament</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{tournament.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-shadow-hero">{tournament.title}</h1>
           {tournament.description && <p className="text-lg opacity-90 max-w-2xl mx-auto">{tournament.description}</p>}
           <div className="flex items-center justify-center gap-6 mt-6 flex-wrap">
             {tournament.course_name && (

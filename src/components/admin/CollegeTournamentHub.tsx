@@ -568,6 +568,9 @@ const CollegeTournamentHub = () => {
                         <TabsTrigger value="tabs">
                           <FileText className="h-3.5 w-3.5 mr-1.5" /> Event Tabs ({tabs.length})
                         </TabsTrigger>
+                        <TabsTrigger value="reg-fields">
+                          <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> Registration Fields
+                        </TabsTrigger>
                       </TabsList>
 
                       {/* Invitations Tab */}

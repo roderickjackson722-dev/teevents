@@ -48,6 +48,7 @@ const AdminDashboard = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newDate, setNewDate] = useState("");
+  const [newEndDate, setNewEndDate] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newLink, setNewLink] = useState("");
   const [newGalleryUrl, setNewGalleryUrl] = useState("");

@@ -236,6 +236,10 @@ const Registration = () => {
   const [newFieldLabel, setNewFieldLabel] = useState("");
   const [newFieldType, setNewFieldType] = useState("text");
   const [newFieldOptions, setNewFieldOptions] = useState("");
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editFieldLabel, setEditFieldLabel] = useState("");
+  const [editFieldType, setEditFieldType] = useState("text");
+  const [editFieldOptions, setEditFieldOptions] = useState("");
 
   const addCustomField = async () => {
     if (!newFieldLabel.trim()) return;
@@ -256,6 +260,36 @@ const Registration = () => {
       setNewFieldLabel("");
       setNewFieldOptions("");
       toast.success("Custom field added!");
+    }
+  };
+
+  const startEditField = (field: RegField) => {
+    setEditingFieldId(field.id!);
+    setEditFieldLabel(field.label);
+    setEditFieldType(field.field_type);
+    setEditFieldOptions(field.options ? (field.options as string[]).join(", ") : "");
+  };
+
+  const cancelEditField = () => {
+    setEditingFieldId(null);
+    setEditFieldLabel("");
+    setEditFieldType("text");
+    setEditFieldOptions("");
+  };
+
+  const saveEditField = async (id: string) => {
+    if (!editFieldLabel.trim()) return;
+    const updates: any = {
+      label: editFieldLabel.trim(),
+      field_type: editFieldType,
+      options: editFieldType === "dropdown" ? editFieldOptions.split(",").map((o) => o.trim()).filter(Boolean) : null,
+    };
+    const { error } = await supabase.from("tournament_registration_fields").update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+      setEditingFieldId(null);
+      toast.success("Field updated!");
     }
   };
 

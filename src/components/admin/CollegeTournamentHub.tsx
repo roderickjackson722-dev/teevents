@@ -723,6 +723,38 @@ const CollegeTournamentHub = () => {
 
                       {/* Invitations Tab */}
                       <TabsContent value="invitations" className="space-y-4">
+                        {/* Event Flyer Upload */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Image className="h-4 w-4 text-primary" /> Event Flyer
+                          </h4>
+                          <p className="text-xs text-muted-foreground mb-3">Upload a flyer image to include in invitation emails sent to coaches.</p>
+                          {(() => {
+                            const currentTournament = tournaments.find(ct => ct.id === expandedId);
+                            return currentTournament?.flyer_url ? (
+                              <div className="flex items-start gap-4">
+                                <img src={currentTournament.flyer_url} alt="Event flyer" className="w-40 h-auto rounded-lg border border-border object-contain" />
+                                <div className="space-y-2">
+                                  <p className="text-xs text-muted-foreground">Flyer will be included in invitation emails.</p>
+                                  <div className="flex gap-2">
+                                    <label className="cursor-pointer">
+                                      <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFlyerUpload(e.target.files[0]); }} />
+                                      <Button variant="outline" size="sm" asChild><span><Upload className="h-3.5 w-3.5 mr-1" /> Replace</span></Button>
+                                    </label>
+                                    <Button variant="outline" size="sm" onClick={removeFlyer} className="text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5 mr-1" /> Remove</Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="cursor-pointer inline-flex">
+                                <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFlyerUpload(e.target.files[0]); }} />
+                                <Button variant="outline" size="sm" disabled={uploadingFlyer} asChild>
+                                  <span>{uploadingFlyer ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Upload className="h-3.5 w-3.5 mr-1" />} Upload Flyer</span>
+                                </Button>
+                              </label>
+                            );
+                          })()}
+                        </div>
                         {/* Single Invite */}
                         <div className="bg-card rounded-lg border border-border p-4">
                           <h4 className="font-semibold text-sm mb-3">Send Invitation</h4>

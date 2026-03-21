@@ -74,7 +74,7 @@ const CollegeTournament = () => {
 
   // Registration form
   const [showRegForm, setShowRegForm] = useState(false);
-  const [regForm, setRegForm] = useState({
+  const [regForm, setRegForm] = useState<Record<string, string>>({
     school_name: "", coach_name: "", coach_email: "", notes: "",
   });
   const [players, setPlayers] = useState([

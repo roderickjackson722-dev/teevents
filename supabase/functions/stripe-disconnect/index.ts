@@ -1,4 +1,3 @@
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -39,54 +38,68 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
 
+    // Verify the user is the OWNER of the organization
     const { data: membership } = await supabaseClient
       .from("org_members")
-      .select("organization_id")
+      .select("organization_id, role")
       .eq("user_id", userId)
       .limit(1)
       .single();
 
     if (!membership) throw new Error("No organization found");
 
+    if (membership.role !== "owner") {
+      throw new Error("Only the organization owner can disconnect the Stripe account");
+    }
+
+    const { organization_id } = membership;
+
+    // Parse the request body for confirmation
+    const body = await req.json().catch(() => ({}));
+    const { confirm_email } = body;
+
+    // Require the user to confirm by typing their email
+    if (!confirm_email || confirm_email.toLowerCase() !== user.email?.toLowerCase()) {
+      throw new Error("Email confirmation does not match. Please type your account email to confirm.");
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Get current stripe account id for logging
     const { data: org } = await supabaseAdmin
       .from("organizations")
       .select("stripe_account_id")
-      .eq("id", membership.organization_id)
+      .eq("id", organization_id)
       .single();
 
-    if (!org?.stripe_account_id) throw new Error("Stripe not connected");
-
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
-
-    // Retrieve the account to check its type
-    const account = await stripe.accounts.retrieve(org.stripe_account_id);
-
-    let dashboardUrl: string;
-
-    if (account.type === "express") {
-      // Express accounts use login links
-      const loginLink = await stripe.accounts.createLoginLink(org.stripe_account_id);
-      dashboardUrl = loginLink.url;
-    } else {
-      // Standard accounts manage via their own Stripe dashboard
-      dashboardUrl = `https://dashboard.stripe.com`;
+    if (!org?.stripe_account_id) {
+      throw new Error("No Stripe account is currently connected");
     }
 
-    return new Response(JSON.stringify({ url: dashboardUrl }), {
+    console.log(`Disconnecting Stripe account ${org.stripe_account_id} from org ${organization_id} by user ${userId}`);
+
+    // Remove the stripe_account_id from the organization
+    const { error: updateError } = await supabaseAdmin
+      .from("organizations")
+      .update({ stripe_account_id: null })
+      .eq("id", organization_id);
+
+    if (updateError) throw new Error("Failed to disconnect Stripe account");
+
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("stripe-connect-dashboard error:", message);
-    const status = message === "Unauthorized" ? 401 : 500;
+    console.error("stripe-disconnect error:", message);
+    const status = message === "Unauthorized" ? 401
+      : message.includes("owner") ? 403
+      : message.includes("confirmation") ? 400
+      : 500;
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,

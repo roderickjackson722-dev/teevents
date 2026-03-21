@@ -1592,6 +1592,9 @@ const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && <AdminAnalytics />}
+
+          {/* College Hub Tab */}
+          {activeTab === "college" && <CollegeTournamentHub />}
         </div>
       </section>
     </Layout>

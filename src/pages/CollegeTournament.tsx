@@ -149,7 +149,7 @@ const CollegeTournament = () => {
   };
 
   const addPlayer = () => {
-    setPlayers([...players, { first_name: "", last_name: "", year: "", handicap: "" }]);
+    setPlayers([...players, { first_name: "", last_name: "", year: "", position: "" }]);
   };
 
   const removePlayer = (idx: number) => {

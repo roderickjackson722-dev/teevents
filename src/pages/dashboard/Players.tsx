@@ -54,11 +54,14 @@ interface Registration {
   phone: string | null;
   handicap: number | null;
   shirt_size: string | null;
+  dietary_restrictions: string | null;
+  notes: string | null;
   payment_status: string;
   group_number: number | null;
   group_position: number | null;
   created_at: string;
   scoring_code: string | null;
+  tier_id: string | null;
 }
 
 interface Tournament {

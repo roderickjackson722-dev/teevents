@@ -136,8 +136,17 @@ const CollegeTournamentHub = () => {
   const [editFieldType, setEditFieldType] = useState("text");
   const [editFieldRequired, setEditFieldRequired] = useState(false);
 
-  // Delete
+  // Delete confirmations
   const [deleteTarget, setDeleteTarget] = useState<CollegeTournament | null>(null);
+  const [deleteRegTarget, setDeleteRegTarget] = useState<Registration | null>(null);
+  const [deletePlayerTarget, setDeletePlayerTarget] = useState<Player | null>(null);
+  const [deleteInvTarget, setDeleteInvTarget] = useState<Invitation | null>(null);
+
+  // Editing registrations
+  const [editingRegId, setEditingRegId] = useState<string | null>(null);
+  const [editRegForm, setEditRegForm] = useState({ coach_name: "", coach_email: "", school_name: "", notes: "" });
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [editPlayerForm, setEditPlayerForm] = useState({ first_name: "", last_name: "", year: "", position: "" });
 
   const fetchTournaments = async () => {
     const { data } = await supabase

@@ -93,6 +93,7 @@ export type Database = {
           rsvp_response: string | null
           school_name: string
           status: string
+          token: string | null
           tournament_id: string
         }
         Insert: {
@@ -105,6 +106,7 @@ export type Database = {
           rsvp_response?: string | null
           school_name: string
           status?: string
+          token?: string | null
           tournament_id: string
         }
         Update: {
@@ -117,6 +119,7 @@ export type Database = {
           rsvp_response?: string | null
           school_name?: string
           status?: string
+          token?: string | null
           tournament_id?: string
         }
         Relationships: [
@@ -272,6 +275,7 @@ export type Database = {
           id: string
           location: string | null
           registration_open: boolean | null
+          slug: string | null
           start_date: string | null
           status: string
           title: string
@@ -286,6 +290,7 @@ export type Database = {
           id?: string
           location?: string | null
           registration_open?: boolean | null
+          slug?: string | null
           start_date?: string | null
           status?: string
           title: string
@@ -300,6 +305,7 @@ export type Database = {
           id?: string
           location?: string | null
           registration_open?: boolean | null
+          slug?: string | null
           start_date?: string | null
           status?: string
           title?: string

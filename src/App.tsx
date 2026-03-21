@@ -58,6 +58,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import VisitTracker from "./components/VisitTracker";
+import CollegeTournament from "./pages/CollegeTournament";
 
 const queryClient = new QueryClient();
 

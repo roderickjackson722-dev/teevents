@@ -126,6 +126,16 @@ const CollegeTournamentHub = () => {
   const [newTabTitle, setNewTabTitle] = useState("");
   const [newTabType, setNewTabType] = useState("rich_text");
 
+  // Registration fields editing
+  const [regFields, setRegFields] = useState<RegistrationField[]>([]);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [newFieldType, setNewFieldType] = useState("text");
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editFieldLabel, setEditFieldLabel] = useState("");
+  const [editFieldType, setEditFieldType] = useState("text");
+  const [editFieldRequired, setEditFieldRequired] = useState(false);
+
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<CollegeTournament | null>(null);
 

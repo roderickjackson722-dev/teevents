@@ -676,7 +676,8 @@ const AdminDashboard = () => {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <Input placeholder="Title *" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
                   <Input placeholder="Description" value={newDesc} onChange={e => setNewDesc(e.target.value)} />
-                  <Input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} />
+                  <Input type="date" placeholder="Start Date" value={newDate} onChange={e => setNewDate(e.target.value)} />
+                  <Input type="date" placeholder="End Date" value={newEndDate} onChange={e => setNewEndDate(e.target.value)} min={newDate || undefined} />
                   <Input placeholder="Location" value={newLocation} onChange={e => setNewLocation(e.target.value)} />
                   <Input placeholder="Link (URL)" value={newLink} onChange={e => setNewLink(e.target.value)} />
                   <Input placeholder="Gallery URL (Google Photos)" value={newGalleryUrl} onChange={e => setNewGalleryUrl(e.target.value)} />

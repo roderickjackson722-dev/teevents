@@ -583,7 +583,104 @@ const Settings = () => {
         )}
       </motion.div>
 
-      {/* Organization Info Section */}
+      {/* PayPal Connect Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-card rounded-lg border border-border p-6 mb-6"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <Wallet className="h-6 w-6 text-[#0070ba]" />
+          <h2 className="text-lg font-display font-bold text-foreground">
+            PayPal (Alternative Payment)
+          </h2>
+        </div>
+
+        <p className="text-muted-foreground mb-6 text-sm">
+          Connect your PayPal Business account as an alternative payment option for participants.
+          The same 5% platform fee applies to PayPal transactions. Both Stripe and PayPal can be active simultaneously.
+        </p>
+
+        {paypalLoading ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Checking PayPal status...
+          </div>
+        ) : paypalStatus?.connected ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-[#0070ba]">
+              <CheckCircle2 className="h-5 w-5" />
+              <span className="font-medium">PayPal connected</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Merchant ID: {paypalStatus.merchant_id}
+            </p>
+            <AlertDialog open={paypalDisconnectDialogOpen} onOpenChange={setPaypalDisconnectDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                  <Unlink className="h-4 w-4 mr-2" />
+                  Disconnect PayPal
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Disconnect PayPal Account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove PayPal as a payment option for your tournaments.
+                    Participants will only be able to pay via Stripe (if connected).
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDisconnectPaypal}
+                    disabled={disconnectingPaypal}
+                  >
+                    {disconnectingPaypal && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Disconnect
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <AlertCircle className="h-5 w-5" />
+              <span>No PayPal account connected</span>
+            </div>
+            <div className="space-y-2 max-w-md">
+              <Label htmlFor="paypal-merchant-id">PayPal Merchant ID</Label>
+              <p className="text-xs text-muted-foreground">
+                Find this in your{" "}
+                <a href="https://www.paypal.com/businessmanage/account/aboutBusiness" target="_blank" rel="noopener noreferrer" className="underline text-primary">
+                  PayPal Business Settings → Account Info
+                </a>
+                . It looks like <code className="bg-muted px-1 rounded text-xs">XXXXXXXXX</code>.
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="paypal-merchant-id"
+                  value={paypalMerchantId}
+                  onChange={(e) => setPaypalMerchantId(e.target.value)}
+                  placeholder="Enter Merchant ID or PayPal email"
+                  className="flex-1 font-mono text-sm"
+                />
+                <Button
+                  onClick={handleConnectPaypal}
+                  disabled={connectingPaypal || !paypalMerchantId.trim()}
+                >
+                  {connectingPaypal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
+                  Connect
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

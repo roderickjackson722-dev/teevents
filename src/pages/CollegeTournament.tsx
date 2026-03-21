@@ -10,6 +10,7 @@ import {
   Calendar, MapPin, Trophy, Loader2, CheckCircle, XCircle, Users, FileText, School,
 } from "lucide-react";
 import SEO from "@/components/SEO";
+import golfCourseHero from "@/assets/golf-course-hero.jpg";
 
 interface RegistrationField {
   id: string;

@@ -11,6 +11,15 @@ import {
 } from "lucide-react";
 import SEO from "@/components/SEO";
 
+interface RegistrationField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  editable: boolean;
+  options?: string[];
+}
+
 interface Tournament {
   id: string;
   title: string;
@@ -23,6 +32,7 @@ interface Tournament {
   registration_open: boolean;
   contact_email: string | null;
   slug: string | null;
+  registration_fields: RegistrationField[] | null;
 }
 
 interface TournamentTab {

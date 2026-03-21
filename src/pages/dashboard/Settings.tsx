@@ -11,12 +11,11 @@ import {
   ExternalLink,
   Loader2,
   Building2,
-  Palette,
   ArrowRight,
   Zap,
   Trophy,
-  Users,
   Save,
+  Unlink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +26,17 @@ import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import { TeamManagement } from "@/components/settings/TeamManagement";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ConnectStatus {
   connected: boolean;
@@ -47,6 +57,9 @@ const Settings = () => {
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
   const [dashboardName, setDashboardName] = useState("");
   const [savingDashboardName, setSavingDashboardName] = useState(false);
+  const [disconnectEmail, setDisconnectEmail] = useState("");
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchConnectStatus();
@@ -76,11 +89,9 @@ const Settings = () => {
   const getFunctionErrorMessage = (err: any, fallback: string) => {
     const apiError = err?.context?.json?.error;
     if (typeof apiError === "string" && apiError.length > 0) return apiError;
-
     if (typeof err?.message === "string" && !err.message.includes("non-2xx")) {
       return err.message;
     }
-
     return fallback;
   };
 
@@ -159,6 +170,32 @@ const Settings = () => {
     }
   };
 
+  const handleDisconnectStripe = async () => {
+    if (demoGuard()) return;
+    setDisconnecting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("stripe-disconnect", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { confirm_email: disconnectEmail },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Stripe account disconnected successfully");
+      setConnectStatus({ connected: false, charges_enabled: false, payouts_enabled: false });
+      setDisconnectEmail("");
+      setDisconnectDialogOpen(false);
+    } catch (err: any) {
+      toast.error(getFunctionErrorMessage(err, "Failed to disconnect Stripe account"));
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
   const isFullyConnected =
     connectStatus?.connected &&
     connectStatus?.charges_enabled &&
@@ -207,12 +244,62 @@ const Settings = () => {
               <CheckCircle2 className="h-5 w-5" />
               <span className="font-medium">Stripe account connected — payments active</span>
             </div>
+            {connectStatus?.account_id && (
+              <p className="text-xs text-muted-foreground">
+                Account ID: {connectStatus.account_id}
+              </p>
+            )}
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" onClick={handleOpenDashboard}>
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Open Stripe Dashboard
               </Button>
+
+              <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                    <Unlink className="h-4 w-4 mr-2" />
+                    Disconnect Stripe
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Disconnect Stripe Account?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-3">
+                      <p>
+                        This will remove the connected Stripe account from your organization. 
+                        You will <strong>no longer be able to accept payments</strong> for registrations, 
+                        donations, store purchases, or auction bids until you connect a new account.
+                      </p>
+                      <p>
+                        This action can only be performed by the organization owner. 
+                        To confirm, please type your account email address below:
+                      </p>
+                      <Input
+                        placeholder="Enter your email to confirm"
+                        value={disconnectEmail}
+                        onChange={(e) => setDisconnectEmail(e.target.value)}
+                        className="mt-2"
+                      />
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDisconnectEmail("")}>Cancel</AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDisconnectStripe}
+                      disabled={disconnecting || !disconnectEmail.trim()}
+                    >
+                      {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Disconnect Account
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
+            <p className="text-xs text-muted-foreground">
+              To switch accounts, disconnect your current Stripe account then connect a new one.
+            </p>
           </div>
         ) : isPending ? (
           <div className="space-y-4">

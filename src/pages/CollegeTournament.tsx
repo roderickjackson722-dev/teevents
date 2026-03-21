@@ -11,6 +11,15 @@ import {
 } from "lucide-react";
 import SEO from "@/components/SEO";
 
+interface RegistrationField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  editable: boolean;
+  options?: string[];
+}
+
 interface Tournament {
   id: string;
   title: string;
@@ -23,6 +32,7 @@ interface Tournament {
   registration_open: boolean;
   contact_email: string | null;
   slug: string | null;
+  registration_fields: RegistrationField[] | null;
 }
 
 interface TournamentTab {
@@ -64,7 +74,7 @@ const CollegeTournament = () => {
 
   // Registration form
   const [showRegForm, setShowRegForm] = useState(false);
-  const [regForm, setRegForm] = useState({
+  const [regForm, setRegForm] = useState<Record<string, string>>({
     school_name: "", coach_name: "", coach_email: "", notes: "",
   });
   const [players, setPlayers] = useState([
@@ -156,6 +166,14 @@ const CollegeTournament = () => {
     if (!tournament) return;
     setRegistering(true);
 
+    // Collect custom field answers into notes
+    const customFields = (tournament.registration_fields || []).filter(f => f.editable && f.id !== "notes");
+    const customAnswers = customFields
+      .filter(f => regForm[f.id])
+      .map(f => `${f.label}: ${regForm[f.id]}`)
+      .join("\n");
+    const combinedNotes = [regForm.notes, customAnswers].filter(Boolean).join("\n---\n");
+
     // Create registration
     const { data: reg, error: regErr } = await supabase
       .from("college_tournament_registrations")
@@ -165,7 +183,7 @@ const CollegeTournament = () => {
         coach_name: regForm.coach_name,
         coach_email: regForm.coach_email,
         school_name: regForm.school_name,
-        notes: regForm.notes || null,
+        notes: combinedNotes || null,
         payment_status: "registered",
       } as any)
       .select()
@@ -315,22 +333,44 @@ const CollegeTournament = () => {
             </h2>
             <form onSubmit={handleRegister} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">School Name *</label>
-                  <Input value={regForm.school_name} onChange={e => setRegForm({ ...regForm, school_name: e.target.value })} required />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Head Coach Name *</label>
-                  <Input value={regForm.coach_name} onChange={e => setRegForm({ ...regForm, coach_name: e.target.value })} required />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Coach Email *</label>
-                  <Input type="email" value={regForm.coach_email} onChange={e => setRegForm({ ...regForm, coach_email: e.target.value })} required />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Notes</label>
-                  <Input value={regForm.notes} onChange={e => setRegForm({ ...regForm, notes: e.target.value })} placeholder="Any special requests" />
-                </div>
+                {(tournament.registration_fields || [
+                  { id: "school_name", label: "School Name", type: "text", required: true, editable: false },
+                  { id: "coach_name", label: "Head Coach Name", type: "text", required: true, editable: false },
+                  { id: "coach_email", label: "Coach Email", type: "email", required: true, editable: false },
+                  { id: "notes", label: "Notes", type: "text", required: false, editable: true },
+                ]).map((field) => (
+                  <div key={field.id} className={field.type === "textarea" ? "sm:col-span-2" : ""}>
+                    <label className="text-sm font-medium mb-1 block">
+                      {field.label} {field.required && "*"}
+                    </label>
+                    {field.type === "textarea" ? (
+                      <Textarea
+                        value={regForm[field.id] || ""}
+                        onChange={e => setRegForm({ ...regForm, [field.id]: e.target.value })}
+                        placeholder={field.label}
+                        required={field.required}
+                      />
+                    ) : field.type === "select" && field.options ? (
+                      <select
+                        value={regForm[field.id] || ""}
+                        onChange={e => setRegForm({ ...regForm, [field.id]: e.target.value })}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        required={field.required}
+                      >
+                        <option value="">Select...</option>
+                        {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : (
+                      <Input
+                        type={field.type === "number" ? "number" : field.type === "email" ? "email" : "text"}
+                        value={regForm[field.id] || ""}
+                        onChange={e => setRegForm({ ...regForm, [field.id]: e.target.value })}
+                        placeholder={field.label}
+                        required={field.required}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
 
               {/* Player Roster */}

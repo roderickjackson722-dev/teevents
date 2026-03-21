@@ -14,8 +14,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, Trash2, Calendar, MapPin, Loader2, Users, Mail, Send,
-  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw,
+  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList,
 } from "lucide-react";
+
+interface RegistrationField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  editable: boolean;
+  options?: string[];
+}
 
 interface CollegeTournament {
   id: string;
@@ -29,6 +38,7 @@ interface CollegeTournament {
   registration_open: boolean;
   contact_email: string | null;
   created_at: string;
+  registration_fields: RegistrationField[] | null;
 }
 
 interface Invitation {
@@ -116,6 +126,16 @@ const CollegeTournamentHub = () => {
   const [newTabTitle, setNewTabTitle] = useState("");
   const [newTabType, setNewTabType] = useState("rich_text");
 
+  // Registration fields editing
+  const [regFields, setRegFields] = useState<RegistrationField[]>([]);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [newFieldType, setNewFieldType] = useState("text");
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editFieldLabel, setEditFieldLabel] = useState("");
+  const [editFieldType, setEditFieldType] = useState("text");
+  const [editFieldRequired, setEditFieldRequired] = useState(false);
+
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<CollegeTournament | null>(null);
 
@@ -154,13 +174,26 @@ const CollegeTournamentHub = () => {
     }
 
     setTabs(tabRes.data || []);
+
+    // Load registration fields for this tournament
+    const tournament = tournaments.find(t => t.id === tournamentId);
+    if (tournament?.registration_fields) {
+      setRegFields(tournament.registration_fields);
+    } else {
+      setRegFields([
+        { id: "school_name", label: "School Name", type: "text", required: true, editable: false },
+        { id: "coach_name", label: "Head Coach Name", type: "text", required: true, editable: false },
+        { id: "coach_email", label: "Coach Email", type: "email", required: true, editable: false },
+        { id: "notes", label: "Notes", type: "text", required: false, editable: true },
+      ]);
+    }
   };
 
   useEffect(() => { fetchTournaments(); }, []);
 
   useEffect(() => {
     if (expandedId) fetchTournamentData(expandedId);
-  }, [expandedId]);
+  }, [expandedId, tournaments]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,6 +385,54 @@ const CollegeTournamentHub = () => {
     toast({ title: "File uploaded" });
   };
 
+  // Registration Fields CRUD
+  const saveRegFields = async (fields: RegistrationField[]) => {
+    if (!expandedId) return;
+    await supabase.from("college_tournaments").update({ registration_fields: fields } as any).eq("id", expandedId);
+    setRegFields(fields);
+    fetchTournaments();
+    toast({ title: "Registration fields saved" });
+  };
+
+  const addRegField = () => {
+    if (!newFieldLabel.trim()) return;
+    const newField: RegistrationField = {
+      id: `custom_${Date.now()}`,
+      label: newFieldLabel.trim(),
+      type: newFieldType,
+      required: newFieldRequired,
+      editable: true,
+    };
+    const updated = [...regFields, newField];
+    saveRegFields(updated);
+    setNewFieldLabel("");
+    setNewFieldType("text");
+    setNewFieldRequired(false);
+  };
+
+  const removeRegField = (fieldId: string) => {
+    const updated = regFields.filter(f => f.id !== fieldId);
+    saveRegFields(updated);
+  };
+
+  const startEditRegField = (field: RegistrationField) => {
+    setEditingFieldId(field.id);
+    setEditFieldLabel(field.label);
+    setEditFieldType(field.type);
+    setEditFieldRequired(field.required);
+  };
+
+  const saveEditRegField = () => {
+    if (!editingFieldId) return;
+    const updated = regFields.map(f =>
+      f.id === editingFieldId
+        ? { ...f, label: editFieldLabel.trim(), type: editFieldType, required: editFieldRequired }
+        : f
+    );
+    saveRegFields(updated);
+    setEditingFieldId(null);
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (
@@ -486,6 +567,9 @@ const CollegeTournamentHub = () => {
                         </TabsTrigger>
                         <TabsTrigger value="tabs">
                           <FileText className="h-3.5 w-3.5 mr-1.5" /> Event Tabs ({tabs.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="reg-fields">
+                          <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> Registration Fields
                         </TabsTrigger>
                       </TabsList>
 
@@ -681,6 +765,102 @@ const CollegeTournamentHub = () => {
                               <option value="structured">Structured Data</option>
                             </select>
                             <Button onClick={addTab}><Plus className="h-4 w-4 mr-1" /> Add Tab</Button>
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      {/* Registration Fields Tab */}
+                      <TabsContent value="reg-fields" className="space-y-4">
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-1">Registration Form Fields</h4>
+                          <p className="text-xs text-muted-foreground mb-4">Customize the questions coaches see when registering their team. Core fields (School, Coach, Email) cannot be removed.</p>
+
+                          <div className="space-y-2">
+                            {regFields.map((field) => (
+                              <div key={field.id} className="flex items-center gap-3 bg-muted/30 rounded-lg px-4 py-3 border border-border">
+                                {editingFieldId === field.id ? (
+                                  <div className="flex-1 flex items-center gap-2 flex-wrap">
+                                    <Input
+                                      value={editFieldLabel}
+                                      onChange={e => setEditFieldLabel(e.target.value)}
+                                      className="flex-1 min-w-[150px] h-8 text-sm"
+                                      placeholder="Field label"
+                                    />
+                                    <select
+                                      value={editFieldType}
+                                      onChange={e => setEditFieldType(e.target.value)}
+                                      className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                                    >
+                                      <option value="text">Text</option>
+                                      <option value="email">Email</option>
+                                      <option value="number">Number</option>
+                                      <option value="textarea">Textarea</option>
+                                      <option value="select">Dropdown</option>
+                                    </select>
+                                    <label className="flex items-center gap-1.5 text-xs">
+                                      <input type="checkbox" checked={editFieldRequired} onChange={e => setEditFieldRequired(e.target.checked)} />
+                                      Required
+                                    </label>
+                                    <Button size="sm" variant="default" onClick={saveEditRegField} className="h-7 px-2">
+                                      <Save className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingFieldId(null)} className="h-7 px-2">
+                                      <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="flex-1">
+                                      <span className="text-sm font-medium">{field.label}</span>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-xs text-muted-foreground capitalize">{field.type}</span>
+                                        {field.required && <span className="text-xs text-primary font-medium">Required</span>}
+                                        {!field.editable && <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">Core</span>}
+                                      </div>
+                                    </div>
+                                    {field.editable && (
+                                      <div className="flex items-center gap-1">
+                                        <button onClick={() => startEditRegField(field)} className="text-muted-foreground hover:text-foreground" title="Edit field">
+                                          <Pencil className="h-4 w-4" />
+                                        </button>
+                                        <button onClick={() => removeRegField(field.id)} className="text-muted-foreground hover:text-destructive" title="Remove field">
+                                          <Trash2 className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Add New Field */}
+                          <div className="mt-4 border-t border-border pt-4">
+                            <h5 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Add Custom Field</h5>
+                            <div className="flex gap-2 flex-wrap items-end">
+                              <Input
+                                placeholder="Field Label"
+                                value={newFieldLabel}
+                                onChange={e => setNewFieldLabel(e.target.value)}
+                                className="flex-1 min-w-[150px]"
+                              />
+                              <select
+                                value={newFieldType}
+                                onChange={e => setNewFieldType(e.target.value)}
+                                className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              >
+                                <option value="text">Text</option>
+                                <option value="email">Email</option>
+                                <option value="number">Number</option>
+                                <option value="textarea">Textarea</option>
+                                <option value="select">Dropdown</option>
+                              </select>
+                              <label className="flex items-center gap-1.5 text-sm h-10">
+                                <input type="checkbox" checked={newFieldRequired} onChange={e => setNewFieldRequired(e.target.checked)} />
+                                Required
+                              </label>
+                              <Button onClick={addRegField}><Plus className="h-4 w-4 mr-1" /> Add Field</Button>
+                            </div>
                           </div>
                         </div>
                       </TabsContent>

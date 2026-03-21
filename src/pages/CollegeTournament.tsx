@@ -166,6 +166,14 @@ const CollegeTournament = () => {
     if (!tournament) return;
     setRegistering(true);
 
+    // Collect custom field answers into notes
+    const customFields = (tournament.registration_fields || []).filter(f => f.editable && f.id !== "notes");
+    const customAnswers = customFields
+      .filter(f => regForm[f.id])
+      .map(f => `${f.label}: ${regForm[f.id]}`)
+      .join("\n");
+    const combinedNotes = [regForm.notes, customAnswers].filter(Boolean).join("\n---\n");
+
     // Create registration
     const { data: reg, error: regErr } = await supabase
       .from("college_tournament_registrations")
@@ -175,7 +183,7 @@ const CollegeTournament = () => {
         coach_name: regForm.coach_name,
         coach_email: regForm.coach_email,
         school_name: regForm.school_name,
-        notes: regForm.notes || null,
+        notes: combinedNotes || null,
         payment_status: "registered",
       } as any)
       .select()

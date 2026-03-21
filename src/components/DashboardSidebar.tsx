@@ -5,6 +5,7 @@ import {
   Users,
   MessageSquare,
   DollarSign,
+  Wallet,
   Award,
   ShoppingBag,
   Settings,

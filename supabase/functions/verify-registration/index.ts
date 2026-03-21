@@ -131,13 +131,14 @@ Deno.serve(async (req) => {
         .update({ payment_status: "paid" })
         .in("id", registrationIds);
 
-      // Send confirmation + tax receipt
+      // Send confirmation + tax receipt + admin notification
       try {
-        const { data: reg } = await supabaseAdmin
+        const { data: regs } = await supabaseAdmin
           .from("tournament_registrations")
           .select("first_name, last_name, email, tournament_id")
-          .eq("id", registrationIds[0])
-          .single();
+          .in("id", registrationIds);
+
+        const reg = regs?.[0];
 
         if (reg) {
           const { data: tournament } = await supabaseAdmin
@@ -147,10 +148,28 @@ Deno.serve(async (req) => {
             .single();
 
           if (tournament) {
-            // Send standard confirmation
-            await sendRegistrantConfirmationEmail(
-              reg.first_name, reg.last_name, reg.email,
-              tournament.title, tournament.date, tournament.location,
+            // Send confirmation email to each registrant
+            for (const r of regs || []) {
+              await sendRegistrantConfirmationEmail(
+                r.first_name, r.last_name, r.email,
+                tournament.title, tournament.date, tournament.location,
+              );
+            }
+
+            // Send admin notification for completed payment
+            const playerNames = (regs || []).map((r: any) => `${r.first_name} ${r.last_name}`).join(", ");
+            const amountDisplay = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "N/A";
+            await sendNotificationEmails(
+              supabaseAdmin,
+              tournament.organization_id,
+              "notify_registration",
+              `Payment Confirmed — ${tournament.title}`,
+              buildNotificationHtml("Registration Payment Confirmed", [
+                `<strong>${playerNames}</strong> completed payment for <strong>${tournament.title}</strong>.`,
+                `💳 Amount: <strong>${amountDisplay}</strong>`,
+                `📧 ${reg.email}`,
+                regs && regs.length > 1 ? `👥 Group registration (${regs.length} players)` : "",
+              ].filter(Boolean)),
             );
 
             // If nonprofit, send tax-exempt receipt

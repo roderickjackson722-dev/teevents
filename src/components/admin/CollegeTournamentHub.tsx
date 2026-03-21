@@ -343,9 +343,67 @@ const CollegeTournamentHub = () => {
     }
   };
 
-  const deleteInvitation = async (id: string) => {
-    await supabase.from("college_tournament_invitations").delete().eq("id", id) as any;
+  const deleteInvitation = async () => {
+    if (!deleteInvTarget) return;
+    await supabase.from("college_tournament_invitations").delete().eq("id", deleteInvTarget.id) as any;
+    setDeleteInvTarget(null);
     if (expandedId) fetchTournamentData(expandedId);
+  };
+
+  // Registration CRUD
+  const startEditReg = (reg: Registration) => {
+    setEditingRegId(reg.id);
+    setEditRegForm({ coach_name: reg.coach_name, coach_email: reg.coach_email, school_name: reg.school_name, notes: reg.notes || "" });
+  };
+
+  const saveEditReg = async () => {
+    if (!editingRegId) return;
+    await supabase.from("college_tournament_registrations").update({
+      coach_name: editRegForm.coach_name,
+      coach_email: editRegForm.coach_email,
+      school_name: editRegForm.school_name,
+      notes: editRegForm.notes || null,
+    } as any).eq("id", editingRegId);
+    setEditingRegId(null);
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "Registration updated" });
+  };
+
+  const deleteRegistration = async () => {
+    if (!deleteRegTarget) return;
+    // Delete players first, then registration
+    await supabase.from("college_tournament_players").delete().eq("registration_id", deleteRegTarget.id) as any;
+    await supabase.from("college_tournament_registrations").delete().eq("id", deleteRegTarget.id) as any;
+    setDeleteRegTarget(null);
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "Team registration deleted" });
+  };
+
+  // Player CRUD
+  const startEditPlayer = (p: Player) => {
+    setEditingPlayerId(p.id);
+    setEditPlayerForm({ first_name: p.first_name, last_name: p.last_name, year: p.year || "", position: p.position || "" });
+  };
+
+  const saveEditPlayer = async () => {
+    if (!editingPlayerId) return;
+    await supabase.from("college_tournament_players").update({
+      first_name: editPlayerForm.first_name,
+      last_name: editPlayerForm.last_name,
+      year: editPlayerForm.year || null,
+      position: editPlayerForm.position || null,
+    } as any).eq("id", editingPlayerId);
+    setEditingPlayerId(null);
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "Player updated" });
+  };
+
+  const deletePlayer = async () => {
+    if (!deletePlayerTarget) return;
+    await supabase.from("college_tournament_players").delete().eq("id", deletePlayerTarget.id) as any;
+    setDeletePlayerTarget(null);
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "Player removed" });
   };
 
   // Tabs

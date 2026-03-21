@@ -706,7 +706,7 @@ const Players = () => {
                         )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <button className="text-muted-foreground hover:text-destructive transition-colors">
+                            <button className="text-muted-foreground hover:text-destructive transition-colors" title="Remove player">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </AlertDialogTrigger>

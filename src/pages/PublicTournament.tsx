@@ -189,7 +189,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
+  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number; hasPaypal?: boolean }>({ isNonprofit: false });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sponsorIndex, setSponsorIndex] = useState(0);
 
@@ -224,14 +224,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         // Fetch nonprofit status for the org
         supabase.functions.invoke("get-nonprofit-status", { body: { tournament_id: t.id } })
           .then(({ data: npData }) => {
-            if (npData?.is_nonprofit) {
-              setNonprofitInfo({
-                isNonprofit: true,
-                nonprofitName: npData.nonprofit_name || undefined,
-                ein: npData.ein || undefined,
-                platformFeeRate: npData.platform_fee_rate ?? 0.05,
-              });
-            }
+            setNonprofitInfo({
+              isNonprofit: npData?.is_nonprofit || false,
+              nonprofitName: npData?.nonprofit_name || undefined,
+              ein: npData?.ein || undefined,
+              platformFeeRate: npData?.platform_fee_rate ?? 0.05,
+              hasPaypal: npData?.has_paypal || false,
+            });
           })
           .catch(() => {});
 
@@ -1020,6 +1019,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
                     passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
+                    hasPaypal={nonprofitInfo.hasPaypal}
                   />
                 </div>
               )}

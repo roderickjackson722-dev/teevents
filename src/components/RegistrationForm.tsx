@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, CreditCard, Wallet } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
@@ -36,6 +36,7 @@ interface RegistrationFormProps {
   platformFeeRate?: number;
   passFeesToRegistrants?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
+  hasPaypal?: boolean;
 }
 
 const emptyPlayer = () => ({
@@ -112,7 +113,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [] }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [], hasPaypal = false }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -121,6 +122,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [showEligibility, setShowEligibility] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal">("stripe");
 
   const allowGroup = maxGroupSize > 1;
   const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);
@@ -179,40 +181,51 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     if (hasFee) {
       try {
-        const body = allowGroup
-          ? {
-              tournament_id: tournamentId,
-              foursome: true,
-              cover_fees: coverFees,
-              players: parsedPlayers.map((p, i) => ({
-                first_name: p!.first_name,
-                last_name: p!.last_name,
-                email: p!.email,
-                phone: players[i].phone || null,
-                handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
-                shirt_size: players[i].shirt_size || null,
-                dietary_restrictions: players[i].dietary_restrictions || null,
-                notes: i === 0 ? groupNotes || null : null,
-              })),
-            }
-          : {
-              tournament_id: tournamentId,
-              cover_fees: coverFees,
-              first_name: parsedPlayers[0]!.first_name,
-              last_name: parsedPlayers[0]!.last_name,
-              email: parsedPlayers[0]!.email,
-              phone: players[0].phone || null,
-              handicap: players[0].handicap ? parseInt(players[0].handicap) : null,
-              shirt_size: players[0].shirt_size || null,
-              dietary_restrictions: players[0].dietary_restrictions || null,
-              notes: groupNotes || players[0].notes || null,
-            };
+        const playerData = allowGroup
+          ? parsedPlayers.map((p, i) => ({
+              first_name: p!.first_name,
+              last_name: p!.last_name,
+              email: p!.email,
+              phone: players[i].phone || null,
+              handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
+              shirt_size: players[i].shirt_size || null,
+              dietary_restrictions: players[i].dietary_restrictions || null,
+              notes: i === 0 ? groupNotes || null : null,
+            }))
+          : null;
 
-        const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
+        const singleData = !allowGroup ? {
+          first_name: parsedPlayers[0]!.first_name,
+          last_name: parsedPlayers[0]!.last_name,
+          email: parsedPlayers[0]!.email,
+          phone: players[0].phone || null,
+          handicap: players[0].handicap ? parseInt(players[0].handicap) : null,
+          shirt_size: players[0].shirt_size || null,
+          dietary_restrictions: players[0].dietary_restrictions || null,
+          notes: groupNotes || players[0].notes || null,
+        } : null;
 
-        if (error) throw error;
-        if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
-        if (data?.paid) setSubmitted(true);
+        if (paymentMethod === "paypal" && hasPaypal) {
+          // PayPal checkout
+          const body = allowGroup
+            ? { type: "registration", tournament_id: tournamentId, foursome: true, players: playerData }
+            : { type: "registration", tournament_id: tournamentId, ...singleData };
+
+          const { data, error } = await supabase.functions.invoke("create-paypal-order", { body });
+          if (error) throw error;
+          if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
+          if (data?.paid) setSubmitted(true);
+        } else {
+          // Stripe checkout (default)
+          const body = allowGroup
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, players: playerData }
+            : { tournament_id: tournamentId, cover_fees: coverFees, ...singleData };
+
+          const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
+          if (error) throw error;
+          if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
+          if (data?.paid) setSubmitted(true);
+        }
       } catch (err: any) {
         setErrors({ form: err.message || "Registration failed. Please try again." });
       }
@@ -452,6 +465,41 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {/* Payment Method Selection */}
+        {hasPaypal && hasFee && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Payment Method</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("stripe")}
+                className={cn(
+                  "text-left rounded-lg border-2 p-3 transition-all flex items-center gap-2",
+                  paymentMethod === "stripe"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/40"
+                )}
+              >
+                <CreditCard className="h-4 w-4 text-foreground" />
+                <span className="text-sm font-medium text-foreground">Credit Card</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("paypal")}
+                className={cn(
+                  "text-left rounded-lg border-2 p-3 transition-all flex items-center gap-2",
+                  paymentMethod === "paypal"
+                    ? "border-[#0070ba] bg-[#0070ba]/5"
+                    : "border-border hover:border-[#0070ba]/40"
+                )}
+              >
+                <Wallet className="h-4 w-4 text-[#0070ba]" />
+                <span className="text-sm font-medium text-foreground">PayPal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Tax-Exempt Notice */}
         {isNonprofit && (
           <p className="text-xs text-muted-foreground text-center">
@@ -463,11 +511,13 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           type="submit"
           disabled={submitting || submitted}
           className="w-full text-base py-3"
-          style={{ backgroundColor: secondaryColor, color: primaryColor }}
+          style={{ backgroundColor: paymentMethod === "paypal" && hasPaypal ? "#0070ba" : secondaryColor, color: paymentMethod === "paypal" && hasPaypal ? "#fff" : primaryColor }}
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? `Register & Pay ${totalDisplay}`
+            ? paymentMethod === "paypal" && hasPaypal
+              ? `Pay with PayPal ${totalDisplay}`
+              : `Register & Pay ${totalDisplay}`
             : allowGroup
               ? `Register Group (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}

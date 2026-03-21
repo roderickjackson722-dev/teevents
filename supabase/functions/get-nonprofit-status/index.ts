@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, plan")
+      .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, plan, stripe_account_id, paypal_merchant_id")
       .eq("id", tournament.organization_id)
       .single();
 
@@ -40,6 +40,9 @@ Deno.serve(async (req) => {
       ? (org as any).fee_override / 100
       : org?.is_nonprofit ? 0.05 : (FEE_RATES[org?.plan || "base"] ?? 0.05);
 
+    const hasStripe = !!(org as any)?.stripe_account_id;
+    const hasPaypal = !!(org as any)?.paypal_merchant_id;
+
     return new Response(
       JSON.stringify({
         is_nonprofit: org?.is_nonprofit || false,
@@ -47,6 +50,8 @@ Deno.serve(async (req) => {
         ein: org?.ein || null,
         nonprofit_verified: org?.nonprofit_verified || false,
         platform_fee_rate: feeRate,
+        has_stripe: hasStripe,
+        has_paypal: hasPaypal,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );

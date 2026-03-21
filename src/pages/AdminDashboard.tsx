@@ -620,34 +620,50 @@ const AdminDashboard = () => {
       <section className="bg-golf-cream min-h-[70vh] py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
-          <div className="flex flex-wrap gap-2 mb-8 border-b border-border pb-2">
-           {([
-              ["events", "Tournaments", Calendar],
-              ["all-tournaments", "All User Tournaments", Trophy],
-              ["requests", "Access Requests", Users],
-              ["emails", "Auto-Approve Emails", Mail],
-              ["reviews", "Reviews", Star],
-              ["promos", "Promo Codes", Tag],
-              ["demos", "Demo Events", Trophy],
-              ["sales-hub", "Sales Hub", Target],
-              ["store", "Store", ShoppingBag],
-              ["analytics", "Analytics", BarChart3],
-            ] as const).map(([key, label, Icon]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                  activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-4 w-4" /> {label}
-                {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
-                  <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
-                    {requests.filter(r => r.status === "pending").length}
-                  </span>
-                )}
-              </button>
-            ))}
+          <div className="mb-8 border-b border-border pb-2 space-y-1">
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["events", "TeeVents Tournaments", Calendar],
+                ["requests", "Access Requests", Users],
+                ["emails", "Auto-Approve Emails", Mail],
+                ["reviews", "Reviews", Star],
+              ] as const).map(([key, label, Icon]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" /> {label}
+                  {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
+                    <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
+                      {requests.filter(r => r.status === "pending").length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["all-tournaments", "All User Tournaments", Trophy],
+                ["demos", "Demo Events", Trophy],
+                ["sales-hub", "Sales Hub", Target],
+                ["promos", "Promo Codes", Tag],
+                ["store", "Store", ShoppingBag],
+                ["analytics", "Analytics", BarChart3],
+              ] as const).map(([key, label, Icon]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" /> {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Events Tab */}

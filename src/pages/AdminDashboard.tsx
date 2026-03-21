@@ -202,13 +202,13 @@ const AdminDashboard = () => {
 
     const { error } = await supabase.from("events").insert({
       title: newTitle.trim(), description: newDesc.trim() || null,
-      date: newDate || null, location: newLocation.trim() || null,
+      date: newDate || null, end_date: newEndDate || null, location: newLocation.trim() || null,
       link: newLink.trim() || null, status: newStatus, image_url: imageUrl,
       gallery_url: newGalleryUrl.trim() || null,
       results_url: newResultsUrl.trim() || null,
-    });
+    } as any);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); setUploading(false); return; }
-    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewLocation(""); setNewLink(""); setNewGalleryUrl(""); setNewResultsUrl(""); setNewImageFile(null);
+    setNewTitle(""); setNewDesc(""); setNewDate(""); setNewEndDate(""); setNewLocation(""); setNewLink(""); setNewGalleryUrl(""); setNewResultsUrl(""); setNewImageFile(null);
     const fileInput = document.getElementById("event-image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
     await fetchAll();

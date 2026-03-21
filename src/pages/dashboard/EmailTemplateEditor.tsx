@@ -76,7 +76,7 @@ const VARIABLE_TAGS = [
 
 export default function EmailTemplateEditor() {
   const { org } = useOrgContext();
-  const { isDemoMode, selectedTournamentId } = useDemoMode();
+  const { isDemoMode } = useDemoMode();
   const [config, setConfig] = useState<EmailConfig>(DEFAULT_CONFIG);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);

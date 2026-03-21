@@ -136,27 +136,27 @@ export type Database = {
         Row: {
           created_at: string
           first_name: string
-          handicap: number | null
           id: string
           last_name: string
+          position: string | null
           registration_id: string
           year: string | null
         }
         Insert: {
           created_at?: string
           first_name: string
-          handicap?: number | null
           id?: string
           last_name: string
+          position?: string | null
           registration_id: string
           year?: string | null
         }
         Update: {
           created_at?: string
           first_name?: string
-          handicap?: number | null
           id?: string
           last_name?: string
+          position?: string | null
           registration_id?: string
           year?: string | null
         }

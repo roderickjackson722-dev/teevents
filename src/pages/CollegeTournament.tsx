@@ -381,7 +381,7 @@ const CollegeTournament = () => {
                 </div>
                 <div className="space-y-3">
                   {players.map((p, i) => (
-                    <div key={i} className="grid grid-cols-[1fr_1fr_120px_80px_auto] gap-2 items-end">
+                    <div key={i} className="grid grid-cols-[1fr_1fr_120px_120px_auto] gap-2 items-end">
                       <div>
                         {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">First Name *</label>}
                         <Input placeholder="First" value={p.first_name} onChange={e => updatePlayer(i, "first_name", e.target.value)} required />
@@ -406,8 +406,20 @@ const CollegeTournament = () => {
                         </select>
                       </div>
                       <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">HCP</label>}
-                        <Input type="number" placeholder="0" value={p.handicap} onChange={e => updatePlayer(i, "handicap", e.target.value)} step="0.1" />
+                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Position</label>}
+                        <select
+                          value={p.position}
+                          onChange={e => updatePlayer(i, "position", e.target.value)}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="">Position</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                          <option value="alternate">Alt</option>
+                        </select>
                       </div>
                       <div>
                         {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">&nbsp;</label>}

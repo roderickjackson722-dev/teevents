@@ -462,7 +462,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-xl mx-auto m-4"
           >
-            <div className="bg-white rounded-xl border-2 p-8 shadow-2xl text-center" style={{ borderColor: `${secondary}40` }}>
+            <div className="bg-white rounded-xl border-2 p-8 shadow-2xl text-center relative" style={{ borderColor: `${secondary}40` }}>
+              <button
+                onClick={() => setRegistered(false)}
+                className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" style={{ color: "#999" }} />
+              </button>
               <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
               <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>You're Registered!</h3>
               <p style={{ color: "#666" }}>Payment confirmed. You'll receive confirmation details via email.</p>

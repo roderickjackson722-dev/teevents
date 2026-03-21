@@ -22,6 +22,7 @@ import {
   FileEdit,
   Printer,
   PenLine,
+  Mail,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -78,6 +79,7 @@ const managementItems = [
   { title: "Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard" },
   { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard" },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
+  { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null },
   { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null },
   { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget" },
   { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },

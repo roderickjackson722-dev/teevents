@@ -96,6 +96,7 @@ const Players = () => {
   const [scoringCodeInput, setScoringCodeInput] = useState("");
   const [regenerating, setRegenerating] = useState(false);
   const [viewingPlayer, setViewingPlayer] = useState<Registration | null>(null);
+  useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")

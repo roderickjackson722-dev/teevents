@@ -468,38 +468,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {/* Payment Method Selection */}
-        {hasPaypal && hasFee && (
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Payment Method</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("stripe")}
-                className={cn(
-                  "text-left rounded-lg border-2 p-3 transition-all flex items-center gap-2",
-                  paymentMethod === "stripe"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40"
-                )}
-              >
-                <CreditCard className="h-4 w-4 text-foreground" />
-                <span className="text-sm font-medium text-foreground">Credit Card</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("paypal")}
-                className={cn(
-                  "text-left rounded-lg border-2 p-3 transition-all flex items-center gap-2",
-                  paymentMethod === "paypal"
-                    ? "border-[#0070ba] bg-[#0070ba]/5"
-                    : "border-border hover:border-[#0070ba]/40"
-                )}
-              >
-                <Wallet className="h-4 w-4 text-[#0070ba]" />
-                <span className="text-sm font-medium text-foreground">PayPal</span>
-              </button>
-            </div>
+        {/* PayPal indicator when no Stripe */}
+        {!hasStripe && hasPaypal && hasFee && (
+          <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/30">
+            <Wallet className="h-4 w-4 text-[#0070ba]" />
+            <span className="text-sm text-muted-foreground">Payment will be processed via PayPal</span>
           </div>
         )}
 

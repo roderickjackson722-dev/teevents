@@ -69,13 +69,6 @@ const Settings = () => {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualAccountId, setManualAccountId] = useState("");
   const [savingManual, setSavingManual] = useState(false);
-  // PayPal state
-  const [paypalStatus, setPaypalStatus] = useState<PayPalStatus | null>(null);
-  const [paypalLoading, setPaypalLoading] = useState(true);
-  const [paypalMerchantId, setPaypalMerchantId] = useState("");
-  const [connectingPaypal, setConnectingPaypal] = useState(false);
-  const [disconnectingPaypal, setDisconnectingPaypal] = useState(false);
-  const [paypalDisconnectDialogOpen, setPaypalDisconnectDialogOpen] = useState(false);
   useEffect(() => {
     fetchConnectStatus();
     fetchPaypalStatus();

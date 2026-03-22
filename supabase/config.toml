@@ -48,11 +48,3 @@ verify_jwt = false
 [functions.verify-plan-purchase]
 verify_jwt = false
 
-[functions.paypal-onboard]
-verify_jwt = false
-
-[functions.create-paypal-order]
-verify_jwt = false
-
-[functions.capture-paypal-order]
-verify_jwt = false

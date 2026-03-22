@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, plan, stripe_account_id, paypal_merchant_id")
+      .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, plan, stripe_account_id")
       .eq("id", tournament.organization_id)
       .single();
 

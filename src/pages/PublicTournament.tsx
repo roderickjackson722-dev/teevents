@@ -230,6 +230,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               ein: npData?.ein || undefined,
               platformFeeRate: npData?.platform_fee_rate ?? 0.05,
               hasPaypal: npData?.has_paypal || false,
+              hasStripe: npData?.has_stripe !== false,
             });
           })
           .catch(() => {});

@@ -124,6 +124,7 @@ const App = () => (
            <Route path="/pricing" element={<Pricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
+           <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

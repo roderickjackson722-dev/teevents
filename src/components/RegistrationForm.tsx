@@ -462,13 +462,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           type="submit"
           disabled={submitting || submitted}
           className="w-full text-base py-3"
-          style={{ backgroundColor: paymentMethod === "paypal" ? "#0070ba" : secondaryColor, color: paymentMethod === "paypal" ? "#fff" : primaryColor }}
+          style={{ backgroundColor: secondaryColor, color: primaryColor }}
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? paymentMethod === "paypal"
-              ? `Pay with PayPal ${totalDisplay}`
-              : `Register & Pay ${totalDisplay}`
+            ? `Register & Pay ${totalDisplay}`
             : allowGroup
               ? `Register Group (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}

@@ -1483,6 +1483,17 @@ const AdminDashboard = () => {
                             <Button
                               variant="ghost"
                               size="sm"
+                              title="Reset user password"
+                              onClick={() => handleAdminResetPassword(t.organization_id)}
+                              disabled={resettingPassword === t.organization_id}
+                            >
+                              {resettingPassword === t.organization_id
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => setExpandedTournament(expandedTournament === t.id ? null : t.id)}
                             >
                               {expandedTournament === t.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

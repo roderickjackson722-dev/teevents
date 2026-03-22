@@ -48,3 +48,9 @@ verify_jwt = false
 [functions.verify-plan-purchase]
 verify_jwt = false
 
+[functions.notify-new-signup]
+verify_jwt = false
+
+[functions.admin-reset-password]
+verify_jwt = false
+

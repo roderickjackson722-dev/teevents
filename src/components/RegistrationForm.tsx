@@ -203,19 +203,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           notes: groupNotes || players[0].notes || null,
         } : null;
 
-        if (paymentMethod === "paypal" && hasPaypal) {
-          // PayPal checkout
-          const body = allowGroup
-            ? { type: "registration", tournament_id: tournamentId, foursome: true, players: playerData }
-            : { type: "registration", tournament_id: tournamentId, ...singleData };
-
-          const { data, error } = await supabase.functions.invoke("create-paypal-order", { body });
-          if (error) throw error;
-          if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
-          if (data?.paid) setSubmitted(true);
-        } else {
-          // Stripe checkout (default)
-          const body = allowGroup
+        const body = allowGroup
             ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, players: playerData }
             : { tournament_id: tournamentId, cover_fees: coverFees, ...singleData };
 
@@ -223,7 +211,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           if (error) throw error;
           if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
           if (data?.paid) setSubmitted(true);
-        }
       } catch (err: any) {
         setErrors({ form: err.message || "Registration failed. Please try again." });
       }

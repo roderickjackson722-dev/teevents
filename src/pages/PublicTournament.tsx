@@ -189,7 +189,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number; hasPaypal?: boolean }>({ isNonprofit: false });
+  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number; hasPaypal?: boolean; hasStripe?: boolean }>({ isNonprofit: false });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sponsorIndex, setSponsorIndex] = useState(0);
 

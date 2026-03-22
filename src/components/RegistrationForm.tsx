@@ -112,7 +112,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [], hasPaypal = false, hasStripe = true }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [] }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -121,9 +121,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [showEligibility, setShowEligibility] = useState<string | null>(null);
-
-  // Auto-determine payment method: use Stripe if available, fall back to PayPal
-  const paymentMethod = hasStripe ? "stripe" : hasPaypal ? "paypal" : "stripe";
 
   const allowGroup = maxGroupSize > 1;
   const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);

@@ -41,7 +41,6 @@ Deno.serve(async (req) => {
       : org?.is_nonprofit ? 0.05 : (FEE_RATES[org?.plan || "base"] ?? 0.05);
 
     const hasStripe = !!(org as any)?.stripe_account_id;
-    const hasPaypal = !!(org as any)?.paypal_merchant_id;
 
     return new Response(
       JSON.stringify({

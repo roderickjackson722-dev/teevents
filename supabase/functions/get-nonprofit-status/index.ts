@@ -50,7 +50,6 @@ Deno.serve(async (req) => {
         nonprofit_verified: org?.nonprofit_verified || false,
         platform_fee_rate: feeRate,
         has_stripe: hasStripe,
-        has_paypal: hasPaypal,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );

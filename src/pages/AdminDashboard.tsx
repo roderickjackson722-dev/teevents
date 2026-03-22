@@ -115,6 +115,43 @@ const AdminDashboard = () => {
   const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
   const [tournamentSearch, setTournamentSearch] = useState("");
   const [orgFilter, setOrgFilter] = useState("");
+  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
+
+  const handleAdminResetPassword = async (orgId: string) => {
+    // Find org members to get the email
+    const { data: members } = await supabase.functions.invoke("admin-data", {
+      body: { action: "get-org-members", org_id: orgId },
+    });
+    
+    // Use the admin-data edge function to get user email, or query org_members
+    const { data: orgMembers } = await supabase
+      .from("org_members")
+      .select("user_id")
+      .eq("organization_id", orgId)
+      .eq("role", "owner")
+      .limit(1);
+    
+    if (!orgMembers || orgMembers.length === 0) {
+      toast({ title: "No owner found for this organization", variant: "destructive" });
+      return;
+    }
+
+    const resetEmail = prompt("Enter the email address for the account to reset:");
+    if (!resetEmail) return;
+
+    setResettingPassword(orgId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+        body: { email: resetEmail, redirect_url: `${window.location.origin}/reset-password` },
+      });
+      if (error) throw error;
+      toast({ title: "Password reset email sent", description: `Reset link sent to ${resetEmail}` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setResettingPassword(null);
+  };
 
   useEffect(() => {
     checkAdmin();

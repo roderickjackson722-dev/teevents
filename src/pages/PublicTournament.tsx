@@ -189,7 +189,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number; hasPaypal?: boolean }>({ isNonprofit: false });
+  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number; hasPaypal?: boolean; hasStripe?: boolean }>({ isNonprofit: false });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sponsorIndex, setSponsorIndex] = useState(0);
 
@@ -230,6 +230,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               ein: npData?.ein || undefined,
               platformFeeRate: npData?.platform_fee_rate ?? 0.05,
               hasPaypal: npData?.has_paypal || false,
+              hasStripe: npData?.has_stripe !== false,
             });
           })
           .catch(() => {});
@@ -1020,6 +1021,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     platformFeeRate={nonprofitInfo.platformFeeRate}
                     passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
                     hasPaypal={nonprofitInfo.hasPaypal}
+                    hasStripe={nonprofitInfo.hasStripe !== false}
                   />
                 </div>
               )}

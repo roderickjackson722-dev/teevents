@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, CreditCard, Wallet } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, Wallet } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
@@ -37,6 +37,7 @@ interface RegistrationFormProps {
   passFeesToRegistrants?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
   hasPaypal?: boolean;
+  hasStripe?: boolean;
 }
 
 const emptyPlayer = () => ({
@@ -113,7 +114,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [], hasPaypal = false }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [], hasPaypal = false, hasStripe = true }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -122,7 +123,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [showEligibility, setShowEligibility] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal">("stripe");
+
+  // Auto-determine payment method: use Stripe if available, fall back to PayPal
+  const paymentMethod = hasStripe ? "stripe" : hasPaypal ? "paypal" : "stripe";
 
   const allowGroup = maxGroupSize > 1;
   const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);
@@ -465,38 +468,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {/* Payment Method Selection */}
-        {hasPaypal && hasFee && (
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Payment Method</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("stripe")}
-                className={cn(
-                  "text-left rounded-lg border-2 p-3 transition-all flex items-center gap-2",
-                  paymentMethod === "stripe"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40"
-                )}
-              >
-                <CreditCard className="h-4 w-4 text-foreground" />
-                <span className="text-sm font-medium text-foreground">Credit Card</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("paypal")}
-                className={cn(
-                  "text-left rounded-lg border-2 p-3 transition-all flex items-center gap-2",
-                  paymentMethod === "paypal"
-                    ? "border-[#0070ba] bg-[#0070ba]/5"
-                    : "border-border hover:border-[#0070ba]/40"
-                )}
-              >
-                <Wallet className="h-4 w-4 text-[#0070ba]" />
-                <span className="text-sm font-medium text-foreground">PayPal</span>
-              </button>
-            </div>
+        {/* PayPal indicator when no Stripe */}
+        {!hasStripe && hasPaypal && hasFee && (
+          <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/30">
+            <Wallet className="h-4 w-4 text-[#0070ba]" />
+            <span className="text-sm text-muted-foreground">Payment will be processed via PayPal</span>
           </div>
         )}
 
@@ -511,11 +487,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           type="submit"
           disabled={submitting || submitted}
           className="w-full text-base py-3"
-          style={{ backgroundColor: paymentMethod === "paypal" && hasPaypal ? "#0070ba" : secondaryColor, color: paymentMethod === "paypal" && hasPaypal ? "#fff" : primaryColor }}
+          style={{ backgroundColor: paymentMethod === "paypal" ? "#0070ba" : secondaryColor, color: paymentMethod === "paypal" ? "#fff" : primaryColor }}
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? paymentMethod === "paypal" && hasPaypal
+            ? paymentMethod === "paypal"
               ? `Pay with PayPal ${totalDisplay}`
               : `Register & Pay ${totalDisplay}`
             : allowGroup

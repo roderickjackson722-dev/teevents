@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations DROP COLUMN IF EXISTS paypal_merchant_id;

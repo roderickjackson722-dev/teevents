@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, Wallet } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
@@ -36,8 +36,6 @@ interface RegistrationFormProps {
   platformFeeRate?: number;
   passFeesToRegistrants?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
-  hasPaypal?: boolean;
-  hasStripe?: boolean;
 }
 
 const emptyPlayer = () => ({
@@ -114,7 +112,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [], hasPaypal = false, hasStripe = true }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [] }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -123,9 +121,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [showEligibility, setShowEligibility] = useState<string | null>(null);
-
-  // Auto-determine payment method: use Stripe if available, fall back to PayPal
-  const paymentMethod = hasStripe ? "stripe" : hasPaypal ? "paypal" : "stripe";
 
   const allowGroup = maxGroupSize > 1;
   const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);
@@ -208,19 +203,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           notes: groupNotes || players[0].notes || null,
         } : null;
 
-        if (paymentMethod === "paypal" && hasPaypal) {
-          // PayPal checkout
-          const body = allowGroup
-            ? { type: "registration", tournament_id: tournamentId, foursome: true, players: playerData }
-            : { type: "registration", tournament_id: tournamentId, ...singleData };
-
-          const { data, error } = await supabase.functions.invoke("create-paypal-order", { body });
-          if (error) throw error;
-          if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
-          if (data?.paid) setSubmitted(true);
-        } else {
-          // Stripe checkout (default)
-          const body = allowGroup
+        const body = allowGroup
             ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, players: playerData }
             : { tournament_id: tournamentId, cover_fees: coverFees, ...singleData };
 
@@ -228,7 +211,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           if (error) throw error;
           if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
           if (data?.paid) setSubmitted(true);
-        }
       } catch (err: any) {
         setErrors({ form: err.message || "Registration failed. Please try again." });
       }
@@ -468,13 +450,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {/* PayPal indicator when no Stripe */}
-        {!hasStripe && hasPaypal && hasFee && (
-          <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/30">
-            <Wallet className="h-4 w-4 text-[#0070ba]" />
-            <span className="text-sm text-muted-foreground">Payment will be processed via PayPal</span>
-          </div>
-        )}
 
         {/* Tax-Exempt Notice */}
         {isNonprofit && (
@@ -487,13 +462,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           type="submit"
           disabled={submitting || submitted}
           className="w-full text-base py-3"
-          style={{ backgroundColor: paymentMethod === "paypal" ? "#0070ba" : secondaryColor, color: paymentMethod === "paypal" ? "#fff" : primaryColor }}
+          style={{ backgroundColor: secondaryColor, color: primaryColor }}
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? paymentMethod === "paypal"
-              ? `Pay with PayPal ${totalDisplay}`
-              : `Register & Pay ${totalDisplay}`
+            ? `Register & Pay ${totalDisplay}`
             : allowGroup
               ? `Register Group (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}

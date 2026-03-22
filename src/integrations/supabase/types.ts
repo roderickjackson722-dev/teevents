@@ -582,7 +582,6 @@ export type Database = {
           name: string
           nonprofit_name: string | null
           nonprofit_verified: boolean
-          paypal_merchant_id: string | null
           plan: string
           primary_color: string | null
           secondary_color: string | null
@@ -602,7 +601,6 @@ export type Database = {
           name: string
           nonprofit_name?: string | null
           nonprofit_verified?: boolean
-          paypal_merchant_id?: string | null
           plan?: string
           primary_color?: string | null
           secondary_color?: string | null
@@ -622,7 +620,6 @@ export type Database = {
           name?: string
           nonprofit_name?: string | null
           nonprofit_verified?: boolean
-          paypal_merchant_id?: string | null
           plan?: string
           primary_color?: string | null
           secondary_color?: string | null

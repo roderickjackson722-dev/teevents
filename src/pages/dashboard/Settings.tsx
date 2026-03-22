@@ -71,7 +71,6 @@ const Settings = () => {
   const [savingManual, setSavingManual] = useState(false);
   useEffect(() => {
     fetchConnectStatus();
-    fetchPaypalStatus();
     if (org) {
       setDashboardName(org.dashboardName || "");
       supabase

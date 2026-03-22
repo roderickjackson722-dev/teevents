@@ -450,13 +450,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
-        {/* PayPal indicator when no Stripe */}
-        {!hasStripe && hasPaypal && hasFee && (
-          <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/30">
-            <Wallet className="h-4 w-4 text-[#0070ba]" />
-            <span className="text-sm text-muted-foreground">Payment will be processed via PayPal</span>
-          </div>
-        )}
 
         {/* Tax-Exempt Notice */}
         {isNonprofit && (

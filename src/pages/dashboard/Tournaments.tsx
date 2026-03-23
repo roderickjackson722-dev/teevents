@@ -52,7 +52,7 @@ const Tournaments = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+  const [form, setForm] = useState({ date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
   const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -77,9 +77,13 @@ const Tournaments = () => {
     if (!org || demoGuard()) return;
     setCreating(true);
 
+    const title = form.course_name
+      ? `${form.course_name} Tournament`
+      : `${org.orgName || "My"} Golf Tournament`;
+
     const { error } = await supabase.from("tournaments").insert({
       organization_id: org.orgId,
-      title: form.title,
+      title,
       date: form.date || null,
       end_date: form.end_date || null,
       location: form.location || null,
@@ -91,7 +95,7 @@ const Tournaments = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Tournament created!", description: "Your planning checklist has been generated." });
-      setForm({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+      setForm({ date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
       setDialogOpen(false);
       fetchTournaments();
     }
@@ -140,16 +144,6 @@ const Tournaments = () => {
               <DialogTitle className="font-display">Create Tournament</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 mt-4">
-              <div>
-                <Label htmlFor="title">Tournament Name *</Label>
-                <Input
-                  id="title"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Annual Charity Golf Classic"
-                  required
-                />
-              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="date">Start Date</Label>

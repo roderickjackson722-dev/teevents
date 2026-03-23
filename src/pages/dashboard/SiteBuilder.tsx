@@ -407,7 +407,7 @@ const SiteBuilder = () => {
               onCheckedChange={(v) => updateField("site_published", v)}
             />
             <span className="text-sm font-medium text-foreground">
-              {settings.site_published ? "Published" : "Draft"}
+              {settings.site_published ? "Published" : "Publish"}
             </span>
           </div>
           {publicUrl && settings.site_published && (

@@ -81,10 +81,6 @@ const Pricing = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "base") {
-      window.location.href = "/get-started";
-      return;
-    }
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {

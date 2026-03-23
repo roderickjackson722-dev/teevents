@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 const PRICE_MAP: Record<string, string> = {
-  starter: "price_1T6NmGLXW44Q7xfEnpuXOzvZ",
+  base: "price_1TE7QpLT3p5VmsQsqZOGHHwc",
+  starter: "price_1TE7QqLT3p5VmsQskHWwh0oh",
   premium: "price_1TD0XzLT3p5VmsQsT3qfmU2N",
 };
 

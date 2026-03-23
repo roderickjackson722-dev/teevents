@@ -19,6 +19,11 @@ interface AdminFeatureTogglesProps {
 
 // Plan default features for reference
 const PLAN_FEATURES: Record<string, string[]> = {
+  free: [
+    "tournaments", "registration", "website", "players", "check-in",
+    "leaderboard", "planning-guide", "email-messaging", "custom-domain",
+    "sponsors", "budget", "gallery", "printables", "volunteers",
+  ],
   base: [
     "tournaments", "registration", "website", "players", "check-in",
     "leaderboard", "planning-guide", "email-messaging", "custom-domain",
@@ -28,7 +33,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
   premium: ["store", "auction", "surveys", "priority-support", "hole-in-one-insurance"],
 };
 
-const PLAN_HIERARCHY = ["base", "starter", "premium"];
+const PLAN_HIERARCHY = ["free", "base", "starter", "premium"];
 
 function planIncludesFeature(plan: string, feature: string): boolean {
   const idx = PLAN_HIERARCHY.indexOf(plan);
@@ -114,7 +119,7 @@ export default function AdminFeatureToggles({
     setSavingFee(false);
   };
 
-  const planDefaultFee = 0;
+  const planDefaultFee = currentPlan === "free" ? 5 : 0;
   const hasFeatureChanges = JSON.stringify(overrides) !== JSON.stringify(currentOverrides || {});
   const hasFeeChanges = (feeOverride.trim() === "" ? null : parseFloat(feeOverride)) !== currentFeeOverride;
 

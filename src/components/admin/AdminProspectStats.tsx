@@ -1,9 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart3, Mail, PhoneCall, Video, FileText, Users,
   TrendingUp, Target, CheckCircle2, XCircle, Clock, Send,
-  ArrowRightLeft, Bell, Calendar,
+  ArrowRightLeft, Bell, Calendar, Plus, Loader2,
 } from "lucide-react";
 import {
   ChartContainer,
@@ -13,6 +17,7 @@ import {
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface Prospect {
   id: string;
@@ -23,6 +28,7 @@ interface Prospect {
   last_email_sent_at: string | null;
   last_contacted_at: string | null;
   created_at: string;
+  tournament_name?: string;
 }
 
 interface Activity {
@@ -36,6 +42,8 @@ interface Activity {
 interface Props {
   prospects: Prospect[];
   activities: Activity[];
+  callAdminApi: (action: string, body: Record<string, any>) => Promise<any>;
+  onRefresh: () => void;
 }
 
 const ACTIVITY_LABELS: Record<string, { label: string; icon: any; color: string }> = {
@@ -67,7 +75,39 @@ const STATUS_LABELS: Record<string, string> = {
   lost: "Lost",
 };
 
-export default function AdminProspectStats({ prospects, activities }: Props) {
+export default function AdminProspectStats({ prospects, activities, callAdminApi, onRefresh }: Props) {
+  const { toast } = useToast();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [activityType, setActivityType] = useState("email");
+  const [activityProspectId, setActivityProspectId] = useState("");
+  const [activityDescription, setActivityDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleAddActivity = async () => {
+    if (!activityProspectId || !activityDescription.trim()) {
+      toast({ title: "Please select a prospect and add a description", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await callAdminApi("add-prospect-activity", {
+        prospect_id: activityProspectId,
+        type: activityType,
+        description: activityDescription.trim(),
+      });
+      toast({ title: "Activity logged successfully" });
+      setActivityDescription("");
+      setActivityType("email");
+      setActivityProspectId("");
+      setShowAddForm(false);
+      onRefresh();
+    } catch {
+      toast({ title: "Failed to log activity", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Activity counts by type
   const activityCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -169,6 +209,47 @@ export default function AdminProspectStats({ prospects, activities }: Props) {
           Track outreach efforts, pipeline health, and conversion metrics.
         </p>
       </div>
+
+      {/* Manual Activity Entry */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <Plus className="h-4 w-4 text-primary" /> Log Activity
+          </h3>
+          <Button size="sm" variant={showAddForm ? "outline" : "default"} onClick={() => setShowAddForm(!showAddForm)}>
+            {showAddForm ? "Cancel" : "Add Activity"}
+          </Button>
+        </div>
+        {showAddForm && (
+          <div className="grid sm:grid-cols-4 gap-3">
+            <Select value={activityProspectId} onValueChange={setActivityProspectId}>
+              <SelectTrigger><SelectValue placeholder="Select prospect" /></SelectTrigger>
+              <SelectContent>
+                {prospects.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.tournament_name || p.contact_email || p.id.slice(0, 8)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={activityType} onValueChange={setActivityType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(ACTIVITY_LABELS).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Textarea
+              placeholder="Description (e.g. Left voicemail, sent pricing info...)"
+              value={activityDescription}
+              onChange={e => setActivityDescription(e.target.value)}
+              className="min-h-[40px]"
+            />
+            <Button onClick={handleAddActivity} disabled={submitting} className="self-end">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log"}
+            </Button>
+          </div>
+        )}
+      </Card>
 
       {/* Top-level stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">

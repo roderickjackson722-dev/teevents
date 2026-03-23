@@ -11,12 +11,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "leaderboard",
     "planning-guide",
     "email-messaging",
-    "custom-domain",
-    "sponsors",
-    "budget",
-    "gallery",
     "printables",
-    "volunteers",
   ],
   base: [
     "tournaments",
@@ -27,15 +22,15 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "leaderboard",
     "planning-guide",
     "email-messaging",
+    "printables",
+  ],
+  starter: [
+    // Everything in base +
     "custom-domain",
     "sponsors",
     "budget",
     "gallery",
-    "printables",
     "volunteers",
-  ],
-  starter: [
-    // Everything in base +
     "donations",
     "sms-messaging",
     "all-templates",

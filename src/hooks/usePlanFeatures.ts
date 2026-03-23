@@ -2,6 +2,22 @@ import { useOrgContext } from "./useOrgContext";
 
 // Feature access by plan tier
 const PLAN_FEATURES: Record<string, string[]> = {
+  free: [
+    "tournaments",
+    "registration",
+    "website",
+    "players",
+    "check-in",
+    "leaderboard",
+    "planning-guide",
+    "email-messaging",
+    "custom-domain",
+    "sponsors",
+    "budget",
+    "gallery",
+    "printables",
+    "volunteers",
+  ],
   base: [
     "tournaments",
     "registration",

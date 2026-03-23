@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Crown, Shield, Zap, Star } from "lucide-react";
+import { Check, ArrowRight, Loader2, Crown, Shield, Zap, Star, Lock, CreditCard, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";

@@ -77,9 +77,13 @@ const Tournaments = () => {
     if (!org || demoGuard()) return;
     setCreating(true);
 
+    const title = form.course_name
+      ? `${form.course_name} Tournament`
+      : `${org.orgName || "My"} Golf Tournament`;
+
     const { error } = await supabase.from("tournaments").insert({
       organization_id: org.orgId,
-      title: form.title,
+      title,
       date: form.date || null,
       end_date: form.end_date || null,
       location: form.location || null,

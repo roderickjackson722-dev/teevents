@@ -1,9 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart3, Mail, PhoneCall, Video, FileText, Users,
   TrendingUp, Target, CheckCircle2, XCircle, Clock, Send,
-  ArrowRightLeft, Bell, Calendar,
+  ArrowRightLeft, Bell, Calendar, Plus, Loader2,
 } from "lucide-react";
 import {
   ChartContainer,
@@ -13,6 +17,7 @@ import {
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface Prospect {
   id: string;
@@ -23,6 +28,7 @@ interface Prospect {
   last_email_sent_at: string | null;
   last_contacted_at: string | null;
   created_at: string;
+  tournament_name?: string;
 }
 
 interface Activity {
@@ -36,6 +42,8 @@ interface Activity {
 interface Props {
   prospects: Prospect[];
   activities: Activity[];
+  callAdminApi: (action: string, body: Record<string, any>) => Promise<any>;
+  onRefresh: () => void;
 }
 
 const ACTIVITY_LABELS: Record<string, { label: string; icon: any; color: string }> = {

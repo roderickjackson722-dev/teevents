@@ -161,7 +161,6 @@ const Platform = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    }
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {

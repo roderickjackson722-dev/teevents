@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const FEE_RATES: Record<string, string> = {
-  base: "5%",
+  base: "0%",
   starter: "0%",
   premium: "0%",
 };

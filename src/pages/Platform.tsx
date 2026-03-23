@@ -80,10 +80,10 @@ const additionalFeatures = [
 const plans = [
   {
     name: "Base",
-    price: "Free",
-    period: "per tournament",
+    price: "$249",
+    period: "one-time",
     description: "Everything you need to run a professional tournament.",
-    fee: "5% transaction fee",
+    fee: "0% transaction fee",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -161,11 +161,6 @@ const Platform = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "base") {
-      // Free plan — go directly to signup
-      window.location.href = "/get-started";
-      return;
-    }
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -214,7 +209,7 @@ const Platform = () => {
             onClick={() => handleCheckout("base")}
             className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
           >
-            Get Started Free
+            Get Started
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -351,9 +346,9 @@ const Platform = () => {
             {[
               {
                 step: "01",
-                title: "Sign Up Free",
+                title: "Choose Your Plan",
                 description:
-                  "Create your free account in seconds. No credit card required. Upgrade anytime for more features and lower fees.",
+                  "Pick the package that fits your tournament. All plans include zero platform transaction fees.",
               },
               {
                 step: "02",
@@ -407,7 +402,7 @@ const Platform = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free with a 5% transaction fee, or upgrade to eliminate fees entirely.
+              Simple, per-tournament pricing with no platform transaction fees on any plan.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.

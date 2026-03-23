@@ -29,9 +29,9 @@ const benefits = [
   },
   {
     icon: Shield,
-    title: "Locked 5% Platform Fee",
+    title: "Zero Platform Transaction Fees",
     description:
-      "Nonprofits always pay just 5% — regardless of plan tier. No surprise rate hikes, no hidden costs. Transparent pricing you can budget around.",
+      "No platform transaction fees on any plan. Only standard Stripe processing fees apply. Transparent pricing you can budget around.",
   },
   {
     icon: BadgeCheck,

@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const FEE_RATES: Record<string, string> = {
-  base: "5%",
+  base: "0%",
   starter: "0%",
   premium: "0%",
 };
@@ -17,9 +17,9 @@ const plans = [
   {
     key: "base",
     name: "Base",
-    price: "Free",
-    period: "per tournament",
-    fee: "5% transaction fee",
+    price: "$249",
+    period: "one-time",
+    fee: "0% transaction fee",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -81,7 +81,6 @@ const UpgradePlan = () => {
   const planIndex = (plan: string) => ["base", "starter", "premium"].indexOf(plan);
 
   const handleUpgrade = async (plan: string) => {
-    if (plan === "base") return;
 
     setLoadingPlan(plan);
     try {

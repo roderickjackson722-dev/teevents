@@ -265,8 +265,7 @@ const Settings = () => {
 
         <p className="text-muted-foreground mb-6">
           Connect your Stripe account to receive payments directly from player registrations,
-          donations, store purchases, and auction bids. The platform takes a 5% service fee on
-          each transaction.
+          donations, store purchases, and auction bids. No platform transaction fees — you keep your revenue.
         </p>
 
         {loading ? (

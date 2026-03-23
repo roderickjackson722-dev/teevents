@@ -156,10 +156,10 @@ const whyTeeVents = [
 const plans = [
   {
     name: "Base",
-    price: "Free",
-    period: "per tournament",
+    price: "$249",
+    period: "one-time",
     description: "Everything you need to run a professional tournament.",
-    fee: "5% transaction fee",
+    fee: "0% transaction fee",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -274,7 +274,7 @@ const HowItWorks = () => {
               to="/get-started"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              Start Free <ArrowRight className="h-4 w-4" />
+              Get Started <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="https://calendly.com/teevents/teevents-demo"
@@ -467,13 +467,9 @@ const HowItWorks = () => {
                     <span className="text-muted-foreground">Stripe processing (2.9% + $0.30)</span>
                     <span className="font-display font-bold text-destructive">−$4.65</span>
                   </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
-                    <span className="font-display font-bold text-destructive">−$7.50</span>
-                  </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
+                    <span className="font-display font-bold text-primary text-2xl">$145.35</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
@@ -522,7 +518,7 @@ const HowItWorks = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free with a 5% transaction fee, or upgrade to eliminate fees entirely.
+              Simple, per-tournament pricing with no platform transaction fees on any plan.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.

@@ -11,10 +11,10 @@ const plans = [
   {
     key: "base",
     name: "Base",
-    price: "Free",
-    period: "per tournament",
+    price: "$249",
+    period: "one-time",
     description: "Everything you need to run a professional tournament.",
-    fee: "5% transaction fee",
+    fee: "0% transaction fee",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -32,7 +32,7 @@ const plans = [
       "Volunteer coordination",
       "Event countdown timer",
     ],
-    cta: "Get Started",
+    cta: "Buy Base",
   },
   {
     key: "starter",
@@ -81,10 +81,6 @@ const Pricing = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "base") {
-      window.location.href = "/get-started";
-      return;
-    }
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -252,14 +248,14 @@ const Pricing = () => {
               Not Sure Which Plan Is Right?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
-              Start with the free Base plan and upgrade anytime. Or book a quick call and we'll help you decide.
+              Start with the Base plan and upgrade anytime. Or book a quick call and we'll help you decide.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                Start Free <ArrowRight className="h-4 w-4" />
+                Get Started <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href="https://calendly.com/teevents/teevents-demo"

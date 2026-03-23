@@ -72,7 +72,7 @@ const benefits = [
 ];
 
 const steps = [
-  { step: "1", label: "Sign Up Free", detail: "Create your account in under 2 minutes." },
+  { step: "1", label: "Create Your Account", detail: "Create your account in under 2 minutes." },
   { step: "2", label: "Verify Your EIN", detail: "Enter your 501(c)(3) EIN for instant verification." },
   { step: "3", label: "Build Your Tournament", detail: "Add details, set pricing, and customize your site." },
   { step: "4", label: "Go Live & Fundraise", detail: "Publish your site and start collecting registrations." },
@@ -105,7 +105,7 @@ const Nonprofits = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">
             <Link to="/get-started">
-              Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+              Get Started <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
           <Button size="lg" variant="secondary" asChild className="text-base px-8 font-bold">
@@ -313,7 +313,7 @@ const Nonprofits = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild className="text-base px-8">
                 <Link to="/get-started">
-                  Start Free Today <ArrowRight className="ml-2 h-5 w-5" />
+                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-base px-8 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10">

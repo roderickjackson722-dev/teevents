@@ -203,17 +203,6 @@ const SampleOrganizer = () => {
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-border text-center">
-              <p className="text-sm text-muted-foreground mb-3">
-                Ready to create your own tournament?
-              </p>
-              <a
-                href="/get-started"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-              >
-                Sign up free <ArrowRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
           </div>
         </motion.div>
       </div>

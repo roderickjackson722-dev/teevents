@@ -1626,6 +1626,9 @@ const AdminDashboard = () => {
                     callAdminApi={callAdminApi}
                   />
                 </TabsContent>
+                <TabsContent value="stats">
+                  <AdminProspectStats prospects={adminProspects} activities={prospectActivities} />
+                </TabsContent>
                 <TabsContent value="email-scripts">
                   <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
                 </TabsContent>

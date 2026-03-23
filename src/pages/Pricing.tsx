@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Crown, Shield, Zap, Star } from "lucide-react";
+import { Check, ArrowRight, Loader2, Crown, Shield, Zap, Star, Lock, CreditCard, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
@@ -211,12 +211,49 @@ const Pricing = () => {
             ))}
           </div>
 
+          {/* Secure Payments Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-16 rounded-xl border border-border bg-card p-8 md:p-10"
+          >
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4">
+                <Lock className="h-3.5 w-3.5" /> Secure Payment Processing
+              </div>
+              <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-2">
+                Your Golfers Pay Securely — Every Time
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                Every TeeVents tournament uses Stripe — the same payment platform trusted by Amazon, Google, and millions of businesses worldwide. Your registrants' payment data is never stored on our servers.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { icon: Shield, title: "PCI Level 1 Certified", desc: "The highest level of payment security compliance" },
+                { icon: Lock, title: "256-bit SSL Encryption", desc: "Bank-level encryption on every transaction" },
+                { icon: Smartphone, title: "Apple Pay & Google Pay", desc: "One-tap checkout your golfers already trust" },
+                { icon: CreditCard, title: "Fraud Protection", desc: "Built-in Stripe Radar fraud detection on all payments" },
+              ].map((item) => (
+                <div key={item.title} className="text-center">
+                  <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 text-primary mb-3">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-foreground mb-1">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
           {/* Trust signals */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="mt-16 text-center"
+            className="mt-10 text-center"
           >
             <p className="text-xs text-muted-foreground mb-6">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.

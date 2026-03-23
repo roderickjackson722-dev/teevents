@@ -347,9 +347,9 @@ const Platform = () => {
             {[
               {
                 step: "01",
-                title: "Sign Up Free",
+                title: "Choose Your Plan",
                 description:
-                  "Create your free account in seconds. No credit card required. Upgrade anytime for more features and lower fees.",
+                  "Pick the package that fits your tournament. All plans include zero platform transaction fees.",
               },
               {
                 step: "02",

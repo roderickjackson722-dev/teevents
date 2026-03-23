@@ -12,6 +12,7 @@ import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
+import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -1612,6 +1613,7 @@ const AdminDashboard = () => {
               <Tabs defaultValue="prospects" className="w-full">
                 <TabsList className="mb-4">
                   <TabsTrigger value="prospects" className="gap-2"><Target className="h-4 w-4" /> Prospects</TabsTrigger>
+                  <TabsTrigger value="stats" className="gap-2"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
                   <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Email Scripts</TabsTrigger>
                   <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
                 </TabsList>
@@ -1623,6 +1625,9 @@ const AdminDashboard = () => {
                     onRefresh={fetchAll}
                     callAdminApi={callAdminApi}
                   />
+                </TabsContent>
+                <TabsContent value="stats">
+                  <AdminProspectStats prospects={adminProspects} activities={prospectActivities} />
                 </TabsContent>
                 <TabsContent value="email-scripts">
                   <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />

@@ -248,7 +248,7 @@ const Pricing = () => {
               Not Sure Which Plan Is Right?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
-              Start with the free Base plan and upgrade anytime. Or book a quick call and we'll help you decide.
+              Start with the Base plan and upgrade anytime. Or book a quick call and we'll help you decide.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

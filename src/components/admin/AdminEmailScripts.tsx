@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, Mail, Pencil, Save, X } from "lucide-react";
+import { Copy, Check, Mail, Pencil, Save, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,10 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editSubject, setEditSubject] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [tournamentName, setTournamentName] = useState("");
 
   const coldTemplates = templates.filter(t => t.category === "cold_outreach");
   const otherTemplates = templates.filter(t => t.category !== "cold_outreach");
@@ -56,9 +60,44 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
     }
   };
 
+  const openSendForm = (template: any) => {
+    setSendingId(template.id);
+    setRecipientEmail("");
+    setContactName("");
+    setTournamentName("");
+  };
+
+  const sendViaGmail = (template: any) => {
+    if (!recipientEmail) {
+      toast({ title: "Enter a recipient email", variant: "destructive" });
+      return;
+    }
+
+    // Replace placeholders with filled values
+    let subject = template.subject;
+    let body = template.body;
+
+    if (contactName) {
+      subject = subject.replace(/\{\{contact_name\}\}/g, contactName);
+      body = body.replace(/\{\{contact_name\}\}/g, contactName);
+    }
+    if (tournamentName) {
+      subject = subject.replace(/\{\{tournament_name\}\}/g, tournamentName);
+      body = body.replace(/\{\{tournament_name\}\}/g, tournamentName);
+    }
+    subject = subject.replace(/\{\{sender_name\}\}/g, "Rod Jackson");
+    body = body.replace(/\{\{sender_name\}\}/g, "Rod Jackson");
+
+    const mailtoUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, "_blank");
+    setSendingId(null);
+    toast({ title: "Opened in Gmail!" });
+  };
+
   const renderTemplate = (template: any) => {
     const isEditing = editingId === template.id;
     const isCopied = copiedId === template.id;
+    const isSending = sendingId === template.id;
 
     return (
       <div key={template.id} className="bg-card border border-border rounded-xl overflow-hidden">
@@ -68,8 +107,11 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
             <p className="text-xs text-muted-foreground mt-0.5">Category: {template.category.replace(/_/g, " ")}</p>
           </div>
           <div className="flex items-center gap-2">
-            {!isEditing && (
+            {!isEditing && !isSending && (
               <>
+                <Button size="sm" variant="default" onClick={() => openSendForm(template)}>
+                  <Send className="h-3.5 w-3.5 mr-1" /> Send
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => startEditing(template)}>
                   <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
                 </Button>
@@ -80,6 +122,49 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
             )}
           </div>
         </div>
+
+        {isSending ? (
+          <div className="p-4 space-y-3 bg-primary/5 border-b border-primary/20">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Mail className="h-4 w-4 text-primary" /> Send via Gmail
+            </h4>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Recipient Email *</label>
+                <Input
+                  type="email"
+                  placeholder="prospect@example.com"
+                  value={recipientEmail}
+                  onChange={e => setRecipientEmail(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Contact Name</label>
+                <Input
+                  placeholder="John Smith"
+                  value={contactName}
+                  onChange={e => setContactName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Tournament Name</label>
+                <Input
+                  placeholder="Annual Charity Classic"
+                  value={tournamentName}
+                  onChange={e => setTournamentName(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => sendViaGmail(template)}>
+                <Send className="h-3.5 w-3.5 mr-1" /> Open in Gmail
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setSendingId(null)}>
+                <X className="h-3.5 w-3.5 mr-1" /> Cancel
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         {isEditing ? (
           <div className="p-4 space-y-3">

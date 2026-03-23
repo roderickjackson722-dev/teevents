@@ -80,10 +80,10 @@ const additionalFeatures = [
 const plans = [
   {
     name: "Base",
-    price: "Free",
-    period: "per tournament",
+    price: "$249",
+    period: "one-time",
     description: "Everything you need to run a professional tournament.",
-    fee: "5% transaction fee",
+    fee: "0% transaction fee",
     features: [
       "1 tournament",
       "Online registration & payments",

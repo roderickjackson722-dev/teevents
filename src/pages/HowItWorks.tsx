@@ -518,7 +518,7 @@ const HowItWorks = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free with a 5% transaction fee, or upgrade to eliminate fees entirely.
+              Simple, per-tournament pricing with no platform transaction fees on any plan.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.

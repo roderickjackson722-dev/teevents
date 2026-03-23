@@ -333,10 +333,10 @@ const Demo = () => {
               <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Revenue Model</h3>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
                 You Keep Your Revenue.
-                <br />We Take a Simple 5%.
+                <br />Zero Platform Fees.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account — minus a transparent 5% platform fee. No invoices, no delays.
+                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account. No platform fees, no invoices, no delays.
               </p>
               <div className="space-y-3">
                 {[

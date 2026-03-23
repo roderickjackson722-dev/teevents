@@ -255,7 +255,7 @@ const Pricing = () => {
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                Start Free <ArrowRight className="h-4 w-4" />
+                Get Started <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href="https://calendly.com/teevents/teevents-demo"

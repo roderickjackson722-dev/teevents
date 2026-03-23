@@ -118,7 +118,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               to="/get-started"
               className="inline-flex items-center gap-1 bg-secondary-foreground/20 hover:bg-secondary-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
             >
-              Sign Up Free <ArrowRight className="h-3 w-3" />
+              Get Started <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         )}

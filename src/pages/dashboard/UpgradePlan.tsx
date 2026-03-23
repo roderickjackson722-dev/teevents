@@ -17,9 +17,9 @@ const plans = [
   {
     key: "base",
     name: "Base",
-    price: "Free",
-    period: "per tournament",
-    fee: "5% transaction fee",
+    price: "$249",
+    period: "one-time",
+    fee: "0% transaction fee",
     features: [
       "1 tournament",
       "Online registration & payments",

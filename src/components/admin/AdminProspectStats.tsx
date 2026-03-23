@@ -75,7 +75,39 @@ const STATUS_LABELS: Record<string, string> = {
   lost: "Lost",
 };
 
-export default function AdminProspectStats({ prospects, activities }: Props) {
+export default function AdminProspectStats({ prospects, activities, callAdminApi, onRefresh }: Props) {
+  const { toast } = useToast();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [activityType, setActivityType] = useState("email");
+  const [activityProspectId, setActivityProspectId] = useState("");
+  const [activityDescription, setActivityDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleAddActivity = async () => {
+    if (!activityProspectId || !activityDescription.trim()) {
+      toast({ title: "Please select a prospect and add a description", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await callAdminApi("add-prospect-activity", {
+        prospect_id: activityProspectId,
+        type: activityType,
+        description: activityDescription.trim(),
+      });
+      toast({ title: "Activity logged successfully" });
+      setActivityDescription("");
+      setActivityType("email");
+      setActivityProspectId("");
+      setShowAddForm(false);
+      onRefresh();
+    } catch {
+      toast({ title: "Failed to log activity", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Activity counts by type
   const activityCounts = useMemo(() => {
     const counts: Record<string, number> = {};

@@ -72,7 +72,7 @@ const benefits = [
 ];
 
 const steps = [
-  { step: "1", label: "Sign Up Free", detail: "Create your account in under 2 minutes." },
+  { step: "1", label: "Create Your Account", detail: "Create your account in under 2 minutes." },
   { step: "2", label: "Verify Your EIN", detail: "Enter your 501(c)(3) EIN for instant verification." },
   { step: "3", label: "Build Your Tournament", detail: "Add details, set pricing, and customize your site." },
   { step: "4", label: "Go Live & Fundraise", detail: "Publish your site and start collecting registrations." },

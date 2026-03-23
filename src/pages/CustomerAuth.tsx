@@ -158,7 +158,7 @@ const CustomerAuth = () => {
               {isForgotPassword
                 ? "Reset Password"
                 : isSignUp
-                ? "Get Started Free"
+                ? "Get Started"
                 : "Welcome Back"}
             </h1>
             <p className="text-sm text-muted-foreground mt-2">

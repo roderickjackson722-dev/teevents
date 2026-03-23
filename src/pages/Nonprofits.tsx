@@ -105,7 +105,7 @@ const Nonprofits = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">
             <Link to="/get-started">
-              Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+              Get Started <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
           <Button size="lg" variant="secondary" asChild className="text-base px-8 font-bold">

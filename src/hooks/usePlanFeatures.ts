@@ -60,7 +60,7 @@ export const ALL_FEATURES = [
   { id: "hole-in-one-insurance", label: "Hole-in-One Insurance" },
 ];
 
-const PLAN_HIERARCHY = ["base", "starter", "premium"];
+const PLAN_HIERARCHY = ["free", "base", "starter", "premium"];
 
 export function usePlanFeatures() {
   const { org, loading } = useOrgContext();

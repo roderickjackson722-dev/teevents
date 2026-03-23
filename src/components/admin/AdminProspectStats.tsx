@@ -210,6 +210,47 @@ export default function AdminProspectStats({ prospects, activities, callAdminApi
         </p>
       </div>
 
+      {/* Manual Activity Entry */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <Plus className="h-4 w-4 text-primary" /> Log Activity
+          </h3>
+          <Button size="sm" variant={showAddForm ? "outline" : "default"} onClick={() => setShowAddForm(!showAddForm)}>
+            {showAddForm ? "Cancel" : "Add Activity"}
+          </Button>
+        </div>
+        {showAddForm && (
+          <div className="grid sm:grid-cols-4 gap-3">
+            <Select value={activityProspectId} onValueChange={setActivityProspectId}>
+              <SelectTrigger><SelectValue placeholder="Select prospect" /></SelectTrigger>
+              <SelectContent>
+                {prospects.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.tournament_name || p.contact_email || p.id.slice(0, 8)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={activityType} onValueChange={setActivityType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(ACTIVITY_LABELS).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Textarea
+              placeholder="Description (e.g. Left voicemail, sent pricing info...)"
+              value={activityDescription}
+              onChange={e => setActivityDescription(e.target.value)}
+              className="min-h-[40px]"
+            />
+            <Button onClick={handleAddActivity} disabled={submitting} className="self-end">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log"}
+            </Button>
+          </div>
+        )}
+      </Card>
+
       {/* Top-level stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {topStats.map((stat) => {

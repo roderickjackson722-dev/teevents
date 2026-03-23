@@ -140,16 +140,6 @@ const Tournaments = () => {
               <DialogTitle className="font-display">Create Tournament</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 mt-4">
-              <div>
-                <Label htmlFor="title">Tournament Name *</Label>
-                <Input
-                  id="title"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Annual Charity Golf Classic"
-                  required
-                />
-              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="date">Start Date</Label>

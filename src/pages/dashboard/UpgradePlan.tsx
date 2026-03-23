@@ -81,7 +81,6 @@ const UpgradePlan = () => {
   const planIndex = (plan: string) => ["base", "starter", "premium"].indexOf(plan);
 
   const handleUpgrade = async (plan: string) => {
-    if (plan === "base") return;
 
     setLoadingPlan(plan);
     try {

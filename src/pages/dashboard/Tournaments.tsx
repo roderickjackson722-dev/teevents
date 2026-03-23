@@ -95,7 +95,7 @@ const Tournaments = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Tournament created!", description: "Your planning checklist has been generated." });
-      setForm({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+      setForm({ date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
       setDialogOpen(false);
       fetchTournaments();
     }

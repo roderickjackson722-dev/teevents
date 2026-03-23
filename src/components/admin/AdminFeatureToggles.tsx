@@ -119,7 +119,7 @@ export default function AdminFeatureToggles({
     setSavingFee(false);
   };
 
-  const planDefaultFee = 0;
+  const planDefaultFee = currentPlan === "free" ? 5 : 0;
   const hasFeatureChanges = JSON.stringify(overrides) !== JSON.stringify(currentOverrides || {});
   const hasFeeChanges = (feeOverride.trim() === "" ? null : parseFloat(feeOverride)) !== currentFeeOverride;
 

@@ -8,8 +8,8 @@ const corsHeaders = {
 
 const PRICE_MAP = {
   live: {
-    starter: "price_1TE7QqLT3p5VmsQskHWwh0oh",
-    premium: "price_1TD0XzLT3p5VmsQsT3qfmU2N",
+    starter: "price_1TEbIjLT3p5VmsQspxV1XNON",
+    premium: "price_1TEbIkLT3p5VmsQs0lZW4y1S",
   },
   test: {
     starter: "price_1TEYODLT3p5VmsQs467WNgcG",

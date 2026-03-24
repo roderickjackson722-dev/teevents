@@ -12,6 +12,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "email-messaging",
     "printables",
   ],
+  // "base" maps to same as free for backward compatibility
   base: [
     "tournaments",
     "registration",

@@ -8,14 +8,12 @@ const corsHeaders = {
 
 const PRICE_MAP = {
   live: {
-    base: "price_1TE7QpLT3p5VmsQsqZOGHHwc",
     starter: "price_1TE7QqLT3p5VmsQskHWwh0oh",
     premium: "price_1TD0XzLT3p5VmsQsT3qfmU2N",
   },
   test: {
-    base: "price_1TEWWwLT3p5VmsQsQzBVDBbT",
     starter: "price_1TEYODLT3p5VmsQs467WNgcG",
-    premium: "price_1TEWWwLT3p5VmsQs2xtKitwH",
+    premium: "price_1TEYmALT3p5VmsQsn9MSqJnV",
   },
 };
 

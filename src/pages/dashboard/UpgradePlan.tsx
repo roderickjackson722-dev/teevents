@@ -62,7 +62,7 @@ const UpgradePlan = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
 
-  const planIndex = (plan: string) => ["base", "starter", "premium"].indexOf(plan);
+  const planIndex = (plan: string) => ["free", "starter", "premium"].indexOf(plan);
 
   const handleUpgrade = async (plan: string) => {
 

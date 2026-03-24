@@ -222,8 +222,8 @@ const HowItWorks = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "free" || plan === "base") {
-      window.location.href = plan === "free" ? "/get-started?plan=free" : "/get-started";
+    if (plan === "free") {
+      window.location.href = "/get-started?plan=free";
       return;
     }
     setLoadingPlan(plan);

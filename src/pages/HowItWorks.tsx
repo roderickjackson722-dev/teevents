@@ -197,7 +197,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "$1,999",
+    price: "$999",
     period: "per tournament",
     description: "The ultimate package with insurance & auction.",
     fee: "0% transaction fee",

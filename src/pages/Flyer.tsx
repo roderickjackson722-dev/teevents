@@ -43,8 +43,9 @@ const features = [
 ];
 
 const plans = [
-  { name: "Base", price: "Free", fee: "5%", note: "Full features + custom domain & sponsors" },
-  { name: "Starter", price: "$499", fee: "0%", note: "We build it for you + no platform fees", popular: true },
+  { name: "Free", price: "$0", fee: "5%", note: "Core features to get started" },
+  { name: "Base", price: "$249", fee: "0%", note: "Zero platform fees" },
+  { name: "Starter", price: "$499", fee: "0%", note: "We build it for you + leaderboard & sponsors", popular: true },
   { name: "Premium", price: "$1,999", fee: "0%", note: "$25K hole-in-one insurance + auction" },
 ];
 

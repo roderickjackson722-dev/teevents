@@ -15,18 +15,6 @@ const FEE_RATES: Record<string, string> = {
 
 const plans = [
   {
-    key: "base",
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    fee: "0% transaction fee",
-    features: [
-      "Everything in Free",
-      "0% platform transaction fee",
-      "Priority email support",
-    ],
-  },
-  {
     key: "starter",
     name: "Starter",
     price: "$299",

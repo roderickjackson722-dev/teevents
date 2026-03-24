@@ -9,6 +9,26 @@ import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
+    key: "free",
+    name: "Free",
+    price: "$0",
+    period: "per tournament",
+    description: "Get started free — we take a small cut per transaction.",
+    fee: "5% platform fee",
+    features: [
+      "1 tournament",
+      "Online registration & payments",
+      "Tournament website (1 template)",
+      "Player pairings tool",
+      "Check-in & QR codes",
+      "Live leaderboard (Stroke Play)",
+      "Planning guide & checklist",
+      "Email messaging",
+      "Printable scorecards",
+    ],
+    cta: "Start Free",
+  },
+  {
     key: "base",
     name: "Base",
     price: "$249",

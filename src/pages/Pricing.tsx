@@ -28,20 +28,6 @@ const plans = [
     cta: "Start Free",
   },
   {
-    key: "base",
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything in Free with zero platform fees.",
-    fee: "0% transaction fee",
-    features: [
-      "Everything in Free",
-      "0% platform transaction fee",
-      "Priority email support",
-    ],
-    cta: "Buy Base",
-  },
-  {
     key: "starter",
     name: "Starter",
     price: "$299",

@@ -85,7 +85,7 @@ const plans = [
     description: "We build your tournament platform for you.",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base",
+      "Everything in Free",
       "We build your website for you",
       "All 6 templates + custom colors",
       "All 8 scoring formats",

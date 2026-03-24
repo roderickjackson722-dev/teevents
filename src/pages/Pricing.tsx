@@ -100,6 +100,12 @@ const Pricing = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
+    // Free plan skips Stripe — go straight to signup/onboarding
+    if (plan === "free") {
+      window.location.href = "/login?plan=free";
+      return;
+    }
+
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {

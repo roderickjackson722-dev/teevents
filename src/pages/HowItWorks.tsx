@@ -155,27 +155,33 @@ const whyTeeVents = [
 
 const plans = [
   {
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything you need to run a professional tournament.",
-    fee: "0% transaction fee",
+    name: "Free",
+    price: "$0",
+    period: "per tournament",
+    description: "Get started free — we take a small cut per transaction.",
+    fee: "5% platform fee",
     features: [
       "1 tournament",
       "Online registration & payments",
       "Tournament website (1 template)",
-      "Player pairings tool",
-      "Check-in & QR codes",
-      "Live leaderboard (Stroke Play & Best Ball)",
+      "Player pairings & check-in",
       "Planning guide & checklist",
       "Email messaging",
-      "Custom domain support",
-      "Sponsor management & recognition",
-      "Budget tracking",
-      "Photo gallery",
-      "Printable scorecards, signs & badges",
-      "Volunteer coordination",
-      "Event countdown timer",
+      "Printable scorecards",
+    ],
+    cta: "Start Free",
+    plan: "free",
+  },
+  {
+    name: "Base",
+    price: "$249",
+    period: "one-time",
+    description: "Everything in Free with zero platform fees.",
+    fee: "0% transaction fee",
+    features: [
+      "Everything in Free",
+      "0% platform transaction fee",
+      "Priority email support",
     ],
     cta: "Get Started",
     plan: "base",
@@ -191,9 +197,13 @@ const plans = [
       "We build your website for you",
       "All 6 templates + custom colors",
       "All 8 scoring formats",
+      "Live leaderboard (Stroke Play & Best Ball)",
+      "Sponsor management & recognition",
+      "Photo gallery",
+      "Custom domain support",
+      "Budget tracking & volunteer coordination",
       "Donations page",
       "SMS texting (500 messages)",
-      "No platform transaction fees",
     ],
     cta: "Get Started",
     plan: "starter",
@@ -212,9 +222,7 @@ const plans = [
       "Merchandise store",
       "Auction & raffle management",
       "Surveys & analytics",
-      "Custom printable fonts & layouts",
       "Priority support",
-      "No platform transaction fees",
     ],
     cta: "Get Started",
     plan: "premium",
@@ -228,8 +236,8 @@ const HowItWorks = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "base") {
-      window.location.href = "/get-started";
+    if (plan === "free" || plan === "base") {
+      window.location.href = plan === "free" ? "/get-started?plan=free" : "/get-started";
       return;
     }
     setLoadingPlan(plan);
@@ -518,14 +526,14 @@ const HowItWorks = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Simple, per-tournament pricing with no platform transaction fees on any plan.
+              Start free with a 5% platform fee, or upgrade for 0% fees and premium features.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}

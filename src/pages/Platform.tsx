@@ -161,6 +161,11 @@ const Platform = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
+    if (plan === "free") {
+      window.location.href = "/login?plan=free";
+      return;
+    }
+
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {

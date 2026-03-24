@@ -112,9 +112,10 @@ Deno.serve(async (req) => {
       }),
     });
 
+    const resBody = await res.text();
+    console.log(`Resend response (${res.status}):`, resBody);
     if (!res.ok) {
-      const err = await res.text();
-      console.error(`Resend error (${res.status}):`, err);
+      console.error(`Resend error (${res.status}):`, resBody);
     }
 
     return new Response(JSON.stringify({ ok: true }), {

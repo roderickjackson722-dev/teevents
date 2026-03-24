@@ -6,10 +6,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PRICE_MAP: Record<string, string> = {
-  base: "price_1TE7QpLT3p5VmsQsqZOGHHwc",
-  starter: "price_1TE7QqLT3p5VmsQskHWwh0oh",
-  premium: "price_1TD0XzLT3p5VmsQsT3qfmU2N",
+const PRICE_MAP = {
+  live: {
+    base: "price_1TE7QpLT3p5VmsQsqZOGHHwc",
+    starter: "price_1TE7QqLT3p5VmsQskHWwh0oh",
+    premium: "price_1TD0XzLT3p5VmsQsT3qfmU2N",
+  },
+  test: {
+    base: "price_1TEWWwLT3p5VmsQsQzBVDBbT",
+    starter: "price_1TEWWwLT3p5VmsQsQ4kgruRT",
+    premium: "price_1TEWWwLT3p5VmsQs2xtKitwH",
+  },
 };
 
 Deno.serve(async (req) => {
@@ -19,10 +26,12 @@ Deno.serve(async (req) => {
 
   try {
     const { plan, email, promo_code } = await req.json();
-    const priceId = PRICE_MAP[plan];
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+    const priceSet = stripeKey.includes("_test_") ? PRICE_MAP.test : PRICE_MAP.live;
+    const priceId = priceSet[plan as keyof typeof priceSet];
     if (!priceId) throw new Error("Invalid plan selected");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 

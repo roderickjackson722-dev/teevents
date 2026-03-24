@@ -11,7 +11,7 @@ import logoBlack from "@/assets/logo-black.png";
 import { ArrowLeft, Loader2, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const AGREEMENT_ITEMS = [
+const BASE_AGREEMENT_ITEMS = [
   {
     id: "stripe_fee",
     label: "I understand that Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all payments processed through my tournament.",
@@ -33,6 +33,11 @@ const AGREEMENT_ITEMS = [
   },
 ];
 
+const FREE_PLAN_AGREEMENT_ITEM = {
+  id: "platform_fee",
+  label: "I understand that a 5% platform fee will be applied to all transactions processed through my tournament in addition to Stripe's processing fees. This fee supports the free use of the TeeVents platform.",
+};
+
 const CustomerAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -40,6 +45,10 @@ const CustomerAuth = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const isFreePlan = new URLSearchParams(window.location.search).get("plan") === "free";
+  const AGREEMENT_ITEMS = isFreePlan
+    ? [FREE_PLAN_AGREEMENT_ITEM, ...BASE_AGREEMENT_ITEMS]
+    : BASE_AGREEMENT_ITEMS;
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -249,7 +258,7 @@ const CustomerAuth = () => {
                   <div className="space-y-3 pt-2">
                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <FileText className="h-4 w-4 text-primary" />
-                      Free Platform Agreement
+                      {isFreePlan ? "Free Plan Agreement" : "Platform Agreement"}
                     </div>
                     <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
                       {AGREEMENT_ITEMS.map((item) => (

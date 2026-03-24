@@ -1428,7 +1428,7 @@ const AdminDashboard = () => {
                             >
                               <option value="free">Free (5% fee)</option>
                               <option value="base">Base ($249)</option>
-                              <option value="starter">Starter ($499)</option>
+                              <option value="starter">Starter ($299)</option>
                               <option value="premium">Premium ($1,999)</option>
                             </select>
                             {updatingOrgPlan === t.organization_id && <Loader2 className="h-3 w-3 animate-spin text-primary" />}

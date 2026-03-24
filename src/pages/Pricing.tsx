@@ -44,7 +44,7 @@ const plans = [
   {
     key: "starter",
     name: "Starter",
-    price: "$499",
+    price: "$299",
     period: "per tournament",
     subtitle: "We build it for you",
     description: "We build your tournament platform for you.",

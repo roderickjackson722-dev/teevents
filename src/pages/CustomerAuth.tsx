@@ -45,6 +45,10 @@ const CustomerAuth = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const isFreePlan = new URLSearchParams(window.location.search).get("plan") === "free";
+  const AGREEMENT_ITEMS = isFreePlan
+    ? [FREE_PLAN_AGREEMENT_ITEM, ...BASE_AGREEMENT_ITEMS]
+    : BASE_AGREEMENT_ITEMS;
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const { toast } = useToast();

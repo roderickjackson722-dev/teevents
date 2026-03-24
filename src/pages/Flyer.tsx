@@ -243,7 +243,7 @@ function QuickFlyer() {
 
       {/* Pricing - horizontal */}
       <div className="px-8 pb-5">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           {plans.map((p, i) => (
             <div
               key={i}

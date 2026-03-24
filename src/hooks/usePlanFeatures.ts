@@ -8,7 +8,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "website",
     "players",
     "check-in",
-    "leaderboard",
     "planning-guide",
     "email-messaging",
     "printables",
@@ -19,13 +18,13 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "website",
     "players",
     "check-in",
-    "leaderboard",
     "planning-guide",
     "email-messaging",
     "printables",
   ],
   starter: [
     // Everything in base +
+    "leaderboard",
     "custom-domain",
     "sponsors",
     "budget",

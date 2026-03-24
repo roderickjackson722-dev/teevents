@@ -192,7 +192,7 @@ const Platform = () => {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <button
-            onClick={() => handleCheckout("base")}
+            onClick={() => handleCheckout("starter")}
             className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
           >
             Get Started

@@ -202,7 +202,7 @@ const plans = [
     description: "The ultimate package with insurance & auction.",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base & Starter",
+      "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",

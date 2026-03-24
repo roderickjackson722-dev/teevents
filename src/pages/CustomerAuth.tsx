@@ -258,7 +258,7 @@ const CustomerAuth = () => {
                   <div className="space-y-3 pt-2">
                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <FileText className="h-4 w-4 text-primary" />
-                      Free Platform Agreement
+                      {isFreePlan ? "Free Plan Agreement" : "Platform Agreement"}
                     </div>
                     <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
                       {AGREEMENT_ITEMS.map((item) => (

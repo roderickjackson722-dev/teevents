@@ -173,20 +173,6 @@ const plans = [
     plan: "free",
   },
   {
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything in Free with zero platform fees.",
-    fee: "0% transaction fee",
-    features: [
-      "Everything in Free",
-      "0% platform transaction fee",
-      "Priority email support",
-    ],
-    cta: "Get Started",
-    plan: "base",
-  },
-  {
     name: "Starter",
     price: "$299",
     period: "per tournament",

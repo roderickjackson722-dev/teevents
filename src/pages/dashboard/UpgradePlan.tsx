@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 const FEE_RATES: Record<string, string> = {
   free: "5%",
-  base: "0%",
   starter: "0%",
   premium: "0%",
 };

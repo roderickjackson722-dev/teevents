@@ -188,7 +188,7 @@ const plans = [
   },
   {
     name: "Starter",
-    price: "$499",
+    price: "$299",
     period: "per tournament",
     description: "We build your tournament platform for you.",
     fee: "0% transaction fee",

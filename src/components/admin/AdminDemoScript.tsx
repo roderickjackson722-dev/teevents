@@ -152,7 +152,7 @@ const sections = [
     color: "bg-green-500/10 text-green-600",
     route: "/dashboard/upgrade",
     points: [
-      "Show the 3 tiers: Base (Free, 5% fee), Starter ($499, 0% fee), Premium ($1,999, 0% fee).",
+      "Show the 4 tiers: Free (5% fee), Base ($249, 0% fee), Starter ($299, 0% fee), Premium ($1,999, 0% fee).",
       "Emphasize: \"Base includes custom domains, sponsors, budget, gallery & printables — all free.\"",
       "Starter highlight: \"We build your tournament platform for you — full concierge setup + no fees.\"",
       "Premium highlight: \"$25K hole-in-one insurance + auction item included.\"",

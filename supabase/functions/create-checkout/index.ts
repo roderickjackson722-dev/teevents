@@ -14,7 +14,7 @@ const PRICE_MAP = {
   },
   test: {
     base: "price_1TEWWwLT3p5VmsQsQzBVDBbT",
-    starter: "price_1TEWWwLT3p5VmsQsQ4kgruRT",
+    starter: "price_1TEYODLT3p5VmsQs467WNgcG",
     premium: "price_1TEWWwLT3p5VmsQs2xtKitwH",
   },
 };

@@ -100,9 +100,9 @@ const Pricing = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    // Free plan skips Stripe — go straight to signup/onboarding
+    // Free plan skips Stripe — go straight to account creation
     if (plan === "free") {
-      window.location.href = "/login?plan=free";
+      window.location.href = "/get-started?plan=free";
       return;
     }
 

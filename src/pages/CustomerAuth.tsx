@@ -49,6 +49,11 @@ const CustomerAuth = () => {
     : true;
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("plan") === "free") {
+      setIsSignUp(true);
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         checkUserOrg(session.user.id);

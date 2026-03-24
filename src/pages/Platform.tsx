@@ -162,7 +162,7 @@ const Platform = () => {
 
   const handleCheckout = async (plan: string) => {
     if (plan === "free") {
-      window.location.href = "/login?plan=free";
+      window.location.href = "/get-started?plan=free";
       return;
     }
 

@@ -75,7 +75,7 @@ const PLAN_HIERARCHY = ["free", "starter", "premium"];
 
 export function usePlanFeatures() {
   const { org, loading } = useOrgContext();
-  const plan = org?.plan || "base";
+  const plan = org?.plan || "free";
   const overrides = org?.featureOverrides;
 
   const planHasFeature = (feature: string): boolean => {

@@ -79,26 +79,6 @@ const additionalFeatures = [
 
 const plans = [
   {
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything you need to run a professional tournament.",
-    fee: "0% transaction fee",
-    features: [
-      "1 tournament",
-      "Online registration & payments",
-      "Tournament website (1 template)",
-      "Player pairings tool",
-      "Check-in & QR codes",
-      "Planning guide & checklist",
-      "Email messaging",
-      "Printable scorecards",
-      "Event countdown timer",
-    ],
-    cta: "Get Started",
-    plan: "base",
-  },
-  {
     name: "Starter",
     price: "$299",
     period: "per tournament",

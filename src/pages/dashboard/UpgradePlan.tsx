@@ -9,24 +9,11 @@ import { toast } from "sonner";
 
 const FEE_RATES: Record<string, string> = {
   free: "5%",
-  base: "0%",
   starter: "0%",
   premium: "0%",
 };
 
 const plans = [
-  {
-    key: "base",
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    fee: "0% transaction fee",
-    features: [
-      "Everything in Free",
-      "0% platform transaction fee",
-      "Priority email support",
-    ],
-  },
   {
     key: "starter",
     name: "Starter",
@@ -54,11 +41,11 @@ const plans = [
   {
     key: "premium",
     name: "Premium",
-    price: "$1,999",
+    price: "$999",
     period: "per tournament",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base & Starter",
+      "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",
@@ -75,7 +62,7 @@ const UpgradePlan = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
 
-  const planIndex = (plan: string) => ["base", "starter", "premium"].indexOf(plan);
+  const planIndex = (plan: string) => ["free", "starter", "premium"].indexOf(plan);
 
   const handleUpgrade = async (plan: string) => {
 

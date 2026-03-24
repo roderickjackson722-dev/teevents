@@ -12,6 +12,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "email-messaging",
     "printables",
   ],
+  // "base" maps to same as free for backward compatibility
   base: [
     "tournaments",
     "registration",
@@ -70,11 +71,11 @@ export const ALL_FEATURES = [
   { id: "hole-in-one-insurance", label: "Hole-in-One Insurance" },
 ];
 
-const PLAN_HIERARCHY = ["free", "base", "starter", "premium"];
+const PLAN_HIERARCHY = ["free", "starter", "premium"];
 
 export function usePlanFeatures() {
   const { org, loading } = useOrgContext();
-  const plan = org?.plan || "base";
+  const plan = org?.plan || "free";
   const overrides = org?.featureOverrides;
 
   const planHasFeature = (feature: string): boolean => {

@@ -173,20 +173,6 @@ const plans = [
     plan: "free",
   },
   {
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything in Free with zero platform fees.",
-    fee: "0% transaction fee",
-    features: [
-      "Everything in Free",
-      "0% platform transaction fee",
-      "Priority email support",
-    ],
-    cta: "Get Started",
-    plan: "base",
-  },
-  {
     name: "Starter",
     price: "$299",
     period: "per tournament",
@@ -211,12 +197,12 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "$1,999",
+    price: "$999",
     period: "per tournament",
     description: "The ultimate package with insurance & auction.",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base & Starter",
+      "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",
@@ -236,8 +222,8 @@ const HowItWorks = () => {
   const { toast } = useToast();
 
   const handleCheckout = async (plan: string) => {
-    if (plan === "free" || plan === "base") {
-      window.location.href = plan === "free" ? "/get-started?plan=free" : "/get-started";
+    if (plan === "free") {
+      window.location.href = "/get-started?plan=free";
       return;
     }
     setLoadingPlan(plan);
@@ -533,7 +519,7 @@ const HowItWorks = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}

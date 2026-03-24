@@ -79,33 +79,13 @@ const additionalFeatures = [
 
 const plans = [
   {
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything you need to run a professional tournament.",
-    fee: "0% transaction fee",
-    features: [
-      "1 tournament",
-      "Online registration & payments",
-      "Tournament website (1 template)",
-      "Player pairings tool",
-      "Check-in & QR codes",
-      "Planning guide & checklist",
-      "Email messaging",
-      "Printable scorecards",
-      "Event countdown timer",
-    ],
-    cta: "Get Started",
-    plan: "base",
-  },
-  {
     name: "Starter",
     price: "$299",
     period: "per tournament",
     description: "We build your tournament platform for you.",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base",
+      "Everything in Free",
       "We build your website for you",
       "All 6 templates + custom colors",
       "All 8 scoring formats",
@@ -126,12 +106,12 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "$1,999",
+    price: "$999",
     period: "per tournament",
     description: "The ultimate package with insurance & auction.",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base & Starter",
+      "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",
@@ -212,7 +192,7 @@ const Platform = () => {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <button
-            onClick={() => handleCheckout("base")}
+            onClick={() => handleCheckout("starter")}
             className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
           >
             Get Started

@@ -28,20 +28,6 @@ const plans = [
     cta: "Start Free",
   },
   {
-    key: "base",
-    name: "Base",
-    price: "$249",
-    period: "one-time",
-    description: "Everything in Free with zero platform fees.",
-    fee: "0% transaction fee",
-    features: [
-      "Everything in Free",
-      "0% platform transaction fee",
-      "Priority email support",
-    ],
-    cta: "Buy Base",
-  },
-  {
     key: "starter",
     name: "Starter",
     price: "$299",
@@ -70,12 +56,12 @@ const plans = [
   {
     key: "premium",
     name: "Premium",
-    price: "$1,999",
+    price: "$999",
     period: "per tournament",
     description: "The ultimate tournament package with insurance & auction.",
     fee: "0% transaction fee",
     features: [
-      "Everything in Base & Starter",
+      "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",
@@ -163,7 +149,7 @@ const Pricing = () => {
       {/* Plans */}
       <section className="bg-background py-20">
         <div className="container mx-auto px-4 max-w-5xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.key}

@@ -51,7 +51,7 @@ const Onboarding = () => {
         id: orgId,
         name: orgName,
         subdomain,
-        plan: "base",
+        plan: "free",
         primary_color: template.colors.primary,
         secondary_color: template.colors.secondary,
       });

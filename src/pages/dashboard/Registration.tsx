@@ -534,7 +534,7 @@ const Registration = () => {
                   <Label>Registration Status</Label>
                   <div className="flex items-center gap-3 mt-1">
                     <Switch checked={regOpen} onCheckedChange={setRegOpen} />
-                    <span className="text-sm font-medium text-foreground">{regOpen ? "Open" : "Closed"}</span>
+                    <span className="text-sm font-medium text-foreground">{regOpen ? "Close Registration" : "Open Registration"}</span>
                   </div>
                 </div>
               </div>

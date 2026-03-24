@@ -398,7 +398,7 @@ const SiteBuilder = () => {
               onCheckedChange={(v) => updateField("registration_open", v)}
             />
             <span className="text-sm font-medium text-foreground">
-              Registration {settings.registration_open ? "Open" : "Closed"}
+              {settings.registration_open ? "Close Registration" : "Open Registration"}
             </span>
           </div>
           <div className="flex items-center gap-2">

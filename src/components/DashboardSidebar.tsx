@@ -18,7 +18,7 @@ import {
   UserCheck,
   ClipboardList,
   Heart,
-  Lock,
+  
   FileEdit,
   Printer,
   PenLine,

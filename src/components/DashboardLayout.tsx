@@ -125,13 +125,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex flex-1">
           <DashboardSidebar />
           <div className="flex-1 flex flex-col">
-            <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4">
+             <header className="h-16 flex items-center justify-between border-b-2 border-secondary bg-secondary/15 px-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger />
                 {orgContext && (
                   <div className="flex items-center gap-2">
-                    <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">
+                    <ArrowLeft className="h-5 w-5 text-foreground" />
+                    <span className="text-base md:text-lg font-display font-bold text-foreground">
                       {orgContext.orgName} Dashboard
                     </span>
                   </div>

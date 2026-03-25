@@ -57,30 +57,6 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error("Insert error:", insertError);
-    } else {
-      // Fire off real-time visitor notification email
-      try {
-        const fnUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/daily-visit-digest`;
-        await fetch(fnUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-          },
-          body: JSON.stringify({
-            visit: {
-              page_url: page_url || "unknown",
-              referrer: referrer || "Direct / No referrer",
-              user_agent: user_agent || null,
-              ip_address: ip,
-              city,
-              country,
-            },
-          }),
-        });
-      } catch (e) {
-        console.warn("Visit notification failed:", e);
-      }
     }
 
     return new Response(JSON.stringify({ ok: true }), {

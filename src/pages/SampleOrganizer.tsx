@@ -99,11 +99,27 @@ const SampleOrganizer = () => {
       />
 
       <div className="w-full max-w-6xl space-y-8">
+        {/* Logo + Title */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
+        >
+          <img src={logoBlack} alt="TeeVents" className="h-14 w-14 mx-auto mb-4 object-contain" />
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground leading-tight">
+            Explore the Organizer Dashboard
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
+            See exactly what tournament organizers see. This sample event is fully populated with players, sponsors, scores, and more.
+          </p>
+        </motion.div>
+
         {/* Login card - FIRST */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="max-w-lg mx-auto"
         >
           <div className="bg-card border border-border rounded-2xl shadow-xl p-8 md:p-10">

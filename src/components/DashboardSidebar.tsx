@@ -118,35 +118,7 @@ export function DashboardSidebar() {
   const renderItem = (item: typeof managementItems[0]) => {
     const locked = item.feature && !hasFeature(item.feature);
     const tier = item.feature ? requiredPlan(item.feature) : "";
-
-    if (locked) {
-      return (
-        <SidebarMenuItem key={item.title}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SidebarMenuButton asChild>
-                <NavLink
-                  to={item.url}
-                  className="text-primary-foreground/40 hover:bg-primary-foreground/5 hover:text-primary-foreground/50"
-                  activeClassName="bg-primary-foreground/10 text-primary-foreground/50"
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1">{item.title}</span>
-                      <Lock className="h-3 w-3 text-primary-foreground/30" />
-                    </>
-                  )}
-                </NavLink>
-              </SidebarMenuButton>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p className="text-xs">Requires <span className="font-semibold capitalize">{tier}</span> plan — click to learn more</p>
-            </TooltipContent>
-          </Tooltip>
-        </SidebarMenuItem>
-      );
-    }
+    const tierLabel = tier === "starter" ? "Starter" : tier === "premium" ? "Pro" : "";
 
     return (
       <SidebarMenuItem key={item.title}>
@@ -157,7 +129,16 @@ export function DashboardSidebar() {
             activeClassName="bg-primary-foreground/15 text-secondary font-medium"
           >
             <item.icon className="mr-2 h-4 w-4" />
-            {!collapsed && <span>{item.title}</span>}
+            {!collapsed && (
+              <>
+                <span className="flex-1">{item.title}</span>
+                {locked && tierLabel && (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-secondary/20 text-secondary ml-1">
+                    {tierLabel}
+                  </span>
+                )}
+              </>
+            )}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>

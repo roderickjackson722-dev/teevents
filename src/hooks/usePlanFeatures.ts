@@ -77,6 +77,7 @@ export function usePlanFeatures() {
   const { org, loading } = useOrgContext();
   const plan = org?.plan || "free";
   const overrides = org?.featureOverrides;
+  const isDemoOrg = org?.orgName === "Sample Golf Organization";
 
   const planHasFeature = (feature: string): boolean => {
     const idx = PLAN_HIERARCHY.indexOf(plan);
@@ -88,6 +89,8 @@ export function usePlanFeatures() {
   };
 
   const hasFeature = (feature: string): boolean => {
+    // Unlock everything for the demo/sample org
+    if (isDemoOrg) return true;
     // Check admin overrides first
     if (overrides && feature in overrides) {
       return overrides[feature];

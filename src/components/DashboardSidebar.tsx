@@ -42,11 +42,6 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // Map sidebar features to permission keys
 const FEATURE_PERMISSION_MAP: Record<string, string> = {

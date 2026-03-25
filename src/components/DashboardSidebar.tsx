@@ -113,7 +113,7 @@ export function DashboardSidebar() {
   const renderItem = (item: typeof managementItems[0]) => {
     const locked = item.feature && !hasFeature(item.feature);
     const tier = item.feature ? requiredPlan(item.feature) : "";
-    const tierLabel = tier === "starter" ? "Starter" : tier === "premium" ? "Pro" : "";
+    const tierLabel = tier === "starter" ? "Starter" : tier === "premium" ? "Premium" : "";
 
     return (
       <SidebarMenuItem key={item.title}>

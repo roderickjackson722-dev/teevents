@@ -98,84 +98,29 @@ const SampleOrganizer = () => {
         path="/sample-organizer"
       />
 
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-start">
-        {/* Left - Info panel */}
+      <div className="w-full max-w-6xl space-y-8">
+        {/* Logo + Title */}
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
         >
-          <div>
-            <img src={logoBlack} alt="TeeVents" className="h-16 w-16 mb-6 object-contain" />
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground leading-tight">
-              Explore the Organizer Dashboard
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-              See exactly what tournament organizers see. This sample event is fully populated with players, sponsors, scores, and more.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {features.map((f) => (
-              <div key={f.label} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                  <f.icon className="h-5 w-5 text-secondary" />
-                </div>
-                <span className="text-foreground font-medium">{f.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Registration Tiers Preview */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Sample Registration Tiers
-            </h3>
-            <div className="grid gap-3">
-              {sampleTiers.map((tier) => (
-                <button
-                  key={tier.name}
-                  onClick={() => setSelectedTier(tier)}
-                  className={`flex items-center justify-between p-3 rounded-xl border ${tier.color} hover:shadow-md transition-all text-left group`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <span className="font-semibold text-foreground">{tier.name}</span>
-                      <p className="text-xs text-muted-foreground">{tier.description}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="font-mono">{tier.price}</Badge>
-                    <Info className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground italic">
-              Click a tier to see its eligibility requirements — just like your players will.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <CalendarRange className="h-4 w-4 flex-shrink-0" />
-            <span>
-              Demo event: <strong className="text-foreground">Mar 1 – Mar 3, 2027</strong> (multi-day)
-              &nbsp;·&nbsp; Groups of up to <strong className="text-foreground">4 players</strong>
-            </span>
-          </div>
-
-          <p className="text-sm text-muted-foreground">
-            This is a read-only demo. Changes will not be saved.
+          <img src={logoBlack} alt="TeeVents" className="h-14 w-14 mx-auto mb-4 object-contain" />
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground leading-tight">
+            Explore the Organizer Dashboard
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
+            See exactly what tournament organizers see. This sample event is fully populated with players, sponsors, scores, and more.
           </p>
         </motion.div>
 
-        {/* Right - Login card */}
+        {/* Login card - FIRST */}
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="lg:sticky lg:top-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="max-w-lg mx-auto"
         >
           <div className="bg-card border border-border rounded-2xl shadow-xl p-8 md:p-10">
             <div className="text-center mb-8">
@@ -203,6 +148,70 @@ const SampleOrganizer = () => {
               </button>
             </form>
 
+          </div>
+        </motion.div>
+
+        {/* Info panel - BELOW */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="grid md:grid-cols-2 gap-8"
+        >
+          <div className="space-y-6">
+            <div className="space-y-3">
+              {features.map((f) => (
+                <div key={f.label} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                    <f.icon className="h-5 w-5 text-secondary" />
+                  </div>
+                  <span className="text-foreground font-medium">{f.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Sample Registration Tiers
+              </h3>
+              <div className="grid gap-3">
+                {sampleTiers.map((tier) => (
+                  <button
+                    key={tier.name}
+                    onClick={() => setSelectedTier(tier)}
+                    className={`flex items-center justify-between p-3 rounded-xl border ${tier.color} hover:shadow-md transition-all text-left group`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="font-semibold text-foreground">{tier.name}</span>
+                        <p className="text-xs text-muted-foreground">{tier.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="font-mono">{tier.price}</Badge>
+                      <Info className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                Click a tier to see its eligibility requirements — just like your players will.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <CalendarRange className="h-4 w-4 flex-shrink-0" />
+              <span>
+                Demo event: <strong className="text-foreground">Mar 1 – Mar 3, 2027</strong> (multi-day)
+                &nbsp;·&nbsp; Groups of up to <strong className="text-foreground">4 players</strong>
+              </span>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              This is a read-only demo. Changes will not be saved.
+            </p>
           </div>
         </motion.div>
       </div>

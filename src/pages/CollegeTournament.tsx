@@ -34,6 +34,9 @@ interface Tournament {
   contact_email: string | null;
   slug: string | null;
   registration_fields: RegistrationField[] | null;
+  flyer_url: string | null;
+  hero_image_url: string | null;
+  hero_overlay_opacity: number | null;
 }
 
 interface TournamentTab {
@@ -256,9 +259,9 @@ const CollegeTournament = () => {
       <div className="relative text-primary-foreground py-24 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${golfCourseHero})` }}
+          style={{ backgroundImage: `url(${tournament.hero_image_url || golfCourseHero})` }}
         />
-        <div className="absolute inset-0 bg-overlay-dark" />
+        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${tournament.hero_overlay_opacity ?? 0.6})` }} />
         <div className="relative z-10 container mx-auto px-4 max-w-4xl text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <School className="h-6 w-6" />
@@ -452,6 +455,13 @@ const CollegeTournament = () => {
             <h2 className="text-xl font-display font-bold mb-2">Registration Open</h2>
             <p className="text-muted-foreground mb-4">Register your team for this tournament.</p>
             <Button onClick={() => setShowRegForm(true)}><Users className="h-4 w-4 mr-2" /> Register Team</Button>
+          </div>
+        )}
+
+        {/* Event Flyer */}
+        {tournament.flyer_url && (
+          <div className="mb-8">
+            <img src={tournament.flyer_url} alt={`${tournament.title} flyer`} className="w-full max-w-2xl mx-auto rounded-lg border border-border shadow-sm" />
           </div>
         )}
 

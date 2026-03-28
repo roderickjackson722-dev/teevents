@@ -458,6 +458,13 @@ const CollegeTournament = () => {
           </div>
         )}
 
+        {/* Event Flyer */}
+        {tournament.flyer_url && (
+          <div className="mb-8">
+            <img src={tournament.flyer_url} alt={`${tournament.title} flyer`} className="w-full max-w-2xl mx-auto rounded-lg border border-border shadow-sm" />
+          </div>
+        )}
+
         {/* Event Tabs */}
         {tabs.length > 0 && (
           <Tabs value={activeTab} onValueChange={setActiveTab}>

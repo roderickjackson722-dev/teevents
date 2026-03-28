@@ -153,6 +153,14 @@ const CollegeTournamentHub = () => {
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
   const [editPlayerForm, setEditPlayerForm] = useState({ first_name: "", last_name: "", year: "", position: "" });
 
+  // Inline tournament editing
+  const [editingTournament, setEditingTournament] = useState<string | null>(null);
+  const [editTournamentForm, setEditTournamentForm] = useState({
+    title: "", description: "", start_date: "", end_date: "",
+    location: "", course_name: "", contact_email: "", slug: "",
+  });
+  const [uploadingHero, setUploadingHero] = useState(false);
+
   const fetchTournaments = async () => {
     const { data } = await supabase
       .from("college_tournaments")

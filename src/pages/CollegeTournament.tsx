@@ -34,6 +34,9 @@ interface Tournament {
   contact_email: string | null;
   slug: string | null;
   registration_fields: RegistrationField[] | null;
+  flyer_url: string | null;
+  hero_image_url: string | null;
+  hero_overlay_opacity: number | null;
 }
 
 interface TournamentTab {

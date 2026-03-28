@@ -40,6 +40,9 @@ interface CollegeTournament {
   created_at: string;
   registration_fields: RegistrationField[] | null;
   flyer_url: string | null;
+  slug: string | null;
+  hero_image_url: string | null;
+  hero_overlay_opacity: number | null;
 }
 
 interface Invitation {

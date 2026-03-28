@@ -777,7 +777,10 @@ const CollegeTournamentHub = () => {
                 {isExpanded && (
                   <div className="border-t border-border p-4 bg-muted/20">
                     <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
-                      <TabsList className="mb-4">
+                      <TabsList className="mb-4 flex-wrap h-auto gap-1">
+                        <TabsTrigger value="page-settings">
+                          <Settings className="h-3.5 w-3.5 mr-1.5" /> Page Settings
+                        </TabsTrigger>
                         <TabsTrigger value="invitations">
                           <Send className="h-3.5 w-3.5 mr-1.5" /> Invitations ({invitations.length})
                         </TabsTrigger>
@@ -791,6 +794,186 @@ const CollegeTournamentHub = () => {
                           <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> Registration Fields
                         </TabsTrigger>
                       </TabsList>
+
+                      {/* Page Settings Tab */}
+                      <TabsContent value="page-settings" className="space-y-4">
+                        {/* Tournament Details */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-sm flex items-center gap-2">
+                              <Pencil className="h-4 w-4 text-primary" /> Tournament Details
+                            </h4>
+                            {editingTournament === t.id ? (
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={saveTournamentEdit}><Save className="h-3.5 w-3.5 mr-1" /> Save</Button>
+                                <Button size="sm" variant="outline" onClick={() => setEditingTournament(null)}><X className="h-3.5 w-3.5 mr-1" /> Cancel</Button>
+                              </div>
+                            ) : (
+                              <Button size="sm" variant="outline" onClick={() => startEditTournament(t)}><Pencil className="h-3.5 w-3.5 mr-1" /> Edit</Button>
+                            )}
+                          </div>
+                          {editingTournament === t.id ? (
+                            <div className="space-y-3">
+                              <div>
+                                <label className="text-xs text-muted-foreground mb-1 block">Tournament Name</label>
+                                <Input value={editTournamentForm.title} onChange={e => setEditTournamentForm({ ...editTournamentForm, title: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="text-xs text-muted-foreground mb-1 block">Description</label>
+                                <Textarea value={editTournamentForm.description} onChange={e => setEditTournamentForm({ ...editTournamentForm, description: e.target.value })} className="min-h-[100px]" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs text-muted-foreground mb-1 block">Start Date</label>
+                                  <Input type="date" value={editTournamentForm.start_date} onChange={e => setEditTournamentForm({ ...editTournamentForm, start_date: e.target.value })} />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-muted-foreground mb-1 block">End Date</label>
+                                  <Input type="date" value={editTournamentForm.end_date} onChange={e => setEditTournamentForm({ ...editTournamentForm, end_date: e.target.value })} />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs text-muted-foreground mb-1 block">Golf Course</label>
+                                  <Input value={editTournamentForm.course_name} onChange={e => setEditTournamentForm({ ...editTournamentForm, course_name: e.target.value })} />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-muted-foreground mb-1 block">Location (City, State)</label>
+                                  <Input value={editTournamentForm.location} onChange={e => setEditTournamentForm({ ...editTournamentForm, location: e.target.value })} />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-xs text-muted-foreground mb-1 block">Contact Email</label>
+                                <Input value={editTournamentForm.contact_email} onChange={e => setEditTournamentForm({ ...editTournamentForm, contact_email: e.target.value })} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                              <div><span className="text-muted-foreground">Name:</span> <strong>{t.title}</strong></div>
+                              <div><span className="text-muted-foreground">Course:</span> {t.course_name || "—"}</div>
+                              <div><span className="text-muted-foreground">Location:</span> {t.location || "—"}</div>
+                              <div><span className="text-muted-foreground">Contact:</span> {t.contact_email || "—"}</div>
+                              <div><span className="text-muted-foreground">Start:</span> {t.start_date || "—"}</div>
+                              <div><span className="text-muted-foreground">End:</span> {t.end_date || "—"}</div>
+                              {t.description && <div className="sm:col-span-2"><span className="text-muted-foreground">Description:</span> {t.description}</div>}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Page URL / Slug */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-primary" /> Page URL
+                          </h4>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">/college/</span>
+                            {editingTournament === t.id ? (
+                              <Input value={editTournamentForm.slug} onChange={e => setEditTournamentForm({ ...editTournamentForm, slug: e.target.value })} placeholder="tournament-slug" className="flex-1" />
+                            ) : (
+                              <div className="flex items-center gap-2 flex-1">
+                                <code className="text-sm bg-muted px-2 py-1 rounded">{(t as any).slug || "auto-generated"}</code>
+                                {t.status === "active" && (t as any).slug && (
+                                  <a href={`/college/${(t as any).slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">Open →</a>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">Edit the slug via "Edit" button above. The slug is auto-generated on creation but can be customized.</p>
+                        </div>
+
+                        {/* Hero Image */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Image className="h-4 w-4 text-primary" /> Hero Image
+                          </h4>
+                          {t.hero_image_url ? (
+                            <div className="space-y-3">
+                              <img src={t.hero_image_url} alt="Hero" className="w-full max-h-48 object-cover rounded-lg border border-border" />
+                              <div className="flex gap-2 flex-wrap">
+                                <label className="cursor-pointer">
+                                  <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroUpload(t.id, e.target.files[0]); }} />
+                                  <Button variant="outline" size="sm" asChild><span><Upload className="h-3.5 w-3.5 mr-1" /> Replace</span></Button>
+                                </label>
+                                <a href={t.hero_image_url} download target="_blank" rel="noopener noreferrer">
+                                  <Button variant="outline" size="sm"><Download className="h-3.5 w-3.5 mr-1" /> Download</Button>
+                                </a>
+                                <Button variant="outline" size="sm" onClick={() => removeHeroImage(t.id)} className="text-destructive hover:text-destructive">
+                                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div className="bg-muted/30 rounded-lg p-4 text-center border border-dashed border-border">
+                                <p className="text-sm text-muted-foreground mb-2">Using default hero image. Upload a custom one below.</p>
+                                <a href="/src/assets/golf-course-hero.jpg" download target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                                  Download current default image
+                                </a>
+                              </div>
+                              <label className="cursor-pointer inline-flex">
+                                <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroUpload(t.id, e.target.files[0]); }} />
+                                <Button variant="outline" size="sm" disabled={uploadingHero} asChild>
+                                  <span>{uploadingHero ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Upload className="h-3.5 w-3.5 mr-1" />} Upload Hero Image</span>
+                                </Button>
+                              </label>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Hero Overlay Opacity */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Sliders className="h-4 w-4 text-primary" /> Hero Overlay Transparency
+                          </h4>
+                          <p className="text-xs text-muted-foreground mb-3">Controls how dark the overlay is on the hero image. Higher = darker.</p>
+                          <div className="flex items-center gap-4">
+                            <Slider
+                              value={[t.hero_overlay_opacity ?? 0.6]}
+                              min={0}
+                              max={1}
+                              step={0.05}
+                              onValueCommit={(val) => updateOverlayOpacity(t.id, val[0])}
+                              className="flex-1"
+                            />
+                            <span className="text-sm font-medium w-12 text-right">{Math.round((t.hero_overlay_opacity ?? 0.6) * 100)}%</span>
+                          </div>
+                        </div>
+
+                        {/* Event Flyer for Public Page */}
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                            <Image className="h-4 w-4 text-primary" /> Event Flyer (shown on public page)
+                          </h4>
+                          <p className="text-xs text-muted-foreground mb-3">This flyer will be displayed on the public tournament page below the navigation tabs and also included in invitation emails.</p>
+                          {(() => {
+                            const currentTournament = tournaments.find(ct => ct.id === expandedId);
+                            return currentTournament?.flyer_url ? (
+                              <div className="flex items-start gap-4">
+                                <img src={currentTournament.flyer_url} alt="Event flyer" className="w-40 h-auto rounded-lg border border-border object-contain" />
+                                <div className="space-y-2">
+                                  <div className="flex gap-2 flex-wrap">
+                                    <label className="cursor-pointer">
+                                      <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFlyerUpload(e.target.files[0]); }} />
+                                      <Button variant="outline" size="sm" asChild><span><Upload className="h-3.5 w-3.5 mr-1" /> Replace</span></Button>
+                                    </label>
+                                    <a href={currentTournament.flyer_url} download target="_blank" rel="noopener noreferrer">
+                                      <Button variant="outline" size="sm"><Download className="h-3.5 w-3.5 mr-1" /> Download</Button>
+                                    </a>
+                                    <Button variant="outline" size="sm" onClick={removeFlyer} className="text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5 mr-1" /> Remove</Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="cursor-pointer inline-flex">
+                                <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFlyerUpload(e.target.files[0]); }} />
+                                <Button variant="outline" size="sm" disabled={uploadingFlyer} asChild>
+                                  <span>{uploadingFlyer ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Upload className="h-3.5 w-3.5 mr-1" />} Upload Flyer</span>
+                                </Button>
+                              </label>
+                            );
+                          })()}
+                        </div>
+                      </TabsContent>
 
                       {/* Invitations Tab */}
                       <TabsContent value="invitations" className="space-y-4">

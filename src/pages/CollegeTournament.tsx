@@ -259,9 +259,9 @@ const CollegeTournament = () => {
       <div className="relative text-primary-foreground py-24 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${golfCourseHero})` }}
+          style={{ backgroundImage: `url(${tournament.hero_image_url || golfCourseHero})` }}
         />
-        <div className="absolute inset-0 bg-overlay-dark" />
+        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${tournament.hero_overlay_opacity ?? 0.6})` }} />
         <div className="relative z-10 container mx-auto px-4 max-w-4xl text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <School className="h-6 w-6" />

@@ -539,6 +539,65 @@ const CollegeTournamentHub = () => {
     setEditingFieldId(null);
   };
 
+  // Inline tournament editing
+  const startEditTournament = (t: CollegeTournament) => {
+    setEditingTournament(t.id);
+    setEditTournamentForm({
+      title: t.title, description: t.description || "", start_date: t.start_date || "",
+      end_date: t.end_date || "", location: t.location || "", course_name: t.course_name || "",
+      contact_email: t.contact_email || "", slug: (t as any).slug || "",
+    });
+  };
+
+  const saveTournamentEdit = async () => {
+    if (!editingTournament) return;
+    const { error } = await supabase.from("college_tournaments").update({
+      title: editTournamentForm.title,
+      description: editTournamentForm.description || null,
+      start_date: editTournamentForm.start_date || null,
+      end_date: editTournamentForm.end_date || null,
+      location: editTournamentForm.location || null,
+      course_name: editTournamentForm.course_name || null,
+      contact_email: editTournamentForm.contact_email || null,
+      slug: editTournamentForm.slug || null,
+    } as any).eq("id", editingTournament);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Tournament updated" });
+      setEditingTournament(null);
+      fetchTournaments();
+    }
+  };
+
+  const handleHeroUpload = async (tournamentId: string, file: File) => {
+    setUploadingHero(true);
+    const ext = file.name.split(".").pop();
+    const path = `college/${tournamentId}/hero.${ext}`;
+    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    if (upErr) {
+      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+      setUploadingHero(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    await supabase.from("college_tournaments").update({ hero_image_url: publicUrl } as any).eq("id", tournamentId);
+    fetchTournaments();
+    toast({ title: "Hero image uploaded" });
+    setUploadingHero(false);
+  };
+
+  const removeHeroImage = async (tournamentId: string) => {
+    await supabase.from("college_tournaments").update({ hero_image_url: null } as any).eq("id", tournamentId);
+    fetchTournaments();
+    toast({ title: "Hero image removed (default will be used)" });
+  };
+
+  const updateOverlayOpacity = async (tournamentId: string, value: number) => {
+    await supabase.from("college_tournaments").update({ hero_overlay_opacity: value } as any).eq("id", tournamentId);
+    fetchTournaments();
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (

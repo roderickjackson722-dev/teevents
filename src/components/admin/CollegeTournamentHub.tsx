@@ -117,7 +117,7 @@ const CollegeTournamentHub = () => {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [tabs, setTabs] = useState<TournamentTab[]>([]);
-  const [activeSubTab, setActiveSubTab] = useState("invitations");
+  const [activeSubTab, setActiveSubTab] = useState("page-settings");
 
   // Invite form
   const [inviteForm, setInviteForm] = useState({ coach_name: "", coach_email: "", school_name: "" });

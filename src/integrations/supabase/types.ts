@@ -273,6 +273,8 @@ export type Database = {
           description: string | null
           end_date: string | null
           flyer_url: string | null
+          hero_image_url: string | null
+          hero_overlay_opacity: number | null
           id: string
           location: string | null
           registration_fields: Json | null
@@ -290,6 +292,8 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           flyer_url?: string | null
+          hero_image_url?: string | null
+          hero_overlay_opacity?: number | null
           id?: string
           location?: string | null
           registration_fields?: Json | null
@@ -307,6 +311,8 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           flyer_url?: string | null
+          hero_image_url?: string | null
+          hero_overlay_opacity?: number | null
           id?: string
           location?: string | null
           registration_fields?: Json | null

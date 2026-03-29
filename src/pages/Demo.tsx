@@ -332,18 +332,18 @@ const Demo = () => {
             <motion.div variants={slideRight} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Revenue Model</h3>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
-                You Keep Your Revenue.
-                <br />Zero Platform Fees.
+                Transparent Pricing.
+                <br />You Keep What You Charge.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account. No platform fees, no invoices, no delays.
+                All payments flow into our secure escrow. We deduct a flat 4% TeeVents platform fee and Stripe processing, then pay you bi-weekly. Fees are passed to participants by default — so you keep 100% of your advertised price.
               </p>
               <div className="space-y-3">
                 {[
-                  "Registration payments → organizer's Stripe",
-                  "Store purchases → organizer's Stripe",
-                  "Auction Buy Now → organizer's Stripe",
-                  "Donations → organizer's Stripe",
+                  "Registration payments → 4% platform fee + Stripe processing",
+                  "Store purchases → 4% platform fee + Stripe processing",
+                  "Auction Buy Now → 4% platform fee + Stripe processing",
+                  "Donations → 4% platform fee + Stripe processing",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <Send className="h-4 w-4 text-primary flex-shrink-0" />

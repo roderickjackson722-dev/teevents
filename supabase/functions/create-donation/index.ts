@@ -2,6 +2,8 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
+const PLATFORM_FEE_PERCENT = 4;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -30,15 +32,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Get organization_id for the transaction record
+    // Get organization_id and fee toggle for the transaction record
     let organizationId: string | null = null;
+    let passFeesToParticipants = true;
     if (tournament_id) {
       const { data: tournament } = await supabaseAdmin
         .from("tournaments")
-        .select("organization_id")
+        .select("organization_id, pass_fees_to_participants")
         .eq("id", tournament_id)
         .single();
       organizationId = tournament?.organization_id || null;
+      passFeesToParticipants = (tournament as any)?.pass_fees_to_participants !== false;
     }
 
     // Check for existing Stripe customer
@@ -52,22 +56,57 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
-    // All payments go to platform Stripe account — no destination charges
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : donor_email || undefined,
-      line_items: [
-        {
+    const lineItems: any[] = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Donation — ${tournament_title || "Golf Tournament"}`,
+          },
+          unit_amount: amount_cents,
+        },
+        quantity: 1,
+      },
+    ];
+
+    // If passing fees to participants, add platform fee + Stripe processing fee
+    if (passFeesToParticipants) {
+      const platformFee = Math.round(amount_cents * (PLATFORM_FEE_PERCENT / 100));
+      if (platformFee > 0) {
+        lineItems.push({
           price_data: {
             currency: "usd",
             product_data: {
-              name: `Donation — ${tournament_title || "Golf Tournament"}`,
+              name: "TeeVents Platform Fee (4%)",
+              description: "Tournament management platform fee",
             },
-            unit_amount: amount_cents,
+            unit_amount: platformFee,
           },
           quantity: 1,
-        },
-      ],
+        });
+      }
+
+      const preStripeTotal = amount_cents + platformFee;
+      const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
+      if (stripeFee > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Payment Processing Fee",
+              description: "Stripe processing fee (~2.9% + $0.30)",
+            },
+            unit_amount: stripeFee,
+          },
+          quantity: 1,
+        });
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      customer_email: customerId ? undefined : donor_email || undefined,
+      line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/t/${tournament_slug}?donated=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/t/${tournament_slug}#donation`,

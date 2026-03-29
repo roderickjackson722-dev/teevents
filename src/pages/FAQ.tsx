@@ -44,7 +44,7 @@ const faqSections = [
       },
       {
         q: "What if it rains or the event is postponed?",
-        a: "You control the rain policy in settings. We support rescheduling, refunds, or transfers — full flexibility for organizers.",
+        a: "You control the rain date policy in tournament settings. We support automatic transfers to a new date, full refunds, or custom handling — full flexibility for organizers.",
       },
     ],
   },
@@ -52,32 +52,28 @@ const faqSections = [
     title: "Payments & Fees",
     items: [
       {
-        q: "How does payment processing work?",
-        a: "All funds are collected securely into TeeVents' business Stripe account (we act as the merchant of record). We handle everything so organizers never need their own Stripe account.",
+        q: "What are the fees?",
+        a: "Every transaction has two transparent fees:\n\n• TeeVents platform fee: 4% (for the full golf tournament management platform — custom website, live scoring, pairings, budget tools, white-glove support, etc.)\n• Stripe processing fee: ~2.9% + $0.30 (standard credit-card fee)\n\nTotal extra cost is approximately 6.9% + $0.30 when passed to participants.",
       },
       {
-        q: "Who pays the payment processing fees?",
-        a: 'By default (toggle ON), fees are passed on to participants at checkout so your organization receives the full advertised price. You can turn the toggle OFF in tournament settings to absorb the fees yourself — participants then pay exactly the advertised price, and fees are deducted from your bi-weekly payout.',
-      },
-      {
-        q: "What are the payment processing fees?",
-        a: "Fees consist of standard Stripe processing costs (typically ~2.9% + $0.30 per transaction) plus our platform fee. Exact amounts are shown at checkout when the \"pass fees\" toggle is ON.",
+        q: "Who pays the fees?",
+        a: "By default (toggle ON), fees are passed on to participants at checkout so your organization receives the full advertised price. You can turn the toggle OFF in tournament settings to absorb the fees yourself — participants then pay exactly the advertised price, and fees are deducted from your bi-weekly payout.",
       },
       {
         q: "When and how often does my organization get paid?",
-        a: "Net funds (after fees and any reserve) are automatically paid out to your organization's bank account every two weeks. You can view next payout date and history in the Finances dashboard.",
+        a: "Net funds (after the 4% platform fee, Stripe fees, any refunds/chargebacks, and 15% reserve) are automatically paid out to your organization's bank account every two weeks. You can view next payout date, reserve balance, and full history in the Finances dashboard.",
+      },
+      {
+        q: "How are refunds and chargebacks handled?",
+        a: "You set your own refund policy in tournament settings (recommended default: full refunds up to 30 days before the event; tiered options like 50% between 15-30 days are available). TeeVents processes approved refunds (full or partial) from the held funds. A 15% reserve is held until 60 days after the event to protect against chargebacks and refunds. You are never personally liable — any chargeback or refund is deducted from your reserve or held funds first. You also set a separate rain date policy for weather-related postponements (e.g., automatic transfer to new date or full refund if no rain date is possible). In cases of full event cancellation or major postponement, refunds or transfers are typically required per your stated policy.",
       },
       {
         q: "Can I get my money faster?",
         a: "Bi-weekly is standard for security and fraud protection. Contact support for large events if you need a custom schedule.",
       },
       {
-        q: "What is your refund policy?",
-        a: "Refunds are managed by the tournament organizer. You set the policy per event (e.g., full refund up to X days before the event). All refunds are processed through our platform.",
-      },
-      {
         q: "Are there any hidden fees?",
-        a: "No. All fees are transparent and shown upfront. There are no monthly subscription fees beyond your chosen Starter/Pro plan.",
+        a: "No. All fees are shown clearly at checkout and in your dashboard. There are no monthly subscription fees beyond your chosen Starter/Pro plan.",
       },
     ],
   },
@@ -90,7 +86,7 @@ const faqSections = [
       },
       {
         q: "Can I track my event budget and sponsor money?",
-        a: "Yes — the full Budget & Finances dashboard shows real-time income, expenses, held funds, and next payout.",
+        a: "Yes — the full Budget & Finances dashboard shows real-time income, expenses, held funds, reserve balance, and next payout.",
       },
     ],
   },
@@ -99,7 +95,7 @@ const faqSections = [
     items: [
       {
         q: "Is my data and money secure?",
-        a: "Yes — we use enterprise-grade Stripe security, and follow all PCI compliance standards. Funds are held safely until payout.",
+        a: "Yes — we use enterprise-grade Stripe security and follow all PCI compliance standards. Funds are held safely until payout, with a 15% reserve for additional protection.",
       },
       {
         q: "What if I need help?",
@@ -167,7 +163,7 @@ const FAQ = () => {
                     <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline py-4">
                       {item.q}
                     </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
+                    <AccordionContent className="text-muted-foreground leading-relaxed pb-4 whitespace-pre-line">
                       {item.a}
                     </AccordionContent>
                   </AccordionItem>

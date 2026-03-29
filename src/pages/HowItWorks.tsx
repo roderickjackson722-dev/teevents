@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — we take a small cut per transaction.",
-    fee: "Stripe processing fees apply",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -177,7 +177,7 @@ const plans = [
     price: "$299",
     period: "per tournament",
     description: "We build your tournament platform for you.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Base",
       "We build your website for you",
@@ -200,7 +200,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "The ultimate package with insurance & auction.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
@@ -452,22 +452,54 @@ const HowItWorks = () => {
             <motion.div variants={slideLeft} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               <div className="bg-card border border-border rounded-xl p-8 shadow-lg">
                 <h4 className="font-display font-bold text-foreground text-lg mb-6">Example: $150 Registration Fee</h4>
+                <p className="text-xs text-muted-foreground mb-4 bg-muted/50 rounded-lg px-3 py-2">
+                  Default: fees passed to participants so organizer keeps 100%
+                </p>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">Golfer pays</span>
-                    <span className="font-display font-bold text-foreground text-xl">$150.00</span>
+                    <span className="text-muted-foreground">Base registration price</span>
+                    <span className="font-display font-bold text-foreground">$150.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">Stripe processing (2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">−$4.65</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (4%)</span>
+                    <span className="font-display font-bold text-destructive">+$6.00</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
+                    <span className="font-display font-bold text-destructive">+$4.82</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
+                    <span className="font-semibold text-foreground">Golfer pays at checkout</span>
+                    <span className="font-display font-bold text-foreground text-xl">$160.82</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
-                    <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$145.35</span>
+                    <span className="font-semibold text-primary">Organizer receives</span>
+                    <span className="font-display font-bold text-primary text-2xl">$150.00</span>
+                  </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-border">
+                  <p className="text-xs font-semibold text-foreground mb-2">Toggle OFF? Organizer absorbs fees:</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">Golfer pays</span>
+                      <span className="text-sm font-display font-bold text-foreground">$150.00</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">TeeVents fee (4%)</span>
+                      <span className="text-sm font-display font-bold text-destructive">−$6.00</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">Stripe processing</span>
+                      <span className="text-sm font-display font-bold text-destructive">−$4.65</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-primary font-semibold">Organizer receives</span>
+                      <span className="text-sm font-display font-bold text-primary">$139.35</span>
+                    </div>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  Stripe's standard processing fee of 2.9% + $0.30 per transaction applies. This is charged by Stripe, not TeeVents.
+                  All plans include a 4% TeeVents platform fee + Stripe's standard 2.9% + $0.30. Toggle fee handling in tournament settings.
                 </p>
               </div>
             </motion.div>
@@ -515,7 +547,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+              All plans include a 4% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction.
             </p>
           </motion.div>
 

@@ -14,7 +14,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — we take a small cut per transaction.",
-    fee: "Stripe processing fees apply",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -34,7 +34,7 @@ const plans = [
     period: "per tournament",
     subtitle: "We build it for you",
     description: "We build your tournament platform for you.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     highlighted: true,
     features: [
       "Everything in Base",
@@ -59,7 +59,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "The ultimate tournament package with insurance & auction.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
@@ -262,7 +262,7 @@ const Pricing = () => {
             className="mt-10 text-center"
           >
             <p className="text-xs text-muted-foreground mb-6">
-              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+              All plans include a 4% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Fees are passed to participants by default.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
               <div className="flex items-center gap-2">

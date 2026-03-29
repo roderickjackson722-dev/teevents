@@ -33,7 +33,6 @@ const Settings = () => {
   const [dashboardName, setDashboardName] = useState("");
   const [savingDashboardName, setSavingDashboardName] = useState(false);
   useEffect(() => {
-  useEffect(() => {
     if (org) {
       setDashboardName(org.dashboardName || "");
       supabase

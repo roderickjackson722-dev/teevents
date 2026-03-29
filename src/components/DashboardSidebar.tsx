@@ -24,6 +24,7 @@ import {
   Printer,
   PenLine,
   Mail,
+  HelpCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";

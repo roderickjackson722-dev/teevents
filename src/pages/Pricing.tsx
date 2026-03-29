@@ -34,7 +34,7 @@ const plans = [
     period: "per tournament",
     subtitle: "We build it for you",
     description: "We build your tournament platform for you.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     highlighted: true,
     features: [
       "Everything in Base",

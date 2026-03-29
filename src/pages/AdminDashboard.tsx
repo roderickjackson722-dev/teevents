@@ -1426,7 +1426,7 @@ const AdminDashboard = () => {
                               disabled={updatingOrgPlan === t.organization_id}
                               className="flex h-7 rounded-md border border-input bg-background px-2 py-0.5 text-xs"
                             >
-                              <option value="free">Free (5% fee)</option>
+                              <option value="free">Free</option>
                               <option value="starter">Starter ($299)</option>
                               <option value="premium">Premium ($999)</option>
                             </select>

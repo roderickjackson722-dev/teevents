@@ -436,10 +436,10 @@ const HowItWorks = () => {
               </p>
               <div className="space-y-3">
                 {[
-                  "Registration payments → organizer's Stripe",
-                  "Store purchases → organizer's Stripe",
-                  "Auction Buy Now → organizer's Stripe",
-                  "Donations → organizer's Stripe",
+                  "Registration payments → collected & held securely",
+                  "Store purchases → automatic bi-weekly payout",
+                  "Auction Buy Now → transparent fee breakdown",
+                  "Donations → net funds paid to your bank",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <Send className="h-4 w-4 text-primary flex-shrink-0" />

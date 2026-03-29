@@ -118,7 +118,7 @@ const Nonprofits = () => {
       <section className="bg-primary text-primary-foreground py-6">
         <div className="container mx-auto flex flex-wrap justify-center gap-8 md:gap-16 text-center text-sm md:text-base font-medium">
           <span>✓ Verified 501(c)(3) Support</span>
-          <span>✓ Locked 5% Fee — All Plans</span>
+          <span>✓ Transparent Fees — All Plans</span>
           <span>✓ $0 to Start</span>
           <span>✓ Custom Domain Support</span>
         </div>

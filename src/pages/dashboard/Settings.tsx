@@ -33,7 +33,7 @@ const Settings = () => {
   const [dashboardName, setDashboardName] = useState("");
   const [savingDashboardName, setSavingDashboardName] = useState(false);
   useEffect(() => {
-    fetchConnectStatus();
+  useEffect(() => {
     if (org) {
       setDashboardName(org.dashboardName || "");
       supabase
@@ -57,15 +57,6 @@ const Settings = () => {
     setSavingDashboardName(false);
   };
 
-  const getFunctionErrorMessage = (err: any, fallback: string) => {
-    const apiError = err?.context?.json?.error;
-    if (typeof apiError === "string" && apiError.length > 0) return apiError;
-    if (typeof err?.message === "string" && !err.message.includes("non-2xx")) {
-      return err.message;
-    }
-    return fallback;
-  };
-
   const handleSaveFormat = async (tournamentId: string) => {
     if (demoGuard()) return;
     const newFormat = formatEdits[tournamentId];
@@ -83,126 +74,6 @@ const Settings = () => {
     }
     setSavingFormat(null);
   };
-
-  const fetchConnectStatus = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const { data, error } = await supabase.functions.invoke("stripe-connect-status", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-
-      if (error) throw error;
-      setConnectStatus(data);
-    } catch (err) {
-      console.error("Failed to fetch connect status:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  const handleConnectStripe = async () => {
-    if (demoGuard()) return;
-    setOnboarding(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase.functions.invoke("stripe-connect-onboard", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (err: any) {
-      toast.error(getFunctionErrorMessage(err, "Failed to start Stripe onboarding"));
-      setOnboarding(false);
-    }
-  };
-
-  const handleOpenDashboard = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase.functions.invoke("stripe-connect-dashboard", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (err: any) {
-      toast.error(getFunctionErrorMessage(err, "Failed to open Stripe dashboard"));
-    }
-  };
-
-  const handleDisconnectStripe = async () => {
-    if (demoGuard()) return;
-    setDisconnecting(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase.functions.invoke("stripe-disconnect", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { confirm_email: disconnectEmail },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast.success("Stripe account disconnected successfully");
-      setConnectStatus({ connected: false, charges_enabled: false, payouts_enabled: false });
-      setDisconnectEmail("");
-      setDisconnectDialogOpen(false);
-    } catch (err: any) {
-      toast.error(getFunctionErrorMessage(err, "Failed to disconnect Stripe account"));
-    } finally {
-      setDisconnecting(false);
-    }
-  };
-
-  const handleManualConnect = async () => {
-    if (demoGuard() || !org) return;
-    const trimmed = manualAccountId.trim();
-    if (!trimmed.startsWith("acct_")) {
-      toast.error("Please enter a valid Stripe account ID (starts with acct_)");
-      return;
-    }
-    setSavingManual(true);
-    try {
-      const { error } = await supabase
-        .from("organizations")
-        .update({ stripe_account_id: trimmed } as any)
-        .eq("id", org.orgId);
-      if (error) throw error;
-      toast.success("Stripe account ID saved! Verifying status...");
-      setManualAccountId("");
-      setShowManualEntry(false);
-      await fetchConnectStatus();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save Stripe account ID");
-    } finally {
-      setSavingManual(false);
-    }
-  };
-
-  const isFullyConnected =
-    connectStatus?.connected &&
-    connectStatus?.charges_enabled &&
-    connectStatus?.payouts_enabled;
-
-  const isPending =
-    connectStatus?.connected &&
-    (!connectStatus?.charges_enabled || !connectStatus?.payouts_enabled);
-
-  const isInvalidAccount = !!(connectStatus as any)?.invalid_account;
 
   return (
     <div className="space-y-6">

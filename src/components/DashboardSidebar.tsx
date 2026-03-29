@@ -24,6 +24,7 @@ import {
   Printer,
   PenLine,
   Mail,
+  HelpCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -222,6 +223,19 @@ export function DashboardSidebar() {
                       <ShoppingCart className="mr-2 h-4 w-4" />
                       {!collapsed && <span>Director Shop</span>}
                     </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a
+                      href="/faq"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"
+                    >
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>FAQ</span>}
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

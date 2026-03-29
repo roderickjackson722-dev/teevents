@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — we take a small cut per transaction.",
-    fee: "5% platform fee",
+    fee: "Stripe processing fees apply",
     features: [
       "1 tournament",
       "Online registration & payments",
@@ -432,14 +432,14 @@ const HowItWorks = () => {
                 You Keep Your Revenue.<br />We Take a Simple Fee.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account — minus a transparent platform fee. No invoices, no delays.
+                All registration fees, store purchases, auction sales, and donations are collected securely by TeeVents. Net payouts to your organization occur automatically every two weeks. No invoices, no delays.
               </p>
               <div className="space-y-3">
                 {[
-                  "Registration payments → organizer's Stripe",
-                  "Store purchases → organizer's Stripe",
-                  "Auction Buy Now → organizer's Stripe",
-                  "Donations → organizer's Stripe",
+                  "Registration payments → collected & held securely",
+                  "Store purchases → automatic bi-weekly payout",
+                  "Auction Buy Now → transparent fee breakdown",
+                  "Donations → net funds paid to your bank",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <Send className="h-4 w-4 text-primary flex-shrink-0" />
@@ -512,7 +512,7 @@ const HowItWorks = () => {
               Simple, Transparent Pricing
             </h2>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free with a 5% platform fee, or upgrade for 0% fees and premium features.
+              Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
               Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.

@@ -92,7 +92,7 @@ const Nonprofits = () => {
     <Layout>
       <SEO
         title="Nonprofits"
-        description="TeeVents empowers 501(c)(3) nonprofits with a locked 5% platform fee, donor-covers-fees model, automated tax receipts, and everything you need to run a charity golf tournament."
+        description="TeeVents empowers 501(c)(3) nonprofits with transparent pricing, donor-covers-fees model, automated tax receipts, and everything you need to run a charity golf tournament."
         path="/nonprofits"
       />
 
@@ -100,7 +100,7 @@ const Nonprofits = () => {
       <HeroSection
         backgroundImage={heroGolf}
         title="Your Mission Deserves Every Dollar"
-        subtitle="TeeVents gives nonprofit organizations a game-changing advantage — a locked 5% platform fee, donor-covered costs, and automated tax receipts so 100% of your fundraising goes where it matters."
+        subtitle="TeeVents gives nonprofit organizations a game-changing advantage — transparent pricing, donor-covered costs, and automated tax receipts so 100% of your fundraising goes where it matters."
       >
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">
@@ -118,7 +118,7 @@ const Nonprofits = () => {
       <section className="bg-primary text-primary-foreground py-6">
         <div className="container mx-auto flex flex-wrap justify-center gap-8 md:gap-16 text-center text-sm md:text-base font-medium">
           <span>✓ Verified 501(c)(3) Support</span>
-          <span>✓ Locked 5% Fee — All Plans</span>
+          <span>✓ Transparent Fees — All Plans</span>
           <span>✓ $0 to Start</span>
           <span>✓ Custom Domain Support</span>
         </div>

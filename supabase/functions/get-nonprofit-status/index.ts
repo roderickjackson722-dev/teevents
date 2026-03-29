@@ -35,10 +35,7 @@ Deno.serve(async (req) => {
       .eq("id", tournament.organization_id)
       .single();
 
-    const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0, premium: 0 };
-    const feeRate = (org as any)?.fee_override != null
-      ? (org as any).fee_override / 100
-      : org?.is_nonprofit ? 0.05 : (FEE_RATES[org?.plan || "base"] ?? 0.05);
+    const feeRate = (org as any)?.platform_fee_rate ?? 0;
 
     const hasStripe = !!(org as any)?.stripe_account_id;
 

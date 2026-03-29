@@ -62,6 +62,7 @@ import SampleOrganizer from "./pages/SampleOrganizer";
 import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
+import FAQ from "./pages/FAQ";
 
 const queryClient = new QueryClient();
 
@@ -129,6 +130,7 @@ const App = () => (
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
+           <Route path="/faq" element={<FAQ />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

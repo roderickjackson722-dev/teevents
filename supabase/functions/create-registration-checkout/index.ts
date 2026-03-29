@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location, pass_fees_to_participants")
       .eq("id", tournament_id)
       .single();
 
@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
     }
 
     const feeCents = tournament.registration_fee_cents || 0;
+    const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
     const totalFeeCents = feeCents * players.length;
 
     // Insert registration records
@@ -144,6 +145,27 @@ Deno.serve(async (req) => {
         quantity: players.length,
       },
     ];
+
+    // If passing fees to participants, add a processing fee line item
+    if (passFeesToParticipants) {
+      // Stripe fee: 2.9% + $0.30 on the total
+      const subtotal = feeCents * players.length;
+      // Calculate the fee that covers Stripe processing on the whole charge
+      const stripeFee = Math.round((subtotal + 30) / (1 - 0.029)) - subtotal;
+      if (stripeFee > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Processing Fee",
+              description: "Payment processing fee (Stripe 2.9% + $0.30)",
+            },
+            unit_amount: stripeFee,
+          },
+          quantity: 1,
+        });
+      }
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

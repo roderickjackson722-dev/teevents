@@ -146,6 +146,27 @@ Deno.serve(async (req) => {
       },
     ];
 
+    // If passing fees to participants, add a processing fee line item
+    if (passFeesToParticipants) {
+      // Stripe fee: 2.9% + $0.30 on the total
+      const subtotal = feeCents * players.length;
+      // Calculate the fee that covers Stripe processing on the whole charge
+      const stripeFee = Math.round((subtotal + 30) / (1 - 0.029)) - subtotal;
+      if (stripeFee > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Processing Fee",
+              description: "Payment processing fee (Stripe 2.9% + $0.30)",
+            },
+            unit_amount: stripeFee,
+          },
+          quantity: 1,
+        });
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),

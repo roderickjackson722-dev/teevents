@@ -262,7 +262,7 @@ const Pricing = () => {
             className="mt-10 text-center"
           >
             <p className="text-xs text-muted-foreground mb-6">
-              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+              All plans include a 4% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Fees are passed to participants by default.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
               <div className="flex items-center gap-2">

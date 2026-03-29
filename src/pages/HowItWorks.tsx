@@ -547,7 +547,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all plans.
+              All plans include a 4% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction.
             </p>
           </motion.div>
 

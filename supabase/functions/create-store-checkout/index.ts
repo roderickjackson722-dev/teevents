@@ -22,7 +22,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Fetch product + tournament + org
     const { data: product, error: pErr } = await supabaseAdmin
       .from("tournament_store_products")
       .select("id, name, description, price, image_url, tournament_id")
@@ -41,21 +40,6 @@ Deno.serve(async (req) => {
       .eq("id", product.tournament_id)
       .single();
 
-    let connectedAccountId: string | null = null;
-    let feeRate = 0.05;
-    if (tournament) {
-      const { data: org } = await supabaseAdmin
-        .from("organizations")
-        .select("stripe_account_id, plan, fee_override")
-        .eq("id", tournament.organization_id)
-        .single();
-      connectedAccountId = org?.stripe_account_id || null;
-      const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0, premium: 0 };
-      feeRate = (org as any)?.fee_override != null
-        ? (org as any).fee_override / 100
-        : (FEE_RATES[org?.plan || "base"] ?? 0.05);
-    }
-
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -69,7 +53,8 @@ Deno.serve(async (req) => {
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const slug = tournament_slug || tournament?.slug || "";
 
-    const sessionParams: any = {
+    // All payments go to platform Stripe account — no destination charges
+    const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : buyer_email || undefined,
       line_items: [
@@ -93,19 +78,11 @@ Deno.serve(async (req) => {
         type: "store_purchase",
         product_id,
         tournament_id: product.tournament_id,
+        organization_id: tournament?.organization_id || "",
       },
-    };
+    });
 
-    if (connectedAccountId) {
-      sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(priceCents * feeRate),
-        transfer_data: { destination: connectedAccountId },
-      };
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
-
-    // Send notification emails via Resend
+    // Send notification
     try {
       if (tournament) {
         await sendNotificationEmails(

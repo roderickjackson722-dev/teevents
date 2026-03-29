@@ -16,9 +16,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const isFoursome = body.foursome === true && Array.isArray(body.players);
-    let coverFees = body.cover_fees === true;
 
-    // Extract player data
     const players = isFoursome
       ? body.players
       : [{
@@ -46,10 +44,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Fetch tournament details
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location, pass_fees_to_registrants")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location")
       .eq("id", tournament_id)
       .single();
 
@@ -58,42 +55,10 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
-    // If tournament is set to pass fees to registrants, force cover_fees
-    if ((tournament as any).pass_fees_to_registrants) {
-      coverFees = true;
-    }
-
-    // Fetch organization plan and nonprofit status
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("stripe_account_id, plan, is_nonprofit, ein, nonprofit_name, nonprofit_verified, fee_override")
-      .eq("id", tournament.organization_id)
-      .single();
-
-    const orgPlan = org?.plan || "base";
-    const isNonprofit = org?.is_nonprofit === true;
-
-    const FEE_RATES: Record<string, number> = {
-      base: 0.05,
-      starter: 0,
-      premium: 0,
-    };
-    // Use fee_override if set by admin, otherwise use plan default
-    // Nonprofits always pay 5% platform fee regardless of plan
-    const feeRate = (org as any)?.fee_override != null
-      ? (org as any).fee_override / 100
-      : isNonprofit ? 0.05 : (FEE_RATES[orgPlan] ?? 0.05);
-
     const feeCents = tournament.registration_fee_cents || 0;
     const totalFeeCents = feeCents * players.length;
 
-    // If donor is covering fees, calculate the Stripe processing fee + platform fee
-    const platformFeeCents = Math.round(totalFeeCents * feeRate);
-    const stripeFee = coverFees && totalFeeCents > 0 ? Math.round((totalFeeCents + platformFeeCents) * 0.029 + 30) : 0;
-    const coverageAmount = coverFees ? stripeFee + platformFeeCents : 0;
-    const chargeTotal = totalFeeCents + coverageAmount;
-
-    // Insert registration records for all players
+    // Insert registration records
     const registrationInserts = players.map((p: any) => ({
       tournament_id,
       first_name: (p.first_name || "").trim(),
@@ -115,7 +80,7 @@ Deno.serve(async (req) => {
     if (regErr) throw new Error(regErr.message);
     const registrationIds = (registrations || []).map((r: any) => r.id);
 
-    // Send notification emails via Resend
+    // Send notification emails
     try {
       const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
       await sendNotificationEmails(
@@ -134,7 +99,7 @@ Deno.serve(async (req) => {
       console.error("Notification error:", e);
     }
 
-    // If no fee, registration is complete — send confirmation to registrant
+    // If no fee, registration is complete
     if (feeCents <= 0) {
       try {
         await sendRegistrantConfirmationEmail(
@@ -151,18 +116,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fee required — create Stripe checkout session
+    // Fee required — create Stripe checkout on PLATFORM account (no destination charges)
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
-
-    // Look up organizer's connected Stripe account
-    const connectedAccountId = org?.stripe_account_id || null;
-    
-    console.log(`[Registration Checkout] Tournament: ${tournament.title}`);
-    console.log(`[Registration Checkout] Fee: $${(chargeTotal / 100).toFixed(2)} (base: $${(totalFeeCents / 100).toFixed(2)}, cover fees: $${(stripeFee / 100).toFixed(2)})`);
-    console.log(`[Registration Checkout] Nonprofit: ${isNonprofit}, Plan: ${orgPlan}, Rate: ${feeRate * 100}%`);
-    console.log(`[Registration Checkout] Connected Account: ${connectedAccountId || "NONE"}`);
 
     // Check for existing Stripe customer
     let customerId: string | undefined;
@@ -172,7 +129,6 @@ Deno.serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
-
     const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
 
     const lineItems: any[] = [
@@ -189,22 +145,7 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add fee coverage line item if donor is covering fees
-    if (coverageAmount > 0) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "Fee Coverage",
-            description: "Voluntary fee coverage so 100% goes to the organization",
-          },
-          unit_amount: coverageAmount,
-        },
-        quantity: 1,
-      });
-    }
-
-    const sessionParams: any = {
+    const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),
       line_items: lineItems,
@@ -214,34 +155,10 @@ Deno.serve(async (req) => {
       metadata: {
         type: "registration",
         tournament_id,
+        organization_id: tournament.organization_id,
         registration_ids: registrationIds.join(","),
-        is_nonprofit: isNonprofit ? "true" : "false",
-        ein: org?.ein || "",
-        nonprofit_name: org?.nonprofit_name || "",
-        cover_fees: coverFees ? "true" : "false",
       },
-    };
-
-    // Route payment to connected account with plan-based application fee
-    if (connectedAccountId) {
-      // If donor covered fees, platform gets the full platform fee + Stripe fee from coverage
-      // If not covering, platform takes its cut from the base amount
-      const applicationFee = coverFees ? (platformFeeCents + stripeFee) : Math.round(chargeTotal * feeRate);
-      console.log(`[Registration Checkout] Platform fee: $${(applicationFee / 100).toFixed(2)} → Platform Stripe account`);
-      console.log(`[Registration Checkout] Organizer payout: $${((chargeTotal - applicationFee) / 100).toFixed(2)} → ${connectedAccountId}`);
-      
-      sessionParams.payment_intent_data = {
-        application_fee_amount: applicationFee,
-        transfer_data: {
-          destination: connectedAccountId,
-        },
-      };
-    } else {
-      console.log(`[Registration Checkout] No connected account — full payment goes to platform`);
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
-    console.log(`[Registration Checkout] Session created: ${session.id}`);
+    });
 
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),

@@ -92,7 +92,7 @@ const Nonprofits = () => {
     <Layout>
       <SEO
         title="Nonprofits"
-        description="TeeVents empowers 501(c)(3) nonprofits with a locked 5% platform fee, donor-covers-fees model, automated tax receipts, and everything you need to run a charity golf tournament."
+        description="TeeVents empowers 501(c)(3) nonprofits with transparent pricing, donor-covers-fees model, automated tax receipts, and everything you need to run a charity golf tournament."
         path="/nonprofits"
       />
 

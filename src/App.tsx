@@ -132,6 +132,7 @@ const App = () => (
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />
+           <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

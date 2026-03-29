@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — we take a small cut per transaction.",
-    fee: "Stripe processing fees apply",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "1 tournament",
       "Online registration & payments",

@@ -100,7 +100,7 @@ const Nonprofits = () => {
       <HeroSection
         backgroundImage={heroGolf}
         title="Your Mission Deserves Every Dollar"
-        subtitle="TeeVents gives nonprofit organizations a game-changing advantage — a locked 5% platform fee, donor-covered costs, and automated tax receipts so 100% of your fundraising goes where it matters."
+        subtitle="TeeVents gives nonprofit organizations a game-changing advantage — transparent pricing, donor-covered costs, and automated tax receipts so 100% of your fundraising goes where it matters."
       >
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">

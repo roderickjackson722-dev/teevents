@@ -12,89 +12,55 @@ const SENDER_EMAIL = "notifications@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents";
 
 async function sendTaxExemptReceipt(
-  recipientEmail: string,
-  firstName: string,
-  lastName: string,
-  tournamentTitle: string,
-  tournamentDate: string | null,
-  amountCents: number,
-  nonprofitName: string,
-  ein: string,
+  recipientEmail: string, firstName: string, lastName: string,
+  tournamentTitle: string, tournamentDate: string | null,
+  amountCents: number, nonprofitName: string, ein: string,
 ) {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) return;
-
   const dateStr = tournamentDate
     ? new Date(tournamentDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
     : new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-
   const amount = (amountCents / 100).toFixed(2);
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
-        <tr><td style="background:#1a5c38;padding:28px 32px;text-align:center;">
-          <p style="margin:0 0 8px;font-size:32px;">🧾</p>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Tax-Deductible Donation Receipt</h1>
-        </td></tr>
-        <tr><td style="padding:32px;">
-          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">
-            Dear <strong>${firstName} ${lastName}</strong>,
-          </p>
-          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">
-            Thank you for your generous contribution to <strong>${nonprofitName}</strong> through your registration for <strong>${tournamentTitle}</strong>.
-          </p>
-
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin:20px 0;">
-            <tr><td style="padding:20px;">
-              <p style="margin:0 0 8px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Receipt Details</p>
-              <table width="100%">
-                <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Organization:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${nonprofitName}</td></tr>
-                <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>EIN:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${ein}</td></tr>
-                <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Amount:</strong></td><td style="text-align:right;color:#374151;font-size:14px;font-weight:700;">$${amount}</td></tr>
-                <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Date:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${today}</td></tr>
-                <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Event:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${tournamentTitle}</td></tr>
-                ${tournamentDate ? `<tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Event Date:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${dateStr}</td></tr>` : ""}
-              </table>
-            </td></tr>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+      <tr><td style="background:#1a5c38;padding:28px 32px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:32px;">🧾</p>
+        <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Tax-Deductible Donation Receipt</h1>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">Dear <strong>${firstName} ${lastName}</strong>,</p>
+        <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">Thank you for your generous contribution to <strong>${nonprofitName}</strong> through your registration for <strong>${tournamentTitle}</strong>.</p>
+        <table width="100%" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin:20px 0;"><tr><td style="padding:20px;">
+          <p style="margin:0 0 8px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Receipt Details</p>
+          <table width="100%">
+            <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Organization:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${nonprofitName}</td></tr>
+            <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>EIN:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${ein}</td></tr>
+            <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Amount:</strong></td><td style="text-align:right;color:#374151;font-size:14px;font-weight:700;">$${amount}</td></tr>
+            <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Date:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${today}</td></tr>
+            <tr><td style="padding:4px 0;color:#374151;font-size:14px;"><strong>Event:</strong></td><td style="text-align:right;color:#374151;font-size:14px;">${tournamentTitle}</td></tr>
           </table>
-
-          <p style="margin:16px 0 0;color:#6b7280;font-size:12px;line-height:1.6;border-top:1px solid #e5e7eb;padding-top:16px;">
-            <strong>${nonprofitName}</strong> is a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code (EIN: ${ein}).
-            No goods or services were provided in exchange for this contribution.
-            This letter serves as your official receipt for tax purposes. Please retain for your records.
-          </p>
-        </td></tr>
-        <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
-          <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+        </td></tr></table>
+        <p style="margin:16px 0 0;color:#6b7280;font-size:12px;line-height:1.6;border-top:1px solid #e5e7eb;padding-top:16px;">
+          <strong>${nonprofitName}</strong> is a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code (EIN: ${ein}).
+          No goods or services were provided in exchange for this contribution.
+        </p>
+      </td></tr>
+      <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+        <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
 
   await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-      to: [recipientEmail],
-      subject: `Tax-Deductible Receipt — ${tournamentTitle}`,
-      html,
-    }),
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+    body: JSON.stringify({ from: `${SENDER_NAME} <${SENDER_EMAIL}>`, to: [recipientEmail], subject: `Tax-Deductible Receipt — ${tournamentTitle}`, html }),
   });
-
-  console.log(`[Receipt] Tax-exempt receipt sent to ${recipientEmail}`);
 }
 
 Deno.serve(async (req) => {
@@ -131,7 +97,38 @@ Deno.serve(async (req) => {
         .update({ payment_status: "paid" })
         .in("id", registrationIds);
 
-      // Send confirmation + tax receipt + admin notification
+      // Record platform transaction (escrow)
+      const organizationId = session.metadata?.organization_id;
+      const tournamentId = session.metadata?.tournament_id;
+      const amountCents = session.amount_total || 0;
+
+      if (organizationId && amountCents > 0) {
+        // Get org's platform fee rate
+        const { data: org } = await supabaseAdmin
+          .from("organizations")
+          .select("platform_fee_rate")
+          .eq("id", organizationId)
+          .single();
+
+        const feeRate = (org as any)?.platform_fee_rate ?? 0;
+        const platformFeeCents = Math.round(amountCents * (feeRate / 100));
+        const netAmountCents = amountCents - platformFeeCents;
+
+        await supabaseAdmin.from("platform_transactions").insert({
+          organization_id: organizationId,
+          tournament_id: tournamentId || null,
+          amount_cents: amountCents,
+          platform_fee_cents: platformFeeCents,
+          net_amount_cents: netAmountCents,
+          type: "registration",
+          status: "held",
+          stripe_session_id: session_id,
+          stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+          description: `Registration payment — ${registrationIds.length} player(s)`,
+        });
+      }
+
+      // Send confirmation + tax receipt
       try {
         const { data: regs } = await supabaseAdmin
           .from("tournament_registrations")
@@ -139,7 +136,6 @@ Deno.serve(async (req) => {
           .in("id", registrationIds);
 
         const reg = regs?.[0];
-
         if (reg) {
           const { data: tournament } = await supabaseAdmin
             .from("tournaments")
@@ -148,7 +144,6 @@ Deno.serve(async (req) => {
             .single();
 
           if (tournament) {
-            // Send confirmation email to each registrant
             for (const r of regs || []) {
               await sendRegistrantConfirmationEmail(
                 r.first_name, r.last_name, r.email,
@@ -156,7 +151,6 @@ Deno.serve(async (req) => {
               );
             }
 
-            // Send admin notification for completed payment
             const playerNames = (regs || []).map((r: any) => `${r.first_name} ${r.last_name}`).join(", ");
             const amountDisplay = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "N/A";
             await sendNotificationEmails(
@@ -172,23 +166,24 @@ Deno.serve(async (req) => {
               ].filter(Boolean)),
             );
 
-            // If nonprofit, send tax-exempt receipt
-            const isNonprofit = session.metadata?.is_nonprofit === "true";
-            const ein = session.metadata?.ein || "";
-            const nonprofitName = session.metadata?.nonprofit_name || "";
+            // Nonprofit tax receipt
+            const { data: orgData } = await supabaseAdmin
+              .from("organizations")
+              .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified")
+              .eq("id", tournament.organization_id)
+              .single();
 
-            if (isNonprofit && ein) {
-              const amountCents = session.amount_total || 0;
+            if (orgData?.is_nonprofit && orgData.ein && orgData.nonprofit_verified) {
               await sendTaxExemptReceipt(
                 reg.email, reg.first_name, reg.last_name,
                 tournament.title, tournament.date,
-                amountCents, nonprofitName, ein,
+                amountCents, orgData.nonprofit_name || orgData.ein, orgData.ein,
               );
             }
           }
         }
       } catch (e) {
-        console.error("Registrant confirmation/receipt error:", e);
+        console.error("Confirmation/receipt error:", e);
       }
 
       return new Response(

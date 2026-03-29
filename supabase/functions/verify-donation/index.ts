@@ -33,6 +33,36 @@ Deno.serve(async (req) => {
         .update({ status: "completed" })
         .eq("stripe_session_id", session_id);
 
+      // Record platform transaction (escrow)
+      const organizationId = session.metadata?.organization_id;
+      const tournamentId = session.metadata?.tournament_id;
+      const amountCents = session.amount_total || 0;
+
+      if (organizationId && amountCents > 0) {
+        const { data: org } = await supabaseAdmin
+          .from("organizations")
+          .select("platform_fee_rate")
+          .eq("id", organizationId)
+          .single();
+
+        const feeRate = (org as any)?.platform_fee_rate ?? 0;
+        const platformFeeCents = Math.round(amountCents * (feeRate / 100));
+        const netAmountCents = amountCents - platformFeeCents;
+
+        await supabaseAdmin.from("platform_transactions").insert({
+          organization_id: organizationId,
+          tournament_id: tournamentId || null,
+          amount_cents: amountCents,
+          platform_fee_cents: platformFeeCents,
+          net_amount_cents: netAmountCents,
+          type: "donation",
+          status: "held",
+          stripe_session_id: session_id,
+          stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+          description: `Donation — $${(amountCents / 100).toFixed(2)}`,
+        });
+      }
+
       return new Response(
         JSON.stringify({ verified: true, status: "completed" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

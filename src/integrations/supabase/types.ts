@@ -1955,6 +1955,62 @@ export type Database = {
           },
         ]
       }
+      tournament_waitlist: {
+        Row: {
+          created_at: string
+          deposit_amount: number | null
+          deposit_paid: boolean
+          group_size: number
+          id: string
+          notes: string | null
+          offer_expires_at: string | null
+          phone: string | null
+          position: number
+          status: string
+          tournament_id: string
+          user_email: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean
+          group_size?: number
+          id?: string
+          notes?: string | null
+          offer_expires_at?: string | null
+          phone?: string | null
+          position?: number
+          status?: string
+          tournament_id: string
+          user_email: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean
+          group_size?: number
+          id?: string
+          notes?: string | null
+          offer_expires_at?: string | null
+          phone?: string | null
+          position?: number
+          status?: string
+          tournament_id?: string
+          user_email?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_waitlist_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           confirmation_email_config: Json | null
@@ -2003,6 +2059,8 @@ export type Database = {
           template: string | null
           title: string
           updated_at: string
+          waitlist_deposit_cents: number | null
+          waitlist_enabled: boolean
         }
         Insert: {
           confirmation_email_config?: Json | null
@@ -2051,6 +2109,8 @@ export type Database = {
           template?: string | null
           title: string
           updated_at?: string
+          waitlist_deposit_cents?: number | null
+          waitlist_enabled?: boolean
         }
         Update: {
           confirmation_email_config?: Json | null
@@ -2099,6 +2159,8 @@ export type Database = {
           template?: string | null
           title?: string
           updated_at?: string
+          waitlist_deposit_cents?: number | null
+          waitlist_enabled?: boolean
         }
         Relationships: [
           {

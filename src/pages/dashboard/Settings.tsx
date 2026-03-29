@@ -29,9 +29,10 @@ import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
 const Settings = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
-  const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string }[]>([]);
+  const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string; pass_fees_to_participants: boolean }[]>([]);
   const [formatEdits, setFormatEdits] = useState<Record<string, string>>({});
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
+  const [savingFeeToggle, setSavingFeeToggle] = useState<string | null>(null);
   const [dashboardName, setDashboardName] = useState("");
   const [savingDashboardName, setSavingDashboardName] = useState(false);
   useEffect(() => {
@@ -39,7 +40,7 @@ const Settings = () => {
       setDashboardName(org.dashboardName || "");
       supabase
         .from("tournaments")
-        .select("id, title, scoring_format")
+        .select("id, title, scoring_format, pass_fees_to_participants")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false })
         .then(({ data }) => setTournaments((data as any) || []));

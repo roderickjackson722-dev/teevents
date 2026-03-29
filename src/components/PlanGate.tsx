@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePlanFeatures } from "@/hooks/usePlanFeatures";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface PlanGateProps {
   feature: string;
@@ -10,6 +12,7 @@ interface PlanGateProps {
 
 const PlanGate = ({ feature, children }: PlanGateProps) => {
   const { hasFeature, requiredPlan, plan, loading } = usePlanFeatures();
+  const [showModal, setShowModal] = useState(false);
 
   if (loading) return <>{children}</>;
   if (hasFeature(feature)) return <>{children}</>;
@@ -18,6 +21,14 @@ const PlanGate = ({ feature, children }: PlanGateProps) => {
 
   return (
     <div>
+      <UpgradeModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={`Upgrade to ${needed.charAt(0).toUpperCase() + needed.slice(1)}`}
+        description={`Your current ${plan} plan doesn't include this feature. Upgrade to unlock more powerful tools for your tournament.`}
+        currentPlan={plan}
+      />
+
       {/* Upgrade Banner */}
       <div className="mb-6 rounded-lg border border-secondary/30 bg-secondary/5 p-6">
         <div className="flex items-start gap-4">
@@ -30,14 +41,17 @@ const PlanGate = ({ feature, children }: PlanGateProps) => {
             </h3>
             <p className="text-muted-foreground text-sm mb-4">
               Your current <span className="font-semibold capitalize">{plan}</span> plan doesn't include this feature.
-              Upgrade to get access to more powerful tools and lower transaction fees.
+              Upgrade to get access to more powerful tools.
             </p>
-            <Button asChild>
-              <Link to="/dashboard/upgrade">
+            <div className="flex gap-3">
+              <Button onClick={() => setShowModal(true)}>
                 View Upgrade Options
                 <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dashboard/upgrade">Compare Plans</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

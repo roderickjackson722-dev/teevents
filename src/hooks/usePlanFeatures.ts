@@ -117,5 +117,7 @@ export function usePlanFeatures() {
     return "premium";
   };
 
-  return { plan, hasFeature, requiredPlan, loading };
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+
+  return { plan, hasFeature, requiredPlan, loading, limits };
 }

@@ -130,6 +130,7 @@ const App = () => (
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
+           <Route path="/faq" element={<FAQ />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -286,6 +286,22 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return () => { supabase.removeChannel(channel); };
   }, [tournament]);
 
+  // Check if tournament is full (for waitlist)
+  useEffect(() => {
+    if (!tournament) return;
+    supabase
+      .from("tournament_registrations")
+      .select("id", { count: "exact", head: true })
+      .eq("tournament_id", tournament.id)
+      .then(({ count }) => {
+        const regCount = count || 0;
+        setRegistrationCount(regCount);
+        if (tournament.max_players && regCount >= tournament.max_players) {
+          setIsTournamentFull(true);
+        }
+      });
+  }, [tournament]);
+
   // Fetch donation totals for goal progress
   useEffect(() => {
     if (!tournament) return;

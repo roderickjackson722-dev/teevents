@@ -7,16 +7,12 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import {
   CreditCard,
   CheckCircle2,
-  AlertCircle,
-  ExternalLink,
   Loader2,
   Building2,
   ArrowRight,
   Zap,
   Trophy,
   Save,
-  Unlink,
-  
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,48 +23,15 @@ import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import { TeamManagement } from "@/components/settings/TeamManagement";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-interface ConnectStatus {
-  connected: boolean;
-  charges_enabled: boolean;
-  payouts_enabled: boolean;
-  details_submitted?: boolean;
-  account_id?: string;
-}
-
-interface PayPalStatus {
-  connected: boolean;
-  merchant_id: string | null;
-}
 
 const Settings = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
-  const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [onboarding, setOnboarding] = useState(false);
   const [tournaments, setTournaments] = useState<{ id: string; title: string; scoring_format: string }[]>([]);
   const [formatEdits, setFormatEdits] = useState<Record<string, string>>({});
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
   const [dashboardName, setDashboardName] = useState("");
   const [savingDashboardName, setSavingDashboardName] = useState(false);
-  const [disconnectEmail, setDisconnectEmail] = useState("");
-  const [disconnecting, setDisconnecting] = useState(false);
-  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
-  const [showManualEntry, setShowManualEntry] = useState(false);
-  const [manualAccountId, setManualAccountId] = useState("");
-  const [savingManual, setSavingManual] = useState(false);
   useEffect(() => {
     fetchConnectStatus();
     if (org) {

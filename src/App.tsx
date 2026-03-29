@@ -63,6 +63,7 @@ import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
 import FAQ from "./pages/FAQ";
+import SalesHub from "./pages/SalesHub";
 
 const queryClient = new QueryClient();
 

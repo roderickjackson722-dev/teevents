@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
     }
 
     const feeCents = tournament.registration_fee_cents || 0;
+    const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
     const totalFeeCents = feeCents * players.length;
 
     // Insert registration records

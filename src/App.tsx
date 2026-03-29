@@ -31,6 +31,7 @@ import Messages from "./pages/dashboard/Messages";
 import Leaderboard from "./pages/dashboard/Leaderboard";
 import Scoring from "./pages/dashboard/Scoring";
 import TeeSheet from "./pages/dashboard/TeeSheet";
+import WaitlistPage from "./pages/dashboard/Waitlist";
 import CheckIn from "./pages/dashboard/CheckIn";
 import Auction from "./pages/dashboard/Auction";
 import Gallery from "./pages/dashboard/Gallery";

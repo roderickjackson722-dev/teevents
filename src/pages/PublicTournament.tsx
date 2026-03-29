@@ -1007,18 +1007,39 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
                 <p style={{ color: "#666" }}>
-                  {tournament.foursome_registration
-                    ? "Register your foursome below to secure your spots."
-                    : "Fill out the form below to secure your spot."}
+                  {isTournamentFull && tournament.waitlist_enabled
+                    ? "This tournament is currently full. Join the waitlist below."
+                    : tournament.foursome_registration
+                      ? "Register your foursome below to secure your spots."
+                      : "Fill out the form below to secure your spot."}
                 </p>
+                {tournament.max_players && (
+                  <p className="text-xs mt-2" style={{ color: "#999" }}>
+                    {registrationCount} / {tournament.max_players} spots filled
+                  </p>
+                )}
               </div>
-              {showConfirmation ? (
+
+              {/* Waitlist when full */}
+              {isTournamentFull && tournament.waitlist_enabled ? (
+                <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
+                  <WaitlistSignup
+                    tournamentId={tournament.id}
+                    primaryColor={primary}
+                    secondaryColor={secondary}
+                    depositCents={tournament.waitlist_deposit_cents || 0}
+                    maxGroupSize={4}
+                  />
+                </div>
+              ) : isTournamentFull ? (
+                <div className="bg-white rounded-xl border p-8 shadow-sm text-center" style={{ borderColor: "#e5e5e5" }}>
+                  <Users className="h-12 w-12 mx-auto mb-3" style={{ color: "#999" }} />
+                  <h3 className="text-xl font-bold mb-2" style={{ color: "#1a1a1a" }}>Tournament Full</h3>
+                  <p style={{ color: "#666" }}>All spots have been filled. Check back later for cancellations.</p>
+                </div>
+              ) : showConfirmation ? (
                 <div className="bg-white rounded-xl border p-8 shadow-sm text-center relative" style={{ borderColor: "#e5e5e5" }}>
-                  <button
-                    onClick={() => setShowConfirmation(false)}
-                    className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors"
-                    aria-label="Close"
-                  >
+                  <button onClick={() => setShowConfirmation(false)} className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors" aria-label="Close">
                     <X className="h-5 w-5" style={{ color: "#999" }} />
                   </button>
                   <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />

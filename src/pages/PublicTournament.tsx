@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
+import WaitlistSignup from "@/components/WaitlistSignup";
 import RefundRequestForm from "@/components/RefundRequestForm";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";

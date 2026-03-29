@@ -1,6 +1,14 @@
 import { useOrgContext } from "./useOrgContext";
 
 // Feature access by plan tier
+// Plan limits
+export const PLAN_LIMITS: Record<string, { maxTournaments: number; maxPlayers: number }> = {
+  free: { maxTournaments: 1, maxPlayers: 72 },
+  base: { maxTournaments: 1, maxPlayers: 72 },
+  starter: { maxTournaments: Infinity, maxPlayers: Infinity },
+  premium: { maxTournaments: Infinity, maxPlayers: Infinity },
+};
+
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [
     "tournaments",
@@ -42,6 +50,9 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "surveys",
     "priority-support",
     "hole-in-one-insurance",
+    "white-glove-consulting",
+    "reduced-reserve",
+    "faster-payouts",
   ],
 };
 
@@ -106,5 +117,7 @@ export function usePlanFeatures() {
     return "premium";
   };
 
-  return { plan, hasFeature, requiredPlan, loading };
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+
+  return { plan, hasFeature, requiredPlan, loading, limits };
 }

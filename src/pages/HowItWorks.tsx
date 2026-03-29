@@ -177,7 +177,7 @@ const plans = [
     price: "$299",
     period: "per tournament",
     description: "We build your tournament platform for you.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Base",
       "We build your website for you",

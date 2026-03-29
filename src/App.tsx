@@ -63,6 +63,7 @@ import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
 import FAQ from "./pages/FAQ";
+import SalesHub from "./pages/SalesHub";
 
 const queryClient = new QueryClient();
 
@@ -131,6 +132,7 @@ const App = () => (
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />
+           <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

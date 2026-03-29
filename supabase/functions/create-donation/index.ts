@@ -30,47 +30,30 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Look up the organizer's connected Stripe account and plan via tournament → organization
-    let connectedAccountId: string | null = null;
-    let feeRate = 0.05;
+    // Get organization_id for the transaction record
+    let organizationId: string | null = null;
     if (tournament_id) {
       const { data: tournament } = await supabaseAdmin
         .from("tournaments")
         .select("organization_id")
         .eq("id", tournament_id)
         .single();
-
-      if (tournament) {
-        const { data: org } = await supabaseAdmin
-          .from("organizations")
-          .select("stripe_account_id, plan, fee_override")
-          .eq("id", tournament.organization_id)
-          .single();
-
-        connectedAccountId = org?.stripe_account_id || null;
-        const FEE_RATES: Record<string, number> = { base: 0.05, starter: 0, premium: 0 };
-        feeRate = (org as any)?.fee_override != null
-          ? (org as any).fee_override / 100
-          : (FEE_RATES[org?.plan || "base"] ?? 0.05);
-      }
+      organizationId = tournament?.organization_id || null;
     }
 
     // Check for existing Stripe customer
     let customerId: string | undefined;
     if (donor_email) {
-      const customers = await stripe.customers.list({
-        email: donor_email,
-        limit: 1,
-      });
+      const customers = await stripe.customers.list({ email: donor_email, limit: 1 });
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
       }
     }
 
-    const origin =
-      req.headers.get("origin") || "https://teevents.lovable.app";
+    const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
-    const sessionParams: any = {
+    // All payments go to platform Stripe account — no destination charges
+    const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : donor_email || undefined,
       line_items: [
@@ -92,20 +75,9 @@ Deno.serve(async (req) => {
         type: "donation",
         tournament_slug: tournament_slug || "",
         tournament_id: tournament_id || "",
+        organization_id: organizationId || "",
       },
-    };
-
-    // Route payment to connected account with plan-based application fee
-    if (connectedAccountId) {
-      sessionParams.payment_intent_data = {
-        application_fee_amount: Math.round(amount_cents * feeRate),
-        transfer_data: {
-          destination: connectedAccountId,
-        },
-      };
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    });
 
     // Record donation as pending
     if (tournament_id) {
@@ -117,7 +89,7 @@ Deno.serve(async (req) => {
         status: "pending",
       });
 
-      // Send notification emails via Resend
+      // Send notification emails
       try {
         const { data: tournamentData } = await supabaseAdmin
           .from("tournaments")

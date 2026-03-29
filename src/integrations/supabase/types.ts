@@ -575,6 +575,103 @@ export type Database = {
           },
         ]
       }
+      organization_payout_methods: {
+        Row: {
+          account_last_four: string | null
+          bank_name: string | null
+          created_at: string
+          id: string
+          is_verified: boolean
+          method_type: string
+          organization_id: string
+          routing_last_four: string | null
+          stripe_bank_account_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_last_four?: string | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          method_type?: string
+          organization_id: string
+          routing_last_four?: string | null
+          stripe_bank_account_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_last_four?: string | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          method_type?: string
+          organization_id?: string
+          routing_last_four?: string | null
+          stripe_bank_account_token?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_payout_methods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_payouts: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          notes: string | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          platform_fees_cents: number
+          status: string
+          stripe_transfer_id: string | null
+          transaction_count: number
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          period_end: string
+          period_start: string
+          platform_fees_cents?: number
+          status?: string
+          stripe_transfer_id?: string | null
+          transaction_count?: number
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          platform_fees_cents?: number
+          status?: string
+          stripe_transfer_id?: string | null
+          transaction_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_payouts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -589,6 +686,7 @@ export type Database = {
           nonprofit_name: string | null
           nonprofit_verified: boolean
           plan: string
+          platform_fee_rate: number | null
           primary_color: string | null
           secondary_color: string | null
           stripe_account_id: string | null
@@ -608,6 +706,7 @@ export type Database = {
           nonprofit_name?: string | null
           nonprofit_verified?: boolean
           plan?: string
+          platform_fee_rate?: number | null
           primary_color?: string | null
           secondary_color?: string | null
           stripe_account_id?: string | null
@@ -627,6 +726,7 @@ export type Database = {
           nonprofit_name?: string | null
           nonprofit_verified?: boolean
           plan?: string
+          platform_fee_rate?: number | null
           primary_color?: string | null
           secondary_color?: string | null
           stripe_account_id?: string | null
@@ -703,6 +803,75 @@ export type Database = {
           sort_order?: number | null
         }
         Relationships: []
+      }
+      platform_transactions: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          net_amount_cents: number
+          organization_id: string
+          payout_id: string | null
+          platform_fee_cents: number
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tournament_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          net_amount_cents?: number
+          organization_id: string
+          payout_id?: string | null
+          platform_fee_cents?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          net_amount_cents?: number
+          organization_id?: string
+          payout_id?: string | null
+          platform_fee_cents?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_transactions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_transactions_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_templates: {
         Row: {

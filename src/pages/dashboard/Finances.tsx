@@ -12,7 +12,8 @@ import { toast } from "sonner";
 import {
   DollarSign, TrendingUp, CreditCard, RotateCcw, Loader2, Search,
   Trophy, Download, Receipt, Mail, CheckCircle, XCircle, Clock,
-  ArrowUpRight, ArrowDownRight, Users, RefreshCw,
+  ArrowUpRight, ArrowDownRight, Users, RefreshCw, Wallet, Calendar,
+  Banknote, Info,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -61,6 +62,29 @@ interface Tier {
   tournament_id: string;
 }
 
+interface PlatformTransaction {
+  id: string;
+  amount_cents: number;
+  platform_fee_cents: number;
+  net_amount_cents: number;
+  type: string;
+  status: string;
+  description: string | null;
+  created_at: string;
+}
+
+interface Payout {
+  id: string;
+  amount_cents: number;
+  platform_fees_cents: number;
+  status: string;
+  period_start: string;
+  period_end: string;
+  transaction_count: number;
+  notes: string | null;
+  created_at: string;
+}
+
 const Finances = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
@@ -69,6 +93,8 @@ const Finances = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
+  const [platformTransactions, setPlatformTransactions] = useState<PlatformTransaction[]>([]);
+  const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -88,6 +114,23 @@ const Finances = () => {
         if (list.length > 0) setSelectedTournament(list[0].id);
         setLoading(false);
       });
+
+    // Fetch org-level data
+    Promise.all([
+      supabase
+        .from("platform_transactions")
+        .select("*")
+        .eq("organization_id", org.orgId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("organization_payouts")
+        .select("*")
+        .eq("organization_id", org.orgId)
+        .order("created_at", { ascending: false }),
+    ]).then(([txRes, payoutRes]) => {
+      setPlatformTransactions((txRes.data as PlatformTransaction[]) || []);
+      setPayouts((payoutRes.data as Payout[]) || []);
+    });
   }, [org]);
 
   const fetchData = useCallback(async () => {
@@ -142,6 +185,26 @@ const Finances = () => {
   const totalRefunded = refundedRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
   const netRevenue = totalRevenue - totalRefunded;
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
+
+  // Escrow calculations
+  const heldFunds = platformTransactions
+    .filter((t) => t.status === "held")
+    .reduce((sum, t) => sum + t.net_amount_cents, 0);
+
+  const totalPaidOut = payouts
+    .filter((p) => p.status === "completed")
+    .reduce((sum, p) => sum + p.amount_cents, 0);
+
+  // Next payout date: next 1st or 15th of the month
+  const getNextPayoutDate = () => {
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    if (day < 15) return new Date(year, month, 15);
+    return new Date(year, month + 1, 1);
+  };
+  const nextPayoutDate = getNextPayoutDate();
 
   // Refund actions
   const handleRefundAction = async (requestId: string, action: "approved" | "denied") => {
@@ -274,6 +337,16 @@ const Finances = () => {
     }
   };
 
+  const payoutStatusBadge = (status: string) => {
+    switch (status) {
+      case "completed": return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle className="h-3 w-3 mr-1" />Paid</Badge>;
+      case "processing": return <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50"><Loader2 className="h-3 w-3 mr-1 animate-spin" />Processing</Badge>;
+      case "pending_setup": return <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-3 w-3 mr-1" />Setup Required</Badge>;
+      case "failed": return <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50"><XCircle className="h-3 w-3 mr-1" />Failed</Badge>;
+      default: return <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-3 w-3 mr-1" />{status}</Badge>;
+    }
+  };
+
   if (loading && tournaments.length === 0) {
     return (
       <div className="flex justify-center py-12">
@@ -298,7 +371,7 @@ const Finances = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Finances</h1>
-          <p className="text-muted-foreground mt-1">Revenue, transactions, and refund management</p>
+          <p className="text-muted-foreground mt-1">Revenue, payouts, and refund management</p>
         </div>
         <div className="flex items-center gap-3">
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
@@ -315,8 +388,17 @@ const Finances = () => {
         </div>
       </div>
 
+      {/* Escrow Info Banner */}
+      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
+          <p className="text-xs text-muted-foreground mt-1">Net payouts to your organization occur automatically every two weeks on the 1st and 15th of each month.</p>
+        </div>
+      </div>
+
       {/* Revenue Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100">
@@ -325,7 +407,7 @@ const Finances = () => {
             <span className="text-xs text-muted-foreground font-medium">Total Revenue</span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{paidRegistrations.length} paid registrations</p>
+          <p className="text-xs text-muted-foreground mt-1">{paidRegistrations.length} paid</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4">
@@ -339,26 +421,41 @@ const Finances = () => {
           <p className="text-xs text-muted-foreground mt-1">After refunds</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4 border-secondary/30">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-red-100">
-              <ArrowDownRight className="h-4 w-4 text-red-600" />
+            <div className="p-2 rounded-full bg-secondary/10">
+              <Wallet className="h-4 w-4 text-secondary" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Total Refunded</span>
+            <span className="text-xs text-muted-foreground font-medium">Held Funds</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">${(totalRefunded / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{refundedRegistrations.length} refunds</p>
+          <p className="text-2xl font-bold text-secondary">${(heldFunds / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Pending payout</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-amber-100">
-              <Clock className="h-4 w-4 text-amber-600" />
+            <div className="p-2 rounded-full bg-blue-100">
+              <Calendar className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Pending</span>
+            <span className="text-xs text-muted-foreground font-medium">Next Payout</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{pendingRegistrations.length + pendingRefunds.length}</p>
-          <p className="text-xs text-muted-foreground mt-1">{pendingRegistrations.length} payments, {pendingRefunds.length} refunds</p>
+          <p className="text-lg font-bold text-foreground">
+            {nextPayoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {heldFunds > 0 ? `~$${(heldFunds / 100).toFixed(2)}` : "No funds held"}
+          </p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-full bg-emerald-100">
+              <Banknote className="h-4 w-4 text-emerald-600" />
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">Total Paid Out</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">${(totalPaidOut / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{payouts.filter((p) => p.status === "completed").length} payouts</p>
         </motion.div>
       </div>
 
@@ -369,6 +466,10 @@ const Finances = () => {
             <TabsTrigger value="transactions">
               <CreditCard className="h-4 w-4 mr-1.5" />
               Transactions
+            </TabsTrigger>
+            <TabsTrigger value="payouts">
+              <Banknote className="h-4 w-4 mr-1.5" />
+              Payouts
             </TabsTrigger>
             <TabsTrigger value="refunds">
               <RotateCcw className="h-4 w-4 mr-1.5" />
@@ -478,7 +579,7 @@ const Finances = () => {
                                       <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
                                       <AlertDialogDescription>
                                         Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                        {" "}(${(getRegistrationAmount(reg) / 100).toFixed(2)})? This will process the refund through Stripe and cannot be undone.
+                                        {" "}(${(getRegistrationAmount(reg) / 100).toFixed(2)})? This will process the refund and cannot be undone.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -501,6 +602,52 @@ const Finances = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Payouts Tab */}
+        <TabsContent value="payouts" className="space-y-4">
+          {payouts.length === 0 ? (
+            <div className="text-center py-12 bg-muted/20 rounded-lg border border-border">
+              <Banknote className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm font-medium text-muted-foreground">No payouts yet</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Payouts are processed automatically on the 1st and 15th of each month.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {payouts.map((payout) => (
+                <div key={payout.id} className="bg-card rounded-lg border border-border p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="font-semibold text-foreground text-lg">${(payout.amount_cents / 100).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(payout.period_start).toLocaleDateString()} — {new Date(payout.period_end).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {payoutStatusBadge(payout.status)}
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Transactions</p>
+                      <p className="font-medium text-foreground">{payout.transaction_count}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Platform Fees</p>
+                      <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Net Payout</p>
+                      <p className="font-bold text-primary">${(payout.amount_cents / 100).toFixed(2)}</p>
+                    </div>
+                  </div>
+                  {payout.notes && (
+                    <p className="text-xs text-muted-foreground mt-2 italic">{payout.notes}</p>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </TabsContent>
@@ -569,7 +716,7 @@ const Finances = () => {
                               <AlertDialogDescription>
                                 Are you sure you want to approve a ${(req.amount_cents / 100).toFixed(2)} refund for{" "}
                                 <span className="font-semibold">{req.registration?.first_name} {req.registration?.last_name}</span>?
-                                This will process the refund through Stripe and cannot be undone.
+                                This will process the refund and cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

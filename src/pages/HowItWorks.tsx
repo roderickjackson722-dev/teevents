@@ -155,13 +155,13 @@ const whyTeeVents = [
 
 const plans = [
   {
-    name: "Free",
+    name: "Base",
     price: "$0",
     period: "per tournament",
-    description: "Get started free — we take a small cut per transaction.",
+    description: "Get started free — limited to 1 tournament & 72 players.",
     fee: "4% TeeVents fee + Stripe processing fees",
     features: [
-      "1 tournament",
+      "1 active tournament (max 72 players)",
       "Online registration & payments",
       "Tournament website (1 template)",
       "Player pairings & check-in",
@@ -176,10 +176,10 @@ const plans = [
     name: "Starter",
     price: "$299",
     period: "per tournament",
-    description: "We build your tournament platform for you.",
+    description: "Unlimited players. We build your tournament platform for you.",
     fee: "4% TeeVents fee + Stripe processing fees",
     features: [
-      "Everything in Base",
+      "Everything in Base (unlimited players)",
       "We build your website for you",
       "All 6 templates + custom colors",
       "All 8 scoring formats",
@@ -199,10 +199,13 @@ const plans = [
     name: "Premium",
     price: "$999",
     period: "per tournament",
-    description: "The ultimate package with insurance & auction.",
+    description: "White-glove consulting, reduced reserve, faster payouts.",
     fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Starter",
+      "White-glove consulting & setup",
+      "Reduced 10% reserve (vs 15%)",
+      "Faster bi-weekly payouts",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",

@@ -142,6 +142,57 @@ const Settings = () => {
         </div>
       </motion.div>
 
+      {/* Payment & Fee Settings */}
+      {tournaments.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-card rounded-lg border border-border p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <Receipt className="h-6 w-6 text-secondary" />
+            <h2 className="text-lg font-display font-bold text-foreground">Payment & Fee Settings</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Control how processing fees are handled for each tournament.
+          </p>
+          <div className="space-y-4">
+            {tournaments.map((t) => (
+              <div key={t.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-border">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground text-sm truncate">{t.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t.pass_fees_to_participants
+                      ? "Fees passed to participants — your organization receives the full advertised price."
+                      : "Fees absorbed by organization — participants pay exactly the advertised price."}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Label htmlFor={`fee-toggle-${t.id}`} className="text-xs text-muted-foreground whitespace-nowrap">
+                    Pass fees to participants
+                  </Label>
+                  <Switch
+                    id={`fee-toggle-${t.id}`}
+                    checked={t.pass_fees_to_participants}
+                    onCheckedChange={() => handleToggleFees(t.id, t.pass_fees_to_participants)}
+                    disabled={savingFeeToggle === t.id}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 mt-4">
+            <p className="text-xs text-muted-foreground">
+              <strong>When ON (recommended):</strong> Registrants pay the advertised price plus processing fees. Your organization receives the full amount.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              <strong>When OFF:</strong> Participants pay exactly the advertised price. Processing fees are deducted from your bi-weekly payout.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

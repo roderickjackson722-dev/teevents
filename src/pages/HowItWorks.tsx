@@ -432,7 +432,7 @@ const HowItWorks = () => {
                 You Keep Your Revenue.<br />We Take a Simple Fee.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Powered by Stripe Connect, all registration fees, store purchases, auction sales, and donations flow directly to the organizer's bank account — minus a transparent platform fee. No invoices, no delays.
+                All registration fees, store purchases, auction sales, and donations are collected securely by TeeVents. Net payouts to your organization occur automatically every two weeks. No invoices, no delays.
               </p>
               <div className="space-y-3">
                 {[

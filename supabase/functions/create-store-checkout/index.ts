@@ -2,6 +2,8 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
+const PLATFORM_FEE_PERCENT = 4;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -36,9 +38,11 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("organization_id, slug")
+      .select("organization_id, slug, pass_fees_to_participants")
       .eq("id", product.tournament_id)
       .single();
+
+    const passFeesToParticipants = (tournament as any)?.pass_fees_to_participants !== false;
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -53,24 +57,51 @@ Deno.serve(async (req) => {
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const slug = tournament_slug || tournament?.slug || "";
 
-    // All payments go to platform Stripe account — no destination charges
+    const lineItems: any[] = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: product.name,
+            description: product.description || undefined,
+            images: product.image_url ? [product.image_url] : undefined,
+          },
+          unit_amount: priceCents,
+        },
+        quantity: 1,
+      },
+    ];
+
+    if (passFeesToParticipants) {
+      const platformFee = Math.round(priceCents * (PLATFORM_FEE_PERCENT / 100));
+      if (platformFee > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: { name: "TeeVents Platform Fee (4%)", description: "Tournament management platform fee" },
+            unit_amount: platformFee,
+          },
+          quantity: 1,
+        });
+      }
+      const preStripeTotal = priceCents + platformFee;
+      const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
+      if (stripeFee > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: { name: "Payment Processing Fee", description: "Stripe processing fee (~2.9% + $0.30)" },
+            unit_amount: stripeFee,
+          },
+          quantity: 1,
+        });
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : buyer_email || undefined,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              description: product.description || undefined,
-              images: product.image_url ? [product.image_url] : undefined,
-            },
-            unit_amount: priceCents,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/t/${slug}?purchased=true`,
       cancel_url: `${origin}/t/${slug}`,

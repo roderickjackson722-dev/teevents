@@ -43,7 +43,7 @@ const features = [
 ];
 
 const plans = [
-  { name: "Free", price: "$0", fee: "5%", note: "Core features to get started" },
+  { name: "Free", price: "$0", fee: "4%", note: "Core features to get started" },
   { name: "Starter", price: "$299", fee: "0%", note: "We build it for you + leaderboard & sponsors", popular: true },
   { name: "Premium", price: "$999", fee: "0%", note: "$25K hole-in-one insurance + auction" },
 ];

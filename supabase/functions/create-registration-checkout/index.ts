@@ -2,6 +2,8 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
+const PLATFORM_FEE_PERCENT = 4;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -117,7 +119,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fee required — create Stripe checkout on PLATFORM account (no destination charges)
+    // Fee required — create Stripe checkout on PLATFORM account
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -146,19 +148,36 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // If passing fees to participants, add a processing fee line item
+    // If passing fees to participants, add platform fee + Stripe processing fee
     if (passFeesToParticipants) {
-      // Stripe fee: 2.9% + $0.30 on the total
       const subtotal = feeCents * players.length;
-      // Calculate the fee that covers Stripe processing on the whole charge
-      const stripeFee = Math.round((subtotal + 30) / (1 - 0.029)) - subtotal;
+
+      // 4% TeeVents platform fee
+      const platformFee = Math.round(subtotal * (PLATFORM_FEE_PERCENT / 100));
+      if (platformFee > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "TeeVents Platform Fee (4%)",
+              description: "Tournament management platform fee",
+            },
+            unit_amount: platformFee,
+          },
+          quantity: 1,
+        });
+      }
+
+      // Stripe processing fee: 2.9% + $0.30 on the total (including platform fee)
+      const preStripeFeeTotal = subtotal + platformFee;
+      const stripeFee = Math.round((preStripeFeeTotal + 30) / (1 - 0.029)) - preStripeFeeTotal;
       if (stripeFee > 0) {
         lineItems.push({
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Processing Fee",
-              description: "Payment processing fee (Stripe 2.9% + $0.30)",
+              name: "Payment Processing Fee",
+              description: "Stripe processing fee (~2.9% + $0.30)",
             },
             unit_amount: stripeFee,
           },

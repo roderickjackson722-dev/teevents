@@ -2208,13 +2208,17 @@ export type Database = {
           pass_fees_to_registrants: boolean
           printable_font: string
           printable_layout: string
+          rain_date_policy: string | null
+          rain_date_policy_type: string | null
           refund_deadline_days: number | null
           refund_partial_percent: number | null
+          refund_policy: string | null
           refund_policy_text: string | null
           refund_policy_type: string
           registration_fee_cents: number | null
           registration_open: boolean | null
           registration_url: string | null
+          reserve_percentage: number | null
           schedule_info: string | null
           scoring_format: string
           site_hero_image_url: string | null
@@ -2259,13 +2263,17 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
+          rain_date_policy?: string | null
+          rain_date_policy_type?: string | null
           refund_deadline_days?: number | null
           refund_partial_percent?: number | null
+          refund_policy?: string | null
           refund_policy_text?: string | null
           refund_policy_type?: string
           registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null
+          reserve_percentage?: number | null
           schedule_info?: string | null
           scoring_format?: string
           site_hero_image_url?: string | null
@@ -2310,13 +2318,17 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
+          rain_date_policy?: string | null
+          rain_date_policy_type?: string | null
           refund_deadline_days?: number | null
           refund_partial_percent?: number | null
+          refund_policy?: string | null
           refund_policy_text?: string | null
           refund_policy_type?: string
           registration_fee_cents?: number | null
           registration_open?: boolean | null
           registration_url?: string | null
+          reserve_percentage?: number | null
           schedule_info?: string | null
           scoring_format?: string
           site_hero_image_url?: string | null

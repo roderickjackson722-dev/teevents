@@ -13,7 +13,7 @@ import {
   DollarSign, TrendingUp, CreditCard, RotateCcw, Loader2, Search,
   Trophy, Download, Receipt, Mail, CheckCircle, XCircle, Clock,
   ArrowUpRight, ArrowDownRight, Users, RefreshCw, Wallet, Calendar,
-  Banknote, Info,
+  Banknote, Info, ShieldCheck,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -85,6 +85,8 @@ interface Payout {
   created_at: string;
 }
 
+const RESERVE_PERCENT = 15;
+
 const Finances = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
@@ -115,7 +117,6 @@ const Finances = () => {
         setLoading(false);
       });
 
-    // Fetch org-level data
     Promise.all([
       supabase
         .from("platform_transactions")
@@ -191,11 +192,18 @@ const Finances = () => {
     .filter((t) => t.status === "held")
     .reduce((sum, t) => sum + t.net_amount_cents, 0);
 
+  const totalPlatformFees = platformTransactions
+    .filter((t) => t.status === "held")
+    .reduce((sum, t) => sum + t.platform_fee_cents, 0);
+
+  const reserveAmount = Math.round(heldFunds * (RESERVE_PERCENT / 100));
+  const availableForPayout = heldFunds - reserveAmount;
+
   const totalPaidOut = payouts
     .filter((p) => p.status === "completed")
     .reduce((sum, p) => sum + p.amount_cents, 0);
 
-  // Next payout date: next 1st or 15th of the month
+  // Next payout date
   const getNextPayoutDate = () => {
     const now = new Date();
     const day = now.getDate();
@@ -371,7 +379,7 @@ const Finances = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Finances</h1>
-          <p className="text-muted-foreground mt-1">Revenue, payouts, and refund management</p>
+          <p className="text-muted-foreground mt-1">Revenue, payouts, reserves, and refund management</p>
         </div>
         <div className="flex items-center gap-3">
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
@@ -393,12 +401,14 @@ const Finances = () => {
         <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
         <div>
           <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
-          <p className="text-xs text-muted-foreground mt-1">Net payouts to your organization occur automatically every two weeks on the 1st and 15th of each month.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Transparent 4% platform fee applied. 15% reserve held until 60 days post-event. Net payouts every two weeks on the 1st and 15th.
+          </p>
         </div>
       </div>
 
       {/* Revenue Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100">
@@ -410,18 +420,7 @@ const Finances = () => {
           <p className="text-xs text-muted-foreground mt-1">{paidRegistrations.length} paid</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-primary/10">
-              <DollarSign className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-xs text-muted-foreground font-medium">Net Revenue</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">${(netRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">After refunds</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4 border-secondary/30">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4 border-secondary/30">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-secondary/10">
               <Wallet className="h-4 w-4 text-secondary" />
@@ -429,10 +428,32 @@ const Finances = () => {
             <span className="text-xs text-muted-foreground font-medium">Held Funds</span>
           </div>
           <p className="text-2xl font-bold text-secondary">${(heldFunds / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Pending payout</p>
+          <p className="text-xs text-muted-foreground mt-1">After 4% fee</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4 border-amber-200">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-full bg-amber-100">
+              <ShieldCheck className="h-4 w-4 text-amber-600" />
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">Reserve (15%)</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-600">${(reserveAmount / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Refund & chargeback protection</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-lg border border-border p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-full bg-primary/10">
+              <DollarSign className="h-4 w-4 text-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">Available for Payout</span>
+          </div>
+          <p className="text-2xl font-bold text-primary">${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Net after reserve</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-blue-100">
               <Calendar className="h-4 w-4 text-blue-600" />
@@ -443,11 +464,11 @@ const Finances = () => {
             {nextPayoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {heldFunds > 0 ? `~$${(heldFunds / 100).toFixed(2)}` : "No funds held"}
+            {availableForPayout > 0 ? `~$${(availableForPayout / 100).toFixed(2)}` : "No funds available"}
           </p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100">
               <Banknote className="h-4 w-4 text-emerald-600" />
@@ -579,7 +600,7 @@ const Finances = () => {
                                       <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
                                       <AlertDialogDescription>
                                         Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                        {" "}(${(getRegistrationAmount(reg) / 100).toFixed(2)})? This will process the refund and cannot be undone.
+                                        {" "}(${(getRegistrationAmount(reg) / 100).toFixed(2)})? This will process the refund from held funds and cannot be undone.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -613,7 +634,7 @@ const Finances = () => {
               <Banknote className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
               <p className="text-sm font-medium text-muted-foreground">No payouts yet</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Payouts are processed automatically on the 1st and 15th of each month.
+                Payouts are processed automatically on the 1st and 15th of each month. A 15% reserve is held until 60 days post-event.
               </p>
             </div>
           ) : (
@@ -629,14 +650,18 @@ const Finances = () => {
                     </div>
                     {payoutStatusBadge(payout.status)}
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-4 gap-4 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground">Transactions</p>
                       <p className="font-medium text-foreground">{payout.transaction_count}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Platform Fees</p>
+                      <p className="text-xs text-muted-foreground">Platform Fee (4%)</p>
                       <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Reserve (15%)</p>
+                      <p className="font-medium text-amber-600">Held</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Net Payout</p>
@@ -716,7 +741,7 @@ const Finances = () => {
                               <AlertDialogDescription>
                                 Are you sure you want to approve a ${(req.amount_cents / 100).toFixed(2)} refund for{" "}
                                 <span className="font-semibold">{req.registration?.first_name} {req.registration?.last_name}</span>?
-                                This will process the refund and cannot be undone.
+                                This will be deducted from held funds and cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

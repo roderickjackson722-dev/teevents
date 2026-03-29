@@ -127,19 +127,14 @@ export default function TeeSheet() {
     }
 
     // Save assignments to DB
-    const updates: Promise<any>[] = [];
-    groups.forEach((g) => {
-      g.players.forEach((p, idx) => {
-        updates.push(
-          supabase
-            .from("tournament_registrations")
-            .update({ group_number: g.number, group_position: idx + 1 })
-            .eq("id", p.id)
-        );
-      });
-    });
-
-    await Promise.all(updates);
+    for (const g of groups) {
+      for (let idx = 0; idx < g.players.length; idx++) {
+        await supabase
+          .from("tournament_registrations")
+          .update({ group_number: g.number, group_position: idx + 1 })
+          .eq("id", g.players[idx].id);
+      }
+    }
     setTeeGroups(groups);
     setGenerating(false);
     toast({ title: "Tee sheet generated!", description: `${groups.length} groups created with ${sorted.length} players.` });

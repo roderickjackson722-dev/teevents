@@ -209,6 +209,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
   const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
+  const [registrationCount, setRegistrationCount] = useState(0);
+  const [isTournamentFull, setIsTournamentFull] = useState(false);
 
   useEffect(() => {
     if (!slug) return;

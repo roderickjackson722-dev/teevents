@@ -250,7 +250,7 @@ const Settings = () => {
         </p>
       </div>
 
-      {/* Stripe Connect Section */}
+      {/* Payout Settings Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -259,247 +259,34 @@ const Settings = () => {
         <div className="flex items-center gap-3 mb-4">
           <CreditCard className="h-6 w-6 text-primary" />
           <h2 className="text-lg font-display font-bold text-foreground">
-            Payment Processing
+            Payout Settings
           </h2>
         </div>
 
-        <p className="text-muted-foreground mb-6">
-          Connect your Stripe account to receive payments directly from player registrations,
-          donations, store purchases, and auction bids. No platform transaction fees — you keep your revenue.
-        </p>
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
+          <p className="text-sm text-foreground font-medium">How payouts work</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            All customer payments (registration fees, donations, store purchases, and auction bids) are collected and held securely by TeeVents.
+            Net payouts to your organization are processed automatically every two weeks on the 1st and 15th of each month.
+          </p>
+        </div>
 
-        {loading ? (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Checking payment status...
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-primary">
+            <CheckCircle2 className="h-5 w-5" />
+            <span className="font-medium">Payment collection is active</span>
           </div>
-        ) : isInvalidAccount ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              <span className="font-medium">
-                Stripe account could not be verified
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              The saved account ID could not be accessed by our platform. This usually means the account
-              was entered manually but was never connected through Stripe's onboarding flow. Please click
-              <strong> Connect Stripe Account</strong> below to properly link your account, or disconnect the
-              invalid entry first.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={handleConnectStripe} disabled={onboarding}>
-                {onboarding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                <CreditCard className="h-4 w-4 mr-2" />
-                Connect Stripe Account
-              </Button>
-              <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
-                    <Unlink className="h-4 w-4 mr-2" />
-                    Remove Invalid Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Remove Invalid Stripe Account?</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-3">
-                      <p>
-                        This will clear the invalid Stripe account ID so you can connect a new account
-                        through the proper onboarding flow.
-                      </p>
-                      <p>To confirm, type your account email address below:</p>
-                      <Input
-                        placeholder="Enter your email to confirm"
-                        value={disconnectEmail}
-                        onChange={(e) => setDisconnectEmail(e.target.value)}
-                        className="mt-2"
-                      />
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setDisconnectEmail("")}>Cancel</AlertDialogCancel>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDisconnectStripe}
-                      disabled={disconnecting || !disconnectEmail.trim()}
-                    >
-                      {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Remove & Reset
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        ) : isFullyConnected ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-primary">
-              <CheckCircle2 className="h-5 w-5" />
-              <span className="font-medium">Stripe account connected — payments active</span>
-            </div>
-            {connectStatus?.account_id && (
-              <p className="text-xs text-muted-foreground">
-                Account ID: {connectStatus.account_id}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline" onClick={handleOpenDashboard}>
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open Stripe Dashboard
-              </Button>
-
-              <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
-                    <Unlink className="h-4 w-4 mr-2" />
-                    Disconnect Stripe
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Disconnect Stripe Account?</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-3">
-                      <p>
-                        This will remove the connected Stripe account from your organization. 
-                        You will <strong>no longer be able to accept payments</strong> for registrations, 
-                        donations, store purchases, or auction bids until you connect a new account.
-                      </p>
-                      <p>
-                        This action can only be performed by the organization owner. 
-                        To confirm, please type your account email address below:
-                      </p>
-                      <Input
-                        placeholder="Enter your email to confirm"
-                        value={disconnectEmail}
-                        onChange={(e) => setDisconnectEmail(e.target.value)}
-                        className="mt-2"
-                      />
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setDisconnectEmail("")}>Cancel</AlertDialogCancel>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDisconnectStripe}
-                      disabled={disconnecting || !disconnectEmail.trim()}
-                    >
-                      {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Disconnect Account
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+          <p className="text-sm text-muted-foreground">
+            Your tournament registration fees, donations, and store purchases are automatically collected by TeeVents.
+            View your held funds and payout history in the <strong>Finances</strong> tab.
+          </p>
+          <div className="border-t border-border pt-4 mt-4">
+            <p className="text-sm font-medium text-foreground mb-2">Need to update your payout details?</p>
             <p className="text-xs text-muted-foreground">
-              To switch accounts, disconnect your current Stripe account then connect a new one.
+              Contact <a href="mailto:info@teevents.golf" className="text-primary underline">info@teevents.golf</a> to set up or change your organization's bank account for payouts.
             </p>
           </div>
-        ) : isPending ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              <span className="font-medium">
-                Stripe account linked but onboarding incomplete
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Please complete your Stripe onboarding to start accepting payments.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={handleConnectStripe} disabled={onboarding}>
-                {onboarding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Complete Stripe Onboarding
-              </Button>
-              <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
-                    <Unlink className="h-4 w-4 mr-2" />
-                    Disconnect & Retry
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Disconnect Stripe Account?</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-3">
-                      <p>
-                        This will remove the linked Stripe account so you can start fresh 
-                        or connect a different account.
-                      </p>
-                      <p>To confirm, type your account email address below:</p>
-                      <Input
-                        placeholder="Enter your email to confirm"
-                        value={disconnectEmail}
-                        onChange={(e) => setDisconnectEmail(e.target.value)}
-                        className="mt-2"
-                      />
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setDisconnectEmail("")}>Cancel</AlertDialogCancel>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDisconnectStripe}
-                      disabled={disconnecting || !disconnectEmail.trim()}
-                    >
-                      {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Disconnect Account
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <AlertCircle className="h-5 w-5" />
-              <span>No Stripe account connected</span>
-            </div>
-            <Button onClick={handleConnectStripe} disabled={onboarding}>
-              {onboarding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              <CreditCard className="h-4 w-4 mr-2" />
-              Connect Stripe Account
-            </Button>
-
-            {/* Manual entry fallback */}
-            <div className="border-t border-border pt-4 mt-4">
-              <button
-                onClick={() => setShowManualEntry(!showManualEntry)}
-                className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
-              >
-                Having trouble? Enter your Stripe Account ID manually
-              </button>
-              {showManualEntry && (
-                <div className="mt-3 space-y-2">
-                  <p className="text-xs text-muted-foreground">
-                    Find your Account ID in your{" "}
-                    <a href="https://dashboard.stripe.com/settings/account" target="_blank" rel="noopener noreferrer" className="underline text-primary">
-                      Stripe Dashboard → Settings
-                    </a>
-                    . It starts with <code className="bg-muted px-1 rounded text-xs">acct_</code>.
-                  </p>
-                  <div className="flex items-center gap-2 max-w-md">
-                    <Input
-                      value={manualAccountId}
-                      onChange={(e) => setManualAccountId(e.target.value)}
-                      placeholder="acct_1234567890"
-                      className="flex-1 font-mono text-sm"
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleManualConnect}
-                      disabled={savingManual || !manualAccountId.trim()}
-                    >
-                      {savingManual ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
-                      Save
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        </div>
       </motion.div>
 
 

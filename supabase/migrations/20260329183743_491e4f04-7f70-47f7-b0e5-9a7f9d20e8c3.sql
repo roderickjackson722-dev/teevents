@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS pass_fees_to_participants boolean NOT NULL DEFAULT true;

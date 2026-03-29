@@ -2204,6 +2204,7 @@ export type Database = {
           max_group_size: number
           max_players: number | null
           organization_id: string
+          pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
           printable_font: string
           printable_layout: string
@@ -2254,6 +2255,7 @@ export type Database = {
           max_group_size?: number
           max_players?: number | null
           organization_id: string
+          pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string
@@ -2304,6 +2306,7 @@ export type Database = {
           max_group_size?: number
           max_players?: number | null
           organization_id?: string
+          pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           printable_font?: string
           printable_layout?: string

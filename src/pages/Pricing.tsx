@@ -59,7 +59,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "The ultimate tournament package with insurance & auction.",
-    fee: "0% transaction fee",
+    fee: "4% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Starter",
       "$25,000 hole-in-one insurance (up to 72 golfers)",

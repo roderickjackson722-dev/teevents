@@ -108,6 +108,27 @@ export default function Leaderboard() {
     enabled: !!selectedTournament,
   });
 
+  // Realtime subscription for live score updates
+  useEffect(() => {
+    if (!selectedTournament) return;
+    const channel = supabase
+      .channel(`scores-${selectedTournament}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tournament_scores',
+          filter: `tournament_id=eq.${selectedTournament}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedTournament, queryClient]);
+
   const { data: leaderboardSponsors } = useQuery({
     queryKey: ["leaderboard-sponsors", selectedTournament],
     queryFn: async () => {

@@ -77,6 +77,23 @@ const Settings = () => {
     setSavingFormat(null);
   };
 
+  const handleToggleFees = async (tournamentId: string, currentValue: boolean) => {
+    if (demoGuard()) return;
+    setSavingFeeToggle(tournamentId);
+    const newValue = !currentValue;
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ pass_fees_to_participants: newValue } as any)
+      .eq("id", tournamentId);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(newValue ? "Fees will be passed to participants" : "Fees will be absorbed by your organization");
+      setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, pass_fees_to_participants: newValue } : t));
+    }
+    setSavingFeeToggle(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="mb-8">

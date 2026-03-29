@@ -371,7 +371,7 @@ const Demo = () => {
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
+                    <span className="font-display font-bold text-primary text-2xl">$139.35</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">

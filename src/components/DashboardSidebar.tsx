@@ -12,7 +12,6 @@ import {
   LogOut,
   ShoppingCart,
   BarChart3,
-  ScanLine,
   Gavel,
   ImageIcon,
   UserCheck,
@@ -20,13 +19,7 @@ import {
   Heart,
   Clock,
   CreditCard,
-  Gavel,
-  ImageIcon,
-  UserCheck,
-  ClipboardList,
-  Heart,
-  Clock,
-  
+
   FileEdit,
   Printer,
   PenLine,

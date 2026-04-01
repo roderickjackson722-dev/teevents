@@ -241,7 +241,7 @@ export function DashboardSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <a
-                      href="/faq"
+                      href="/help"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"

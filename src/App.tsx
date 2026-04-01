@@ -144,6 +144,13 @@ const App = () => (
            <Route path="/faq" element={<FAQ />} />
            <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
+           <Route path="/help" element={<HelpCenter />} />
+           <Route path="/help/connect-stripe" element={<ConnectStripe />} />
+           <Route path="/help/fees-and-hold" element={<FeesAndHold />} />
+           <Route path="/help/payout-schedule" element={<PayoutSchedule />} />
+           <Route path="/help/tax-information" element={<TaxInformation />} />
+           <Route path="/help/payment-settings" element={<PaymentSettings />} />
+           <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

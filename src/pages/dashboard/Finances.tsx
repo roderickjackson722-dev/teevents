@@ -330,7 +330,7 @@ const Finances = () => {
         const held = txs.filter((tx) => tx.status === "held").reduce((s, tx) => s + tx.net_amount_cents, 0);
         const paid = txs.filter((tx) => tx.status === "paid_out").reduce((s, tx) => s + tx.net_amount_cents, 0);
         return [
-          t.title, t.event_date || "-", String(txs.length),
+          t.title, "-", String(txs.length),
           (gross / 100).toFixed(2), (fees / 100).toFixed(2),
           (held / 100).toFixed(2), "0.00", (paid / 100).toFixed(2),
         ];

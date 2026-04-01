@@ -67,6 +67,9 @@ interface PlatformTransaction {
   amount_cents: number;
   platform_fee_cents: number;
   net_amount_cents: number;
+  hold_amount_cents: number | null;
+  hold_status: string | null;
+  hold_release_date: string | null;
   type: string;
   status: string;
   description: string | null;

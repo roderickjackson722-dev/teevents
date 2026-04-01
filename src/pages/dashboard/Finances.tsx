@@ -559,7 +559,7 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-secondary/10">
               <Wallet className="h-4 w-4 text-secondary" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Pending Hold</span>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Pending Hold <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">15% of gross registration held until 15 days after event ends to cover chargebacks.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-secondary">${(pendingHold / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">15% reserve active</p>

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
 const PLATFORM_FEE_PERCENT = 4;
+const HOLD_PERCENT = 15;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,15 +100,32 @@ Deno.serve(async (req) => {
         .update({ payment_status: "paid" })
         .in("id", registrationIds);
 
-      // Record platform transaction (escrow) with hardcoded 4% fee
+      // Determine fee model from metadata
+      const passFeesToGolfer = session.metadata?.pass_fees_to_golfer === "true";
+      const grossRegistrationCents = session.metadata?.gross_registration_cents
+        ? parseInt(session.metadata.gross_registration_cents)
+        : 0;
+
+      // Use gross registration amount (what the organizer set) as the basis
+      // If metadata is missing (legacy), fall back to session.amount_total
+      const grossAmount = grossRegistrationCents > 0 ? grossRegistrationCents : (session.amount_total || 0);
+
       const organizationId = session.metadata?.organization_id;
       const tournamentId = session.metadata?.tournament_id;
-      const amountCents = session.amount_total || 0;
 
-      if (organizationId && amountCents > 0) {
-        const platformFeeCents = Math.round(amountCents * (PLATFORM_FEE_PERCENT / 100));
-        const netAmountCents = amountCents - platformFeeCents;
-        const holdAmountCents = Math.round(netAmountCents * 0.15);
+      if (organizationId && grossAmount > 0) {
+        // Platform fee is always 4% of the registration amount
+        const platformFeeCents = Math.round(grossAmount * (PLATFORM_FEE_PERCENT / 100));
+
+        // Net for organizer depends on fee model:
+        // Model A (pass to golfer): Organizer gets full registration amount (fee paid by golfer separately)
+        // Model B (absorb): Organizer gets registration minus 4% fee
+        const netAmountCents = passFeesToGolfer
+          ? grossAmount
+          : grossAmount - platformFeeCents;
+
+        // 15% hold on the net amount
+        const holdAmountCents = Math.round(netAmountCents * (HOLD_PERCENT / 100));
 
         // Calculate hold_release_date: event end_date + 15 days
         let holdReleaseDate: string | null = null;
@@ -128,7 +146,7 @@ Deno.serve(async (req) => {
         await supabaseAdmin.from("platform_transactions").insert({
           organization_id: organizationId,
           tournament_id: tournamentId || null,
-          amount_cents: amountCents,
+          amount_cents: grossAmount,
           platform_fee_cents: platformFeeCents,
           net_amount_cents: netAmountCents,
           hold_amount_cents: holdAmountCents,
@@ -138,7 +156,7 @@ Deno.serve(async (req) => {
           status: "held",
           stripe_session_id: session_id,
           stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
-          description: `Registration payment — ${registrationIds.length} player(s)`,
+          description: `Registration payment — ${registrationIds.length} player(s)${passFeesToGolfer ? " (fees passed to golfer)" : " (fees absorbed by organizer)"}`,
         });
       }
 
@@ -174,7 +192,10 @@ Deno.serve(async (req) => {
               `Payment Confirmed — ${tournament.title}`,
               buildNotificationHtml("Registration Payment Confirmed", [
                 `<strong>${playerNames}</strong> completed payment for <strong>${tournament.title}</strong>.`,
-                `💳 Amount: <strong>${amountDisplay}</strong>`,
+                `💳 Amount charged: <strong>${amountDisplay}</strong>`,
+                passFeesToGolfer
+                  ? `📊 Fees passed to golfer — you receive the full registration amount minus 15% hold`
+                  : `📊 4% platform fee absorbed — net amount after fee and 15% hold applied`,
                 `📧 ${reg.email}`,
                 regs && regs.length > 1 ? `👥 Group registration (${regs.length} players)` : "",
               ].filter(Boolean)),
@@ -191,7 +212,7 @@ Deno.serve(async (req) => {
               await sendTaxExemptReceipt(
                 reg.email, reg.first_name, reg.last_name,
                 tournament.title, tournament.date,
-                amountCents, orgData.nonprofit_name || orgData.ein, orgData.ein,
+                grossAmount, orgData.nonprofit_name || orgData.ein, orgData.ein,
               );
             }
           }

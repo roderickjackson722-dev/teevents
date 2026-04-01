@@ -247,7 +247,7 @@ export function DashboardSidebar() {
                       className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"
                     >
                       <HelpCircle className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>FAQ</span>}
+                      {!collapsed && <span>Help Center</span>}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -99,7 +99,7 @@ const faqSections = [
       },
       {
         q: "What if I need help?",
-        a: "Use the in-app chat, email support@teevents.golf, or book a call. White-glove consulting is also available.",
+        a: "Use the in-app chat, email info@teevents.golf, or book a call. White-glove consulting is also available.",
       },
       {
         q: "Can I cancel my plan?",

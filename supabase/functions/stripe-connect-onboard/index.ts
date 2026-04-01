@@ -13,7 +13,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authenticate the organizer
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.toLowerCase().startsWith("bearer ")) {
       throw new Error("Unauthorized");
@@ -63,33 +62,79 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Check if org already has a stripe account linked
-    const { data: orgData } = await supabaseAdmin
-      .from("organizations")
-      .select("stripe_account_id")
-      .eq("id", organization_id)
+    // Check if org already has a stripe account in payout methods
+    const { data: payoutMethod } = await supabaseAdmin
+      .from("organization_payout_methods")
+      .select("stripe_account_id, stripe_onboarding_complete")
+      .eq("organization_id", organization_id)
       .single();
 
-    let accountId = orgData?.stripe_account_id;
+    let accountId = payoutMethod?.stripe_account_id;
+
+    // Also check organizations table for legacy stripe_account_id
+    if (!accountId) {
+      const { data: orgData } = await supabaseAdmin
+        .from("organizations")
+        .select("stripe_account_id")
+        .eq("id", organization_id)
+        .single();
+      accountId = orgData?.stripe_account_id;
+    }
 
     if (!accountId) {
       // Create a new Express connected account
-      const account = await stripe.accounts.create({ type: "express" });
+      const account = await stripe.accounts.create({
+        type: "express",
+        country: "US",
+        email: user.email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        business_type: "individual",
+        business_profile: {
+          mcc: "7941",
+          url: "https://teevents.golf",
+        },
+      });
       accountId = account.id;
 
+      // Save to organizations table
       await supabaseAdmin
         .from("organizations")
         .update({ stripe_account_id: accountId })
         .eq("id", organization_id);
+
+      // Upsert payout method record
+      await supabaseAdmin
+        .from("organization_payout_methods")
+        .upsert({
+          organization_id,
+          stripe_account_id: accountId,
+          stripe_onboarding_complete: false,
+          stripe_account_status: "pending",
+          preferred_method: "stripe",
+          is_verified: false,
+        }, { onConflict: "organization_id" });
+
+      // Log onboarding start
+      await supabaseAdmin
+        .from("stripe_onboarding_logs")
+        .insert({
+          organization_id,
+          stripe_account_id: accountId,
+          event_type: "onboarding_started",
+          metadata: { user_email: user.email },
+        });
     }
 
-    // Create an account link for onboarding (works for new or incomplete accounts)
+    // Create an account link for onboarding
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${origin}/dashboard/settings`,
-      return_url: `${origin}/dashboard/settings?stripe_connected=true`,
+      refresh_url: `${origin}/dashboard/payout-settings?refresh=true`,
+      return_url: `${origin}/dashboard/payout-settings?stripe_connected=true`,
       type: "account_onboarding",
     });
 

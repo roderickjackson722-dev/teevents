@@ -17,7 +17,7 @@ const FLOW_STEPS = [
   { icon: Users, label: "Golfer Pays", detail: "$100 registration", color: "bg-primary" },
   { icon: CreditCard, label: "TeeVents Collects", detail: "Secure Stripe checkout", color: "bg-primary/80" },
   { icon: DollarSign, label: "4% Fee Deducted", detail: "$4.00 platform fee", color: "bg-destructive/80" },
-  { icon: Shield, label: "15% Hold", detail: "$15.00 reserve", color: "bg-yellow-600" },
+  { icon: Shield, label: "15% Hold", detail: "$15.00 reserve", color: "bg-destructive/80" },
   { icon: Banknote, label: "81% Net Available", detail: "$81.00 tracked", color: "bg-emerald-600" },
   { icon: Clock, label: "Event +15 Days", detail: "Hold released", color: "bg-primary/60" },
   { icon: Building2, label: "Payout", detail: "Bi-weekly or manual", color: "bg-emerald-700" },

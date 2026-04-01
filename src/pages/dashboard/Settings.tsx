@@ -222,7 +222,7 @@ const Settings = () => {
           <p className="text-xs text-muted-foreground mt-1">
             All customer payments are collected and held securely by TeeVents. A transparent 4% platform fee is applied to each transaction.
             Net payouts (after fees, refunds, and 15% reserve) are processed automatically every two weeks on the 1st and 15th of each month.
-            The 15% reserve is released 60 days after your event ends.
+            The 15% reserve is released 15 days after your event ends.
           </p>
         </div>
 
@@ -310,7 +310,7 @@ const Settings = () => {
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
             <p className="text-xs text-muted-foreground">
               You fully control both the refund policy and rain date policy. TeeVents will process approved refunds (full or partial) from held funds.
-              A <strong>15% reserve</strong> is held until 60 days post-event to cover refunds and chargebacks. You are never personally liable.
+              A <strong>15% reserve</strong> is held until 15 days post-event to cover refunds and chargebacks. You are never personally liable.
             </p>
           </div>
 

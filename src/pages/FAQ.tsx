@@ -65,7 +65,7 @@ const faqSections = [
       },
       {
         q: "How are refunds and chargebacks handled?",
-        a: "You set your own refund policy in tournament settings (recommended default: full refunds up to 30 days before the event; tiered options like 50% between 15-30 days are available). TeeVents processes approved refunds (full or partial) from the held funds. A 15% reserve is held until 60 days after the event to protect against chargebacks and refunds. You are never personally liable — any chargeback or refund is deducted from your reserve or held funds first. You also set a separate rain date policy for weather-related postponements (e.g., automatic transfer to new date or full refund if no rain date is possible). In cases of full event cancellation or major postponement, refunds or transfers are typically required per your stated policy.",
+        a: "You set your own refund policy in tournament settings (recommended default: full refunds up to 30 days before the event; tiered options like 50% between 15-30 days are available). TeeVents processes approved refunds (full or partial) from the held funds. A 15% reserve is held until 15 days after the event to protect against chargebacks and refunds. You are never personally liable — any chargeback or refund is deducted from your reserve or held funds first. You also set a separate rain date policy for weather-related postponements (e.g., automatic transfer to new date or full refund if no rain date is possible). In cases of full event cancellation or major postponement, refunds or transfers are typically required per your stated policy.",
       },
       {
         q: "Can I get my money faster?",

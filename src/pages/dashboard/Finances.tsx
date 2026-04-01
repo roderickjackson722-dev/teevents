@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -13,7 +13,7 @@ import {
   DollarSign, TrendingUp, CreditCard, RotateCcw, Loader2, Search,
   Trophy, Download, Receipt, Mail, CheckCircle, XCircle, Clock,
   ArrowUpRight, ArrowDownRight, Users, RefreshCw, Wallet, Calendar,
-  Banknote, Info, ShieldCheck,
+  Banknote, Info, ShieldCheck, FileText, AlertTriangle,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -71,6 +71,7 @@ interface PlatformTransaction {
   status: string;
   description: string | null;
   created_at: string;
+  tournament_id: string | null;
 }
 
 interface Payout {
@@ -83,9 +84,11 @@ interface Payout {
   transaction_count: number;
   notes: string | null;
   created_at: string;
+  stripe_transfer_id: string | null;
 }
 
 const RESERVE_PERCENT = 15;
+const MIN_WITHDRAWAL = 2500; // $25 in cents
 
 const Finances = () => {
   const { org } = useOrgContext();
@@ -102,6 +105,13 @@ const Finances = () => {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [withdrawing, setWithdrawing] = useState(false);
+
+  // CSV report state
+  const [reportType, setReportType] = useState("transactions");
+  const [dateRange, setDateRange] = useState("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
   useEffect(() => {
     if (!org) return;
@@ -111,7 +121,7 @@ const Finances = () => {
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const list = data || [];
+        const list = (data || []) as Tournament[];
         setTournaments(list);
         if (list.length > 0) setSelectedTournament(list[0].id);
         setLoading(false);
@@ -180,11 +190,8 @@ const Finances = () => {
 
   const paidRegistrations = registrations.filter((r) => r.payment_status === "paid");
   const refundedRegistrations = registrations.filter((r) => r.payment_status === "refunded");
-  const pendingRegistrations = registrations.filter((r) => r.payment_status === "pending");
-
   const totalRevenue = paidRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
   const totalRefunded = refundedRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
-  const netRevenue = totalRevenue - totalRefunded;
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
   // Escrow calculations
@@ -193,7 +200,6 @@ const Finances = () => {
     .reduce((sum, t) => sum + t.net_amount_cents, 0);
 
   const totalPlatformFees = platformTransactions
-    .filter((t) => t.status === "held")
     .reduce((sum, t) => sum + t.platform_fee_cents, 0);
 
   const reserveAmount = Math.round(heldFunds * (RESERVE_PERCENT / 100));
@@ -213,6 +219,135 @@ const Finances = () => {
     return new Date(year, month + 1, 1);
   };
   const nextPayoutDate = getNextPayoutDate();
+
+  // Manual withdrawal
+  const handleWithdraw = async () => {
+    if (demoGuard()) return;
+    if (availableForPayout < MIN_WITHDRAWAL) {
+      toast.error(`Minimum withdrawal is $${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("process-biweekly-payouts", {
+        body: { manual: true, organization_id: org?.orgId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Withdrawal of $${(availableForPayout / 100).toFixed(2)} initiated!`);
+      // Refresh data
+      const [txRes, payoutRes] = await Promise.all([
+        supabase.from("platform_transactions").select("*").eq("organization_id", org!.orgId).order("created_at", { ascending: false }),
+        supabase.from("organization_payouts").select("*").eq("organization_id", org!.orgId).order("created_at", { ascending: false }),
+      ]);
+      setPlatformTransactions((txRes.data as PlatformTransaction[]) || []);
+      setPayouts((payoutRes.data as Payout[]) || []);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to process withdrawal");
+    }
+    setWithdrawing(false);
+  };
+
+  // CSV report generation
+  const getDateFilterRange = (): { start: Date | null; end: Date | null } => {
+    const now = new Date();
+    switch (dateRange) {
+      case "30": return { start: new Date(now.getTime() - 30 * 86400000), end: now };
+      case "90": return { start: new Date(now.getTime() - 90 * 86400000), end: now };
+      case "custom":
+        return {
+          start: customStart ? new Date(customStart) : null,
+          end: customEnd ? new Date(customEnd + "T23:59:59") : now,
+        };
+      default: return { start: null, end: null };
+    }
+  };
+
+  const filterByDate = <T extends { created_at: string }>(items: T[]): T[] => {
+    const { start, end } = getDateFilterRange();
+    if (!start && !end) return items;
+    return items.filter((item) => {
+      const d = new Date(item.created_at);
+      if (start && d < start) return false;
+      if (end && d > end) return false;
+      return true;
+    });
+  };
+
+  const downloadCSV = (filename: string, headers: string[], rows: string[][]) => {
+    const csv = [headers, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGenerateReport = () => {
+    const tournamentMap = Object.fromEntries(tournaments.map((t) => [t.id, t]));
+
+    if (reportType === "transactions") {
+      const filtered = filterByDate(platformTransactions);
+      const headers = [
+        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 4% ($)",
+        "Hold Amount 15% ($)", "Net Available ($)", "Status",
+      ];
+      const rows = filtered.map((tx) => {
+        const holdAmt = Math.round(tx.net_amount_cents * (RESERVE_PERCENT / 100));
+        const net = tx.net_amount_cents - holdAmt;
+        return [
+          tx.id, tx.type, new Date(tx.created_at).toLocaleDateString(),
+          (tx.amount_cents / 100).toFixed(2), (tx.platform_fee_cents / 100).toFixed(2),
+          (holdAmt / 100).toFixed(2), (net / 100).toFixed(2), tx.status,
+        ];
+      });
+      downloadCSV("transaction-history.csv", headers, rows);
+      toast.success(`Exported ${rows.length} transactions`);
+    } else if (reportType === "payouts") {
+      const filtered = filterByDate(payouts);
+      const headers = [
+        "Payout Date", "Amount ($)", "Method", "Transactions", "Status", "Transfer ID",
+      ];
+      const rows = filtered.map((p) => [
+        new Date(p.created_at).toLocaleDateString(), (p.amount_cents / 100).toFixed(2),
+        "Stripe", String(p.transaction_count), p.status, p.stripe_transfer_id || "-",
+      ]);
+      downloadCSV("payout-history.csv", headers, rows);
+      toast.success(`Exported ${rows.length} payouts`);
+    } else if (reportType === "summary") {
+      const headers = [
+        "Event Name", "Event Date", "Total Registrations", "Gross Revenue ($)",
+        "Platform Fees ($)", "Held Amount ($)", "Released ($)", "Paid Out ($)",
+      ];
+      const rows = tournaments.map((t) => {
+        const txs = platformTransactions.filter((tx) => tx.tournament_id === t.id);
+        const gross = txs.reduce((s, tx) => s + tx.amount_cents, 0);
+        const fees = txs.reduce((s, tx) => s + tx.platform_fee_cents, 0);
+        const held = txs.filter((tx) => tx.status === "held").reduce((s, tx) => s + tx.net_amount_cents, 0);
+        const paid = txs.filter((tx) => tx.status === "paid_out").reduce((s, tx) => s + tx.net_amount_cents, 0);
+        return [
+          t.title, "-", String(txs.length),
+          (gross / 100).toFixed(2), (fees / 100).toFixed(2),
+          (held / 100).toFixed(2), "0.00", (paid / 100).toFixed(2),
+        ];
+      });
+      downloadCSV("event-summary.csv", headers, rows);
+      toast.success(`Exported ${rows.length} events`);
+    } else if (reportType === "tax") {
+      const year = new Date().getFullYear();
+      const gross = platformTransactions.reduce((s, t) => s + t.amount_cents, 0);
+      const fees = platformTransactions.reduce((s, t) => s + t.platform_fee_cents, 0);
+      const net = gross - fees;
+      const headers = ["Year", "Total Gross Revenue ($)", "Total Platform Fees ($)", "Total Net Received ($)"];
+      const rows = [[String(year), (gross / 100).toFixed(2), (fees / 100).toFixed(2), (net / 100).toFixed(2)]];
+      downloadCSV("tax-summary.csv", headers, rows);
+      toast.success("Tax summary exported");
+    }
+  };
 
   // Refund actions
   const handleRefundAction = async (requestId: string, action: "approved" | "denied") => {
@@ -299,25 +434,6 @@ const Finances = () => {
     setResendingId(null);
   };
 
-  const handleExportCSV = () => {
-    const headers = ["Name", "Email", "Amount", "Status", "Date"];
-    const rows = registrations.map((r) => [
-      `${r.first_name} ${r.last_name}`,
-      r.email,
-      `$${(getRegistrationAmount(r) / 100).toFixed(2)}`,
-      r.payment_status,
-      new Date(r.created_at).toLocaleDateString(),
-    ]);
-    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `finances-${selectedTournamentData?.title || "export"}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const filteredRegistrations = registrations.filter((r) => {
     const q = search.toLowerCase();
     return (
@@ -402,7 +518,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Transparent 4% platform fee applied. 15% reserve held until 60 days post-event. Net payouts every two weeks on the 1st and 15th.
+            Transparent 4% platform fee applied. 15% reserve held until 15 days post-event. Net payouts every two weeks on the 1st and 15th.
           </p>
         </div>
       </div>
@@ -414,7 +530,7 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-emerald-100">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Total Revenue</span>
+            <span className="text-xs text-muted-foreground font-medium">Total Collected</span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalRevenue / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">{paidRegistrations.length} paid</p>
@@ -425,7 +541,7 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-secondary/10">
               <Wallet className="h-4 w-4 text-secondary" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Held Funds</span>
+            <span className="text-xs text-muted-foreground font-medium">Pending Hold</span>
           </div>
           <p className="text-2xl font-bold text-secondary">${(heldFunds / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">After 4% fee</p>
@@ -439,7 +555,7 @@ const Finances = () => {
             <span className="text-xs text-muted-foreground font-medium">Reserve (15%)</span>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(reserveAmount / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Refund & chargeback protection</p>
+          <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-lg border border-border p-4">
@@ -447,10 +563,10 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-primary/10">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Available for Payout</span>
+            <span className="text-xs text-muted-foreground font-medium">Available Now</span>
           </div>
           <p className="text-2xl font-bold text-primary">${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Net after reserve</p>
+          <p className="text-xs text-muted-foreground mt-1">Ready for payout</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
@@ -458,7 +574,7 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-blue-100">
               <Calendar className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Next Payout</span>
+            <span className="text-xs text-muted-foreground font-medium">Next Auto Payout</span>
           </div>
           <p className="text-lg font-bold text-foreground">
             {nextPayoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
@@ -478,6 +594,57 @@ const Finances = () => {
           <p className="text-2xl font-bold text-foreground">${(totalPaidOut / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">{payouts.filter((p) => p.status === "completed").length} payouts</p>
         </motion.div>
+      </div>
+
+      {/* Fees Paid Card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="bg-card rounded-lg border border-border p-4 flex items-center gap-4">
+          <div className="p-3 rounded-full bg-muted">
+            <Receipt className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground font-medium">Platform Fees Paid (4%)</p>
+            <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
+          </div>
+        </div>
+
+        {/* Manual withdrawal */}
+        <div className="bg-card rounded-lg border border-border p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-primary/10">
+              <ArrowUpRight className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium">Withdraw Funds</p>
+              <p className="text-sm text-muted-foreground">Min $25.00 • Available: ${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
+            </div>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                disabled={availableForPayout < MIN_WITHDRAWAL || withdrawing}
+              >
+                {withdrawing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Banknote className="h-4 w-4 mr-1" />}
+                Withdraw
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Withdraw Funds</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Transfer <span className="font-semibold">${(availableForPayout / 100).toFixed(2)}</span> to your connected Stripe account? This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleWithdraw}>
+                  Yes, Withdraw
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -501,12 +668,12 @@ const Finances = () => {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="reports">
+              <FileText className="h-4 w-4 mr-1.5" />
+              Reports
+            </TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExportCSV}>
-              <Download className="h-4 w-4 mr-1.5" />
-              Export CSV
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -545,81 +712,72 @@ const Finances = () => {
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Amount</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (4%)</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRegistrations.map((reg) => (
-                      <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-                        <td className="p-3">
-                          <p className="font-medium text-sm text-foreground">{reg.first_name} {reg.last_name}</p>
-                          <p className="text-xs text-muted-foreground">{reg.email}</p>
-                        </td>
-                        <td className="p-3">
-                          <span className="font-semibold text-sm text-foreground">
-                            ${(getRegistrationAmount(reg) / 100).toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="p-3">{statusBadge(reg.payment_status)}</td>
-                        <td className="p-3 text-sm text-muted-foreground">
-                          {new Date(reg.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="p-3">
-                          <div className="flex items-center justify-end gap-1">
-                            {reg.payment_status === "paid" && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 text-xs gap-1"
-                                  onClick={() => handleResendConfirmation(reg.id)}
-                                  disabled={resendingId === reg.id}
-                                  title="Resend confirmation email"
-                                >
-                                  {resendingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
-                                  <span className="hidden sm:inline">Resend</span>
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 text-xs text-destructive hover:text-destructive gap-1"
-                                      disabled={processingId === reg.id}
-                                      title="Issue a refund"
-                                    >
-                                      {processingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-                                      <span className="hidden sm:inline">Refund</span>
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                        {" "}(${(getRegistrationAmount(reg) / 100).toFixed(2)})? This will process the refund from held funds and cannot be undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleDirectRefund(reg.id)}
-                                        className="bg-destructive hover:bg-destructive/90"
-                                      >
-                                        Yes, Process Refund
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {filteredRegistrations.map((reg) => {
+                      const gross = getRegistrationAmount(reg);
+                      const fee = Math.round(gross * 0.04);
+                      const afterFee = gross - fee;
+                      const hold = Math.round(afterFee * 0.15);
+                      const net = afterFee - hold;
+                      return (
+                        <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                          <td className="p-3">
+                            <p className="font-medium text-sm text-foreground">{reg.first_name} {reg.last_name}</p>
+                            <p className="text-xs text-muted-foreground">{reg.email}</p>
+                          </td>
+                          <td className="p-3 font-semibold text-sm text-foreground">${(gross / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(fee / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm text-amber-600 hidden lg:table-cell">${(hold / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
+                          <td className="p-3">{statusBadge(reg.payment_status)}</td>
+                          <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
+                          <td className="p-3">
+                            <div className="flex items-center justify-end gap-1">
+                              {reg.payment_status === "paid" && (
+                                <>
+                                  <Button variant="ghost" size="sm" className="h-8 text-xs gap-1" onClick={() => handleResendConfirmation(reg.id)} disabled={resendingId === reg.id} title="Resend confirmation email">
+                                    {resendingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                                    <span className="hidden sm:inline">Resend</span>
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-8 text-xs text-destructive hover:text-destructive gap-1" disabled={processingId === reg.id} title="Issue a refund">
+                                        {processingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                                        <span className="hidden sm:inline">Refund</span>
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
+                                          {" "}(${(gross / 100).toFixed(2)})? This will process the refund from held funds and cannot be undone.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDirectRefund(reg.id)} className="bg-destructive hover:bg-destructive/90">
+                                          Yes, Process Refund
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -634,7 +792,7 @@ const Finances = () => {
               <Banknote className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
               <p className="text-sm font-medium text-muted-foreground">No payouts yet</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Payouts are processed automatically on the 1st and 15th of each month. A 15% reserve is held until 60 days post-event.
+                Payouts are processed automatically on the 1st and 15th of each month. A 15% reserve is held until 15 days post-event.
               </p>
             </div>
           ) : (
@@ -650,7 +808,7 @@ const Finances = () => {
                     </div>
                     {payoutStatusBadge(payout.status)}
                   </div>
-                  <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground">Transactions</p>
                       <p className="font-medium text-foreground">{payout.transaction_count}</p>
@@ -660,14 +818,17 @@ const Finances = () => {
                       <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Reserve (15%)</p>
-                      <p className="font-medium text-amber-600">Held</p>
+                      <p className="text-xs text-muted-foreground">Method</p>
+                      <p className="font-medium text-foreground">Stripe</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Net Payout</p>
                       <p className="font-bold text-primary">${(payout.amount_cents / 100).toFixed(2)}</p>
                     </div>
                   </div>
+                  {payout.stripe_transfer_id && (
+                    <p className="text-xs text-muted-foreground mt-2">Transfer: {payout.stripe_transfer_id}</p>
+                  )}
                   {payout.notes && (
                     <p className="text-xs text-muted-foreground mt-2 italic">{payout.notes}</p>
                   )}
@@ -782,6 +943,83 @@ const Finances = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Reports Tab */}
+        <TabsContent value="reports" className="space-y-4">
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Generate CSV Reports
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Report Type</label>
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="transactions">Transaction History</SelectItem>
+                    <SelectItem value="payouts">Payout History</SelectItem>
+                    <SelectItem value="summary">Event Summary</SelectItem>
+                    <SelectItem value="tax">Tax Summary (Annual)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Date Range</label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="30">Last 30 Days</SelectItem>
+                    <SelectItem value="90">Last 90 Days</SelectItem>
+                    <SelectItem value="custom">Custom Range</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {dateRange === "custom" && (
+                <>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Start Date</label>
+                    <Input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="bg-background" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">End Date</label>
+                    <Input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className="bg-background" />
+                  </div>
+                </>
+              )}
+            </div>
+            <Button onClick={handleGenerateReport} className="gap-2">
+              <Download className="h-4 w-4" />
+              Generate CSV
+            </Button>
+
+            <div className="mt-6 border-t border-border pt-4">
+              <h4 className="text-sm font-medium text-muted-foreground mb-3">Available Reports</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { type: "transactions", title: "Transaction History", desc: "All registrations with fee & hold breakdown" },
+                  { type: "payouts", title: "Payout History", desc: "All completed and pending payouts" },
+                  { type: "summary", title: "Event Summary", desc: "Revenue totals per tournament" },
+                  { type: "tax", title: "Tax Summary", desc: "Annual gross, fees, and net for tax reporting" },
+                ].map((r) => (
+                  <button
+                    key={r.type}
+                    onClick={() => { setReportType(r.type); handleGenerateReport(); }}
+                    className="text-left p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                  >
+                    <p className="text-sm font-medium text-foreground">{r.title}</p>
+                    <p className="text-xs text-muted-foreground">{r.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

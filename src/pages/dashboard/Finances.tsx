@@ -235,7 +235,7 @@ const Finances = () => {
   };
   const nextPayoutDate = getNextPayoutDate();
 
-  // Manual withdrawal
+  // Manual withdrawal with 7-day dispute check
   const handleWithdraw = async () => {
     if (demoGuard()) return;
     if (availableForPayout < MIN_WITHDRAWAL) {
@@ -249,7 +249,8 @@ const Finances = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Withdrawal of $${(availableForPayout / 100).toFixed(2)} initiated!`);
+      const amount = data?.results?.[0]?.amount;
+      toast.success(amount ? `Withdrawal of $${(amount / 100).toFixed(2)} initiated! Funds arrive in 1-3 business days.` : "Withdrawal processed!");
       // Refresh data
       const [txRes, payoutRes] = await Promise.all([
         supabase.from("platform_transactions").select("*").eq("organization_id", org!.orgId).order("created_at", { ascending: false }),

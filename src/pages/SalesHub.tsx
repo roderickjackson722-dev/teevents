@@ -336,6 +336,9 @@ export default function SalesHub() {
             <Button size="lg" onClick={() => navigate("/get-started")}>
               Get Started Free
             </Button>
+            <Button size="lg" variant="secondary" onClick={() => navigate("/sales-hub/demo-talk-track")}>
+              📋 Payment Talk Track
+            </Button>
             <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com", "_blank")}>
               Book a Personalized Demo
             </Button>

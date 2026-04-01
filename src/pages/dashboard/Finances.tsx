@@ -310,15 +310,16 @@ const Finances = () => {
       const filtered = filterByDate(platformTransactions);
       const headers = [
         "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 4% ($)",
-        "Hold Amount 15% ($)", "Net Available ($)", "Status",
+        "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
       ];
       const rows = filtered.map((tx) => {
-        const holdAmt = Math.round(tx.net_amount_cents * (RESERVE_PERCENT / 100));
-        const net = tx.net_amount_cents - holdAmt;
+        const holdAmt = tx.hold_amount_cents || 0;
+        const netAvailable = tx.net_amount_cents - holdAmt;
         return [
           tx.id, tx.type, new Date(tx.created_at).toLocaleDateString(),
           (tx.amount_cents / 100).toFixed(2), (tx.platform_fee_cents / 100).toFixed(2),
-          (holdAmt / 100).toFixed(2), (net / 100).toFixed(2), tx.status,
+          (holdAmt / 100).toFixed(2), (netAvailable / 100).toFixed(2),
+          tx.hold_status || "n/a", tx.status,
         ];
       });
       downloadCSV("transaction-history.csv", headers, rows);

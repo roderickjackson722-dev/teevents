@@ -570,7 +570,7 @@ const Finances = () => {
             </div>
             <span className="text-xs text-muted-foreground font-medium">Reserve (15%)</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600">${(reserveAmount / 100).toFixed(2)}</p>
+          <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
         </motion.div>
 

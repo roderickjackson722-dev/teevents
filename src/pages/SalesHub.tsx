@@ -2,14 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
-  Clock, CheckCircle2, MessageSquare
+  Clock, CheckCircle2, MessageSquare, Mail, Check
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";

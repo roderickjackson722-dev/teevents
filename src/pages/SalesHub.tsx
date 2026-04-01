@@ -2,14 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
-  Clock, CheckCircle2, MessageSquare
+  Clock, CheckCircle2, MessageSquare, Mail, Check
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -133,6 +135,66 @@ const STEPS = [
 ];
 
 const TOTAL_MINUTES = STEPS.reduce((sum, s) => sum + s.minutes, 0);
+
+function EmailTemplate() {
+  const [copied, setCopied] = useState(false);
+  const [meetingLink, setMeetingLink] = useState("https://calendly.com/teevents/teevents-demo");
+
+  const template = `Subject: Your TeeVents Demo Agenda – [Date]
+
+Hi [Name],
+
+Thanks for scheduling your TeeVents demo! I'm excited to show you how we help tournament organizers streamline registration, payments, and payouts.
+
+Here's our agenda for the 30-minute call:
+
+✅ Platform Overview (5 min)
+✅ Tournament Setup (10 min)
+✅ Payment Flow & Fees (10 min)
+✅ Organizer Payouts (10 min)
+✅ Q&A (5-10 min)
+
+View the full agenda with screenshots here:
+${window.location.origin}/sales/demo-agenda
+
+Book your demo: ${meetingLink}
+
+To make the most of our time, please:
+• Come with your tournament details (name, date, expected players)
+• Think about your current pain points with registration/payments
+
+See you soon!
+
+Best,
+[Your Name]
+TeeVents Golf
+info@teevents.golf`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(template);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" /> Email Template for Prospects</CardTitle>
+        <CardDescription>Copy and send to prospects before the demo</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <label className="text-sm font-medium">Meeting Booking Link</label>
+          <Input value={meetingLink} onChange={e => setMeetingLink(e.target.value)} placeholder="https://calendly.com/..." />
+        </div>
+        <Textarea value={template} readOnly rows={20} className="font-mono text-xs" />
+        <Button onClick={handleCopy} className="w-full">
+          {copied ? <><Check className="h-4 w-4 mr-2" /> Copied!</> : <><Copy className="h-4 w-4 mr-2" /> Copy Email Template</>}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function SalesHub() {
   const navigate = useNavigate();
@@ -330,6 +392,9 @@ export default function SalesHub() {
               </AccordionItem>
             </Accordion>
           </div>
+
+          {/* Email Template */}
+          <EmailTemplate />
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center py-8">

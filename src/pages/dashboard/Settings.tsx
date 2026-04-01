@@ -204,43 +204,28 @@ const Settings = () => {
         </p>
       </div>
 
-      {/* Payout Settings Section */}
+      {/* Payout Settings Link */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-lg border border-border p-6 mb-6"
       >
-        <div className="flex items-center gap-3 mb-4">
-          <CreditCard className="h-6 w-6 text-primary" />
-          <h2 className="text-lg font-display font-bold text-foreground">
-            Payout Settings
-          </h2>
-        </div>
-
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
-          <p className="text-sm text-foreground font-medium">How payouts work</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            All customer payments are collected and held securely by TeeVents. A transparent 4% platform fee is applied to each transaction.
-            Net payouts (after fees, refunds, and 15% reserve) are processed automatically every two weeks on the 1st and 15th of each month.
-            The 15% reserve is released 15 days after your event ends.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-primary">
-            <CheckCircle2 className="h-5 w-5" />
-            <span className="font-medium">Payment collection is active</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CreditCard className="h-6 w-6 text-primary" />
+            <div>
+              <h2 className="text-lg font-display font-bold text-foreground">Payout Settings</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Set up Stripe Connect or PayPal to receive tournament funds.
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Your tournament registration fees, donations, and store purchases are automatically collected by TeeVents.
-            View your held funds, reserve balance, and payout history in the <strong>Finances</strong> tab.
-          </p>
-          <div className="border-t border-border pt-4 mt-4">
-            <p className="text-sm font-medium text-foreground mb-2">Need to update your payout details?</p>
-            <p className="text-xs text-muted-foreground">
-              Contact <a href="mailto:info@teevents.golf" className="text-primary underline">info@teevents.golf</a> to set up or change your organization's bank account for payouts.
-            </p>
-          </div>
+          <Link to="/dashboard/payout-settings">
+            <Button variant="outline" size="sm">
+              <ArrowRight className="h-4 w-4 mr-1.5" />
+              Manage Payouts
+            </Button>
+          </Link>
         </div>
       </motion.div>
 

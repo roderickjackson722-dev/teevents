@@ -44,6 +44,7 @@ import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
 import DirectorShop from "./pages/dashboard/DirectorShop";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
+import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import PublicTournament from "./pages/PublicTournament";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -116,6 +117,7 @@ const App = () => (
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/director-shop" element={<DashboardLayout><DirectorShop /></DashboardLayout>} />
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
+          <Route path="/dashboard/payout-settings" element={<DashboardLayout><PayoutSettings /></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />

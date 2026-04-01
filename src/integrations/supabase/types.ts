@@ -626,9 +626,15 @@ export type Database = {
           is_verified: boolean
           method_type: string
           organization_id: string
+          paypal_email: string | null
+          preferred_method: string | null
           routing_last_four: string | null
+          stripe_account_id: string | null
+          stripe_account_status: string | null
           stripe_bank_account_token: string | null
+          stripe_onboarding_complete: boolean | null
           updated_at: string
+          verification_notes: string | null
         }
         Insert: {
           account_last_four?: string | null
@@ -638,9 +644,15 @@ export type Database = {
           is_verified?: boolean
           method_type?: string
           organization_id: string
+          paypal_email?: string | null
+          preferred_method?: string | null
           routing_last_four?: string | null
+          stripe_account_id?: string | null
+          stripe_account_status?: string | null
           stripe_bank_account_token?: string | null
+          stripe_onboarding_complete?: boolean | null
           updated_at?: string
+          verification_notes?: string | null
         }
         Update: {
           account_last_four?: string | null
@@ -650,9 +662,15 @@ export type Database = {
           is_verified?: boolean
           method_type?: string
           organization_id?: string
+          paypal_email?: string | null
+          preferred_method?: string | null
           routing_last_four?: string | null
+          stripe_account_id?: string | null
+          stripe_account_status?: string | null
           stripe_bank_account_token?: string | null
+          stripe_onboarding_complete?: boolean | null
           updated_at?: string
+          verification_notes?: string | null
         }
         Relationships: [
           {
@@ -809,6 +827,50 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      paypal_payouts: {
+        Row: {
+          amount_cents: number
+          batch_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          paypal_email: string
+          status: string | null
+        }
+        Insert: {
+          amount_cents: number
+          batch_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          paypal_email: string
+          status?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          batch_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          paypal_email?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paypal_payouts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_store_products: {
         Row: {
@@ -1184,6 +1246,41 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      stripe_onboarding_logs: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          organization_id: string
+          stripe_account_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          organization_id: string
+          stripe_account_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          organization_id?: string
+          stripe_account_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_onboarding_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tournament_auction_bids: {
         Row: {

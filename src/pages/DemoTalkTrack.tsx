@@ -379,7 +379,7 @@ export default function DemoTalkTrack() {
                   <Card key={i}>
                     <CardContent className="p-5 space-y-3">
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                         <p className="font-semibold text-foreground text-sm">Objection: {obj.q}</p>
                       </div>
                       <div className="flex items-start gap-2 pl-7">

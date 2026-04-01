@@ -53,7 +53,6 @@ interface Tournament {
   id: string;
   title: string;
   registration_fee_cents: number | null;
-  event_date: string | null;
 }
 
 interface Tier {

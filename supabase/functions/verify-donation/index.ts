@@ -43,6 +43,23 @@ Deno.serve(async (req) => {
       if (organizationId && amountCents > 0) {
         const platformFeeCents = Math.round(amountCents * (PLATFORM_FEE_PERCENT / 100));
         const netAmountCents = amountCents - platformFeeCents;
+        const holdAmountCents = Math.round(netAmountCents * 0.15);
+
+        // Calculate hold_release_date: event end_date + 15 days
+        let holdReleaseDate: string | null = null;
+        if (tournamentId) {
+          const { data: tData } = await supabaseAdmin
+            .from("tournaments")
+            .select("end_date, date")
+            .eq("id", tournamentId)
+            .single();
+          const eventEnd = tData?.end_date || tData?.date;
+          if (eventEnd) {
+            const d = new Date(eventEnd);
+            d.setDate(d.getDate() + 15);
+            holdReleaseDate = d.toISOString().split("T")[0];
+          }
+        }
 
         await supabaseAdmin.from("platform_transactions").insert({
           organization_id: organizationId,
@@ -50,6 +67,9 @@ Deno.serve(async (req) => {
           amount_cents: amountCents,
           platform_fee_cents: platformFeeCents,
           net_amount_cents: netAmountCents,
+          hold_amount_cents: holdAmountCents,
+          hold_release_date: holdReleaseDate,
+          hold_status: "active",
           type: "donation",
           status: "held",
           stripe_session_id: session_id,

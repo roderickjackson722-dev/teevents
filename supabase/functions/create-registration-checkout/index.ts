@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, location, pass_fees_to_participants")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants")
       .eq("id", tournament_id)
       .single();
 
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
 
     const feeCents = tournament.registration_fee_cents || 0;
     const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
-    const totalFeeCents = feeCents * players.length;
+    const registrationFeeCents = feeCents * players.length;
 
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
           `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
           `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
           isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
-          feeCents > 0 ? `💳 Registration fee: $${(totalFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+          feeCents > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
         ].filter(Boolean)),
       );
     } catch (e) {
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fee required — create Stripe checkout on PLATFORM account
+    // Fee required — create Stripe checkout
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -134,8 +134,16 @@ Deno.serve(async (req) => {
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
 
-    const lineItems: any[] = [
-      {
+    // Build line items based on fee model
+    const lineItems: any[] = [];
+
+    if (passFeesToParticipants) {
+      // MODEL A: Golfer pays registration + 4% platform fee + Stripe processing fee
+      const platformFee = Math.round(registrationFeeCents * (PLATFORM_FEE_PERCENT / 100));
+      const preStripeTotal = registrationFeeCents + platformFee;
+      const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
+
+      lineItems.push({
         price_data: {
           currency: "usd",
           product_data: {
@@ -145,15 +153,8 @@ Deno.serve(async (req) => {
           unit_amount: feeCents,
         },
         quantity: players.length,
-      },
-    ];
+      });
 
-    // If passing fees to participants, add platform fee + Stripe processing fee
-    if (passFeesToParticipants) {
-      const subtotal = feeCents * players.length;
-
-      // 4% TeeVents platform fee
-      const platformFee = Math.round(subtotal * (PLATFORM_FEE_PERCENT / 100));
       if (platformFee > 0) {
         lineItems.push({
           price_data: {
@@ -168,9 +169,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Stripe processing fee: 2.9% + $0.30 on the total (including platform fee)
-      const preStripeFeeTotal = subtotal + platformFee;
-      const stripeFee = Math.round((preStripeFeeTotal + 30) / (1 - 0.029)) - preStripeFeeTotal;
       if (stripeFee > 0) {
         lineItems.push({
           price_data: {
@@ -184,6 +182,19 @@ Deno.serve(async (req) => {
           quantity: 1,
         });
       }
+    } else {
+      // MODEL B: Golfer pays registration fee only; organizer absorbs the 4% platform fee
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Registration — ${tournament.title}`,
+            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+          },
+          unit_amount: feeCents,
+        },
+        quantity: players.length,
+      });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -198,6 +209,8 @@ Deno.serve(async (req) => {
         tournament_id,
         organization_id: tournament.organization_id,
         registration_ids: registrationIds.join(","),
+        pass_fees_to_golfer: String(passFeesToParticipants),
+        gross_registration_cents: String(registrationFeeCents),
       },
     });
 

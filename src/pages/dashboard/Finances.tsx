@@ -67,6 +67,9 @@ interface PlatformTransaction {
   amount_cents: number;
   platform_fee_cents: number;
   net_amount_cents: number;
+  hold_amount_cents: number | null;
+  hold_status: string | null;
+  hold_release_date: string | null;
   type: string;
   status: string;
   description: string | null;
@@ -194,7 +197,7 @@ const Finances = () => {
   const totalRefunded = refundedRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
-  // Escrow calculations - use hold_status for accurate tracking
+  // Escrow calculations - use hold_status and hold_amount_cents from DB
   const totalCollected = platformTransactions
     .reduce((sum, t) => sum + t.amount_cents, 0);
 
@@ -203,20 +206,17 @@ const Finances = () => {
 
   // Pending hold = hold_amount on transactions where hold is still active
   const pendingHold = platformTransactions
-    .filter((t: any) => (t.hold_status === "active") && t.status !== "paid_out")
-    .reduce((sum, t: any) => sum + (t.hold_amount_cents || Math.round(t.net_amount_cents * (RESERVE_PERCENT / 100))), 0);
+    .filter((t) => t.hold_status === "active" && t.status !== "paid_out")
+    .reduce((sum, t) => sum + (t.hold_amount_cents || 0), 0);
 
   // Available = released holds (full net) + held transactions (net minus hold) - already paid out
   const releasedAvailable = platformTransactions
-    .filter((t: any) => t.hold_status === "released" && t.status !== "paid_out")
+    .filter((t) => t.hold_status === "released" && t.status !== "paid_out")
     .reduce((sum, t) => sum + t.net_amount_cents, 0);
 
   const heldAvailable = platformTransactions
-    .filter((t: any) => t.hold_status === "active" && t.status === "held")
-    .reduce((sum, t: any) => {
-      const holdAmt = t.hold_amount_cents || Math.round(t.net_amount_cents * (RESERVE_PERCENT / 100));
-      return sum + (t.net_amount_cents - holdAmt);
-    }, 0);
+    .filter((t) => t.hold_status === "active" && t.status === "held")
+    .reduce((sum, t) => sum + (t.net_amount_cents - (t.hold_amount_cents || 0)), 0);
 
   const availableForPayout = releasedAvailable + heldAvailable;
 
@@ -310,15 +310,16 @@ const Finances = () => {
       const filtered = filterByDate(platformTransactions);
       const headers = [
         "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 4% ($)",
-        "Hold Amount 15% ($)", "Net Available ($)", "Status",
+        "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
       ];
       const rows = filtered.map((tx) => {
-        const holdAmt = Math.round(tx.net_amount_cents * (RESERVE_PERCENT / 100));
-        const net = tx.net_amount_cents - holdAmt;
+        const holdAmt = tx.hold_amount_cents || 0;
+        const netAvailable = tx.net_amount_cents - holdAmt;
         return [
           tx.id, tx.type, new Date(tx.created_at).toLocaleDateString(),
           (tx.amount_cents / 100).toFixed(2), (tx.platform_fee_cents / 100).toFixed(2),
-          (holdAmt / 100).toFixed(2), (net / 100).toFixed(2), tx.status,
+          (holdAmt / 100).toFixed(2), (netAvailable / 100).toFixed(2),
+          tx.hold_status || "n/a", tx.status,
         ];
       });
       downloadCSV("transaction-history.csv", headers, rows);

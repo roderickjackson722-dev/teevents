@@ -548,8 +548,8 @@ const Finances = () => {
             </div>
             <span className="text-xs text-muted-foreground font-medium">Total Collected</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">${(totalRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{paidRegistrations.length} paid</p>
+          <p className="text-2xl font-bold text-foreground">${(totalCollected / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4 border-secondary/30">

@@ -12,6 +12,7 @@ import {
   LogOut,
   ShoppingCart,
   BarChart3,
+  ScanLine,
   Gavel,
   ImageIcon,
   UserCheck,

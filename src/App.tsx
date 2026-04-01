@@ -64,6 +64,7 @@ import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
 import FAQ from "./pages/FAQ";
 import SalesHub from "./pages/SalesHub";
+import DemoTalkTrack from "./pages/DemoTalkTrack";
 
 const queryClient = new QueryClient();
 
@@ -133,6 +134,7 @@ const App = () => (
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />
            <Route path="/sales-hub" element={<SalesHub />} />
+           <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

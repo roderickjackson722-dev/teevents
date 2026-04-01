@@ -621,15 +621,20 @@ export type Database = {
         Row: {
           account_last_four: string | null
           bank_name: string | null
+          change_request_status: string | null
+          change_requested_at: string | null
           created_at: string
           id: string
           is_verified: boolean
           method_type: string
           organization_id: string
           paypal_email: string | null
+          pending_change_email: string | null
           preferred_method: string | null
           routing_last_four: string | null
+          stripe_account_brand: string | null
           stripe_account_id: string | null
+          stripe_account_last4: string | null
           stripe_account_status: string | null
           stripe_bank_account_token: string | null
           stripe_onboarding_complete: boolean | null
@@ -639,15 +644,20 @@ export type Database = {
         Insert: {
           account_last_four?: string | null
           bank_name?: string | null
+          change_request_status?: string | null
+          change_requested_at?: string | null
           created_at?: string
           id?: string
           is_verified?: boolean
           method_type?: string
           organization_id: string
           paypal_email?: string | null
+          pending_change_email?: string | null
           preferred_method?: string | null
           routing_last_four?: string | null
+          stripe_account_brand?: string | null
           stripe_account_id?: string | null
+          stripe_account_last4?: string | null
           stripe_account_status?: string | null
           stripe_bank_account_token?: string | null
           stripe_onboarding_complete?: boolean | null
@@ -657,15 +667,20 @@ export type Database = {
         Update: {
           account_last_four?: string | null
           bank_name?: string | null
+          change_request_status?: string | null
+          change_requested_at?: string | null
           created_at?: string
           id?: string
           is_verified?: boolean
           method_type?: string
           organization_id?: string
           paypal_email?: string | null
+          pending_change_email?: string | null
           preferred_method?: string | null
           routing_last_four?: string | null
+          stripe_account_brand?: string | null
           stripe_account_id?: string | null
+          stripe_account_last4?: string | null
           stripe_account_status?: string | null
           stripe_bank_account_token?: string | null
           stripe_onboarding_complete?: boolean | null
@@ -827,6 +842,97 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      payout_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          organization_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          organization_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          organization_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_change_requests: {
+        Row: {
+          change_type: string
+          created_at: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+          organization_id: string
+          requested_by: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          change_type: string
+          created_at?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          organization_id: string
+          requested_by: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          change_type?: string
+          created_at?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          organization_id?: string
+          requested_by?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_change_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       paypal_payouts: {
         Row: {

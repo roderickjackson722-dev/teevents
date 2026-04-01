@@ -536,7 +536,8 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Transparent 4% platform fee applied. 15% reserve held until 15 days post-event. Net payouts every two weeks on the 1st and 15th.
+            Transparent 4% platform fee applied. 15% reserve held until 15 days post-event. Net payouts every two weeks.{" "}
+            <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>
       </div>

@@ -19,6 +19,13 @@ import {
   ClipboardList,
   Heart,
   Clock,
+  CreditCard,
+  Gavel,
+  ImageIcon,
+  UserCheck,
+  ClipboardList,
+  Heart,
+  Clock,
   
   FileEdit,
   Printer,

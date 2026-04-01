@@ -66,6 +66,7 @@ import ResetPassword from "./pages/ResetPassword";
 import FAQ from "./pages/FAQ";
 import SalesHub from "./pages/SalesHub";
 import DemoTalkTrack from "./pages/DemoTalkTrack";
+import DemoAgenda from "./pages/sales/DemoAgenda";
 import HelpCenter from "./pages/help/HelpCenter";
 import ConnectStripe from "./pages/help/ConnectStripe";
 import FeesAndHold from "./pages/help/FeesAndHold";
@@ -144,6 +145,7 @@ const App = () => (
            <Route path="/faq" element={<FAQ />} />
            <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
+           <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />

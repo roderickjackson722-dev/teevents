@@ -12,12 +12,23 @@ import {
   Shield,
   Banknote,
   ExternalLink,
+  History,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 interface PayoutMethod {
@@ -26,10 +37,31 @@ interface PayoutMethod {
   stripe_account_id: string | null;
   stripe_onboarding_complete: boolean;
   stripe_account_status: string;
+  stripe_account_last4: string | null;
+  stripe_account_brand: string | null;
   paypal_email: string | null;
   preferred_method: string;
   is_verified: boolean;
   verification_notes: string | null;
+  change_request_status: string | null;
+}
+
+interface AuditLog {
+  id: string;
+  action: string;
+  details: { summary?: string } | null;
+  created_at: string;
+}
+
+interface ChangeRequest {
+  id: string;
+  change_type: string;
+  old_value: string | null;
+  new_value: string | null;
+  status: string;
+  created_at: string;
+  reviewed_at: string | null;
+  review_notes: string | null;
 }
 
 export default function PayoutSettings() {
@@ -40,12 +72,21 @@ export default function PayoutSettings() {
   const [savingPaypal, setSavingPaypal] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [changeType, setChangeType] = useState("");
+  const [changeReason, setChangeReason] = useState("");
+  const [submittingChange, setSubmittingChange] = useState(false);
 
   useEffect(() => {
-    if (org?.orgId) fetchPayoutMethod();
+    if (org?.orgId) {
+      fetchPayoutMethod();
+      fetchAuditLogs();
+      fetchChangeRequests();
+    }
   }, [org?.orgId]);
 
-  // Handle return from Stripe onboarding
   useEffect(() => {
     if (searchParams.get("stripe_connected") === "true") {
       toast.success("Stripe account connected! Checking status...");
@@ -71,6 +112,37 @@ export default function PayoutSettings() {
     setLoading(false);
   };
 
+  const fetchAuditLogs = async () => {
+    const { data } = await supabase
+      .from("payout_audit_log")
+      .select("id, action, details, created_at")
+      .eq("organization_id", org!.orgId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (data) setAuditLogs(data as unknown as AuditLog[]);
+  };
+
+  const fetchChangeRequests = async () => {
+    const { data } = await supabase
+      .from("payout_change_requests")
+      .select("id, change_type, old_value, new_value, status, created_at, reviewed_at, review_notes")
+      .eq("organization_id", org!.orgId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (data) setChangeRequests(data as unknown as ChangeRequest[]);
+  };
+
+  const logAudit = async (action: string, details: Record<string, string>) => {
+    if (!org?.orgId) return;
+    await supabase.from("payout_audit_log").insert({
+      organization_id: org.orgId,
+      user_id: org.userId,
+      action,
+      details,
+      user_agent: navigator.userAgent,
+    } as any);
+  };
+
   const checkStripeStatus = async () => {
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-status", {
@@ -78,8 +150,10 @@ export default function PayoutSettings() {
       });
       if (!error && data?.charges_enabled) {
         toast.success("Your Stripe account is fully verified and ready for payouts!");
+        await logAudit("stripe_verified", { summary: "Stripe account verified and active" });
       }
       fetchPayoutMethod();
+      fetchAuditLogs();
     } catch {
       fetchPayoutMethod();
     }
@@ -93,6 +167,7 @@ export default function PayoutSettings() {
         toast.error("Failed to start Stripe onboarding. Please try again.");
         return;
       }
+      await logAudit("stripe_onboarding_started", { summary: "Started Stripe Connect onboarding" });
       window.location.href = data.url;
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -109,6 +184,7 @@ export default function PayoutSettings() {
     if (!org?.orgId) return;
 
     setSavingPaypal(true);
+    const oldEmail = payoutMethod?.paypal_email || null;
     const { error } = await supabase
       .from("organization_payout_methods")
       .upsert(
@@ -125,7 +201,11 @@ export default function PayoutSettings() {
       toast.error("Failed to save PayPal email.");
     } else {
       toast.success("PayPal email saved successfully.");
+      await logAudit(oldEmail ? "paypal_updated" : "paypal_added", {
+        summary: oldEmail ? `PayPal email updated to ${paypalEmail}` : `PayPal email added: ${paypalEmail}`,
+      });
       fetchPayoutMethod();
+      fetchAuditLogs();
     }
     setSavingPaypal(false);
   };
@@ -138,8 +218,52 @@ export default function PayoutSettings() {
       .eq("organization_id", org.orgId);
     if (!error) {
       toast.success(`Preferred method set to ${method === "stripe" ? "Stripe Connect" : "PayPal"}`);
+      await logAudit("preferred_method_changed", {
+        summary: `Preferred payout method changed to ${method}`,
+      });
       fetchPayoutMethod();
+      fetchAuditLogs();
     }
+  };
+
+  const openChangeRequest = (type: string) => {
+    setChangeType(type);
+    setChangeReason("");
+    setShowChangeModal(true);
+  };
+
+  const submitChangeRequest = async () => {
+    if (!org?.orgId) return;
+    setSubmittingChange(true);
+
+    const oldValue =
+      changeType === "stripe_connect"
+        ? payoutMethod?.stripe_account_last4
+          ? `Bank ···· ${payoutMethod.stripe_account_last4}`
+          : "Not connected"
+        : payoutMethod?.paypal_email || "Not set";
+
+    const { error } = await supabase.from("payout_change_requests").insert({
+      organization_id: org.orgId,
+      requested_by: org.userId,
+      change_type: changeType,
+      old_value: oldValue,
+      new_value: changeReason || "Change requested",
+      status: "pending",
+    } as any);
+
+    if (error) {
+      toast.error("Failed to submit change request.");
+    } else {
+      toast.success("Change request submitted. Our team will review it shortly.");
+      await logAudit("change_requested", {
+        summary: `Change request submitted for ${changeType}`,
+      });
+      setShowChangeModal(false);
+      fetchChangeRequests();
+      fetchAuditLogs();
+    }
+    setSubmittingChange(false);
   };
 
   if (orgLoading || loading) {
@@ -181,6 +305,23 @@ export default function PayoutSettings() {
         </motion.div>
       )}
 
+      {/* Pending Change Request Banner */}
+      {changeRequests.some((r) => r.status === "pending") && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3"
+        >
+          <Loader2 className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0 animate-spin" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Change request pending review</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Your payout method change request is being reviewed by our team. You'll receive an email once approved.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* How Payouts Work */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
@@ -196,9 +337,63 @@ export default function PayoutSettings() {
         </ul>
       </div>
 
+      {/* Current Active Method */}
+      {(stripeConnected || hasPaypal) && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Current Payout Method</CardTitle>
+              <CardDescription>How you receive payments from TeeVents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {stripeConnected && payoutMethod?.preferred_method === "stripe" ? (
+                <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="h-8 w-8 text-emerald-600" />
+                    <div>
+                      <p className="font-semibold text-foreground">Stripe Connect</p>
+                      <p className="text-sm text-muted-foreground">
+                        {payoutMethod.stripe_account_brand || "Bank Account"} ····{" "}
+                        {payoutMethod.stripe_account_last4 || "****"}
+                      </p>
+                      <p className="text-xs text-emerald-600">✅ Verified & Active</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => openChangeRequest("stripe_connect")}>
+                    Change Bank Account
+                  </Button>
+                </div>
+              ) : hasPaypal ? (
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-8 w-8 text-blue-600" />
+                    <div>
+                      <p className="font-semibold text-foreground">PayPal</p>
+                      <p className="text-sm text-muted-foreground">{payoutMethod?.paypal_email}</p>
+                      <p className="text-xs text-blue-600">Active</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => openChangeRequest("paypal_email")}>
+                    Change PayPal
+                  </Button>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Stripe Connect Card */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className={`border-2 ${stripeConnected ? "border-emerald-500/50" : payoutMethod?.preferred_method === "stripe" ? "border-primary/30" : "border-border"}`}>
+        <Card
+          className={`border-2 ${
+            stripeConnected
+              ? "border-emerald-500/50"
+              : payoutMethod?.preferred_method === "stripe"
+              ? "border-primary/30"
+              : "border-border"
+          }`}
+        >
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -232,6 +427,11 @@ export default function PayoutSettings() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Payouts will be sent to your connected bank account automatically.
+                    {payoutMethod?.stripe_account_last4 && (
+                      <span className="ml-1">
+                        ({payoutMethod.stripe_account_brand || "Bank"} ···· {payoutMethod.stripe_account_last4})
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -272,7 +472,6 @@ export default function PayoutSettings() {
               </>
             )}
 
-            {/* Stripe Benefits */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               {[
                 { label: "No extra fees", desc: "No additional payout fees" },
@@ -347,53 +546,16 @@ export default function PayoutSettings() {
 
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground">
-                PayPal payouts are processed manually within 5-7 business days.
-                A 1% fee (min $0.50) applies per payout. Stripe Connect is recommended for faster, automatic payouts.
+                PayPal payouts are processed manually within 5-7 business days. A 1% fee (min $0.50) applies per
+                payout. Stripe Connect is recommended for faster, automatic payouts.
               </p>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Current Active Method Summary */}
-      {(stripeConnected || hasPaypal) && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Banknote className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Active Payout Method</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {payoutMethod?.preferred_method === "stripe" && stripeConnected
-                      ? "Stripe Connect (Express)"
-                      : payoutMethod?.preferred_method === "paypal" && hasPaypal
-                      ? "PayPal"
-                      : stripeConnected
-                      ? "Stripe Connect (Express)"
-                      : "PayPal"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {payoutMethod?.preferred_method === "stripe" && stripeConnected
-                      ? "Automatic bi-weekly payouts to your bank account"
-                      : `PayPal: ${payoutMethod?.paypal_email}`}
-                  </p>
-                </div>
-                <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30">
-                  Primary
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
       {/* Comparison Table */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Comparison</CardTitle>
@@ -428,6 +590,178 @@ export default function PayoutSettings() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Change Requests */}
+      {changeRequests.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Send className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base">Change Requests</CardTitle>
+              </div>
+              <CardDescription>Track the status of your payout method change requests</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Notes</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {changeRequests.map((req) => (
+                    <TableRow key={req.id}>
+                      <TableCell className="text-xs">
+                        {new Date(req.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-xs capitalize">
+                        {req.change_type.replace(/_/g, " ")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            req.status === "approved"
+                              ? "text-emerald-600 border-emerald-500/30"
+                              : req.status === "rejected"
+                              ? "text-destructive border-destructive/30"
+                              : "text-amber-600 border-amber-500/30"
+                          }
+                        >
+                          {req.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {req.review_notes || "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Audit Log */}
+      {auditLogs.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <History className="h-5 w-5 text-muted-foreground" />
+                <CardTitle className="text-base">Recent Activity</CardTitle>
+              </div>
+              <CardDescription>Track changes to your payout settings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Details</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="text-xs">
+                        {new Date(log.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-xs capitalize">
+                        {log.action.replace(/_/g, " ")}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {log.details?.summary || "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Support Contact */}
+      <div className="bg-muted/30 border border-border rounded-lg p-4 text-center">
+        <p className="text-xs text-muted-foreground">
+          Need help with payout settings?{" "}
+          <a href="mailto:info@teevents.golf" className="text-primary underline">
+            Contact us at info@teevents.golf
+          </a>
+        </p>
+      </div>
+
+      {/* Change Request Modal */}
+      <Dialog open={showChangeModal} onOpenChange={setShowChangeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Payout Method Change</DialogTitle>
+            <DialogDescription>
+              For your security, changes to payout methods require verification by our team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Change Type</Label>
+              <p className="text-sm font-medium text-foreground capitalize mt-1">
+                {changeType.replace(/_/g, " ")}
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Current Method</Label>
+              <p className="text-sm text-foreground mt-1">
+                {changeType === "stripe_connect"
+                  ? payoutMethod?.stripe_account_last4
+                    ? `Bank ···· ${payoutMethod.stripe_account_last4}`
+                    : "Stripe Connected"
+                  : payoutMethod?.paypal_email || "Not set"}
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="change-reason">Reason for Change (Optional)</Label>
+              <Textarea
+                id="change-reason"
+                placeholder="e.g. Switching to a new bank account..."
+                value={changeReason}
+                onChange={(e) => setChangeReason(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground">
+                This change will be reviewed by our team. You'll receive an email confirmation once approved.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button onClick={submitChangeRequest} disabled={submittingChange} className="flex-1">
+                {submittingChange && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Submit Change Request
+              </Button>
+              <Button variant="outline" onClick={() => setShowChangeModal(false)}>
+                Cancel
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Need immediate help? Contact us at{" "}
+              <a href="mailto:info@teevents.golf" className="underline">
+                info@teevents.golf
+              </a>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

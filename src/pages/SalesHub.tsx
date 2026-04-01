@@ -92,7 +92,7 @@ const STEPS = [
   },
   {
     num: 7, title: "Budget, Sponsors, Auctions & Payouts", minutes: 5, icon: DollarSign,
-    hero: "Real-time budget tracking • Automatic bi-weekly payouts • 15% reserve released 60 days after event • You are never personally liable for chargebacks.",
+    hero: "Real-time budget tracking • Automatic bi-weekly payouts • 15% reserve released 15 days after event • You are never personally liable for chargebacks.",
     keyMessage: null,
     bullets: [
       "Show sponsor tiers: Title, Gold, Silver, Bronze — logos auto-display on tournament site.",

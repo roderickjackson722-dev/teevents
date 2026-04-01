@@ -73,8 +73,8 @@ Deno.serve(async (req) => {
     let accountId = orgData?.stripe_account_id;
 
     if (!accountId) {
-      // Create a new Standard connected account
-      const account = await stripe.accounts.create({ type: "standard" });
+      // Create a new Express connected account
+      const account = await stripe.accounts.create({ type: "express" });
       accountId = account.id;
 
       await supabaseAdmin

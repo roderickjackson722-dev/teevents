@@ -452,6 +452,48 @@ export type Database = {
         }
         Relationships: []
       }
+      hold_releases: {
+        Row: {
+          amount_cents: number
+          created_at: string | null
+          id: string
+          organization_id: string
+          released_at: string | null
+          transaction_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          released_at?: string | null
+          transaction_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          released_at?: string | null
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hold_releases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hold_releases_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "platform_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_emails: {
         Row: {
           created_at: string
@@ -809,6 +851,9 @@ export type Database = {
           amount_cents: number
           created_at: string
           description: string | null
+          hold_amount_cents: number | null
+          hold_release_date: string | null
+          hold_status: string | null
           id: string
           metadata: Json | null
           net_amount_cents: number
@@ -826,6 +871,9 @@ export type Database = {
           amount_cents: number
           created_at?: string
           description?: string | null
+          hold_amount_cents?: number | null
+          hold_release_date?: string | null
+          hold_status?: string | null
           id?: string
           metadata?: Json | null
           net_amount_cents?: number
@@ -843,6 +891,9 @@ export type Database = {
           amount_cents?: number
           created_at?: string
           description?: string | null
+          hold_amount_cents?: number | null
+          hold_release_date?: string | null
+          hold_status?: string | null
           id?: string
           metadata?: Json | null
           net_amount_cents?: number

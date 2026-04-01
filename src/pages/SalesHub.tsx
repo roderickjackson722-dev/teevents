@@ -319,7 +319,7 @@ export default function SalesHub() {
               <AccordionItem value="reserve">
                 <AccordionTrigger>What is the 15% reserve?</AccordionTrigger>
                 <AccordionContent>
-                  TeeVents holds 15% of net proceeds as a reserve to cover potential refunds and chargebacks. This reserve is automatically released 60 days after your event ends. Premium plan customers receive a reduced 10% reserve rate with faster payout schedules.
+                  TeeVents holds 15% of net proceeds as a reserve to cover potential refunds and chargebacks. This reserve is automatically released 15 days after your event ends. Premium plan customers receive a reduced 10% reserve rate with faster payout schedules.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="payouts">

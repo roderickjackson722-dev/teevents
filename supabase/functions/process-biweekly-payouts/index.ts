@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
                     <tr><td style="padding:8px;border:1px solid #e5e7eb;">Reserve Hold (15%)</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:right;">$${(reserveAmount / 100).toFixed(2)}</td></tr>
                     <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;">Net Payout</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:right;font-weight:bold;">$${(payoutAmount / 100).toFixed(2)}</td></tr>
                   </table>
-                  <p style="color:#6b7280;font-size:13px;">The 15% reserve ($${(reserveAmount / 100).toFixed(2)}) will be released 60 days after your event ends.</p>
+                  <p style="color:#6b7280;font-size:13px;">The 15% reserve ($${(reserveAmount / 100).toFixed(2)}) will be released 15 days after your event ends.</p>
                   ${!payoutMethod?.is_verified ? '<p style="color:#d97706;">⚠️ Please add your bank account details in Dashboard → Settings → Payouts to receive your funds.</p>' : ""}
                   <p style="color:#9ca3af;font-size:12px;">— TeeVents Platform</p>
                 </div>`,

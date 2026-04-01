@@ -310,7 +310,7 @@ const Settings = () => {
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
             <p className="text-xs text-muted-foreground">
               You fully control both the refund policy and rain date policy. TeeVents will process approved refunds (full or partial) from held funds.
-              A <strong>15% reserve</strong> is held until 60 days post-event to cover refunds and chargebacks. You are never personally liable.
+              A <strong>15% reserve</strong> is held until 15 days post-event to cover refunds and chargebacks. You are never personally liable.
             </p>
           </div>
 

@@ -634,7 +634,7 @@ const Finances = () => {
               <Banknote className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
               <p className="text-sm font-medium text-muted-foreground">No payouts yet</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Payouts are processed automatically on the 1st and 15th of each month. A 15% reserve is held until 60 days post-event.
+                Payouts are processed automatically on the 1st and 15th of each month. A 15% reserve is held until 15 days post-event.
               </p>
             </div>
           ) : (

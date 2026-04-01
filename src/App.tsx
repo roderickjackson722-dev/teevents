@@ -66,6 +66,13 @@ import ResetPassword from "./pages/ResetPassword";
 import FAQ from "./pages/FAQ";
 import SalesHub from "./pages/SalesHub";
 import DemoTalkTrack from "./pages/DemoTalkTrack";
+import HelpCenter from "./pages/help/HelpCenter";
+import ConnectStripe from "./pages/help/ConnectStripe";
+import FeesAndHold from "./pages/help/FeesAndHold";
+import PayoutSchedule from "./pages/help/PayoutSchedule";
+import TaxInformation from "./pages/help/TaxInformation";
+import PaymentSettings from "./pages/help/PaymentSettings";
+import RefundsChargebacks from "./pages/help/RefundsChargebacks";
 
 const queryClient = new QueryClient();
 
@@ -137,6 +144,13 @@ const App = () => (
            <Route path="/faq" element={<FAQ />} />
            <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
+           <Route path="/help" element={<HelpCenter />} />
+           <Route path="/help/connect-stripe" element={<ConnectStripe />} />
+           <Route path="/help/fees-and-hold" element={<FeesAndHold />} />
+           <Route path="/help/payout-schedule" element={<PayoutSchedule />} />
+           <Route path="/help/tax-information" element={<TaxInformation />} />
+           <Route path="/help/payment-settings" element={<PaymentSettings />} />
+           <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

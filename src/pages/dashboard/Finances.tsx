@@ -559,8 +559,8 @@ const Finances = () => {
             </div>
             <span className="text-xs text-muted-foreground font-medium">Pending Hold</span>
           </div>
-          <p className="text-2xl font-bold text-secondary">${(heldFunds / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">After 4% fee</p>
+          <p className="text-2xl font-bold text-secondary">${(pendingHold / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">15% reserve active</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4 border-amber-200">

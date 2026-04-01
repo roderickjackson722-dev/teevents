@@ -197,7 +197,7 @@ const Finances = () => {
   const totalRefunded = refundedRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
-  // Escrow calculations - use hold_status for accurate tracking
+  // Escrow calculations - use hold_status and hold_amount_cents from DB
   const totalCollected = platformTransactions
     .reduce((sum, t) => sum + t.amount_cents, 0);
 
@@ -206,20 +206,17 @@ const Finances = () => {
 
   // Pending hold = hold_amount on transactions where hold is still active
   const pendingHold = platformTransactions
-    .filter((t: any) => (t.hold_status === "active") && t.status !== "paid_out")
-    .reduce((sum, t: any) => sum + (t.hold_amount_cents || Math.round(t.net_amount_cents * (RESERVE_PERCENT / 100))), 0);
+    .filter((t) => t.hold_status === "active" && t.status !== "paid_out")
+    .reduce((sum, t) => sum + (t.hold_amount_cents || 0), 0);
 
   // Available = released holds (full net) + held transactions (net minus hold) - already paid out
   const releasedAvailable = platformTransactions
-    .filter((t: any) => t.hold_status === "released" && t.status !== "paid_out")
+    .filter((t) => t.hold_status === "released" && t.status !== "paid_out")
     .reduce((sum, t) => sum + t.net_amount_cents, 0);
 
   const heldAvailable = platformTransactions
-    .filter((t: any) => t.hold_status === "active" && t.status === "held")
-    .reduce((sum, t: any) => {
-      const holdAmt = t.hold_amount_cents || Math.round(t.net_amount_cents * (RESERVE_PERCENT / 100));
-      return sum + (t.net_amount_cents - holdAmt);
-    }, 0);
+    .filter((t) => t.hold_status === "active" && t.status === "held")
+    .reduce((sum, t) => sum + (t.net_amount_cents - (t.hold_amount_cents || 0)), 0);
 
   const availableForPayout = releasedAvailable + heldAvailable;
 

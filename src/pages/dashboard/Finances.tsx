@@ -194,16 +194,31 @@ const Finances = () => {
   const totalRefunded = refundedRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
-  // Escrow calculations
-  const heldFunds = platformTransactions
-    .filter((t) => t.status === "held")
-    .reduce((sum, t) => sum + t.net_amount_cents, 0);
+  // Escrow calculations - use hold_status for accurate tracking
+  const totalCollected = platformTransactions
+    .reduce((sum, t) => sum + t.amount_cents, 0);
 
   const totalPlatformFees = platformTransactions
     .reduce((sum, t) => sum + t.platform_fee_cents, 0);
 
-  const reserveAmount = Math.round(heldFunds * (RESERVE_PERCENT / 100));
-  const availableForPayout = heldFunds - reserveAmount;
+  // Pending hold = hold_amount on transactions where hold is still active
+  const pendingHold = platformTransactions
+    .filter((t: any) => (t.hold_status === "active") && t.status !== "paid_out")
+    .reduce((sum, t: any) => sum + (t.hold_amount_cents || Math.round(t.net_amount_cents * (RESERVE_PERCENT / 100))), 0);
+
+  // Available = released holds (full net) + held transactions (net minus hold) - already paid out
+  const releasedAvailable = platformTransactions
+    .filter((t: any) => t.hold_status === "released" && t.status !== "paid_out")
+    .reduce((sum, t) => sum + t.net_amount_cents, 0);
+
+  const heldAvailable = platformTransactions
+    .filter((t: any) => t.hold_status === "active" && t.status === "held")
+    .reduce((sum, t: any) => {
+      const holdAmt = t.hold_amount_cents || Math.round(t.net_amount_cents * (RESERVE_PERCENT / 100));
+      return sum + (t.net_amount_cents - holdAmt);
+    }, 0);
+
+  const availableForPayout = releasedAvailable + heldAvailable;
 
   const totalPaidOut = payouts
     .filter((p) => p.status === "completed")
@@ -220,7 +235,7 @@ const Finances = () => {
   };
   const nextPayoutDate = getNextPayoutDate();
 
-  // Manual withdrawal
+  // Manual withdrawal with 7-day dispute check
   const handleWithdraw = async () => {
     if (demoGuard()) return;
     if (availableForPayout < MIN_WITHDRAWAL) {
@@ -234,7 +249,8 @@ const Finances = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Withdrawal of $${(availableForPayout / 100).toFixed(2)} initiated!`);
+      const amount = data?.results?.[0]?.amount;
+      toast.success(amount ? `Withdrawal of $${(amount / 100).toFixed(2)} initiated! Funds arrive in 1-3 business days.` : "Withdrawal processed!");
       // Refresh data
       const [txRes, payoutRes] = await Promise.all([
         supabase.from("platform_transactions").select("*").eq("organization_id", org!.orgId).order("created_at", { ascending: false }),
@@ -532,8 +548,8 @@ const Finances = () => {
             </div>
             <span className="text-xs text-muted-foreground font-medium">Total Collected</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">${(totalRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{paidRegistrations.length} paid</p>
+          <p className="text-2xl font-bold text-foreground">${(totalCollected / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4 border-secondary/30">
@@ -543,8 +559,8 @@ const Finances = () => {
             </div>
             <span className="text-xs text-muted-foreground font-medium">Pending Hold</span>
           </div>
-          <p className="text-2xl font-bold text-secondary">${(heldFunds / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">After 4% fee</p>
+          <p className="text-2xl font-bold text-secondary">${(pendingHold / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">15% reserve active</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4 border-amber-200">
@@ -552,9 +568,9 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Reserve (15%)</span>
+            <span className="text-xs text-muted-foreground font-medium">Fees Paid (4%)</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600">${(reserveAmount / 100).toFixed(2)}</p>
+          <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
         </motion.div>
 

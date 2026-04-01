@@ -117,7 +117,7 @@ const Finances = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, registration_fee_cents, event_date")
+      .select("id, title, registration_fee_cents")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {

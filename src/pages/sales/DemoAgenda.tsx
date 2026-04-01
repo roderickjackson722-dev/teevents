@@ -454,9 +454,6 @@ export default function DemoAgenda() {
             </CardContent>
           </Card>
 
-          {/* Email Template */}
-          <EmailTemplate />
-
           {/* CTA Footer */}
           <div className="text-center py-12 space-y-4">
             <h2 className="text-2xl font-bold font-playfair">Ready to Simplify Your Tournament?</h2>

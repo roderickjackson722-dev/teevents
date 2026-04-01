@@ -333,6 +333,9 @@ export default function SalesHub() {
             </Accordion>
           </div>
 
+          {/* Email Template */}
+          <EmailTemplate />
+
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center py-8">
             <Button size="lg" onClick={() => navigate("/get-started")}>

@@ -257,7 +257,7 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
   );
 }
 
-
+const Sponsors = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();

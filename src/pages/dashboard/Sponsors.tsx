@@ -493,6 +493,15 @@ const Sponsors = () => {
         </div>
       )}
 
+      {/* Sponsor Asset Management */}
+      {selectedTournament && sponsors.length > 0 && (
+        <SponsorAssetManager
+          sponsors={sponsors}
+          selectedTournament={selectedTournament}
+          orgId={org?.orgId || ""}
+        />
+      )}
+
       {/* Leaderboard Sponsor Settings */}
       {selectedTournament && sponsors.some(s => s.show_on_leaderboard) && (
         <Card className="mt-6">

@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, Plus, Trash2, UserCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Volunteers() {
@@ -20,7 +21,10 @@ export default function Volunteers() {
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assignRoleId, setAssignRoleId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", description: "", max_volunteers: "4", time_slot: "" });
+  const [assignForm, setAssignForm] = useState({ name: "", email: "", phone: "" });
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -82,7 +86,59 @@ export default function Volunteers() {
     },
   });
 
+  const assignMutation = useMutation({
+    mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
+      if (!assignRoleId) throw new Error("No role selected");
+      const { error } = await supabase.from("tournament_volunteers").insert({
+        tournament_id: selectedTournament,
+        role_id: assignRoleId,
+        name: assignForm.name,
+        email: assignForm.email,
+        phone: assignForm.phone || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Volunteer assigned!" });
+      setAssignDialogOpen(false);
+      setAssignForm({ name: "", email: "", phone: "" });
+      setAssignRoleId(null);
+      queryClient.invalidateQueries({ queryKey: ["volunteers"] });
+    },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const removeVolunteerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (demoGuard()) throw new Error("Demo mode");
+      const { error } = await supabase.from("tournament_volunteers").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["volunteers"] });
+      toast({ title: "Volunteer removed" });
+    },
+  });
+
+  const toggleCheckIn = useMutation({
+    mutationFn: async ({ id, checked_in }: { id: string; checked_in: boolean }) => {
+      if (demoGuard()) throw new Error("Demo mode");
+      const { error } = await supabase.from("tournament_volunteers").update({
+        checked_in,
+        checked_in_at: checked_in ? new Date().toISOString() : null,
+      } as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["volunteers"] });
+    },
+  });
+
   const getVolunteersForRole = (roleId: string) => volunteers?.filter((v) => v.role_id === roleId) || [];
+
+  const totalVolunteers = volunteers?.length || 0;
+  const checkedInCount = volunteers?.filter((v: any) => v.checked_in).length || 0;
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 
@@ -91,7 +147,7 @@ export default function Volunteers() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Volunteer Coordination</h1>
-          <p className="text-muted-foreground">Create volunteer roles and manage signups.</p>
+          <p className="text-muted-foreground">Create volunteer roles, assign volunteers, and manage check-ins.</p>
         </div>
         {selectedTournament && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -123,6 +179,39 @@ export default function Volunteers() {
         </SelectContent>
       </Select>
 
+      {/* Summary Cards */}
+      {selectedTournament && (roles?.length ?? 0) > 0 && (
+        <div className="grid grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Total Roles</span>
+              </div>
+              <p className="text-2xl font-bold mt-1">{roles?.length || 0}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <UserCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Volunteers Assigned</span>
+              </div>
+              <p className="text-2xl font-bold mt-1">{totalVolunteers}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Checked In</span>
+              </div>
+              <p className="text-2xl font-bold mt-1">{checkedInCount}/{totalVolunteers}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {selectedTournament && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {roles?.map((role) => {
@@ -140,7 +229,11 @@ export default function Volunteers() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {role.description && <p className="text-sm text-muted-foreground">{role.description}</p>}
-                  {role.time_slot && <Badge variant="outline" className="text-xs">{role.time_slot}</Badge>}
+                  {role.time_slot && (
+                    <Badge variant="outline" className="text-xs">
+                      <Clock className="h-3 w-3 mr-1" />{role.time_slot}
+                    </Badge>
+                  )}
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">
@@ -148,16 +241,46 @@ export default function Volunteers() {
                     </span>
                     {spotsLeft > 0 && <Badge variant="secondary" className="text-xs">{spotsLeft} spots left</Badge>}
                   </div>
+
+                  {/* Volunteer list with check-in toggles */}
                   {roleVolunteers.length > 0 && (
-                    <div className="space-y-1">
-                      {roleVolunteers.map((v) => (
-                        <div key={v.id} className="flex items-center gap-2 text-sm">
-                          <UserCheck className="h-3 w-3 text-primary" />
-                          <span>{v.name}</span>
-                          <span className="text-muted-foreground">({v.email})</span>
+                    <div className="space-y-2 pt-2 border-t border-border">
+                      {roleVolunteers.map((v: any) => (
+                        <div key={v.id} className="flex items-center gap-2 text-sm group">
+                          <Checkbox
+                            checked={v.checked_in || false}
+                            onCheckedChange={(checked) => toggleCheckIn.mutate({ id: v.id, checked_in: !!checked })}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className={v.checked_in ? "line-through text-muted-foreground" : ""}>{v.name}</span>
+                            <span className="text-muted-foreground ml-1 text-xs">({v.email})</span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-destructive"
+                            onClick={() => removeVolunteerMutation.mutate(v.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       ))}
                     </div>
+                  )}
+
+                  {/* Assign volunteer button */}
+                  {spotsLeft > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                      onClick={() => {
+                        setAssignRoleId(role.id);
+                        setAssignDialogOpen(true);
+                      }}
+                    >
+                      <UserPlus className="h-3.5 w-3.5 mr-1" /> Assign Volunteer
+                    </Button>
                   )}
                 </CardContent>
               </Card>
@@ -170,6 +293,36 @@ export default function Volunteers() {
           )}
         </div>
       )}
+
+      {/* Assign Volunteer Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={(v) => { setAssignDialogOpen(v); if (!v) { setAssignRoleId(null); setAssignForm({ name: "", email: "", phone: "" }); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Volunteer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Name *</Label>
+              <Input value={assignForm.name} onChange={(e) => setAssignForm({ ...assignForm, name: e.target.value })} placeholder="John Smith" />
+            </div>
+            <div>
+              <Label>Email *</Label>
+              <Input type="email" value={assignForm.email} onChange={(e) => setAssignForm({ ...assignForm, email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input value={assignForm.phone} onChange={(e) => setAssignForm({ ...assignForm, phone: e.target.value })} placeholder="(555) 123-4567" />
+            </div>
+            <Button
+              onClick={() => assignMutation.mutate()}
+              disabled={!assignForm.name || !assignForm.email || assignMutation.isPending}
+              className="w-full"
+            >
+              {assignMutation.isPending ? "Assigning..." : "Assign Volunteer"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +43,9 @@ import {
   Pencil,
   ExternalLink,
   DollarSign,
+  FileImage,
+  Check,
+  Package,
 } from "lucide-react";
 
 interface Sponsor {
@@ -74,7 +79,185 @@ const tiers = [
 
 const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6 };
 
-const Sponsors = () => {
+const assetTypes = [
+  { value: "logo", label: "Logo" },
+  { value: "hole_sign", label: "Hole Sign" },
+  { value: "digital_ad", label: "Digital Ad" },
+  { value: "banner", label: "Banner" },
+  { value: "program_ad", label: "Program Ad" },
+  { value: "other", label: "Other" },
+];
+
+function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors: Sponsor[]; selectedTournament: string; orgId: string }) {
+  const { toast } = useToast();
+  const [assets, setAssets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadSponsorId, setUploadSponsorId] = useState("");
+  const [uploadType, setUploadType] = useState("logo");
+  const [uploadNotes, setUploadNotes] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const fetchAssets = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from("sponsor_assets").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: false });
+    setAssets(data || []);
+    setLoading(false);
+  }, [selectedTournament]);
+
+  useEffect(() => { fetchAssets(); }, [fetchAssets]);
+
+  const handleUpload = async (file: File) => {
+    if (!uploadSponsorId) return;
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `${orgId}/${selectedTournament}/sponsor-assets/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+
+    const { error: insertErr } = await supabase.from("sponsor_assets").insert({
+      sponsor_id: uploadSponsorId,
+      tournament_id: selectedTournament,
+      asset_type: uploadType,
+      asset_url: urlData.publicUrl,
+      file_name: file.name,
+      notes: uploadNotes || null,
+    } as any);
+
+    if (insertErr) { toast({ title: "Error", description: insertErr.message, variant: "destructive" }); }
+    else { toast({ title: "Asset uploaded!" }); fetchAssets(); }
+    setUploading(false);
+    setUploadOpen(false);
+    setUploadNotes("");
+  };
+
+  const markDelivered = async (assetId: string) => {
+    await supabase.from("sponsor_assets").update({ status: "delivered", delivered_at: new Date().toISOString() } as any).eq("id", assetId);
+    fetchAssets();
+    toast({ title: "Marked as delivered" });
+  };
+
+  const deleteAsset = async (assetId: string) => {
+    await supabase.from("sponsor_assets").delete().eq("id", assetId);
+    setAssets(prev => prev.filter(a => a.id !== assetId));
+    toast({ title: "Asset removed" });
+  };
+
+  const getSponsorName = (sponsorId: string) => sponsors.find(s => s.id === sponsorId)?.name || "Unknown";
+
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Package className="h-4 w-4" /> Sponsor Assets & Deliverables
+          </CardTitle>
+          <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm"><Upload className="h-3.5 w-3.5 mr-1" /> Upload Asset</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Upload Sponsor Asset</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Sponsor</Label>
+                  <Select value={uploadSponsorId} onValueChange={setUploadSponsorId}>
+                    <SelectTrigger><SelectValue placeholder="Select sponsor" /></SelectTrigger>
+                    <SelectContent>
+                      {sponsors.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Asset Type</Label>
+                  <Select value={uploadType} onValueChange={setUploadType}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {assetTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Notes</Label>
+                  <Input value={uploadNotes} onChange={e => setUploadNotes(e.target.value)} placeholder="e.g. High-res for print" />
+                </div>
+                <label className="cursor-pointer block">
+                  <input type="file" accept="image/*,.pdf,.svg" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
+                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
+                    {uploading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
+                      <>
+                        <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">Click to select file</p>
+                      </>
+                    )}
+                  </div>
+                </label>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="text-center py-4"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div>
+        ) : assets.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">No assets uploaded yet. Upload sponsor logos, hole signs, and digital ads.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sponsor</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>File</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {assets.map(a => (
+                <TableRow key={a.id}>
+                  <TableCell className="font-medium">{getSponsorName(a.sponsor_id)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {assetTypes.find(t => t.value === a.asset_type)?.label || a.asset_type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <a href={a.asset_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm flex items-center gap-1">
+                      <ExternalLink className="h-3 w-3" />{a.file_name || "View"}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    {a.status === "delivered" ? (
+                      <Badge className="bg-primary/10 text-primary text-xs"><Check className="h-3 w-3 mr-1" />Delivered</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">Uploaded</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      {a.status !== "delivered" && (
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => markDelivered(a.id)}>
+                          <Check className="h-3 w-3" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-destructive" onClick={() => deleteAsset(a.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+
   const { org } = useOrgContext();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
@@ -491,6 +674,15 @@ const Sponsors = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Sponsor Asset Management */}
+      {selectedTournament && sponsors.length > 0 && (
+        <SponsorAssetManager
+          sponsors={sponsors}
+          selectedTournament={selectedTournament}
+          orgId={org?.orgId || ""}
+        />
       )}
 
       {/* Leaderboard Sponsor Settings */}

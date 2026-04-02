@@ -1353,6 +1353,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsor_assets: {
+        Row: {
+          asset_type: string
+          asset_url: string
+          created_at: string
+          delivered_at: string | null
+          file_name: string | null
+          id: string
+          notes: string | null
+          sponsor_id: string
+          status: string
+          tournament_id: string
+        }
+        Insert: {
+          asset_type?: string
+          asset_url: string
+          created_at?: string
+          delivered_at?: string | null
+          file_name?: string | null
+          id?: string
+          notes?: string | null
+          sponsor_id: string
+          status?: string
+          tournament_id: string
+        }
+        Update: {
+          asset_type?: string
+          asset_url?: string
+          created_at?: string
+          delivered_at?: string | null
+          file_name?: string | null
+          id?: string
+          notes?: string | null
+          sponsor_id?: string
+          status?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_assets_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_sponsors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsor_assets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_onboarding_logs: {
         Row: {
           created_at: string | null
@@ -2332,6 +2386,8 @@ export type Database = {
       }
       tournament_volunteers: {
         Row: {
+          checked_in: boolean | null
+          checked_in_at: string | null
           created_at: string | null
           email: string
           id: string
@@ -2342,6 +2398,8 @@ export type Database = {
           tournament_id: string
         }
         Insert: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
           created_at?: string | null
           email: string
           id?: string
@@ -2352,6 +2410,8 @@ export type Database = {
           tournament_id: string
         }
         Update: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
           created_at?: string | null
           email?: string
           id?: string

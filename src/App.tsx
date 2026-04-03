@@ -67,6 +67,7 @@ import FAQ from "./pages/FAQ";
 import SalesHub from "./pages/SalesHub";
 import DemoTalkTrack from "./pages/DemoTalkTrack";
 import DemoAgenda from "./pages/sales/DemoAgenda";
+import StudySheet from "./pages/admin/StudySheet";
 import HelpCenter from "./pages/help/HelpCenter";
 import ConnectStripe from "./pages/help/ConnectStripe";
 import FeesAndHold from "./pages/help/FeesAndHold";

@@ -156,6 +156,7 @@ const App = () => (
            <Route path="/help/tax-information" element={<TaxInformation />} />
            <Route path="/help/payment-settings" element={<PaymentSettings />} />
            <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
+           <Route path="/help/custom-domain" element={<CustomDomain />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

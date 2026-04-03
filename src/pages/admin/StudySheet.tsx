@@ -299,7 +299,7 @@ const StudySheet = () => {
       <table>
         <tr><th>Resource</th><th>Location</th></tr>
         <tr><td>Help Center</td><td>/help (6 articles covering payments, Stripe, refunds)</td></tr>
-        <tr><td>Email Support</td><td>support@teevents.golf</td></tr>
+        <tr><td>Email Support</td><td>info@teevents.golf</td></tr>
         <tr><td>Demo Request</td><td>info@teevents.golf</td></tr>
         <tr><td>How It Works</td><td>/how-it-works</td></tr>
         <tr><td>Pricing</td><td>/pricing</td></tr>
@@ -588,7 +588,7 @@ const StudySheet = () => {
             <div className="text-sm text-muted-foreground">
               <SimpleTable headers={["Resource", "Location"]} rows={[
                 ["Help Center", "/help (6 articles)"],
-                ["Email Support", "support@teevents.golf"],
+                ["Email Support", "info@teevents.golf"],
                 ["Demo Request", "info@teevents.golf"],
                 ["How It Works", "/how-it-works"],
                 ["Pricing", "/pricing"],

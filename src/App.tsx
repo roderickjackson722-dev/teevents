@@ -75,6 +75,7 @@ import PayoutSchedule from "./pages/help/PayoutSchedule";
 import TaxInformation from "./pages/help/TaxInformation";
 import PaymentSettings from "./pages/help/PaymentSettings";
 import RefundsChargebacks from "./pages/help/RefundsChargebacks";
+import CustomDomain from "./pages/help/CustomDomain";
 
 const queryClient = new QueryClient();
 
@@ -147,7 +148,7 @@ const App = () => (
            <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
-           <Route path="/admin/study-sheet" element={<StudySheet />} />
+           <Route path="/admin/study-sheet" element={<Navigate to="/sales-hub" replace />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />
@@ -155,6 +156,7 @@ const App = () => (
            <Route path="/help/tax-information" element={<TaxInformation />} />
            <Route path="/help/payment-settings" element={<PaymentSettings />} />
            <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
+           <Route path="/help/custom-domain" element={<CustomDomain />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

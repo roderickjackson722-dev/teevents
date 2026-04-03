@@ -407,15 +407,15 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
         </TabsList>
         <TabsContent value="demo"><DemoTab /></TabsContent>
         <TabsContent value="prospects">
-          <AdminProspects prospects={prospects} activities={activities} outreachTemplates={outreachTemplates} onRefresh={onRefresh} callAdminApi={callAdminApi} />
+          <ProspectsComponent prospects={prospects} activities={activities} outreachTemplates={outreachTemplates} onRefresh={onRefresh} callAdminApi={callAdminApi} />
         </TabsContent>
         <TabsContent value="stats">
-          <AdminProspectStats prospects={prospects} activities={activities} callAdminApi={callAdminApi} onRefresh={onRefresh} />
+          <StatsComponent prospects={prospects} activities={activities} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
         <TabsContent value="email-scripts">
-          <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
+          <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
-        <TabsContent value="demo-script"><AdminDemoScript /></TabsContent>
+        <TabsContent value="demo-script"><DemoScriptComponent /></TabsContent>
         <TabsContent value="study"><StudySheetTab /></TabsContent>
         <TabsContent value="flyers"><FlyerStudioTab /></TabsContent>
       </Tabs>

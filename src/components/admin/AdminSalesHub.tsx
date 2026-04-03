@@ -92,18 +92,11 @@ function EmailTemplate() {
 function DemoTab() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string>("step-0");
 
-  useEffect(() => { if (!running) return; const id = setInterval(() => setElapsed(e => e + 1), 1000); return () => clearInterval(id); }, [running]);
-
-  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  const progressPct = Math.min((elapsed / (TOTAL_MINUTES * 60)) * 100, 100);
   const goTo = useCallback((idx: number) => { setCurrentStep(idx); setOpenAccordion(`step-${idx}`); }, []);
   const next = () => { if (currentStep < STEPS.length - 1) goTo(currentStep + 1); };
   const prev = () => { if (currentStep > 0) goTo(currentStep - 1); };
-  const reset = () => { setElapsed(0); setRunning(false); goTo(0); toast.success("Demo reset"); };
   const step = STEPS[currentStep];
 
   return (

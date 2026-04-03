@@ -148,7 +148,7 @@ const App = () => (
            <Route path="/sales-hub" element={<SalesHub />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
-           <Route path="/admin/study-sheet" element={<StudySheet />} />
+           <Route path="/admin/study-sheet" element={<Navigate to="/sales-hub" replace />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />

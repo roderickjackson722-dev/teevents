@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
-  Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Copy, ExternalLink,
+  Play, ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
   Clock, CheckCircle2, MessageSquare, Mail, Check, Download, BookOpen, Shield,
   Zap, BarChart3, FileText, Image, Edit, Trash2, Plus
@@ -30,7 +30,7 @@ const STEPS = [
   { num: 8, title: "Pricing & Upgrade Options", minutes: 2, icon: Tag, hero: "Start for $0 • Upgrade only when you need unlimited players or white-glove service.", keyMessage: "Base ($0, 72 players) → Starter ($299, unlimited) → Premium ($999, white-glove + reduced reserve)", bullets: ["Show the 3-tier comparison: Base $0 / Starter $299 / Premium $999.", 'Base highlight: 1 tournament, 72 players max, all core features.', '"Unlimited tournaments and players + custom domain."', '"White-glove consulting, 10% reserve, faster payouts."', "All plans: 4% platform fee passed to participants by default."], route: "/dashboard/upgrade" },
   { num: 9, title: "Q&A & Next Steps", minutes: 3, icon: HelpCircle, hero: "What questions do you have? Let's get your tournament set up today.", keyMessage: null, bullets: ['"What stood out to you? Which features would make the biggest difference?"', "Address any questions or concerns.", '"I can set up your tournament right now — takes just a few minutes."', "Share the sign-up link: teevents.golf/get-started", "If nonprofit: mention tax-deductible donation receipts and EIN verification.", "Follow up within 24 hours with a recap email."], route: null },
 ];
-const TOTAL_MINUTES = STEPS.reduce((sum, s) => sum + s.minutes, 0);
+
 
 // ── Flyer Templates ──
 const FLYER_TEMPLATES = [
@@ -92,36 +92,19 @@ function EmailTemplate() {
 function DemoTab() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string>("step-0");
 
-  useEffect(() => { if (!running) return; const id = setInterval(() => setElapsed(e => e + 1), 1000); return () => clearInterval(id); }, [running]);
-
-  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  const progressPct = Math.min((elapsed / (TOTAL_MINUTES * 60)) * 100, 100);
   const goTo = useCallback((idx: number) => { setCurrentStep(idx); setOpenAccordion(`step-${idx}`); }, []);
   const next = () => { if (currentStep < STEPS.length - 1) goTo(currentStep + 1); };
   const prev = () => { if (currentStep > 0) goTo(currentStep - 1); };
-  const reset = () => { setElapsed(0); setRunning(false); goTo(0); toast.success("Demo reset"); };
   const step = STEPS[currentStep];
 
   return (
     <div className="space-y-8">
-      <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <Badge variant="outline" className="font-mono text-sm"><Clock className="h-3.5 w-3.5 mr-1" /> {fmt(elapsed)} / {TOTAL_MINUTES}:00</Badge>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant={running ? "secondary" : "default"} onClick={() => setRunning(!running)}>{running ? <Pause className="h-4 w-4 mr-1" /> : <Play className="h-4 w-4 mr-1" />}{running ? "Pause" : "Start"}</Button>
-            <Button size="sm" variant="ghost" onClick={reset}><RotateCcw className="h-4 w-4" /></Button>
-          </div>
-        </div>
-        <Progress value={progressPct} className="h-2" />
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          {STEPS.map((s, i) => (
-            <button key={i} onClick={() => goTo(i)} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${i === currentStep ? "bg-primary text-primary-foreground" : i < currentStep ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>{s.num}</button>
-          ))}
-        </div>
+      <div className="flex gap-1 overflow-x-auto pb-1">
+        {STEPS.map((s, i) => (
+          <button key={i} onClick={() => goTo(i)} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${i === currentStep ? "bg-primary text-primary-foreground" : i < currentStep ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>{s.num}</button>
+        ))}
       </div>
 
       <Card className="border-primary/30 bg-primary/5">

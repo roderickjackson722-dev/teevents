@@ -45,6 +45,7 @@ const FLYER_TEMPLATES = [
   { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Try TeeVents →" },
   { id: "payout", title: "Get paid automatically", headline: "Get paid automatically. Every 2 weeks.", items: ["💰 Bi-weekly direct deposits", "💰 15% reserve for chargebacks", "💰 Complete financial dashboard", "💰 1099-K tax reporting"], cta: "Connect your bank →" },
   { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Manual payouts → New: Automatic"], cta: "Upgrade your game →" },
+  { id: "planning-promo", title: "Are you planning a golf tournament?", headline: "ARE YOU PLANNING A\nGOLF TOURNAMENT?", items: ["🌐 Professional Website — Branded tournament site in minutes", "💳 Automated Payments — Stripe, Apple Pay, Google Pay", "📊 Live Dashboard — Track registrations & pairings in real-time", "🏆 Sponsor Management — Showcase sponsors and track ROI", "👥 Volunteer Check-in — QR code check-in & shift scheduling", "💰 Automatic Payouts — Get paid every other Monday"], cta: "Start For Free →" },
 ];
 
 // ── Study Sheet Sections ──

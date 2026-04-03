@@ -385,14 +385,13 @@ interface AdminSalesHubProps {
   outreachTemplates: any[];
   onRefresh: () => void;
   callAdminApi: (action: string, payload?: any) => Promise<any>;
+  ProspectsComponent: React.ComponentType<any>;
+  StatsComponent: React.ComponentType<any>;
+  EmailScriptsComponent: React.ComponentType<any>;
+  DemoScriptComponent: React.ComponentType<any>;
 }
 
-export default function AdminSalesHub({ prospects, activities, outreachTemplates, onRefresh, callAdminApi }: AdminSalesHubProps) {
-  // Lazy imports to avoid circular deps
-  const AdminProspects = require("@/components/admin/AdminProspects").default;
-  const AdminProspectStats = require("@/components/admin/AdminProspectStats").default;
-  const AdminEmailScripts = require("@/components/admin/AdminEmailScripts").default;
-  const AdminDemoScript = require("@/components/admin/AdminDemoScript").default;
+export default function AdminSalesHub({ prospects, activities, outreachTemplates, onRefresh, callAdminApi, ProspectsComponent, StatsComponent, EmailScriptsComponent, DemoScriptComponent }: AdminSalesHubProps) {
 
   return (
     <div className="space-y-6">

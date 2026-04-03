@@ -634,7 +634,34 @@ const AdminDashboard = () => {
     }
   };
 
-  if (loading) return (
+  const handleDeleteTournament = async (tournamentId: string) => {
+    if (deleteConfirmStep === 0 || deletingTournament !== tournamentId) {
+      setDeletingTournament(tournamentId);
+      setDeleteConfirmStep(1);
+      return;
+    }
+    if (deleteConfirmStep === 1) {
+      setDeleteConfirmStep(2);
+      return;
+    }
+    // Step 2: actually delete
+    try {
+      setDeleteConfirmStep(3); // loading state
+      await callAdminApi("delete-tournament", { tournament_id: tournamentId });
+      setAllTournaments(prev => prev.filter(t => t.id !== tournamentId));
+      toast({ title: "Tournament deleted permanently" });
+    } catch (err: any) {
+      toast({ title: "Error deleting tournament", description: err.message, variant: "destructive" });
+    }
+    setDeletingTournament(null);
+    setDeleteConfirmStep(0);
+  };
+
+  const cancelDelete = () => {
+    setDeletingTournament(null);
+    setDeleteConfirmStep(0);
+  };
+
     <Layout>
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

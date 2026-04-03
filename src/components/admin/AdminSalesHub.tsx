@@ -101,20 +101,10 @@ function DemoTab() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <Badge variant="outline" className="font-mono text-sm"><Clock className="h-3.5 w-3.5 mr-1" /> {fmt(elapsed)} / {TOTAL_MINUTES}:00</Badge>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant={running ? "secondary" : "default"} onClick={() => setRunning(!running)}>{running ? <Pause className="h-4 w-4 mr-1" /> : <Play className="h-4 w-4 mr-1" />}{running ? "Pause" : "Start"}</Button>
-            <Button size="sm" variant="ghost" onClick={reset}><RotateCcw className="h-4 w-4" /></Button>
-          </div>
-        </div>
-        <Progress value={progressPct} className="h-2" />
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          {STEPS.map((s, i) => (
-            <button key={i} onClick={() => goTo(i)} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${i === currentStep ? "bg-primary text-primary-foreground" : i < currentStep ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>{s.num}</button>
-          ))}
-        </div>
+      <div className="flex gap-1 overflow-x-auto pb-1">
+        {STEPS.map((s, i) => (
+          <button key={i} onClick={() => goTo(i)} className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${i === currentStep ? "bg-primary text-primary-foreground" : i < currentStep ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>{s.num}</button>
+        ))}
       </div>
 
       <Card className="border-primary/30 bg-primary/5">

@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
-  Play, Pause, RotateCcw, ChevronLeft, ChevronRight, Copy, ExternalLink,
+  ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
   Clock, CheckCircle2, MessageSquare, Mail, Check, Download, BookOpen, Shield,
   Zap, BarChart3, FileText, Image, Edit, Trash2, Plus

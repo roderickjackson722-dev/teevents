@@ -343,7 +343,7 @@ function FlyerStudioTab() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-foreground">Sales Flyers</h3>
-          <p className="text-sm text-muted-foreground">10 ready-to-use flyer templates. Click Edit to customize, then Download.</p>
+          <p className="text-sm text-muted-foreground">11 ready-to-use flyer templates. Click Edit to customize, then Download.</p>
         </div>
       </div>
 

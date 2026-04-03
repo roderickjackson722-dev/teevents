@@ -528,6 +528,67 @@ Deno.serve(async (req) => {
         if (error) return jsonRes({ error: error.message }, 400);
         return jsonRes({ success: true });
       }
+
+      if (action === "delete-tournament") {
+        const tournamentId = body.tournament_id;
+        if (!tournamentId) return jsonRes({ error: "tournament_id required" }, 400);
+
+        // Delete related data first (order matters for FK constraints)
+        await adminClient.from("tournament_survey_responses").delete().eq("survey_id", tournamentId);
+        const { data: surveys } = await adminClient.from("tournament_surveys").select("id").eq("tournament_id", tournamentId);
+        if (surveys) {
+          for (const s of surveys) {
+            await adminClient.from("tournament_survey_responses").delete().eq("survey_id", s.id);
+            await adminClient.from("tournament_survey_questions").delete().eq("survey_id", s.id);
+          }
+          await adminClient.from("tournament_surveys").delete().eq("tournament_id", tournamentId);
+        }
+        await adminClient.from("tournament_photos").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_checklist_items").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_budget_items").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_messages").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_waitlist").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_promo_codes").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_registration_addons").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_registration_fields").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_registration_tiers").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_donations").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_volunteers").delete().eq("tournament_id", tournamentId);
+
+        // Auction bids reference items, so delete bids first
+        const { data: auctionItems } = await adminClient.from("tournament_auction_items").select("id").eq("tournament_id", tournamentId);
+        if (auctionItems) {
+          for (const item of auctionItems) {
+            await adminClient.from("tournament_auction_bids").delete().eq("item_id", item.id);
+          }
+        }
+        await adminClient.from("tournament_auction_items").delete().eq("tournament_id", tournamentId);
+
+        // Sponsor assets reference sponsors
+        const { data: sponsors } = await adminClient.from("tournament_sponsors").select("id").eq("tournament_id", tournamentId);
+        if (sponsors) {
+          for (const sp of sponsors) {
+            await adminClient.from("sponsor_assets").delete().eq("sponsor_id", sp.id);
+          }
+        }
+        await adminClient.from("tournament_sponsors").delete().eq("tournament_id", tournamentId);
+
+        // Refund requests reference registrations
+        await adminClient.from("tournament_refund_requests").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_scores").delete().eq("tournament_id", tournamentId);
+        await adminClient.from("tournament_registrations").delete().eq("tournament_id", tournamentId);
+
+        // Platform transactions
+        await adminClient.from("platform_transactions").delete().eq("tournament_id", tournamentId);
+
+        // Demo events
+        await adminClient.from("admin_demo_events").delete().eq("tournament_id", tournamentId);
+
+        // Finally delete the tournament
+        const { error } = await adminClient.from("tournaments").delete().eq("id", tournamentId);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
     }
 
     // Default: fetch all admin data

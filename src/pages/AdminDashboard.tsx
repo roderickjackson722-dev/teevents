@@ -111,10 +111,12 @@ const AdminDashboard = () => {
   const [updatingOrgPlan, setUpdatingOrgPlan] = useState<string | null>(null);
 
   // All tournaments state
-  const [allTournaments, setAllTournaments] = useState<any[]>([]);
+   const [allTournaments, setAllTournaments] = useState<any[]>([]);
   const [platformProducts, setPlatformProducts] = useState<any[]>([]);
   const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
   const [tournamentSearch, setTournamentSearch] = useState("");
+  const [deletingTournament, setDeletingTournament] = useState<string | null>(null);
+  const [deleteConfirmStep, setDeleteConfirmStep] = useState<number>(0);
   const [orgFilter, setOrgFilter] = useState("");
   const [resettingPassword, setResettingPassword] = useState<string | null>(null);
 
@@ -630,6 +632,34 @@ const AdminDashboard = () => {
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
+  };
+
+  const handleDeleteTournament = async (tournamentId: string) => {
+    if (deleteConfirmStep === 0 || deletingTournament !== tournamentId) {
+      setDeletingTournament(tournamentId);
+      setDeleteConfirmStep(1);
+      return;
+    }
+    if (deleteConfirmStep === 1) {
+      setDeleteConfirmStep(2);
+      return;
+    }
+    // Step 2: actually delete
+    try {
+      setDeleteConfirmStep(3); // loading state
+      await callAdminApi("delete-tournament", { tournament_id: tournamentId });
+      setAllTournaments(prev => prev.filter(t => t.id !== tournamentId));
+      toast({ title: "Tournament deleted permanently" });
+    } catch (err: any) {
+      toast({ title: "Error deleting tournament", description: err.message, variant: "destructive" });
+    }
+    setDeletingTournament(null);
+    setDeleteConfirmStep(0);
+  };
+
+  const cancelDelete = () => {
+    setDeletingTournament(null);
+    setDeleteConfirmStep(0);
   };
 
   if (loading) return (
@@ -1492,6 +1522,32 @@ const AdminDashboard = () => {
                                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 : <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />}
                             </Button>
+                            {deletingTournament === t.id && deleteConfirmStep > 0 ? (
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="text-xs h-7 px-2"
+                                  onClick={() => handleDeleteTournament(t.id)}
+                                  disabled={deleteConfirmStep === 3}
+                                >
+                                  {deleteConfirmStep === 3 ? <Loader2 className="h-3 w-3 animate-spin" /> :
+                                   deleteConfirmStep === 1 ? "Confirm?" : "DELETE FOREVER"}
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-7 px-1" onClick={cancelDelete}>
+                                  <X className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Delete tournament"
+                                onClick={() => handleDeleteTournament(t.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"

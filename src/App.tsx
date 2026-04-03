@@ -145,10 +145,10 @@ const App = () => (
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />
-           <Route path="/sales-hub" element={<SalesHub />} />
+           <Route path="/sales-hub" element={<Navigate to="/admin" replace />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
-           <Route path="/admin/study-sheet" element={<Navigate to="/sales-hub" replace />} />
+           <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />

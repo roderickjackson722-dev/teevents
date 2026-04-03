@@ -1522,12 +1522,39 @@ const AdminDashboard = () => {
                                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 : <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />}
                             </Button>
+                            {deletingTournament === t.id && deleteConfirmStep > 0 ? (
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="text-xs h-7 px-2"
+                                  onClick={() => handleDeleteTournament(t.id)}
+                                  disabled={deleteConfirmStep === 3}
+                                >
+                                  {deleteConfirmStep === 3 ? <Loader2 className="h-3 w-3 animate-spin" /> :
+                                   deleteConfirmStep === 1 ? "Confirm?" : "DELETE FOREVER"}
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-7 px-1" onClick={cancelDelete}>
+                                  <X className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Delete tournament"
+                                onClick={() => handleDeleteTournament(t.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => setExpandedTournament(expandedTournament === t.id ? null : t.id)}
                             >
                               {expandedTournament === t.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </Button>
                             </Button>
                           </div>
                         </td>

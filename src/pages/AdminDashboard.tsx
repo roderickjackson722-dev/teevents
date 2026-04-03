@@ -111,10 +111,12 @@ const AdminDashboard = () => {
   const [updatingOrgPlan, setUpdatingOrgPlan] = useState<string | null>(null);
 
   // All tournaments state
-  const [allTournaments, setAllTournaments] = useState<any[]>([]);
+   const [allTournaments, setAllTournaments] = useState<any[]>([]);
   const [platformProducts, setPlatformProducts] = useState<any[]>([]);
   const [expandedTournament, setExpandedTournament] = useState<string | null>(null);
   const [tournamentSearch, setTournamentSearch] = useState("");
+  const [deletingTournament, setDeletingTournament] = useState<string | null>(null);
+  const [deleteConfirmStep, setDeleteConfirmStep] = useState<number>(0);
   const [orgFilter, setOrgFilter] = useState("");
   const [resettingPassword, setResettingPassword] = useState<string | null>(null);
 

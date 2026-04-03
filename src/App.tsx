@@ -75,6 +75,7 @@ import PayoutSchedule from "./pages/help/PayoutSchedule";
 import TaxInformation from "./pages/help/TaxInformation";
 import PaymentSettings from "./pages/help/PaymentSettings";
 import RefundsChargebacks from "./pages/help/RefundsChargebacks";
+import CustomDomain from "./pages/help/CustomDomain";
 
 const queryClient = new QueryClient();
 

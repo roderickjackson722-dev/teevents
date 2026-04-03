@@ -588,7 +588,7 @@ const StudySheet = () => {
             <div className="text-sm text-muted-foreground">
               <SimpleTable headers={["Resource", "Location"]} rows={[
                 ["Help Center", "/help (6 articles)"],
-                ["Email Support", "support@teevents.golf"],
+                ["Email Support", "info@teevents.golf"],
                 ["Demo Request", "info@teevents.golf"],
                 ["How It Works", "/how-it-works"],
                 ["Pricing", "/pricing"],

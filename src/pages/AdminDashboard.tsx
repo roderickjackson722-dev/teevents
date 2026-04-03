@@ -1555,7 +1555,6 @@ const AdminDashboard = () => {
                             >
                               {expandedTournament === t.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                             </Button>
-                            </Button>
                           </div>
                         </td>
                       </tr>

@@ -61,16 +61,16 @@ export const sampleVolunteerShifts = [
 
 export const sampleFinances = {
   total_collected: 8100,
-  platform_fees: 324,
+  platform_fees: 405,
   pending_hold: 1215,
   available_balance: 0,
   next_payout_date: "May 5, 2026",
 };
 
 export const sampleTransactions = [
-  { golfer: "John Smith", date: "Apr 1, 2026", gross: 150, fee: 6, hold: 22.5, net: 121.5, status: "Held" },
-  { golfer: "Sarah Jones", date: "Mar 30, 2026", gross: 150, fee: 6, hold: 22.5, net: 121.5, status: "Held" },
-  { golfer: "Mike Chen", date: "Mar 28, 2026", gross: 150, fee: 6, hold: 22.5, net: 121.5, status: "Released" },
-  { golfer: "Emily Davis", date: "Mar 25, 2026", gross: 150, fee: 6, hold: 22.5, net: 121.5, status: "Released" },
-  { golfer: "Robert Wilson", date: "Mar 22, 2026", gross: 150, fee: 6, hold: 22.5, net: 121.5, status: "Paid" },
+  { golfer: "John Smith", date: "Apr 1, 2026", gross: 150, fee: 7.5, hold: 22.5, net: 120, status: "Held" },
+  { golfer: "Sarah Jones", date: "Mar 30, 2026", gross: 150, fee: 7.5, hold: 22.5, net: 120, status: "Held" },
+  { golfer: "Mike Chen", date: "Mar 28, 2026", gross: 150, fee: 7.5, hold: 22.5, net: 120, status: "Released" },
+  { golfer: "Emily Davis", date: "Mar 25, 2026", gross: 150, fee: 7.5, hold: 22.5, net: 120, status: "Released" },
+  { golfer: "Robert Wilson", date: "Mar 22, 2026", gross: 150, fee: 7.5, hold: 22.5, net: 120, status: "Paid" },
 ];

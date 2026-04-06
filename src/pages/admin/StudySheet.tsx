@@ -519,7 +519,7 @@ const StudySheet = () => {
                 <h3 className="font-semibold text-foreground mb-2">4.2 Fee Model Comparison</h3>
                 <SimpleTable headers={["Model", "Golfer Pays", "Organizer Receives", "Best For"]} rows={[
                   ["Pass to Golfer", "$100 + $5 + ~$3.43 = ~$108.43", "$100 (minus 15% hold)", "Premium events"],
-                  ["Absorb Fees", "$100 exactly", "~$92.80 (minus 15% hold)", "Nonprofits, charities"],
+                  ["Absorb Fees", "$100 exactly", "~$91.80 (minus 15% hold)", "Nonprofits, charities"],
                 ]} />
               </div>
               <FeatureBlock title="4.3 Hold Release Timeline" items={[

@@ -93,8 +93,8 @@ const CompareEventbritePdf = () => {
             <h3>TeeVents · $100 Registration</h3>
             <ul>
               <li>Platform: 5% flat = $5.00</li>
-              <li>Processing: INCLUDED</li>
-              <li class="total" style="border-color:#1a5c38">Total: $5.00 (5%)</li>
+              <li>Stripe: 2.9% + $0.30 = $3.20</li>
+              <li class="total" style="border-color:#1a5c38">Total: $8.20 (8.2%)</li>
             </ul>
           </div>
         </div>

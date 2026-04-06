@@ -238,7 +238,7 @@ function StudySheetTab() {
         <section id="study-payments">
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
-            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 4% fee → 15% hold → Available balance → Bi-weekly payout</div>
+            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 5% fee → 15% hold → Available balance → Bi-weekly payout</div>
             <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$7.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$92.80 (minus hold)", "Nonprofits"]]} />
             <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
           </div>

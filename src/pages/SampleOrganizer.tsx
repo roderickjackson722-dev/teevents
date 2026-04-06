@@ -72,15 +72,9 @@ const SampleOrganizer = () => {
             <Badge variant="outline" className="hidden sm:inline-flex text-xs">
               Demo Mode
             </Badge>
-            <Button size="sm" variant="secondary" onClick={handleLogin} disabled={loading}>
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <LayoutDashboard className="h-4 w-4 mr-1" />
-                  Open Dashboard
-                </>
-              )}
+            <Button size="sm" variant="secondary" onClick={() => navigate("/sample-dashboard")}>
+              <LayoutDashboard className="h-4 w-4 mr-1" />
+              Open Dashboard
             </Button>
           </div>
         </div>

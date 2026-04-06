@@ -123,7 +123,7 @@ export default function DemoAgenda() {
             </p>
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               <Button size="lg" variant="secondary" asChild>
-                <a href="https://calendly.com/teevents/teevents-demo" target="_blank" rel="noopener noreferrer">
+                <a href="https://calendly.com/teevents-golf/demo" target="_blank" rel="noopener noreferrer">
                   <Calendar className="h-5 w-5 mr-2" /> Schedule Your Demo
                 </a>
               </Button>
@@ -395,7 +395,7 @@ export default function DemoAgenda() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { title: "Self-Service", desc: "Create your account and set up your first tournament today.", cta: "Get Started", href: "/get-started" },
-                  { title: "Guided Setup", desc: "Schedule a 15-minute setup call. We'll configure your tournament together.", cta: "Book Setup Call", href: "https://calendly.com/teevents/teevents-demo" },
+                  { title: "Guided Setup", desc: "Schedule a 15-minute setup call. We'll configure your tournament together.", cta: "Book Setup Call", href: "https://calendly.com/teevents-golf/demo" },
                   { title: "Full-Service", desc: "We manage everything — sponsor acquisition, coordination, and day-of.", cta: "Coming Soon", href: null },
                 ].map((opt, i) => (
                   <div key={i} className="border rounded-lg p-4 flex flex-col">
@@ -460,7 +460,7 @@ export default function DemoAgenda() {
             <p className="text-muted-foreground max-w-md mx-auto">Join organizers who save 20+ hours per event with TeeVents.</p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button size="lg" asChild>
-                <a href="https://calendly.com/teevents/teevents-demo" target="_blank" rel="noopener noreferrer">
+                <a href="https://calendly.com/teevents-golf/demo" target="_blank" rel="noopener noreferrer">
                   <Calendar className="h-5 w-5 mr-2" /> Schedule Demo
                 </a>
               </Button>

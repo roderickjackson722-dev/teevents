@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowRight, Trophy, Users, DollarSign, Heart, ClipboardList, LayoutDashboard
+  ArrowRight, Trophy, Users, DollarSign, Heart, ClipboardList, LayoutDashboard, Calendar
 } from "lucide-react";
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";
@@ -25,7 +25,21 @@ const SampleOrganizer = () => {
         title="Interactive Demo | TeeVents"
         description="Experience a fully interactive sample tournament on TeeVents. Explore leaderboards, registration, sponsors, volunteers, and financials."
         path="/sample-organizer"
+        noIndex
       />
+
+      {/* Demo Mode Banner */}
+      <div className="bg-secondary text-secondary-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium">
+        <span>🎯 You're viewing a demo tournament — want a personalized walkthrough?</span>
+        <a
+          href="https://calendly.com/teevents-golf/demo"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 bg-secondary-foreground/20 hover:bg-secondary-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
+        >
+          <Calendar className="h-3 w-3" /> Book a Live Demo
+        </a>
+      </div>
 
       {/* Header */}
       <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-30">
@@ -103,12 +117,18 @@ const SampleOrganizer = () => {
             Ready to run your own tournament?
           </p>
           <div className="flex items-center justify-center gap-3">
-            <Button variant="secondary" onClick={() => navigate("/sample-dashboard")}>
-              View Organizer Dashboard
+            <Button onClick={() => navigate("/get-started")}>
+              Get Started
             </Button>
-            <Button variant="outline" onClick={() => navigate("/pricing")}>
-              See Pricing
-            </Button>
+            <a
+              href="https://calendly.com/teevents-golf/demo"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline">
+                <Calendar className="h-4 w-4 mr-1" /> Book a Live Demo
+              </Button>
+            </a>
           </div>
         </div>
       </div>

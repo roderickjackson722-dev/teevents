@@ -113,12 +113,14 @@ const Index = () => {
             >
               See How It Works
             </Link>
-            <Link
-              to="/sample-organizer"
-              className="inline-flex items-center justify-center gap-2 border border-secondary/50 text-secondary px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/10 transition-colors"
+            <a
+              href="https://calendly.com/teevents-golf/demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              Try Sample Dashboard
-            </Link>
+              Book a Live Demo
+            </a>
           </div>
         </motion.div>
       </HeroSection>
@@ -379,7 +381,7 @@ const Index = () => {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="https://calendly.com/teevents/teevents-demo"
+                href="https://calendly.com/teevents-golf/demo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"

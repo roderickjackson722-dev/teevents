@@ -75,7 +75,7 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: string[][] })
 // ── Email Template Component ──
 function EmailTemplate() {
   const [copied, setCopied] = useState(false);
-  const [meetingLink, setMeetingLink] = useState("https://calendly.com/teevents/teevents-demo");
+  const [meetingLink, setMeetingLink] = useState("https://calendly.com/teevents-golf/demo");
   const template = `Subject: Your TeeVents Demo Agenda – [Date]\n\nHi [Name],\n\nThanks for scheduling your TeeVents demo! I'm excited to show you how we help tournament organizers streamline registration, payments, and payouts.\n\nHere's our agenda for the 30-minute call:\n\n✅ Platform Overview (5 min)\n✅ Tournament Setup (10 min)\n✅ Payment Flow & Fees (10 min)\n✅ Organizer Payouts (10 min)\n✅ Q&A (5-10 min)\n\nView the full agenda with screenshots here:\n${window.location.origin}/sales/demo-agenda\n\nBook your demo: ${meetingLink}\n\nTo make the most of our time, please:\n• Come with your tournament details (name, date, expected players)\n• Think about your current pain points with registration/payments\n\nSee you soon!\n\nBest,\n[Your Name]\nTeeVents Golf\ninfo@teevents.golf`;
   const handleCopy = () => { navigator.clipboard.writeText(template); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
@@ -420,7 +420,7 @@ export default function SalesHub() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center py-8 mt-8 border-t border-border">
             <Button size="lg" onClick={() => navigate("/get-started")}>Get Started Free</Button>
-            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com", "_blank")}>Book a Demo</Button>
+            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com/teevents-golf/demo", "_blank")}>Book a Live Demo</Button>
           </div>
         </div>
       </div>

@@ -1633,6 +1633,53 @@ export type Database = {
           },
         ]
       }
+      tournament_clicks: {
+        Row: {
+          browser: string | null
+          clicked_at: string
+          device_type: string | null
+          id: string
+          ip_address: string | null
+          os: string | null
+          referrer: string | null
+          source: string
+          tournament_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          browser?: string | null
+          clicked_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          referrer?: string | null
+          source?: string
+          tournament_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          browser?: string | null
+          clicked_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          referrer?: string | null
+          source?: string
+          tournament_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_clicks_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_donations: {
         Row: {
           amount_cents: number

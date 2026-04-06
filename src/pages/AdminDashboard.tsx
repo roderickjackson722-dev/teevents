@@ -1690,6 +1690,9 @@ const AdminDashboard = () => {
 
           {/* College Hub Tab */}
           {activeTab === "college" && <CollegeTournamentHub />}
+
+          {/* Flyer Templates Tab */}
+          {activeTab === "flyer-templates" && <AdminFlyerTemplates />}
         </div>
       </section>
     </Layout>

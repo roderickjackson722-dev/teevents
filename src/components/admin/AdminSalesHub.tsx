@@ -13,7 +13,7 @@ import {
   Play, ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
   Clock, CheckCircle2, MessageSquare, Mail, Check, Download, BookOpen, Shield,
-  Zap, BarChart3, FileText, Image, Edit, Trash2, Plus
+  Zap, BarChart3, FileText, Image, Edit, Trash2, Plus, Link2, QrCode, FolderOpen
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { downloadHtmlAsPdf } from "@/components/printables/printUtils";

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, X, AlertTriangle, ArrowRight, Download, Calendar } from "lucide-react";
+import { Check, X, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";

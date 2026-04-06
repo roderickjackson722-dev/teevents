@@ -187,7 +187,7 @@ function StudySheetTab() {
       <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>
-      <h2>8. Limits</h2><p>4% fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
+      <h2>8. Limits</h2><p>5% fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
       <h2>9. Glossary</h2><p>Chargeback, Hold, Platform Fee, Stripe Connect, Express Account, RLS, Edge Function, Cron Job</p>
       <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential.</p>
     `);

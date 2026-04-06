@@ -20,6 +20,7 @@ import {
   Heart,
   Clock,
   CreditCard,
+  Share2,
 
   FileEdit,
   Printer,

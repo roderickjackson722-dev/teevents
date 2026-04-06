@@ -361,6 +361,61 @@ function FlyerStudioTab() {
   );
 }
 
+// ── Eventbrite Comparison Script Tab ──
+function EventbriteScriptTab() {
+  const [copied, setCopied] = useState(false);
+  const script = `EVENTBRITE VS. TEEVENTS — SALES SCRIPT
+
+OPENING (30 seconds)
+"Are you currently using Eventbrite for your golf tournament? I hear this a lot — Eventbrite is great for concerts and conferences, but it wasn't designed for golf. Let me show you why organizers are switching to TeeVents."
+
+KEY DIFFERENTIATOR #1: GOLF-SPECIFIC FEATURES (45 seconds)
+"With Eventbrite, you don't get live leaderboards, hole sponsor management, or volunteer check-in. With TeeVents, all of that is built in. Your golfers scan a QR code to enter scores, your sponsors get a branded portal, and your volunteers check in with their phone."
+
+KEY DIFFERENTIATOR #2: PRICING TRANSPARENCY (45 seconds)
+"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents? A flat 5% — that's $5.00 total, processing included. You save $3.49 per golfer. On 100 golfers, that's $349 back in your pocket."
+
+KEY DIFFERENTIATOR #3: PAYOUT SPEED (30 seconds)
+"With Eventbrite, you wait until after your event to get paid. With TeeVents, you receive automatic bi-weekly payouts. We hold 15% for 15 days as chargeback protection, then release it automatically."
+
+HANDLING OBJECTIONS
+
+"Eventbrite has a built-in audience."
+→ "That's true for concerts and meetups. But golf tournament players don't browse Eventbrite looking for tournaments. They find you through your club, charity, or social media. TeeVents gives you a branded website you can share directly."
+
+"I'm already using Eventbrite."
+→ "I understand. The good news is you can run your next tournament on TeeVents side-by-side and compare. Start with our free Base plan — no commitment, no credit card. Most organizers switch after seeing the leaderboard and fee savings."
+
+CLOSING (30 seconds)
+"I can set you up in under 60 seconds. Would you like to start with the free plan today, or would you prefer to book a 25-minute demo so I can walk you through everything?"`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(script);
+    setCopied(true);
+    toast.success("Script copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Eventbrite vs. TeeVents — Sales Script</CardTitle>
+          <CardDescription>Use during calls when a prospect mentions Eventbrite</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea value={script} readOnly rows={30} className="font-mono text-xs" />
+          <div className="flex gap-2">
+            <Button onClick={handleCopy} className="gap-2">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Copied!" : "Copy Script"}</Button>
+            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> View Comparison Page</Button>
+            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents/pdf", "_blank")} className="gap-2"><Download className="h-4 w-4" /> Download PDF</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Props for integration ──
 interface AdminSalesHubProps {
   prospects: any[];
@@ -385,6 +440,7 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
           <TabsTrigger value="stats" className="gap-2"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
           <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Email Scripts</TabsTrigger>
           <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
+          <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite</TabsTrigger>
           <TabsTrigger value="study" className="gap-2"><BookOpen className="h-4 w-4" /> Study Sheet</TabsTrigger>
           <TabsTrigger value="flyers" className="gap-2"><Image className="h-4 w-4" /> Flyer Studio</TabsTrigger>
         </TabsList>
@@ -399,6 +455,7 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
           <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
         <TabsContent value="demo-script"><DemoScriptComponent /></TabsContent>
+        <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
         <TabsContent value="study"><StudySheetTab /></TabsContent>
         <TabsContent value="flyers"><FlyerStudioTab /></TabsContent>
       </Tabs>

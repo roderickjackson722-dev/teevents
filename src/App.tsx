@@ -77,6 +77,8 @@ import TaxInformation from "./pages/help/TaxInformation";
 import PaymentSettings from "./pages/help/PaymentSettings";
 import RefundsChargebacks from "./pages/help/RefundsChargebacks";
 import CustomDomain from "./pages/help/CustomDomain";
+import CompareEventbrite from "./pages/CompareEventbrite";
+import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 
 const queryClient = new QueryClient();
 
@@ -159,6 +161,8 @@ const App = () => (
            <Route path="/help/payment-settings" element={<PaymentSettings />} />
            <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
            <Route path="/help/custom-domain" element={<CustomDomain />} />
+           <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
+           <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

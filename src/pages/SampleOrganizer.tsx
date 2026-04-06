@@ -15,37 +15,9 @@ import DemoVolunteersTab from "@/components/sample-tournament/DemoVolunteersTab"
 import DemoFinancesTab from "@/components/sample-tournament/DemoFinancesTab";
 import DemoRegistrationTab from "@/components/sample-tournament/DemoRegistrationTab";
 
-const DEMO_EMAIL = "demo@teevents.com";
-const DEMO_PASSWORD = "demo2026";
 
 const SampleOrganizer = () => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-      if (error) {
-        toast({
-          title: "Demo Unavailable",
-          description: "The demo environment is being prepared. Please try again in a moment.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      navigate("/dashboard");
-    } catch {
-      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">

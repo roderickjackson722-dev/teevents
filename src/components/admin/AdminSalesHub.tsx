@@ -265,7 +265,7 @@ function StudySheetTab() {
 
         <section id="study-metrics">
           <SectionHeader num={8} title="Key Metrics & Limits" />
-          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "4%"], ["Hold", "15%"], ["Hold release", "15 days post-event"], ["Min payout", "$25"], ["Payout freq", "Bi-weekly"], ["Base plan", "$0, 1 tournament, 72 players"], ["Starter", "$299, unlimited"], ["Premium", "$999, white-glove"]]} />
+          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5%"], ["Hold", "15%"], ["Hold release", "15 days post-event"], ["Min payout", "$25"], ["Payout freq", "Bi-weekly"], ["Base plan", "$0, 1 tournament, 72 players"], ["Starter", "$299, unlimited"], ["Premium", "$999, white-glove"]]} />
         </section>
 
         <section id="study-glossary">

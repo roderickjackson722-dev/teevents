@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import {
-  Loader2, ArrowRight, Trophy, Users, DollarSign, Heart, ClipboardList, LayoutDashboard
+  ArrowRight, Trophy, Users, DollarSign, Heart, ClipboardList, LayoutDashboard
 } from "lucide-react";
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";

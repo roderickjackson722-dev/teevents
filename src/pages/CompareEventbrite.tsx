@@ -3,7 +3,6 @@ import { Check, X, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 const CALENDLY = "https://calendly.com/teevents-golf/demo";

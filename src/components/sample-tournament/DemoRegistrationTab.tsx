@@ -92,7 +92,7 @@ const DemoRegistrationTab = () => {
               </div>
               <div className="border-t border-border mt-2 pt-2 flex justify-between text-sm font-bold">
                 <span className="text-foreground">Total</span>
-                <span className="text-foreground">${sampleTournament.registration_fee + 6}</span>
+                <span className="text-foreground">${sampleTournament.registration_fee + 7.5}</span>
               </div>
             </div>
 

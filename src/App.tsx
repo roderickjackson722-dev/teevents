@@ -77,6 +77,8 @@ import TaxInformation from "./pages/help/TaxInformation";
 import PaymentSettings from "./pages/help/PaymentSettings";
 import RefundsChargebacks from "./pages/help/RefundsChargebacks";
 import CustomDomain from "./pages/help/CustomDomain";
+import CompareEventbrite from "./pages/CompareEventbrite";
+import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 
 const queryClient = new QueryClient();
 

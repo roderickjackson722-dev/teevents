@@ -5,13 +5,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { QRCodeSVG } from "qrcode.react";
 import {
-  FileImage, ExternalLink, Download, Copy, QrCode,
-  Palette, FileText, Users, Calendar, MapPin, Megaphone,
+  FileImage, ExternalLink, Download, Copy, Palette, Image as ImageIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -24,114 +22,64 @@ interface Tournament {
   course_name: string | null;
 }
 
-interface FlyerTemplate {
+interface DbTemplate {
   id: string;
   name: string;
-  description: string;
-  size: string;
-  icon: React.ReactNode;
-  canvaTemplateId: string;
-  color: string;
+  description: string | null;
+  canva_template_id: string | null;
+  thumbnail_url: string | null;
+  preview_url: string | null;
+  size: string | null;
+  is_premium: boolean;
+  is_active: boolean;
+  sort_order: number;
 }
 
 const DOMAIN = "www.teevents.golf";
-
-const FLYER_TEMPLATES: FlyerTemplate[] = [
-  {
-    id: "simple",
-    name: "Simple Tournament Flyer",
-    description: "Clean design with event name, date, location, and QR code. Perfect for email blasts and community boards.",
-    size: "8.5\" × 11\" (Letter)",
-    icon: <FileText className="h-8 w-8" />,
-    canvaTemplateId: "",
-    color: "from-primary/20 to-primary/5",
-  },
-  {
-    id: "sponsor",
-    name: "Sponsor Showcase Flyer",
-    description: "Highlights your sponsors with logo placements. Great for distribution at the course and to sponsors.",
-    size: "8.5\" × 11\" (Letter)",
-    icon: <Users className="h-8 w-8" />,
-    canvaTemplateId: "",
-    color: "from-secondary/20 to-secondary/5",
-  },
-  {
-    id: "save-the-date",
-    name: "Save the Date",
-    description: "Minimal, elegant design for early promotion. Send months ahead to build anticipation.",
-    size: "8.5\" × 11\" (Letter)",
-    icon: <Calendar className="h-8 w-8" />,
-    canvaTemplateId: "",
-    color: "from-accent/20 to-accent/5",
-  },
-  {
-    id: "hole-sign",
-    name: "Hole Sponsor Sign",
-    description: "Print-ready sign for placing on the course. Includes sponsor name, logo area, and hole number.",
-    size: "11\" × 8.5\" (Landscape)",
-    icon: <MapPin className="h-8 w-8" />,
-    canvaTemplateId: "",
-    color: "from-primary/20 to-secondary/5",
-  },
-  {
-    id: "social",
-    name: "Registration Reminder",
-    description: "Social media optimized (1080×1080px). Share on Instagram, Facebook, and LinkedIn.",
-    size: "1080 × 1080px (Social)",
-    icon: <Megaphone className="h-8 w-8" />,
-    canvaTemplateId: "",
-    color: "from-secondary/20 to-primary/5",
-  },
-];
 
 const FlyerStudio = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [templates, setTemplates] = useState<DbTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [customMessage, setCustomMessage] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!org) return;
-    supabase
-      .from("tournaments")
-      .select("id, slug, title, date, location, course_name")
-      .eq("organization_id", org.orgId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single()
-      .then(({ data }) => {
-        if (data) setTournament(data);
-        setLoading(false);
-      });
+    const fetchAll = async () => {
+      const [tourRes, tplRes] = await Promise.all([
+        supabase
+          .from("tournaments")
+          .select("id, slug, title, date, location, course_name")
+          .eq("organization_id", org.orgId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single(),
+        supabase
+          .from("flyer_templates")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+      ]);
+      if (tourRes.data) setTournament(tourRes.data);
+      setTemplates((tplRes.data as DbTemplate[]) || []);
+      setLoading(false);
+    };
+    fetchAll();
   }, [org]);
 
-  const registrationUrl = tournament?.slug
-    ? `https://${DOMAIN}/t/${tournament.slug}`
-    : "";
+  const registrationUrl = tournament?.slug ? `https://${DOMAIN}/t/${tournament.slug}` : "";
+  const shortLink = tournament?.slug ? `teev.vent/${tournament.slug}` : "";
+  const formattedDate = tournament?.date ? format(new Date(tournament.date), "MMMM d, yyyy") : "TBD";
 
-  const shortLink = tournament?.slug
-    ? `teev.vent/${tournament.slug}`
-    : "";
-
-  const formattedDate = tournament?.date
-    ? format(new Date(tournament.date), "MMMM d, yyyy")
-    : "TBD";
-
-  const handleEditInCanva = (template: FlyerTemplate) => {
-    if (!template.canvaTemplateId) {
-      toast({
-        title: "Template not configured",
-        description: "A Canva template ID hasn't been set for this template yet. Contact your admin to configure it.",
-        variant: "destructive",
-      });
+  const handleEditInCanva = (t: DbTemplate) => {
+    if (!t.canva_template_id) {
+      toast({ title: "Template not configured", description: "A Canva template ID hasn't been set yet.", variant: "destructive" });
       return;
     }
-    window.open(
-      `https://www.canva.com/design/${template.canvaTemplateId}/edit`,
-      "_blank"
-    );
+    window.open(`https://www.canva.com/design/${t.canva_template_id}/edit`, "_blank");
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -143,8 +91,7 @@ const FlyerStudio = () => {
     const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
     const canvas = document.createElement("canvas");
-    canvas.width = 600;
-    canvas.height = 600;
+    canvas.width = 600; canvas.height = 600;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.fillStyle = "#ffffff";
@@ -187,7 +134,6 @@ const FlyerStudio = () => {
 
   return (
     <div className="p-6 space-y-8">
-      {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
           <h1 className="text-2xl font-display font-bold text-foreground">Flyer Studio</h1>
@@ -205,13 +151,10 @@ const FlyerStudio = () => {
             <FileImage className="h-5 w-5 text-secondary" />
             Tournament Data for Flyers
           </CardTitle>
-          <CardDescription>
-            Copy this info into your Canva templates or use "Edit in Canva" below.
-          </CardDescription>
+          <CardDescription>Copy this info into your Canva templates or use "Edit in Canva" below.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Left: Info */}
             <div className="space-y-4">
               <div className="space-y-3">
                 {[
@@ -226,80 +169,41 @@ const FlyerStudio = () => {
                       <p className="text-xs text-muted-foreground font-medium">{item.label}</p>
                       <p className="text-sm font-medium text-foreground truncate max-w-[280px]">{item.value}</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 flex-shrink-0"
-                      onClick={() => copyToClipboard(item.value, item.label)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => copyToClipboard(item.value, item.label)}>
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
               </div>
-
               <div>
-                <Label htmlFor="custom-message" className="text-xs text-muted-foreground font-medium">
-                  Custom Message (optional)
-                </Label>
-                <Textarea
-                  id="custom-message"
-                  placeholder="e.g. Register by May 1st for early bird pricing!"
-                  value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  className="mt-1.5 text-sm"
-                  rows={2}
-                />
+                <Label htmlFor="custom-message" className="text-xs text-muted-foreground font-medium">Custom Message (optional)</Label>
+                <Textarea id="custom-message" placeholder="e.g. Register by May 1st for early bird pricing!" value={customMessage} onChange={(e) => setCustomMessage(e.target.value)} className="mt-1.5 text-sm" rows={2} />
                 {customMessage && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1"
-                    onClick={() => copyToClipboard(customMessage, "Custom message")}
-                  >
+                  <Button variant="ghost" size="sm" className="mt-1" onClick={() => copyToClipboard(customMessage, "Custom message")}>
                     <Copy className="h-3 w-3 mr-1" /> Copy message
                   </Button>
                 )}
               </div>
             </div>
-
-            {/* Right: QR Code */}
             <div className="flex flex-col items-center gap-4">
-              <div
-                ref={qrRef}
-                className="bg-white p-4 rounded-xl border border-border shadow-sm"
-              >
-                <QRCodeSVG
-                  value={`${registrationUrl}?ref=flyer`}
-                  size={180}
-                  level="H"
-                  includeMargin
-                />
+              <div ref={qrRef} className="bg-white p-4 rounded-xl border border-border shadow-sm">
+                <QRCodeSVG value={`${registrationUrl}?ref=flyer`} size={180} level="H" includeMargin />
               </div>
-              <p className="text-xs text-muted-foreground text-center max-w-[200px]">
-                Right-click to save, or download below
-              </p>
+              <p className="text-xs text-muted-foreground text-center max-w-[200px]">Right-click to save, or download below</p>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={downloadQrPng}>
                   <Download className="h-4 w-4 mr-1" /> PNG
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const svg = qrRef.current?.querySelector("svg");
-                    if (!svg) return;
-                    const blob = new Blob(
-                      [new XMLSerializer().serializeToString(svg)],
-                      { type: "image/svg+xml" }
-                    );
-                    const a = document.createElement("a");
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `${tournament.slug || "tournament"}-qr.svg`;
-                    a.click();
-                    URL.revokeObjectURL(a.href);
-                  }}
-                >
+                <Button variant="outline" size="sm" onClick={() => {
+                  const svg = qrRef.current?.querySelector("svg");
+                  if (!svg) return;
+                  const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+                  const a = document.createElement("a");
+                  a.href = URL.createObjectURL(blob);
+                  a.download = `${tournament.slug || "tournament"}-qr.svg`;
+                  a.click();
+                  URL.revokeObjectURL(a.href);
+                }}>
                   <Download className="h-4 w-4 mr-1" /> SVG
                 </Button>
               </div>
@@ -314,45 +218,39 @@ const FlyerStudio = () => {
         <p className="text-sm text-muted-foreground mb-4">
           Choose a template, then click "Edit in Canva" to customize with your branding.
         </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FLYER_TEMPLATES.map((template) => (
-            <Card key={template.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              {/* Preview area */}
-              <div
-                className={`h-40 bg-gradient-to-br ${template.color} flex items-center justify-center`}
-              >
-                <div className="text-center space-y-2">
-                  <div className="mx-auto w-14 h-14 rounded-full bg-background/80 flex items-center justify-center text-foreground">
-                    {template.icon}
+
+        {templates.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              <p>No flyer templates available yet. Templates will appear here once configured by the platform team.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {templates.map((t) => (
+              <Card key={t.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                <div className="h-40 bg-muted flex items-center justify-center">
+                  {t.thumbnail_url ? (
+                    <img src={t.thumbnail_url} alt={t.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <ImageIcon className="h-12 w-12 text-muted-foreground/40" />
+                  )}
+                </div>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-semibold text-foreground text-sm">{t.name}</h3>
+                    {t.is_premium && <Badge variant="secondary" className="text-[10px]">Pro</Badge>}
                   </div>
-                  <Badge variant="outline" className="text-[10px] bg-background/70">
-                    {template.size}
-                  </Badge>
-                </div>
-              </div>
-
-              <CardContent className="p-4 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-foreground text-sm">{template.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {template.description}
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-1 text-xs"
-                    onClick={() => handleEditInCanva(template)}
-                  >
-                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                    Edit in Canva
+                  <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                  {t.size && <Badge variant="outline" className="text-[10px]">{t.size}</Badge>}
+                  <Button size="sm" className="w-full text-xs" onClick={() => handleEditInCanva(t)}>
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" /> Edit in Canva
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Instructions */}

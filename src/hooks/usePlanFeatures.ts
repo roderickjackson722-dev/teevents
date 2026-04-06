@@ -53,6 +53,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "white-glove-consulting",
     "reduced-reserve",
     "faster-payouts",
+    "flyer-studio",
   ],
 };
 

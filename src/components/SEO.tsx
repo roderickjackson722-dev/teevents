@@ -9,9 +9,10 @@ interface SEOProps {
   description: string;
   path?: string;
   ogImage?: string;
+  noIndex?: boolean;
 }
 
-const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE }: SEOProps) => {
+const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noIndex = false }: SEOProps) => {
   const fullTitle = title === "Home" ? `${SITE_NAME} — Tournament Planning & Management` : `${title} | ${SITE_NAME}`;
   const url = `${BASE_URL}${path}`;
 

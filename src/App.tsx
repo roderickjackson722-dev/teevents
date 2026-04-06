@@ -44,6 +44,7 @@ import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
 import DirectorShop from "./pages/dashboard/DirectorShop";
 import SharePromote from "./pages/dashboard/SharePromote";
+import FlyerStudio from "./pages/dashboard/FlyerStudio";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import PublicTournament from "./pages/PublicTournament";

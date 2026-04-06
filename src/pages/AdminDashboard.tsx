@@ -6,6 +6,7 @@ import {
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
+import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
 import CollegeTournamentHub from "@/components/admin/CollegeTournamentHub";
 import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminStore from "@/components/admin/AdminStore";
@@ -32,7 +33,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -724,6 +725,7 @@ const AdminDashboard = () => {
                 ["store", "Store", ShoppingBag],
                 ["analytics", "Analytics", BarChart3],
                 ["college", "College Hub", School],
+                ["flyer-templates", "Flyer Templates", FileText],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}
@@ -1688,6 +1690,9 @@ const AdminDashboard = () => {
 
           {/* College Hub Tab */}
           {activeTab === "college" && <CollegeTournamentHub />}
+
+          {/* Flyer Templates Tab */}
+          {activeTab === "flyer-templates" && <AdminFlyerTemplates />}
         </div>
       </section>
     </Layout>

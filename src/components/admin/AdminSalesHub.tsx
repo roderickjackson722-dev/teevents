@@ -154,7 +154,7 @@ function DemoTab() {
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-4">Quick Reference — Fee & Reserve FAQ</h3>
         <Accordion type="multiple">
-          <AccordionItem value="fee"><AccordionTrigger>What is the 4% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a flat 5% platform fee on every transaction. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
+          <AccordionItem value="fee"><AccordionTrigger>What is the 5% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a flat 5% platform fee on every transaction. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
           <AccordionItem value="reserve"><AccordionTrigger>What is the 15% reserve?</AccordionTrigger><AccordionContent>TeeVents holds 15% of net proceeds as a reserve for refunds and chargebacks. This reserve is automatically released 15 days after your event ends. Premium plan customers receive a reduced 10% reserve rate.</AccordionContent></AccordionItem>
           <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Payouts are processed automatically every two weeks. The net amount is deposited directly into the organizer's connected bank account.</AccordionContent></AccordionItem>
         </Accordion>

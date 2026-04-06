@@ -161,6 +161,8 @@ const App = () => (
            <Route path="/help/payment-settings" element={<PaymentSettings />} />
            <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
            <Route path="/help/custom-domain" element={<CustomDomain />} />
+           <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
+           <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

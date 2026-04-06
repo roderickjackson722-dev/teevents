@@ -285,6 +285,15 @@ const Pricing = () => {
         </div>
       </section>
 
+      {/* Eventbrite Banner */}
+      <section className="bg-muted py-8">
+        <div className="container mx-auto px-4 text-center">
+          <Link to="/compare/eventbrite-vs-teevents" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
+            See how we compare to Eventbrite → <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
       {/* FAQ-style CTA */}
       <section className="bg-primary py-16">
         <div className="container mx-auto px-4 text-center max-w-2xl">

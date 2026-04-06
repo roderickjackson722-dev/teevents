@@ -212,6 +212,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
 
+  // Track click from ref param
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (!ref || !tournament) return;
+    const sourceMap: Record<string, string> = {
+      qr: "qr_code", facebook: "social_facebook", linkedin: "social_linkedin",
+      twitter: "social_twitter", email: "email", sms: "short_link",
+    };
+    supabase.functions.invoke("track-click", {
+      body: { tournament_id: tournament.id, source: sourceMap[ref] || "short_link", referrer: document.referrer || null },
+    }).catch(() => {});
+  }, [tournament, searchParams]);
+
   useEffect(() => {
     if (!slug) return;
     supabase

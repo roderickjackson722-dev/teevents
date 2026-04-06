@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { Check, X, AlertTriangle, ArrowRight, Download, Calendar } from "lucide-react";
+import { Check, X, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 const CALENDLY = "https://calendly.com/teevents-golf/demo";
@@ -88,9 +87,6 @@ const StatusIcon = ({ status }: { status: Status }) => {
 };
 
 const CompareEventbrite = () => {
-  const handleDownloadPdf = () => {
-    window.open("/compare/eventbrite-vs-teevents/pdf", "_blank");
-  };
 
   return (
     <Layout>
@@ -133,12 +129,7 @@ const CompareEventbrite = () => {
       {/* Comparison Table */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 max-w-5xl">
-          <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
-            <h2 className="text-2xl font-display font-bold text-foreground">Feature-by-Feature Comparison</h2>
-            <Button variant="outline" onClick={handleDownloadPdf} className="gap-2">
-              <Download className="h-4 w-4" /> Download PDF
-            </Button>
-          </div>
+          <h2 className="text-2xl font-display font-bold text-foreground mb-8">Feature-by-Feature Comparison</h2>
 
           <div className="rounded-xl border border-border overflow-hidden shadow-sm">
             <Table>
@@ -207,6 +198,10 @@ const CompareEventbrite = () => {
               </p>
             </div>
           </motion.div>
+
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            Sales materials available to TeeVents team in the Admin Sales Hub
+          </p>
         </div>
       </section>
 

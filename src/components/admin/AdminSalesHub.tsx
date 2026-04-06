@@ -13,7 +13,7 @@ import {
   Play, ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
   Clock, CheckCircle2, MessageSquare, Mail, Check, Download, BookOpen, Shield,
-  Zap, BarChart3, FileText, Image, Edit, Trash2, Plus
+  Zap, BarChart3, FileText, Image, Edit, Trash2, Plus, Link2, QrCode, FolderOpen
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { downloadHtmlAsPdf } from "@/components/printables/printUtils";
@@ -24,7 +24,7 @@ const STEPS = [
   { num: 2, title: "Onboarding in 60 Seconds", minutes: 3, icon: Users, hero: "Enter your organization name → pick a template → your branded tournament site is ready.", keyMessage: null, bullets: ["Show the Onboarding flow live (organization name + template picker).", "Highlight how fast it is — under 60 seconds to a fully branded site.", '"No design skills needed. Pick a template, upload your logo, done."'], route: "/onboarding" },
   { num: 3, title: "Dashboard Tour", minutes: 3, icon: LayoutDashboard, hero: "Everything in one place – no more Google Sheets or multiple tools.", keyMessage: null, bullets: ["Show the main dashboard — highlight at-a-glance stats (players, revenue, check-ins).", 'Point out the sidebar: "Everything you need lives right here."', "Mention the Planning Guide checklist: 30-item checklist from 12 months out to post-event.", "Show PlanGate badges — features clearly labeled by tier."], route: "/dashboard" },
   { num: 4, title: "Build Your Custom Tournament Website", minutes: 4, icon: Globe, hero: "Drag-and-drop your branded site in minutes – fully mobile responsive.", keyMessage: null, bullets: ["Show the 3 templates: Classic Green, Modern Navy, Charity Warmth.", '"Pick a template, upload your logo, set your colors — publish with one click."', "Preview the public site — show mobile-responsive design.", "Mention 8 built-in pages: Home, Contests, Registration, Photos, Location, Agenda, Donation, Contact.", "Call out custom domain support for Starter+ plans."], route: "/dashboard/tournaments" },
-  { num: 5, title: "Registration, Payments & Fees", minutes: 5, icon: CreditCard, hero: "4% TeeVents platform fee + Stripe fee shown clearly • Default = passed to players so you keep 100% of advertised price • Toggle to absorb fees if you want.", keyMessage: "$150 registration example → Golfer pays $162.53 (fees passed) or Organizer nets $137.70 (fees absorbed).", bullets: ["Show Registration page with tiers, group sizes, and checkout breakdown.", "Walk through the fee breakdown: Base Price → 5% TeeVents Fee → Stripe Fee → Total.", '"You keep 100% of your advertised price by default."', "Show the toggle in Settings to absorb fees instead.", "Mention promo codes, group registration (up to 4 players), and waitlist."], route: "/dashboard/registration" },
+  { num: 5, title: "Registration, Payments & Fees", minutes: 5, icon: CreditCard, hero: "5% TeeVents platform fee + Stripe fee shown clearly • Default = passed to players so you keep 100% of advertised price • Toggle to absorb fees if you want.", keyMessage: "$150 registration example → Golfer pays $162.53 (fees passed) or Organizer nets $137.70 (fees absorbed).", bullets: ["Show Registration page with tiers, group sizes, and checkout breakdown.", "Walk through the fee breakdown: Base Price → 5% TeeVents Fee → Stripe Fee → Total.", '"You keep 100% of your advertised price by default."', "Show the toggle in Settings to absorb fees instead.", "Mention promo codes, group registration (up to 4 players), and waitlist."], route: "/dashboard/registration" },
   { num: 6, title: "Live Scoring, Pairings & Check-In", minutes: 5, icon: Trophy, hero: "Real-time mobile scoring, drag-and-drop pairings, instant leaderboards.", keyMessage: null, bullets: ["Show the admin leaderboard — real-time scores, group-by-group.", "Navigate to Printables → Scorecards tab — show QR codes.", '"Players scan this code with their phone — no app download, no login."', "Explain: Scan → phone opens scoring page → enter scores → leaderboard updates live.", "Show Tee Sheet with shotgun/sequential start options.", "Show QR Check-In: print badges, open Scan Station on any tablet."], route: "/dashboard/leaderboard" },
   { num: 7, title: "Budget, Sponsors, Auctions & Payouts", minutes: 5, icon: DollarSign, hero: "Real-time budget tracking • Automatic bi-weekly payouts • 15% reserve released 15 days after event • You are never personally liable for chargebacks.", keyMessage: null, bullets: ["Show sponsor tiers: Title, Gold, Silver, Bronze — logos auto-display on tournament site.", "Show budget tracking: income vs. expenses by category, paid/unpaid status.", "Show Finances page with payout timeline and reserve breakdown.", "Show Auction page — silent auction, raffle, buy-now items.", '"Know exactly where your money is at all times."'], route: "/dashboard/budget" },
   { num: 8, title: "Pricing & Upgrade Options", minutes: 2, icon: Tag, hero: "Start for $0 • Upgrade only when you need unlimited players or white-glove service.", keyMessage: "Base ($0, 72 players) → Starter ($299, unlimited) → Premium ($999, white-glove + reduced reserve)", bullets: ["Show the 3-tier comparison: Base $0 / Starter $299 / Premium $999.", 'Base highlight: 1 tournament, 72 players max, all core features.', '"Unlimited tournaments and players + custom domain."', '"White-glove consulting, 10% reserve, faster payouts."', "All plans: 5% platform fee passed to participants by default."], route: "/dashboard/upgrade" },
@@ -183,11 +183,11 @@ function StudySheetTab() {
       <h2>1. Platform Overview</h2><p>TeeVents is an all-in-one golf tournament management platform.</p>
       <h2>2. Organizer Features</h2><p>Tournament creation, registration, payments, volunteers, sponsors, leaderboard, auction, and more.</p>
       <h2>3. Golfer Experience</h2><p>Registration → QR check-in → Mobile scoring → Leaderboard</p>
-      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → 4% fee → 15% hold → Available balance → Bi-weekly payout</p>
+      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → 5% fee → 15% hold → Available balance → Bi-weekly payout</p>
       <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>
-      <h2>8. Limits</h2><p>4% fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
+      <h2>8. Limits</h2><p>5% fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
       <h2>9. Glossary</h2><p>Chargeback, Hold, Platform Fee, Stripe Connect, Express Account, RLS, Edge Function, Cron Job</p>
       <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential.</p>
     `);
@@ -238,7 +238,7 @@ function StudySheetTab() {
         <section id="study-payments">
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
-            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 4% fee → 15% hold → Available balance → Bi-weekly payout</div>
+            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 5% fee → 15% hold → Available balance → Bi-weekly payout</div>
             <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$7.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$92.80 (minus hold)", "Nonprofits"]]} />
             <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
           </div>
@@ -265,12 +265,12 @@ function StudySheetTab() {
 
         <section id="study-metrics">
           <SectionHeader num={8} title="Key Metrics & Limits" />
-          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "4%"], ["Hold", "15%"], ["Hold release", "15 days post-event"], ["Min payout", "$25"], ["Payout freq", "Bi-weekly"], ["Base plan", "$0, 1 tournament, 72 players"], ["Starter", "$299, unlimited"], ["Premium", "$999, white-glove"]]} />
+          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5%"], ["Hold", "15%"], ["Hold release", "15 days post-event"], ["Min payout", "$25"], ["Payout freq", "Bi-weekly"], ["Base plan", "$0, 1 tournament, 72 players"], ["Starter", "$299, unlimited"], ["Premium", "$999, white-glove"]]} />
         </section>
 
         <section id="study-glossary">
           <SectionHeader num={9} title="Glossary" />
-          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "4% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
+          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "5% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
         </section>
       </div>
     </div>
@@ -408,10 +408,214 @@ CLOSING (30 seconds)
           <div className="flex gap-2">
             <Button onClick={handleCopy} className="gap-2">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Copied!" : "Copy Script"}</Button>
             <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> View Comparison Page</Button>
-            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents/pdf", "_blank")} className="gap-2"><Download className="h-4 w-4" /> Download PDF</Button>
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ── PDF Library Tab ──
+const PDF_ASSETS = [
+  { id: "comparison", name: "Eventbrite vs. TeeVents Comparison", description: "One-page side-by-side comparison chart", route: "/compare/eventbrite-vs-teevents/pdf" },
+  { id: "study-sheet", name: "TeeVents Platform Study Sheet", description: "Complete platform documentation for internal training", route: null },
+  { id: "pricing-guide", name: "TeeVents Pricing Guide", description: "Pricing tiers, fee breakdown, and fee model explanation", route: null },
+  { id: "demo-agenda", name: "TeeVents Demo Agenda", description: "Sales call agenda with screenshots and talking points", route: "/sales/demo-agenda" },
+  { id: "organizer-onboarding", name: "Organizer Onboarding Guide", description: "Step-by-step setup guide for new tournament organizers", route: null },
+];
+
+function PdfLibraryTab() {
+  const handleDownloadPdf = (asset: typeof PDF_ASSETS[0]) => {
+    if (asset.route) {
+      window.open(asset.route, "_blank");
+    } else {
+      toast.info(`"${asset.name}" — PDF generation coming soon`);
+    }
+  };
+
+  const handleCopyLink = (asset: typeof PDF_ASSETS[0]) => {
+    const url = asset.route ? `${window.location.origin}${asset.route}` : `${window.location.origin}/admin`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copied!");
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">PDF Library</h3>
+          <p className="text-sm text-muted-foreground">{PDF_ASSETS.length} sales PDFs available for download and sharing</p>
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {PDF_ASSETS.map((asset) => (
+          <Card key={asset.id}>
+            <CardContent className="p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5 text-destructive" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground text-sm">{asset.name}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">{asset.description}</p>
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" variant="outline" onClick={() => handleDownloadPdf(asset)} className="gap-1.5">
+                      <Download className="h-3 w-3" /> Download
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleCopyLink(asset)} className="gap-1.5">
+                      <Copy className="h-3 w-3" /> Copy Link
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Email Templates Library Tab ──
+const EMAIL_TEMPLATES = [
+  {
+    id: "comparison-cold",
+    name: "Eventbrite Comparison Cold Email",
+    subject: "Eventbrite vs. TeeVents – Which one saves you money?",
+    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.49 | TeeVents $8.20\n• Payouts: Eventbrite waits until after event | TeeVents bi-weekly\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+  },
+  {
+    id: "fee-breakdown",
+    name: "Fee Breakdown Follow-up",
+    subject: "Where your registration fees are actually going",
+    body: `Hi [Name],\n\nI wanted to follow up with a quick breakdown of what happens to your registration fees:\n\nOn a $100 registration:\n• TeeVents platform fee: 5% = $5.00\n• Stripe processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.20\n• You keep: $91.80 (with option to pass fees to golfers)\n\nCompare that to Eventbrite:\n• Platform fee: 3.5% + $1.79 = $5.29\n• Processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.49\n\nPlus, TeeVents includes live leaderboards, sponsor management, and QR check-in — features you'd need separate tools for with Eventbrite.\n\nWant to see it in action? Book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+  },
+  {
+    id: "feature-gap",
+    name: "Feature Gap Email",
+    subject: "3 features Eventbrite doesn't have for golf tournaments",
+    body: `Hi [Name],\n\nRunning a golf tournament on Eventbrite? Here are 3 things you're missing:\n\n1. Live Leaderboard — Players scan a QR code to enter scores. Leaderboard updates in real-time.\n\n2. Sponsor Portal — Upload logos, assign hole sponsorships, track deliverables. Your sponsors get professional treatment.\n\n3. Automatic Payouts — Get paid every two weeks. No waiting until after the event.\n\nThese aren't add-ons or integrations — they're built into TeeVents from day one.\n\nCurious? Take a look: https://teevents.golf/compare/eventbrite-vs-teevents\n\nOr book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+  },
+  {
+    id: "onboarding-welcome",
+    name: "Onboarding Welcome",
+    subject: "Welcome to TeeVents – Here's what to do next",
+    body: `Hi [Name],\n\nWelcome to TeeVents! I'm excited to help you run your best tournament yet.\n\nHere are your next steps:\n\n1. Log in at teevents.golf/login\n2. Create your first tournament\n3. Set your registration fee and customize your site\n4. Share your tournament link with golfers\n\nNeed help? Reply to this email or call (602) 413-1338.\n\nHere are some helpful resources:\n• How It Works: teevents.golf/how-it-works\n• Help Center: teevents.golf/help\n• FAQ: teevents.golf/faq\n\nLet's make your tournament a success!\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+  },
+  {
+    id: "demo-followup",
+    name: "Demo Follow-up",
+    subject: "Thanks for your demo – Here's what's next",
+    body: `Hi [Name],\n\nThanks for taking the time to see TeeVents in action today! I hope you can see how it would simplify your tournament management.\n\nHere's a recap of what we covered:\n• Tournament setup and branding\n• Registration and payment flow\n• Live leaderboard and scoring\n• Sponsor and volunteer management\n• Fee structure and payouts\n\nReady to get started? Sign up here: teevents.golf/get-started\n\nWant to compare with Eventbrite? teevents.golf/compare/eventbrite-vs-teevents\n\nI'm here to help with setup — just reply to this email.\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+  },
+];
+
+function EmailTemplatesTab() {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (template: typeof EMAIL_TEMPLATES[0]) => {
+    const text = `Subject: ${template.subject}\n\n${template.body}`;
+    navigator.clipboard.writeText(text);
+    setCopiedId(template.id);
+    toast.success("Email template copied!");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSendTest = (template: typeof EMAIL_TEMPLATES[0]) => {
+    const mailto = `mailto:?subject=${encodeURIComponent(template.subject)}&body=${encodeURIComponent(template.body)}`;
+    window.open(mailto);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-foreground">Email Templates</h3>
+        <p className="text-sm text-muted-foreground">{EMAIL_TEMPLATES.length} ready-to-send email templates for sales outreach</p>
+      </div>
+      <div className="space-y-4">
+        {EMAIL_TEMPLATES.map((template) => (
+          <Card key={template.id}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><Mail className="h-4 w-4" /> {template.name}</CardTitle>
+              <CardDescription>Subject: {template.subject}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Textarea value={template.body} readOnly rows={8} className="font-mono text-xs" />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleCopy(template)} className="gap-1.5">
+                  {copiedId === template.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedId === template.id ? "Copied!" : "Copy to Clipboard"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => handleSendTest(template)} className="gap-1.5">
+                  <Mail className="h-3 w-3" /> Send Test Email
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Links & QR Codes Tab ──
+const SALES_LINKS = [
+  { name: "Comparison Page", url: "/compare/eventbrite-vs-teevents", useCase: "Share in emails & social" },
+  { name: "Get Started", url: "/get-started", useCase: "Direct signups" },
+  { name: "Demo Calendly", url: "https://calendly.com/teevents-golf/demo", useCase: "Booking link", external: true },
+  { name: "Sample Organizer", url: "/sample-organizer", useCase: "Share with prospects (noindex)" },
+  { name: "Pricing Page", url: "/pricing", useCase: "Fee explanation" },
+  { name: "How It Works", url: "/how-it-works", useCase: "Platform overview" },
+  { name: "Help Center", url: "/help", useCase: "Support resources" },
+  { name: "Demo Agenda", url: "/sales/demo-agenda", useCase: "Pre-call prep" },
+];
+
+function LinksQrTab() {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const getFullUrl = (link: typeof SALES_LINKS[0]) => {
+    if (link.external) return link.url;
+    return `https://teevents.golf${link.url}`;
+  };
+
+  const handleCopy = (link: typeof SALES_LINKS[0], idx: number) => {
+    navigator.clipboard.writeText(getFullUrl(link));
+    setCopiedIdx(idx);
+    toast.success("Link copied!");
+    setTimeout(() => setCopiedIdx(null), 2000);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-foreground">Links & QR Codes</h3>
+        <p className="text-sm text-muted-foreground">Quick-copy links for sales emails, social media, and presentations</p>
+      </div>
+      <div className="grid gap-3">
+        {SALES_LINKS.map((link, idx) => (
+          <Card key={idx}>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Link2 className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-foreground text-sm">{link.name}</h4>
+                <p className="text-xs text-muted-foreground truncate">{getFullUrl(link)}</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">{link.useCase}</p>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button size="sm" variant="outline" onClick={() => handleCopy(link, idx)} className="gap-1.5">
+                  {copiedIdx === idx ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedIdx === idx ? "Copied!" : "Copy"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => window.open(link.external ? link.url : link.url, "_blank")} className="gap-1.5">
+                  <ExternalLink className="h-3 w-3" /> Open
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
@@ -438,11 +642,14 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
           <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /> Live Demo</TabsTrigger>
           <TabsTrigger value="prospects" className="gap-2"><Users className="h-4 w-4" /> Prospects</TabsTrigger>
           <TabsTrigger value="stats" className="gap-2"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
-          <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Email Scripts</TabsTrigger>
+          <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Outreach Scripts</TabsTrigger>
+          <TabsTrigger value="email-templates" className="gap-2"><Mail className="h-4 w-4" /> Email Templates</TabsTrigger>
           <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
           <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite</TabsTrigger>
           <TabsTrigger value="study" className="gap-2"><BookOpen className="h-4 w-4" /> Study Sheet</TabsTrigger>
           <TabsTrigger value="flyers" className="gap-2"><Image className="h-4 w-4" /> Flyer Studio</TabsTrigger>
+          <TabsTrigger value="pdfs" className="gap-2"><FolderOpen className="h-4 w-4" /> PDF Library</TabsTrigger>
+          <TabsTrigger value="links" className="gap-2"><Link2 className="h-4 w-4" /> Links & QR</TabsTrigger>
         </TabsList>
         <TabsContent value="demo"><DemoTab /></TabsContent>
         <TabsContent value="prospects">
@@ -454,10 +661,13 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
         <TabsContent value="email-scripts">
           <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
+        <TabsContent value="email-templates"><EmailTemplatesTab /></TabsContent>
         <TabsContent value="demo-script"><DemoScriptComponent /></TabsContent>
         <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
         <TabsContent value="study"><StudySheetTab /></TabsContent>
         <TabsContent value="flyers"><FlyerStudioTab /></TabsContent>
+        <TabsContent value="pdfs"><PdfLibraryTab /></TabsContent>
+        <TabsContent value="links"><LinksQrTab /></TabsContent>
       </Tabs>
     </div>
   );

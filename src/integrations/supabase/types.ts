@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          changes: Json | null
+          created_at: string
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       admin_demo_events: {
         Row: {
           created_at: string
@@ -448,6 +478,54 @@ export type Database = {
           sort_order?: number | null
           status?: string
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      flyer_templates: {
+        Row: {
+          canva_template_id: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_premium: boolean | null
+          name: string
+          preview_url: string | null
+          size: string | null
+          sort_order: number | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          canva_template_id?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_premium?: boolean | null
+          name: string
+          preview_url?: string | null
+          size?: string | null
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canva_template_id?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_premium?: boolean | null
+          name?: string
+          preview_url?: string | null
+          size?: string | null
+          sort_order?: number | null
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Relationships: []

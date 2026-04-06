@@ -303,7 +303,7 @@ const Pricing = () => {
                 Get Started <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="https://calendly.com/teevents/teevents-demo"
+                href="https://calendly.com/teevents-golf/demo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"

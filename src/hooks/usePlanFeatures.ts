@@ -53,6 +53,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "white-glove-consulting",
     "reduced-reserve",
     "faster-payouts",
+    "flyer-studio",
   ],
 };
 
@@ -80,6 +81,7 @@ export const ALL_FEATURES = [
   { id: "surveys", label: "Surveys" },
   { id: "priority-support", label: "Priority Support" },
   { id: "hole-in-one-insurance", label: "Hole-in-One Insurance" },
+  { id: "flyer-studio", label: "Flyer Studio" },
 ];
 
 const PLAN_HIERARCHY = ["free", "starter", "premium"];

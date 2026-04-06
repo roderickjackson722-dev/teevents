@@ -92,6 +92,7 @@ const managementItems = [
   { title: "Surveys", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys" },
   { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations" },
   { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null },
+  { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: FileEdit, feature: "flyer-studio" },
 ];
 
 export function DashboardSidebar() {

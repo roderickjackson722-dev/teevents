@@ -44,6 +44,7 @@ import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
 import DirectorShop from "./pages/dashboard/DirectorShop";
 import SharePromote from "./pages/dashboard/SharePromote";
+import FlyerStudio from "./pages/dashboard/FlyerStudio";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import PublicTournament from "./pages/PublicTournament";
@@ -133,6 +134,7 @@ const App = () => (
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
           <Route path="/dashboard/payout-settings" element={<DashboardLayout><PayoutSettings /></DashboardLayout>} />
           <Route path="/dashboard/share-promote" element={<DashboardLayout><SharePromote /></DashboardLayout>} />
+          <Route path="/dashboard/flyer-studio" element={<DashboardLayout><PlanGate feature="flyer-studio"><FlyerStudio /></PlanGate></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />

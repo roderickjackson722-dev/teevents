@@ -416,6 +416,211 @@ CLOSING (30 seconds)
   );
 }
 
+// ── PDF Library Tab ──
+const PDF_ASSETS = [
+  { id: "comparison", name: "Eventbrite vs. TeeVents Comparison", description: "One-page side-by-side comparison chart", route: "/compare/eventbrite-vs-teevents/pdf" },
+  { id: "study-sheet", name: "TeeVents Platform Study Sheet", description: "Complete platform documentation for internal training", route: null },
+  { id: "pricing-guide", name: "TeeVents Pricing Guide", description: "Pricing tiers, fee breakdown, and fee model explanation", route: null },
+  { id: "demo-agenda", name: "TeeVents Demo Agenda", description: "Sales call agenda with screenshots and talking points", route: "/sales/demo-agenda" },
+  { id: "organizer-onboarding", name: "Organizer Onboarding Guide", description: "Step-by-step setup guide for new tournament organizers", route: null },
+];
+
+function PdfLibraryTab() {
+  const handleDownloadPdf = (asset: typeof PDF_ASSETS[0]) => {
+    if (asset.route) {
+      window.open(asset.route, "_blank");
+    } else {
+      toast.info(`"${asset.name}" — PDF generation coming soon`);
+    }
+  };
+
+  const handleCopyLink = (asset: typeof PDF_ASSETS[0]) => {
+    const url = asset.route ? `${window.location.origin}${asset.route}` : `${window.location.origin}/admin`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copied!");
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">PDF Library</h3>
+          <p className="text-sm text-muted-foreground">{PDF_ASSETS.length} sales PDFs available for download and sharing</p>
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {PDF_ASSETS.map((asset) => (
+          <Card key={asset.id}>
+            <CardContent className="p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5 text-destructive" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground text-sm">{asset.name}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">{asset.description}</p>
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" variant="outline" onClick={() => handleDownloadPdf(asset)} className="gap-1.5">
+                      <Download className="h-3 w-3" /> Download
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleCopyLink(asset)} className="gap-1.5">
+                      <Copy className="h-3 w-3" /> Copy Link
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Email Templates Library Tab ──
+const EMAIL_TEMPLATES = [
+  {
+    id: "comparison-cold",
+    name: "Eventbrite Comparison Cold Email",
+    subject: "Eventbrite vs. TeeVents – Which one saves you money?",
+    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.49 | TeeVents $8.20\n• Payouts: Eventbrite waits until after event | TeeVents bi-weekly\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+  },
+  {
+    id: "fee-breakdown",
+    name: "Fee Breakdown Follow-up",
+    subject: "Where your registration fees are actually going",
+    body: `Hi [Name],\n\nI wanted to follow up with a quick breakdown of what happens to your registration fees:\n\nOn a $100 registration:\n• TeeVents platform fee: 5% = $5.00\n• Stripe processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.20\n• You keep: $91.80 (with option to pass fees to golfers)\n\nCompare that to Eventbrite:\n• Platform fee: 3.5% + $1.79 = $5.29\n• Processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.49\n\nPlus, TeeVents includes live leaderboards, sponsor management, and QR check-in — features you'd need separate tools for with Eventbrite.\n\nWant to see it in action? Book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+  },
+  {
+    id: "feature-gap",
+    name: "Feature Gap Email",
+    subject: "3 features Eventbrite doesn't have for golf tournaments",
+    body: `Hi [Name],\n\nRunning a golf tournament on Eventbrite? Here are 3 things you're missing:\n\n1. Live Leaderboard — Players scan a QR code to enter scores. Leaderboard updates in real-time.\n\n2. Sponsor Portal — Upload logos, assign hole sponsorships, track deliverables. Your sponsors get professional treatment.\n\n3. Automatic Payouts — Get paid every two weeks. No waiting until after the event.\n\nThese aren't add-ons or integrations — they're built into TeeVents from day one.\n\nCurious? Take a look: https://teevents.golf/compare/eventbrite-vs-teevents\n\nOr book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+  },
+  {
+    id: "onboarding-welcome",
+    name: "Onboarding Welcome",
+    subject: "Welcome to TeeVents – Here's what to do next",
+    body: `Hi [Name],\n\nWelcome to TeeVents! I'm excited to help you run your best tournament yet.\n\nHere are your next steps:\n\n1. Log in at teevents.golf/login\n2. Create your first tournament\n3. Set your registration fee and customize your site\n4. Share your tournament link with golfers\n\nNeed help? Reply to this email or call (602) 413-1338.\n\nHere are some helpful resources:\n• How It Works: teevents.golf/how-it-works\n• Help Center: teevents.golf/help\n• FAQ: teevents.golf/faq\n\nLet's make your tournament a success!\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+  },
+  {
+    id: "demo-followup",
+    name: "Demo Follow-up",
+    subject: "Thanks for your demo – Here's what's next",
+    body: `Hi [Name],\n\nThanks for taking the time to see TeeVents in action today! I hope you can see how it would simplify your tournament management.\n\nHere's a recap of what we covered:\n• Tournament setup and branding\n• Registration and payment flow\n• Live leaderboard and scoring\n• Sponsor and volunteer management\n• Fee structure and payouts\n\nReady to get started? Sign up here: teevents.golf/get-started\n\nWant to compare with Eventbrite? teevents.golf/compare/eventbrite-vs-teevents\n\nI'm here to help with setup — just reply to this email.\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+  },
+];
+
+function EmailTemplatesTab() {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (template: typeof EMAIL_TEMPLATES[0]) => {
+    const text = `Subject: ${template.subject}\n\n${template.body}`;
+    navigator.clipboard.writeText(text);
+    setCopiedId(template.id);
+    toast.success("Email template copied!");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSendTest = (template: typeof EMAIL_TEMPLATES[0]) => {
+    const mailto = `mailto:?subject=${encodeURIComponent(template.subject)}&body=${encodeURIComponent(template.body)}`;
+    window.open(mailto);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-foreground">Email Templates</h3>
+        <p className="text-sm text-muted-foreground">{EMAIL_TEMPLATES.length} ready-to-send email templates for sales outreach</p>
+      </div>
+      <div className="space-y-4">
+        {EMAIL_TEMPLATES.map((template) => (
+          <Card key={template.id}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><Mail className="h-4 w-4" /> {template.name}</CardTitle>
+              <CardDescription>Subject: {template.subject}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Textarea value={template.body} readOnly rows={8} className="font-mono text-xs" />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleCopy(template)} className="gap-1.5">
+                  {copiedId === template.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedId === template.id ? "Copied!" : "Copy to Clipboard"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => handleSendTest(template)} className="gap-1.5">
+                  <Mail className="h-3 w-3" /> Send Test Email
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Links & QR Codes Tab ──
+const SALES_LINKS = [
+  { name: "Comparison Page", url: "/compare/eventbrite-vs-teevents", useCase: "Share in emails & social" },
+  { name: "Get Started", url: "/get-started", useCase: "Direct signups" },
+  { name: "Demo Calendly", url: "https://calendly.com/teevents-golf/demo", useCase: "Booking link", external: true },
+  { name: "Sample Organizer", url: "/sample-organizer", useCase: "Share with prospects (noindex)" },
+  { name: "Pricing Page", url: "/pricing", useCase: "Fee explanation" },
+  { name: "How It Works", url: "/how-it-works", useCase: "Platform overview" },
+  { name: "Help Center", url: "/help", useCase: "Support resources" },
+  { name: "Demo Agenda", url: "/sales/demo-agenda", useCase: "Pre-call prep" },
+];
+
+function LinksQrTab() {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const getFullUrl = (link: typeof SALES_LINKS[0]) => {
+    if (link.external) return link.url;
+    return `https://teevents.golf${link.url}`;
+  };
+
+  const handleCopy = (link: typeof SALES_LINKS[0], idx: number) => {
+    navigator.clipboard.writeText(getFullUrl(link));
+    setCopiedIdx(idx);
+    toast.success("Link copied!");
+    setTimeout(() => setCopiedIdx(null), 2000);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-foreground">Links & QR Codes</h3>
+        <p className="text-sm text-muted-foreground">Quick-copy links for sales emails, social media, and presentations</p>
+      </div>
+      <div className="grid gap-3">
+        {SALES_LINKS.map((link, idx) => (
+          <Card key={idx}>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Link2 className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-foreground text-sm">{link.name}</h4>
+                <p className="text-xs text-muted-foreground truncate">{getFullUrl(link)}</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">{link.useCase}</p>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button size="sm" variant="outline" onClick={() => handleCopy(link, idx)} className="gap-1.5">
+                  {copiedIdx === idx ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copiedIdx === idx ? "Copied!" : "Copy"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => window.open(link.external ? link.url : link.url, "_blank")} className="gap-1.5">
+                  <ExternalLink className="h-3 w-3" /> Open
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Props for integration ──
 interface AdminSalesHubProps {
   prospects: any[];
@@ -438,11 +643,14 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
           <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /> Live Demo</TabsTrigger>
           <TabsTrigger value="prospects" className="gap-2"><Users className="h-4 w-4" /> Prospects</TabsTrigger>
           <TabsTrigger value="stats" className="gap-2"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
-          <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Email Scripts</TabsTrigger>
+          <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Outreach Scripts</TabsTrigger>
+          <TabsTrigger value="email-templates" className="gap-2"><Mail className="h-4 w-4" /> Email Templates</TabsTrigger>
           <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
           <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite</TabsTrigger>
           <TabsTrigger value="study" className="gap-2"><BookOpen className="h-4 w-4" /> Study Sheet</TabsTrigger>
           <TabsTrigger value="flyers" className="gap-2"><Image className="h-4 w-4" /> Flyer Studio</TabsTrigger>
+          <TabsTrigger value="pdfs" className="gap-2"><FolderOpen className="h-4 w-4" /> PDF Library</TabsTrigger>
+          <TabsTrigger value="links" className="gap-2"><Link2 className="h-4 w-4" /> Links & QR</TabsTrigger>
         </TabsList>
         <TabsContent value="demo"><DemoTab /></TabsContent>
         <TabsContent value="prospects">
@@ -454,10 +662,13 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
         <TabsContent value="email-scripts">
           <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
+        <TabsContent value="email-templates"><EmailTemplatesTab /></TabsContent>
         <TabsContent value="demo-script"><DemoScriptComponent /></TabsContent>
         <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
         <TabsContent value="study"><StudySheetTab /></TabsContent>
         <TabsContent value="flyers"><FlyerStudioTab /></TabsContent>
+        <TabsContent value="pdfs"><PdfLibraryTab /></TabsContent>
+        <TabsContent value="links"><LinksQrTab /></TabsContent>
       </Tabs>
     </div>
   );

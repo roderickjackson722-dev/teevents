@@ -102,7 +102,7 @@ const CompareEventbritePdf = () => {
         <div class="reasons">
           <h2>Why Golf Organizers Switch</h2>
           <ol>
-            <li><strong>Lower total fees</strong> — Save $3.49 per golfer vs. Eventbrite</li>
+            <li><strong>Lower platform fee</strong> — 5% vs. Eventbrite's 3.5% + $1.79 + separate processing</li>
             <li><strong>Golf-specific features</strong> — Leaderboards, pairings, hole sponsors</li>
             <li><strong>Faster payouts</strong> — Bi-weekly automatic deposits</li>
             <li><strong>Real support</strong> — Talk to a human, not a chatbot</li>

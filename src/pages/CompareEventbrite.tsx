@@ -203,7 +203,7 @@ const CompareEventbrite = () => {
                 <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20 (8.2%)</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
-                YOU SAVE: $3.49 per registration · On 100 golfers: $349 saved
+                YOU SAVE: $0.29 per registration · On 100 golfers: $29 saved + golf-specific features included
               </p>
             </div>
           </motion.div>

@@ -725,6 +725,7 @@ const AdminDashboard = () => {
                 ["store", "Store", ShoppingBag],
                 ["analytics", "Analytics", BarChart3],
                 ["college", "College Hub", School],
+                ["flyer-templates", "Flyer Templates", FileText],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}

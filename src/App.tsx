@@ -60,6 +60,7 @@ import Nonprofits from "./pages/Nonprofits";
 import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
+import SampleDashboard from "./pages/SampleDashboard";
 import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
@@ -142,6 +143,7 @@ const App = () => (
            <Route path="/how-it-works" element={<HowItWorks />} />
            <Route path="/pricing" element={<Pricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
+           <Route path="/sample-dashboard" element={<SampleDashboard />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />

@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import {
-  Loader2, ArrowRight, Trophy, Users, DollarSign, Heart, ClipboardList, LayoutDashboard
+  ArrowRight, Trophy, Users, DollarSign, Heart, ClipboardList, LayoutDashboard
 } from "lucide-react";
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";
@@ -18,37 +15,9 @@ import DemoVolunteersTab from "@/components/sample-tournament/DemoVolunteersTab"
 import DemoFinancesTab from "@/components/sample-tournament/DemoFinancesTab";
 import DemoRegistrationTab from "@/components/sample-tournament/DemoRegistrationTab";
 
-const DEMO_EMAIL = "demo@teevents.com";
-const DEMO_PASSWORD = "demo2026";
 
 const SampleOrganizer = () => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-      if (error) {
-        toast({
-          title: "Demo Unavailable",
-          description: "The demo environment is being prepared. Please try again in a moment.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      navigate("/dashboard");
-    } catch {
-      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -72,15 +41,9 @@ const SampleOrganizer = () => {
             <Badge variant="outline" className="hidden sm:inline-flex text-xs">
               Demo Mode
             </Badge>
-            <Button size="sm" variant="secondary" onClick={handleLogin} disabled={loading}>
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <LayoutDashboard className="h-4 w-4 mr-1" />
-                  Open Dashboard
-                </>
-              )}
+            <Button size="sm" variant="secondary" onClick={() => navigate("/sample-dashboard")}>
+              <LayoutDashboard className="h-4 w-4 mr-1" />
+              Open Dashboard
             </Button>
           </div>
         </div>
@@ -140,8 +103,8 @@ const SampleOrganizer = () => {
             Ready to run your own tournament?
           </p>
           <div className="flex items-center justify-center gap-3">
-            <Button variant="secondary" onClick={handleLogin} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "View Organizer Dashboard"}
+            <Button variant="secondary" onClick={() => navigate("/sample-dashboard")}>
+              View Organizer Dashboard
             </Button>
             <Button variant="outline" onClick={() => navigate("/pricing")}>
               See Pricing

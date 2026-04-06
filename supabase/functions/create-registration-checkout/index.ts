@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
-const PLATFORM_FEE_PERCENT = 4;
+const PLATFORM_FEE_PERCENT = 5;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
     const lineItems: any[] = [];
 
     if (passFeesToParticipants) {
-      // MODEL A: Golfer pays registration + 4% platform fee + Stripe processing fee
+      // MODEL A: Golfer pays registration + 5% platform fee + Stripe processing fee
       const platformFee = Math.round(registrationFeeCents * (PLATFORM_FEE_PERCENT / 100));
       const preStripeTotal = registrationFeeCents + platformFee;
       const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "TeeVents Platform Fee (4%)",
+              name: "TeeVents Platform Fee (5%)",
               description: "Tournament management platform fee",
             },
             unit_amount: platformFee,
@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
         });
       }
     } else {
-      // MODEL B: Golfer pays registration fee only; organizer absorbs the 4% platform fee
+      // MODEL B: Golfer pays registration fee only; organizer absorbs the 5% platform fee
       lineItems.push({
         price_data: {
           currency: "usd",

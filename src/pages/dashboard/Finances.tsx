@@ -536,7 +536,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Transparent 4% platform fee applied. 15% reserve held until 15 days post-event. Net payouts every two weeks.{" "}
+            Transparent 5% platform fee applied. 15% reserve held until 15 days post-event. Net payouts every two weeks.{" "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>
@@ -571,7 +571,7 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Fees Paid (4%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">Flat 4% platform fee on each registration covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Fees Paid (4%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">Flat 5% platform fee on each registration covering processing, platform, and support.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
@@ -833,7 +833,7 @@ const Finances = () => {
                       <p className="font-medium text-foreground">{payout.transaction_count}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Platform Fee (4%)</p>
+                      <p className="text-xs text-muted-foreground">Platform Fee (5%)</p>
                       <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
                     </div>
                     <div>

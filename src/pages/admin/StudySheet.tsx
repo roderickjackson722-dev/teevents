@@ -101,8 +101,8 @@ const StudySheet = () => {
         <li>Set registration fee (any amount from $1 to $10,000)</li>
         <li>Choose fee model:
           <ul>
-            <li><strong>Pass to Golfer:</strong> Golfer pays registration + 4% platform fee + Stripe processing fees</li>
-            <li><strong>Absorb Fees:</strong> Golfer pays registration only; organizer receives registration minus 4% minus Stripe fees</li>
+            <li><strong>Pass to Golfer:</strong> Golfer pays registration + 5% platform fee + Stripe processing fees</li>
+            <li><strong>Absorb Fees:</strong> Golfer pays registration only; organizer receives registration minus 5% minus Stripe fees</li>
           </ul>
         </li>
         <li>Set event date, location, course name, max players</li>
@@ -214,13 +214,13 @@ const StudySheet = () => {
       <h2>4. Payment & Money Flow</h2>
 
       <h3>4.1 How Funds Move</h3>
-      <p>Golfer pays → Stripe processes → TeeVents takes 4% platform fee → 15% hold reserved → Remaining goes to organizer's available balance → Automatic bi-weekly payout or manual withdrawal</p>
+      <p>Golfer pays → Stripe processes → TeeVents takes 5% platform fee → 15% hold reserved → Remaining goes to organizer's available balance → Automatic bi-weekly payout or manual withdrawal</p>
 
       <h3>4.2 Fee Model Comparison</h3>
       <table>
         <tr><th>Model</th><th>Golfer Pays</th><th>Organizer Receives</th><th>Best For</th></tr>
-        <tr><td><strong>Pass to Golfer</strong></td><td>$100 + $4 + ~$3.20 = ~$107.20</td><td>$100 (minus 15% hold)</td><td>Premium events, corporate outings</td></tr>
-        <tr><td><strong>Absorb Fees</strong></td><td>$100 exactly</td><td>$100 - $4 - ~$3.20 = ~$92.80 (minus 15% hold)</td><td>Nonprofits, charity events</td></tr>
+        <tr><td><strong>Pass to Golfer</strong></td><td>$100 + $5 + ~$3.43 = ~$108.43</td><td>$100 (minus 15% hold)</td><td>Premium events, corporate outings</td></tr>
+        <tr><td><strong>Absorb Fees</strong></td><td>$100 exactly</td><td>$100 - $5 - ~$3.20 = ~$91.80 (minus 15% hold)</td><td>Nonprofits, charity events</td></tr>
       </table>
 
       <h3>4.3 Hold Release Timeline</h3>
@@ -332,7 +332,7 @@ const StudySheet = () => {
         <tr><td><strong>Platform Fee</strong></td><td>4% fee charged on all registrations processed through TeeVents</td></tr>
         <tr><td><strong>Stripe Connect</strong></td><td>Stripe's platform for marketplace-style payments; enables organizer payouts</td></tr>
         <tr><td><strong>Express Account</strong></td><td>Simplified Stripe Connect account type for organizers</td></tr>
-        <tr><td><strong>Application Fee</strong></td><td>Stripe mechanism to automatically take the 4% platform fee from each payment</td></tr>
+        <tr><td><strong>Application Fee</strong></td><td>Stripe mechanism to automatically take the 5% platform fee from each payment</td></tr>
         <tr><td><strong>Destination Charge</strong></td><td>Stripe flow where money goes to platform account first, then transferred to organizer</td></tr>
         <tr><td><strong>RLS</strong></td><td>Row Level Security — database-level access control ensuring users only see their own data</td></tr>
         <tr><td><strong>Edge Function</strong></td><td>Serverless function that runs close to the user for low-latency backend logic</td></tr>
@@ -512,14 +512,14 @@ const StudySheet = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">4.1 How Funds Move</h3>
                 <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">
-                  Golfer pays → Stripe processes → 4% platform fee taken → 15% hold reserved → Remaining = available balance → Bi-weekly payout or manual withdrawal
+                  Golfer pays → Stripe processes → 5% platform fee taken → 15% hold reserved → Remaining = available balance → Bi-weekly payout or manual withdrawal
                 </div>
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-2">4.2 Fee Model Comparison</h3>
                 <SimpleTable headers={["Model", "Golfer Pays", "Organizer Receives", "Best For"]} rows={[
-                  ["Pass to Golfer", "$100 + $4 + ~$3.20 = ~$107.20", "$100 (minus 15% hold)", "Premium events"],
-                  ["Absorb Fees", "$100 exactly", "~$92.80 (minus 15% hold)", "Nonprofits, charities"],
+                  ["Pass to Golfer", "$100 + $5 + ~$3.43 = ~$108.43", "$100 (minus 15% hold)", "Premium events"],
+                  ["Absorb Fees", "$100 exactly", "~$91.80 (minus 15% hold)", "Nonprofits, charities"],
                 ]} />
               </div>
               <FeatureBlock title="4.3 Hold Release Timeline" items={[
@@ -627,7 +627,7 @@ const StudySheet = () => {
                 ["Platform Fee", "4% fee charged on all registrations"],
                 ["Stripe Connect", "Stripe's platform for marketplace payments"],
                 ["Express Account", "Simplified Stripe Connect account type"],
-                ["Application Fee", "Stripe mechanism to take the 4% platform fee"],
+                ["Application Fee", "Stripe mechanism to take the 5% platform fee"],
                 ["RLS", "Row Level Security — database-level access control"],
                 ["Edge Function", "Serverless backend function"],
                 ["Cron Job", "Scheduled task (e.g., daily hold releases)"],

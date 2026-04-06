@@ -134,8 +134,8 @@ const SampleOrganizer = () => {
             Ready to run your own tournament?
           </p>
           <div className="flex items-center justify-center gap-3">
-            <Button variant="secondary" onClick={handleLogin} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "View Organizer Dashboard"}
+            <Button variant="secondary" onClick={() => navigate("/sample-dashboard")}>
+              View Organizer Dashboard
             </Button>
             <Button variant="outline" onClick={() => navigate("/pricing")}>
               See Pricing

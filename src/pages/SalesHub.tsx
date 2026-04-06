@@ -420,7 +420,7 @@ export default function SalesHub() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center py-8 mt-8 border-t border-border">
             <Button size="lg" onClick={() => navigate("/get-started")}>Get Started Free</Button>
-            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com", "_blank")}>Book a Demo</Button>
+            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com/teevents-golf/demo", "_blank")}>Book a Live Demo</Button>
           </div>
         </div>
       </div>

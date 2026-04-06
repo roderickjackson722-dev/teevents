@@ -270,7 +270,7 @@ function StudySheetTab() {
 
         <section id="study-glossary">
           <SectionHeader num={9} title="Glossary" />
-          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "4% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
+          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "5% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
         </section>
       </div>
     </div>

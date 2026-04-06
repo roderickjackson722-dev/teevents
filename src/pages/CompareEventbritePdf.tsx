@@ -66,9 +66,9 @@ const CompareEventbritePdf = () => {
             <tr><td>Volunteer Check-in</td><td class="no">✗ Not available</td><td class="yes">✓ QR code + scheduling</td></tr>
 
             <tr class="cat"><td colspan="3">Pricing</td></tr>
-            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">5% flat (all-in)</td></tr>
-            <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="yes">Included</td></tr>
-            <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$5.00</td></tr>
+            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">5% flat</td></tr>
+            <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="warn">2.9% + $0.30 (Stripe)</td></tr>
+            <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$8.20</td></tr>
 
             <tr class="cat"><td colspan="3">Payouts</td></tr>
             <tr><td>Payout Speed</td><td class="no">After event (slow)</td><td class="yes">Bi-weekly</td></tr>

@@ -40,8 +40,8 @@ const data: CompSection[] = [
     category: "Pricing",
     rows: [
       { feature: "Platform Fee", eventbrite: "3.5% + $1.79/ticket", teevents: "5% flat", ebStatus: "warn", tvStatus: "yes" },
-      { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 extra", teevents: "Included in 5%", ebStatus: "no", tvStatus: "yes" },
-      { feature: "Total on $100 Registration", eventbrite: "~$8.49+", teevents: "$5.00", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", ebStatus: "warn", tvStatus: "warn" },
+      { feature: "Total on $100 Registration", eventbrite: "~$8.49+", teevents: "$8.20", ebStatus: "no", tvStatus: "yes" },
       { feature: "Monthly Subscription", eventbrite: "No (per-event fees)", teevents: "No", ebStatus: "yes", tvStatus: "yes" },
       { feature: "Pass Fees to Golfers", eventbrite: "Not transparent", teevents: "Yes (toggle on/off)", ebStatus: "warn", tvStatus: "yes" },
     ],

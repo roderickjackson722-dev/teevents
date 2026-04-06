@@ -5,7 +5,7 @@ import { ArrowLeft, DollarSign, Shield, Info } from "lucide-react";
 
 const FeesAndHold = () => (
   <Layout>
-    <SEO title="Fees & Fund Holds | TeeVents Help" description="Understand TeeVents' transparent 4% platform fee and 15% protective hold that safeguards organizers from chargebacks." />
+    <SEO title="Fees & Fund Holds | TeeVents Help" description="Understand TeeVents' transparent 5% platform fee and 15% protective hold that safeguards organizers from chargebacks." />
     <div className="max-w-3xl mx-auto px-4 py-16">
       <Link to="/help" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-6">
         <ArrowLeft className="h-4 w-4 mr-1" /> Back to Help Center
@@ -16,16 +16,16 @@ const FeesAndHold = () => (
 
       <div className="space-y-8">
         <section>
-          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><DollarSign className="h-5 w-5 text-primary" /> The 4% Platform Fee</h2>
-          <p className="text-muted-foreground mb-4">TeeVents charges a flat 4% platform fee on each registration. This covers payment processing, platform maintenance, and customer support.</p>
+          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><DollarSign className="h-5 w-5 text-primary" /> The 5% Platform Fee</h2>
+          <p className="text-muted-foreground mb-4">TeeVents charges a flat 5% platform fee on each registration. This covers payment processing, platform maintenance, and customer support.</p>
           
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="bg-card border border-border rounded-lg p-4">
               <h4 className="font-semibold text-foreground mb-2">Model A: Pass Fees to Golfers</h4>
-              <p className="text-sm text-muted-foreground mb-3">The golfer pays the base price plus the 4% fee and Stripe processing fee as separate line items.</p>
+              <p className="text-sm text-muted-foreground mb-3">The golfer pays the base price plus the 5% fee and Stripe processing fee as separate line items.</p>
               <div className="text-sm space-y-1 bg-muted/50 rounded p-3">
                 <div className="flex justify-between"><span>Registration</span><span>$100.00</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Platform Fee (4%)</span><span>$4.00</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>$4.00</span></div>
                 <div className="flex justify-between text-muted-foreground"><span>Processing Fee</span><span>$3.33</span></div>
                 <hr className="my-1 border-border" />
                 <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$107.33</span></div>
@@ -34,12 +34,12 @@ const FeesAndHold = () => (
             </div>
             <div className="bg-card border border-border rounded-lg p-4">
               <h4 className="font-semibold text-foreground mb-2">Model B: Absorb Fees</h4>
-              <p className="text-sm text-muted-foreground mb-3">The golfer pays only the base registration fee. The 4% is deducted from your payout.</p>
+              <p className="text-sm text-muted-foreground mb-3">The golfer pays only the base registration fee. The 5% is deducted from your payout.</p>
               <div className="text-sm space-y-1 bg-muted/50 rounded p-3">
                 <div className="flex justify-between"><span>Registration</span><span>$100.00</span></div>
                 <hr className="my-1 border-border" />
                 <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$100.00</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Platform Fee (4%)</span><span>−$4.00</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>−$4.00</span></div>
                 <div className="flex justify-between text-primary font-medium"><span>You Receive</span><span>$96.00</span></div>
               </div>
             </div>
@@ -69,7 +69,7 @@ const FeesAndHold = () => (
             <h4 className="font-semibold text-foreground mb-2">Example: $100 Registration</h4>
             <div className="space-y-1 text-muted-foreground">
               <div className="flex justify-between"><span>Gross Amount</span><span>$100.00</span></div>
-              <div className="flex justify-between"><span>Platform Fee (4%)</span><span>−$4.00</span></div>
+              <div className="flex justify-between"><span>Platform Fee (5%)</span><span>−$4.00</span></div>
               <div className="flex justify-between"><span>Net Amount</span><span>$96.00</span></div>
               <div className="flex justify-between text-secondary"><span>Held in Reserve (15%)</span><span>$15.00</span></div>
               <div className="flex justify-between"><span>Available Immediately</span><span>$81.00</span></div>

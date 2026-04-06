@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "4% TeeVents fee + Stripe processing fees",
+    fee: "5% TeeVents fee + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",
@@ -177,7 +177,7 @@ const plans = [
     price: "$299",
     period: "per tournament",
     description: "Unlimited players. We build your tournament platform for you.",
-    fee: "4% TeeVents fee + Stripe processing fees",
+    fee: "5% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Base (unlimited players)",
       "We build your website for you",
@@ -200,7 +200,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "4% TeeVents fee + Stripe processing fees",
+    fee: "5% TeeVents fee + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",
@@ -464,7 +464,7 @@ const HowItWorks = () => {
                     <span className="font-display font-bold text-foreground">$150.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (4%)</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
                     <span className="font-display font-bold text-destructive">+$6.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
@@ -488,7 +488,7 @@ const HowItWorks = () => {
                       <span className="text-sm font-display font-bold text-foreground">$150.00</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">TeeVents fee (4%)</span>
+                      <span className="text-xs text-muted-foreground">TeeVents fee (5%)</span>
                       <span className="text-sm font-display font-bold text-destructive">−$6.00</span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -502,7 +502,7 @@ const HowItWorks = () => {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  All plans include a 4% TeeVents platform fee + Stripe's standard 2.9% + $0.30. Toggle fee handling in tournament settings.
+                  All plans include a 5% TeeVents platform fee + Stripe's standard 2.9% + $0.30. Toggle fee handling in tournament settings.
                 </p>
               </div>
             </motion.div>
@@ -550,7 +550,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              All plans include a 4% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction.
+              All plans include a 5% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction.
             </p>
           </motion.div>
 

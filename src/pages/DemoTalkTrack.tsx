@@ -26,7 +26,7 @@ const FLOW_STEPS = [
 /* ────── $100 breakdown ────── */
 const SAMPLE_BREAKDOWN = [
   { label: "Registration Price", amount: "$100.00" },
-  { label: "TeeVents Platform Fee (4%)", amount: "−$4.00" },
+  { label: "TeeVents Platform Fee (5%)", amount: "−$4.00" },
   { label: "Net After Fee", amount: "$96.00" },
   { label: "15% Reserve Hold", amount: "−$15.00" },
   { label: "Net Available for Payout", amount: "$81.00", bold: true },
@@ -90,7 +90,7 @@ INTRODUCTION
 HOW FUNDS FLOW
 1. Golfer registers for your tournament and pays by credit card, Apple Pay, or Google Pay.
 2. Payment is collected by TeeVents (we use Stripe, the same platform that powers millions of online businesses).
-3. 4% platform fee is automatically deducted — this covers hosting, support, software updates, and payment processing infrastructure.
+3. 5% platform fee is automatically deducted — this covers hosting, support, software updates, and payment processing infrastructure.
 4. 15% hold is placed on the remaining balance — this protects you from chargebacks and refunds.
 5. 81% (net available) is immediately tracked in your dashboard but held for payout timing.
 6. 15 days after your event ends, the 15% hold is released to your available balance.
@@ -98,7 +98,7 @@ HOW FUNDS FLOW
 
 SAMPLE $100 REGISTRATION BREAKDOWN
 • Registration Price: $100.00
-• Platform Fee (4%): −$4.00
+• Platform Fee (5%): −$4.00
 • Net After Fee: $96.00
 • 15% Reserve Hold: −$15.00
 • Net Available for Payout: $81.00
@@ -122,7 +122,7 @@ STRIPE CONNECT VS PAYPAL
 • PayPal: Enter email, 1% or $0.50 per payout, 1–5 day payouts, manual only, PayPal website.
 
 TRANSPARENCY & REPORTING
-"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the 4% fee, the 15% hold, when it releases, your available balance, and full payout history. You can also download CSV reports anytime."
+"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the 5% fee, the 15% hold, when it releases, your available balance, and full payout history. You can also download CSV reports anytime."
 
 COMMON OBJECTIONS
 • "15% hold is too high" → You get it all back 15 days after your event. No other platform gives you this protection.
@@ -340,7 +340,7 @@ export default function DemoTalkTrack() {
                 <CardContent className="p-6">
                   <Badge variant="outline" className="mb-3 text-xs">SAY THIS — TRANSPARENCY</Badge>
                   <p className="text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the 4% fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
+                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the 5% fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
                   </p>
                 </CardContent>
               </Card>

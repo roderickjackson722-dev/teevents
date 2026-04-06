@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
                   <p>A ${isManual ? "withdrawal" : "payout"} of <strong>$${(totalPayoutAmount / 100).toFixed(2)}</strong> has been ${hasVerifiedPayout ? "transferred to your Stripe account" : "queued"} for <strong>${orgData?.name}</strong>.</p>
                   <table style="width:100%;border-collapse:collapse;margin:16px 0;">
                     <tr><td style="padding:8px;border:1px solid #e5e7eb;">Transactions</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:right;">${transactions.length}</td></tr>
-                    <tr><td style="padding:8px;border:1px solid #e5e7eb;">Platform Fees (4%)</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:right;">$${(totalFees / 100).toFixed(2)}</td></tr>
+                    <tr><td style="padding:8px;border:1px solid #e5e7eb;">Platform Fees (5%)</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:right;">$${(totalFees / 100).toFixed(2)}</td></tr>
                     <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;">Amount Transferred</td><td style="padding:8px;border:1px solid #e5e7eb;text-align:right;font-weight:bold;">$${(totalPayoutAmount / 100).toFixed(2)}</td></tr>
                   </table>
                   ${hasVerifiedPayout ? '<p style="color:#059669;">✅ Funds will arrive in your bank account within 1-3 business days.</p>' : '<p style="color:#d97706;">⚠️ Please connect your Stripe account in Dashboard → Settings → Payouts to receive your funds.</p>'}

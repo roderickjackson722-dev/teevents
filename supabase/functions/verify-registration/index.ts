@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
-const PLATFORM_FEE_PERCENT = 4;
+const PLATFORM_FEE_PERCENT = 5;
 const HOLD_PERCENT = 15;
 
 const corsHeaders = {
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
 
         // Net for organizer depends on fee model:
         // Model A (pass to golfer): Organizer gets full registration amount (fee paid by golfer separately)
-        // Model B (absorb): Organizer gets registration minus 4% fee
+        // Model B (absorb): Organizer gets registration minus 5% fee
         const netAmountCents = passFeesToGolfer
           ? grossAmount
           : grossAmount - platformFeeCents;
@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
                 `💳 Amount charged: <strong>${amountDisplay}</strong>`,
                 passFeesToGolfer
                   ? `📊 Fees passed to golfer — you receive the full registration amount minus 15% hold`
-                  : `📊 4% platform fee absorbed — net amount after fee and 15% hold applied`,
+                  : `📊 5% platform fee absorbed — net amount after fee and 15% hold applied`,
                 `📧 ${reg.email}`,
                 regs && regs.length > 1 ? `👥 Group registration (${regs.length} players)` : "",
               ].filter(Boolean)),

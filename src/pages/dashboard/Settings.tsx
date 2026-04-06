@@ -242,7 +242,7 @@ const Settings = () => {
             <h2 className="text-lg font-display font-bold text-foreground">Payment & Fee Settings</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Control how the 4% platform fee and Stripe processing fees are handled for each tournament.
+            Control how the 5% platform fee and Stripe processing fees are handled for each tournament.
           </p>
           <div className="space-y-4">
             {tournaments.map((t) => (
@@ -271,7 +271,7 @@ const Settings = () => {
           </div>
           <div className="bg-muted/50 rounded-lg p-3 mt-4">
             <p className="text-xs text-muted-foreground">
-              <strong>When ON (recommended):</strong> Registrants pay the base price + 4% TeeVents fee + ~2.9%+$0.30 Stripe fee. Total ~6.9% + $0.30.
+              <strong>When ON (recommended):</strong> Registrants pay the base price + 5% TeeVents fee + ~2.9%+$0.30 Stripe fee. Total ~6.9% + $0.30.
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               <strong>When OFF:</strong> Participants pay exactly the advertised price. All fees are deducted from your bi-weekly payout.

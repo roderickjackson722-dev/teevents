@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
-const PLATFORM_FEE_PERCENT = 4;
+const PLATFORM_FEE_PERCENT = 5;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
         lineItems.push({
           price_data: {
             currency: "usd",
-            product_data: { name: "TeeVents Platform Fee (4%)", description: "Tournament management platform fee" },
+            product_data: { name: "TeeVents Platform Fee (5%)", description: "Tournament management platform fee" },
             unit_amount: platformFee,
           },
           quantity: 1,

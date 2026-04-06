@@ -129,12 +129,7 @@ const CompareEventbrite = () => {
       {/* Comparison Table */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 max-w-5xl">
-          <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
-            <h2 className="text-2xl font-display font-bold text-foreground">Feature-by-Feature Comparison</h2>
-            <Button variant="outline" onClick={handleDownloadPdf} className="gap-2">
-              <Download className="h-4 w-4" /> Download PDF
-            </Button>
-          </div>
+          <h2 className="text-2xl font-display font-bold text-foreground mb-8">Feature-by-Feature Comparison</h2>
 
           <div className="rounded-xl border border-border overflow-hidden shadow-sm">
             <Table>

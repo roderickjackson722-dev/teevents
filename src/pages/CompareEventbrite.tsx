@@ -199,8 +199,8 @@ const CompareEventbrite = () => {
               <h3 className="text-lg font-bold mb-3" style={{ color: "#1a5c38" }}>TeeVents on $100 Registration</h3>
               <ul className="space-y-2 text-sm" style={{ color: "#1a5c38" }}>
                 <li>Platform fee: 5% flat = <strong>$5.00</strong></li>
-                <li>Payment processing: <strong>INCLUDED</strong></li>
-                <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $5.00 (5%)</li>
+                <li>Stripe processing: 2.9% + $0.30 = <strong>$3.20</strong></li>
+                <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20 (8.2%)</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
                 YOU SAVE: $3.49 per registration · On 100 golfers: $349 saved

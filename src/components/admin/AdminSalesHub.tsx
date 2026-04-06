@@ -408,7 +408,6 @@ CLOSING (30 seconds)
           <div className="flex gap-2">
             <Button onClick={handleCopy} className="gap-2">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Copied!" : "Copy Script"}</Button>
             <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> View Comparison Page</Button>
-            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents/pdf", "_blank")} className="gap-2"><Download className="h-4 w-4" /> Download PDF</Button>
           </div>
         </CardContent>
       </Card>

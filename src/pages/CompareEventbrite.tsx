@@ -87,9 +87,6 @@ const StatusIcon = ({ status }: { status: Status }) => {
 };
 
 const CompareEventbrite = () => {
-  const handleDownloadPdf = () => {
-    window.open("/compare/eventbrite-vs-teevents/pdf", "_blank");
-  };
 
   return (
     <Layout>

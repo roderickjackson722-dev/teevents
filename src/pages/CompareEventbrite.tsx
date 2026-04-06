@@ -40,8 +40,8 @@ const data: CompSection[] = [
     category: "Pricing",
     rows: [
       { feature: "Platform Fee", eventbrite: "3.5% + $1.79/ticket", teevents: "5% flat", ebStatus: "warn", tvStatus: "yes" },
-      { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 extra", teevents: "Included in 5%", ebStatus: "no", tvStatus: "yes" },
-      { feature: "Total on $100 Registration", eventbrite: "~$8.49+", teevents: "$5.00", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", ebStatus: "warn", tvStatus: "warn" },
+      { feature: "Total on $100 Registration", eventbrite: "~$8.49+", teevents: "$8.20", ebStatus: "no", tvStatus: "yes" },
       { feature: "Monthly Subscription", eventbrite: "No (per-event fees)", teevents: "No", ebStatus: "yes", tvStatus: "yes" },
       { feature: "Pass Fees to Golfers", eventbrite: "Not transparent", teevents: "Yes (toggle on/off)", ebStatus: "warn", tvStatus: "yes" },
     ],
@@ -199,11 +199,11 @@ const CompareEventbrite = () => {
               <h3 className="text-lg font-bold mb-3" style={{ color: "#1a5c38" }}>TeeVents on $100 Registration</h3>
               <ul className="space-y-2 text-sm" style={{ color: "#1a5c38" }}>
                 <li>Platform fee: 5% flat = <strong>$5.00</strong></li>
-                <li>Payment processing: <strong>INCLUDED</strong></li>
-                <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $5.00 (5%)</li>
+                <li>Stripe processing: 2.9% + $0.30 = <strong>$3.20</strong></li>
+                <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20 (8.2%)</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
-                YOU SAVE: $3.49 per registration · On 100 golfers: $349 saved
+                YOU SAVE: $0.29 per registration · On 100 golfers: $29 saved + golf-specific features included
               </p>
             </div>
           </motion.div>

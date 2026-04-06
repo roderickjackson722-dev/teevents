@@ -39,7 +39,7 @@ const FLYER_TEMPLATES = [
   { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Automated payouts"], cta: "Try it free →" },
   { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Learn more →" },
   { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Automated payouts"], cta: "Start fundraising →" },
-  { id: "fees", title: "5% platform fee. That's it.", headline: "5% platform fee. That's it.", items: ["✅ No monthly subscription", "✅ No setup fees", "✅ No hidden costs", "✅ Stripe processing included"], cta: "See pricing →" },
+  { id: "fees", title: "5% platform fee + Stripe processing", headline: "5% platform fee + Stripe processing", items: ["✅ No monthly subscription", "✅ No setup fees", "✅ No hidden costs", "✅ 2.9% + $0.30 Stripe fee separate"], cta: "See pricing →" },
   { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "See it in action →" },
   { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Try TeeVents →" },
   { id: "payout", title: "Get paid automatically", headline: "Get paid automatically. Every 2 weeks.", items: ["💰 Bi-weekly direct deposits", "💰 15% reserve for chargebacks", "💰 Complete financial dashboard", "💰 1099-K tax reporting"], cta: "Connect your bank →" },
@@ -373,7 +373,7 @@ KEY DIFFERENTIATOR #1: GOLF-SPECIFIC FEATURES (45 seconds)
 "With Eventbrite, you don't get live leaderboards, hole sponsor management, or volunteer check-in. With TeeVents, all of that is built in. Your golfers scan a QR code to enter scores, your sponsors get a branded portal, and your volunteers check in with their phone."
 
 KEY DIFFERENTIATOR #2: PRICING TRANSPARENCY (45 seconds)
-"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents? A flat 5% — that's $5.00 total, processing included. You save $3.49 per golfer. On 100 golfers, that's $349 back in your pocket."
+"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges 5% platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost, but you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
 
 KEY DIFFERENTIATOR #3: PAYOUT SPEED (30 seconds)
 "With Eventbrite, you wait until after your event to get paid. With TeeVents, you receive automatic bi-weekly payouts. We hold 15% for 15 days as chargeback protection, then release it automatically."

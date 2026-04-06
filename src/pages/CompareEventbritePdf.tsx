@@ -50,8 +50,8 @@ const CompareEventbritePdf = () => {
 
         <div class="bottom-line">
           <h2>The Bottom Line</h2>
-          <p>Eventbrite charges <strong>~8.5% total fees</strong> on a $100 registration. TeeVents charges a <strong>flat 5%</strong> — with payment processing included. Plus, TeeVents gives you live leaderboards, sponsor management, volunteer check-in, and automatic payouts that Eventbrite simply doesn't offer.</p>
-          <p class="save">Save $3.49 per golfer · $349 on 100 registrations</p>
+          <p>Eventbrite charges <strong>~8.5% total fees</strong> on a $100 registration. TeeVents charges <strong>5% platform + 2.9% + $0.30 Stripe processing = ~8.2%</strong>. Similar total cost, but TeeVents gives you live leaderboards, sponsor management, volunteer check-in, and automatic payouts that Eventbrite simply doesn't offer.</p>
+          <p class="save">Lower platform fee + golf-specific features Eventbrite can't match</p>
         </div>
 
         <table>
@@ -66,9 +66,9 @@ const CompareEventbritePdf = () => {
             <tr><td>Volunteer Check-in</td><td class="no">✗ Not available</td><td class="yes">✓ QR code + scheduling</td></tr>
 
             <tr class="cat"><td colspan="3">Pricing</td></tr>
-            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">5% flat (all-in)</td></tr>
-            <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="yes">Included</td></tr>
-            <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$5.00</td></tr>
+            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">5% flat</td></tr>
+            <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="warn">2.9% + $0.30 (Stripe)</td></tr>
+            <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$8.20</td></tr>
 
             <tr class="cat"><td colspan="3">Payouts</td></tr>
             <tr><td>Payout Speed</td><td class="no">After event (slow)</td><td class="yes">Bi-weekly</td></tr>
@@ -93,8 +93,8 @@ const CompareEventbritePdf = () => {
             <h3>TeeVents · $100 Registration</h3>
             <ul>
               <li>Platform: 5% flat = $5.00</li>
-              <li>Processing: INCLUDED</li>
-              <li class="total" style="border-color:#1a5c38">Total: $5.00 (5%)</li>
+              <li>Stripe: 2.9% + $0.30 = $3.20</li>
+              <li class="total" style="border-color:#1a5c38">Total: $8.20 (8.2%)</li>
             </ul>
           </div>
         </div>
@@ -102,7 +102,7 @@ const CompareEventbritePdf = () => {
         <div class="reasons">
           <h2>Why Golf Organizers Switch</h2>
           <ol>
-            <li><strong>Lower total fees</strong> — Save $3.49 per golfer vs. Eventbrite</li>
+            <li><strong>Lower platform fee</strong> — 5% vs. Eventbrite's 3.5% + $1.79 + separate processing</li>
             <li><strong>Golf-specific features</strong> — Leaderboards, pairings, hole sponsors</li>
             <li><strong>Faster payouts</strong> — Bi-weekly automatic deposits</li>
             <li><strong>Real support</strong> — Talk to a human, not a chatbot</li>

@@ -190,6 +190,34 @@ const SharePromote = () => {
                   <Button size="sm" variant="outline" onClick={() => downloadQR("svg")}>
                     <Download className="h-3.5 w-3.5 mr-1.5" /> SVG (Vector)
                   </Button>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    if (!qrRef.current) return;
+                    const svg = qrRef.current.querySelector("svg");
+                    if (!svg) return;
+                    const canvas = document.createElement("canvas");
+                    const size = 600;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext("2d")!;
+                    const img = new Image();
+                    const svgBlob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+                    img.onload = () => {
+                      ctx.fillStyle = "#ffffff";
+                      ctx.fillRect(0, 0, size, size);
+                      ctx.drawImage(img, 0, 0, size, size);
+                      canvas.toBlob((blob) => {
+                        if (!blob) return;
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(blob);
+                        a.download = `${tournament?.slug || "tournament"}-qr.jpg`;
+                        a.click();
+                        URL.revokeObjectURL(a.href);
+                      }, "image/jpeg", 0.92);
+                    };
+                    img.src = URL.createObjectURL(svgBlob);
+                  }}>
+                    <Download className="h-3.5 w-3.5 mr-1.5" /> JPG (Web)
+                  </Button>
                   <Button size="sm" variant="outline" onClick={() => copyToClipboard(qrUrl, "QR link")}>
                     <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
                   </Button>

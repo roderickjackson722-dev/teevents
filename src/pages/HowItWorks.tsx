@@ -465,15 +465,15 @@ const HowItWorks = () => {
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
-                    <span className="font-display font-bold text-destructive">+$6.00</span>
+                    <span className="font-display font-bold text-destructive">+$7.50</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">+$4.82</span>
+                    <span className="font-display font-bold text-destructive">+$5.03</span>
                   </div>
                   <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
                     <span className="font-semibold text-foreground">Golfer pays at checkout</span>
-                    <span className="font-display font-bold text-foreground text-xl">$160.82</span>
+                    <span className="font-display font-bold text-foreground text-xl">$162.53</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-primary">Organizer receives</span>
@@ -489,15 +489,15 @@ const HowItWorks = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-muted-foreground">TeeVents fee (5%)</span>
-                      <span className="text-sm font-display font-bold text-destructive">−$6.00</span>
+                      <span className="text-sm font-display font-bold text-destructive">−$7.50</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-muted-foreground">Stripe processing</span>
-                      <span className="text-sm font-display font-bold text-destructive">−$4.65</span>
+                      <span className="text-sm font-display font-bold text-destructive">−$4.80</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-primary font-semibold">Organizer receives</span>
-                      <span className="text-sm font-display font-bold text-primary">$139.35</span>
+                      <span className="text-sm font-display font-bold text-primary">$137.70</span>
                     </div>
                   </div>
                 </div>

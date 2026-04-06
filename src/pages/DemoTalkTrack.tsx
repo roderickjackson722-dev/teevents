@@ -26,12 +26,12 @@ const FLOW_STEPS = [
 /* ────── $100 breakdown ────── */
 const SAMPLE_BREAKDOWN = [
   { label: "Registration Price", amount: "$100.00" },
-  { label: "TeeVents Platform Fee (5%)", amount: "−$4.00" },
-  { label: "Net After Fee", amount: "$96.00" },
+  { label: "TeeVents Platform Fee (5%)", amount: "−$5.00" },
+  { label: "Net After Fee", amount: "$95.00" },
   { label: "15% Reserve Hold", amount: "−$15.00" },
-  { label: "Net Available for Payout", amount: "$81.00", bold: true },
+  { label: "Net Available for Payout", amount: "$80.00", bold: true },
   { label: "Hold Released (Event +15 days)", amount: "+$15.00" },
-  { label: "Total Received by Organizer", amount: "$96.00", bold: true },
+  { label: "Total Received by Organizer", amount: "$95.00", bold: true },
 ];
 
 /* ────── objections ────── */

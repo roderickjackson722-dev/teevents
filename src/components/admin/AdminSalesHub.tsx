@@ -183,7 +183,7 @@ function StudySheetTab() {
       <h2>1. Platform Overview</h2><p>TeeVents is an all-in-one golf tournament management platform.</p>
       <h2>2. Organizer Features</h2><p>Tournament creation, registration, payments, volunteers, sponsors, leaderboard, auction, and more.</p>
       <h2>3. Golfer Experience</h2><p>Registration → QR check-in → Mobile scoring → Leaderboard</p>
-      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → 4% fee → 15% hold → Available balance → Bi-weekly payout</p>
+      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → 5% fee → 15% hold → Available balance → Bi-weekly payout</p>
       <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>

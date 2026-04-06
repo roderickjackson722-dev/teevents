@@ -41,6 +41,13 @@ const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noInde
     setMeta("name", "twitter:description", description);
     setMeta("name", "twitter:image", ogImage);
 
+    if (noIndex) {
+      setMeta("name", "robots", "noindex, nofollow");
+    } else {
+      const robotsMeta = document.querySelector('meta[name="robots"]');
+      if (robotsMeta) robotsMeta.remove();
+    }
+
     let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!link) {
       link = document.createElement("link");
@@ -48,7 +55,7 @@ const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noInde
       document.head.appendChild(link);
     }
     link.setAttribute("href", url);
-  }, [fullTitle, description, url, ogImage]);
+  }, [fullTitle, description, url, ogImage, noIndex]);
 
   return null;
 };

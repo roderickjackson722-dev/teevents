@@ -91,6 +91,7 @@ const managementItems = [
   { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers" },
   { title: "Surveys", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys" },
   { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations" },
+  { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null },
 ];
 
 export function DashboardSidebar() {

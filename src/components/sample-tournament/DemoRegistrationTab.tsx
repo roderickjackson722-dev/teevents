@@ -88,7 +88,7 @@ const DemoRegistrationTab = () => {
               </div>
               <div className="flex justify-between text-sm mt-1">
                 <span className="text-muted-foreground">Processing Fee</span>
-                <span className="text-foreground">$6.00</span>
+                <span className="text-foreground">$7.50</span>
               </div>
               <div className="border-t border-border mt-2 pt-2 flex justify-between text-sm font-bold">
                 <span className="text-foreground">Total</span>

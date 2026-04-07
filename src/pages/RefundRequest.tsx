@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import RefundRequestForm from "@/components/RefundRequestForm";
-import { SEO } from "@/components/SEO";
+import SEO from "@/components/SEO";
 
 export default function RefundRequest() {
   const { tournamentId } = useParams<{ tournamentId: string }>();

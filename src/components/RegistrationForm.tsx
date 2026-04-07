@@ -292,8 +292,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         } : null;
 
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, players: playerData }
-            : { tournament_id: tournamentId, cover_fees: coverFees, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;

@@ -277,6 +277,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setProducts((productRes.data as PublicProduct[]) || []);
         setAuctionItems((auctionRes.data as AuctionItem[]) || []);
         setPhotos((photoRes.data as Photo[]) || []);
+        setRegTiers((tiersRes.data as TierPublic[]) || []);
+        setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));

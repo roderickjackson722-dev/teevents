@@ -881,6 +881,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== EVENT DAY CONTESTS ===== */}
+      {contests.length > 0 && (
       <section id="contests" className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -888,24 +889,21 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
             <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Compete for prizes throughout the day</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { icon: "🏌️", title: "Longest Drive", desc: "Hit it the farthest on the designated hole to win a prize." },
-                { icon: "🎯", title: "Closest to the Pin", desc: "Land your tee shot closest to the pin on the par 3." },
-                { icon: "🕳️", title: "Hole-in-One", desc: "Make a hole-in-one on a designated hole for a major prize." },
-                { icon: "🏆", title: "Putting Contest", desc: "Test your putting skills on the practice green before tee-off." },
-                { icon: "💰", title: "Mulligan Package", desc: "Purchase mulligans to improve your score during the round." },
-                { icon: "🎲", title: "50/50 Raffle", desc: "Buy tickets for a chance to win half the pot." },
-              ].map((contest, i) => (
-                <div key={i} className="bg-white rounded-xl border p-5 text-center space-y-2 hover:shadow-md transition-shadow" style={{ borderColor: "#e5e5e5" }}>
+              {contests.map((contest) => (
+                <div key={contest.id} className="bg-white rounded-xl border p-5 text-center space-y-2 hover:shadow-md transition-shadow" style={{ borderColor: "#e5e5e5" }}>
                   <span className="text-3xl">{contest.icon}</span>
-                  <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{contest.title}</h3>
-                  <p className="text-sm" style={{ color: "#666" }}>{contest.desc}</p>
+                  <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{contest.name}</h3>
+                  {contest.description && <p className="text-sm" style={{ color: "#666" }}>{contest.description}</p>}
+                  {contest.fee_cents > 0 && (
+                    <p className="text-xs font-semibold" style={{ color: secondary }}>${(contest.fee_cents / 100).toFixed(2)}</p>
+                  )}
                 </div>
               ))}
             </div>
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* ===== EVENT AGENDA ===== */}
       {tournament.schedule_info && (

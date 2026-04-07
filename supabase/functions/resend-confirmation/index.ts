@@ -185,6 +185,8 @@ Deno.serve(async (req) => {
             tournament.title,
             tournament.date,
             tournament.location,
+            (tournament as any).slug,
+            tournamentId,
           );
           sent++;
         }

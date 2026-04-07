@@ -490,7 +490,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   // Fixed nav tabs
   const navLinks: { label: string; href: string }[] = [
     { label: "Home", href: "#top" },
-    { label: "Event Day Contests", href: "#contests" },
+    ...(contests.length > 0 ? [{ label: "Event Day Contests", href: "#contests" }] : []),
     { label: "Registration", href: "#register" },
     { label: "Photos", href: "#photos" },
     { label: "Location", href: "#location" },

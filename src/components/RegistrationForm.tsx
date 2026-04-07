@@ -493,7 +493,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         {/* Cover Fees Option */}
         {hasFee && (passFeesToRegistrants || (allowCoverFees && !passFeesToRegistrants)) && (
           <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
-            {passFeesToRegistrants && !isNonprofit ? (
+            {passFeesToRegistrants ? (
               <>
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-destructive" />

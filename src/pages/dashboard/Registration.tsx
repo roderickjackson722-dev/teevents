@@ -156,6 +156,7 @@ const Registration = () => {
       setMaxPlayersDisplay(String(mp));
       setFoursomeReg(tournament.foursome_registration || false);
       setMaxGroupSize(tournament.max_group_size || 1);
+      setAllowCoverFees(tournament.allow_cover_fees !== false);
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([

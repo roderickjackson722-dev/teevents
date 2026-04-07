@@ -122,6 +122,7 @@ const Registration = () => {
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
   const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
+  const [allowCoverFees, setAllowCoverFees] = useState<boolean>(true);
 
   /* fetch tournaments */
   useEffect(() => {

@@ -54,6 +54,8 @@ const AdminFlyerTemplates = () => {
   const [csvData, setCsvData] = useState("");
   const [importPreview, setImportPreview] = useState<Omit<FlyerTemplate, "id">[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const thumbRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchTemplates = async () => {
     const { data } = await supabase

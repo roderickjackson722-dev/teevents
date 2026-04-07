@@ -124,6 +124,7 @@ Deno.serve(async (req) => {
         await sendRegistrantConfirmationEmail(
           first_name, last_name, email.trim(),
           tournament.title, tournament.date, tournament.location,
+          tournament.slug, tournament.id,
         );
       } catch (e) {
         console.error("Registrant confirmation error:", e);

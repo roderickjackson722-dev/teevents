@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, organization_id, confirmation_email_config")
+      .select("title, date, location, organization_id, confirmation_email_config, slug")
       .eq("id", tournamentId)
       .single();
 

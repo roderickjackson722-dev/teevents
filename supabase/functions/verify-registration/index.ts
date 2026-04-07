@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
         if (reg) {
           const { data: tournament } = await supabaseAdmin
             .from("tournaments")
-            .select("title, date, location, organization_id")
+            .select("title, date, location, organization_id, slug")
             .eq("id", reg.tournament_id)
             .single();
 
@@ -180,6 +180,7 @@ Deno.serve(async (req) => {
               await sendRegistrantConfirmationEmail(
                 r.first_name, r.last_name, r.email,
                 tournament.title, tournament.date, tournament.location,
+                (tournament as any).slug, reg.tournament_id,
               );
             }
 

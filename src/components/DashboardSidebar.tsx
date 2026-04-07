@@ -61,6 +61,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-blue-400",
     items: [
       { title: "Registration", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
+      { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null },
       { title: "Players", url: "/dashboard/players", icon: Users, feature: "players" },
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in" },
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null },

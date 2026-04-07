@@ -48,6 +48,7 @@ interface RegistrationFormProps {
 const emptyPlayer = () => ({
   first_name: "", last_name: "", email: "", phone: "",
   handicap: "", shirt_size: "", dietary_restrictions: "", notes: "",
+  company: "", skill_level: "",
 });
 
 type PlayerForm = ReturnType<typeof emptyPlayer>;
@@ -67,6 +68,8 @@ const PlayerFields = ({
     "Handicap": "handicap",
     "Shirt Size": "shirt_size",
     "Dietary Restrictions": "dietary_restrictions",
+    "Company / Organization": "company",
+    "Skill Level": "skill_level",
   };
 
   // If fields config provided, check which default fields are enabled

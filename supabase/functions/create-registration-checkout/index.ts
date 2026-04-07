@@ -230,7 +230,9 @@ Deno.serve(async (req) => {
         tournament_id,
         organization_id: tournament.organization_id,
         registration_ids: registrationIds.join(","),
-        pass_fees_to_golfer: String(passFeesToParticipants),
+        pass_fees_to_golfer: String(golferPaysFees),
+        cover_fees: String(coverFees),
+        tier_id: tierId || "",
         gross_registration_cents: String(registrationFeeCents),
       },
     });

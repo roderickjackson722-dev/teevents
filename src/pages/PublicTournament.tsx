@@ -1082,11 +1082,15 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     secondaryColor={secondary}
                     registrationFeeCents={tournament.registration_fee_cents || 0}
                     foursomeMode={tournament.foursome_registration}
+                    maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
                     isNonprofit={nonprofitInfo.isNonprofit}
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
                     passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
+                    allowCoverFees={tournament.allow_cover_fees !== false}
+                    tiers={regTiers}
+                    fields={regFields}
                   />
                 </div>
               )}

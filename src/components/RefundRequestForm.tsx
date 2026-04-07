@@ -9,10 +9,11 @@ interface RefundRequestFormProps {
   tournamentId: string;
   primaryColor: string;
   secondaryColor: string;
+  prefillEmail?: string;
 }
 
-export default function RefundRequestForm({ tournamentId, primaryColor, secondaryColor }: RefundRequestFormProps) {
-  const [email, setEmail] = useState("");
+export default function RefundRequestForm({ tournamentId, primaryColor, secondaryColor, prefillEmail = "" }: RefundRequestFormProps) {
+  const [email, setEmail] = useState(prefillEmail);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);

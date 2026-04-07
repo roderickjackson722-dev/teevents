@@ -224,6 +224,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
 
+  // Redirect to standalone refund page if ?tab=refund
+  useEffect(() => {
+    if (searchParams.get("tab") === "refund" && tournament) {
+      const email = searchParams.get("email") || "";
+      navigate(`/refund/${tournament.id}${email ? `?email=${encodeURIComponent(email)}` : ""}`, { replace: true });
+    }
+  }, [searchParams, tournament, navigate]);
+
   // Track click from ref param
   useEffect(() => {
     const ref = searchParams.get("ref");

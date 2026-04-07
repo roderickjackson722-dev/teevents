@@ -1758,6 +1758,50 @@ export type Database = {
           },
         ]
       }
+      tournament_contests: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          fee_cents: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          fee_cents?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          fee_cents?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_contests_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_donations: {
         Row: {
           amount_cents: number

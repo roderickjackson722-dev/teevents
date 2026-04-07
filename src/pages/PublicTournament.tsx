@@ -201,6 +201,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
   const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
+  const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
@@ -270,7 +271,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -280,6 +281,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_surveys").select("id, tournament_survey_questions(id, question, type, sort_order)").eq("tournament_id", t.id).eq("is_active", true).limit(1).single(),
           supabase.from("tournament_registration_tiers").select("id, name, description, eligibility_description, price_cents, max_registrants").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
+          supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
@@ -288,6 +290,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setPhotos((photoRes.data as Photo[]) || []);
         setRegTiers((tiersRes.data as TierPublic[]) || []);
         setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
+        setContests((contestsRes.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
@@ -487,7 +490,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   // Fixed nav tabs
   const navLinks: { label: string; href: string }[] = [
     { label: "Home", href: "#top" },
-    { label: "Event Day Contests", href: "#contests" },
+    ...(contests.length > 0 ? [{ label: "Event Day Contests", href: "#contests" }] : []),
     { label: "Registration", href: "#register" },
     { label: "Photos", href: "#photos" },
     { label: "Location", href: "#location" },
@@ -878,6 +881,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== EVENT DAY CONTESTS ===== */}
+      {contests.length > 0 && (
       <section id="contests" className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -885,24 +889,21 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
             <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Compete for prizes throughout the day</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { icon: "🏌️", title: "Longest Drive", desc: "Hit it the farthest on the designated hole to win a prize." },
-                { icon: "🎯", title: "Closest to the Pin", desc: "Land your tee shot closest to the pin on the par 3." },
-                { icon: "🕳️", title: "Hole-in-One", desc: "Make a hole-in-one on a designated hole for a major prize." },
-                { icon: "🏆", title: "Putting Contest", desc: "Test your putting skills on the practice green before tee-off." },
-                { icon: "💰", title: "Mulligan Package", desc: "Purchase mulligans to improve your score during the round." },
-                { icon: "🎲", title: "50/50 Raffle", desc: "Buy tickets for a chance to win half the pot." },
-              ].map((contest, i) => (
-                <div key={i} className="bg-white rounded-xl border p-5 text-center space-y-2 hover:shadow-md transition-shadow" style={{ borderColor: "#e5e5e5" }}>
+              {contests.map((contest) => (
+                <div key={contest.id} className="bg-white rounded-xl border p-5 text-center space-y-2 hover:shadow-md transition-shadow" style={{ borderColor: "#e5e5e5" }}>
                   <span className="text-3xl">{contest.icon}</span>
-                  <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{contest.title}</h3>
-                  <p className="text-sm" style={{ color: "#666" }}>{contest.desc}</p>
+                  <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{contest.name}</h3>
+                  {contest.description && <p className="text-sm" style={{ color: "#666" }}>{contest.description}</p>}
+                  {contest.fee_cents > 0 && (
+                    <p className="text-xs font-semibold" style={{ color: secondary }}>${(contest.fee_cents / 100).toFixed(2)}</p>
+                  )}
                 </div>
               ))}
             </div>
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* ===== EVENT AGENDA ===== */}
       {tournament.schedule_info && (

@@ -48,6 +48,7 @@ interface RegistrationFormProps {
 const emptyPlayer = () => ({
   first_name: "", last_name: "", email: "", phone: "",
   handicap: "", shirt_size: "", dietary_restrictions: "", notes: "",
+  company: "", skill_level: "",
 });
 
 type PlayerForm = ReturnType<typeof emptyPlayer>;
@@ -67,6 +68,8 @@ const PlayerFields = ({
     "Handicap": "handicap",
     "Shirt Size": "shirt_size",
     "Dietary Restrictions": "dietary_restrictions",
+    "Company / Organization": "company",
+    "Skill Level": "skill_level",
   };
 
   // If fields config provided, check which default fields are enabled
@@ -155,6 +158,32 @@ const PlayerFields = ({
           </div>
         )}
       </div>
+      {/* Company / Organization & Skill Level */}
+      <div className="grid grid-cols-2 gap-4">
+        {isFieldEnabled("Company / Organization") && (
+          <div>
+            <Label>Company / Organization{isFieldRequired("Company / Organization") ? " *" : ""}</Label>
+            <Input value={player.company} onChange={(e) => onChange({ ...player, company: e.target.value })} placeholder="e.g. Acme Corp" maxLength={200} />
+            {errors[`${prefix}company`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}company`]}</p>}
+          </div>
+        )}
+        {isFieldEnabled("Skill Level") && (
+          <div>
+            <Label>Skill Level{isFieldRequired("Skill Level") ? " *" : ""}</Label>
+            <Select value={player.skill_level} onValueChange={(v) => onChange({ ...player, skill_level: v })}>
+              <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+              <SelectContent>
+                {(() => {
+                  const f = (fields || []).find((fld) => fld.label.toLowerCase() === "skill level");
+                  const opts = f?.options && Array.isArray(f.options) && f.options.length > 0 ? f.options : ["Beginner", "Intermediate", "Advanced", "Scratch"];
+                  return opts.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>);
+                })()}
+              </SelectContent>
+            </Select>
+            {errors[`${prefix}skill_level`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}skill_level`]}</p>}
+          </div>
+        )}
+      </div>
       {/* Custom fields */}
       {customFields.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
@@ -231,7 +260,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     // Validate required custom fields from field config
     const validateRequiredFields = (player: PlayerForm, prefix: string) => {
       if (fields && fields.length > 0) {
-        const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions" };
+        const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions", "company / organization": "company", "skill level": "skill_level" };
         fields.filter((f) => f.is_enabled && f.is_required).forEach((f) => {
           const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
           const val = (player as any)[key];

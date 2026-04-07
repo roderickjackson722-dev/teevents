@@ -156,7 +156,7 @@ const PlayerFields = ({
             <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
             {errors[`${prefix}dietary_restrictions`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}dietary_restrictions`]}</p>}
           </div>
-      )}
+        )}
       </div>
       {/* Company / Organization & Skill Level */}
       <div className="grid grid-cols-2 gap-4">
@@ -183,6 +183,7 @@ const PlayerFields = ({
             {errors[`${prefix}skill_level`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}skill_level`]}</p>}
           </div>
         )}
+      </div>
       {/* Custom fields */}
       {customFields.length > 0 && (
         <div className="grid grid-cols-2 gap-4">

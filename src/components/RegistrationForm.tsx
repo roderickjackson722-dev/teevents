@@ -228,6 +228,20 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     const fieldErrors: Record<string, string> = {};
 
+    // Validate required custom fields from field config
+    const validateRequiredFields = (player: PlayerForm, prefix: string) => {
+      if (fields && fields.length > 0) {
+        const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions" };
+        fields.filter((f) => f.is_enabled && f.is_required).forEach((f) => {
+          const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
+          const val = (player as any)[key];
+          if (!val || (typeof val === "string" && !val.trim())) {
+            fieldErrors[`${prefix}${key}`] = `${f.label} is required`;
+          }
+        });
+      }
+    };
+
     const parsedPlayers = players.map((player, i) => {
       const prefix = i > 0 ? `p${i}_` : "";
       const parsed = playerSchema.safeParse({
@@ -240,6 +254,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         });
         return null;
       }
+      validateRequiredFields(player, prefix);
       return parsed.data;
     });
 

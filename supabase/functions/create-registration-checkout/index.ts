@@ -153,8 +153,13 @@ Deno.serve(async (req) => {
     // Build line items based on fee model
     const lineItems: any[] = [];
 
-    if (passFeesToParticipants) {
-      // MODEL A: Golfer pays registration + 5% platform fee + Stripe processing fee
+    // Determine if golfer pays fees:
+    // - passFeesToParticipants=true → always pass fees
+    // - coverFees=true → golfer opted to cover fees voluntarily
+    const golferPaysFees = passFeesToParticipants || coverFees;
+
+    if (golferPaysFees) {
+      // Golfer pays registration + 5% platform fee + Stripe processing fee
       const platformFee = Math.round(registrationFeeCents * (PLATFORM_FEE_PERCENT / 100));
       const preStripeTotal = registrationFeeCents + platformFee;
       const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
@@ -166,7 +171,7 @@ Deno.serve(async (req) => {
             name: `Registration — ${tournament.title}`,
             description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
           },
-          unit_amount: feeCents,
+          unit_amount: feePerPlayer,
         },
         quantity: players.length,
       });
@@ -199,7 +204,7 @@ Deno.serve(async (req) => {
         });
       }
     } else {
-      // MODEL B: Golfer pays registration fee only; organizer absorbs the 5% platform fee
+      // Golfer pays registration fee only; organizer absorbs the 5% platform fee
       lineItems.push({
         price_data: {
           currency: "usd",
@@ -207,7 +212,7 @@ Deno.serve(async (req) => {
             name: `Registration — ${tournament.title}`,
             description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
           },
-          unit_amount: feeCents,
+          unit_amount: feePerPlayer,
         },
         quantity: players.length,
       });

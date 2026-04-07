@@ -290,6 +290,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setPhotos((photoRes.data as Photo[]) || []);
         setRegTiers((tiersRes.data as TierPublic[]) || []);
         setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
+        setContests((contestsRes.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));

@@ -75,6 +75,12 @@ export async function sendRegistrantConfirmationEmail(
       ? new Date(tournamentDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : null;
 
+    const refundUrl = tournamentSlug
+      ? `https://www.teevents.golf/t/${tournamentSlug}?tab=refund&email=${encodeURIComponent(recipientEmail)}`
+      : tournamentId
+        ? `https://www.teevents.golf/refund/${tournamentId}?email=${encodeURIComponent(recipientEmail)}`
+        : null;
+
     const lines = [
       `Hi <strong>${firstName}</strong>,`,
       `We've received your registration for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
@@ -84,7 +90,7 @@ export async function sendRegistrantConfirmationEmail(
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[]);
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], refundUrl);
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -138,7 +144,13 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
 }
 
 // HTML email template for registrant confirmations (friendlier design)
-function buildConfirmationHtml(title: string, lines: string[]): string {
+function buildConfirmationHtml(title: string, lines: string[], refundUrl: string | null = null): string {
+  const refundBlock = refundUrl ? `
+        <tr><td style="padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
+          <a href="${refundUrl}" style="display:inline-block;padding:10px 24px;background-color:#6b7280;color:#ffffff;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">Request a Refund</a>
+          <p style="margin:8px 0 0;color:#9ca3af;font-size:11px;">Need to cancel? Click above to submit a refund request.</p>
+        </td></tr>` : "";
+
   return `
 <!DOCTYPE html>
 <html>
@@ -153,7 +165,7 @@ function buildConfirmationHtml(title: string, lines: string[]): string {
         </td></tr>
         <tr><td style="padding:32px;">
           ${lines.map(l => `<p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">${l}</p>`).join("")}
-        </td></tr>
+        </td></tr>${refundBlock}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
         </td></tr>

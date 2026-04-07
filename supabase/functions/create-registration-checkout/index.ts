@@ -86,7 +86,9 @@ Deno.serve(async (req) => {
       shirt_size: p.shirt_size || null,
       dietary_restrictions: p.dietary_restrictions || null,
       notes: p.notes || null,
-      payment_status: feeCents > 0 ? "pending" : "paid",
+      payment_status: feePerPlayer > 0 ? "pending" : "paid",
+      tier_id: tierId || null,
+      covered_fees: coverFees,
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin

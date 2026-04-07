@@ -201,6 +201,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
   const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
   const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
+  const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });

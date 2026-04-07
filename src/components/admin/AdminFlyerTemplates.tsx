@@ -54,6 +54,8 @@ const AdminFlyerTemplates = () => {
   const [csvData, setCsvData] = useState("");
   const [importPreview, setImportPreview] = useState<Omit<FlyerTemplate, "id">[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const thumbRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchTemplates = async () => {
     const { data } = await supabase
@@ -252,8 +254,53 @@ const AdminFlyerTemplates = () => {
               </div>
             </div>
             <div>
-              <Label>Thumbnail URL</Label>
-              <Input value={form.thumbnail_url || ""} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} placeholder="https://..." />
+              <Label>Thumbnail Image</Label>
+              <div className="flex items-center gap-3 mt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading}
+                  onClick={() => thumbRef.current?.click()}
+                >
+                  {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
+                  {form.thumbnail_url ? "Replace Image" : "Upload Image"}
+                </Button>
+                {form.thumbnail_url && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => setForm({ ...form, thumbnail_url: "" })}
+                  >
+                    <X className="h-4 w-4 mr-1" /> Remove
+                  </Button>
+                )}
+              </div>
+              <input
+                ref={thumbRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploading(true);
+                  const ext = file.name.split(".").pop() || "png";
+                  const path = `flyer-thumbnails/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                  const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+                  if (error) {
+                    toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+                  } else {
+                    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+                    setForm({ ...form, thumbnail_url: urlData.publicUrl });
+                    toast({ title: "Image uploaded" });
+                  }
+                  setUploading(false);
+                  if (thumbRef.current) thumbRef.current.value = "";
+                }}
+              />
               {/* Live thumbnail preview */}
               <div className="mt-2 h-[200px] w-[150px] rounded-md border border-border bg-muted flex items-center justify-center overflow-hidden">
                 {form.thumbnail_url ? (
@@ -272,8 +319,8 @@ const AdminFlyerTemplates = () => {
               </div>
             </div>
             <div>
-              <Label>Preview URL</Label>
-              <Input value={form.preview_url || ""} onChange={(e) => setForm({ ...form, preview_url: e.target.value })} />
+              <Label>Preview URL (optional)</Label>
+              <Input value={form.preview_url || ""} onChange={(e) => setForm({ ...form, preview_url: e.target.value })} placeholder="Full-size preview link" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

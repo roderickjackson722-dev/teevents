@@ -48,6 +48,7 @@ import FlyerStudio from "./pages/dashboard/FlyerStudio";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import PublicTournament from "./pages/PublicTournament";
+import RefundRequest from "./pages/RefundRequest";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { Navigate } from "react-router-dom";
@@ -140,7 +141,8 @@ const App = () => (
           <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
-          <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
+           <Route path="/refund/:tournamentId" element={<RefundRequest />} />
+           <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/deck" element={<SalesDeck />} />
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />

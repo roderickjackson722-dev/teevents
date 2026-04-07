@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight, Heart, DollarSign, CheckCircle } from "lucide-react";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
 import WaitlistSignup from "@/components/WaitlistSignup";
-import RefundRequestForm from "@/components/RefundRequestForm";
+
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
@@ -186,6 +186,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = slugOverride || paramSlug;
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const donated = searchParams.get("donated") === "true";
   const registered = searchParams.get("registered") === "true";
   const [showConfirmation, setShowConfirmation] = useState(registered);
@@ -222,6 +223,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
+
+  // Redirect to standalone refund page if ?tab=refund
+  useEffect(() => {
+    if (searchParams.get("tab") === "refund" && tournament) {
+      const email = searchParams.get("email") || "";
+      navigate(`/refund/${tournament.id}${email ? `?email=${encodeURIComponent(email)}` : ""}`, { replace: true });
+    }
+  }, [searchParams, tournament, navigate]);
 
   // Track click from ref param
   useEffect(() => {
@@ -1099,16 +1108,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <div className="mt-4 p-4 rounded-lg border text-sm" style={{ borderColor: "#e5e5e5", backgroundColor: "#fff" }}>
                   <p className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: primary }}>Refund Policy</p>
                   <p style={{ color: "#666" }}>{tournament.refund_policy_text}</p>
-                </div>
-              )}
-              {/* Refund Request Form */}
-              {(tournament.registration_fee_cents || 0) > 0 && (
-                <div className="mt-6 bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
-                  <RefundRequestForm
-                    tournamentId={tournament.id}
-                    primaryColor={primary}
-                    secondaryColor={secondary}
-                  />
                 </div>
               )}
             </motion.div>

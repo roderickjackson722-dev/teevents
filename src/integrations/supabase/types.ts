@@ -2118,6 +2118,7 @@ export type Database = {
         Row: {
           check_in_time: string | null
           checked_in: boolean | null
+          covered_fees: boolean
           created_at: string
           dietary_restrictions: string | null
           email: string
@@ -2138,6 +2139,7 @@ export type Database = {
         Insert: {
           check_in_time?: string | null
           checked_in?: boolean | null
+          covered_fees?: boolean
           created_at?: string
           dietary_restrictions?: string | null
           email: string
@@ -2158,6 +2160,7 @@ export type Database = {
         Update: {
           check_in_time?: string | null
           checked_in?: boolean | null
+          covered_fees?: boolean
           created_at?: string
           dietary_restrictions?: string | null
           email?: string
@@ -2621,6 +2624,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          allow_cover_fees: boolean
           confirmation_email_config: Json | null
           contact_email: string | null
           contact_phone: string | null
@@ -2676,6 +2680,7 @@ export type Database = {
           waitlist_enabled: boolean
         }
         Insert: {
+          allow_cover_fees?: boolean
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -2731,6 +2736,7 @@ export type Database = {
           waitlist_enabled?: boolean
         }
         Update: {
+          allow_cover_fees?: boolean
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null

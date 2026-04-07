@@ -40,6 +40,7 @@ interface Tournament {
   max_players: number | null;
   foursome_registration: boolean;
   max_group_size: number;
+  allow_cover_fees: boolean;
 }
 
 interface RegistrationTier {
@@ -121,13 +122,14 @@ const Registration = () => {
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
   const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
+  const [allowCoverFees, setAllowCoverFees] = useState<boolean>(true);
 
   /* fetch tournaments */
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -154,6 +156,7 @@ const Registration = () => {
       setMaxPlayersDisplay(String(mp));
       setFoursomeReg(tournament.foursome_registration || false);
       setMaxGroupSize(tournament.max_group_size || 1);
+      setAllowCoverFees(tournament.allow_cover_fees !== false);
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([
@@ -195,6 +198,7 @@ const Registration = () => {
         max_players: maxPlayers,
         foursome_registration: foursomeReg,
         max_group_size: maxGroupSize,
+        allow_cover_fees: allowCoverFees,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);
@@ -203,7 +207,7 @@ const Registration = () => {
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
-            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg, max_group_size: maxGroupSize }
+            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg, max_group_size: maxGroupSize, allow_cover_fees: allowCoverFees }
             : t,
         ),
       );
@@ -566,6 +570,17 @@ const Registration = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">"Cover the Fees" Option</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Allow golfers to optionally cover the 5% platform fee and Stripe processing fee.
+                    When enabled, a checkbox appears on the registration form.
+                  </p>
+                </div>
+                <Switch checked={allowCoverFees} onCheckedChange={setAllowCoverFees} />
               </div>
 
               <Button onClick={saveSettings} disabled={saving}>

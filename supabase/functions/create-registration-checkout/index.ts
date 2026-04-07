@@ -18,6 +18,8 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const isFoursome = body.foursome === true && Array.isArray(body.players);
+    const coverFees = body.cover_fees === true;
+    const tierId = body.tier_id || null;
 
     const players = isFoursome
       ? body.players
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees")
       .eq("id", tournament_id)
       .single();
 
@@ -57,9 +59,21 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
-    const feeCents = tournament.registration_fee_cents || 0;
+    // Determine fee per player: use tier price if tier selected, else tournament default
+    let feePerPlayer = tournament.registration_fee_cents || 0;
+    if (tierId) {
+      const { data: tier } = await supabaseAdmin
+        .from("tournament_registration_tiers")
+        .select("price_cents")
+        .eq("id", tierId)
+        .eq("tournament_id", tournament_id)
+        .eq("is_active", true)
+        .single();
+      if (tier) feePerPlayer = tier.price_cents;
+    }
+
     const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
-    const registrationFeeCents = feeCents * players.length;
+    const registrationFeeCents = feePerPlayer * players.length;
 
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({
@@ -72,7 +86,9 @@ Deno.serve(async (req) => {
       shirt_size: p.shirt_size || null,
       dietary_restrictions: p.dietary_restrictions || null,
       notes: p.notes || null,
-      payment_status: feeCents > 0 ? "pending" : "paid",
+      payment_status: feePerPlayer > 0 ? "pending" : "paid",
+      tier_id: tierId || null,
+      covered_fees: coverFees,
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin
@@ -95,7 +111,7 @@ Deno.serve(async (req) => {
           `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
           `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
           isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
-          feeCents > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+          feePerPlayer > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
         ].filter(Boolean)),
       );
     } catch (e) {
@@ -103,7 +119,7 @@ Deno.serve(async (req) => {
     }
 
     // If no fee, registration is complete
-    if (feeCents <= 0) {
+    if (feePerPlayer <= 0) {
       try {
         await sendRegistrantConfirmationEmail(
           first_name, last_name, email.trim(),
@@ -137,8 +153,13 @@ Deno.serve(async (req) => {
     // Build line items based on fee model
     const lineItems: any[] = [];
 
-    if (passFeesToParticipants) {
-      // MODEL A: Golfer pays registration + 5% platform fee + Stripe processing fee
+    // Determine if golfer pays fees:
+    // - passFeesToParticipants=true → always pass fees
+    // - coverFees=true → golfer opted to cover fees voluntarily
+    const golferPaysFees = passFeesToParticipants || coverFees;
+
+    if (golferPaysFees) {
+      // Golfer pays registration + 5% platform fee + Stripe processing fee
       const platformFee = Math.round(registrationFeeCents * (PLATFORM_FEE_PERCENT / 100));
       const preStripeTotal = registrationFeeCents + platformFee;
       const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
@@ -150,7 +171,7 @@ Deno.serve(async (req) => {
             name: `Registration — ${tournament.title}`,
             description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
           },
-          unit_amount: feeCents,
+          unit_amount: feePerPlayer,
         },
         quantity: players.length,
       });
@@ -183,7 +204,7 @@ Deno.serve(async (req) => {
         });
       }
     } else {
-      // MODEL B: Golfer pays registration fee only; organizer absorbs the 5% platform fee
+      // Golfer pays registration fee only; organizer absorbs the 5% platform fee
       lineItems.push({
         price_data: {
           currency: "usd",
@@ -191,7 +212,7 @@ Deno.serve(async (req) => {
             name: `Registration — ${tournament.title}`,
             description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
           },
-          unit_amount: feeCents,
+          unit_amount: feePerPlayer,
         },
         quantity: players.length,
       });
@@ -209,7 +230,9 @@ Deno.serve(async (req) => {
         tournament_id,
         organization_id: tournament.organization_id,
         registration_ids: registrationIds.join(","),
-        pass_fees_to_golfer: String(passFeesToParticipants),
+        pass_fees_to_golfer: String(golferPaysFees),
+        cover_fees: String(coverFees),
+        tier_id: tierId || "",
         gross_registration_cents: String(registrationFeeCents),
       },
     });

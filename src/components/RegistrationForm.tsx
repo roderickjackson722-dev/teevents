@@ -23,6 +23,11 @@ const playerSchema = z.object({
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+interface RegFieldConfig {
+  id: string; label: string; field_type: string; options: string[] | null;
+  is_required: boolean; is_enabled: boolean; is_default: boolean; sort_order: number;
+}
+
 interface RegistrationFormProps {
   tournamentId: string;
   primaryColor: string;
@@ -35,7 +40,9 @@ interface RegistrationFormProps {
   ein?: string;
   platformFeeRate?: number;
   passFeesToRegistrants?: boolean;
+  allowCoverFees?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
+  fields?: RegFieldConfig[];
 }
 
 const emptyPlayer = () => ({
@@ -46,12 +53,38 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove,
+  player, index, onChange, errors, showRemove, onRemove, fields,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
+  fields?: RegFieldConfig[];
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
+
+  // Map default field labels to player form keys
+  const defaultFieldMap: Record<string, keyof PlayerForm> = {
+    "Phone": "phone",
+    "Handicap": "handicap",
+    "Shirt Size": "shirt_size",
+    "Dietary Restrictions": "dietary_restrictions",
+  };
+
+  // If fields config provided, check which default fields are enabled
+  const isFieldEnabled = (label: string) => {
+    if (!fields || fields.length === 0) return true; // no config = show all defaults
+    const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
+    return f ? f.is_enabled : false;
+  };
+
+  const isFieldRequired = (label: string) => {
+    if (!fields || fields.length === 0) return false;
+    const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
+    return f ? f.is_required : false;
+  };
+
+  // Custom fields (non-default)
+  const customFields = (fields || []).filter((f) => !f.is_default && f.is_enabled);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -82,37 +115,77 @@ const PlayerFields = ({
         {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Phone</Label>
-          <Input value={player.phone} onChange={(e) => onChange({ ...player, phone: e.target.value })} placeholder="(555) 123-4567" maxLength={20} />
-        </div>
-        <div>
-          <Label>Handicap</Label>
-          <Input type="number" min="0" max="54" value={player.handicap} onChange={(e) => onChange({ ...player, handicap: e.target.value })} placeholder="e.g. 15" />
-        </div>
+        {isFieldEnabled("Phone") && (
+          <div>
+            <Label>Phone{isFieldRequired("Phone") ? " *" : ""}</Label>
+            <Input value={player.phone} onChange={(e) => onChange({ ...player, phone: e.target.value })} placeholder="(555) 123-4567" maxLength={20} />
+            {errors[`${prefix}phone`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}phone`]}</p>}
+          </div>
+        )}
+        {isFieldEnabled("Handicap") && (
+          <div>
+            <Label>Handicap{isFieldRequired("Handicap") ? " *" : ""}</Label>
+            <Input type="number" min="0" max="54" value={player.handicap} onChange={(e) => onChange({ ...player, handicap: e.target.value })} placeholder="e.g. 15" />
+            {errors[`${prefix}handicap`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}handicap`]}</p>}
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Shirt Size</Label>
-          <Select value={player.shirt_size} onValueChange={(v) => onChange({ ...player, shirt_size: v })}>
-            <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-            <SelectContent>
-              {["XS", "S", "M", "L", "XL", "2XL", "3XL"].map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Dietary Restrictions</Label>
-          <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
-        </div>
+        {isFieldEnabled("Shirt Size") && (
+          <div>
+            <Label>Shirt Size{isFieldRequired("Shirt Size") ? " *" : ""}</Label>
+            <Select value={player.shirt_size} onValueChange={(v) => onChange({ ...player, shirt_size: v })}>
+              <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+              <SelectContent>
+                {(() => {
+                  const f = (fields || []).find((fld) => fld.label.toLowerCase() === "shirt size");
+                  const opts = f?.options && Array.isArray(f.options) && f.options.length > 0 ? f.options : ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+                  return opts.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>);
+                })()}
+              </SelectContent>
+            </Select>
+            {errors[`${prefix}shirt_size`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}shirt_size`]}</p>}
+          </div>
+        )}
+        {isFieldEnabled("Dietary Restrictions") && (
+          <div>
+            <Label>Dietary Restrictions{isFieldRequired("Dietary Restrictions") ? " *" : ""}</Label>
+            <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
+            {errors[`${prefix}dietary_restrictions`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}dietary_restrictions`]}</p>}
+          </div>
+        )}
       </div>
+      {/* Custom fields */}
+      {customFields.length > 0 && (
+        <div className="grid grid-cols-2 gap-4">
+          {customFields.map((cf) => {
+            const key = `custom_${cf.id}`;
+            return (
+              <div key={cf.id}>
+                <Label>{cf.label}{cf.is_required ? " *" : ""}</Label>
+                {cf.field_type === "dropdown" && cf.options ? (
+                  <Select value={(player as any)[key] || ""} onValueChange={(v) => onChange({ ...player, [key]: v })}>
+                    <SelectTrigger><SelectValue placeholder={`Select ${cf.label}`} /></SelectTrigger>
+                    <SelectContent>
+                      {cf.options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : cf.field_type === "number" ? (
+                  <Input type="number" value={(player as any)[key] || ""} onChange={(e) => onChange({ ...player, [key]: e.target.value })} placeholder={cf.label} />
+                ) : (
+                  <Input value={(player as any)[key] || ""} onChange={(e) => onChange({ ...player, [key]: e.target.value })} placeholder={cf.label} maxLength={500} />
+                )}
+                {errors[`${prefix}${key}`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}${key}`]}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, tiers = [] }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [] }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -155,6 +228,20 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     const fieldErrors: Record<string, string> = {};
 
+    // Validate required custom fields from field config
+    const validateRequiredFields = (player: PlayerForm, prefix: string) => {
+      if (fields && fields.length > 0) {
+        const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions" };
+        fields.filter((f) => f.is_enabled && f.is_required).forEach((f) => {
+          const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
+          const val = (player as any)[key];
+          if (!val || (typeof val === "string" && !val.trim())) {
+            fieldErrors[`${prefix}${key}`] = `${f.label} is required`;
+          }
+        });
+      }
+    };
+
     const parsedPlayers = players.map((player, i) => {
       const prefix = i > 0 ? `p${i}_` : "";
       const parsed = playerSchema.safeParse({
@@ -167,6 +254,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         });
         return null;
       }
+      validateRequiredFields(player, prefix);
       return parsed.data;
     });
 
@@ -204,8 +292,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         } : null;
 
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, players: playerData }
-            : { tournament_id: tournamentId, cover_fees: coverFees, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
@@ -362,6 +450,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               errors={errors}
               showRemove={allowGroup && i > 0}
               onRemove={() => removePlayer(i)}
+              fields={fields}
             />
           </div>
         ))}
@@ -402,9 +491,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         )}
 
         {/* Cover Fees Option */}
-        {(isNonprofit || passFeesToRegistrants) && hasFee && (
+        {hasFee && (passFeesToRegistrants || (allowCoverFees && !passFeesToRegistrants)) && (
           <div className="rounded-lg border-2 p-4 space-y-2" style={{ borderColor: `${secondaryColor}40`, backgroundColor: `${secondaryColor}08` }}>
-            {passFeesToRegistrants && !isNonprofit ? (
+            {passFeesToRegistrants ? (
               <>
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-destructive" />

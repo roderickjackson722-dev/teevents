@@ -31,9 +31,18 @@ interface TournamentSite {
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
   scoring_format: string; countdown_style: string | null;
-  foursome_registration: boolean;
+  foursome_registration: boolean; max_group_size?: number;
   pass_fees_to_registrants?: boolean;
+  allow_cover_fees?: boolean;
   refund_policy_text?: string | null;
+}
+interface RegFieldPublic {
+  id: string; label: string; field_type: string; options: string[] | null;
+  is_required: boolean; is_enabled: boolean; is_default: boolean; sort_order: number;
+}
+interface TierPublic {
+  id: string; name: string; description: string | null; eligibility_description: string | null;
+  price_cents: number; max_registrants: number | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
@@ -189,6 +198,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
+  const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
+  const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
@@ -250,7 +261,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -258,12 +269,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_photos").select("id, image_url, caption").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_volunteer_roles").select("*, tournament_volunteers(id)").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_surveys").select("id, tournament_survey_questions(id, question, type, sort_order)").eq("tournament_id", t.id).eq("is_active", true).limit(1).single(),
+          supabase.from("tournament_registration_tiers").select("id, name, description, eligibility_description, price_cents, max_registrants").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
+          supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
         setProducts((productRes.data as PublicProduct[]) || []);
         setAuctionItems((auctionRes.data as AuctionItem[]) || []);
         setPhotos((photoRes.data as Photo[]) || []);
+        setRegTiers((tiersRes.data as TierPublic[]) || []);
+        setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
@@ -1067,11 +1082,15 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     secondaryColor={secondary}
                     registrationFeeCents={tournament.registration_fee_cents || 0}
                     foursomeMode={tournament.foursome_registration}
+                    maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
                     isNonprofit={nonprofitInfo.isNonprofit}
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
                     passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
+                    allowCoverFees={tournament.allow_cover_fees !== false}
+                    tiers={regTiers}
+                    fields={regFields}
                   />
                 </div>
               )}

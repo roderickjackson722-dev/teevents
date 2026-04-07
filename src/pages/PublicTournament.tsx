@@ -191,14 +191,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const registered = searchParams.get("registered") === "true";
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
-
-  // Redirect to standalone refund page if ?tab=refund
-  useEffect(() => {
-    if (searchParams.get("tab") === "refund" && tournament) {
-      const email = searchParams.get("email") || "";
-      navigate(`/refund/${tournament.id}${email ? `?email=${encodeURIComponent(email)}` : ""}`, { replace: true });
-    }
-  }, [searchParams, tournament, navigate]);
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
   const [products, setProducts] = useState<PublicProduct[]>([]);

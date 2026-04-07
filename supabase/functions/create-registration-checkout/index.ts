@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
           `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
           `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
           isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
-          feeCents > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+          feePerPlayer > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
         ].filter(Boolean)),
       );
     } catch (e) {
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     }
 
     // If no fee, registration is complete
-    if (feeCents <= 0) {
+    if (feePerPlayer <= 0) {
       try {
         await sendRegistrantConfirmationEmail(
           first_name, last_name, email.trim(),

@@ -253,7 +253,23 @@ const AdminFlyerTemplates = () => {
             </div>
             <div>
               <Label>Thumbnail URL</Label>
-              <Input value={form.thumbnail_url || ""} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} />
+              <Input value={form.thumbnail_url || ""} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} placeholder="https://..." />
+              {/* Live thumbnail preview */}
+              <div className="mt-2 h-[200px] w-[150px] rounded-md border border-border bg-muted flex items-center justify-center overflow-hidden">
+                {form.thumbnail_url ? (
+                  <img
+                    src={form.thumbnail_url}
+                    alt="Thumbnail preview"
+                    className="h-full w-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
+                    onLoad={(e) => { (e.target as HTMLImageElement).style.display = "block"; (e.target as HTMLImageElement).nextElementSibling?.classList.add("hidden"); }}
+                  />
+                ) : null}
+                <div className={form.thumbnail_url ? "hidden flex-col items-center gap-1 text-muted-foreground" : "flex flex-col items-center gap-1 text-muted-foreground"}>
+                  <ImageIcon className="h-8 w-8 opacity-40" />
+                  <span className="text-[10px]">No preview</span>
+                </div>
+              </div>
             </div>
             <div>
               <Label>Preview URL</Label>

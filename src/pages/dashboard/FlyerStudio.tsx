@@ -229,12 +229,22 @@ const FlyerStudio = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((t) => (
               <Card key={t.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <div className="h-40 bg-muted flex items-center justify-center">
+                <div className="h-[200px] w-full bg-muted flex items-center justify-center overflow-hidden">
                   {t.thumbnail_url ? (
-                    <img src={t.thumbnail_url} alt={t.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <ImageIcon className="h-12 w-12 text-muted-foreground/40" />
-                  )}
+                    <img
+                      src={t.thumbnail_url}
+                      alt={t.name}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                      }}
+                    />
+                  ) : null}
+                  <div className={t.thumbnail_url ? "hidden flex-col items-center gap-1 text-muted-foreground" : "flex flex-col items-center gap-1 text-muted-foreground"}>
+                    <ImageIcon className="h-12 w-12 opacity-40" />
+                    <span className="text-xs">No image</span>
+                  </div>
                 </div>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between">

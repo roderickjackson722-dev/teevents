@@ -156,8 +156,33 @@ const PlayerFields = ({
             <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
             {errors[`${prefix}dietary_restrictions`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}dietary_restrictions`]}</p>}
           </div>
-        )}
+      )}
       </div>
+      {/* Company / Organization & Skill Level */}
+      <div className="grid grid-cols-2 gap-4">
+        {isFieldEnabled("Company / Organization") && (
+          <div>
+            <Label>Company / Organization{isFieldRequired("Company / Organization") ? " *" : ""}</Label>
+            <Input value={player.company} onChange={(e) => onChange({ ...player, company: e.target.value })} placeholder="e.g. Acme Corp" maxLength={200} />
+            {errors[`${prefix}company`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}company`]}</p>}
+          </div>
+        )}
+        {isFieldEnabled("Skill Level") && (
+          <div>
+            <Label>Skill Level{isFieldRequired("Skill Level") ? " *" : ""}</Label>
+            <Select value={player.skill_level} onValueChange={(v) => onChange({ ...player, skill_level: v })}>
+              <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+              <SelectContent>
+                {(() => {
+                  const f = (fields || []).find((fld) => fld.label.toLowerCase() === "skill level");
+                  const opts = f?.options && Array.isArray(f.options) && f.options.length > 0 ? f.options : ["Beginner", "Intermediate", "Advanced", "Scratch"];
+                  return opts.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>);
+                })()}
+              </SelectContent>
+            </Select>
+            {errors[`${prefix}skill_level`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}skill_level`]}</p>}
+          </div>
+        )}
       {/* Custom fields */}
       {customFields.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
@@ -234,7 +259,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     // Validate required custom fields from field config
     const validateRequiredFields = (player: PlayerForm, prefix: string) => {
       if (fields && fields.length > 0) {
-        const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions" };
+        const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions", "company / organization": "company", "skill level": "skill_level" };
         fields.filter((f) => f.is_enabled && f.is_required).forEach((f) => {
           const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
           const val = (player as any)[key];

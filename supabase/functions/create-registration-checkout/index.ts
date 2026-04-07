@@ -18,6 +18,8 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const isFoursome = body.foursome === true && Array.isArray(body.players);
+    const coverFees = body.cover_fees === true;
+    const tierId = body.tier_id || null;
 
     const players = isFoursome
       ? body.players
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees")
       .eq("id", tournament_id)
       .single();
 
@@ -57,9 +59,21 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
-    const feeCents = tournament.registration_fee_cents || 0;
+    // Determine fee per player: use tier price if tier selected, else tournament default
+    let feePerPlayer = tournament.registration_fee_cents || 0;
+    if (tierId) {
+      const { data: tier } = await supabaseAdmin
+        .from("tournament_registration_tiers")
+        .select("price_cents")
+        .eq("id", tierId)
+        .eq("tournament_id", tournament_id)
+        .eq("is_active", true)
+        .single();
+      if (tier) feePerPlayer = tier.price_cents;
+    }
+
     const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
-    const registrationFeeCents = feeCents * players.length;
+    const registrationFeeCents = feePerPlayer * players.length;
 
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({

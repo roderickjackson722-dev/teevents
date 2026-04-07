@@ -23,6 +23,11 @@ const playerSchema = z.object({
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+interface RegFieldConfig {
+  id: string; label: string; field_type: string; options: string[] | null;
+  is_required: boolean; is_enabled: boolean; is_default: boolean; sort_order: number;
+}
+
 interface RegistrationFormProps {
   tournamentId: string;
   primaryColor: string;
@@ -35,7 +40,9 @@ interface RegistrationFormProps {
   ein?: string;
   platformFeeRate?: number;
   passFeesToRegistrants?: boolean;
+  allowCoverFees?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
+  fields?: RegFieldConfig[];
 }
 
 const emptyPlayer = () => ({

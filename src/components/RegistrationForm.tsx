@@ -450,6 +450,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               errors={errors}
               showRemove={allowGroup && i > 0}
               onRemove={() => removePlayer(i)}
+              fields={fields}
             />
           </div>
         ))}

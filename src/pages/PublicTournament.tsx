@@ -31,9 +31,18 @@ interface TournamentSite {
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
   scoring_format: string; countdown_style: string | null;
-  foursome_registration: boolean;
+  foursome_registration: boolean; max_group_size?: number;
   pass_fees_to_registrants?: boolean;
+  allow_cover_fees?: boolean;
   refund_policy_text?: string | null;
+}
+interface RegFieldPublic {
+  id: string; label: string; field_type: string; options: string[] | null;
+  is_required: boolean; is_enabled: boolean; is_default: boolean; sort_order: number;
+}
+interface TierPublic {
+  id: string; name: string; description: string | null; eligibility_description: string | null;
+  price_cents: number; max_registrants: number | null;
 }
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
@@ -189,6 +198,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
+  const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
+  const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });

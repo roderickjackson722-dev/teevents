@@ -53,12 +53,38 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove,
+  player, index, onChange, errors, showRemove, onRemove, fields,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
+  fields?: RegFieldConfig[];
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
+
+  // Map default field labels to player form keys
+  const defaultFieldMap: Record<string, keyof PlayerForm> = {
+    "Phone": "phone",
+    "Handicap": "handicap",
+    "Shirt Size": "shirt_size",
+    "Dietary Restrictions": "dietary_restrictions",
+  };
+
+  // If fields config provided, check which default fields are enabled
+  const isFieldEnabled = (label: string) => {
+    if (!fields || fields.length === 0) return true; // no config = show all defaults
+    const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
+    return f ? f.is_enabled : false;
+  };
+
+  const isFieldRequired = (label: string) => {
+    if (!fields || fields.length === 0) return false;
+    const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
+    return f ? f.is_required : false;
+  };
+
+  // Custom fields (non-default)
+  const customFields = (fields || []).filter((f) => !f.is_default && f.is_enabled);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -89,32 +115,72 @@ const PlayerFields = ({
         {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Phone</Label>
-          <Input value={player.phone} onChange={(e) => onChange({ ...player, phone: e.target.value })} placeholder="(555) 123-4567" maxLength={20} />
-        </div>
-        <div>
-          <Label>Handicap</Label>
-          <Input type="number" min="0" max="54" value={player.handicap} onChange={(e) => onChange({ ...player, handicap: e.target.value })} placeholder="e.g. 15" />
-        </div>
+        {isFieldEnabled("Phone") && (
+          <div>
+            <Label>Phone{isFieldRequired("Phone") ? " *" : ""}</Label>
+            <Input value={player.phone} onChange={(e) => onChange({ ...player, phone: e.target.value })} placeholder="(555) 123-4567" maxLength={20} />
+            {errors[`${prefix}phone`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}phone`]}</p>}
+          </div>
+        )}
+        {isFieldEnabled("Handicap") && (
+          <div>
+            <Label>Handicap{isFieldRequired("Handicap") ? " *" : ""}</Label>
+            <Input type="number" min="0" max="54" value={player.handicap} onChange={(e) => onChange({ ...player, handicap: e.target.value })} placeholder="e.g. 15" />
+            {errors[`${prefix}handicap`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}handicap`]}</p>}
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Shirt Size</Label>
-          <Select value={player.shirt_size} onValueChange={(v) => onChange({ ...player, shirt_size: v })}>
-            <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-            <SelectContent>
-              {["XS", "S", "M", "L", "XL", "2XL", "3XL"].map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Dietary Restrictions</Label>
-          <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
-        </div>
+        {isFieldEnabled("Shirt Size") && (
+          <div>
+            <Label>Shirt Size{isFieldRequired("Shirt Size") ? " *" : ""}</Label>
+            <Select value={player.shirt_size} onValueChange={(v) => onChange({ ...player, shirt_size: v })}>
+              <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+              <SelectContent>
+                {(() => {
+                  const f = (fields || []).find((fld) => fld.label.toLowerCase() === "shirt size");
+                  const opts = f?.options && Array.isArray(f.options) && f.options.length > 0 ? f.options : ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+                  return opts.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>);
+                })()}
+              </SelectContent>
+            </Select>
+            {errors[`${prefix}shirt_size`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}shirt_size`]}</p>}
+          </div>
+        )}
+        {isFieldEnabled("Dietary Restrictions") && (
+          <div>
+            <Label>Dietary Restrictions{isFieldRequired("Dietary Restrictions") ? " *" : ""}</Label>
+            <Input value={player.dietary_restrictions} onChange={(e) => onChange({ ...player, dietary_restrictions: e.target.value })} placeholder="e.g. Vegetarian" maxLength={500} />
+            {errors[`${prefix}dietary_restrictions`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}dietary_restrictions`]}</p>}
+          </div>
+        )}
       </div>
+      {/* Custom fields */}
+      {customFields.length > 0 && (
+        <div className="grid grid-cols-2 gap-4">
+          {customFields.map((cf) => {
+            const key = `custom_${cf.id}`;
+            return (
+              <div key={cf.id}>
+                <Label>{cf.label}{cf.is_required ? " *" : ""}</Label>
+                {cf.field_type === "dropdown" && cf.options ? (
+                  <Select value={(player as any)[key] || ""} onValueChange={(v) => onChange({ ...player, [key]: v })}>
+                    <SelectTrigger><SelectValue placeholder={`Select ${cf.label}`} /></SelectTrigger>
+                    <SelectContent>
+                      {cf.options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : cf.field_type === "number" ? (
+                  <Input type="number" value={(player as any)[key] || ""} onChange={(e) => onChange({ ...player, [key]: e.target.value })} placeholder={cf.label} />
+                ) : (
+                  <Input value={(player as any)[key] || ""} onChange={(e) => onChange({ ...player, [key]: e.target.value })} placeholder={cf.label} maxLength={500} />
+                )}
+                {errors[`${prefix}${key}`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}${key}`]}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

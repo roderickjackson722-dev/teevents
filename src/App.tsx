@@ -48,6 +48,7 @@ import FlyerStudio from "./pages/dashboard/FlyerStudio";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import PublicTournament from "./pages/PublicTournament";
+import RefundRequest from "./pages/RefundRequest";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { Navigate } from "react-router-dom";

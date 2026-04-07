@@ -141,7 +141,8 @@ const App = () => (
           <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
-          <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
+           <Route path="/refund/:tournamentId" element={<RefundRequest />} />
+           <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/deck" element={<SalesDeck />} />
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />

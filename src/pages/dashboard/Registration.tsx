@@ -572,6 +572,17 @@ const Registration = () => {
                 </div>
               </div>
 
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">"Cover the Fees" Option</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Allow golfers to optionally cover the 5% platform fee and Stripe processing fee.
+                    When enabled, a checkbox appears on the registration form.
+                  </p>
+                </div>
+                <Switch checked={allowCoverFees} onCheckedChange={setAllowCoverFees} />
+              </div>
+
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings

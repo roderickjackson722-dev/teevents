@@ -255,6 +255,10 @@ export default function PayoutSettings() {
   const openChangeRequest = (type: string) => {
     setChangeType(type);
     setChangeReason("");
+    setHolderName("");
+    setNewRouting("");
+    setNewAccount("");
+    setConfirmAccount("");
     setShowChangeModal(true);
   };
 

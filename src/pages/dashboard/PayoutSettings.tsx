@@ -78,6 +78,10 @@ export default function PayoutSettings() {
   const [changeType, setChangeType] = useState("");
   const [changeReason, setChangeReason] = useState("");
   const [submittingChange, setSubmittingChange] = useState(false);
+  const [holderName, setHolderName] = useState("");
+  const [newRouting, setNewRouting] = useState("");
+  const [newAccount, setNewAccount] = useState("");
+  const [confirmAccount, setConfirmAccount] = useState("");
 
   useEffect(() => {
     if (org?.orgId) {
@@ -251,11 +255,36 @@ export default function PayoutSettings() {
   const openChangeRequest = (type: string) => {
     setChangeType(type);
     setChangeReason("");
+    setHolderName("");
+    setNewRouting("");
+    setNewAccount("");
+    setConfirmAccount("");
     setShowChangeModal(true);
   };
 
   const submitChangeRequest = async () => {
     if (!org?.orgId) return;
+
+    // Validation for bank change requests
+    if (changeType === "stripe_connect") {
+      if (!holderName.trim()) {
+        toast.error("Please enter the account holder name.");
+        return;
+      }
+      if (newRouting.length < 4) {
+        toast.error("Please enter a valid routing number.");
+        return;
+      }
+      if (newAccount.length < 4) {
+        toast.error("Please enter a valid account number.");
+        return;
+      }
+      if (newAccount !== confirmAccount) {
+        toast.error("Account numbers do not match.");
+        return;
+      }
+    }
+
     setSubmittingChange(true);
 
     const oldValue =
@@ -265,22 +294,43 @@ export default function PayoutSettings() {
           : "Not connected"
         : payoutMethod?.paypal_email || "Not set";
 
+    const routingLast4 = newRouting.slice(-4);
+    const accountLast4 = newAccount.slice(-4);
+
     const { error } = await supabase.from("payout_change_requests").insert({
       organization_id: org.orgId,
       requested_by: org.userId,
       change_type: changeType,
       old_value: oldValue,
       new_value: changeReason || "Change requested",
+      account_holder_name: holderName || null,
+      new_routing_last4: changeType === "stripe_connect" ? routingLast4 : null,
+      new_account_last4: changeType === "stripe_connect" ? accountLast4 : null,
       status: "pending",
     } as any);
 
     if (error) {
       toast.error("Failed to submit change request.");
     } else {
-      toast.success("Change request submitted. Our team will review it shortly.");
+      toast.success("Change request submitted. You will receive an email once approved. Please expect a verification call during business hours.");
       await logAudit("change_requested", {
         summary: `Change request submitted for ${changeType}`,
       });
+
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke("notify-admin-action", {
+          body: {
+            type: "bank_change_submitted",
+            organization_id: org.orgId,
+            details: {
+              account_holder_name: holderName,
+              new_account_last4: accountLast4,
+            },
+          },
+        });
+      } catch { /* non-critical */ }
+
       setShowChangeModal(false);
       fetchChangeRequests();
       fetchAuditLogs();
@@ -383,8 +433,13 @@ export default function PayoutSettings() {
                     <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => openChangeRequest("stripe_connect")}>
-                  Change Account
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openChangeRequest("stripe_connect")}
+                  disabled={changeRequests.some(r => r.status === "pending")}
+                >
+                  {changeRequests.some(r => r.status === "pending") ? "Change Pending..." : "Change Account"}
                 </Button>
               </div>
             ) : hasPaypal && payoutMethod?.preferred_method === "paypal" ? (
@@ -733,21 +788,14 @@ export default function PayoutSettings() {
 
       {/* Change Request Modal */}
       <Dialog open={showChangeModal} onOpenChange={setShowChangeModal}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Payout Method Change</DialogTitle>
+            <DialogTitle>Request Bank Account Change</DialogTitle>
             <DialogDescription>
-              For your security, changes to payout methods require verification by our team.
+              For your security, bank account changes require verification by our team via phone call.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label className="text-xs text-muted-foreground">Change Type</Label>
-              <p className="text-sm font-medium text-foreground capitalize mt-1">
-                {changeType.replace(/_/g, " ")}
-              </p>
-            </div>
-
             <div>
               <Label className="text-xs text-muted-foreground">Current Method</Label>
               <p className="text-sm text-foreground mt-1">
@@ -758,6 +806,71 @@ export default function PayoutSettings() {
                   : payoutMethod?.paypal_email || "Not set"}
               </p>
             </div>
+
+            {changeType === "stripe_connect" && (
+              <>
+                <div>
+                  <Label htmlFor="holder-name">Account Holder Name *</Label>
+                  <Input
+                    id="holder-name"
+                    placeholder="Full name on the account"
+                    value={holderName}
+                    onChange={(e) => setHolderName(e.target.value)}
+                    className="mt-1.5"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="new-routing">New Routing Number *</Label>
+                  <Input
+                    id="new-routing"
+                    type="password"
+                    placeholder="•••••••••"
+                    value={newRouting}
+                    onChange={(e) => setNewRouting(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                    className="mt-1.5 font-mono"
+                    autoComplete="off"
+                  />
+                  {newRouting.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Last 4: ···· {newRouting.slice(-4)}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="new-account">New Account Number *</Label>
+                  <Input
+                    id="new-account"
+                    type="password"
+                    placeholder="•••••••••••••"
+                    value={newAccount}
+                    onChange={(e) => setNewAccount(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                    className="mt-1.5 font-mono"
+                    autoComplete="off"
+                  />
+                  {newAccount.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Last 4: ···· {newAccount.slice(-4)}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="confirm-account">Confirm Account Number *</Label>
+                  <Input
+                    id="confirm-account"
+                    type="password"
+                    placeholder="•••••••••••••"
+                    value={confirmAccount}
+                    onChange={(e) => setConfirmAccount(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                    className="mt-1.5 font-mono"
+                    autoComplete="off"
+                  />
+                  {confirmAccount.length > 0 && newAccount.length > 0 && (
+                    <p className={`text-xs mt-1 ${confirmAccount === newAccount ? "text-emerald-600" : "text-destructive"}`}>
+                      {confirmAccount === newAccount ? "✓ Numbers match" : "✗ Numbers do not match"}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
 
             <div>
               <Label htmlFor="change-reason">Reason for Change (Optional)</Label>
@@ -770,14 +883,20 @@ export default function PayoutSettings() {
               />
             </div>
 
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground">
-                This change will be reviewed by our team. You'll receive an email confirmation once approved.
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+              <p className="text-xs text-foreground font-medium">🔒 Security Notice</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Full account numbers are NOT stored. Only the last 4 digits are saved for verification.
+                You will receive a phone call during business hours to verify this change before it is approved.
               </p>
             </div>
 
             <div className="flex gap-3">
-              <Button onClick={submitChangeRequest} disabled={submittingChange} className="flex-1">
+              <Button
+                onClick={submitChangeRequest}
+                disabled={submittingChange || (changeType === "stripe_connect" && (!holderName.trim() || newRouting.length < 4 || newAccount.length < 4 || newAccount !== confirmAccount))}
+                className="flex-1"
+              >
                 {submittingChange && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Submit Change Request
               </Button>

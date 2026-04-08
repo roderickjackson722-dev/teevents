@@ -888,6 +888,60 @@ export type Database = {
         }
         Relationships: []
       }
+      organizer_messages: {
+        Row: {
+          created_at: string
+          direction: string
+          id: string
+          message: string
+          organization_id: string
+          parent_message_id: string | null
+          read_at: string | null
+          sender_user_id: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          id?: string
+          message: string
+          organization_id: string
+          parent_message_id?: string | null
+          read_at?: string | null
+          sender_user_id?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          id?: string
+          message?: string
+          organization_id?: string
+          parent_message_id?: string | null
+          read_at?: string | null
+          sender_user_id?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "organizer_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_templates: {
         Row: {
           body: string
@@ -964,9 +1018,13 @@ export type Database = {
       }
       payout_change_requests: {
         Row: {
+          account_holder_name: string | null
+          admin_toggle_granted: boolean | null
           change_type: string
           created_at: string | null
           id: string
+          new_account_last4: string | null
+          new_routing_last4: string | null
           new_value: string | null
           old_value: string | null
           organization_id: string
@@ -977,9 +1035,13 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          account_holder_name?: string | null
+          admin_toggle_granted?: boolean | null
           change_type: string
           created_at?: string | null
           id?: string
+          new_account_last4?: string | null
+          new_routing_last4?: string | null
           new_value?: string | null
           old_value?: string | null
           organization_id: string
@@ -990,9 +1052,13 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          account_holder_name?: string | null
+          admin_toggle_granted?: boolean | null
           change_type?: string
           created_at?: string | null
           id?: string
+          new_account_last4?: string | null
+          new_routing_last4?: string | null
           new_value?: string | null
           old_value?: string | null
           organization_id?: string

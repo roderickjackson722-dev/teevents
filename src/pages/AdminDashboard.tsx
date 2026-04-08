@@ -12,6 +12,7 @@ import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
+import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -726,6 +727,7 @@ const AdminDashboard = () => {
                 ["analytics", "Analytics", BarChart3],
                 ["college", "College Hub", School],
                 ["flyer-templates", "Flyer Templates", FileText],
+                ["notifications", "Notifications & Requests", Bell],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}
@@ -1693,6 +1695,9 @@ const AdminDashboard = () => {
 
           {/* Flyer Templates Tab */}
           {activeTab === "flyer-templates" && <AdminFlyerTemplates />}
+
+          {/* Notifications & Requests Tab */}
+          {activeTab === "notifications" && <AdminNotifications />}
         </div>
       </section>
     </Layout>

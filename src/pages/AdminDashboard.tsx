@@ -727,6 +727,7 @@ const AdminDashboard = () => {
                 ["analytics", "Analytics", BarChart3],
                 ["college", "College Hub", School],
                 ["flyer-templates", "Flyer Templates", FileText],
+                ["notifications", "Notifications & Requests", Bell],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}
@@ -1694,6 +1695,9 @@ const AdminDashboard = () => {
 
           {/* Flyer Templates Tab */}
           {activeTab === "flyer-templates" && <AdminFlyerTemplates />}
+
+          {/* Notifications & Requests Tab */}
+          {activeTab === "notifications" && <AdminNotifications />}
         </div>
       </section>
     </Layout>

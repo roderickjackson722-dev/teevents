@@ -106,7 +106,22 @@ export default function PayoutSettings() {
       // If Stripe is connected but last4 is missing, sync from Stripe
       if ((data as any).stripe_account_id && !(data as any).stripe_account_last4) {
         try {
-          await supabase.functions.invoke("stripe-connect-status", { body: {} });
+          const { data: syncData } = await supabase.functions.invoke("stripe-connect-status", { body: {} });
+
+          if (syncData?.last4) {
+            setPayoutMethod((current) =>
+              current
+                ? {
+                    ...current,
+                    stripe_account_last4: syncData.last4,
+                    stripe_account_brand: syncData.brand ?? current.stripe_account_brand,
+                    stripe_onboarding_complete: Boolean(syncData.details_submitted),
+                    stripe_account_status: syncData.charges_enabled ? "active" : current.stripe_account_status,
+                  }
+                : current
+            );
+          }
+
           // Re-fetch to get the updated last4
           const { data: refreshed } = await supabase
             .from("organization_payout_methods")
@@ -428,7 +443,9 @@ export default function PayoutSettings() {
                     <p className="font-semibold text-foreground">Stripe Connect</p>
                     {/* Security: Only last 4 digits are stored and displayed — full account numbers never reach the frontend */}
                     <p className="text-sm text-muted-foreground">
-                      {payoutMethod.stripe_account_brand || "Bank Account"} ···· {payoutMethod.stripe_account_last4 || "****"}
+                      {payoutMethod.stripe_account_last4
+                        ? `Connected bank account ending in: •••• ${payoutMethod.stripe_account_last4}`
+                        : "Connected bank account details are syncing..."}
                     </p>
                     <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
                   </div>
@@ -517,7 +534,7 @@ export default function PayoutSettings() {
                     Payouts will be sent to your connected bank account automatically.
                     {payoutMethod?.stripe_account_last4 && (
                       <span className="ml-1">
-                        ({payoutMethod.stripe_account_brand || "Bank"} ···· {payoutMethod.stripe_account_last4})
+                        (Ending in ···· {payoutMethod.stripe_account_last4})
                       </span>
                     )}
                   </p>

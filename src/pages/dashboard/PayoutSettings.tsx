@@ -264,6 +264,27 @@ export default function PayoutSettings() {
 
   const submitChangeRequest = async () => {
     if (!org?.orgId) return;
+
+    // Validation for bank change requests
+    if (changeType === "stripe_connect") {
+      if (!holderName.trim()) {
+        toast.error("Please enter the account holder name.");
+        return;
+      }
+      if (newRouting.length < 4) {
+        toast.error("Please enter a valid routing number.");
+        return;
+      }
+      if (newAccount.length < 4) {
+        toast.error("Please enter a valid account number.");
+        return;
+      }
+      if (newAccount !== confirmAccount) {
+        toast.error("Account numbers do not match.");
+        return;
+      }
+    }
+
     setSubmittingChange(true);
 
     const oldValue =
@@ -273,22 +294,43 @@ export default function PayoutSettings() {
           : "Not connected"
         : payoutMethod?.paypal_email || "Not set";
 
+    const routingLast4 = newRouting.slice(-4);
+    const accountLast4 = newAccount.slice(-4);
+
     const { error } = await supabase.from("payout_change_requests").insert({
       organization_id: org.orgId,
       requested_by: org.userId,
       change_type: changeType,
       old_value: oldValue,
       new_value: changeReason || "Change requested",
+      account_holder_name: holderName || null,
+      new_routing_last4: changeType === "stripe_connect" ? routingLast4 : null,
+      new_account_last4: changeType === "stripe_connect" ? accountLast4 : null,
       status: "pending",
     } as any);
 
     if (error) {
       toast.error("Failed to submit change request.");
     } else {
-      toast.success("Change request submitted. Our team will review it shortly.");
+      toast.success("Change request submitted. You will receive an email once approved. Please expect a verification call during business hours.");
       await logAudit("change_requested", {
         summary: `Change request submitted for ${changeType}`,
       });
+
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke("notify-admin-action", {
+          body: {
+            type: "bank_change_submitted",
+            organization_id: org.orgId,
+            details: {
+              account_holder_name: holderName,
+              new_account_last4: accountLast4,
+            },
+          },
+        });
+      } catch { /* non-critical */ }
+
       setShowChangeModal(false);
       fetchChangeRequests();
       fetchAuditLogs();

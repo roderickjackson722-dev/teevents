@@ -75,31 +75,17 @@ Deno.serve(async (req) => {
     // If passing fees to participants, add platform fee + Stripe processing fee
     if (passFeesToParticipants) {
       const platformFee = Math.round(priceCents * (PLATFORM_FEE_PERCENT / 100));
-      if (platformFee > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "TeeVents Platform Fee (5%)",
-              description: "Tournament management platform fee",
-            },
-            unit_amount: platformFee,
-          },
-          quantity: 1,
-        });
-      }
-
       const preStripeTotal = priceCents + platformFee;
       const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
-      if (stripeFee > 0) {
+      const combinedFees = platformFee + stripeFee;
+      if (combinedFees > 0) {
         lineItems.push({
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Payment Processing Fee",
-              description: "Stripe processing fee (~2.9% + $0.30)",
+              name: "Fees",
             },
-            unit_amount: stripeFee,
+            unit_amount: combinedFees,
           },
           quantity: 1,
         });

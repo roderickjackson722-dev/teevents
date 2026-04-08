@@ -177,29 +177,15 @@ Deno.serve(async (req) => {
         quantity: players.length,
       });
 
-      if (platformFee > 0) {
+      const combinedFees = platformFee + stripeFee;
+      if (combinedFees > 0) {
         lineItems.push({
           price_data: {
             currency: "usd",
             product_data: {
-              name: "TeeVents Platform Fee (5%)",
-              description: "Tournament management platform fee",
+              name: "Fees",
             },
-            unit_amount: platformFee,
-          },
-          quantity: 1,
-        });
-      }
-
-      if (stripeFee > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Payment Processing Fee",
-              description: "Stripe processing fee (~2.9% + $0.30)",
-            },
-            unit_amount: stripeFee,
+            unit_amount: combinedFees,
           },
           quantity: 1,
         });

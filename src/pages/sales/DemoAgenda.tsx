@@ -54,7 +54,7 @@ function FeeCalculator() {
   const [passToGolfer, setPassToGolfer] = useState(false);
 
   const stripeFee = fee * 0.029 + 0.3;
-  const platformFee = fee * 0.04;
+  const platformFee = fee * 0.05;
   const totalCollected = fee * golfers;
 
   const golferPays = passToGolfer ? fee + platformFee + stripeFee : fee;
@@ -421,7 +421,7 @@ export default function DemoAgenda() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5" /> Pricing</CardTitle>
-              <CardDescription>Simple, transparent pricing. 4% platform fee on all registrations.</CardDescription>
+              <CardDescription>Simple, transparent pricing. 5% platform fee on all registrations.</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>

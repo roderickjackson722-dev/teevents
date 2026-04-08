@@ -81,11 +81,44 @@ export default function PayoutSettings() {
 
   useEffect(() => {
     if (org?.orgId) {
-      fetchPayoutMethod();
+      fetchPayoutMethodAndSync();
       fetchAuditLogs();
       fetchChangeRequests();
     }
   }, [org?.orgId]);
+
+  const fetchPayoutMethodAndSync = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("organization_payout_methods")
+      .select("*")
+      .eq("organization_id", org!.orgId)
+      .single();
+
+    if (data) {
+      setPayoutMethod(data as unknown as PayoutMethod);
+      if ((data as any).paypal_email) setPaypalEmail((data as any).paypal_email);
+
+      // If Stripe is connected but last4 is missing, sync from Stripe
+      if ((data as any).stripe_account_id && !(data as any).stripe_account_last4) {
+        try {
+          await supabase.functions.invoke("stripe-connect-status", { body: {} });
+          // Re-fetch to get the updated last4
+          const { data: refreshed } = await supabase
+            .from("organization_payout_methods")
+            .select("*")
+            .eq("organization_id", org!.orgId)
+            .single();
+          if (refreshed) {
+            setPayoutMethod(refreshed as unknown as PayoutMethod);
+          }
+        } catch {
+          // Silent — status will show without last4
+        }
+      }
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (searchParams.get("stripe_connected") === "true") {

@@ -310,7 +310,7 @@ const Finances = () => {
     if (reportType === "transactions") {
       const filtered = filterByDate(platformTransactions);
       const headers = [
-        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 4% ($)",
+        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 5% ($)",
         "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
       ];
       const rows = filtered.map((tx) => {
@@ -571,7 +571,7 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Fees Paid (4%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">Flat 5% platform fee on each registration covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Fees Paid (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">Flat 5% platform fee on each registration covering processing, platform, and support.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
@@ -622,7 +622,7 @@ const Finances = () => {
             <Receipt className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Platform Fees Paid (4%)</p>
+            <p className="text-xs text-muted-foreground font-medium">Platform Fees Paid (5%)</p>
             <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
           </div>
         </div>
@@ -743,7 +743,7 @@ const Finances = () => {
                   <tbody>
                     {filteredRegistrations.map((reg) => {
                       const gross = getRegistrationAmount(reg);
-                      const fee = Math.round(gross * 0.04);
+                      const fee = Math.round(gross * 0.05);
                       const afterFee = gross - fee;
                       const hold = Math.round(afterFee * 0.15);
                       const net = afterFee - hold;

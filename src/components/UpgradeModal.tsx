@@ -31,7 +31,7 @@ export function UpgradeModal({ isOpen, onClose, title, description, currentPlan 
           <DialogDescription>
             {description}
             <br /><br />
-            All plans include our transparent 4% platform fee passed to participants by default, so you keep 100% of the advertised price.
+            All plans include our transparent 5% platform fee passed to participants by default, so you keep 100% of the advertised price.
           </DialogDescription>
         </DialogHeader>
 

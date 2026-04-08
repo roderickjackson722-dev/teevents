@@ -53,7 +53,7 @@ const faqSections = [
     items: [
       {
         q: "What are the fees?",
-        a: "Every transaction has two transparent fees:\n\n• TeeVents platform fee: 4% (for the full golf tournament management platform — custom website, live scoring, pairings, budget tools, white-glove support, etc.)\n• Stripe processing fee: ~2.9% + $0.30 (standard credit-card fee)\n\nTotal extra cost is approximately 6.9% + $0.30 when passed to participants.",
+        a: "Every transaction has two transparent fees:\n\n• TeeVents platform fee: 5% (for the full golf tournament management platform — custom website, live scoring, pairings, budget tools, white-glove support, etc.)\n• Stripe processing fee: ~2.9% + $0.30 (standard credit-card fee)\n\nTotal extra cost is approximately 7.9% + $0.30 when passed to participants.",
       },
       {
         q: "Who pays the fees?",
@@ -61,7 +61,7 @@ const faqSections = [
       },
       {
         q: "When and how often does my organization get paid?",
-        a: "Net funds (after the 4% platform fee, Stripe fees, any refunds/chargebacks, and 15% reserve) are automatically paid out to your organization's bank account every two weeks. You can view next payout date, reserve balance, and full history in the Finances dashboard.",
+        a: "Net funds (after the 5% platform fee, Stripe fees, any refunds/chargebacks, and 15% reserve) are automatically paid out to your organization's bank account every two weeks. You can view next payout date, reserve balance, and full history in the Finances dashboard.",
       },
       {
         q: "How are refunds and chargebacks handled?",

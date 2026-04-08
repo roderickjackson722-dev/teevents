@@ -251,7 +251,7 @@ const Settings = () => {
                   <p className="font-semibold text-foreground text-sm truncate">{t.title}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t.pass_fees_to_participants
-                      ? "Fees passed to participants (4% platform + ~2.9%+$0.30 Stripe) — your organization receives the full advertised price."
+                      ? "Fees passed to participants (5% platform + ~2.9%+$0.30 Stripe) — your organization receives the full advertised price."
                       : "Fees absorbed by organization — participants pay exactly the advertised price. Fees deducted from bi-weekly payout."}
                   </p>
                 </div>

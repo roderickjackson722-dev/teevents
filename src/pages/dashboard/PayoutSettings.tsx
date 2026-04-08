@@ -417,7 +417,7 @@ export default function PayoutSettings() {
         </div>
         <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
           <li>All golfer payments are collected securely by TeeVents</li>
-          <li>A 4% platform fee is deducted from each transaction</li>
+          <li>A 5% platform fee is deducted from each transaction</li>
           <li>15% reserve is held and released 15 days after your event ends</li>
           <li>Payouts are processed automatically every other Monday</li>
           <li>You can also request manual withdrawals anytime ($25 minimum)</li>

@@ -16,9 +16,9 @@ import Layout from "@/components/Layout";
 const FLOW_STEPS = [
   { icon: Users, label: "Golfer Pays", detail: "$100 registration", color: "bg-primary" },
   { icon: CreditCard, label: "TeeVents Collects", detail: "Secure Stripe checkout", color: "bg-primary/80" },
-  { icon: DollarSign, label: "4% Fee Deducted", detail: "$4.00 platform fee", color: "bg-destructive/80" },
+  { icon: DollarSign, label: "5% Fee Deducted", detail: "$5.00 platform fee", color: "bg-destructive/80" },
   { icon: Shield, label: "15% Hold", detail: "$15.00 reserve", color: "bg-destructive/80" },
-  { icon: Banknote, label: "81% Net Available", detail: "$81.00 tracked", color: "bg-emerald-600" },
+  { icon: Banknote, label: "80% Net Available", detail: "$80.00 tracked", color: "bg-emerald-600" },
   { icon: Clock, label: "Event +15 Days", detail: "Hold released", color: "bg-primary/60" },
   { icon: Building2, label: "Payout", detail: "Bi-weekly or manual", color: "bg-emerald-700" },
 ];
@@ -50,7 +50,7 @@ const OBJECTIONS = [
   },
   {
     q: '"What if I need money before my event?"',
-    a: "Your available balance (the 81% net) is tracked in your dashboard. If you have enough available, you can request a manual withdrawal anytime ($25 minimum). However, the 15% hold will only release after the event ends.",
+    a: "Your available balance (the 80% net) is tracked in your dashboard. If you have enough available, you can request a manual withdrawal anytime ($25 minimum). However, the 15% hold will only release after the event ends.",
   },
 ];
 
@@ -92,18 +92,18 @@ HOW FUNDS FLOW
 2. Payment is collected by TeeVents (we use Stripe, the same platform that powers millions of online businesses).
 3. 5% platform fee is automatically deducted — this covers hosting, support, software updates, and payment processing infrastructure.
 4. 15% hold is placed on the remaining balance — this protects you from chargebacks and refunds.
-5. 81% (net available) is immediately tracked in your dashboard but held for payout timing.
+5. 80% (net available) is immediately tracked in your dashboard but held for payout timing.
 6. 15 days after your event ends, the 15% hold is released to your available balance.
 7. You receive payouts every other Monday (bi-weekly) OR you can request manual withdrawals anytime.
 
 SAMPLE $100 REGISTRATION BREAKDOWN
 • Registration Price: $100.00
-• Platform Fee (5%): −$4.00
-• Net After Fee: $96.00
+• Platform Fee (5%): −$5.00
+• Net After Fee: $95.00
 • 15% Reserve Hold: −$15.00
-• Net Available for Payout: $81.00
+• Net Available for Payout: $80.00
 • Hold Released (Event +15 days): +$15.00
-• Total Received by Organizer: $96.00
+• Total Received by Organizer: $95.00
 
 EXPLAINING THE 15% HOLD
 "We place a 15% hold on each transaction to protect you from chargebacks. A chargeback happens when a golfer disputes a charge with their bank — maybe they didn't recognize the charge, or there was an issue with the event. The bank can reverse the payment, and that money would come out of your account.
@@ -128,7 +128,7 @@ COMMON OBJECTIONS
 • "15% hold is too high" → You get it all back 15 days after your event. No other platform gives you this protection.
 • "Why can't I get paid immediately?" → We hold funds to cover chargebacks. Once the risk period passes, funds are released.
 • "I already have a Stripe account" → Connect it through our Express onboarding in 2–3 minutes.
-• "What if I need money before my event?" → Your 81% net is available for manual withdrawal anytime ($25 min).
+• "What if I need money before my event?" → Your 80% net is available for manual withdrawal anytime ($25 min).
 `;
 }
 

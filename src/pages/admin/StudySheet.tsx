@@ -167,7 +167,7 @@ const StudySheet = () => {
       <ul>
         <li>Silent auction items with bidding</li>
         <li>Raffle items with ticket pricing</li>
-        <li>Payment processing through Stripe (4% fee applies)</li>
+        <li>Payment processing through Stripe (5% fee applies)</li>
       </ul>
 
       <h3>2.9 Additional Features</h3>
@@ -329,7 +329,7 @@ const StudySheet = () => {
         <tr><th>Term</th><th>Definition</th></tr>
         <tr><td><strong>Chargeback</strong></td><td>When a credit cardholder disputes a charge with their bank</td></tr>
         <tr><td><strong>Hold</strong></td><td>15% of registration fee set aside for 15 days after event for chargeback protection</td></tr>
-        <tr><td><strong>Platform Fee</strong></td><td>4% fee charged on all registrations processed through TeeVents</td></tr>
+        <tr><td><strong>Platform Fee</strong></td><td>5% fee charged on all registrations processed through TeeVents</td></tr>
         <tr><td><strong>Stripe Connect</strong></td><td>Stripe's platform for marketplace-style payments; enables organizer payouts</td></tr>
         <tr><td><strong>Express Account</strong></td><td>Simplified Stripe Connect account type for organizers</td></tr>
         <tr><td><strong>Application Fee</strong></td><td>Stripe mechanism to automatically take the 5% platform fee from each payment</td></tr>
@@ -463,7 +463,7 @@ const StudySheet = () => {
               <FeatureBlock title="2.8 Auction & Raffle (Premium)" items={[
                 "Silent auction items with bidding",
                 "Raffle items with ticket pricing",
-                "Payment processing through Stripe (4% fee applies)",
+                "Payment processing through Stripe (5% fee applies)",
               ]} />
               <FeatureBlock title="2.9 Additional Features" items={[
                 "Printables: Scorecards, name badges, cart signs, hole assignments, sponsor signs",
@@ -624,7 +624,7 @@ const StudySheet = () => {
               <SimpleTable headers={["Term", "Definition"]} rows={[
                 ["Chargeback", "When a cardholder disputes a charge with their bank"],
                 ["Hold", "15% of registration fee set aside for 15 days post-event"],
-                ["Platform Fee", "4% fee charged on all registrations"],
+                ["Platform Fee", "5% fee charged on all registrations"],
                 ["Stripe Connect", "Stripe's platform for marketplace payments"],
                 ["Express Account", "Simplified Stripe Connect account type"],
                 ["Application Fee", "Stripe mechanism to take the 5% platform fee"],

@@ -131,18 +131,7 @@ export default function PayoutSettings() {
   }, [searchParams]);
 
   const fetchPayoutMethod = async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("organization_payout_methods")
-      .select("*")
-      .eq("organization_id", org!.orgId)
-      .single();
-
-    if (data) {
-      setPayoutMethod(data as unknown as PayoutMethod);
-      if ((data as any).paypal_email) setPaypalEmail((data as any).paypal_email);
-    }
-    setLoading(false);
+    await fetchPayoutMethodAndSync();
   };
 
   const fetchAuditLogs = async () => {

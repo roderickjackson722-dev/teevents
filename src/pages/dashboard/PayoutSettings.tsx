@@ -78,6 +78,10 @@ export default function PayoutSettings() {
   const [changeType, setChangeType] = useState("");
   const [changeReason, setChangeReason] = useState("");
   const [submittingChange, setSubmittingChange] = useState(false);
+  const [holderName, setHolderName] = useState("");
+  const [newRouting, setNewRouting] = useState("");
+  const [newAccount, setNewAccount] = useState("");
+  const [confirmAccount, setConfirmAccount] = useState("");
 
   useEffect(() => {
     if (org?.orgId) {

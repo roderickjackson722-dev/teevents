@@ -337,51 +337,62 @@ export default function PayoutSettings() {
         </ul>
       </div>
 
-      {/* Current Active Method */}
-      {(stripeConnected || hasPaypal) && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Current Payout Method</CardTitle>
-              <CardDescription>How you receive payments from TeeVents</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {stripeConnected && payoutMethod?.preferred_method === "stripe" ? (
-                <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="h-8 w-8 text-emerald-600" />
-                    <div>
-                      <p className="font-semibold text-foreground">Stripe Connect</p>
-                      <p className="text-sm text-muted-foreground">
-                        {payoutMethod.stripe_account_brand || "Bank Account"} ····{" "}
-                        {payoutMethod.stripe_account_last4 || "****"}
-                      </p>
-                      <p className="text-xs text-emerald-600">✅ Verified & Active</p>
-                    </div>
+      {/* Current Setup — always visible */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Banknote className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">Current Setup</CardTitle>
+            </div>
+            <CardDescription>Your active payout account details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {stripeConnected && payoutMethod?.preferred_method === "stripe" ? (
+              <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-8 w-8 text-emerald-600" />
+                  <div>
+                    <p className="font-semibold text-foreground">Stripe Connect</p>
+                    {/* Security: Only last 4 digits are stored and displayed — full account numbers never reach the frontend */}
+                    <p className="text-sm text-muted-foreground">
+                      {payoutMethod.stripe_account_brand || "Bank Account"} ···· {payoutMethod.stripe_account_last4 || "****"}
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => openChangeRequest("stripe_connect")}>
-                    Change Bank Account
-                  </Button>
                 </div>
-              ) : hasPaypal ? (
-                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-8 w-8 text-blue-600" />
-                    <div>
-                      <p className="font-semibold text-foreground">PayPal</p>
-                      <p className="text-sm text-muted-foreground">{payoutMethod?.paypal_email}</p>
-                      <p className="text-xs text-blue-600">Active</p>
-                    </div>
+                <Button variant="outline" size="sm" onClick={() => openChangeRequest("stripe_connect")}>
+                  Change Account
+                </Button>
+              </div>
+            ) : hasPaypal && payoutMethod?.preferred_method === "paypal" ? (
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Mail className="h-8 w-8 text-blue-600" />
+                  <div>
+                    <p className="font-semibold text-foreground">PayPal</p>
+                    <p className="text-sm text-muted-foreground">{payoutMethod?.paypal_email}</p>
+                    <p className="text-xs text-blue-600 mt-0.5">Active</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => openChangeRequest("paypal_email")}>
-                    Change PayPal
-                  </Button>
                 </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+                <Button variant="outline" size="sm" onClick={() => openChangeRequest("paypal_email")}>
+                  Change PayPal
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 bg-muted/40 rounded-lg">
+                <AlertCircle className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">No payout account connected</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Please add a Stripe or PayPal account below to receive funds from your tournaments.
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Stripe Connect Card */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

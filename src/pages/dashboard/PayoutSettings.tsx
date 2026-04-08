@@ -433,8 +433,13 @@ export default function PayoutSettings() {
                     <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => openChangeRequest("stripe_connect")}>
-                  Change Account
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openChangeRequest("stripe_connect")}
+                  disabled={changeRequests.some(r => r.status === "pending")}
+                >
+                  {changeRequests.some(r => r.status === "pending") ? "Change Pending..." : "Change Account"}
                 </Button>
               </div>
             ) : hasPaypal && payoutMethod?.preferred_method === "paypal" ? (

@@ -72,6 +72,22 @@ Deno.serve(async (req) => {
 
     const account = await stripe.accounts.retrieve(org.stripe_account_id);
 
+    // Persist last4 and brand from the default external account (bank/card)
+    const ext = account.external_accounts?.data?.[0] as any;
+    if (ext) {
+      const last4 = ext.last4 || null;
+      const brand = ext.bank_name || ext.brand || null;
+      await supabaseAdmin
+        .from("organization_payout_methods")
+        .update({
+          stripe_account_last4: last4,
+          stripe_account_brand: brand,
+          stripe_account_status: account.charges_enabled ? "active" : "pending",
+          stripe_onboarding_complete: !!account.details_submitted,
+        })
+        .eq("organization_id", membership.organization_id);
+    }
+
     return new Response(
       JSON.stringify({
         connected: true,

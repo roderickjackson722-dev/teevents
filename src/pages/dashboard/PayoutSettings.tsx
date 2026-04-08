@@ -783,7 +783,135 @@ export default function PayoutSettings() {
 
       {/* Change Request Modal */}
       <Dialog open={showChangeModal} onOpenChange={setShowChangeModal}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request Bank Account Change</DialogTitle>
+            <DialogDescription>
+              For your security, bank account changes require verification by our team via phone call.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Current Method</Label>
+              <p className="text-sm text-foreground mt-1">
+                {changeType === "stripe_connect"
+                  ? payoutMethod?.stripe_account_last4
+                    ? `Bank ···· ${payoutMethod.stripe_account_last4}`
+                    : "Stripe Connected"
+                  : payoutMethod?.paypal_email || "Not set"}
+              </p>
+            </div>
+
+            {changeType === "stripe_connect" && (
+              <>
+                <div>
+                  <Label htmlFor="holder-name">Account Holder Name *</Label>
+                  <Input
+                    id="holder-name"
+                    placeholder="Full name on the account"
+                    value={holderName}
+                    onChange={(e) => setHolderName(e.target.value)}
+                    className="mt-1.5"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="new-routing">New Routing Number *</Label>
+                  <Input
+                    id="new-routing"
+                    type="password"
+                    placeholder="•••••••••"
+                    value={newRouting}
+                    onChange={(e) => setNewRouting(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                    className="mt-1.5 font-mono"
+                    autoComplete="off"
+                  />
+                  {newRouting.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Last 4: ···· {newRouting.slice(-4)}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="new-account">New Account Number *</Label>
+                  <Input
+                    id="new-account"
+                    type="password"
+                    placeholder="•••••••••••••"
+                    value={newAccount}
+                    onChange={(e) => setNewAccount(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                    className="mt-1.5 font-mono"
+                    autoComplete="off"
+                  />
+                  {newAccount.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Last 4: ···· {newAccount.slice(-4)}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="confirm-account">Confirm Account Number *</Label>
+                  <Input
+                    id="confirm-account"
+                    type="password"
+                    placeholder="•••••••••••••"
+                    value={confirmAccount}
+                    onChange={(e) => setConfirmAccount(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                    className="mt-1.5 font-mono"
+                    autoComplete="off"
+                  />
+                  {confirmAccount.length > 0 && newAccount.length > 0 && (
+                    <p className={`text-xs mt-1 ${confirmAccount === newAccount ? "text-emerald-600" : "text-destructive"}`}>
+                      {confirmAccount === newAccount ? "✓ Numbers match" : "✗ Numbers do not match"}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div>
+              <Label htmlFor="change-reason">Reason for Change (Optional)</Label>
+              <Textarea
+                id="change-reason"
+                placeholder="e.g. Switching to a new bank account..."
+                value={changeReason}
+                onChange={(e) => setChangeReason(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+              <p className="text-xs text-foreground font-medium">🔒 Security Notice</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Full account numbers are NOT stored. Only the last 4 digits are saved for verification.
+                You will receive a phone call during business hours to verify this change before it is approved.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={submitChangeRequest}
+                disabled={submittingChange || (changeType === "stripe_connect" && (!holderName.trim() || newRouting.length < 4 || newAccount.length < 4 || newAccount !== confirmAccount))}
+                className="flex-1"
+              >
+                {submittingChange && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Submit Change Request
+              </Button>
+              <Button variant="outline" onClick={() => setShowChangeModal(false)}>
+                Cancel
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Need immediate help? Contact us at{" "}
+              <a href="mailto:info@teevents.golf" className="underline">
+                info@teevents.golf
+              </a>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
           <DialogHeader>
             <DialogTitle>Confirm Payout Method Change</DialogTitle>
             <DialogDescription>

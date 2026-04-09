@@ -13,6 +13,7 @@ import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminNotifications from "@/components/admin/AdminNotifications";
+import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";

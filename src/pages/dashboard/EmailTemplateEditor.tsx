@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   Mail, Save, Eye, Send, Loader2, Palette, Type, Image, Layout,
-  RotateCcw, Copy, CheckCircle, Users, RefreshCw,
+  RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -86,6 +86,10 @@ export default function EmailTemplateEditor() {
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingReg, setEditingReg] = useState<any>(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [resendingSingle, setResendingSingle] = useState(false);
 
   // Load tournaments
   useEffect(() => {

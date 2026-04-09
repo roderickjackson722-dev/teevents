@@ -791,6 +791,8 @@ const Finances = () => {
                       const afterFee = gross - fee;
                       const hold = Math.round(afterFee * 0.15);
                       const net = afterFee - hold;
+                      const clearDate = addBusinessDays(new Date(reg.created_at), 5);
+                      const isCleared = clearDate <= now;
                       return (
                         <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="p-3">
@@ -802,6 +804,18 @@ const Finances = () => {
                           <td className="p-3 text-sm text-amber-600 hidden lg:table-cell">${(hold / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
                           <td className="p-3">{statusBadge(reg.payment_status)}</td>
+                          <td className="p-3 hidden md:table-cell">
+                            {isCleared ? (
+                              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Cleared</Badge>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50 text-xs cursor-help"><Clock className="h-3 w-3 mr-1" />{clearDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>Funds clear on {clearDate.toLocaleDateString()}</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </td>
                           <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
                           <td className="p-3">
                             <div className="flex items-center justify-end gap-1">

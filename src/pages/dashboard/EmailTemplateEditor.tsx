@@ -457,16 +457,21 @@ export default function EmailTemplateEditor() {
             ) : (
               <div className="max-h-[400px] overflow-y-auto divide-y">
                 {registrations.map(r => (
-                  <label key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded cursor-pointer">
-                    <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{r.email}</p>
-                    </div>
+                  <div key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
+                    <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                      <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                      </div>
+                    </label>
                     <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
                       {r.payment_status}
                     </Badge>
-                  </label>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit email & resend" onClick={() => openEditModal(r)}>
+                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             )}

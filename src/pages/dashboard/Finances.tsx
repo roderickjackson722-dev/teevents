@@ -221,6 +221,36 @@ const Finances = () => {
 
   const availableForPayout = releasedAvailable + heldAvailable;
 
+  // 5-business-day clearance logic
+  const addBusinessDays = (date: Date, days: number): Date => {
+    const result = new Date(date);
+    let added = 0;
+    while (added < days) {
+      result.setDate(result.getDate() + 1);
+      const day = result.getDay();
+      if (day !== 0 && day !== 6) added++;
+    }
+    return result;
+  };
+
+  const now = new Date();
+
+  // Pending clearance: transactions created within last 5 business days
+  const pendingClearanceTxs = platformTransactions.filter((t) => {
+    const clearDate = addBusinessDays(new Date(t.created_at), 5);
+    return clearDate > now && t.status !== "paid_out";
+  });
+  const pendingClearance = pendingClearanceTxs.reduce((sum, t) => sum + t.net_amount_cents, 0);
+  const pendingClearanceCount = pendingClearanceTxs.length;
+
+  // Cleared available: transactions past 5-day hold AND not yet paid out
+  const clearedAvailable = platformTransactions
+    .filter((t) => {
+      const clearDate = addBusinessDays(new Date(t.created_at), 5);
+      return clearDate <= now && t.status !== "paid_out";
+    })
+    .reduce((sum, t) => sum + t.net_amount_cents - (t.hold_amount_cents || 0), 0);
+
   const totalPaidOut = payouts
     .filter((p) => p.status === "completed")
     .reduce((sum, p) => sum + p.amount_cents, 0);

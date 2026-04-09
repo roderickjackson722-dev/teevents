@@ -664,8 +664,9 @@ const Finances = () => {
             <Receipt className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Platform Fees Paid (5%)</p>
+            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee (5%)</p>
             <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">5% of gross registration revenue</p>
           </div>
         </div>
 

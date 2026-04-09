@@ -99,7 +99,21 @@ Deno.serve(async (req) => {
     ).auth.getUser(token);
     if (!user) throw new Error("Not authenticated");
 
-    const { registration_ids, use_custom_template } = await req.json();
+    const { registration_ids, use_custom_template, update_email } = await req.json();
+
+    // Optional: update a registrant's email before resending
+    if (update_email && update_email.registration_id && update_email.new_email) {
+      const { error: updateErr } = await supabaseAdmin
+        .from("tournament_registrations")
+        .update({ email: update_email.new_email.trim() })
+        .eq("id", update_email.registration_id);
+      if (updateErr) {
+        console.error("[Resend Confirmation] Failed to update email:", updateErr);
+        throw new Error("Failed to update registrant email");
+      }
+      console.log(`[Resend Confirmation] Updated email for ${update_email.registration_id} to ${update_email.new_email}`);
+    }
+
     if (!registration_ids || !Array.isArray(registration_ids) || registration_ids.length === 0) {
       throw new Error("Missing registration_ids array");
     }

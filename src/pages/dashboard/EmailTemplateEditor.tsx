@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   Mail, Save, Eye, Send, Loader2, Palette, Type, Image, Layout,
-  RotateCcw, Copy, CheckCircle, Users, RefreshCw,
+  RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -86,6 +86,10 @@ export default function EmailTemplateEditor() {
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingReg, setEditingReg] = useState<any>(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [resendingSingle, setResendingSingle] = useState(false);
 
   // Load tournaments
   useEffect(() => {
@@ -208,6 +212,40 @@ export default function EmailTemplateEditor() {
 
   const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject", variable: string) => {
     setConfig(prev => ({ ...prev, [field]: prev[field] + " " + variable }));
+  };
+
+  const openEditModal = (reg: any) => {
+    setEditingReg(reg);
+    setEditEmail(reg.email);
+    setEditModalOpen(true);
+  };
+
+  const handleEditAndResend = async () => {
+    if (!editingReg || !editEmail.trim()) return;
+    setResendingSingle(true);
+    try {
+      const needsUpdate = editEmail.trim().toLowerCase() !== editingReg.email.toLowerCase();
+      const { data, error } = await supabase.functions.invoke("resend-confirmation", {
+        body: {
+          registration_ids: [editingReg.id],
+          use_custom_template: true,
+          ...(needsUpdate ? { update_email: { registration_id: editingReg.id, new_email: editEmail.trim() } } : {}),
+        },
+      });
+      if (error) throw error;
+      // Update local state
+      if (needsUpdate) {
+        setRegistrations(prev => prev.map(r =>
+          r.id === editingReg.id ? { ...r, email: editEmail.trim() } : r
+        ));
+      }
+      toast.success(`Confirmation email resent to ${editEmail.trim()}`);
+      setEditModalOpen(false);
+      setEditingReg(null);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to resend email");
+    }
+    setResendingSingle(false);
   };
 
   if (loading) {
@@ -419,16 +457,21 @@ export default function EmailTemplateEditor() {
             ) : (
               <div className="max-h-[400px] overflow-y-auto divide-y">
                 {registrations.map(r => (
-                  <label key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded cursor-pointer">
-                    <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{r.email}</p>
-                    </div>
+                  <div key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
+                    <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                      <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                      </div>
+                    </label>
                     <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
                       {r.payment_status}
                     </Badge>
-                  </label>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit email & resend" onClick={() => openEditModal(r)}>
+                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             )}
@@ -456,6 +499,46 @@ export default function EmailTemplateEditor() {
           <Copy className="h-4 w-4" /> Copy HTML
         </Button>
       </div>
+
+      {/* Edit Email & Resend Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-primary" /> Edit Email & Resend
+            </DialogTitle>
+          </DialogHeader>
+          {editingReg && (
+            <div className="space-y-4 pt-2">
+              <p className="text-sm text-muted-foreground">
+                Editing email for <strong>{editingReg.first_name} {editingReg.last_name}</strong>
+              </p>
+              <div>
+                <Label>Email Address</Label>
+                <Input
+                  value={editEmail}
+                  onChange={e => setEditEmail(e.target.value)}
+                  placeholder="Enter corrected email"
+                  className="mt-1"
+                  type="email"
+                />
+              </div>
+              {editEmail.trim().toLowerCase() !== editingReg.email.toLowerCase() && (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  ⚠️ This will update the registrant's email from <strong>{editingReg.email}</strong> to <strong>{editEmail.trim()}</strong>
+                </p>
+              )}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
+                <Button onClick={handleEditAndResend} disabled={resendingSingle || !editEmail.trim()} className="gap-2">
+                  {resendingSingle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {editEmail.trim().toLowerCase() !== editingReg.email.toLowerCase() ? "Update & Send" : "Resend"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

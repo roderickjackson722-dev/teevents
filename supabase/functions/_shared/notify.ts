@@ -28,6 +28,8 @@ export async function sendNotificationEmails(
 
     const recipients = notifEmails.map((n: any) => n.email);
 
+    console.log(`[Notification] Attempting to send ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -44,9 +46,10 @@ export async function sendNotificationEmails(
 
     if (!res.ok) {
       const err = await res.text();
-      console.error(`Resend API error (${res.status}):`, err);
+      console.error(`[Notification] Resend API error (${res.status}) for ${eventType}:`, err);
+      console.error(`[Notification] Sender domain: ${SENDER_EMAIL} — Ensure this domain is verified in Resend.`);
     } else {
-      console.log(`[Notification] ${eventType} sent to ${recipients.join(", ")}`);
+      console.log(`[Notification] ${eventType} successfully sent to ${recipients.join(", ")}`);
     }
   } catch (err) {
     console.error("Failed to send notification emails:", err);
@@ -92,6 +95,8 @@ export async function sendRegistrantConfirmationEmail(
 
     const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], refundUrl);
 
+    console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -108,9 +113,10 @@ export async function sendRegistrantConfirmationEmail(
 
     if (!res.ok) {
       const err = await res.text();
-      console.error(`Resend API error (${res.status}):`, err);
+      console.error(`[Confirmation] Resend API error (${res.status}):`, err);
+      console.error(`[Confirmation] Sender domain: ${SENDER_EMAIL} — Ensure this domain is verified in Resend.`);
     } else {
-      console.log(`[Confirmation] Registration confirmation sent to ${recipientEmail}`);
+      console.log(`[Confirmation] Registration confirmation successfully sent to ${recipientEmail}`);
     }
   } catch (err) {
     console.error("Failed to send registrant confirmation email:", err);

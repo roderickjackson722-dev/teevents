@@ -499,6 +499,46 @@ export default function EmailTemplateEditor() {
           <Copy className="h-4 w-4" /> Copy HTML
         </Button>
       </div>
+
+      {/* Edit Email & Resend Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-primary" /> Edit Email & Resend
+            </DialogTitle>
+          </DialogHeader>
+          {editingReg && (
+            <div className="space-y-4 pt-2">
+              <p className="text-sm text-muted-foreground">
+                Editing email for <strong>{editingReg.first_name} {editingReg.last_name}</strong>
+              </p>
+              <div>
+                <Label>Email Address</Label>
+                <Input
+                  value={editEmail}
+                  onChange={e => setEditEmail(e.target.value)}
+                  placeholder="Enter corrected email"
+                  className="mt-1"
+                  type="email"
+                />
+              </div>
+              {editEmail.trim().toLowerCase() !== editingReg.email.toLowerCase() && (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  ⚠️ This will update the registrant's email from <strong>{editingReg.email}</strong> to <strong>{editEmail.trim()}</strong>
+                </p>
+              )}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
+                <Button onClick={handleEditAndResend} disabled={resendingSingle || !editEmail.trim()} className="gap-2">
+                  {resendingSingle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {editEmail.trim().toLowerCase() !== editingReg.email.toLowerCase() ? "Update & Send" : "Resend"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

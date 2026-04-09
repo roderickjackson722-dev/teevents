@@ -678,7 +678,7 @@ const Finances = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium">Withdraw Funds</p>
-              <p className="text-sm text-muted-foreground">Min $25.00 • Available: ${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">Min $25.00 • Available: ${(Math.max(0, clearedAvailable) / 100).toFixed(2)}</p>
             </div>
           </div>
           <AlertDialog>

@@ -729,6 +729,7 @@ const AdminDashboard = () => {
                 ["college", "College Hub", School],
                 ["flyer-templates", "Flyer Templates", FileText],
                 ["notifications", "Notifications & Requests", Bell],
+                ["accounting", "Accounting", DollarSign],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}

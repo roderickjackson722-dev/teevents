@@ -571,10 +571,21 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Fees Paid (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">Flat 5% platform fee on each registration covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents Platform Fee (5% of gross registration revenue) covering processing, platform, and support.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
+          <p className="text-xs text-muted-foreground mt-1">5% of gross registration revenue</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card rounded-lg border border-border p-4 border-blue-200">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-full bg-blue-100">
+              <Clock className="h-4 w-4 text-blue-600" />
+            </div>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Pending Clearance <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">Funds are held for 5 business days to ensure payment clearance. This protects both organizers and players from chargebacks or disputes.</TooltipContent></Tooltip>
+          </div>
+          <p className="text-2xl font-bold text-blue-600">${(pendingClearance / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{pendingClearanceCount > 0 ? `${pendingClearanceCount} transaction(s) clearing` : "All funds cleared"}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-lg border border-border p-4">
@@ -582,10 +593,10 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-primary/10">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Available Now</span>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Available <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">Funds that have cleared the 5-business-day hold period and are ready for payout.</TooltipContent></Tooltip>
           </div>
-          <p className="text-2xl font-bold text-primary">${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Ready for payout</p>
+          <p className="text-2xl font-bold text-primary">${(Math.max(0, clearedAvailable) / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{clearedAvailable > 0 ? "Ready for payout" : "No cleared funds"}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
@@ -599,8 +610,9 @@ const Finances = () => {
             {nextPayoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {availableForPayout > 0 ? `~$${(availableForPayout / 100).toFixed(2)}` : "No funds available"}
+            {clearedAvailable > 0 ? `~$${(clearedAvailable / 100).toFixed(2)}` : "No funds available"}
           </p>
+          <p className="text-xs text-muted-foreground">Funds available 5 days after each transaction</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card rounded-lg border border-border p-4">

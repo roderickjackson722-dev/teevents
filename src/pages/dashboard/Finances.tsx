@@ -772,13 +772,14 @@ const Finances = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/30">
+                     <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (4%)</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (5%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Clear Date</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Actions</th>
                     </tr>

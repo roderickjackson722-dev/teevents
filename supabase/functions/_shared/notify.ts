@@ -78,6 +78,14 @@ export async function sendRegistrantConfirmationEmail(
       ? new Date(tournamentDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : null;
 
+    // Tournament page URL for "View Tournament Page" button
+    const tournamentPageUrl = tournamentSlug
+      ? `https://www.teevents.golf/t/${tournamentSlug}`
+      : tournamentId
+        ? `https://www.teevents.golf/t/${tournamentId}`
+        : null;
+
+    // Refund URL (shown as small footer link)
     const refundUrl = tournamentSlug
       ? `https://www.teevents.golf/t/${tournamentSlug}?tab=refund&email=${encodeURIComponent(recipientEmail)}`
       : tournamentId
@@ -93,7 +101,7 @@ export async function sendRegistrantConfirmationEmail(
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], refundUrl);
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl);
 
     console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 

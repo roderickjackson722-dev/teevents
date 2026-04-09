@@ -214,6 +214,40 @@ export default function EmailTemplateEditor() {
     setConfig(prev => ({ ...prev, [field]: prev[field] + " " + variable }));
   };
 
+  const openEditModal = (reg: any) => {
+    setEditingReg(reg);
+    setEditEmail(reg.email);
+    setEditModalOpen(true);
+  };
+
+  const handleEditAndResend = async () => {
+    if (!editingReg || !editEmail.trim()) return;
+    setResendingSingle(true);
+    try {
+      const needsUpdate = editEmail.trim().toLowerCase() !== editingReg.email.toLowerCase();
+      const { data, error } = await supabase.functions.invoke("resend-confirmation", {
+        body: {
+          registration_ids: [editingReg.id],
+          use_custom_template: true,
+          ...(needsUpdate ? { update_email: { registration_id: editingReg.id, new_email: editEmail.trim() } } : {}),
+        },
+      });
+      if (error) throw error;
+      // Update local state
+      if (needsUpdate) {
+        setRegistrations(prev => prev.map(r =>
+          r.id === editingReg.id ? { ...r, email: editEmail.trim() } : r
+        ));
+      }
+      toast.success(`Confirmation email resent to ${editEmail.trim()}`);
+      setEditModalOpen(false);
+      setEditingReg(null);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to resend email");
+    }
+    setResendingSingle(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">

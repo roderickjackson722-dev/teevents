@@ -1699,6 +1699,9 @@ const AdminDashboard = () => {
 
           {/* Notifications & Requests Tab */}
           {activeTab === "notifications" && <AdminNotifications />}
+
+          {/* Accounting Tab */}
+          {activeTab === "accounting" && <AdminAccounting />}
         </div>
       </section>
     </Layout>

@@ -221,6 +221,36 @@ const Finances = () => {
 
   const availableForPayout = releasedAvailable + heldAvailable;
 
+  // 5-business-day clearance logic
+  const addBusinessDays = (date: Date, days: number): Date => {
+    const result = new Date(date);
+    let added = 0;
+    while (added < days) {
+      result.setDate(result.getDate() + 1);
+      const day = result.getDay();
+      if (day !== 0 && day !== 6) added++;
+    }
+    return result;
+  };
+
+  const now = new Date();
+
+  // Pending clearance: transactions created within last 5 business days
+  const pendingClearanceTxs = platformTransactions.filter((t) => {
+    const clearDate = addBusinessDays(new Date(t.created_at), 5);
+    return clearDate > now && t.status !== "paid_out";
+  });
+  const pendingClearance = pendingClearanceTxs.reduce((sum, t) => sum + t.net_amount_cents, 0);
+  const pendingClearanceCount = pendingClearanceTxs.length;
+
+  // Cleared available: transactions past 5-day hold AND not yet paid out
+  const clearedAvailable = platformTransactions
+    .filter((t) => {
+      const clearDate = addBusinessDays(new Date(t.created_at), 5);
+      return clearDate <= now && t.status !== "paid_out";
+    })
+    .reduce((sum, t) => sum + t.net_amount_cents - (t.hold_amount_cents || 0), 0);
+
   const totalPaidOut = payouts
     .filter((p) => p.status === "completed")
     .reduce((sum, p) => sum + p.amount_cents, 0);
@@ -571,10 +601,21 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Fees Paid (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">Flat 5% platform fee on each registration covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents Platform Fee (5% of gross registration revenue) covering processing, platform, and support.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Released 15 days post-event</p>
+          <p className="text-xs text-muted-foreground mt-1">5% of gross registration revenue</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card rounded-lg border border-border p-4 border-blue-200">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-full bg-blue-100">
+              <Clock className="h-4 w-4 text-blue-600" />
+            </div>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Pending Clearance <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">Funds are held for 5 business days to ensure payment clearance. This protects both organizers and players from chargebacks or disputes.</TooltipContent></Tooltip>
+          </div>
+          <p className="text-2xl font-bold text-blue-600">${(pendingClearance / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{pendingClearanceCount > 0 ? `${pendingClearanceCount} transaction(s) clearing` : "All funds cleared"}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-lg border border-border p-4">
@@ -582,10 +623,10 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-primary/10">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Available Now</span>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Available <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">Funds that have cleared the 5-business-day hold period and are ready for payout.</TooltipContent></Tooltip>
           </div>
-          <p className="text-2xl font-bold text-primary">${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Ready for payout</p>
+          <p className="text-2xl font-bold text-primary">${(Math.max(0, clearedAvailable) / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{clearedAvailable > 0 ? "Ready for payout" : "No cleared funds"}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
@@ -599,8 +640,9 @@ const Finances = () => {
             {nextPayoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {availableForPayout > 0 ? `~$${(availableForPayout / 100).toFixed(2)}` : "No funds available"}
+            {clearedAvailable > 0 ? `~$${(clearedAvailable / 100).toFixed(2)}` : "No funds available"}
           </p>
+          <p className="text-xs text-muted-foreground">Funds available 5 days after each transaction</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card rounded-lg border border-border p-4">
@@ -622,8 +664,9 @@ const Finances = () => {
             <Receipt className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Platform Fees Paid (5%)</p>
+            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee (5%)</p>
             <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">5% of gross registration revenue</p>
           </div>
         </div>
 
@@ -635,7 +678,7 @@ const Finances = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium">Withdraw Funds</p>
-              <p className="text-sm text-muted-foreground">Min $25.00 • Available: ${(Math.max(0, availableForPayout) / 100).toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">Min $25.00 • Available: ${(Math.max(0, clearedAvailable) / 100).toFixed(2)}</p>
             </div>
           </div>
           <AlertDialog>
@@ -729,13 +772,14 @@ const Finances = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/30">
+                     <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (4%)</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (5%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Clear Date</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Actions</th>
                     </tr>
@@ -747,6 +791,8 @@ const Finances = () => {
                       const afterFee = gross - fee;
                       const hold = Math.round(afterFee * 0.15);
                       const net = afterFee - hold;
+                      const clearDate = addBusinessDays(new Date(reg.created_at), 5);
+                      const isCleared = clearDate <= now;
                       return (
                         <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="p-3">
@@ -758,6 +804,18 @@ const Finances = () => {
                           <td className="p-3 text-sm text-amber-600 hidden lg:table-cell">${(hold / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
                           <td className="p-3">{statusBadge(reg.payment_status)}</td>
+                          <td className="p-3 hidden md:table-cell">
+                            {isCleared ? (
+                              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Cleared</Badge>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50 text-xs cursor-help"><Clock className="h-3 w-3 mr-1" />{clearDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>Funds clear on {clearDate.toLocaleDateString()}</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </td>
                           <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
                           <td className="p-3">
                             <div className="flex items-center justify-end gap-1">

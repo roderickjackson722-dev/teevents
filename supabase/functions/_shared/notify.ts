@@ -78,6 +78,14 @@ export async function sendRegistrantConfirmationEmail(
       ? new Date(tournamentDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : null;
 
+    // Tournament page URL for "View Tournament Page" button
+    const tournamentPageUrl = tournamentSlug
+      ? `https://www.teevents.golf/t/${tournamentSlug}`
+      : tournamentId
+        ? `https://www.teevents.golf/t/${tournamentId}`
+        : null;
+
+    // Refund URL (shown as small footer link)
     const refundUrl = tournamentSlug
       ? `https://www.teevents.golf/t/${tournamentSlug}?tab=refund&email=${encodeURIComponent(recipientEmail)}`
       : tournamentId
@@ -93,7 +101,7 @@ export async function sendRegistrantConfirmationEmail(
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], refundUrl);
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl);
 
     console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 
@@ -150,12 +158,15 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
 }
 
 // HTML email template for registrant confirmations (friendlier design)
-function buildConfirmationHtml(title: string, lines: string[], refundUrl: string | null = null): string {
-  const refundBlock = refundUrl ? `
+function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl: string | null = null, refundUrl: string | null = null): string {
+  const tournamentBlock = tournamentPageUrl ? `
         <tr><td style="padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-          <a href="${refundUrl}" style="display:inline-block;padding:10px 24px;background-color:#6b7280;color:#ffffff;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">Request a Refund</a>
-          <p style="margin:8px 0 0;color:#9ca3af;font-size:11px;">Need to cancel? Click above to submit a refund request.</p>
+          <a href="${tournamentPageUrl}" style="display:inline-block;padding:12px 28px;background-color:#1a5c38;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">View Tournament Page</a>
         </td></tr>` : "";
+
+  const refundFooterLink = refundUrl
+    ? ` | <a href="${refundUrl}" style="color:#9ca3af;text-decoration:underline;">Request a refund</a>`
+    : "";
 
   return `
 <!DOCTYPE html>
@@ -171,9 +182,9 @@ function buildConfirmationHtml(title: string, lines: string[], refundUrl: string
         </td></tr>
         <tr><td style="padding:32px;">
           ${lines.map(l => `<p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">${l}</p>`).join("")}
-        </td></tr>${refundBlock}
+        </td></tr>${tournamentBlock}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
-          <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
+          <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a> | <a href="mailto:info@teevents.golf" style="color:#9ca3af;text-decoration:underline;">Need help? Contact support</a>${refundFooterLink}</p>
         </td></tr>
       </table>
     </td></tr>

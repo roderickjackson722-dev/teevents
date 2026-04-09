@@ -13,6 +13,7 @@ import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminNotifications from "@/components/admin/AdminNotifications";
+import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
@@ -34,7 +35,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -728,6 +729,7 @@ const AdminDashboard = () => {
                 ["college", "College Hub", School],
                 ["flyer-templates", "Flyer Templates", FileText],
                 ["notifications", "Notifications & Requests", Bell],
+                ["accounting", "Accounting", DollarSign],
               ] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}
@@ -1698,6 +1700,9 @@ const AdminDashboard = () => {
 
           {/* Notifications & Requests Tab */}
           {activeTab === "notifications" && <AdminNotifications />}
+
+          {/* Accounting Tab */}
+          {activeTab === "accounting" && <AdminAccounting />}
         </div>
       </section>
     </Layout>

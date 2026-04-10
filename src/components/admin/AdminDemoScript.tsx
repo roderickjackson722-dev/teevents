@@ -1,172 +1,140 @@
-import { Clock, MessageSquare, Monitor, Users, Trophy, CreditCard, BarChart3, Printer, QrCode, CheckCircle, Mail, Store, Gavel, Camera, Heart, ClipboardList, Globe, Sparkles, ArrowRight } from "lucide-react";
+import { Clock, MessageSquare, Monitor, Users, Trophy, CreditCard, BarChart3, Printer, QrCode, CheckCircle, Mail, Store, Gavel, Camera, Heart, ClipboardList, Globe, Sparkles, ArrowRight, ShoppingBag, Gift, FileText, UserCheck, Palette } from "lucide-react";
 
 const sections = [
   {
     time: "0:00 – 2:00",
     duration: "2 min",
-    title: "Welcome & Set the Stage",
+    title: "Opening",
     icon: MessageSquare,
     color: "bg-primary/10 text-primary",
     points: [
-      "Introduce yourself and thank them for their time.",
+      "\"Thanks for joining me. Today I'll show you how TeeVents helps you run better golf tournaments – from registration to payout.\"",
+      "\"We have three plans: Base (free), Starter ($299), and Premium ($999). I'll show you which features are in each.\"",
       "Ask: \"Tell me about your tournament — how many players, is it a fundraiser, how do you manage it today?\"",
       "Listen for pain points: spreadsheets, manual check-in, no website, payment headaches.",
-      "Transition: \"Let me show you exactly how TeeVents solves all of that.\"",
     ],
   },
   {
-    time: "2:00 – 5:00",
-    duration: "3 min",
-    title: "Dashboard Overview",
+    time: "2:00 – 7:00",
+    duration: "5 min",
+    title: "Core Features — Base Plan (Free)",
     icon: Monitor,
-    color: "bg-blue-500/10 text-blue-600",
-    route: "/dashboard",
-    points: [
-      "Show the main dashboard — highlight the at-a-glance stats (players, revenue, check-ins).",
-      "Point out the left sidebar: \"Everything you need lives right here — no switching between tools.\"",
-      "Mention the Planning Guide checklist: \"We give you a 30-item checklist from 12 months out to post-event.\"",
-    ],
-  },
-  {
-    time: "5:00 – 8:00",
-    duration: "3 min",
-    title: "Tournament Website Builder",
-    icon: Globe,
     color: "bg-emerald-500/10 text-emerald-600",
-    route: "/dashboard/tournaments → Site Builder",
+    route: "/sample-dashboard",
     points: [
-      "Show the 3 templates: Classic Green, Modern Navy, Charity Warmth.",
-      "Highlight: \"Pick a template, upload your logo, set your colors — publish with one click.\"",
-      "Preview the public site — show mobile-responsive design.",
-      "Mention 8 built-in pages: Home, Contests, Registration, Photos, Location, Agenda, Donation, Contact.",
-      "Call out custom domain support for Starter+ plans.",
+      "\"These features come with every tournament, including our free Base plan:\"",
+      "Dashboard & Overview — real-time registration counter, financial summary, recent activity feed.",
+      "Registration & Players — customizable registration form, player database with CSV export, QR check-in.",
+      "Finances — transaction history, payout settings (Stripe Connect), available balance tracking.",
+      "Share & Promote — QR code generator, short tournament URLs, social media templates.",
+      "Planning Guide — 30-item checklist from 12 months out to post-event.",
+      "Printables — scorecards, cart signs, name badges, alpha list, sponsor signs, hole assignments.",
     ],
   },
   {
-    time: "8:00 – 12:00",
-    duration: "4 min",
-    title: "Player Management & Registration",
-    icon: Users,
-    color: "bg-violet-500/10 text-violet-600",
-    route: "/dashboard/players",
-    points: [
-      "Show the player roster — search, filter, payment status columns.",
-      "Demo adding a player manually via the dialog.",
-      "Show CSV import: \"Already have a spreadsheet? Import your entire roster in seconds.\"",
-      "Switch to Pairings tab — drag-and-drop players into foursomes.",
-      "Show the Auto-Assign button: \"One click and we build all your groups.\"",
-      "Mention online registration with Stripe payments on the public site.",
-    ],
-  },
-  {
-    time: "12:00 – 16:00",
-    duration: "4 min",
-    title: "Live Scoring & QR Scorecards",
+    time: "7:00 – 12:00",
+    duration: "5 min",
+    title: "Starter Features — Upgrade ($299)",
     icon: Trophy,
     color: "bg-amber-500/10 text-amber-600",
-    route: "/dashboard/leaderboard + /dashboard/printables",
+    route: "/sample-dashboard → Starter items",
     points: [
-      "Show the admin leaderboard — real-time scores, group-by-group.",
-      "Navigate to Printables → Scorecards tab.",
-      "Show QR codes on scorecards: \"Players scan this code with their phone — no app download, no login.\"",
-      "Explain the flow: Scan → phone opens scoring page → enter scores hole-by-hole → leaderboard updates live.",
-      "This is usually the 'wow moment' — let it land.",
-      "Mention sponsor logos rotate on the public leaderboard.",
+      "\"When you're ready for more, Starter adds:\"",
+      "Waitlist management — automatic queue with 'Offer Spot' buttons.",
+      "Live Leaderboard — real-time scores, embeddable on any website, sponsor logo rotation.",
+      "Scoring & Tee Sheet — score entry by group, drag-and-drop tee time grid.",
+      "Messages & Email Templates — email/SMS blasts, scheduled delivery, pre-written templates.",
+      "Sponsor Management — tiered sponsor portal with asset delivery and ROI tracking.",
+      "Budget Tracking — income vs. expense by category, paid/unpaid status.",
+      "Photo Gallery — upload and showcase event photos on the public site.",
+      "Volunteer Coordination — shift scheduling, QR check-in, automated reminders.",
+      "Post-Event Surveys — feedback with ratings, text, and multiple choice questions.",
     ],
   },
   {
-    time: "16:00 – 18:00",
-    duration: "2 min",
-    title: "QR Check-In",
-    icon: QrCode,
-    color: "bg-rose-500/10 text-rose-600",
-    route: "/dashboard/check-in",
+    time: "12:00 – 17:00",
+    duration: "5 min",
+    title: "Premium Features ($999)",
+    icon: Sparkles,
+    color: "bg-violet-500/10 text-violet-600",
+    route: "/sample-dashboard → Premium items",
     points: [
-      "Show the check-in dashboard with real-time counter.",
-      "Explain: \"Print QR badges, open the Scan Station on any tablet, and check players in instantly.\"",
-      "Show manual search fallback for walk-ups.",
-      "Mention undo check-in capability.",
+      "\"Premium is our all-inclusive plan for organizations running multiple tournaments:\"",
+      "Add On Store — sell branded merchandise with Stripe checkout.",
+      "Silent Auction & Raffle — bidding, buy-now, winner tracking, raffle ticket sales.",
+      "Donation Tracking — fundraising page with progress bar and configurable goals.",
+      "Flyer Studio — Canva-integrated template gallery for flyers, social posts, banners.",
+      "Director Shop — premium add-ons (consulting, signage, hole-in-one insurance).",
+      "Everything in Base + Starter, plus priority support and reduced reserve rates.",
+      "Adapt emphasis based on prospect needs (fundraiser → donations/auction; corporate → store/gallery).",
     ],
   },
   {
-    time: "18:00 – 20:00",
-    duration: "2 min",
-    title: "Sponsors & Budget",
-    icon: BarChart3,
-    color: "bg-teal-500/10 text-teal-600",
-    route: "/dashboard/sponsors + /dashboard/budget",
+    time: "17:00 – 20:00",
+    duration: "3 min",
+    title: "Pricing & Fee Model",
+    icon: CreditCard,
+    color: "bg-green-500/10 text-green-600",
+    route: "/pricing",
     points: [
-      "Show sponsor tiers: Title, Gold, Silver, Bronze — logos auto-display on tournament site.",
-      "Show budget tracking: income vs. expenses by category, paid/unpaid status.",
-      "Highlight: \"Know exactly where your money is at all times.\"",
+      "\"TeeVents charges a 5% platform fee on registrations. You choose who pays:\"",
+      "Pass to Golfer: Golfer pays registration + 5% + Stripe fees. You keep 100% of registration.",
+      "Absorb Fees: Golfer pays registration only. You receive registration minus 5% minus Stripe fees (~$91.80 on $100).",
+      "Hold: 15% held for 15 days after event for chargeback protection, then released automatically.",
     ],
   },
   {
     time: "20:00 – 22:00",
     duration: "2 min",
-    title: "Messaging & Communication",
-    icon: Mail,
-    color: "bg-indigo-500/10 text-indigo-600",
-    route: "/dashboard/messages",
+    title: "Payouts",
+    icon: BarChart3,
+    color: "bg-teal-500/10 text-teal-600",
     points: [
-      "Show email and SMS messaging capabilities.",
-      "Mention scheduled messages: \"Set up reminders before event day and they send automatically.\"",
-      "Highlight recipient count tracking and message history.",
+      "\"Get paid automatically:\"",
+      "Bi-weekly payouts every other Monday.",
+      "Manual withdrawals anytime ($25 minimum).",
+      "5-business-day clearing period for each transaction.",
+      "Direct to your Stripe-connected bank account.",
     ],
   },
   {
     time: "22:00 – 25:00",
     duration: "3 min",
-    title: "Advanced Features (Pro Tier)",
-    icon: Sparkles,
-    color: "bg-purple-500/10 text-purple-600",
-    route: "Various dashboard pages",
+    title: "Live Scoring & QR Scorecards",
+    icon: QrCode,
+    color: "bg-amber-500/10 text-amber-600",
+    route: "/sample-dashboard → Leaderboard + Printables",
     points: [
-      "Merchandise Store — sell branded items with Stripe checkout.",
-      "Silent Auction & Raffle — bidding, buy-now, winner tracking.",
-      "Photo Gallery — upload and showcase event photos on the public site.",
-      "Donations — fundraising page with progress bar and configurable goals.",
-      "Surveys — post-event feedback with rating, text, and multiple choice.",
-      "Volunteer Coordination — define roles, time slots, and track signups.",
-      "Adapt emphasis based on prospect's needs (fundraiser → donations/auction; corporate → store/gallery).",
+      "Show the admin leaderboard — real-time scores, group-by-group.",
+      "Navigate to Printables → Scorecards tab with QR codes.",
+      "\"Players scan this code with their phone — no app download, no login.\"",
+      "Explain the flow: Scan → phone opens scoring page → enter scores hole-by-hole → leaderboard updates live.",
+      "This is usually the 'wow moment' — let it land.",
     ],
   },
   {
     time: "25:00 – 27:00",
     duration: "2 min",
-    title: "Printables Suite",
-    icon: Printer,
-    color: "bg-orange-500/10 text-orange-600",
-    route: "/dashboard/printables",
+    title: "QR Check-In",
+    icon: CheckCircle,
+    color: "bg-rose-500/10 text-rose-600",
+    route: "/sample-dashboard → Check-In",
     points: [
-      "Walk through: Scorecards, Cart Signs, Name Badges, Alpha List, Sponsor Signs, Hole Assignments.",
-      "Highlight: \"Everything you'd normally create in Word or pay a designer for — done automatically.\"",
-      "Show print preview and one-click PDF export.",
+      "Show real-time check-in counter (38/54 checked in).",
+      "\"Open the Scan Station on any tablet, scan QR codes, and check players in instantly.\"",
+      "Show manual search fallback for walk-ups.",
     ],
   },
   {
-    time: "27:00 – 28:00",
-    duration: "1 min",
-    title: "Pricing & Plans",
-    icon: CreditCard,
-    color: "bg-green-500/10 text-green-600",
-    route: "/dashboard/upgrade",
-    points: [
-      "Show the 3 tiers: Free (5% fee), Starter ($299, 0% fee), Premium ($999, 0% fee).",
-      "Starter highlight: \"We build your tournament platform for you — full concierge setup + no fees.\"",
-      "Premium highlight: \"$25K hole-in-one insurance + auction item included — all for under $1K.\"",
-    ],
-  },
-  {
-    time: "28:00 – 30:00",
-    duration: "2 min",
+    time: "27:00 – 30:00",
+    duration: "3 min",
     title: "Close & Next Steps",
     icon: ArrowRight,
     color: "bg-secondary/10 text-secondary",
     points: [
-      "Ask: \"What stood out to you? Which features would make the biggest difference for your event?\"",
+      "\"Which features are most important for your tournament? I can customize a plan for you.\"",
       "Address any questions or concerns.",
-      "Offer: \"I can set up your tournament right now — takes just a few minutes.\"",
+      "\"I can set up your tournament right now — takes just a few minutes.\"",
       "Share the sign-up link: teevents.golf/get-started",
       "If nonprofit: mention tax-deductible donation receipts and EIN verification.",
       "Follow up within 24 hours with a recap email.",
@@ -175,25 +143,25 @@ const sections = [
 ];
 
 const tips = [
-  "Personalize the demo by referencing their specific tournament (# of players, fundraiser vs. corporate, etc.).",
+  "Start from /sample-dashboard — it now shows EVERY feature with plan badges so prospects can see what they're getting.",
   "Let the QR scoring flow be your centerpiece — it's the most visually impressive feature.",
   "If they're currently using spreadsheets, show the CSV import and let them imagine the time saved.",
   "For nonprofits, lead with Donations + Auction features and mention Stripe Connect for direct payouts.",
   "Keep the Starter 'We build it for you' benefit in your back pocket as a closer for hesitant prospects.",
-  "Share your screen from the /sample-organizer login page and walk through together.",
+  "Point out the colored plan badges: 🟢 Base (free), 🟡 Starter ($299), 🟣 Premium ($999).",
+  "Show the Budget Tracker and Sponsor Management together — organizers love seeing the financial overview.",
 ];
 
 export default function AdminDemoScript() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-display font-bold text-foreground">30-Minute Demo Script</h2>
+        <h2 className="text-2xl font-display font-bold text-foreground">30-Minute Demo Script — 2026 Edition</h2>
         <p className="text-muted-foreground mt-1">
-          Agenda and talking points for live demos of the Sample Organizer dashboard.
+          Updated agenda and talking points organized by plan tier (Base → Starter → Premium).
         </p>
       </div>
 
-      {/* Timeline */}
       <div className="space-y-4">
         {sections.map((s, i) => (
           <div key={i} className="bg-card border border-border rounded-xl p-5">
@@ -204,16 +172,10 @@ export default function AdminDemoScript() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
                   <h3 className="font-semibold text-foreground text-lg">{s.title}</h3>
-                  <span className="text-xs font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded">
-                    {s.time}
-                  </span>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {s.duration}
-                  </span>
+                  <span className="text-xs font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded">{s.time}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {s.duration}</span>
                 </div>
-                {s.route && (
-                  <p className="text-xs text-muted-foreground font-mono mt-1">{s.route}</p>
-                )}
+                {s.route && <p className="text-xs text-muted-foreground font-mono mt-1">{s.route}</p>}
                 <ul className="mt-3 space-y-2">
                   {s.points.map((p, j) => (
                     <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -228,7 +190,6 @@ export default function AdminDemoScript() {
         ))}
       </div>
 
-      {/* Pro Tips */}
       <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-6">
         <h3 className="font-semibold text-foreground text-lg mb-4 flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-secondary" /> Pro Tips

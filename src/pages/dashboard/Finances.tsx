@@ -340,7 +340,7 @@ const Finances = () => {
     if (reportType === "transactions") {
       const filtered = filterByDate(platformTransactions);
       const headers = [
-        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 5% ($)",
+        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee $5 ($)",
         "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
       ];
       const rows = filtered.map((tx) => {

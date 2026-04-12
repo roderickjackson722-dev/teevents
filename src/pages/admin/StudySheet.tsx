@@ -167,7 +167,7 @@ const StudySheet = () => {
       <ul>
         <li>Silent auction items with bidding</li>
         <li>Raffle items with ticket pricing</li>
-        <li>Payment processing through Stripe (5% fee applies)</li>
+        <li>Payment processing through Stripe ($5 flat fee applies)</li>
       </ul>
 
       <h3>2.9 Additional Features</h3>
@@ -463,7 +463,7 @@ const StudySheet = () => {
               <FeatureBlock title="2.8 Auction & Raffle (Premium)" items={[
                 "Silent auction items with bidding",
                 "Raffle items with ticket pricing",
-                "Payment processing through Stripe (5% fee applies)",
+                "Payment processing through Stripe ($5 flat fee applies)",
               ]} />
               <FeatureBlock title="2.9 Additional Features" items={[
                 "Printables: Scorecards, name badges, cart signs, hole assignments, sponsor signs",

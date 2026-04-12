@@ -16,9 +16,9 @@ import Layout from "@/components/Layout";
 const FLOW_STEPS = [
   { icon: Users, label: "Golfer Pays", detail: "$100 registration", color: "bg-primary" },
   { icon: CreditCard, label: "TeeVents Collects", detail: "Secure Stripe checkout", color: "bg-primary/80" },
-  { icon: DollarSign, label: "5% Fee Deducted", detail: "$5.00 platform fee", color: "bg-destructive/80" },
-  { icon: Shield, label: "15% Hold", detail: "$15.00 reserve", color: "bg-destructive/80" },
-  { icon: Banknote, label: "80% Net Available", detail: "$80.00 tracked", color: "bg-emerald-600" },
+  { icon: DollarSign, label: "$5 Flat Fee", detail: "$5.00 platform fee", color: "bg-destructive/80" },
+  { icon: Shield, label: "15% Hold", detail: "$14.25 reserve", color: "bg-destructive/80" },
+  { icon: Banknote, label: "Net Available", detail: "$80.75 tracked", color: "bg-emerald-600" },
   { icon: Clock, label: "Event +15 Days", detail: "Hold released", color: "bg-primary/60" },
   { icon: Building2, label: "Payout", detail: "Bi-weekly or manual", color: "bg-emerald-700" },
 ];
@@ -26,11 +26,11 @@ const FLOW_STEPS = [
 /* ────── $100 breakdown ────── */
 const SAMPLE_BREAKDOWN = [
   { label: "Registration Price", amount: "$100.00" },
-  { label: "TeeVents Platform Fee (5%)", amount: "−$5.00" },
+  { label: "TeeVents Platform Fee ($5 flat)", amount: "−$5.00" },
   { label: "Net After Fee", amount: "$95.00" },
-  { label: "15% Reserve Hold", amount: "−$15.00" },
-  { label: "Net Available for Payout", amount: "$80.00", bold: true },
-  { label: "Hold Released (Event +15 days)", amount: "+$15.00" },
+  { label: "15% Reserve Hold", amount: "−$14.25" },
+  { label: "Net Available for Payout", amount: "$80.75", bold: true },
+  { label: "Hold Released (Event +15 days)", amount: "+$14.25" },
   { label: "Total Received by Organizer", amount: "$95.00", bold: true },
 ];
 
@@ -90,19 +90,19 @@ INTRODUCTION
 HOW FUNDS FLOW
 1. Golfer registers for your tournament and pays by credit card, Apple Pay, or Google Pay.
 2. Payment is collected by TeeVents (we use Stripe, the same platform that powers millions of online businesses).
-3. 5% platform fee is automatically deducted — this covers hosting, support, software updates, and payment processing infrastructure.
+3. $5 flat platform fee is automatically deducted — this covers hosting, support, software updates, and payment processing infrastructure.
 4. 15% hold is placed on the remaining balance — this protects you from chargebacks and refunds.
-5. 80% (net available) is immediately tracked in your dashboard but held for payout timing.
+5. Net available is immediately tracked in your dashboard but held for payout timing.
 6. 15 days after your event ends, the 15% hold is released to your available balance.
 7. You receive payouts every other Monday (bi-weekly) OR you can request manual withdrawals anytime.
 
 SAMPLE $100 REGISTRATION BREAKDOWN
 • Registration Price: $100.00
-• Platform Fee (5%): −$5.00
+• Platform Fee ($5 flat): −$5.00
 • Net After Fee: $95.00
-• 15% Reserve Hold: −$15.00
-• Net Available for Payout: $80.00
-• Hold Released (Event +15 days): +$15.00
+• 15% Reserve Hold: −$14.25
+• Net Available for Payout: $80.75
+• Hold Released (Event +15 days): +$14.25
 • Total Received by Organizer: $95.00
 
 EXPLAINING THE 15% HOLD
@@ -122,7 +122,7 @@ STRIPE CONNECT VS PAYPAL
 • PayPal: Enter email, 1% or $0.50 per payout, 1–5 day payouts, manual only, PayPal website.
 
 TRANSPARENCY & REPORTING
-"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the 5% fee, the 15% hold, when it releases, your available balance, and full payout history. You can also download CSV reports anytime."
+"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the $5 flat fee, the 15% hold, when it releases, your available balance, and full payout history. You can also download CSV reports anytime."
 
 COMMON OBJECTIONS
 • "15% hold is too high" → You get it all back 15 days after your event. No other platform gives you this protection.
@@ -340,7 +340,7 @@ export default function DemoTalkTrack() {
                 <CardContent className="p-6">
                   <Badge variant="outline" className="mb-3 text-xs">SAY THIS — TRANSPARENCY</Badge>
                   <p className="text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the 5% fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
+                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the $5 flat fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
                   </p>
                 </CardContent>
               </Card>

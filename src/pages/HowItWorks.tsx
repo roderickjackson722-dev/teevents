@@ -464,16 +464,16 @@ const HowItWorks = () => {
                     <span className="font-display font-bold text-foreground">$150.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
-                    <span className="font-display font-bold text-destructive">+$7.50</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (flat)</span>
+                    <span className="font-display font-bold text-destructive">+$5.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">+$5.03</span>
+                    <span className="font-display font-bold text-destructive">+$4.80</span>
                   </div>
                   <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
                     <span className="font-semibold text-foreground">Golfer pays at checkout</span>
-                    <span className="font-display font-bold text-foreground text-xl">$162.53</span>
+                    <span className="font-display font-bold text-foreground text-xl">$159.80</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-primary">Organizer receives</span>
@@ -488,8 +488,8 @@ const HowItWorks = () => {
                       <span className="text-sm font-display font-bold text-foreground">$150.00</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">TeeVents fee (5%)</span>
-                      <span className="text-sm font-display font-bold text-destructive">−$7.50</span>
+                      <span className="text-xs text-muted-foreground">TeeVents fee (flat)</span>
+                      <span className="text-sm font-display font-bold text-destructive">−$5.00</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-muted-foreground">Stripe processing</span>
@@ -497,12 +497,12 @@ const HowItWorks = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-primary font-semibold">Organizer receives</span>
-                      <span className="text-sm font-display font-bold text-primary">$137.70</span>
+                      <span className="text-sm font-display font-bold text-primary">$140.35</span>
                     </div>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  All plans include a 5% TeeVents platform fee + Stripe's standard 2.9% + $0.30. Toggle fee handling in tournament settings.
+                  All plans include a $5 flat TeeVents platform fee + Stripe's standard 2.9% + $0.30. Toggle fee handling in tournament settings.
                 </p>
               </div>
             </motion.div>

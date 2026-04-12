@@ -664,9 +664,9 @@ const Finances = () => {
             <Receipt className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee (5%)</p>
+            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee ($5 flat)</p>
             <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">5% of gross registration revenue</p>
+            <p className="text-xs text-muted-foreground">$5 flat fee per transaction</p>
           </div>
         </div>
 
@@ -775,7 +775,7 @@ const Finances = () => {
                      <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (5%)</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee ($5)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
@@ -891,7 +891,7 @@ const Finances = () => {
                       <p className="font-medium text-foreground">{payout.transaction_count}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Platform Fee (5%)</p>
+                      <p className="text-xs text-muted-foreground">Platform Fee ($5 flat)</p>
                       <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
                     </div>
                     <div>

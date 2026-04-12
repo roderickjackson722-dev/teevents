@@ -160,7 +160,7 @@ const AdminAccounting = () => {
   const handleExportTransactions = () => {
     const headers = [
       "Transaction ID", "Date", "Organizer", "Tournament", "Type", "Status",
-      "Gross ($)", "Platform Fee 5% ($)", "Hold 15% ($)", "Net to Organizer ($)",
+      "Gross ($)", "Platform Fee $5 ($)", "Hold 15% ($)", "Net to Organizer ($)",
       "Hold Status", "Hold Release Date", "Stripe PI", "Stripe Session",
     ];
     const rows = filteredTx.map((tx) => [
@@ -217,7 +217,7 @@ const AdminAccounting = () => {
             <span className="text-xs text-muted-foreground font-medium">Platform Revenue</span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalPlatformRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">5% of all registrations</p>
+          <p className="text-xs text-muted-foreground">$5 flat per transaction</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">

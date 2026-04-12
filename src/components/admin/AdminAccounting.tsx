@@ -333,7 +333,7 @@ const AdminAccounting = () => {
                     <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Tournament</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-3">Type</th>
                     <th className="text-right text-xs font-medium text-muted-foreground p-3">Gross</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (5%)</th>
+                    <th className="text-right text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee ($5)</th>
                     <th className="text-right text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
                     <th className="text-right text-xs font-medium text-muted-foreground p-3">Net</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
@@ -443,7 +443,7 @@ const AdminAccounting = () => {
                     <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Organizer</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Gross</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Fees (5%)</th>
+                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Fees ($5)</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Held</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Net Owed</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Paid Out</th>

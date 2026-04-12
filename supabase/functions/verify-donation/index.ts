@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const PLATFORM_FEE_PERCENT = 5;
+const PLATFORM_FEE_CENTS = 500; // $5 flat fee per transaction
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,13 +35,13 @@ Deno.serve(async (req) => {
         .update({ status: "completed" })
         .eq("stripe_session_id", session_id);
 
-      // Record platform transaction (escrow) with hardcoded 5% fee
+      // Record platform transaction (escrow) with flat $5 fee
       const organizationId = session.metadata?.organization_id;
       const tournamentId = session.metadata?.tournament_id;
       const amountCents = session.amount_total || 0;
 
       if (organizationId && amountCents > 0) {
-        const platformFeeCents = Math.round(amountCents * (PLATFORM_FEE_PERCENT / 100));
+        const platformFeeCents = PLATFORM_FEE_CENTS;
         const netAmountCents = amountCents - platformFeeCents;
         const holdAmountCents = Math.round(netAmountCents * 0.15);
 

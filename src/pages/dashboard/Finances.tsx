@@ -340,7 +340,7 @@ const Finances = () => {
     if (reportType === "transactions") {
       const filtered = filterByDate(platformTransactions);
       const headers = [
-        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 5% ($)",
+        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee $5 ($)",
         "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
       ];
       const rows = filtered.map((tx) => {
@@ -566,7 +566,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Transparent 5% platform fee applied. 15% reserve held until 15 days post-event. Net payouts every two weeks.{" "}
+            Flat $5 platform fee applied per transaction. 15% reserve held until 15 days post-event. Net payouts every two weeks.{" "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>
@@ -601,10 +601,10 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents Platform Fee (5% of gross registration revenue) covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee ($5 flat) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents Platform Fee ($5 flat per transaction) covering processing, platform, and support.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">5% of gross registration revenue</p>
+          <p className="text-xs text-muted-foreground mt-1">$5 flat per transaction</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card rounded-lg border border-border p-4 border-blue-200">

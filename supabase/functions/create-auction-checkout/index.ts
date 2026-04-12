@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
-const PLATFORM_FEE_PERCENT = 5;
+const PLATFORM_FEE_CENTS = 500; // $5 flat fee per transaction
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
 
     // If passing fees to participants, add platform fee + Stripe processing fee
     if (passFeesToParticipants) {
-      const platformFee = Math.round(priceCents * (PLATFORM_FEE_PERCENT / 100));
+      const platformFee = PLATFORM_FEE_CENTS;
       const preStripeTotal = priceCents + platformFee;
       const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
       const combinedFees = platformFee + stripeFee;

@@ -29,21 +29,21 @@ export const samplePlayers = [
 
 export const sampleDashboardFinances = {
   total_collected: 8100,
-  platform_fees: 405,
+  platform_fees: 270,
   pending_hold: 1215,
-  available_balance: 6480,
+  available_balance: 6615,
   next_payout_date: "June 30, 2026",
 };
 
 export const sampleDashboardTransactions = [
-  { date: "2026-03-15", golfer: "John Smith", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Held" },
-  { date: "2026-03-16", golfer: "Sarah Jones", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Held" },
-  { date: "2026-03-18", golfer: "Michael Brown", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Held" },
-  { date: "2026-03-20", golfer: "Emily Davis", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Held" },
-  { date: "2026-03-22", golfer: "David Wilson", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Released" },
-  { date: "2026-03-25", golfer: "Lisa Taylor", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Released" },
-  { date: "2026-03-28", golfer: "Robert Anderson", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Held" },
-  { date: "2026-03-30", golfer: "Jennifer Martinez", gross: 150, fee: 7.50, hold: 22.50, net: 120, status: "Held" },
+  { date: "2026-03-15", golfer: "John Smith", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Held" },
+  { date: "2026-03-16", golfer: "Sarah Jones", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Held" },
+  { date: "2026-03-18", golfer: "Michael Brown", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Held" },
+  { date: "2026-03-20", golfer: "Emily Davis", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Held" },
+  { date: "2026-03-22", golfer: "David Wilson", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Released" },
+  { date: "2026-03-25", golfer: "Lisa Taylor", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Released" },
+  { date: "2026-03-28", golfer: "Robert Anderson", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Held" },
+  { date: "2026-03-30", golfer: "Jennifer Martinez", gross: 150, fee: 5, hold: 21.75, net: 123.25, status: "Held" },
 ];
 
 export const samplePayouts = [

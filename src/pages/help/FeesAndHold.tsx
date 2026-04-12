@@ -69,7 +69,7 @@ const FeesAndHold = () => (
             <h4 className="font-semibold text-foreground mb-2">Example: $100 Registration</h4>
             <div className="space-y-1 text-muted-foreground">
               <div className="flex justify-between"><span>Gross Amount</span><span>$100.00</span></div>
-              <div className="flex justify-between"><span>Platform Fee (5%)</span><span>−$5.00</span></div>
+              <div className="flex justify-between"><span>Platform Fee ($5 flat)</span><span>−$5.00</span></div>
               <div className="flex justify-between"><span>Net Amount</span><span>$95.00</span></div>
               <div className="flex justify-between text-secondary"><span>Held in Reserve (15%)</span><span>$15.00</span></div>
               <div className="flex justify-between"><span>Available Immediately</span><span>$80.00</span></div>

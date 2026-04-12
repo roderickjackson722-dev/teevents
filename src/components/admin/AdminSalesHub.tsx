@@ -238,7 +238,7 @@ function StudySheetTab() {
         <section id="study-payments">
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
-            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 5% fee → 15% hold → Available balance → Bi-weekly payout</div>
+            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → $5 flat fee → 15% hold → Available balance → Bi-weekly payout</div>
             <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (minus hold)", "Nonprofits"]]} />
             <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
           </div>
@@ -373,7 +373,7 @@ KEY DIFFERENTIATOR #1: GOLF-SPECIFIC FEATURES (45 seconds)
 "With Eventbrite, you don't get live leaderboards, hole sponsor management, or volunteer check-in. With TeeVents, all of that is built in. Your golfers scan a QR code to enter scores, your sponsors get a branded portal, and your volunteers check in with their phone."
 
 KEY DIFFERENTIATOR #2: PRICING TRANSPARENCY (45 seconds)
-"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges 5% platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost, but you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
+"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges a flat $5 platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost on $100, but massive savings on higher registrations. Plus you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
 
 KEY DIFFERENTIATOR #3: PAYOUT SPEED (30 seconds)
 "With Eventbrite, you wait until after your event to get paid. With TeeVents, you receive automatic bi-weekly payouts. We hold 15% for 15 days as chargeback protection, then release it automatically."

@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
         .update({ status: "completed" })
         .eq("stripe_session_id", session_id);
 
-      // Record platform transaction (escrow) with flat $5 fee
+      // Record platform transaction (escrow) with 5% fee
       const organizationId = session.metadata?.organization_id;
       const tournamentId = session.metadata?.tournament_id;
       const amountCents = session.amount_total || 0;

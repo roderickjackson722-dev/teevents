@@ -101,8 +101,8 @@ const StudySheet = () => {
         <li>Set registration fee (any amount from $1 to $10,000)</li>
         <li>Choose fee model:
           <ul>
-            <li><strong>Pass to Golfer:</strong> Golfer pays registration + $5 flat platform fee + Stripe processing fees</li>
-            <li><strong>Absorb Fees:</strong> Golfer pays registration only; organizer receives registration minus $5 flat fee minus Stripe fees</li>
+             <li><strong>Pass to Golfer:</strong> Golfer pays registration + 5% platform fee + Stripe processing fees</li>
+            <li><strong>Absorb Fees:</strong> Golfer pays registration only; organizer receives registration minus 5% fee minus Stripe fees</li>
           </ul>
         </li>
         <li>Set event date, location, course name, max players</li>
@@ -167,7 +167,7 @@ const StudySheet = () => {
       <ul>
         <li>Silent auction items with bidding</li>
         <li>Raffle items with ticket pricing</li>
-        <li>Payment processing through Stripe ($5 flat fee applies)</li>
+        <li>Payment processing through Stripe (5% platform fee applies)</li>
       </ul>
 
       <h3>2.9 Additional Features</h3>
@@ -214,7 +214,7 @@ const StudySheet = () => {
       <h2>4. Payment & Money Flow</h2>
 
       <h3>4.1 How Funds Move</h3>
-      <p>Golfer pays → Stripe processes → TeeVents takes $5 flat platform fee → 15% hold reserved → Remaining goes to organizer's available balance → Automatic bi-weekly payout or manual withdrawal</p>
+      <p>Golfer pays → Stripe processes → TeeVents takes 5% platform fee → 15% hold reserved → Remaining goes to organizer's available balance → Automatic bi-weekly payout or manual withdrawal</p>
 
       <h3>4.2 Fee Model Comparison</h3>
       <table>
@@ -329,10 +329,10 @@ const StudySheet = () => {
         <tr><th>Term</th><th>Definition</th></tr>
         <tr><td><strong>Chargeback</strong></td><td>When a credit cardholder disputes a charge with their bank</td></tr>
         <tr><td><strong>Hold</strong></td><td>15% of registration fee set aside for 15 days after event for chargeback protection</td></tr>
-        <tr><td><strong>Platform Fee</strong></td><td>$5 flat fee charged on all transactions processed through TeeVents</td></tr>
+        <tr><td><strong>Platform Fee</strong></td><td>5% fee charged on all transactions processed through TeeVents</td></tr>
         <tr><td><strong>Stripe Connect</strong></td><td>Stripe's platform for marketplace-style payments; enables organizer payouts</td></tr>
         <tr><td><strong>Express Account</strong></td><td>Simplified Stripe Connect account type for organizers</td></tr>
-        <tr><td><strong>Application Fee</strong></td><td>Stripe mechanism to automatically take the $5 flat platform fee from each payment</td></tr>
+        <tr><td><strong>Application Fee</strong></td><td>Stripe mechanism to automatically take the 5% platform fee from each payment</td></tr>
         <tr><td><strong>Destination Charge</strong></td><td>Stripe flow where money goes to platform account first, then transferred to organizer</td></tr>
         <tr><td><strong>RLS</strong></td><td>Row Level Security — database-level access control ensuring users only see their own data</td></tr>
         <tr><td><strong>Edge Function</strong></td><td>Serverless function that runs close to the user for low-latency backend logic</td></tr>
@@ -463,7 +463,7 @@ const StudySheet = () => {
               <FeatureBlock title="2.8 Auction & Raffle (Premium)" items={[
                 "Silent auction items with bidding",
                 "Raffle items with ticket pricing",
-                "Payment processing through Stripe ($5 flat fee applies)",
+                "Payment processing through Stripe (5% platform fee applies)",
               ]} />
               <FeatureBlock title="2.9 Additional Features" items={[
                 "Printables: Scorecards, name badges, cart signs, hole assignments, sponsor signs",
@@ -512,7 +512,7 @@ const StudySheet = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">4.1 How Funds Move</h3>
                 <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">
-                  Golfer pays → Stripe processes → $5 flat platform fee taken → 15% hold reserved → Remaining = available balance → Bi-weekly payout or manual withdrawal
+                  Golfer pays → Stripe processes → 5% platform fee taken → 15% hold reserved → Remaining = available balance → Bi-weekly payout or manual withdrawal
                 </div>
               </div>
               <div>
@@ -624,7 +624,7 @@ const StudySheet = () => {
               <SimpleTable headers={["Term", "Definition"]} rows={[
                 ["Chargeback", "When a cardholder disputes a charge with their bank"],
                 ["Hold", "15% of registration fee set aside for 15 days post-event"],
-                ["Platform Fee", "$5 flat fee charged on all transactions"],
+                ["Platform Fee", "5% fee charged on all transactions"],
                 ["Stripe Connect", "Stripe's platform for marketplace payments"],
                 ["Express Account", "Simplified Stripe Connect account type"],
                 ["Application Fee", "Stripe mechanism to take the $5 flat platform fee"],

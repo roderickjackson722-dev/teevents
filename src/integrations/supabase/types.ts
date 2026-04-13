@@ -1078,6 +1078,33 @@ export type Database = {
           },
         ]
       }
+      payout_notes: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          note: string
+          source: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          note: string
+          source?: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          note?: string
+          source?: string
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       paypal_payouts: {
         Row: {
           amount_cents: number

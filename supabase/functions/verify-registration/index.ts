@@ -114,12 +114,12 @@ Deno.serve(async (req) => {
       const tournamentId = session.metadata?.tournament_id;
 
       if (organizationId && grossAmount > 0) {
-        // Platform fee is a flat $5 per transaction
-        const platformFeeCents = PLATFORM_FEE_CENTS;
+        // Platform fee is 5% of registration amount
+        const platformFeeCents = Math.round(grossAmount * PLATFORM_FEE_RATE);
 
         // Net for organizer depends on fee model:
         // Model A (pass to golfer): Organizer gets full registration amount (fee paid by golfer separately)
-        // Model B (absorb): Organizer gets registration minus $5 flat fee
+        // Model B (absorb): Organizer gets registration minus 5% platform fee
         const netAmountCents = passFeesToGolfer
           ? grossAmount
           : grossAmount - platformFeeCents;
@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
                 `💳 Amount charged: <strong>${amountDisplay}</strong>`,
                 passFeesToGolfer
                   ? `📊 Fees passed to golfer — you receive the full registration amount minus 15% hold`
-                  : `📊 $5 flat platform fee absorbed — net amount after fee and 15% hold applied`,
+                  : `📊 5% platform fee absorbed — net amount after fee and 15% hold applied`,
                 `📧 ${reg.email}`,
                 regs && regs.length > 1 ? `👥 Group registration (${regs.length} players)` : "",
               ].filter(Boolean)),

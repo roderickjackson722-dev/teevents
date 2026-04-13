@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       const amountCents = session.amount_total || 0;
 
       if (organizationId && amountCents > 0) {
-        const platformFeeCents = PLATFORM_FEE_CENTS;
+        const platformFeeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
         const netAmountCents = amountCents - platformFeeCents;
         const holdAmountCents = Math.round(netAmountCents * 0.15);
 

@@ -48,10 +48,10 @@ const data: CompSection[] = [
   {
     category: "Payouts",
     rows: [
-      { feature: "Payout Speed", eventbrite: "After event ends (slow)", teevents: "Bi-weekly or on-demand", ebStatus: "no", tvStatus: "yes" },
-      { feature: "Fund Holds", eventbrite: "Arbitrary, unclear", teevents: "15% for 15 days (transparent)", ebStatus: "no", tvStatus: "yes" },
-      { feature: "Manual Withdrawals", eventbrite: "No", teevents: "Yes ($25 minimum)", ebStatus: "no", tvStatus: "yes" },
-      { feature: "Chargeback Protection", eventbrite: "None", teevents: "15% hold covers you", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Payout Speed", eventbrite: "Holds funds until after event", teevents: "Automatic split at checkout", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Who Holds Funds", eventbrite: "Eventbrite holds everything", teevents: "Stripe holds — TeeVents never touches", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Fund Holds", eventbrite: "Arbitrary, unclear", teevents: "None — Stripe sends net proceeds directly", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Withdraw Funds", eventbrite: "Wait for Eventbrite payout", teevents: "Withdraw from your Stripe anytime", ebStatus: "no", tvStatus: "yes" },
     ],
   },
   {
@@ -194,7 +194,7 @@ const CompareEventbrite = () => {
                 <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
-                The same $5 fee whether it's a $50 or $500 registration — massive savings on high-value events!
+                The same $5 fee whether it's a $50 or $500 registration — and payments split automatically. TeeVents never holds your money.
               </p>
             </div>
           </motion.div>

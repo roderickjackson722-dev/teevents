@@ -11,7 +11,7 @@ const features = [
   { icon: "👥", title: "Volunteer Check‑in", desc: "QR codes, shift scheduling, automated reminders" },
   { icon: "📊", title: "Financial Dashboard", desc: "Track registrations, fees, and payouts in real time" },
   { icon: "🔗", title: "Share & Promote", desc: "QR codes, short URLs, social media templates" },
-  { icon: "💰", title: "Fast Payouts", desc: "Bi‑weekly or on‑demand – no waiting until after event" },
+  { icon: "💰", title: "Automatic Payouts", desc: "Payments split at checkout — funds go directly to your Stripe account" },
   { icon: "📱", title: "Mobile Friendly", desc: "Golfers register and pay from any device" },
   { icon: "🎨", title: "Branded Website", desc: "Your logo, your colors, your custom domain" },
 ];
@@ -150,8 +150,11 @@ const SalesFlyer = () => {
               <div style={{ fontSize: 24, fontWeight: 800, color: "#1a5c38", marginBottom: 6 }}>
                 JUST $5 PER REGISTRATION
               </div>
-              <div style={{ fontSize: 14, color: "#333", marginBottom: 12 }}>
-                No percentages. No hidden fees. You pay only when you collect.
+              <div style={{ fontSize: 14, color: "#333", marginBottom: 4 }}>
+                Payments split automatically at checkout. We never hold your money.
+              </div>
+              <div style={{ fontSize: 11, color: "#555", marginBottom: 12 }}>
+                Stripe sends net proceeds directly to your connected account.
               </div>
               <div style={{
                 display: "grid",

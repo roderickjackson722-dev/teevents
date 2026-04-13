@@ -95,9 +95,12 @@ const Index = () => {
             <br />
             <span className="text-secondary">Like a Pro</span>
           </h1>
-          <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
+           <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
             The all-in-one platform for nonprofits and corporations to plan,
             manage, and execute world-class golf tournaments.
+            <span className="block mt-2 text-secondary font-semibold text-base">
+              Payments split automatically at checkout — we never hold your money.
+            </span>
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -302,6 +305,58 @@ const Index = () => {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* How Payments Work */}
+      <section className="bg-background py-24 border-t border-border">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+              How Payments Work
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              We Never Hold Your Money
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Payments split automatically at checkout using Stripe Connect. Your funds go directly to your Stripe account — TeeVents never touches them.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { num: "1", title: "Golfer Pays", desc: "Full registration amount charged at checkout via Stripe." },
+              { num: "2", title: "$5 Fee Deducted", desc: "TeeVents automatically receives a flat $5 platform fee." },
+              { num: "3", title: "Stripe Fee Applied", desc: "Standard 2.9% + $0.30 processing fee deducted by Stripe." },
+              { num: "4", title: "You Get Paid", desc: "Net proceeds land directly in your connected Stripe account." },
+            ].map((step, i) => (
+              <motion.div
+                key={step.num}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="text-center bg-card border border-border rounded-xl p-6"
+              >
+                <div className="w-10 h-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-sm font-bold">
+                  {step.num}
+                </div>
+                <h4 className="text-lg font-display font-bold text-foreground mb-2">{step.title}</h4>
+                <p className="text-sm text-muted-foreground">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-10 bg-primary/5 border border-primary/20 rounded-xl p-6 text-center">
+            <p className="text-foreground font-semibold">
+              💡 TeeVents never holds your money. Stripe sends net proceeds directly to your bank account on your schedule.
+            </p>
+          </div>
         </div>
       </section>
 

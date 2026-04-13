@@ -425,24 +425,24 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* Revenue Model */}
+      {/* Revenue Model — Automatic Split */}
       <section className="bg-background py-24">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <motion.div variants={slideRight} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Revenue Model</h3>
+              <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Automatic Payments</h3>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
-                You Keep Your Revenue.<br />We Take a Simple Fee.
+                We Never Hold Your Money.<br />Payments Split Automatically.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                All registration fees, store purchases, auction sales, and donations are collected securely by TeeVents. Net payouts to your organization occur automatically every two weeks. No invoices, no delays.
+                Every payment is split instantly at checkout using Stripe Connect destination charges. Your net proceeds go directly to your connected Stripe account — TeeVents never touches or holds your funds.
               </p>
               <div className="space-y-3">
                 {[
-                  "Registration payments → collected & held securely",
-                  "Store purchases → automatic bi-weekly payout",
-                  "Auction Buy Now → transparent fee breakdown",
-                  "Donations → net funds paid to your bank",
+                  "Golfer pays → Stripe splits funds automatically",
+                  "$5 flat fee → sent to TeeVents instantly",
+                  "Stripe fee → deducted by Stripe",
+                  "Net proceeds → deposited in your Stripe account",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <Send className="h-4 w-4 text-primary flex-shrink-0" />
@@ -450,59 +450,39 @@ const HowItWorks = () => {
                   </div>
                 ))}
               </div>
+              <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
+                <p className="text-sm text-foreground font-medium">
+                  💡 You withdraw funds from your own Stripe account on your schedule. No waiting for TeeVents to release anything.
+                </p>
+              </div>
             </motion.div>
 
             <motion.div variants={slideLeft} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               <div className="bg-card border border-border rounded-xl p-8 shadow-lg">
                 <h4 className="font-display font-bold text-foreground text-lg mb-6">Example: $150 Registration Fee</h4>
                 <p className="text-xs text-muted-foreground mb-4 bg-muted/50 rounded-lg px-3 py-2">
-                  Default: fees passed to participants so organizer keeps 100%
+                  Stripe splits funds automatically at checkout — TeeVents never holds your money
                 </p>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">Base registration price</span>
-                    <span className="font-display font-bold text-foreground">$150.00</span>
+                    <span className="text-muted-foreground">Golfer pays</span>
+                    <span className="font-display font-bold text-foreground">$159.80</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (flat)</span>
-                    <span className="font-display font-bold text-destructive">+$5.00</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (auto-deducted)</span>
+                    <span className="font-display font-bold text-destructive">−$5.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">+$4.80</span>
+                    <span className="font-display font-bold text-destructive">−$4.80</span>
                   </div>
                   <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
-                    <span className="font-semibold text-foreground">Golfer pays at checkout</span>
-                    <span className="font-display font-bold text-foreground text-xl">$159.80</span>
-                  </div>
-                  <div className="flex justify-between items-center pt-1">
-                    <span className="font-semibold text-primary">Organizer receives</span>
+                    <span className="font-semibold text-primary">Deposited in your Stripe account</span>
                     <span className="font-display font-bold text-primary text-2xl">$150.00</span>
                   </div>
                 </div>
-                <div className="mt-6 pt-4 border-t border-border">
-                  <p className="text-xs font-semibold text-foreground mb-2">Toggle OFF? Organizer absorbs fees:</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">Golfer pays</span>
-                      <span className="text-sm font-display font-bold text-foreground">$150.00</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">TeeVents fee (flat)</span>
-                      <span className="text-sm font-display font-bold text-destructive">−$5.00</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground">Stripe processing</span>
-                      <span className="text-sm font-display font-bold text-destructive">−$4.80</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-primary font-semibold">Organizer receives</span>
-                      <span className="text-sm font-display font-bold text-primary">$140.35</span>
-                    </div>
-                  </div>
-                </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  All plans include a $5 flat TeeVents platform fee + Stripe's standard 2.9% + $0.30. Toggle fee handling in tournament settings.
+                  Funds arrive in your Stripe account automatically. Withdraw to your bank anytime. All plans: $5 flat fee + Stripe 2.9% + $0.30.
                 </p>
               </div>
             </motion.div>
@@ -550,7 +530,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              All plans include a 5% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction.
+              All plans include a flat $5 TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically — we never hold your money.
             </p>
           </motion.div>
 

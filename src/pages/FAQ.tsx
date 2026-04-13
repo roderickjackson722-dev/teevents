@@ -61,7 +61,7 @@ const faqSections = [
       },
       {
         q: "When and how often does my organization get paid?",
-        a: "Net funds (after the $5 platform fee, Stripe fees, any refunds/chargebacks, and 15% reserve) are automatically paid out to your organization's bank account every two weeks. You can view next payout date, reserve balance, and full history in the Finances dashboard.",
+        a: "Payments are split automatically at checkout using Stripe Connect destination charges. TeeVents never holds your money — net proceeds (after the $5 platform fee and Stripe processing fee) are deposited directly into your connected Stripe account. You withdraw to your bank on your own schedule through Stripe.",
       },
       {
         q: "How are refunds and chargebacks handled?",
@@ -95,7 +95,7 @@ const faqSections = [
     items: [
       {
         q: "Is my data and money secure?",
-        a: "Yes — we use enterprise-grade Stripe security and follow all PCI compliance standards. Funds are held safely until payout, with a 15% reserve for additional protection.",
+        a: "Yes — we use enterprise-grade Stripe security and follow all PCI compliance standards. TeeVents never holds your money — payments are split automatically at checkout via Stripe Connect, and net proceeds go directly to your connected Stripe account.",
       },
       {
         q: "What if I need help?",

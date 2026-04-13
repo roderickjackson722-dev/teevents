@@ -330,13 +330,13 @@ const Demo = () => {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <motion.div variants={slideRight} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Revenue Model</h3>
+              <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">Automatic Payments</h3>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
-                Transparent Pricing.
-                <br />You Keep What You Charge.
+                We Never Hold Your Money.
+                <br />Payments Split Automatically.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                All payments flow into our secure escrow. We deduct a flat $5 TeeVents platform fee and Stripe processing, then pay you bi-weekly. Fees are passed to participants by default — so you keep 100% of your advertised price.
+                Every payment is split at checkout using Stripe Connect destination charges. TeeVents takes a flat $5 fee, Stripe deducts processing, and net proceeds go directly to your Stripe account. You withdraw on your schedule.
               </p>
               <div className="space-y-3">
                 {[

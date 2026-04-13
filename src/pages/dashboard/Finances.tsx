@@ -560,13 +560,13 @@ const Finances = () => {
         </div>
       </div>
 
-      {/* Escrow Info Banner */}
+      {/* Payment Flow Banner */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 flex items-start gap-3">
         <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
         <div>
-          <p className="text-sm font-medium text-foreground">All funds are collected and held securely by TeeVents.</p>
+          <p className="text-sm font-medium text-foreground">Payments split automatically at checkout — TeeVents never holds your money.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Flat $5 platform fee applied per transaction. 15% reserve held until 15 days post-event. Net payouts every two weeks.{" "}
+            Stripe deducts the $5 platform fee and processing fee, then deposits net proceeds directly in your connected Stripe account. Withdraw to your bank on your schedule.{" "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>

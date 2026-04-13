@@ -336,14 +336,14 @@ const Demo = () => {
                 <br />Payments Split Automatically.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Every payment is split at checkout using Stripe Connect destination charges. TeeVents takes a flat $5 fee, Stripe deducts processing, and net proceeds go directly to your Stripe account. You withdraw on your schedule.
+                Every payment is split at checkout using Stripe Connect destination charges. TeeVents takes a 5% fee, Stripe deducts processing, and net proceeds go directly to your Stripe account. You withdraw on your schedule.
               </p>
               <div className="space-y-3">
                 {[
-                  "Registration payments → $5 flat fee + Stripe processing",
-                  "Store purchases → $5 flat fee + Stripe processing",
-                  "Auction Buy Now → $5 flat fee + Stripe processing",
-                  "Donations → $5 flat fee + Stripe processing",
+                  "Registration payments → 5% platform fee + Stripe processing",
+                  "Store purchases → 5% platform fee + Stripe processing",
+                  "Auction Buy Now → 5% platform fee + Stripe processing",
+                  "Donations → 5% platform fee + Stripe processing",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <Send className="h-4 w-4 text-primary flex-shrink-0" />
@@ -366,12 +366,12 @@ const Demo = () => {
                     <span className="font-display font-bold text-destructive">−$4.65</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (flat)</span>
-                    <span className="font-display font-bold text-destructive">−$5.00</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
+                    <span className="font-display font-bold text-destructive">−$7.50</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$140.35</span>
+                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">

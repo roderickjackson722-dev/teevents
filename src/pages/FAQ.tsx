@@ -53,15 +53,15 @@ const faqSections = [
     items: [
       {
         q: "What are the fees?",
-        a: "Every transaction has two transparent fees:\n\n• TeeVents platform fee: $5 flat per transaction (the same whether it's a $50 or $500 registration — covers the full golf tournament management platform, custom website, live scoring, pairings, budget tools, white-glove support, etc.)\n• Stripe processing fee: ~2.9% + $0.30 (standard credit-card fee)\n\nTotal extra cost example: on a $100 registration, total fees are $8.20 when passed to participants.",
+        a: "Every transaction has two transparent fees:\n\n• TeeVents platform fee: 5% per transaction (covers the full golf tournament management platform, custom website, live scoring, pairings, budget tools, white-glove support, etc.)\n• Stripe processing fee: ~2.9% + $0.30 (standard credit-card fee)\n\nTotal extra cost example: on a $100 registration, total fees are $8.20 when passed to participants.",
       },
       {
         q: "Who pays the fees?",
-        a: "By default (toggle ON), fees are passed on to participants at checkout so your organization receives the full advertised price. You can turn the toggle OFF in tournament settings to absorb the fees yourself — participants then pay exactly the advertised price, and the $5 platform fee is deducted from your bi-weekly payout.",
+        a: "By default (toggle ON), fees are passed on to participants at checkout so your organization receives the full advertised price. You can turn the toggle OFF in tournament settings to absorb the fees yourself — participants then pay exactly the advertised price, and the 5% platform fee is deducted from your proceeds.",
       },
       {
         q: "When and how often does my organization get paid?",
-        a: "Payments are split automatically at checkout using Stripe Connect destination charges. TeeVents never holds your money — net proceeds (after the $5 platform fee and Stripe processing fee) are deposited directly into your connected Stripe account. You withdraw to your bank on your own schedule through Stripe.",
+        a: "Payments are split automatically at checkout using Stripe Connect destination charges. TeeVents never holds your money — net proceeds (after the 5% platform fee and Stripe processing fee) are deposited directly into your connected Stripe account. You withdraw to your bank on your own schedule through Stripe.",
       },
       {
         q: "How are refunds and chargebacks handled?",

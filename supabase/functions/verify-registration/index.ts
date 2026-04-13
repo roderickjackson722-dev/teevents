@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
-const PLATFORM_FEE_CENTS = 500; // $5 flat fee per transaction
+const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 const HOLD_PERCENT = 15;
 
 const corsHeaders = {

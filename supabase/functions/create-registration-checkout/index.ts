@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
-const PLATFORM_FEE_CENTS = 500; // $5 flat fee per transaction
+const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -171,10 +171,12 @@ Deno.serve(async (req) => {
     // Build line items and calculate application fee
     const lineItems: any[] = [];
 
+    // Calculate 5% platform fee on the registration amount
+    const platformFeeCents = Math.round(registrationFeeCents * PLATFORM_FEE_RATE);
+
     if (golferPaysFees) {
-      // Golfer pays registration + $5 flat platform fee + Stripe processing fee
-      const platformFee = PLATFORM_FEE_CENTS;
-      const preStripeTotal = registrationFeeCents + platformFee;
+      // Golfer pays registration + 5% platform fee + Stripe processing fee
+      const preStripeTotal = registrationFeeCents + platformFeeCents;
       const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
 
       lineItems.push({
@@ -189,7 +191,7 @@ Deno.serve(async (req) => {
         quantity: players.length,
       });
 
-      const combinedFees = platformFee + stripeFee;
+      const combinedFees = platformFeeCents + stripeFee;
       if (combinedFees > 0) {
         lineItems.push({
           price_data: {
@@ -203,7 +205,7 @@ Deno.serve(async (req) => {
         });
       }
     } else {
-      // Golfer pays registration fee only; organizer absorbs the $5 platform fee
+      // Golfer pays registration fee only; organizer absorbs the 5% platform fee
       lineItems.push({
         price_data: {
           currency: "usd",
@@ -217,9 +219,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Application fee is always $5 flat — this is retained by the platform.
+    // Application fee is 5% of registration — this is retained by the platform.
     // With destination charges, Stripe automatically sends the remainder to the organizer.
-    const applicationFeeAmount = PLATFORM_FEE_CENTS;
+    const applicationFeeAmount = platformFeeCents;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

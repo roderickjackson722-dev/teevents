@@ -43,7 +43,7 @@ serve(async (req) => {
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold; background: #f9fafb;">Plan</td>
-                <td style="padding: 8px; border: 1px solid #e5e7eb;">Base (Free – $5 flat fee per transaction)</td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">Base (Free – 5% platform fee per transaction)</td>
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold; background: #f9fafb;">Date</td>

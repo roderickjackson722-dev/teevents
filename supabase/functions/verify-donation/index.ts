@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const PLATFORM_FEE_CENTS = 500; // $5 flat fee per transaction
+const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

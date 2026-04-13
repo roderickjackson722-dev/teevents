@@ -73,6 +73,7 @@ import FAQ from "./pages/FAQ";
 import DemoTalkTrack from "./pages/DemoTalkTrack";
 import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
+import AdminPayouts from "./pages/admin/Payouts";
 import HelpCenter from "./pages/help/HelpCenter";
 import ConnectStripe from "./pages/help/ConnectStripe";
 import FeesAndHold from "./pages/help/FeesAndHold";
@@ -162,6 +163,7 @@ const App = () => (
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
+           <Route path="/admin/payouts" element={<AdminPayouts />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />

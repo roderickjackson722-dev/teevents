@@ -59,6 +59,18 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
+    // Fetch organizer's Stripe Connect account ID
+    const { data: org } = await supabaseAdmin
+      .from("organizations")
+      .select("stripe_account_id")
+      .eq("id", tournament.organization_id)
+      .single();
+
+    const organizerStripeAccountId = org?.stripe_account_id;
+    if (!organizerStripeAccountId) {
+      throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
+    }
+
     // Determine fee per player: use tier price if tier selected, else tournament default
     let feePerPlayer = tournament.registration_fee_cents || 0;
     if (tierId) {

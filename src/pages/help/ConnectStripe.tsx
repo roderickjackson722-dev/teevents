@@ -12,7 +12,7 @@ const ConnectStripe = () => (
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Connect Your Bank Account</h1>
-      <p className="text-muted-foreground mb-8">Set up Stripe Connect Express to receive automatic bi-weekly payouts directly to your bank account.</p>
+      <p className="text-muted-foreground mb-8">Set up Stripe Connect so payments split automatically at checkout and funds go directly to your bank account.</p>
 
       <div className="space-y-8">
         <section>
@@ -40,9 +40,9 @@ const ConnectStripe = () => (
           <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><CheckCircle className="h-5 w-5 text-primary" /> After Connection</h2>
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-sm text-foreground space-y-2">
             <p>✅ Your payout method status will show as <strong>"Verified"</strong></p>
-            <p>✅ Automatic bi-weekly payouts will begin on the next payout cycle</p>
-            <p>✅ You can view your Stripe dashboard at any time from Payout Settings</p>
-            <p>✅ Manual withdrawals become available for balances over $25</p>
+            <p>✅ Payments will split automatically at checkout — TeeVents never holds your money</p>
+            <p>✅ Net proceeds go directly to your Stripe account after each transaction</p>
+            <p>✅ Withdraw funds to your bank anytime from your Stripe dashboard</p>
           </div>
         </section>
 

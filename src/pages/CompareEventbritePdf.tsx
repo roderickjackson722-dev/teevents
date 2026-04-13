@@ -71,8 +71,8 @@ const CompareEventbritePdf = () => {
             <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$8.20</td></tr>
 
             <tr class="cat"><td colspan="3">Payouts</td></tr>
-            <tr><td>Payout Speed</td><td class="no">After event (slow)</td><td class="yes">Bi-weekly</td></tr>
-            <tr><td>Chargeback Protection</td><td class="no">✗ None</td><td class="yes">✓ 15% hold</td></tr>
+            <tr><td>Payout Speed</td><td class="no">Holds funds until after event</td><td class="yes">Automatic split at checkout</td></tr>
+            <tr><td>Who Holds Funds</td><td class="no">Eventbrite holds everything</td><td class="yes">TeeVents never touches your money</td></tr>
 
             <tr class="cat"><td colspan="3">Support</td></tr>
             <tr><td>Customer Support</td><td class="no">AI bots</td><td class="yes">Direct email + phone</td></tr>

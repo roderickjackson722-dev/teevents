@@ -217,7 +217,7 @@ const AdminAccounting = () => {
             <span className="text-xs text-muted-foreground font-medium">Platform Revenue</span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalPlatformRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">$5 flat per transaction</p>
+          <p className="text-xs text-muted-foreground">5% per transaction</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">

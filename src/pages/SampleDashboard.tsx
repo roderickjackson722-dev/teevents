@@ -333,7 +333,7 @@ const HomeTab = () => (
         <CardHeader><CardTitle className="text-base">Quick Finances</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-muted-foreground">Collected</span><span className="font-bold">{fmt(fin.total_collected)}</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Platform Fees ($5 flat)</span><span className="text-destructive">{fmt(fin.platform_fees)}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Platform Fees (5%)</span><span className="text-destructive">{fmt(fin.platform_fees)}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Pending Hold</span><span className="text-yellow-600">{fmt(fin.pending_hold)}</span></div>
           <div className="flex justify-between border-t pt-2"><span className="font-semibold">Available</span><span className="font-bold text-green-600">{fmt(fin.available_balance)}</span></div>
         </CardContent>
@@ -692,7 +692,7 @@ const FinancesTab = () => (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {[
         { label: "Total Collected", value: fin.total_collected, icon: DollarSign, color: "text-green-600" },
-        { label: "TeeVents Fee ($5 flat)", value: fin.platform_fees, icon: TrendingUp, color: "text-destructive" },
+        { label: "TeeVents Fee (5%)", value: fin.platform_fees, icon: TrendingUp, color: "text-destructive" },
         { label: "Pending Hold", value: fin.pending_hold, icon: Clock, color: "text-yellow-600" },
         { label: "Available Balance", value: fin.available_balance, icon: Wallet, color: "text-primary" },
       ].map((c) => (

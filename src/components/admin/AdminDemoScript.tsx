@@ -77,9 +77,9 @@ const sections = [
     color: "bg-green-500/10 text-green-600",
     route: "/pricing",
     points: [
-      "\"TeeVents charges a flat $5 platform fee per transaction. You choose who pays:\"",
-      "Pass to Golfer: Golfer pays registration + $5 flat fee + Stripe fees. You keep 100% of registration.",
-      "Absorb Fees: Golfer pays registration only. You receive registration minus $5 minus Stripe fees (~$141.80 on $150).",
+      "\"TeeVents charges a 5% platform fee per transaction. You choose who pays:\"",
+      "Pass to Golfer: Golfer pays registration + 5% platform fee + Stripe fees. You keep 100% of registration.",
+      "Absorb Fees: Golfer pays registration only. You receive registration minus 5% minus Stripe fees (~$138.15 on $150).",
       "Hold: 15% held for 15 days after event for chargeback protection, then released automatically.",
     ],
   },

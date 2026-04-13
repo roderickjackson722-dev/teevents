@@ -50,8 +50,8 @@ const CompareEventbritePdf = () => {
 
         <div class="bottom-line">
           <h2>The Bottom Line</h2>
-          <p>Eventbrite charges <strong>~8.5% total fees</strong> on a $100 registration. TeeVents charges a <strong>flat $5 platform fee + 2.9% + $0.30 Stripe processing = $8.20 on $100</strong>. On higher registrations like $200, TeeVents saves you even more since the $5 fee stays the same.</p>
-          <p class="save">Flat $5 fee + golf-specific features Eventbrite can't match</p>
+          <p>Eventbrite charges <strong>~8.5% total fees</strong> on a $100 registration. TeeVents charges a <strong>5% platform fee + 2.9% + $0.30 Stripe processing = $8.20 on $100</strong>. Simple, transparent, and predictable.</p>
+          <p class="save">5% platform fee + golf-specific features Eventbrite can't match</p>
         </div>
 
         <table>
@@ -66,7 +66,7 @@ const CompareEventbritePdf = () => {
             <tr><td>Volunteer Check-in</td><td class="no">✗ Not available</td><td class="yes">✓ QR code + scheduling</td></tr>
 
             <tr class="cat"><td colspan="3">Pricing</td></tr>
-            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">$5 flat</td></tr>
+            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">5%</td></tr>
             <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="warn">2.9% + $0.30 (Stripe)</td></tr>
             <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$8.20</td></tr>
 
@@ -92,7 +92,7 @@ const CompareEventbritePdf = () => {
           <div class="fee-box tv">
             <h3>TeeVents · $100 Registration</h3>
             <ul>
-              <li>Platform: $5 flat</li>
+              <li>Platform: 5% = $5.00</li>
               <li>Stripe: 2.9% + $0.30 = $3.20</li>
               <li class="total" style="border-color:#1a5c38">Total: $8.20</li>
             </ul>
@@ -102,7 +102,7 @@ const CompareEventbritePdf = () => {
         <div class="reasons">
           <h2>Why Golf Organizers Switch</h2>
           <ol>
-            <li><strong>Flat $5 platform fee</strong> — predictable costs regardless of registration price</li>
+            <li><strong>5% platform fee</strong> — simple, transparent pricing</li>
             <li><strong>Golf-specific features</strong> — Leaderboards, pairings, hole sponsors</li>
             <li><strong>Faster payouts</strong> — Bi-weekly automatic deposits</li>
             <li><strong>Real support</strong> — Talk to a human, not a chatbot</li>

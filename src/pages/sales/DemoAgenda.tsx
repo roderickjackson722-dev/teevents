@@ -421,7 +421,7 @@ export default function DemoAgenda() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5" /> Pricing</CardTitle>
-              <CardDescription>Simple, transparent pricing. $5 flat platform fee per transaction.</CardDescription>
+              <CardDescription>Simple, transparent pricing. 5% platform fee per transaction.</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>

@@ -5,7 +5,7 @@ import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe 
 
 const helpPages = [
   { title: "Connect Your Bank Account", description: "Set up Stripe Connect to receive automatic payouts to your bank account.", icon: CreditCard, path: "/help/connect-stripe" },
-  { title: "Fees & Fund Holds", description: "Understand the $5 flat platform fee and 15% protective hold on registration funds.", icon: DollarSign, path: "/help/fees-and-hold" },
+  { title: "Fees & Fund Holds", description: "Understand the 5% platform fee and how payment splitting works.", icon: DollarSign, path: "/help/fees-and-hold" },
   { title: "Payout Schedule", description: "Learn about bi-weekly automatic payouts and manual withdrawal options.", icon: Calendar, path: "/help/payout-schedule" },
   { title: "Tax Information", description: "1099-K reporting thresholds, annual tax summaries, and record keeping.", icon: FileText, path: "/help/tax-information" },
   { title: "Payment Settings", description: "Choose whether golfers or your organization covers the platform fee.", icon: Settings, path: "/help/payment-settings" },

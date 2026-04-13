@@ -148,7 +148,7 @@ const SalesFlyer = () => {
               marginBottom: 24,
             }}>
               <div style={{ fontSize: 24, fontWeight: 800, color: "#1a5c38", marginBottom: 6 }}>
-                JUST $5 PER REGISTRATION
+                JUST 5% PER REGISTRATION
               </div>
               <div style={{ fontSize: 14, color: "#333", marginBottom: 4 }}>
                 Payments split automatically at checkout. We never hold your money.
@@ -171,8 +171,8 @@ const SalesFlyer = () => {
                 </div>
                 <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", border: "2px solid #1a5c38" }}>
                   <div style={{ fontWeight: 700, color: "#1a5c38", marginBottom: 4 }}>TeeVents</div>
-                  <div style={{ color: "#555" }}>$5 flat + Stripe ($3.20)</div>
-                  <div style={{ fontSize: 10, color: "#1a5c38", fontWeight: 600 }}>Save more as prices go up</div>
+                  <div style={{ color: "#555" }}>5% + Stripe ($3.20)</div>
+                  <div style={{ fontSize: 10, color: "#1a5c38", fontWeight: 600 }}>Simple, transparent pricing</div>
                 </div>
               </div>
             </div>

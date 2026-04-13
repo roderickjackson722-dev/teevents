@@ -14,7 +14,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "$5 flat fee per transaction + Stripe processing fees",
+    fee: "5% platform fee per transaction + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",
@@ -34,7 +34,7 @@ const plans = [
     period: "per tournament",
     subtitle: "We build it for you",
     description: "Unlimited players. We build your tournament platform for you.",
-    fee: "$5 flat fee per transaction + Stripe processing fees",
+    fee: "5% platform fee per transaction + Stripe processing fees",
     highlighted: true,
     features: [
       "Everything in Base (unlimited players)",
@@ -59,7 +59,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "$5 flat fee per transaction + Stripe processing fees",
+    fee: "5% platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",
@@ -265,7 +265,7 @@ const Pricing = () => {
             className="mt-10 text-center"
           >
             <p className="text-xs text-muted-foreground mb-6">
-              All plans include a flat $5 TeeVents platform fee per transaction + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
+              All plans include a 5% TeeVents platform fee per transaction + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
               <div className="flex items-center gap-2">

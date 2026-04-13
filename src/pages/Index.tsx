@@ -331,7 +331,7 @@ const Index = () => {
           <div className="grid md:grid-cols-4 gap-6">
             {[
               { num: "1", title: "Golfer Pays", desc: "Full registration amount charged at checkout via Stripe." },
-              { num: "2", title: "$5 Fee Deducted", desc: "TeeVents automatically receives a flat $5 platform fee." },
+              { num: "2", title: "5% Fee Deducted", desc: "TeeVents automatically receives a 5% platform fee." },
               { num: "3", title: "Stripe Fee Applied", desc: "Standard 2.9% + $0.30 processing fee deducted by Stripe." },
               { num: "4", title: "You Get Paid", desc: "Net proceeds land directly in your connected Stripe account." },
             ].map((step, i) => (

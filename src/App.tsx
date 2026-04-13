@@ -163,6 +163,7 @@ const App = () => (
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
+           <Route path="/admin/payouts" element={<AdminPayouts />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />

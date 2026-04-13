@@ -38,7 +38,7 @@ const data: CompSection[] = [
   {
     category: "Pricing",
     rows: [
-      { feature: "Platform Fee", eventbrite: "3.5% + $1.79/ticket", teevents: "$5 flat", ebStatus: "warn", tvStatus: "yes" },
+      { feature: "Platform Fee", eventbrite: "3.5% + $1.79/ticket", teevents: "5%", ebStatus: "warn", tvStatus: "yes" },
       { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", ebStatus: "warn", tvStatus: "warn" },
       { feature: "Total on $100 Registration", eventbrite: "~$8.49+", teevents: "$8.20", ebStatus: "no", tvStatus: "yes" },
       { feature: "Monthly Subscription", eventbrite: "No (per-event fees)", teevents: "No", ebStatus: "yes", tvStatus: "yes" },
@@ -189,12 +189,12 @@ const CompareEventbrite = () => {
             <div className="rounded-xl border-2 p-6" style={{ borderColor: "#1a5c38", backgroundColor: "#f0f7f3" }}>
               <h3 className="text-lg font-bold mb-3" style={{ color: "#1a5c38" }}>TeeVents on $100 Registration</h3>
               <ul className="space-y-2 text-sm" style={{ color: "#1a5c38" }}>
-                <li>Platform fee: $5 flat = <strong>$5.00</strong></li>
+                <li>Platform fee: 5% = <strong>$5.00</strong></li>
                 <li>Stripe processing: 2.9% + $0.30 = <strong>$3.20</strong></li>
                 <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
-                The same $5 fee whether it's a $50 or $500 registration — and payments split automatically. TeeVents never holds your money.
+                5% platform fee — simple and transparent. Payments split automatically. TeeVents never holds your money.
               </p>
             </div>
           </motion.div>

@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "$5 flat fee per transaction + Stripe processing fees",
+    fee: "5% platform fee per transaction + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",
@@ -177,7 +177,7 @@ const plans = [
     price: "$299",
     period: "per tournament",
     description: "Unlimited players. We build your tournament platform for you.",
-    fee: "$5 flat fee per transaction + Stripe processing fees",
+    fee: "5% platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Base (unlimited players)",
       "We build your website for you",
@@ -200,7 +200,7 @@ const plans = [
     price: "$999",
     period: "per tournament",
     description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "$5 flat fee per transaction + Stripe processing fees",
+    fee: "5% platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",
@@ -440,7 +440,7 @@ const HowItWorks = () => {
               <div className="space-y-3">
                 {[
                   "Golfer pays → Stripe splits funds automatically",
-                  "$5 flat fee → sent to TeeVents instantly",
+                  "5% fee → sent to TeeVents instantly",
                   "Stripe fee → deducted by Stripe",
                   "Net proceeds → deposited in your Stripe account",
                 ].map((item) => (
@@ -466,15 +466,15 @@ const HowItWorks = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Golfer pays</span>
-                    <span className="font-display font-bold text-foreground">$159.80</span>
+                    <span className="font-display font-bold text-foreground">$162.15</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (auto-deducted)</span>
-                    <span className="font-display font-bold text-destructive">−$5.00</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
+                    <span className="font-display font-bold text-destructive">−$7.50</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">−$4.80</span>
+                    <span className="font-display font-bold text-destructive">−$4.65</span>
                   </div>
                   <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
                     <span className="font-semibold text-primary">Deposited in your Stripe account</span>
@@ -482,7 +482,7 @@ const HowItWorks = () => {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  Funds arrive in your Stripe account automatically. Withdraw to your bank anytime. All plans: $5 flat fee + Stripe 2.9% + $0.30.
+                  Funds arrive in your Stripe account automatically. Withdraw to your bank anytime. All plans: 5% platform fee + Stripe 2.9% + $0.30.
                 </p>
               </div>
             </motion.div>
@@ -530,7 +530,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              All plans include a flat $5 TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically — we never hold your money.
+              All plans include a 5% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically — we never hold your money.
             </p>
           </motion.div>
 

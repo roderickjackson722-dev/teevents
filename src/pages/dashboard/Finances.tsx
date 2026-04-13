@@ -340,7 +340,7 @@ const Finances = () => {
     if (reportType === "transactions") {
       const filtered = filterByDate(platformTransactions);
       const headers = [
-        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee $5 ($)",
+        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 5% ($)",
         "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
       ];
       const rows = filtered.map((tx) => {
@@ -566,7 +566,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">Payments split automatically at checkout — TeeVents never holds your money.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Stripe deducts the $5 platform fee and processing fee, then deposits net proceeds directly in your connected Stripe account. Withdraw to your bank on your schedule.{" "}
+            Stripe deducts the 5% platform fee and processing fee, then deposits net proceeds directly in your connected Stripe account. Withdraw to your bank on your schedule.{" "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>
@@ -601,10 +601,10 @@ const Finances = () => {
             <div className="p-2 rounded-full bg-amber-100">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee ($5 flat) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents Platform Fee ($5 flat per transaction) covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents charges a 5% platform fee per transaction covering processing, platform, and support.</TooltipContent></Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">$5 flat per transaction</p>
+          <p className="text-xs text-muted-foreground mt-1">5% per transaction</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card rounded-lg border border-border p-4 border-blue-200">
@@ -664,9 +664,9 @@ const Finances = () => {
             <Receipt className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee ($5 flat)</p>
+            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee (5%)</p>
             <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">$5 flat fee per transaction</p>
+            <p className="text-xs text-muted-foreground">5% per transaction</p>
           </div>
         </div>
 
@@ -775,7 +775,7 @@ const Finances = () => {
                      <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee ($5)</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (5%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
@@ -891,7 +891,7 @@ const Finances = () => {
                       <p className="font-medium text-foreground">{payout.transaction_count}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Platform Fee ($5 flat)</p>
+                      <p className="text-xs text-muted-foreground">Platform Fee (5%)</p>
                       <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
                     </div>
                     <div>

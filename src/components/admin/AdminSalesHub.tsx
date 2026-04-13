@@ -154,7 +154,7 @@ function DemoTab() {
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-4">Quick Reference — Fee & Reserve FAQ</h3>
         <Accordion type="multiple">
-          <AccordionItem value="fee"><AccordionTrigger>What is the $5 flat TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a flat $5 platform fee on every transaction — the same whether it's a $50 or $500 registration. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
+          <AccordionItem value="fee"><AccordionTrigger>What is the 5% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a 5% platform fee on every transaction. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
           <AccordionItem value="reserve"><AccordionTrigger>What is the 15% reserve?</AccordionTrigger><AccordionContent>TeeVents holds 15% of net proceeds as a reserve for refunds and chargebacks. This reserve is automatically released 15 days after your event ends. Premium plan customers receive a reduced 10% reserve rate.</AccordionContent></AccordionItem>
           <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Payouts are processed automatically every two weeks. The net amount is deposited directly into the organizer's connected bank account.</AccordionContent></AccordionItem>
         </Accordion>
@@ -183,11 +183,11 @@ function StudySheetTab() {
       <h2>1. Platform Overview</h2><p>TeeVents is an all-in-one golf tournament management platform.</p>
       <h2>2. Organizer Features</h2><p>Tournament creation, registration, payments, volunteers, sponsors, leaderboard, auction, and more.</p>
       <h2>3. Golfer Experience</h2><p>Registration → QR check-in → Mobile scoring → Leaderboard</p>
-      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → $5 flat fee → 15% hold → Available balance → Bi-weekly payout</p>
+      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → 5% platform fee → 15% hold → Available balance → Bi-weekly payout</p>
       <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>
-      <h2>8. Limits</h2><p>$5 flat fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
+      <h2>8. Limits</h2><p>5% platform fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
       <h2>9. Glossary</h2><p>Chargeback, Hold, Platform Fee, Stripe Connect, Express Account, RLS, Edge Function, Cron Job</p>
       <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential.</p>
     `);
@@ -238,7 +238,7 @@ function StudySheetTab() {
         <section id="study-payments">
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
-            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → $5 flat fee → 15% hold → Available balance → Bi-weekly payout</div>
+            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 5% platform fee → 15% hold → Available balance → Bi-weekly payout</div>
             <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (minus hold)", "Nonprofits"]]} />
             <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
           </div>
@@ -373,7 +373,7 @@ KEY DIFFERENTIATOR #1: GOLF-SPECIFIC FEATURES (45 seconds)
 "With Eventbrite, you don't get live leaderboards, hole sponsor management, or volunteer check-in. With TeeVents, all of that is built in. Your golfers scan a QR code to enter scores, your sponsors get a branded portal, and your volunteers check in with their phone."
 
 KEY DIFFERENTIATOR #2: PRICING TRANSPARENCY (45 seconds)
-"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges a flat $5 platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost on $100, but massive savings on higher registrations. Plus you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
+"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges a 5% platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost on $100, but on higher registrations we stay competitive. Plus you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
 
 KEY DIFFERENTIATOR #3: PAYOUT SPEED (30 seconds)
 "With Eventbrite, you wait until after your event to get paid. With TeeVents, you receive automatic bi-weekly payouts. We hold 15% for 15 days as chargeback protection, then release it automatically."

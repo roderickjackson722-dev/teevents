@@ -43,7 +43,7 @@ const plans = [
     name: "Premium",
     price: "$999",
     period: "per tournament",
-    fee: "$5 flat fee per transaction + Stripe fees",
+    fee: "5% platform fee per transaction + Stripe fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",

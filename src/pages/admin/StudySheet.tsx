@@ -219,8 +219,8 @@ const StudySheet = () => {
       <h3>4.2 Fee Model Comparison</h3>
       <table>
         <tr><th>Model</th><th>Golfer Pays</th><th>Organizer Receives</th><th>Best For</th></tr>
-        <tr><td><strong>Pass to Golfer</strong></td><td>$100 + $5 + ~$3.43 = ~$108.43</td><td>$100 (minus 15% hold)</td><td>Premium events, corporate outings</td></tr>
-        <tr><td><strong>Absorb Fees</strong></td><td>$100 exactly</td><td>$100 - $5 - ~$3.20 = ~$91.80 (minus 15% hold)</td><td>Nonprofits, charity events</td></tr>
+        <tr><td><strong>Pass to Golfer</strong></td><td>$100 + $5 (5%) + ~$3.35 = ~$108.35</td><td>$100 (minus 15% hold)</td><td>Premium events, corporate outings</td></tr>
+        <tr><td><strong>Absorb Fees</strong></td><td>$100 exactly</td><td>$100 - $5 (5%) - ~$3.20 = ~$91.80 (minus 15% hold)</td><td>Nonprofits, charity events</td></tr>
       </table>
 
       <h3>4.3 Hold Release Timeline</h3>
@@ -518,7 +518,7 @@ const StudySheet = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">4.2 Fee Model Comparison</h3>
                 <SimpleTable headers={["Model", "Golfer Pays", "Organizer Receives", "Best For"]} rows={[
-                  ["Pass to Golfer", "$100 + $5 + ~$3.43 = ~$108.43", "$100 (minus 15% hold)", "Premium events"],
+                  ["Pass to Golfer", "$100 + $5 (5%) + ~$3.35 = ~$108.35", "$100 (minus 15% hold)", "Premium events"],
                   ["Absorb Fees", "$100 exactly", "~$91.80 (minus 15% hold)", "Nonprofits, charities"],
                 ]} />
               </div>
@@ -627,7 +627,7 @@ const StudySheet = () => {
                 ["Platform Fee", "5% fee charged on all transactions"],
                 ["Stripe Connect", "Stripe's platform for marketplace payments"],
                 ["Express Account", "Simplified Stripe Connect account type"],
-                ["Application Fee", "Stripe mechanism to take the $5 flat platform fee"],
+                ["Application Fee", "Stripe mechanism to take the 5% platform fee"],
                 ["RLS", "Row Level Security — database-level access control"],
                 ["Edge Function", "Serverless backend function"],
                 ["Cron Job", "Scheduled task (e.g., daily hold releases)"],

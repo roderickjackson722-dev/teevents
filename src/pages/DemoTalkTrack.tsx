@@ -335,7 +335,7 @@ export default function DemoTalkTrack() {
                 <CardContent className="p-6">
                   <Badge variant="outline" className="mb-3 text-xs">SAY THIS — TRANSPARENCY</Badge>
                   <p className="text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the $5 flat fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
+                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the 5% platform fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
                   </p>
                 </CardContent>
               </Card>

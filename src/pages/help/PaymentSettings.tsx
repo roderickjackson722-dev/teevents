@@ -12,13 +12,13 @@ const PaymentSettings = () => (
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Payment Settings</h1>
-      <p className="text-muted-foreground mb-8">Choose how the $5 flat platform fee is handled for your tournaments.</p>
+      <p className="text-muted-foreground mb-8">Choose how the 5% platform fee is handled for your tournaments.</p>
 
       <div className="space-y-8">
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><ToggleLeft className="h-5 w-5 text-primary" /> The Fee Toggle</h2>
           <p className="text-muted-foreground mb-4">
-            In your tournament's <strong>Registration</strong> settings, you'll find the <strong>"Pass Fees to Participants"</strong> toggle. This controls who pays the $5 flat platform fee.
+            In your tournament's <strong>Registration</strong> settings, you'll find the <strong>"Pass Fees to Participants"</strong> toggle. This controls who pays the 5% platform fee.
           </p>
         </section>
 
@@ -28,13 +28,13 @@ const PaymentSettings = () => (
               <Users className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-foreground">Toggle ON — Golfers Pay</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">The $5 flat fee and Stripe processing fee are added as transparent line items at checkout. Your organization receives the full registration amount.</p>
+            <p className="text-sm text-muted-foreground mb-3">The 5% platform fee and Stripe processing fee are added as transparent line items at checkout. Your organization receives the full registration amount.</p>
             <div className="text-sm bg-muted/50 rounded p-3 space-y-1">
               <div className="flex justify-between"><span>Registration</span><span>$150.00</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (flat)</span><span>$5.00</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Processing Fee</span><span>$4.80</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>$7.50</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Processing Fee</span><span>$4.88</span></div>
               <hr className="my-1 border-border" />
-              <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$159.80</span></div>
+              <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$162.38</span></div>
               <div className="flex justify-between text-primary"><span>You Receive</span><span>$150.00</span></div>
             </div>
             <p className="text-xs text-muted-foreground mt-3">✅ Best for: Maximizing your revenue per registration</p>
@@ -45,13 +45,13 @@ const PaymentSettings = () => (
               <Building className="h-5 w-5 text-secondary" />
               <h3 className="font-semibold text-foreground">Toggle OFF — You Absorb</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">The golfer pays only the listed registration fee. The $5 is deducted from your payout, creating a cleaner checkout experience.</p>
+            <p className="text-sm text-muted-foreground mb-3">The golfer pays only the listed registration fee. The 5% fee is deducted from your payout, creating a cleaner checkout experience.</p>
             <div className="text-sm bg-muted/50 rounded p-3 space-y-1">
               <div className="flex justify-between"><span>Registration</span><span>$150.00</span></div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$150.00</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (flat)</span><span>−$5.00</span></div>
-              <div className="flex justify-between text-primary"><span>You Receive</span><span>$145.00</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>−$7.50</span></div>
+              <div className="flex justify-between text-primary"><span>You Receive</span><span>$142.50</span></div>
             </div>
             <p className="text-xs text-muted-foreground mt-3">✅ Best for: Clean pricing and simpler checkout</p>
           </div>

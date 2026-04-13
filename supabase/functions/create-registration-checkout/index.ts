@@ -163,13 +163,13 @@ Deno.serve(async (req) => {
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
 
-    // Build line items based on fee model
-    const lineItems: any[] = [];
-
     // Determine if golfer pays fees:
     // - passFeesToParticipants=true → always pass fees
     // - coverFees=true → golfer opted to cover fees voluntarily
     const golferPaysFees = passFeesToParticipants || coverFees;
+
+    // Build line items and calculate application fee
+    const lineItems: any[] = [];
 
     if (golferPaysFees) {
       // Golfer pays registration + $5 flat platform fee + Stripe processing fee
@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
         });
       }
     } else {
-      // Golfer pays registration fee only; organizer absorbs the 5% platform fee
+      // Golfer pays registration fee only; organizer absorbs the $5 platform fee
       lineItems.push({
         price_data: {
           currency: "usd",
@@ -217,11 +217,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Application fee is always $5 flat — this is retained by the platform.
+    // With destination charges, Stripe automatically sends the remainder to the organizer.
+    const applicationFeeAmount = PLATFORM_FEE_CENTS;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),
       line_items: lineItems,
       mode: "payment",
+      payment_method_types: ["card", "cashapp"],
+      payment_intent_data: {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: {
+          destination: organizerStripeAccountId,
+        },
+        on_behalf_of: organizerStripeAccountId,
+      },
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
       metadata: {

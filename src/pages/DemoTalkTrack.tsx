@@ -110,19 +110,15 @@ EXPLAINING THE 15% HOLD
 
 By holding 15%, we ensure that if a chargeback occurs, it's covered from that hold — not from your available balance. If no chargeback happens, the full 15% is released 15 days after your event ends. This is standard practice across event platforms like Eventbrite and golf platforms like Event Caddy."
 
-PAYOUT TIMING & METHODS
-"You have two ways to get paid:
+AUTOMATIC PAYMENT SPLITTING
+"Here's the best part about our payment flow:
 
-1. Automatic bi-weekly payouts — Every other Monday, we automatically transfer your available balance to your connected Stripe account. You don't have to do anything. Funds typically arrive in 1–3 business days.
+Every payment is split automatically at checkout using Stripe Connect destination charges. When a golfer registers, Stripe instantly sends us our $5 fee, deducts their processing fee, and deposits the rest directly into your Stripe account. TeeVents never holds, touches, or controls your money.
 
-2. Manual withdrawals — If you need funds sooner, you can click 'Withdraw Funds' in your dashboard anytime. There's a $25 minimum, and we'll process the transfer within 1 business day."
-
-STRIPE CONNECT VS PAYPAL
-• Stripe Connect (Recommended): 2–3 min onboarding, no additional fees, 1–3 day payouts, automatic bi-weekly payouts, embedded dashboard.
-• PayPal: Enter email, 1% or $0.50 per payout, 1–5 day payouts, manual only, PayPal website.
+You withdraw from your own Stripe account on your schedule — daily, weekly, or whenever you want. No waiting for us to release anything."
 
 TRANSPARENCY & REPORTING
-"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the $5 flat fee, the 15% hold, when it releases, your available balance, and full payout history. You can also download CSV reports anytime."
+"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the $5 flat fee, Stripe processing, and your net proceeds. You can also download CSV reports anytime."
 
 COMMON OBJECTIONS
 • "15% hold is too high" → You get it all back 15 days after your event. No other platform gives you this protection.
@@ -296,11 +292,10 @@ export default function DemoTalkTrack() {
               <Card className="border-primary/30 bg-primary/5">
                 <CardContent className="p-6">
                   <Badge variant="outline" className="mb-3 text-xs">SAY THIS</Badge>
-                  <div className="space-y-4 text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    <p>"You have two ways to get paid:</p>
-                    <p><strong>1. Automatic bi-weekly payouts</strong> — Every other Monday, we automatically transfer your available balance to your connected Stripe account. You don't have to do anything. Funds typically arrive in 1–3 business days.</p>
-                    <p><strong>2. Manual withdrawals</strong> — If you need funds sooner, you can click 'Withdraw Funds' in your dashboard anytime. There's a $25 minimum, and we'll process the transfer within 1 business day.</p>
-                    <p>You can choose between Stripe Connect (recommended — faster, automatic, lower fees) or PayPal (available as a backup)."</p>
+                   <div className="space-y-4 text-sm md:text-base text-foreground/90 leading-relaxed italic">
+                    <p>"Here's the best part about our payment flow:</p>
+                    <p>Every payment is split <strong>automatically at checkout</strong> using Stripe Connect. When a golfer registers, Stripe instantly sends us our $5 fee, deducts their processing fee, and deposits the rest directly into <strong>your</strong> Stripe account.</p>
+                    <p><strong>TeeVents never holds, touches, or controls your money.</strong> You withdraw from your own Stripe account on your schedule."</p>
                   </div>
                 </CardContent>
               </Card>

@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
             // Nonprofit tax receipt
             const { data: orgData } = await supabaseAdmin
               .from("organizations")
-              .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified")
+              .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, name")
               .eq("id", tournament.organization_id)
               .single();
 
@@ -215,6 +215,42 @@ Deno.serve(async (req) => {
                 tournament.title, tournament.date,
                 grossAmount, orgData.nonprofit_name || orgData.ein, orgData.ein,
               );
+            }
+
+            // Send platform admin transaction notification
+            try {
+              const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+              if (RESEND_API_KEY) {
+                const platformFeeCents = Math.round(grossAmount * PLATFORM_FEE_RATE);
+                const netCents = passFeesToGolfer ? grossAmount : grossAmount - platformFeeCents;
+                const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+                const orgName = orgData?.name || "Unknown Org";
+
+                const adminHtml = buildNotificationHtml("New Registration Transaction", [
+                  `🏌️ <strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>`,
+                  `🏢 <strong>Organizer:</strong> ${orgName}`,
+                  `💰 <strong>Gross Amount:</strong> $${(grossAmount / 100).toFixed(2)}`,
+                  `📊 <strong>Platform Fee (5%):</strong> $${(platformFeeCents / 100).toFixed(2)}`,
+                  `💵 <strong>Net to Organizer:</strong> $${(netCents / 100).toFixed(2)}`,
+                  passFeesToGolfer ? `📋 Fee Model: Passed to golfer` : `📋 Fee Model: Absorbed by organizer`,
+                  `📧 <strong>Golfer Email:</strong> ${reg.email}`,
+                  `👥 <strong>Players:</strong> ${(regs || []).length}`,
+                  `📅 ${dateStr}`,
+                ]);
+
+                await fetch("https://api.resend.com/emails", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+                  body: JSON.stringify({
+                    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+                    to: ["info@teevents.golf"],
+                    subject: `New Registration – ${tournament.title} – ${playerNames}`,
+                    html: adminHtml,
+                  }),
+                });
+              }
+            } catch (adminErr) {
+              console.error("Admin notification error:", adminErr);
             }
           }
         }

@@ -14,6 +14,7 @@ import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminAccounting from "@/components/admin/AdminAccounting";
+import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
@@ -35,7 +36,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -729,6 +730,8 @@ const AdminDashboard = () => {
                 ["college", "College Hub", School],
                 ["flyer-templates", "Flyer Templates", FileText],
                 ["notifications", "Notifications & Requests", Bell],
+                ["transactions", "Transactions", DollarSign],
+                ["accounting", "Accounting", DollarSign],
                 ["accounting", "Accounting", DollarSign],
               ] as const).map(([key, label, Icon]) => (
                 <button
@@ -1700,6 +1703,9 @@ const AdminDashboard = () => {
 
           {/* Notifications & Requests Tab */}
           {activeTab === "notifications" && <AdminNotifications />}
+
+          {/* Transactions Tab */}
+          {activeTab === "transactions" && <AdminTransactions />}
 
           {/* Accounting Tab */}
           {activeTab === "accounting" && <AdminAccounting />}

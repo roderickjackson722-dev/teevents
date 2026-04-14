@@ -3,6 +3,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
+const calculateGrossedUpStripeFee = (subtotalCents: number) =>
+  Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
+const calculateProcessingFee = (chargeAmountCents: number) =>
+  Math.max(0, Math.round(chargeAmountCents * 0.029 + 30));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -168,60 +172,44 @@ Deno.serve(async (req) => {
     // - coverFees=true → golfer opted to cover fees voluntarily
     const golferPaysFees = passFeesToParticipants || coverFees;
 
-    // Build line items and calculate application fee
     const lineItems: any[] = [];
-
-    // Calculate 5% platform fee on the registration amount
     const platformFeeCents = Math.round(registrationFeeCents * PLATFORM_FEE_RATE);
+    const stripeFeeCents = golferPaysFees
+      ? calculateGrossedUpStripeFee(registrationFeeCents + platformFeeCents)
+      : calculateProcessingFee(registrationFeeCents);
+    const combinedFeesCents = platformFeeCents + stripeFeeCents;
+    const applicationFeeAmount = combinedFeesCents;
+    const organizerNetCents = golferPaysFees
+      ? registrationFeeCents
+      : Math.max(registrationFeeCents - combinedFeesCents, 0);
+    const chargeTotalCents = golferPaysFees
+      ? registrationFeeCents + combinedFeesCents
+      : registrationFeeCents;
 
-    if (golferPaysFees) {
-      // Golfer pays registration + 5% platform fee + Stripe processing fee
-      const preStripeTotal = registrationFeeCents + platformFeeCents;
-      const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: `Registration — ${tournament.title}`,
+          description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+        },
+        unit_amount: feePerPlayer,
+      },
+      quantity: players.length,
+    });
 
+    if (golferPaysFees && combinedFeesCents > 0) {
       lineItems.push({
         price_data: {
           currency: "usd",
           product_data: {
-            name: `Registration — ${tournament.title}`,
-            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+            name: "Fees",
           },
-          unit_amount: feePerPlayer,
+          unit_amount: combinedFeesCents,
         },
-        quantity: players.length,
-      });
-
-      const combinedFees = platformFeeCents + stripeFee;
-      if (combinedFees > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Fees",
-            },
-            unit_amount: combinedFees,
-          },
-          quantity: 1,
-        });
-      }
-    } else {
-      // Golfer pays registration fee only; organizer absorbs the 5% platform fee
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `Registration — ${tournament.title}`,
-            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
-          },
-          unit_amount: feePerPlayer,
-        },
-        quantity: players.length,
+        quantity: 1,
       });
     }
-
-    // Application fee is 5% of registration — this is retained by the platform.
-    // With destination charges, Stripe automatically sends the remainder to the organizer.
-    const applicationFeeAmount = platformFeeCents;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -246,6 +234,11 @@ Deno.serve(async (req) => {
         cover_fees: String(coverFees),
         tier_id: tierId || "",
         gross_registration_cents: String(registrationFeeCents),
+        platform_fee_cents: String(platformFeeCents),
+        stripe_fee_cents: String(stripeFeeCents),
+        application_fee_cents: String(applicationFeeAmount),
+        organizer_net_cents: String(organizerNetCents),
+        charge_total_cents: String(chargeTotalCents),
       },
     });
 

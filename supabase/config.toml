@@ -60,3 +60,9 @@ verify_jwt = false
 [functions.notify-admin-action]
 verify_jwt = false
 
+[functions.stripe-admin-reset]
+verify_jwt = false
+
+[functions.stripe-disconnect]
+verify_jwt = false
+

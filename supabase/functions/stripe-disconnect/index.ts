@@ -89,6 +89,27 @@ Deno.serve(async (req) => {
 
     if (updateError) throw new Error("Failed to disconnect Stripe account");
 
+    // Clear payout methods stripe fields
+    await supabaseAdmin
+      .from("organization_payout_methods")
+      .update({
+        stripe_account_id: null,
+        stripe_onboarding_complete: false,
+        stripe_account_status: "pending",
+        stripe_account_last4: null,
+        stripe_account_brand: null,
+        is_verified: false,
+      })
+      .eq("organization_id", organization_id);
+
+    // Log the disconnect
+    await supabaseAdmin.from("stripe_onboarding_logs").insert({
+      organization_id,
+      stripe_account_id: org.stripe_account_id,
+      event_type: "organizer_disconnected",
+      metadata: { user_email: user.email },
+    });
+
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

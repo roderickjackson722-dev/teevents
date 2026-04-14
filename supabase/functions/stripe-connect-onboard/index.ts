@@ -145,8 +145,15 @@ Deno.serve(async (req) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("stripe-connect-onboard error:", message);
+
+    // Provide a user-friendly message for Stripe platform config issues
+    const isPlatformConfigError = message.includes("responsibilities") || message.includes("platform-profile");
+    const userMessage = isPlatformConfigError
+      ? "Stripe Connect is being configured. Please contact TeeVents support and we'll have this resolved shortly."
+      : message;
+
     const status = message === "Unauthorized" ? 401 : 500;
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: userMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,
     });

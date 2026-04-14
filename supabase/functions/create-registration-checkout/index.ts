@@ -228,7 +228,6 @@ Deno.serve(async (req) => {
       customer_email: customerId ? undefined : email.trim(),
       line_items: lineItems,
       mode: "payment",
-      payment_method_types: ["card"],
       payment_intent_data: {
         application_fee_amount: applicationFeeAmount,
         transfer_data: {

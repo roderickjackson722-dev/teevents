@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Download, Search, ExternalLink, StickyNote, DollarSign, ArrowLeft } from "lucide-react";
+import { Download, Search, ExternalLink, StickyNote, ArrowLeft, AlertTriangle, RefreshCw, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PayoutRow {
@@ -34,6 +35,16 @@ interface PayoutNote {
   created_at: string;
 }
 
+interface OrgStripeInfo {
+  id: string;
+  name: string;
+  stripe_account_id: string | null;
+  stripe_account_last4: string | null;
+  stripe_account_brand: string | null;
+  stripe_onboarding_complete: boolean;
+  stripe_account_status: string | null;
+}
+
 const cents = (v: number) => `$${(v / 100).toFixed(2)}`;
 
 export default function AdminPayouts() {
@@ -47,39 +58,105 @@ export default function AdminPayouts() {
   const [newNote, setNewNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
+  // Organizer management state
+  const [orgs, setOrgs] = useState<OrgStripeInfo[]>([]);
+  const [orgsLoading, setOrgsLoading] = useState(true);
+  const [orgSearch, setOrgSearch] = useState("");
+  const [resetOrg, setResetOrg] = useState<OrgStripeInfo | null>(null);
+  const [resetReason, setResetReason] = useState("");
+  const [resetting, setResetting] = useState(false);
+
   useEffect(() => {
     loadData();
+    loadOrgs();
   }, []);
+
+  const loadOrgs = async () => {
+    setOrgsLoading(true);
+    const { data: orgList } = await supabase
+      .from("organizations")
+      .select("id, name, stripe_account_id")
+      .order("name");
+
+    if (!orgList) { setOrgsLoading(false); return; }
+
+    // Get payout method details
+    const orgIds = orgList.map(o => o.id);
+    const { data: payoutMethods } = await supabase
+      .from("organization_payout_methods")
+      .select("organization_id, stripe_account_id, stripe_account_last4, stripe_account_brand, stripe_onboarding_complete, stripe_account_status")
+      .in("organization_id", orgIds);
+
+    const pmMap: Record<string, any> = {};
+    payoutMethods?.forEach(pm => { pmMap[pm.organization_id] = pm; });
+
+    const combined: OrgStripeInfo[] = orgList.map(o => ({
+      id: o.id,
+      name: o.name,
+      stripe_account_id: pmMap[o.id]?.stripe_account_id || o.stripe_account_id || null,
+      stripe_account_last4: pmMap[o.id]?.stripe_account_last4 || null,
+      stripe_account_brand: pmMap[o.id]?.stripe_account_brand || null,
+      stripe_onboarding_complete: pmMap[o.id]?.stripe_onboarding_complete || false,
+      stripe_account_status: pmMap[o.id]?.stripe_account_status || null,
+    }));
+
+    setOrgs(combined);
+    setOrgsLoading(false);
+  };
+
+  const handleResetStripe = async () => {
+    if (!resetOrg) return;
+    setResetting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-admin-reset", {
+        body: { organization_id: resetOrg.id, reason: resetReason || "Admin reset" },
+      });
+      if (error || data?.error) {
+        toast({ title: "Error", description: data?.error || "Failed to reset Stripe", variant: "destructive" });
+      } else {
+        toast({ title: "Stripe account disconnected", description: `${resetOrg.name} will need to reconnect.` });
+        setResetOrg(null);
+        setResetReason("");
+        loadOrgs();
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const filteredOrgs = useMemo(() => {
+    if (!orgSearch) return orgs;
+    const s = orgSearch.toLowerCase();
+    return orgs.filter(o => o.name.toLowerCase().includes(s) || (o.stripe_account_id || "").toLowerCase().includes(s));
+  }, [orgs, orgSearch]);
 
   const loadData = async () => {
     setLoading(true);
 
-    // Fetch Stripe transactions
     const { data: txns } = await supabase
       .from("platform_transactions")
       .select("id, created_at, amount_cents, platform_fee_cents, net_amount_cents, status, stripe_payment_intent_id, stripe_session_id, organization_id, tournament_id, description, type")
       .order("created_at", { ascending: false });
 
-    // Fetch PayPal payouts
     const { data: paypal } = await supabase
       .from("paypal_payouts")
       .select("id, created_at, amount_cents, status, paypal_email, batch_id, organization_id, notes")
       .order("created_at", { ascending: false });
 
-    // Fetch org names
     const orgIds = new Set<string>();
     txns?.forEach((t) => orgIds.add(t.organization_id));
     paypal?.forEach((p) => orgIds.add(p.organization_id));
 
-    const { data: orgs } = await supabase
+    const { data: orgsList } = await supabase
       .from("organizations")
       .select("id, name")
       .in("id", Array.from(orgIds));
 
     const orgMap: Record<string, string> = {};
-    orgs?.forEach((o) => (orgMap[o.id] = o.name));
+    orgsList?.forEach((o) => (orgMap[o.id] = o.name));
 
-    // Fetch tournament names for stripe txns
     const tournamentIds = (txns || []).filter((t) => t.tournament_id).map((t) => t.tournament_id!);
     let tournMap: Record<string, string> = {};
     if (tournamentIds.length) {
@@ -127,7 +204,6 @@ export default function AdminPayouts() {
 
     setRows([...stripeRows, ...paypalRows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 
-    // Fetch all notes
     const { data: allNotes } = await supabase.from("payout_notes").select("id, transaction_id, note, created_at").order("created_at", { ascending: true });
     const noteMap: Record<string, PayoutNote[]> = {};
     allNotes?.forEach((n) => {
@@ -205,7 +281,6 @@ export default function AdminPayouts() {
     } else {
       toast({ title: "Note saved" });
       setNewNote("");
-      // Refresh notes
       const { data } = await supabase.from("payout_notes").select("id, transaction_id, note, created_at").eq("transaction_id", selectedRow.id).order("created_at", { ascending: true });
       setNotes((prev) => ({ ...prev, [selectedRow.id]: data || [] }));
     }
@@ -223,102 +298,186 @@ export default function AdminPayouts() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Payout Transactions</h1>
-            <p className="text-sm text-muted-foreground">Read-only audit log — Stripe handles all automatic splits</p>
+            <h1 className="text-2xl font-bold">Payouts & Organizer Accounts</h1>
+            <p className="text-sm text-muted-foreground">Audit log & Stripe account management</p>
           </div>
         </div>
-        <Button onClick={exportCSV} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Transactions</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{filtered.length}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Gross Volume</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{cents(totals.gross)}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Platform Fees Earned</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold text-primary">{cents(totals.fees)}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Net to Organizers</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{cents(totals.net)}</p></CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="transactions" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="organizers">Organizer Accounts</TabsTrigger>
+        </TabsList>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search organizer, tournament, or Stripe ID…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
-        </div>
-        <Select value={methodFilter} onValueChange={setMethodFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Methods</SelectItem>
-            <SelectItem value="stripe">Stripe</SelectItem>
-            <SelectItem value="paypal">PayPal</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        {/* Transactions Tab */}
+        <TabsContent value="transactions" className="space-y-6">
+          <div className="flex justify-end">
+            <Button onClick={exportCSV} variant="outline" className="gap-2">
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+          </div>
 
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Organizer</TableHead>
-                <TableHead>Tournament</TableHead>
-                <TableHead className="text-right">Gross</TableHead>
-                <TableHead className="text-right">Platform Fee</TableHead>
-                <TableHead className="text-right">Stripe Fee</TableHead>
-                <TableHead className="text-right">Net</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No transactions found</TableCell></TableRow>
-              ) : (
-                filtered.map((r) => (
-                  <TableRow key={r.id} className="cursor-pointer" onClick={() => { setSelectedRow(r); setNewNote(""); }}>
-                    <TableCell className="whitespace-nowrap">{new Date(r.date).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-medium">{r.organizer_name}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{r.tournament_name || "—"}</TableCell>
-                    <TableCell className="text-right">{cents(r.gross_cents)}</TableCell>
-                    <TableCell className="text-right">{cents(r.platform_fee_cents)}</TableCell>
-                    <TableCell className="text-right">{r.stripe_fee_cents != null ? cents(r.stripe_fee_cents) : "N/A"}</TableCell>
-                    <TableCell className="text-right font-medium">{cents(r.net_cents)}</TableCell>
-                    <TableCell>
-                      <Badge variant={r.method === "Stripe" ? "default" : "secondary"}>{r.method}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={r.status === "Completed" || r.status === "completed" ? "default" : "outline"}>{r.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {(notes[r.id]?.length || 0) > 0 && <StickyNote className="h-4 w-4 text-muted-foreground" />}
-                    </TableCell>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Transactions</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold">{filtered.length}</p></CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Gross Volume</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold">{cents(totals.gross)}</p></CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Platform Fees Earned</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold text-primary">{cents(totals.fees)}</p></CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Net to Organizers</CardTitle></CardHeader>
+              <CardContent><p className="text-2xl font-bold">{cents(totals.net)}</p></CardContent>
+            </Card>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search organizer, tournament, or Stripe ID…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            </div>
+            <Select value={methodFilter} onValueChange={setMethodFilter}>
+              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Methods</SelectItem>
+                <SelectItem value="stripe">Stripe</SelectItem>
+                <SelectItem value="paypal">PayPal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Table */}
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Organizer</TableHead>
+                    <TableHead>Tournament</TableHead>
+                    <TableHead className="text-right">Gross</TableHead>
+                    <TableHead className="text-right">Platform Fee</TableHead>
+                    <TableHead className="text-right">Stripe Fee</TableHead>
+                    <TableHead className="text-right">Net</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Notes</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
+                  ) : filtered.length === 0 ? (
+                    <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No transactions found</TableCell></TableRow>
+                  ) : (
+                    filtered.map((r) => (
+                      <TableRow key={r.id} className="cursor-pointer" onClick={() => { setSelectedRow(r); setNewNote(""); }}>
+                        <TableCell className="whitespace-nowrap">{new Date(r.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-medium">{r.organizer_name}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">{r.tournament_name || "—"}</TableCell>
+                        <TableCell className="text-right">{cents(r.gross_cents)}</TableCell>
+                        <TableCell className="text-right">{cents(r.platform_fee_cents)}</TableCell>
+                        <TableCell className="text-right">{r.stripe_fee_cents != null ? cents(r.stripe_fee_cents) : "N/A"}</TableCell>
+                        <TableCell className="text-right font-medium">{cents(r.net_cents)}</TableCell>
+                        <TableCell>
+                          <Badge variant={r.method === "Stripe" ? "default" : "secondary"}>{r.method}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={r.status === "Completed" || r.status === "completed" ? "default" : "outline"}>{r.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {(notes[r.id]?.length || 0) > 0 && <StickyNote className="h-4 w-4 text-muted-foreground" />}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Detail Modal */}
+        {/* Organizer Accounts Tab */}
+        <TabsContent value="organizers" className="space-y-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search organizations…" value={orgSearch} onChange={(e) => setOrgSearch(e.target.value)} className="pl-9 max-w-md" />
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Organization</TableHead>
+                    <TableHead>Stripe Status</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Stripe ID</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orgsLoading ? (
+                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
+                  ) : filteredOrgs.length === 0 ? (
+                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No organizations found</TableCell></TableRow>
+                  ) : (
+                    filteredOrgs.map((o) => (
+                      <TableRow key={o.id}>
+                        <TableCell className="font-medium">{o.name}</TableCell>
+                        <TableCell>
+                          {o.stripe_onboarding_complete ? (
+                            <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30">Connected</Badge>
+                          ) : o.stripe_account_id ? (
+                            <Badge variant="outline" className="text-amber-600 border-amber-500/30">Incomplete</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">Not Connected</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {o.stripe_account_brand && o.stripe_account_last4
+                            ? `${o.stripe_account_brand} •••• ${o.stripe_account_last4}`
+                            : o.stripe_account_last4
+                            ? `•••• ${o.stripe_account_last4}`
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground font-mono">
+                          {o.stripe_account_id ? o.stripe_account_id.slice(0, 12) + "…" : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {o.stripe_account_id ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-destructive hover:text-destructive gap-1.5"
+                              onClick={() => { setResetOrg(o); setResetReason(""); }}
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" />
+                              Reset Stripe
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No action needed</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Transaction Detail Modal */}
       <Dialog open={!!selectedRow} onOpenChange={(o) => !o && setSelectedRow(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -361,6 +520,61 @@ export default function AdminPayouts() {
                 <Button size="sm" onClick={saveNote} disabled={savingNote || !newNote.trim()}>
                   {savingNote ? "Saving…" : "Save Note"}
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Stripe Modal */}
+      <Dialog open={!!resetOrg} onOpenChange={(o) => !o && setResetOrg(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Stripe Connection</DialogTitle>
+            <DialogDescription>
+              Disconnect {resetOrg?.name}'s Stripe account?
+            </DialogDescription>
+          </DialogHeader>
+          {resetOrg && (
+            <div className="space-y-4">
+              <div className="bg-muted/50 rounded-lg p-4 space-y-1">
+                <p className="text-sm font-medium">{resetOrg.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {resetOrg.stripe_account_brand && `${resetOrg.stripe_account_brand} `}
+                  {resetOrg.stripe_account_last4 ? `•••• ${resetOrg.stripe_account_last4}` : ""}
+                </p>
+                <p className="text-xs text-muted-foreground font-mono">{resetOrg.stripe_account_id}</p>
+              </div>
+
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium text-foreground">After reset:</p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5 mt-1 list-disc ml-4">
+                      <li>Organizer will need to reconnect a Stripe account</li>
+                      <li>Any pending payouts will be held until new account is set</li>
+                      <li>This action can be undone by the organizer reconnecting</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground">Reason (optional)</label>
+                <Textarea
+                  placeholder="e.g. Organizer requested account change…"
+                  value={resetReason}
+                  onChange={(e) => setResetReason(e.target.value)}
+                  className="mt-1.5"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="destructive" onClick={handleResetStripe} disabled={resetting} className="flex-1">
+                  {resetting ? "Resetting…" : "Yes, Disconnect"}
+                </Button>
+                <Button variant="outline" onClick={() => setResetOrg(null)}>Cancel</Button>
               </div>
             </div>
           )}

@@ -23,73 +23,52 @@ Deno.serve(async (req) => {
 
     const token = authHeader.split(" ")[1]?.trim();
     let user = null;
-
     if (token) {
       const { data, error } = await supabaseClient.auth.getUser(token);
       if (!error) user = data.user;
     }
-
     if (!user) {
       const { data, error } = await supabaseClient.auth.getUser();
       if (!error) user = data.user;
     }
-
     if (!user) throw new Error("Unauthorized");
-
-    const userId = user.id;
-
-    // Verify the user is the OWNER of the organization
-    const { data: membership } = await supabaseClient
-      .from("org_members")
-      .select("organization_id, role")
-      .eq("user_id", userId)
-      .limit(1)
-      .single();
-
-    if (!membership) throw new Error("No organization found");
-
-    if (membership.role !== "owner") {
-      throw new Error("Only the organization owner can disconnect the Stripe account");
-    }
-
-    const { organization_id } = membership;
-
-    // Parse the request body for confirmation
-    const body = await req.json().catch(() => ({}));
-    const { confirm_email } = body;
-
-    // Require the user to confirm by typing their email
-    if (!confirm_email || confirm_email.toLowerCase() !== user.email?.toLowerCase()) {
-      throw new Error("Email confirmation does not match. Please type your account email to confirm.");
-    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Get current stripe account id for logging
+    // Check admin role
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!roleRow) throw new Error("Forbidden: admin role required");
+
+    const body = await req.json().catch(() => ({}));
+    const { organization_id, reason } = body;
+
+    if (!organization_id) throw new Error("organization_id is required");
+
+    // Get current stripe account
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("stripe_account_id")
+      .select("stripe_account_id, name")
       .eq("id", organization_id)
       .single();
 
-    if (!org?.stripe_account_id) {
-      throw new Error("No Stripe account is currently connected");
-    }
+    const previousStripeAccountId = org?.stripe_account_id || null;
 
-    console.log(`Disconnecting Stripe account ${org.stripe_account_id} from org ${organization_id} by user ${userId}`);
-
-    // Remove the stripe_account_id from the organization
-    const { error: updateError } = await supabaseAdmin
+    // Clear stripe from organizations table
+    await supabaseAdmin
       .from("organizations")
       .update({ stripe_account_id: null })
       .eq("id", organization_id);
 
-    if (updateError) throw new Error("Failed to disconnect Stripe account");
-
-    // Clear payout methods stripe fields
+    // Clear stripe from payout methods table
     await supabaseAdmin
       .from("organization_payout_methods")
       .update({
@@ -102,25 +81,42 @@ Deno.serve(async (req) => {
       })
       .eq("organization_id", organization_id);
 
-    // Log the disconnect
+    // Log the reset
     await supabaseAdmin.from("stripe_onboarding_logs").insert({
       organization_id,
-      stripe_account_id: org.stripe_account_id,
-      event_type: "organizer_disconnected",
-      metadata: { user_email: user.email },
+      stripe_account_id: previousStripeAccountId,
+      event_type: "admin_reset",
+      metadata: {
+        admin_id: user.id,
+        admin_email: user.email,
+        reason: reason || "Admin reset",
+        previous_account_id: previousStripeAccountId,
+      },
     });
 
-    return new Response(JSON.stringify({ success: true }), {
+    // Log to admin audit
+    await supabaseAdmin.from("admin_audit_log").insert({
+      admin_id: user.id,
+      action: "stripe_account_reset",
+      target_type: "organization",
+      target_id: organization_id,
+      changes: {
+        previous_stripe_account_id: previousStripeAccountId,
+        reason: reason || "Admin reset",
+        org_name: org?.name,
+      },
+    });
+
+    console.log(`Admin ${user.email} reset Stripe for org ${organization_id} (was: ${previousStripeAccountId})`);
+
+    return new Response(JSON.stringify({ success: true, previous_account_id: previousStripeAccountId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("stripe-disconnect error:", message);
-    const status = message === "Unauthorized" ? 401
-      : message.includes("owner") ? 403
-      : message.includes("confirmation") ? 400
-      : 500;
+    console.error("stripe-admin-reset error:", message);
+    const status = message === "Unauthorized" ? 401 : message.includes("Forbidden") ? 403 : 500;
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,

@@ -13,12 +13,11 @@ import {
   Banknote,
   ExternalLink,
   History,
-  Send,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -44,6 +43,7 @@ interface PayoutMethod {
   is_verified: boolean;
   verification_notes: string | null;
   change_request_status: string | null;
+  created_at: string;
 }
 
 interface AuditLog {
@@ -51,17 +51,6 @@ interface AuditLog {
   action: string;
   details: { summary?: string } | null;
   created_at: string;
-}
-
-interface ChangeRequest {
-  id: string;
-  change_type: string;
-  old_value: string | null;
-  new_value: string | null;
-  status: string;
-  created_at: string;
-  reviewed_at: string | null;
-  review_notes: string | null;
 }
 
 export default function PayoutSettings() {
@@ -73,21 +62,15 @@ export default function PayoutSettings() {
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
-  const [showChangeModal, setShowChangeModal] = useState(false);
-  const [changeType, setChangeType] = useState("");
-  const [changeReason, setChangeReason] = useState("");
-  const [submittingChange, setSubmittingChange] = useState(false);
-  const [holderName, setHolderName] = useState("");
-  const [newRouting, setNewRouting] = useState("");
-  const [newAccount, setNewAccount] = useState("");
-  const [confirmAccount, setConfirmAccount] = useState("");
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [showChangeBankModal, setShowChangeBankModal] = useState(false);
+  const [changingBank, setChangingBank] = useState(false);
 
   useEffect(() => {
     if (org?.orgId) {
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
-      fetchChangeRequests();
     }
   }, [org?.orgId]);
 
@@ -144,14 +127,14 @@ export default function PayoutSettings() {
       toast.success("Stripe account connected! Checking status...");
       checkStripeStatus();
     }
+    if (searchParams.get("updated") === "true") {
+      toast.success("Stripe account updated successfully!");
+      checkStripeStatus();
+    }
     if (searchParams.get("refresh") === "true") {
       toast.info("Stripe onboarding was interrupted. Please try again.");
     }
   }, [searchParams]);
-
-  const fetchPayoutMethod = async () => {
-    await fetchPayoutMethodAndSync();
-  };
 
   const fetchAuditLogs = async () => {
     const { data } = await supabase
@@ -161,16 +144,6 @@ export default function PayoutSettings() {
       .order("created_at", { ascending: false })
       .limit(20);
     if (data) setAuditLogs(data as unknown as AuditLog[]);
-  };
-
-  const fetchChangeRequests = async () => {
-    const { data } = await supabase
-      .from("payout_change_requests")
-      .select("id, change_type, old_value, new_value, status, created_at, reviewed_at, review_notes")
-      .eq("organization_id", org!.orgId)
-      .order("created_at", { ascending: false })
-      .limit(10);
-    if (data) setChangeRequests(data as unknown as ChangeRequest[]);
   };
 
   const logAudit = async (action: string, details: Record<string, string>) => {
@@ -193,10 +166,10 @@ export default function PayoutSettings() {
         toast.success("Your Stripe account is fully verified and ready for payouts!");
         await logAudit("stripe_verified", { summary: "Stripe account verified and active" });
       }
-      fetchPayoutMethod();
+      fetchPayoutMethodAndSync();
       fetchAuditLogs();
     } catch {
-      fetchPayoutMethod();
+      fetchPayoutMethodAndSync();
     }
   };
 
@@ -214,6 +187,49 @@ export default function PayoutSettings() {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setConnectingStripe(false);
+    }
+  };
+
+  const handleChangeBankAccount = async () => {
+    setChangingBank(true);
+    try {
+      // Use the Stripe account link with type 'account_onboarding' to let them update
+      const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
+      if (error || !data?.url) {
+        toast.error("Failed to open Stripe portal. Please try again.");
+        return;
+      }
+      await logAudit("stripe_bank_update_started", { summary: "Opened Stripe portal to update bank account" });
+      window.location.href = data.url;
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setChangingBank(false);
+      setShowChangeBankModal(false);
+    }
+  };
+
+  const handleDisconnectStripe = async () => {
+    if (!org?.orgId) return;
+    setDisconnecting(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const { data, error } = await supabase.functions.invoke("stripe-disconnect", {
+        body: { confirm_email: userData.user?.email },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || "Failed to disconnect Stripe account.");
+        return;
+      }
+      toast.success("Stripe account disconnected. You can reconnect a new account anytime.");
+      await logAudit("stripe_disconnected", { summary: "Stripe account disconnected by organizer" });
+      setShowDisconnectModal(false);
+      fetchPayoutMethodAndSync();
+      fetchAuditLogs();
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -245,7 +261,7 @@ export default function PayoutSettings() {
       await logAudit(oldEmail ? "paypal_updated" : "paypal_added", {
         summary: oldEmail ? `PayPal email updated to ${paypalEmail}` : `PayPal email added: ${paypalEmail}`,
       });
-      fetchPayoutMethod();
+      fetchPayoutMethodAndSync();
       fetchAuditLogs();
     }
     setSavingPaypal(false);
@@ -262,95 +278,9 @@ export default function PayoutSettings() {
       await logAudit("preferred_method_changed", {
         summary: `Preferred payout method changed to ${method}`,
       });
-      fetchPayoutMethod();
+      fetchPayoutMethodAndSync();
       fetchAuditLogs();
     }
-  };
-
-  const openChangeRequest = (type: string) => {
-    setChangeType(type);
-    setChangeReason("");
-    setHolderName("");
-    setNewRouting("");
-    setNewAccount("");
-    setConfirmAccount("");
-    setShowChangeModal(true);
-  };
-
-  const submitChangeRequest = async () => {
-    if (!org?.orgId) return;
-
-    // Validation for bank change requests
-    if (changeType === "stripe_connect") {
-      if (!holderName.trim()) {
-        toast.error("Please enter the account holder name.");
-        return;
-      }
-      if (newRouting.length < 4) {
-        toast.error("Please enter a valid routing number.");
-        return;
-      }
-      if (newAccount.length < 4) {
-        toast.error("Please enter a valid account number.");
-        return;
-      }
-      if (newAccount !== confirmAccount) {
-        toast.error("Account numbers do not match.");
-        return;
-      }
-    }
-
-    setSubmittingChange(true);
-
-    const oldValue =
-      changeType === "stripe_connect"
-        ? payoutMethod?.stripe_account_last4
-          ? `Bank ···· ${payoutMethod.stripe_account_last4}`
-          : "Not connected"
-        : payoutMethod?.paypal_email || "Not set";
-
-    const routingLast4 = newRouting.slice(-4);
-    const accountLast4 = newAccount.slice(-4);
-
-    const { error } = await supabase.from("payout_change_requests").insert({
-      organization_id: org.orgId,
-      requested_by: org.userId,
-      change_type: changeType,
-      old_value: oldValue,
-      new_value: changeReason || "Change requested",
-      account_holder_name: holderName || null,
-      new_routing_last4: changeType === "stripe_connect" ? routingLast4 : null,
-      new_account_last4: changeType === "stripe_connect" ? accountLast4 : null,
-      status: "pending",
-    } as any);
-
-    if (error) {
-      toast.error("Failed to submit change request.");
-    } else {
-      toast.success("Change request submitted. You will receive an email once approved. Please expect a verification call during business hours.");
-      await logAudit("change_requested", {
-        summary: `Change request submitted for ${changeType}`,
-      });
-
-      // Send email notification to admin
-      try {
-        await supabase.functions.invoke("notify-admin-action", {
-          body: {
-            type: "bank_change_submitted",
-            organization_id: org.orgId,
-            details: {
-              account_holder_name: holderName,
-              new_account_last4: accountLast4,
-            },
-          },
-        });
-      } catch { /* non-critical */ }
-
-      setShowChangeModal(false);
-      fetchChangeRequests();
-      fetchAuditLogs();
-    }
-    setSubmittingChange(false);
   };
 
   if (orgLoading || loading) {
@@ -392,23 +322,6 @@ export default function PayoutSettings() {
         </motion.div>
       )}
 
-      {/* Pending Change Request Banner */}
-      {changeRequests.some((r) => r.status === "pending") && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3"
-        >
-          <Loader2 className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0 animate-spin" />
-          <div>
-            <p className="text-sm font-medium text-foreground">Change request pending review</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Your payout method change request is being reviewed by our team. You'll receive an email once approved.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
       {/* How Payouts Work */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
@@ -416,11 +329,12 @@ export default function PayoutSettings() {
           <p className="text-sm font-medium text-foreground">How payouts work</p>
         </div>
         <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
-          <li>All golfer payments are collected securely by TeeVents</li>
-          <li>A 5% platform fee is deducted from each transaction</li>
-          <li>15% reserve is held and released 15 days after your event ends</li>
-          <li>Payouts are processed automatically every other Monday</li>
-          <li>You can also request manual withdrawals anytime ($25 minimum)</li>
+          <li>Golfer payments are processed through Stripe at checkout</li>
+          <li>A 5% platform fee is automatically deducted by Stripe</li>
+          <li>Stripe deducts their processing fee (2.9% + $0.30)</li>
+          <li>The remaining balance goes directly to your connected Stripe account</li>
+          <li>TeeVents never holds your money — it goes straight to you</li>
+          <li>You withdraw funds from your Stripe account to your bank on your schedule</li>
         </ul>
       </div>
 
@@ -436,28 +350,23 @@ export default function PayoutSettings() {
           </CardHeader>
           <CardContent>
             {stripeConnected && payoutMethod?.preferred_method === "stripe" ? (
-              <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-8 w-8 text-emerald-600" />
-                  <div>
-                    <p className="font-semibold text-foreground">Stripe Connect</p>
-                    {/* Security: Only last 4 digits are stored and displayed — full account numbers never reach the frontend */}
-                    <p className="text-sm text-muted-foreground">
-                      {payoutMethod.stripe_account_last4
-                        ? `Connected bank account ending in: •••• ${payoutMethod.stripe_account_last4}`
-                        : "Connected bank account details are syncing..."}
-                    </p>
-                    <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="h-8 w-8 text-emerald-600" />
+                    <div>
+                      <p className="font-semibold text-foreground">Stripe Connect</p>
+                      <p className="text-sm text-muted-foreground">
+                        {payoutMethod.stripe_account_brand && payoutMethod.stripe_account_last4
+                          ? `${payoutMethod.stripe_account_brand} •••• ${payoutMethod.stripe_account_last4}`
+                          : payoutMethod.stripe_account_last4
+                          ? `Bank account ending in •••• ${payoutMethod.stripe_account_last4}`
+                          : "Connected — bank details syncing..."}
+                      </p>
+                      <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
+                    </div>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openChangeRequest("stripe_connect")}
-                  disabled={changeRequests.some(r => r.status === "pending")}
-                >
-                  {changeRequests.some(r => r.status === "pending") ? "Change Pending..." : "Change Account"}
-                </Button>
               </div>
             ) : hasPaypal && payoutMethod?.preferred_method === "paypal" ? (
               <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
@@ -469,9 +378,6 @@ export default function PayoutSettings() {
                     <p className="text-xs text-blue-600 mt-0.5">Active</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => openChangeRequest("paypal_email")}>
-                  Change PayPal
-                </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3 p-4 bg-muted/40 rounded-lg">
@@ -525,24 +431,37 @@ export default function PayoutSettings() {
           <CardContent className="space-y-4">
             {stripeConnected ? (
               <>
-                <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 className="h-4 w-4" />
                     <span className="text-sm font-medium">Stripe connected and verified</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Payouts will be sent to your connected bank account automatically.
-                    {payoutMethod?.stripe_account_last4 && (
-                      <span className="ml-1">
-                        (Ending in ···· {payoutMethod.stripe_account_last4})
-                      </span>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    {payoutMethod?.stripe_account_brand && (
+                      <p><span className="font-medium text-foreground">Bank:</span> {payoutMethod.stripe_account_brand}</p>
                     )}
-                  </p>
+                    {payoutMethod?.stripe_account_last4 && (
+                      <p><span className="font-medium text-foreground">Account:</span> •••• {payoutMethod.stripe_account_last4}</p>
+                    )}
+                    <p><span className="font-medium text-foreground">Status:</span> Active & Verified</p>
+                    {payoutMethod?.created_at && (
+                      <p><span className="font-medium text-foreground">Connected since:</span> {new Date(payoutMethod.created_at).toLocaleDateString()}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handleStripeConnect}>
-                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                    Update Account
+
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)}>
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                    Change Bank Account
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setShowDisconnectModal(true)}
+                  >
+                    Disconnect Stripe
                   </Button>
                   {payoutMethod?.preferred_method !== "stripe" && (
                     <Button variant="outline" size="sm" onClick={() => handleSetPreferred("stripe")}>
@@ -550,6 +469,10 @@ export default function PayoutSettings() {
                     </Button>
                   )}
                 </div>
+
+                <p className="text-xs text-muted-foreground">
+                  To change your bank account, you'll be redirected to Stripe's secure portal. TeeVents never sees or stores your banking details.
+                </p>
               </>
             ) : (
               <>
@@ -570,8 +493,8 @@ export default function PayoutSettings() {
                 </Button>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-xs text-muted-foreground">
-                    You'll be redirected to Stripe to securely provide your legal name, date of birth,
-                    address, and bank account information. Setup takes 2-3 minutes.
+                    You'll be redirected to Stripe's secure portal to provide your legal name, date of birth,
+                    address, and bank account information. Setup takes 2-3 minutes. TeeVents never sees your banking details.
                   </p>
                 </div>
               </>
@@ -580,8 +503,8 @@ export default function PayoutSettings() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               {[
                 { label: "No extra fees", desc: "No additional payout fees" },
-                { label: "1-3 business days", desc: "Fast payout delivery" },
-                { label: "Automatic", desc: "Bi-weekly auto payouts" },
+                { label: "Direct deposits", desc: "Funds go straight to you" },
+                { label: "Automatic", desc: "Splits happen at checkout" },
               ].map((b) => (
                 <div key={b.label} className="text-center p-2 rounded-lg bg-muted/30">
                   <p className="text-xs font-medium text-foreground">{b.label}</p>
@@ -679,8 +602,8 @@ export default function PayoutSettings() {
                   {[
                     ["Setup time", "2-3 minutes", "Enter email"],
                     ["Additional fees", "None", "1% or $0.50 min"],
-                    ["Payout speed", "1-3 business days", "3-5 business days"],
-                    ["Auto payouts", "✅ Bi-weekly", "❌ Manual only"],
+                    ["Payout speed", "Direct at checkout", "3-5 business days"],
+                    ["Bank details", "Handled by Stripe", "PayPal manages"],
                     ["Dashboard", "Built into TeeVents", "PayPal website"],
                   ].map(([feature, stripe, paypal]) => (
                     <tr key={feature} className="border-b border-border/50">
@@ -695,62 +618,6 @@ export default function PayoutSettings() {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Change Requests */}
-      {changeRequests.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Send className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Change Requests</CardTitle>
-              </div>
-              <CardDescription>Track the status of your payout method change requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Notes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {changeRequests.map((req) => (
-                    <TableRow key={req.id}>
-                      <TableCell className="text-xs">
-                        {new Date(req.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-xs capitalize">
-                        {req.change_type.replace(/_/g, " ")}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            req.status === "approved"
-                              ? "text-emerald-600 border-emerald-500/30"
-                              : req.status === "rejected"
-                              ? "text-destructive border-destructive/30"
-                              : "text-amber-600 border-amber-500/30"
-                          }
-                        >
-                          {req.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {req.review_notes || "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
 
       {/* Audit Log */}
       {auditLogs.length > 0 && (
@@ -803,131 +670,89 @@ export default function PayoutSettings() {
         </p>
       </div>
 
-      {/* Change Request Modal */}
-      <Dialog open={showChangeModal} onOpenChange={setShowChangeModal}>
+      {/* Change Bank Account Modal */}
+      <Dialog open={showChangeBankModal} onOpenChange={setShowChangeBankModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Request Bank Account Change</DialogTitle>
+            <DialogTitle>Change Bank Account</DialogTitle>
             <DialogDescription>
-              For your security, bank account changes require verification by our team via phone call.
+              To change your connected bank account, you will be redirected to Stripe's secure portal.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label className="text-xs text-muted-foreground">Current Method</Label>
-              <p className="text-sm text-foreground mt-1">
-                {changeType === "stripe_connect"
-                  ? payoutMethod?.stripe_account_last4
-                    ? `Bank ···· ${payoutMethod.stripe_account_last4}`
-                    : "Stripe Connected"
-                  : payoutMethod?.paypal_email || "Not set"}
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+              <p className="text-sm font-medium text-foreground">Current account</p>
+              <p className="text-sm text-muted-foreground">
+                {payoutMethod?.stripe_account_brand && `${payoutMethod.stripe_account_brand} `}
+                {payoutMethod?.stripe_account_last4 ? `•••• ${payoutMethod.stripe_account_last4}` : "Connected"}
               </p>
             </div>
 
-            {changeType === "stripe_connect" && (
-              <>
-                <div>
-                  <Label htmlFor="holder-name">Account Holder Name *</Label>
-                  <Input
-                    id="holder-name"
-                    placeholder="Full name on the account"
-                    value={holderName}
-                    onChange={(e) => setHolderName(e.target.value)}
-                    className="mt-1.5"
-                  />
-                </div>
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+              <p className="text-xs text-foreground font-medium mb-1">After updating:</p>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc ml-4">
+                <li>Your new bank account will be verified by Stripe</li>
+                <li>Payouts will automatically go to the new account</li>
+                <li>No interruption to your tournament operations</li>
+              </ul>
+            </div>
 
-                <div>
-                  <Label htmlFor="new-routing">New Routing Number *</Label>
-                  <Input
-                    id="new-routing"
-                    type="password"
-                    placeholder="•••••••••"
-                    value={newRouting}
-                    onChange={(e) => setNewRouting(e.target.value.replace(/\D/g, "").slice(0, 9))}
-                    className="mt-1.5 font-mono"
-                    autoComplete="off"
-                  />
-                  {newRouting.length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">Last 4: ···· {newRouting.slice(-4)}</p>
-                  )}
-                </div>
+            <div className="flex gap-3">
+              <Button onClick={handleChangeBankAccount} disabled={changingBank} className="flex-1">
+                {changingBank && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <ExternalLink className="h-4 w-4 mr-1.5" />
+                Continue to Stripe
+              </Button>
+              <Button variant="outline" onClick={() => setShowChangeBankModal(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-                <div>
-                  <Label htmlFor="new-account">New Account Number *</Label>
-                  <Input
-                    id="new-account"
-                    type="password"
-                    placeholder="•••••••••••••"
-                    value={newAccount}
-                    onChange={(e) => setNewAccount(e.target.value.replace(/\D/g, "").slice(0, 17))}
-                    className="mt-1.5 font-mono"
-                    autoComplete="off"
-                  />
-                  {newAccount.length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">Last 4: ···· {newAccount.slice(-4)}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="confirm-account">Confirm Account Number *</Label>
-                  <Input
-                    id="confirm-account"
-                    type="password"
-                    placeholder="•••••••••••••"
-                    value={confirmAccount}
-                    onChange={(e) => setConfirmAccount(e.target.value.replace(/\D/g, "").slice(0, 17))}
-                    className="mt-1.5 font-mono"
-                    autoComplete="off"
-                  />
-                  {confirmAccount.length > 0 && newAccount.length > 0 && (
-                    <p className={`text-xs mt-1 ${confirmAccount === newAccount ? "text-emerald-600" : "text-destructive"}`}>
-                      {confirmAccount === newAccount ? "✓ Numbers match" : "✗ Numbers do not match"}
-                    </p>
-                  )}
-                </div>
-              </>
+      {/* Disconnect Stripe Modal */}
+      <Dialog open={showDisconnectModal} onOpenChange={setShowDisconnectModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Disconnect Stripe Account</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to disconnect your Stripe account?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {payoutMethod?.stripe_account_last4 && (
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">
+                  Current account: {payoutMethod.stripe_account_brand && `${payoutMethod.stripe_account_brand} `}
+                  •••• {payoutMethod.stripe_account_last4}
+                </p>
+              </div>
             )}
 
-            <div>
-              <Label htmlFor="change-reason">Reason for Change (Optional)</Label>
-              <Textarea
-                id="change-reason"
-                placeholder="e.g. Switching to a new bank account..."
-                value={changeReason}
-                onChange={(e) => setChangeReason(e.target.value)}
-                className="mt-1.5"
-              />
-            </div>
-
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-              <p className="text-xs text-foreground font-medium">🔒 Security Notice</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Full account numbers are NOT stored. Only the last 4 digits are saved for verification.
-                You will receive a phone call during business hours to verify this change before it is approved.
-              </p>
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+              <p className="text-xs text-foreground font-medium mb-1">After disconnecting:</p>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc ml-4">
+                <li>You will need to reconnect a Stripe account to receive payouts</li>
+                <li>Any pending payments will be held until a new account is connected</li>
+                <li>You can reconnect a different Stripe account at any time</li>
+              </ul>
             </div>
 
             <div className="flex gap-3">
               <Button
-                onClick={submitChangeRequest}
-                disabled={submittingChange || (changeType === "stripe_connect" && (!holderName.trim() || newRouting.length < 4 || newAccount.length < 4 || newAccount !== confirmAccount))}
+                variant="destructive"
+                onClick={handleDisconnectStripe}
+                disabled={disconnecting}
                 className="flex-1"
               >
-                {submittingChange && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Submit Change Request
+                {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Yes, Disconnect
               </Button>
-              <Button variant="outline" onClick={() => setShowChangeModal(false)}>
+              <Button variant="outline" onClick={() => setShowDisconnectModal(false)}>
                 Cancel
               </Button>
             </div>
-
-            <p className="text-xs text-muted-foreground text-center">
-              Need immediate help? Contact us at{" "}
-              <a href="mailto:info@teevents.golf" className="underline">
-                info@teevents.golf
-              </a>
-            </p>
           </div>
         </DialogContent>
       </Dialog>

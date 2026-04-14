@@ -13,6 +13,12 @@ const corsHeaders = {
 
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents";
+const parseCents = (value?: string | null) => {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+const calculateProcessingFee = (chargeAmountCents: number) =>
+  Math.max(0, Math.round(chargeAmountCents * 0.029 + 30));
 
 async function sendTaxExemptReceipt(
   recipientEmail: string, firstName: string, lastName: string,
@@ -100,34 +106,26 @@ Deno.serve(async (req) => {
         .update({ payment_status: "paid" })
         .in("id", registrationIds);
 
-      // Determine fee model from metadata
       const passFeesToGolfer = session.metadata?.pass_fees_to_golfer === "true";
-      const grossRegistrationCents = session.metadata?.gross_registration_cents
-        ? parseInt(session.metadata.gross_registration_cents)
-        : 0;
-
-      // Use gross registration amount (what the organizer set) as the basis
-      // If metadata is missing (legacy), fall back to session.amount_total
+      const grossRegistrationCents = parseCents(session.metadata?.gross_registration_cents);
       const grossAmount = grossRegistrationCents > 0 ? grossRegistrationCents : (session.amount_total || 0);
+      const platformFeeCents = parseCents(session.metadata?.platform_fee_cents) || Math.round(grossAmount * PLATFORM_FEE_RATE);
+      const chargeTotalCents = parseCents(session.metadata?.charge_total_cents)
+        || session.amount_total
+        || (passFeesToGolfer ? grossAmount + platformFeeCents : grossAmount);
+      const fallbackStripeFeeCents = passFeesToGolfer
+        ? Math.max(chargeTotalCents - grossAmount - platformFeeCents, 0)
+        : calculateProcessingFee(chargeTotalCents);
+      const stripeFeeCents = parseCents(session.metadata?.stripe_fee_cents) || fallbackStripeFeeCents;
+      const applicationFeeCents = parseCents(session.metadata?.application_fee_cents) || (platformFeeCents + stripeFeeCents);
+      const netAmountCents = parseCents(session.metadata?.organizer_net_cents) || Math.max(chargeTotalCents - applicationFeeCents, 0);
 
       const organizationId = session.metadata?.organization_id;
       const tournamentId = session.metadata?.tournament_id;
 
       if (organizationId && grossAmount > 0) {
-        // Platform fee is 5% of registration amount
-        const platformFeeCents = Math.round(grossAmount * PLATFORM_FEE_RATE);
-
-        // Net for organizer depends on fee model:
-        // Model A (pass to golfer): Organizer gets full registration amount (fee paid by golfer separately)
-        // Model B (absorb): Organizer gets registration minus 5% platform fee
-        const netAmountCents = passFeesToGolfer
-          ? grossAmount
-          : grossAmount - platformFeeCents;
-
-        // 15% hold on the net amount
         const holdAmountCents = Math.round(netAmountCents * (HOLD_PERCENT / 100));
 
-        // Calculate hold_release_date: event end_date + 15 days
         let holdReleaseDate: string | null = null;
         if (tournamentId) {
           const { data: tData } = await supabaseAdmin
@@ -156,11 +154,17 @@ Deno.serve(async (req) => {
           status: "held",
           stripe_session_id: session_id,
           stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
-          description: `Registration payment — ${registrationIds.length} player(s)${passFeesToGolfer ? " (fees passed to golfer)" : " (fees absorbed by organizer)"}`,
+          description: `Registration payment — ${registrationIds.length} player(s)${passFeesToGolfer ? " (platform + Stripe fees paid by golfer)" : " (platform + Stripe fees absorbed by organizer)"}`,
+          metadata: {
+            pass_fees_to_golfer: passFeesToGolfer,
+            charge_total_cents: chargeTotalCents,
+            application_fee_cents: applicationFeeCents,
+            stripe_fee_cents: stripeFeeCents,
+            registration_ids: registrationIds,
+          },
         });
       }
 
-      // Send confirmation + tax receipt
       try {
         const { data: regs } = await supabaseAdmin
           .from("tournament_registrations")
@@ -185,7 +189,7 @@ Deno.serve(async (req) => {
             }
 
             const playerNames = (regs || []).map((r: any) => `${r.first_name} ${r.last_name}`).join(", ");
-            const amountDisplay = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "N/A";
+            const amountDisplay = chargeTotalCents ? `$${(chargeTotalCents / 100).toFixed(2)}` : "N/A";
             await sendNotificationEmails(
               supabaseAdmin,
               tournament.organization_id,
@@ -194,15 +198,17 @@ Deno.serve(async (req) => {
               buildNotificationHtml("Registration Payment Confirmed", [
                 `<strong>${playerNames}</strong> completed payment for <strong>${tournament.title}</strong>.`,
                 `💳 Amount charged: <strong>${amountDisplay}</strong>`,
+                `🏷️ Platform fee retained: <strong>$${(platformFeeCents / 100).toFixed(2)}</strong>`,
+                `💳 Stripe processing fee: <strong>$${(stripeFeeCents / 100).toFixed(2)}</strong>`,
+                `💵 Organizer net before hold: <strong>$${(netAmountCents / 100).toFixed(2)}</strong>`,
                 passFeesToGolfer
-                  ? `📊 Fees passed to golfer — you receive the full registration amount minus 15% hold`
-                  : `📊 5% platform fee absorbed — net amount after fee and 15% hold applied`,
+                  ? `📊 Golfer covered platform + Stripe fees.`
+                  : `📊 Organizer absorbed platform + Stripe fees.`,
                 `📧 ${reg.email}`,
                 regs && regs.length > 1 ? `👥 Group registration (${regs.length} players)` : "",
               ].filter(Boolean)),
             );
 
-            // Nonprofit tax receipt
             const { data: orgData } = await supabaseAdmin
               .from("organizations")
               .select("is_nonprofit, ein, nonprofit_name, nonprofit_verified, name")
@@ -217,22 +223,20 @@ Deno.serve(async (req) => {
               );
             }
 
-            // Send platform admin transaction notification
             try {
               const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
               if (RESEND_API_KEY) {
-                const platformFeeCents = Math.round(grossAmount * PLATFORM_FEE_RATE);
-                const netCents = passFeesToGolfer ? grossAmount : grossAmount - platformFeeCents;
                 const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
                 const orgName = orgData?.name || "Unknown Org";
 
                 const adminHtml = buildNotificationHtml("New Registration Transaction", [
                   `🏌️ <strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>`,
                   `🏢 <strong>Organizer:</strong> ${orgName}`,
-                  `💰 <strong>Gross Amount:</strong> $${(grossAmount / 100).toFixed(2)}`,
-                  `📊 <strong>Platform Fee (5%):</strong> $${(platformFeeCents / 100).toFixed(2)}`,
-                  `💵 <strong>Net to Organizer:</strong> $${(netCents / 100).toFixed(2)}`,
-                  passFeesToGolfer ? `📋 Fee Model: Passed to golfer` : `📋 Fee Model: Absorbed by organizer`,
+                  `💰 <strong>Gross Registration:</strong> $${(grossAmount / 100).toFixed(2)}`,
+                  `🏷️ <strong>Platform Fee (5%):</strong> $${(platformFeeCents / 100).toFixed(2)}`,
+                  `💳 <strong>Stripe Processing Fee:</strong> $${(stripeFeeCents / 100).toFixed(2)}`,
+                  `💵 <strong>Net to Organizer:</strong> $${(netAmountCents / 100).toFixed(2)}`,
+                  passFeesToGolfer ? `📋 Fee Model: Golfer covered platform + Stripe fees` : `📋 Fee Model: Organizer absorbed platform + Stripe fees`,
                   `📧 <strong>Golfer Email:</strong> ${reg.email}`,
                   `👥 <strong>Players:</strong> ${(regs || []).length}`,
                   `📅 ${dateStr}`,

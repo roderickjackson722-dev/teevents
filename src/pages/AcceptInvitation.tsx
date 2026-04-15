@@ -14,7 +14,16 @@ const AcceptInvitation = () => {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
+    // Listen for auth state changes (handles magic link callback)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session && token && status === "loading") {
+        acceptInvitation(session.access_token);
+      }
+    });
+
     checkAuth();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const checkAuth = async () => {
@@ -25,14 +34,24 @@ const AcceptInvitation = () => {
     }
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      setStatus("needs_auth");
-    } else {
+    if (session) {
       acceptInvitation(session.access_token);
+    } else {
+      // No session yet — could be waiting for magic link auth to complete
+      // Give a brief moment for the auth state change to fire
+      setTimeout(async () => {
+        const { data: { session: retrySession } } = await supabase.auth.getSession();
+        if (retrySession) {
+          acceptInvitation(retrySession.access_token);
+        } else {
+          setStatus("needs_auth");
+        }
+      }, 1500);
     }
   };
 
   const acceptInvitation = async (accessToken: string) => {
+    if (status === "accepting" || status === "success") return;
     setStatus("accepting");
     try {
       const { data, error } = await supabase.functions.invoke("accept-invitation", {
@@ -53,7 +72,6 @@ const AcceptInvitation = () => {
   };
 
   const handleSignInAndAccept = () => {
-    // Redirect to auth page with return URL
     navigate(`/get-started?redirect=/accept-invitation?token=${token}`);
   };
 

@@ -99,7 +99,6 @@ const categories: SidebarCategory[] = [
 
 const settingsItems: NavItem[] = [
   { title: "Settings", url: "/dashboard/settings", icon: Settings, feature: null },
-  { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null },
   { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null },
 ];
 

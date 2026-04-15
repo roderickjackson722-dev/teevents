@@ -1190,9 +1190,6 @@ export type Database = {
           amount_cents: number
           created_at: string
           description: string | null
-          hold_amount_cents: number | null
-          hold_release_date: string | null
-          hold_status: string | null
           id: string
           metadata: Json | null
           net_amount_cents: number
@@ -1210,9 +1207,6 @@ export type Database = {
           amount_cents: number
           created_at?: string
           description?: string | null
-          hold_amount_cents?: number | null
-          hold_release_date?: string | null
-          hold_status?: string | null
           id?: string
           metadata?: Json | null
           net_amount_cents?: number
@@ -1230,9 +1224,6 @@ export type Database = {
           amount_cents?: number
           created_at?: string
           description?: string | null
-          hold_amount_cents?: number | null
-          hold_release_date?: string | null
-          hold_status?: string | null
           id?: string
           metadata?: Json | null
           net_amount_cents?: number

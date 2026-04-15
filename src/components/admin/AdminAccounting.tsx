@@ -379,42 +379,6 @@ const AdminAccounting = () => {
           </div>
         </TabsContent>
 
-        {/* Reserves */}
-        <TabsContent value="reserves">
-          <div className="bg-card rounded-lg border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Organizer</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Tournament</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground p-3">Hold Amount</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Release Date</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.filter((t) => (t.hold_amount_cents || 0) > 0).map((tx) => (
-                    <tr key={tx.id} className="border-b border-border last:border-0 hover:bg-muted/20">
-                      <td className="p-3 text-sm font-medium text-foreground">{orgMap[tx.organization_id]?.name || "—"}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{tx.tournament_id ? (tournamentMap[tx.tournament_id]?.title || "—") : "—"}</td>
-                      <td className="p-3 text-sm font-semibold text-amber-600 text-right">${((tx.hold_amount_cents || 0) / 100).toFixed(2)}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{tx.hold_release_date || "—"}</td>
-                      <td className="p-3">
-                        {tx.hold_status === "active" ? (
-                          <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-xs">Active</Badge>
-                        ) : (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-xs">Released</Badge>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </TabsContent>
-
         {/* Reconciliation */}
         <TabsContent value="reconciliation">
           <div className="space-y-4">
@@ -424,23 +388,21 @@ const AdminAccounting = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/30">
+                     <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Organizer</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Gross</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Fees ($5)</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Held</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Net Owed</th>
+                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Net to Organizer</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Paid Out</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                     </tr>
+                   </thead>
+                   <tbody>
                     {orgs.map((org) => {
                       const orgTx = transactions.filter((t) => t.organization_id === org.id);
                       const gross = orgTx.reduce((s, t) => s + t.amount_cents, 0);
                       if (gross === 0) return null;
                       const fees = orgTx.reduce((s, t) => s + t.platform_fee_cents, 0);
-                      const held = orgTx.filter((t) => t.hold_status === "active").reduce((s, t) => s + (t.hold_amount_cents || 0), 0);
                       const netOwed = orgTx.reduce((s, t) => s + t.net_amount_cents, 0);
                       const paidOut = payouts.filter((p) => p.organization_id === org.id && p.status === "completed").reduce((s, p) => s + p.amount_cents, 0);
                       const balance = netOwed - paidOut;
@@ -449,7 +411,6 @@ const AdminAccounting = () => {
                           <td className="p-3 text-sm font-medium text-foreground">{org.name}</td>
                           <td className="p-3 text-sm text-right">${(gross / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right text-muted-foreground">${(fees / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-right text-amber-600">${(held / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right font-medium">${(netOwed / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right text-emerald-600">${(paidOut / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right font-bold text-primary">${(balance / 100).toFixed(2)}</td>

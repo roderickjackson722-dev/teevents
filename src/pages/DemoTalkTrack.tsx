@@ -16,7 +16,7 @@ import Layout from "@/components/Layout";
 const FLOW_STEPS = [
   { icon: Users, label: "Golfer Pays", detail: "$100 registration", color: "bg-primary" },
   { icon: CreditCard, label: "TeeVents Collects", detail: "Secure Stripe checkout", color: "bg-primary/80" },
-  { icon: DollarSign, label: "5% Fee", detail: "$5.00 platform fee", color: "bg-destructive/80" },
+  { icon: DollarSign, label: "5% Fee", detail: "5% platform fee", color: "bg-destructive/80" },
   { icon: Shield, label: "15% Hold", detail: "$14.25 reserve", color: "bg-destructive/80" },
   { icon: Banknote, label: "Net Available", detail: "$80.75 tracked", color: "bg-emerald-600" },
   { icon: Clock, label: "Event +15 Days", detail: "Hold released", color: "bg-primary/60" },

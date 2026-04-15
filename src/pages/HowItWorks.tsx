@@ -438,7 +438,7 @@ const HowItWorks = () => {
               <div className="space-y-3">
                 {[
                   "Golfer pays → Stripe processes payment",
-                  "$5 flat fee → sent to TeeVents",
+                  "5% platform fee → sent to TeeVents",
                   "Stripe fee → deducted by Stripe",
                   "Net proceeds → deposited in your account (Stripe, PayPal, or check)",
                 ].map((item) => (
@@ -467,8 +467,8 @@ const HowItWorks = () => {
                     <span className="font-display font-bold text-foreground">$162.15</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee ($5 flat)</span>
-                    <span className="font-display font-bold text-destructive">−$5.00</span>
+                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
+                    <span className="font-display font-bold text-destructive">−$7.50</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
@@ -480,7 +480,7 @@ const HowItWorks = () => {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  All plans: $5 flat platform fee + Stripe 2.9% + $0.30 per transaction. Choose Stripe Connect (automatic), PayPal (bi-weekly), or check (on request).
+                  All plans: 5% platform fee + Stripe 2.9% + $0.30 per transaction. Choose Stripe Connect (automatic), PayPal (bi-weekly), or check (on request).
                 </p>
               </div>
             </motion.div>
@@ -528,7 +528,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              All plans include a $5 flat TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Three payout options: Stripe Connect (automatic), PayPal (bi-weekly), or check (on request).
+              All plans include a 5% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Three payout options: Stripe Connect (automatic), PayPal (bi-weekly), or check (on request).
             </p>
           </motion.div>
 

@@ -22,7 +22,7 @@ const PayoutSchedule = () => (
           </p>
           <ol className="space-y-2 ml-6 list-decimal text-muted-foreground">
             <li>Stripe charges the golfer the full amount</li>
-            <li>TeeVents' $5 flat platform fee is automatically deducted</li>
+            <li>TeeVents' 5% platform fee is automatically deducted</li>
             <li>Stripe's processing fee (2.9% + $0.30) is deducted</li>
             <li>Net proceeds are deposited directly into <strong>your connected Stripe account</strong></li>
           </ol>

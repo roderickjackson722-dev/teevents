@@ -322,7 +322,7 @@ export default function PayoutSettings() {
           <li><strong>Stripe Connect (Recommended):</strong> Payments split automatically at checkout — net proceeds go directly to your Stripe account</li>
           <li><strong>PayPal:</strong> TeeVents collects payments and sends you a PayPal payout every two weeks</li>
           <li><strong>Check:</strong> TeeVents holds funds and mails a check upon your request</li>
-          <li>All methods: $5 platform fee + Stripe processing fee per transaction</li>
+          <li>All methods: 5% platform fee + Stripe processing fee per transaction</li>
         </ul>
       </div>
 
@@ -458,7 +458,7 @@ export default function PayoutSettings() {
             <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
               <li>TeeVents holds your funds until you request a check</li>
               <li>Checks mailed within 5–7 business days of request</li>
-              <li>No additional fee beyond the standard $5 platform fee</li>
+              <li>No additional fee beyond the standard 5% platform fee</li>
             </ul>
             <div className="space-y-2">
               <Label htmlFor="mailing-address" className="text-sm">Mailing Address</Label>

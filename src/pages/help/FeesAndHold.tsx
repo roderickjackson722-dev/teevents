@@ -44,7 +44,7 @@ const FeesAndHold = () => (
               <div className="flex justify-between text-muted-foreground"><span>Stripe Processing (2.9% + $0.30)</span><span>−$4.65</span></div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$150.00</span></div>
-              <div className="flex justify-between text-primary font-medium"><span>Deposited in Your Stripe</span><span>$140.35</span></div>
+              <div className="flex justify-between text-primary font-medium"><span>Deposited in Your Stripe</span><span>$137.85</span></div>
             </div>
           </div>
         </section>

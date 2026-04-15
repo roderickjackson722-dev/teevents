@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PlayerScore {
   registration_id: string;
@@ -21,6 +22,8 @@ interface PlayerScore {
   group_number: number | null;
   scores: Record<number, number>;
   total: number;
+  playing_handicap: number | null;
+  strokes_per_hole: number[] | null;
 }
 
 interface TeamScore {

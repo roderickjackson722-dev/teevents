@@ -7,6 +7,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const shouldRetryWithoutReverseTransfer = (error: unknown) => {
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+
+  return (
+    message.includes("sufficient funds") ||
+    message.includes("associated transfer") ||
+    message.includes("reverse transfer")
+  );
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -109,7 +119,7 @@ Deno.serve(async (req) => {
         payment_intent: targetSession.payment_intent as string,
       };
 
-      // If connected account, try reverse transfer first, fall back if insufficient balance
+      // If connected account, try reverse transfer first, then fall back for legacy/non-transfer payments
       if (org?.stripe_account_id) {
         try {
           const refund = await stripe.refunds.create({
@@ -119,11 +129,13 @@ Deno.serve(async (req) => {
           });
           refundId = refund.id;
         } catch (transferErr: any) {
-          if (transferErr.message?.includes("sufficient funds")) {
-            console.log(`[Refund] Connected account has insufficient balance, refunding without reverse transfer`);
+          if (shouldRetryWithoutReverseTransfer(transferErr)) {
+            const retryReason = transferErr instanceof Error ? transferErr.message : "reverse transfer unavailable";
+            console.log(`[Refund] ${retryReason}. Refunding without reverse transfer`);
             const refund = await stripe.refunds.create({
               ...refundParams,
               reverse_transfer: false,
+              refund_application_fee: false,
             });
             refundId = refund.id;
           } else {

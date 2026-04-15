@@ -680,6 +680,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string
+          name: string | null
           organization_id: string
           permissions: Database["public"]["Enums"]["org_permission"][]
           role: string
@@ -692,6 +693,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by: string
+          name?: string | null
           organization_id: string
           permissions?: Database["public"]["Enums"]["org_permission"][]
           role?: string
@@ -704,6 +706,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string
+          name?: string | null
           organization_id?: string
           permissions?: Database["public"]["Enums"]["org_permission"][]
           role?: string
@@ -724,6 +727,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          name: string | null
           organization_id: string
           permissions: Database["public"]["Enums"]["org_permission"][]
           role: string
@@ -732,6 +736,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          name?: string | null
           organization_id: string
           permissions?: Database["public"]["Enums"]["org_permission"][]
           role?: string
@@ -740,6 +745,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          name?: string | null
           organization_id?: string
           permissions?: Database["public"]["Enums"]["org_permission"][]
           role?: string

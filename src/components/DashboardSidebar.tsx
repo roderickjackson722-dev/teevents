@@ -3,6 +3,7 @@ import {
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
+  FlaskConical,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -68,6 +69,7 @@ const categories: SidebarCategory[] = [
       { title: "Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard" },
       { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard" },
       { title: "Tee Sheet", url: "/dashboard/tee-sheet", icon: Clock, feature: "leaderboard" },
+      { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard" },
       { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null },
     ],

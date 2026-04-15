@@ -30,6 +30,7 @@ import Store from "./pages/dashboard/Store";
 import Messages from "./pages/dashboard/Messages";
 import Leaderboard from "./pages/dashboard/Leaderboard";
 import Scoring from "./pages/dashboard/Scoring";
+import TestScoringSimulator from "./pages/dashboard/TestScoringSimulator";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import WaitlistPage from "./pages/dashboard/Waitlist";
 import CheckIn from "./pages/dashboard/CheckIn";
@@ -125,6 +126,7 @@ const App = () => (
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><Scoring /></DashboardLayout>} />
+          <Route path="/dashboard/test-simulator" element={<DashboardLayout><TestScoringSimulator /></DashboardLayout>} />
           <Route path="/dashboard/tee-sheet" element={<DashboardLayout><TeeSheet /></DashboardLayout>} />
           <Route path="/dashboard/waitlist" element={<DashboardLayout><WaitlistPage /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />

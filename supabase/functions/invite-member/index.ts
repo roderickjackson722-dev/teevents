@@ -24,17 +24,18 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) throw new Error("Not authenticated");
 
-    const { organization_id, email, permissions } = await req.json();
+    const { organization_id, email, name, role, permissions } = await req.json();
 
     if (!organization_id || !email) {
       throw new Error("organization_id and email are required");
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) throw new Error("Invalid email address");
 
-    // Verify caller is org owner using service role
+    const validRoles = ["admin", "editor", "viewer"];
+    const memberRole = validRoles.includes(role) ? role : "editor";
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -51,7 +52,6 @@ serve(async (req) => {
       throw new Error("Only organization owners can invite members");
     }
 
-    // Get organization name for the email
     const { data: orgData } = await supabaseAdmin
       .from("organizations")
       .select("name")
@@ -59,15 +59,16 @@ serve(async (req) => {
       .single();
 
     const orgName = orgData?.name || "your organization";
+    const memberName = typeof name === "string" ? name.trim().slice(0, 255) : null;
 
-    // Insert invitation
     const { data: invite, error: inviteError } = await supabaseAdmin
       .from("org_invitations")
       .upsert(
         {
           organization_id,
           email: email.toLowerCase(),
-          role: "editor",
+          name: memberName,
+          role: memberRole,
           permissions: permissions || [],
           invited_by: user.id,
           status: "pending",
@@ -79,14 +80,13 @@ serve(async (req) => {
 
     if (inviteError) throw inviteError;
 
-    // Check if user with this email already exists, auto-accept
+    // Check if user already exists — auto-accept
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const invitedUser = existingUsers?.users?.find(
       (u: any) => u.email?.toLowerCase() === email.toLowerCase()
     );
 
     if (invitedUser) {
-      // Check if not already a member
       const { data: alreadyMember } = await supabaseAdmin
         .from("org_members")
         .select("id")
@@ -95,12 +95,12 @@ serve(async (req) => {
         .single();
 
       if (!alreadyMember) {
-        // Auto-add as member
         await supabaseAdmin.from("org_members").insert({
           organization_id,
           user_id: invitedUser.id,
-          role: "editor",
+          role: memberRole,
           permissions: permissions || [],
+          name: memberName,
         });
 
         await supabaseAdmin
@@ -108,8 +108,7 @@ serve(async (req) => {
           .update({ status: "accepted" })
           .eq("id", invite.id);
 
-        // Send notification email to existing user
-        await sendInvitationEmail(email.toLowerCase(), orgName, invite.token, true);
+        await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, true, memberRole);
 
         return new Response(
           JSON.stringify({ success: true, auto_accepted: true }),
@@ -118,8 +117,7 @@ serve(async (req) => {
       }
     }
 
-    // Send invitation email to new/external user
-    await sendInvitationEmail(email.toLowerCase(), orgName, invite.token, false);
+    await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, false, memberRole);
 
     return new Response(
       JSON.stringify({ success: true, invitation_id: invite.id }),
@@ -129,19 +127,18 @@ serve(async (req) => {
     console.error("invite-member error:", err);
     return new Response(
       JSON.stringify({ error: err.message }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
 
 async function sendInvitationEmail(
   recipientEmail: string,
+  recipientName: string | null,
   orgName: string,
   token: string,
-  autoAccepted: boolean
+  autoAccepted: boolean,
+  role: string
 ) {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) {
@@ -151,6 +148,8 @@ async function sendInvitationEmail(
 
   const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
   const acceptUrl = `${baseUrl}/accept-invitation?token=${token}`;
+  const greeting = recipientName ? `Hi ${recipientName},` : "Hi,";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
 
   const subject = autoAccepted
     ? `You've been added to ${orgName} on TeeVents`
@@ -161,8 +160,8 @@ async function sendInvitationEmail(
     : `You're Invited!`;
 
   const bodyText = autoAccepted
-    ? `You have been added as a team member to <strong>${orgName}</strong> on TeeVents. You can now log in and start managing tournaments.`
-    : `You've been invited to join <strong>${orgName}</strong> as a team member on TeeVents. Click the button below to accept the invitation and get started.`;
+    ? `${greeting}<br><br>You have been added as a <strong>${roleLabel}</strong> to <strong>${orgName}</strong> on TeeVents. You can now log in and start managing tournaments.`
+    : `${greeting}<br><br>You've been invited to join <strong>${orgName}</strong> as a <strong>${roleLabel}</strong> on TeeVents. Click the button below to accept the invitation and get started.`;
 
   const buttonText = autoAccepted ? "Go to Dashboard" : "Accept Invitation";
   const buttonUrl = autoAccepted ? `${baseUrl}/dashboard` : acceptUrl;

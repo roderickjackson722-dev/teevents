@@ -530,6 +530,53 @@ export type Database = {
         }
         Relationships: []
       }
+      golf_courses: {
+        Row: {
+          course_rating: number
+          created_at: string
+          id: string
+          name: string
+          par: number
+          slope_rating: number
+          stroke_indexes: number[] | null
+          tee_name: string | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          course_rating?: number
+          created_at?: string
+          id?: string
+          name: string
+          par?: number
+          slope_rating?: number
+          stroke_indexes?: number[] | null
+          tee_name?: string | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          course_rating?: number
+          created_at?: string
+          id?: string
+          name?: string
+          par?: number
+          slope_rating?: number
+          stroke_indexes?: number[] | null
+          tee_name?: string | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "golf_courses_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hold_releases: {
         Row: {
           amount_cents: number
@@ -2318,6 +2365,7 @@ export type Database = {
         Row: {
           check_in_time: string | null
           checked_in: boolean | null
+          course_handicap: number | null
           covered_fees: boolean
           created_at: string
           dietary_restrictions: string | null
@@ -2326,19 +2374,23 @@ export type Database = {
           group_number: number | null
           group_position: number | null
           handicap: number | null
+          handicap_index: number | null
           id: string
           last_name: string
           notes: string | null
           payment_status: string
           phone: string | null
+          playing_handicap: number | null
           scoring_code: string | null
           shirt_size: string | null
+          strokes_per_hole: Json | null
           tier_id: string | null
           tournament_id: string
         }
         Insert: {
           check_in_time?: string | null
           checked_in?: boolean | null
+          course_handicap?: number | null
           covered_fees?: boolean
           created_at?: string
           dietary_restrictions?: string | null
@@ -2347,19 +2399,23 @@ export type Database = {
           group_number?: number | null
           group_position?: number | null
           handicap?: number | null
+          handicap_index?: number | null
           id?: string
           last_name: string
           notes?: string | null
           payment_status?: string
           phone?: string | null
+          playing_handicap?: number | null
           scoring_code?: string | null
           shirt_size?: string | null
+          strokes_per_hole?: Json | null
           tier_id?: string | null
           tournament_id: string
         }
         Update: {
           check_in_time?: string | null
           checked_in?: boolean | null
+          course_handicap?: number | null
           covered_fees?: boolean
           created_at?: string
           dietary_restrictions?: string | null
@@ -2368,13 +2424,16 @@ export type Database = {
           group_number?: number | null
           group_position?: number | null
           handicap?: number | null
+          handicap_index?: number | null
           id?: string
           last_name?: string
           notes?: string | null
           payment_status?: string
           phone?: string | null
+          playing_handicap?: number | null
           scoring_code?: string | null
           shirt_size?: string | null
+          strokes_per_hole?: Json | null
           tier_id?: string | null
           tournament_id?: string
         }
@@ -2838,6 +2897,9 @@ export type Database = {
           donation_goal_cents: number | null
           end_date: string | null
           foursome_registration: boolean
+          golf_course_id: string | null
+          handicap_allowance: number | null
+          handicap_enabled: boolean | null
           hole_pars: Json | null
           id: string
           image_url: string | null
@@ -2845,6 +2907,7 @@ export type Database = {
           leaderboard_sponsor_style: string
           location: string | null
           max_group_size: number
+          max_handicap: number | null
           max_players: number | null
           organization_id: string
           pass_fees_to_participants: boolean
@@ -2895,6 +2958,9 @@ export type Database = {
           donation_goal_cents?: number | null
           end_date?: string | null
           foursome_registration?: boolean
+          golf_course_id?: string | null
+          handicap_allowance?: number | null
+          handicap_enabled?: boolean | null
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
@@ -2902,6 +2968,7 @@ export type Database = {
           leaderboard_sponsor_style?: string
           location?: string | null
           max_group_size?: number
+          max_handicap?: number | null
           max_players?: number | null
           organization_id: string
           pass_fees_to_participants?: boolean
@@ -2952,6 +3019,9 @@ export type Database = {
           donation_goal_cents?: number | null
           end_date?: string | null
           foursome_registration?: boolean
+          golf_course_id?: string | null
+          handicap_allowance?: number | null
+          handicap_enabled?: boolean | null
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
@@ -2959,6 +3029,7 @@ export type Database = {
           leaderboard_sponsor_style?: string
           location?: string | null
           max_group_size?: number
+          max_handicap?: number | null
           max_players?: number | null
           organization_id?: string
           pass_fees_to_participants?: boolean
@@ -2995,6 +3066,13 @@ export type Database = {
           waitlist_enabled?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "tournaments_golf_course_id_fkey"
+            columns: ["golf_course_id"]
+            isOneToOne: false
+            referencedRelation: "golf_courses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournaments_organization_id_fkey"
             columns: ["organization_id"]

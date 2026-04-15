@@ -418,7 +418,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">Transaction history — all payments processed through your tournament.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            A $5 platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect, PayPal, or Check).{" "}
+            A 5% platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect, PayPal, or Check).{" "}
             <a href="/dashboard/payout-settings" className="text-primary underline">Manage payout settings</a>
             {" · "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
@@ -450,7 +450,7 @@ const Finances = () => {
                   Platform Fees <Info className="h-3 w-3" />
                 </span>
               </TooltipTrigger>
-              <TooltipContent className="max-w-[220px]">$5 flat fee per transaction deducted automatically by Stripe at checkout.</TooltipContent>
+              <TooltipContent className="max-w-[220px]">5% fee per transaction deducted automatically by Stripe at checkout.</TooltipContent>
             </Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
@@ -581,7 +581,7 @@ const Finances = () => {
                   <tbody>
                     {filteredRegistrations.map((reg) => {
                       const gross = getRegistrationAmount(reg);
-                      const fee = 500; // $5 flat fee
+                      const fee = Math.round(gross * 0.05); // 5% platform fee
                       const net = gross - fee;
                       return (
                         <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">

@@ -146,7 +146,7 @@ const advancedFeatures = [
 
 const whyTeeVents = [
   "Replace 10+ tools with one platform",
-  "Organizers keep full control of their revenue via Stripe Connect",
+  "Organizers keep full control of their revenue — choose Stripe Connect, PayPal, or check payouts",
   "No monthly subscriptions — pay per tournament",
   "White-label branding for every event",
   "Built for nonprofits, corporations, and golf communities",
@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    fee: "$5 platform fee per transaction + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",
@@ -177,7 +177,7 @@ const plans = [
     price: "$299",
     period: "per tournament",
     description: "Unlimited players. We build your tournament platform for you.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    fee: "$5 platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Base (unlimited players)",
       "We build your website for you",
@@ -199,13 +199,11 @@ const plans = [
     name: "Premium",
     price: "$999",
     period: "per tournament",
-    description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "White-glove consulting & full-service setup.",
+    fee: "$5 platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",
-      "Reduced 10% reserve (vs 15%)",
-      "Faster bi-weekly payouts",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",
@@ -435,14 +433,14 @@ const HowItWorks = () => {
                 We Never Hold Your Money.<br />Payments Split Automatically.
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Every payment is split instantly at checkout using Stripe Connect destination charges. Your net proceeds go directly to your connected Stripe account — TeeVents never touches or holds your funds.
+                Every payment is split instantly at checkout using Stripe Connect destination charges. Your net proceeds go directly to your connected Stripe account. Alternatively, choose PayPal or check payouts.
               </p>
               <div className="space-y-3">
                 {[
-                  "Golfer pays → Stripe splits funds automatically",
-                  "5% fee → sent to TeeVents instantly",
+                  "Golfer pays → Stripe processes payment",
+                  "$5 flat fee → sent to TeeVents",
                   "Stripe fee → deducted by Stripe",
-                  "Net proceeds → deposited in your Stripe account",
+                  "Net proceeds → deposited in your account (Stripe, PayPal, or check)",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <Send className="h-4 w-4 text-primary flex-shrink-0" />
@@ -452,7 +450,7 @@ const HowItWorks = () => {
               </div>
               <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-foreground font-medium">
-                  💡 You withdraw funds from your own Stripe account on your schedule. No waiting for TeeVents to release anything.
+                  💡 Three payout options: Stripe Connect (automatic), PayPal (bi-weekly), or Check (on request). You choose what works best for your organization.
                 </p>
               </div>
             </motion.div>
@@ -469,20 +467,20 @@ const HowItWorks = () => {
                     <span className="font-display font-bold text-foreground">$162.15</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
-                    <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
-                    <span className="font-display font-bold text-destructive">−$7.50</span>
+                    <span className="text-muted-foreground">TeeVents platform fee ($5 flat)</span>
+                    <span className="font-display font-bold text-destructive">−$5.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">−$4.65</span>
+                    <span className="font-display font-bold text-destructive">−$4.70</span>
                   </div>
                   <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
-                    <span className="font-semibold text-primary">Deposited in your Stripe account</span>
-                    <span className="font-display font-bold text-primary text-2xl">$150.00</span>
+                    <span className="font-semibold text-primary">Net to Organizer</span>
+                    <span className="font-display font-bold text-primary text-2xl">$152.45</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
-                  Funds arrive in your Stripe account automatically. Withdraw to your bank anytime. All plans: 5% platform fee + Stripe 2.9% + $0.30.
+                  All plans: $5 flat platform fee + Stripe 2.9% + $0.30 per transaction. Choose Stripe Connect (automatic), PayPal (bi-weekly), or check (on request).
                 </p>
               </div>
             </motion.div>
@@ -530,7 +528,7 @@ const HowItWorks = () => {
               Simple, transparent pricing — no hidden fees. Choose the plan that fits your event.
             </p>
             <p className="mt-3 text-sm text-muted-foreground/70">
-              All plans include a 5% TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically — we never hold your money.
+              All plans include a $5 flat TeeVents platform fee + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Three payout options: Stripe Connect (automatic), PayPal (bi-weekly), or check (on request).
             </p>
           </motion.div>
 

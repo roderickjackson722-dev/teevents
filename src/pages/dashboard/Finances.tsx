@@ -416,9 +416,11 @@ const Finances = () => {
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 flex items-start gap-3">
         <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
         <div>
-          <p className="text-sm font-medium text-foreground">Payments go directly to your Stripe account — TeeVents never holds your money.</p>
+          <p className="text-sm font-medium text-foreground">Transaction history — all payments processed through your tournament.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            At checkout, Stripe deducts the $5 platform fee and processing fee, then deposits the net proceeds directly in your connected Stripe account. Withdraw to your bank on your schedule.{" "}
+            A $5 platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect, PayPal, or Check).{" "}
+            <a href="/dashboard/payout-settings" className="text-primary underline">Manage payout settings</a>
+            {" · "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>

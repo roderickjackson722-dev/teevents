@@ -572,6 +572,66 @@ export type Database = {
           },
         ]
       }
+      manual_payouts: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          mailing_address: string | null
+          method: string
+          notes: string | null
+          organization_id: string
+          paypal_email: string | null
+          processed_at: string | null
+          requested_at: string
+          status: string
+          tournament_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          mailing_address?: string | null
+          method: string
+          notes?: string | null
+          organization_id: string
+          paypal_email?: string | null
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          tournament_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          mailing_address?: string | null
+          method?: string
+          notes?: string | null
+          organization_id?: string
+          paypal_email?: string | null
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_payouts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_payouts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_emails: {
         Row: {
           created_at: string
@@ -835,9 +895,11 @@ export type Database = {
           id: string
           is_nonprofit: boolean
           logo_url: string | null
+          mailing_address: string | null
           name: string
           nonprofit_name: string | null
           nonprofit_verified: boolean
+          payout_method: string | null
           plan: string
           platform_fee_rate: number | null
           primary_color: string | null
@@ -855,9 +917,11 @@ export type Database = {
           id?: string
           is_nonprofit?: boolean
           logo_url?: string | null
+          mailing_address?: string | null
           name: string
           nonprofit_name?: string | null
           nonprofit_verified?: boolean
+          payout_method?: string | null
           plan?: string
           platform_fee_rate?: number | null
           primary_color?: string | null
@@ -875,9 +939,11 @@ export type Database = {
           id?: string
           is_nonprofit?: boolean
           logo_url?: string | null
+          mailing_address?: string | null
           name?: string
           nonprofit_name?: string | null
           nonprofit_verified?: boolean
+          payout_method?: string | null
           plan?: string
           platform_fee_rate?: number | null
           primary_color?: string | null
@@ -2777,6 +2843,7 @@ export type Database = {
           organization_id: string
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
+          payout_method: string | null
           printable_font: string
           printable_layout: string
           rain_date_policy: string | null
@@ -2833,6 +2900,7 @@ export type Database = {
           organization_id: string
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
+          payout_method?: string | null
           printable_font?: string
           printable_layout?: string
           rain_date_policy?: string | null
@@ -2889,6 +2957,7 @@ export type Database = {
           organization_id?: string
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
+          payout_method?: string | null
           printable_font?: string
           printable_layout?: string
           rain_date_policy?: string | null

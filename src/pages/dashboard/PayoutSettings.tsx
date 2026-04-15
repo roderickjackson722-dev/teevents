@@ -4,16 +4,8 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import {
-  CreditCard,
-  CheckCircle2,
-  Loader2,
-  AlertCircle,
-  Mail,
-  Shield,
-  Banknote,
-  ExternalLink,
-  History,
-  RefreshCw,
+  CreditCard, CheckCircle2, Loader2, AlertCircle, Mail, Shield,
+  Banknote, ExternalLink, History, RefreshCw, Building2, FileCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -61,18 +50,34 @@ export default function PayoutSettings() {
   const [savingPaypal, setSavingPaypal] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
+  const [mailingAddress, setMailingAddress] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("stripe");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [showChangeBankModal, setShowChangeBankModal] = useState(false);
   const [changingBank, setChangingBank] = useState(false);
+  const [savingCheck, setSavingCheck] = useState(false);
 
   useEffect(() => {
     if (org?.orgId) {
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
+      fetchOrgSettings();
     }
   }, [org?.orgId]);
+
+  const fetchOrgSettings = async () => {
+    const { data } = await supabase
+      .from("organizations")
+      .select("payout_method, mailing_address")
+      .eq("id", org!.orgId)
+      .single();
+    if (data) {
+      setSelectedMethod(((data as any).payout_method || "stripe") as "stripe" | "paypal" | "check");
+      setMailingAddress((data as any).mailing_address || "");
+    }
+  };
 
   const fetchPayoutMethodAndSync = async () => {
     setLoading(true);
@@ -86,11 +91,9 @@ export default function PayoutSettings() {
       setPayoutMethod(data as unknown as PayoutMethod);
       if ((data as any).paypal_email) setPaypalEmail((data as any).paypal_email);
 
-      // If Stripe is connected but last4 is missing, sync from Stripe
       if ((data as any).stripe_account_id && !(data as any).stripe_account_last4) {
         try {
           const { data: syncData } = await supabase.functions.invoke("stripe-connect-status", { body: {} });
-
           if (syncData?.last4) {
             setPayoutMethod((current) =>
               current
@@ -104,19 +107,13 @@ export default function PayoutSettings() {
                 : current
             );
           }
-
-          // Re-fetch to get the updated last4
           const { data: refreshed } = await supabase
             .from("organization_payout_methods")
             .select("*")
             .eq("organization_id", org!.orgId)
             .single();
-          if (refreshed) {
-            setPayoutMethod(refreshed as unknown as PayoutMethod);
-          }
-        } catch {
-          // Silent — status will show without last4
-        }
+          if (refreshed) setPayoutMethod(refreshed as unknown as PayoutMethod);
+        } catch { /* silent */ }
       }
     }
     setLoading(false);
@@ -159,9 +156,7 @@ export default function PayoutSettings() {
 
   const checkStripeStatus = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-connect-status", {
-        body: {},
-      });
+      const { data, error } = await supabase.functions.invoke("stripe-connect-status", { body: {} });
       if (!error && data?.charges_enabled) {
         toast.success("Your Stripe account is fully verified and ready for payouts!");
         await logAudit("stripe_verified", { summary: "Stripe account verified and active" });
@@ -193,7 +188,6 @@ export default function PayoutSettings() {
   const handleChangeBankAccount = async () => {
     setChangingBank(true);
     try {
-      // Use the Stripe account link with type 'account_onboarding' to let them update
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
       if (error || !data?.url) {
         toast.error("Failed to open Stripe portal. Please try again.");
@@ -239,7 +233,6 @@ export default function PayoutSettings() {
       return;
     }
     if (!org?.orgId) return;
-
     setSavingPaypal(true);
     const oldEmail = payoutMethod?.paypal_email || null;
     const { error } = await supabase
@@ -248,16 +241,18 @@ export default function PayoutSettings() {
         {
           organization_id: org.orgId,
           paypal_email: paypalEmail,
-          preferred_method: payoutMethod?.stripe_onboarding_complete ? payoutMethod.preferred_method : "paypal",
+          preferred_method: "paypal",
           is_verified: false,
         } as any,
         { onConflict: "organization_id" }
       );
-
     if (error) {
       toast.error("Failed to save PayPal email.");
     } else {
-      toast.success("PayPal email saved successfully.");
+      // Also update org payout_method
+      await supabase.from("organizations").update({ payout_method: "paypal" } as any).eq("id", org.orgId);
+      setSelectedMethod("paypal");
+      toast.success("PayPal email saved. Payouts will be processed manually every two weeks.");
       await logAudit(oldEmail ? "paypal_updated" : "paypal_added", {
         summary: oldEmail ? `PayPal email updated to ${paypalEmail}` : `PayPal email added: ${paypalEmail}`,
       });
@@ -267,20 +262,36 @@ export default function PayoutSettings() {
     setSavingPaypal(false);
   };
 
-  const handleSetPreferred = async (method: "stripe" | "paypal") => {
+  const handleSaveCheck = async () => {
+    if (!mailingAddress.trim()) {
+      toast.error("Please enter a mailing address.");
+      return;
+    }
     if (!org?.orgId) return;
+    setSavingCheck(true);
     const { error } = await supabase
-      .from("organization_payout_methods")
-      .update({ preferred_method: method } as any)
-      .eq("organization_id", org.orgId);
-    if (!error) {
-      toast.success(`Preferred method set to ${method === "stripe" ? "Stripe Connect" : "PayPal"}`);
-      await logAudit("preferred_method_changed", {
-        summary: `Preferred payout method changed to ${method}`,
-      });
-      fetchPayoutMethodAndSync();
+      .from("organizations")
+      .update({ payout_method: "check", mailing_address: mailingAddress.trim() } as any)
+      .eq("id", org.orgId);
+    if (error) {
+      toast.error("Failed to save check payout settings.");
+    } else {
+      setSelectedMethod("check");
+      toast.success("Check payout method saved. Request payouts from the Finances page.");
+      await logAudit("check_method_set", { summary: `Check payout method set. Address: ${mailingAddress.trim()}` });
       fetchAuditLogs();
     }
+    setSavingCheck(false);
+  };
+
+  const handleSelectStripe = async () => {
+    if (!org?.orgId) return;
+    await supabase.from("organizations").update({ payout_method: "stripe" } as any).eq("id", org.orgId);
+    await supabase.from("organization_payout_methods").update({ preferred_method: "stripe" } as any).eq("organization_id", org.orgId);
+    setSelectedMethod("stripe");
+    toast.success("Payout method set to Stripe Connect (automatic).");
+    await logAudit("preferred_method_changed", { summary: "Payout method changed to Stripe Connect" });
+    fetchAuditLogs();
   };
 
   if (orgLoading || loading) {
@@ -293,34 +304,13 @@ export default function PayoutSettings() {
 
   const stripeConnected = payoutMethod?.stripe_onboarding_complete === true;
   const stripeStarted = !!payoutMethod?.stripe_account_id;
-  const hasPaypal = !!payoutMethod?.paypal_email;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-foreground">Payout Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure how you receive payments from your tournaments.
-        </p>
+        <p className="text-muted-foreground mt-1">Choose how you receive payments from your tournaments.</p>
       </div>
-
-      {/* Status Banner */}
-      {!stripeConnected && !hasPaypal && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex items-start gap-3"
-        >
-          <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-foreground">No payout method configured</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              You need to connect a payout method before you can receive funds from registrations,
-              donations, and other tournament payments.
-            </p>
-          </div>
-        </motion.div>
-      )}
 
       {/* How Payouts Work */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
@@ -329,82 +319,16 @@ export default function PayoutSettings() {
           <p className="text-sm font-medium text-foreground">How payouts work</p>
         </div>
         <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
-          <li>Golfer payments are processed through Stripe at checkout</li>
-          <li>A 5% platform fee is automatically deducted by Stripe</li>
-          <li>Stripe deducts their processing fee (2.9% + $0.30)</li>
-          <li>The remaining balance goes directly to your connected Stripe account</li>
-          <li>TeeVents never holds your money — it goes straight to you</li>
-          <li>You withdraw funds from your Stripe account to your bank on your schedule</li>
+          <li><strong>Stripe Connect (Recommended):</strong> Payments split automatically at checkout — net proceeds go directly to your Stripe account</li>
+          <li><strong>PayPal:</strong> TeeVents collects payments and sends you a PayPal payout every two weeks</li>
+          <li><strong>Check:</strong> TeeVents holds funds and mails a check upon your request</li>
+          <li>All methods: $5 platform fee + Stripe processing fee per transaction</li>
         </ul>
       </div>
 
-      {/* Current Setup — always visible */}
+      {/* ──── Stripe Connect ──── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Banknote className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Current Setup</CardTitle>
-            </div>
-            <CardDescription>Your active payout account details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stripeConnected && payoutMethod?.preferred_method === "stripe" ? (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="h-8 w-8 text-emerald-600" />
-                    <div>
-                      <p className="font-semibold text-foreground">Stripe Connect</p>
-                      <p className="text-sm text-muted-foreground">
-                        {payoutMethod.stripe_account_brand && payoutMethod.stripe_account_last4
-                          ? `${payoutMethod.stripe_account_brand} •••• ${payoutMethod.stripe_account_last4}`
-                          : payoutMethod.stripe_account_last4
-                          ? `Bank account ending in •••• ${payoutMethod.stripe_account_last4}`
-                          : "Connected — bank details syncing..."}
-                      </p>
-                      <p className="text-xs text-emerald-600 mt-0.5">✅ Verified & Active</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : hasPaypal && payoutMethod?.preferred_method === "paypal" ? (
-              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-8 w-8 text-blue-600" />
-                  <div>
-                    <p className="font-semibold text-foreground">PayPal</p>
-                    <p className="text-sm text-muted-foreground">{payoutMethod?.paypal_email}</p>
-                    <p className="text-xs text-blue-600 mt-0.5">Active</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 p-4 bg-muted/40 rounded-lg">
-                <AlertCircle className="h-8 w-8 text-muted-foreground flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">No payout account connected</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Please add a Stripe or PayPal account below to receive funds from your tournaments.
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Stripe Connect Card */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card
-          className={`border-2 ${
-            stripeConnected
-              ? "border-emerald-500/50"
-              : payoutMethod?.preferred_method === "stripe"
-              ? "border-primary/30"
-              : "border-border"
-          }`}
-        >
+        <Card className={`border-2 ${selectedMethod === "stripe" ? "border-emerald-500/50" : "border-border"}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -413,17 +337,12 @@ export default function PayoutSettings() {
                 </div>
                 <div>
                   <CardTitle className="text-lg">Stripe Connect</CardTitle>
-                  <CardDescription>Recommended – automatic payouts to your bank</CardDescription>
+                  <CardDescription>Recommended — automatic payouts to your bank</CardDescription>
                 </div>
               </div>
-              {stripeConnected && (
+              {stripeConnected && selectedMethod === "stripe" && (
                 <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30">
                   <CheckCircle2 className="h-3 w-3 mr-1" /> Active
-                </Badge>
-              )}
-              {stripeStarted && !stripeConnected && (
-                <Badge variant="outline" className="text-amber-600 border-amber-500/30">
-                  Incomplete
                 </Badge>
               )}
             </div>
@@ -443,214 +362,147 @@ export default function PayoutSettings() {
                     {payoutMethod?.stripe_account_last4 && (
                       <p><span className="font-medium text-foreground">Account:</span> •••• {payoutMethod.stripe_account_last4}</p>
                     )}
-                    <p><span className="font-medium text-foreground">Status:</span> Active & Verified</p>
-                    {payoutMethod?.created_at && (
-                      <p><span className="font-medium text-foreground">Connected since:</span> {new Date(payoutMethod.created_at).toLocaleDateString()}</p>
-                    )}
                   </div>
                 </div>
-
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)}>
-                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                    Change Bank Account
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => setShowDisconnectModal(true)}
-                  >
-                    Disconnect Stripe
-                  </Button>
-                  {payoutMethod?.preferred_method !== "stripe" && (
-                    <Button variant="outline" size="sm" onClick={() => handleSetPreferred("stripe")}>
-                      Set as Primary
-                    </Button>
+                  {selectedMethod !== "stripe" && (
+                    <Button size="sm" onClick={handleSelectStripe}>Use Stripe Connect</Button>
                   )}
+                  <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)} disabled={changingBank}>
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Bank Account
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-destructive border-destructive/20" onClick={() => setShowDisconnectModal(true)}>
+                    Disconnect
+                  </Button>
                 </div>
-
-                <p className="text-xs text-muted-foreground">
-                  To change your bank account, you'll be redirected to Stripe's secure portal. TeeVents never sees or stores your banking details.
-                </p>
               </>
             ) : (
               <>
-                {stripeStarted && (
-                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                      <AlertCircle className="h-4 w-4" />
-                      <span className="text-sm font-medium">Stripe setup incomplete</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Please complete onboarding to start receiving payouts.
-                    </p>
-                  </div>
-                )}
-                <Button onClick={handleStripeConnect} disabled={connectingStripe} className="w-full sm:w-auto">
-                  {connectingStripe && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {stripeStarted ? "Complete Stripe Setup" : "Connect with Stripe"}
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
+                  <li>Automatic split at checkout — net proceeds go directly to your Stripe account</li>
+                  <li>Fastest option: no manual work needed</li>
+                  <li>Withdraw from Stripe to your bank on your schedule</li>
+                </ul>
+                <Button onClick={handleStripeConnect} disabled={connectingStripe}>
+                  {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                  {stripeStarted ? "Complete Stripe Setup" : "Connect Stripe Account"}
                 </Button>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">
-                    You'll be redirected to Stripe's secure portal to provide your legal name, date of birth,
-                    address, and bank account information. Setup takes 2-3 minutes. TeeVents never sees your banking details.
-                  </p>
-                </div>
               </>
             )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              {[
-                { label: "No extra fees", desc: "No additional payout fees" },
-                { label: "Direct deposits", desc: "Funds go straight to you" },
-                { label: "Automatic", desc: "Splits happen at checkout" },
-              ].map((b) => (
-                <div key={b.label} className="text-center p-2 rounded-lg bg-muted/30">
-                  <p className="text-xs font-medium text-foreground">{b.label}</p>
-                  <p className="text-[10px] text-muted-foreground">{b.desc}</p>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* PayPal Card */}
+      {/* ──── PayPal ──── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Card className={`border ${payoutMethod?.preferred_method === "paypal" ? "border-primary/30" : "border-border"}`}>
+        <Card className={`border-2 ${selectedMethod === "paypal" ? "border-blue-500/50" : "border-border"}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
                   <Mail className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
                   <CardTitle className="text-lg">PayPal</CardTitle>
-                  <CardDescription>Backup option – manual payouts to your PayPal</CardDescription>
+                  <CardDescription>Manual — TeeVents pays you every two weeks via PayPal</CardDescription>
                 </div>
               </div>
-              {hasPaypal && (
-                <Badge variant="outline" className="text-blue-600 border-blue-500/30">
-                  Saved
-                </Badge>
+              {selectedMethod === "paypal" && paypalEmail && (
+                <Badge className="bg-blue-500/20 text-blue-700 border-blue-500/30">Active</Badge>
               )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <Label htmlFor="paypal-email" className="text-xs text-muted-foreground mb-1.5 block">
-                  PayPal Email Address
-                </Label>
-                <Input
-                  id="paypal-email"
-                  type="email"
-                  placeholder="your-email@example.com"
-                  value={paypalEmail}
-                  onChange={(e) => setPaypalEmail(e.target.value)}
-                />
-              </div>
-              <div className="flex items-end gap-2">
-                <Button onClick={handleSavePaypal} disabled={savingPaypal} variant="outline">
-                  {savingPaypal && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Save
-                </Button>
-                {hasPaypal && payoutMethod?.preferred_method !== "paypal" && (
-                  <Button variant="outline" size="sm" onClick={() => handleSetPreferred("paypal")}>
-                    Set as Primary
-                  </Button>
-                )}
-              </div>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
+              <li>TeeVents collects full payment, then pays you via PayPal every two weeks</li>
+              <li>TeeVents holds funds temporarily between batch payouts</li>
+            </ul>
+            <div className="space-y-2">
+              <Label htmlFor="paypal-email" className="text-sm">PayPal Email Address</Label>
+              <Input
+                id="paypal-email"
+                type="email"
+                placeholder="your-email@example.com"
+                value={paypalEmail}
+                onChange={(e) => setPaypalEmail(e.target.value)}
+              />
             </div>
-
-            {hasPaypal && (
-              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-xs text-muted-foreground">
-                  <strong>Saved:</strong> {payoutMethod?.paypal_email}
-                </p>
-              </div>
-            )}
-
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground">
-                PayPal payouts are processed manually within 5-7 business days. A 1% fee (min $0.50) applies per
-                payout. Stripe Connect is recommended for faster, automatic payouts.
-              </p>
-            </div>
+            <Button onClick={handleSavePaypal} disabled={savingPaypal || !paypalEmail.trim()}>
+              {savingPaypal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+              Save PayPal & Set as Active
+            </Button>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Comparison Table */}
+      {/* ──── Check ──── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Card>
+        <Card className={`border-2 ${selectedMethod === "check" ? "border-amber-500/50" : "border-border"}`}>
           <CardHeader>
-            <CardTitle className="text-base">Comparison</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-2 pr-4 text-muted-foreground font-medium">Feature</th>
-                    <th className="text-left py-2 px-4 text-foreground font-medium">Stripe Connect</th>
-                    <th className="text-left py-2 pl-4 text-foreground font-medium">PayPal</th>
-                  </tr>
-                </thead>
-                <tbody className="text-muted-foreground">
-                  {[
-                    ["Setup time", "2-3 minutes", "Enter email"],
-                    ["Additional fees", "None", "1% or $0.50 min"],
-                    ["Payout speed", "Direct at checkout", "3-5 business days"],
-                    ["Bank details", "Handled by Stripe", "PayPal manages"],
-                    ["Dashboard", "Built into TeeVents", "PayPal website"],
-                  ].map(([feature, stripe, paypal]) => (
-                    <tr key={feature} className="border-b border-border/50">
-                      <td className="py-2 pr-4 font-medium text-foreground">{feature}</td>
-                      <td className="py-2 px-4">{stripe}</td>
-                      <td className="py-2 pl-4">{paypal}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
+                  <FileCheck className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Check</CardTitle>
+                  <CardDescription>Manual — TeeVents holds funds and mails a check on request</CardDescription>
+                </div>
+              </div>
+              {selectedMethod === "check" && mailingAddress && (
+                <Badge className="bg-amber-500/20 text-amber-700 border-amber-500/30">Active</Badge>
+              )}
             </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
+              <li>TeeVents holds your funds until you request a check</li>
+              <li>Checks mailed within 5–7 business days of request</li>
+              <li>No additional fee beyond the standard $5 platform fee</li>
+            </ul>
+            <div className="space-y-2">
+              <Label htmlFor="mailing-address" className="text-sm">Mailing Address</Label>
+              <Textarea
+                id="mailing-address"
+                placeholder="123 Main St&#10;Suite 100&#10;Phoenix, AZ 85001"
+                value={mailingAddress}
+                onChange={(e) => setMailingAddress(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <Button onClick={handleSaveCheck} disabled={savingCheck || !mailingAddress.trim()}>
+              {savingCheck ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
+              Save Address & Set as Active
+            </Button>
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Audit Log */}
       {auditLogs.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <History className="h-5 w-5 text-muted-foreground" />
-                <CardTitle className="text-base">Recent Activity</CardTitle>
+                <CardTitle className="text-base">Activity Log</CardTitle>
               </div>
-              <CardDescription>Track changes to your payout settings</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Details</TableHead>
+                    <TableHead className="text-xs">Action</TableHead>
+                    <TableHead className="text-xs">Details</TableHead>
+                    <TableHead className="text-xs">Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {auditLogs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="text-xs">
-                        {new Date(log.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-xs capitalize">
-                        {log.action.replace(/_/g, " ")}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {log.details?.summary || "-"}
-                      </TableCell>
+                      <TableCell className="text-sm font-medium">{log.action.replace(/_/g, " ")}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{log.details?.summary || "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{new Date(log.created_at).toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -660,99 +512,40 @@ export default function PayoutSettings() {
         </motion.div>
       )}
 
-      {/* Support Contact */}
-      <div className="bg-muted/30 border border-border rounded-lg p-4 text-center">
-        <p className="text-xs text-muted-foreground">
-          Need help with payout settings?{" "}
-          <a href="mailto:info@teevents.golf" className="text-primary underline">
-            Contact us at info@teevents.golf
-          </a>
-        </p>
-      </div>
-
-      {/* Change Bank Account Modal */}
-      <Dialog open={showChangeBankModal} onOpenChange={setShowChangeBankModal}>
-        <DialogContent className="max-w-md">
+      {/* Disconnect Stripe Modal */}
+      <Dialog open={showDisconnectModal} onOpenChange={setShowDisconnectModal}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change Bank Account</DialogTitle>
+            <DialogTitle>Disconnect Stripe Account</DialogTitle>
             <DialogDescription>
-              To change your connected bank account, you will be redirected to Stripe's secure portal.
+              This will disconnect your Stripe account. You won't receive automatic payouts until you reconnect or choose another method.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium text-foreground">Current account</p>
-              <p className="text-sm text-muted-foreground">
-                {payoutMethod?.stripe_account_brand && `${payoutMethod.stripe_account_brand} `}
-                {payoutMethod?.stripe_account_last4 ? `•••• ${payoutMethod.stripe_account_last4}` : "Connected"}
-              </p>
-            </div>
-
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-              <p className="text-xs text-foreground font-medium mb-1">After updating:</p>
-              <ul className="text-xs text-muted-foreground space-y-1 list-disc ml-4">
-                <li>Your new bank account will be verified by Stripe</li>
-                <li>Payouts will automatically go to the new account</li>
-                <li>No interruption to your tournament operations</li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <Button onClick={handleChangeBankAccount} disabled={changingBank} className="flex-1">
-                {changingBank && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                <ExternalLink className="h-4 w-4 mr-1.5" />
-                Continue to Stripe
-              </Button>
-              <Button variant="outline" onClick={() => setShowChangeBankModal(false)}>
-                Cancel
-              </Button>
-            </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowDisconnectModal(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDisconnectStripe} disabled={disconnecting}>
+              {disconnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Disconnect
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Disconnect Stripe Modal */}
-      <Dialog open={showDisconnectModal} onOpenChange={setShowDisconnectModal}>
-        <DialogContent className="max-w-md">
+      {/* Change Bank Modal */}
+      <Dialog open={showChangeBankModal} onOpenChange={setShowChangeBankModal}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Disconnect Stripe Account</DialogTitle>
+            <DialogTitle>Update Bank Account</DialogTitle>
             <DialogDescription>
-              Are you sure you want to disconnect your Stripe account?
+              You'll be redirected to Stripe to update your bank account details.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            {payoutMethod?.stripe_account_last4 && (
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="text-sm text-muted-foreground">
-                  Current account: {payoutMethod.stripe_account_brand && `${payoutMethod.stripe_account_brand} `}
-                  •••• {payoutMethod.stripe_account_last4}
-                </p>
-              </div>
-            )}
-
-            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
-              <p className="text-xs text-foreground font-medium mb-1">After disconnecting:</p>
-              <ul className="text-xs text-muted-foreground space-y-1 list-disc ml-4">
-                <li>You will need to reconnect a Stripe account to receive payouts</li>
-                <li>Any pending payments will be held until a new account is connected</li>
-                <li>You can reconnect a different Stripe account at any time</li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="destructive"
-                onClick={handleDisconnectStripe}
-                disabled={disconnecting}
-                className="flex-1"
-              >
-                {disconnecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Yes, Disconnect
-              </Button>
-              <Button variant="outline" onClick={() => setShowDisconnectModal(false)}>
-                Cancel
-              </Button>
-            </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowChangeBankModal(false)}>Cancel</Button>
+            <Button onClick={handleChangeBankAccount} disabled={changingBank}>
+              {changingBank ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Open Stripe Portal
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

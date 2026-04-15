@@ -51,12 +51,14 @@ serve(async (req) => {
       throw new Error("Only organization owners can invite members");
     }
 
-    // Check if already a member
-    const { data: existingMember } = await supabaseAdmin
-      .from("org_members")
-      .select("id")
-      .eq("organization_id", organization_id)
-      .eq("user_id", user.id);
+    // Get organization name for the email
+    const { data: orgData } = await supabaseAdmin
+      .from("organizations")
+      .select("name")
+      .eq("id", organization_id)
+      .single();
+
+    const orgName = orgData?.name || "your organization";
 
     // Insert invitation
     const { data: invite, error: inviteError } = await supabaseAdmin
@@ -106,6 +108,9 @@ serve(async (req) => {
           .update({ status: "accepted" })
           .eq("id", invite.id);
 
+        // Send notification email to existing user
+        await sendInvitationEmail(email.toLowerCase(), orgName, invite.token, true);
+
         return new Response(
           JSON.stringify({ success: true, auto_accepted: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -113,11 +118,15 @@ serve(async (req) => {
       }
     }
 
+    // Send invitation email to new/external user
+    await sendInvitationEmail(email.toLowerCase(), orgName, invite.token, false);
+
     return new Response(
       JSON.stringify({ success: true, invitation_id: invite.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {
+    console.error("invite-member error:", err);
     return new Response(
       JSON.stringify({ error: err.message }),
       {
@@ -127,3 +136,86 @@ serve(async (req) => {
     );
   }
 });
+
+async function sendInvitationEmail(
+  recipientEmail: string,
+  orgName: string,
+  token: string,
+  autoAccepted: boolean
+) {
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not set — skipping invitation email to", recipientEmail);
+    return;
+  }
+
+  const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
+  const acceptUrl = `${baseUrl}/accept-invitation?token=${token}`;
+
+  const subject = autoAccepted
+    ? `You've been added to ${orgName} on TeeVents`
+    : `You're invited to join ${orgName} on TeeVents`;
+
+  const heading = autoAccepted
+    ? `You've Been Added to ${orgName}`
+    : `You're Invited!`;
+
+  const bodyText = autoAccepted
+    ? `You have been added as a team member to <strong>${orgName}</strong> on TeeVents. You can now log in and start managing tournaments.`
+    : `You've been invited to join <strong>${orgName}</strong> as a team member on TeeVents. Click the button below to accept the invitation and get started.`;
+
+  const buttonText = autoAccepted ? "Go to Dashboard" : "Accept Invitation";
+  const buttonUrl = autoAccepted ? `${baseUrl}/dashboard` : acceptUrl;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f5; padding: 40px 20px; margin: 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background: #f4f4f5;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 8px; overflow: hidden;">
+        <tr><td style="background: #1a5c38; padding: 24px 32px;">
+          <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 600;">${heading}</h1>
+        </td></tr>
+        <tr><td style="padding: 32px;">
+          <p style="margin: 0 0 16px; color: #374151; font-size: 15px; line-height: 1.6;">${bodyText}</p>
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="${buttonUrl}" style="display: inline-block; background: #1a5c38; color: #ffffff; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">${buttonText}</a>
+          </div>
+          <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">If you didn't expect this invitation, you can safely ignore this email.</p>
+        </td></tr>
+        <tr><td style="padding: 16px 32px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #9ca3af; font-size: 12px;">Sent by <a href="https://www.teevents.golf" style="color: #1a5c38; text-decoration: none; font-weight: bold;">TeeVents</a></p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "TeeVents <notifications@notifications.teevents.golf>",
+        to: [recipientEmail],
+        subject,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(`Failed to send invitation email to ${recipientEmail}:`, err);
+    } else {
+      console.log(`Invitation email sent to ${recipientEmail}`);
+    }
+  } catch (err) {
+    console.error(`Error sending invitation email to ${recipientEmail}:`, err);
+  }
+}

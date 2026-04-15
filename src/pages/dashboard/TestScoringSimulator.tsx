@@ -317,7 +317,7 @@ export default function TestScoringSimulator() {
                   </div>
                 </div>
                 {tournament.test_mode_enabled && (
-                  <Badge variant="outline" className="border-amber-500 text-amber-600">
+                  <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
                     <AlertTriangle className="h-3 w-3 mr-1" /> Test Mode Active
                   </Badge>
                 )}

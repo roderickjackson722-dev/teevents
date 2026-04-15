@@ -80,13 +80,14 @@ serve(async (req) => {
 
     if (inviteError) throw inviteError;
 
-    // Check if user already exists — auto-accept
+    // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const invitedUser = existingUsers?.users?.find(
       (u: any) => u.email?.toLowerCase() === email.toLowerCase()
     );
 
     if (invitedUser) {
+      // Existing user — check if already a member
       const { data: alreadyMember } = await supabaseAdmin
         .from("org_members")
         .select("id")
@@ -108,16 +109,45 @@ serve(async (req) => {
           .update({ status: "accepted" })
           .eq("id", invite.id);
 
-        await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, true, memberRole);
+        await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, true, memberRole, null);
 
         return new Response(
           JSON.stringify({ success: true, auto_accepted: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Already a member
+      return new Response(
+        JSON.stringify({ success: true, already_member: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, false, memberRole);
+    // New user — generate a magic link so they can authenticate without a password
+    const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
+    const redirectTo = `${baseUrl}/accept-invitation?token=${invite.token}`;
+
+    let magicLinkUrl: string | null = null;
+    try {
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email: email.toLowerCase(),
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (!linkError && linkData?.properties?.action_link) {
+        magicLinkUrl = linkData.properties.action_link;
+      } else {
+        console.warn("Could not generate magic link:", linkError?.message);
+      }
+    } catch (err) {
+      console.warn("Magic link generation failed, falling back to standard invite:", err);
+    }
+
+    await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, false, memberRole, magicLinkUrl);
 
     return new Response(
       JSON.stringify({ success: true, invitation_id: invite.id }),
@@ -138,7 +168,8 @@ async function sendInvitationEmail(
   orgName: string,
   token: string,
   autoAccepted: boolean,
-  role: string
+  role: string,
+  magicLinkUrl: string | null
 ) {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) {
@@ -151,6 +182,12 @@ async function sendInvitationEmail(
   const greeting = recipientName ? `Hi ${recipientName},` : "Hi,";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
 
+  // For new users with a magic link, use the magic link as the CTA
+  // For existing users, use the standard accept URL or dashboard link
+  const buttonUrl = autoAccepted
+    ? `${baseUrl}/dashboard`
+    : (magicLinkUrl || acceptUrl);
+
   const subject = autoAccepted
     ? `You've been added to ${orgName} on TeeVents`
     : `You're invited to join ${orgName} on TeeVents`;
@@ -161,10 +198,17 @@ async function sendInvitationEmail(
 
   const bodyText = autoAccepted
     ? `${greeting}<br><br>You have been added as a <strong>${roleLabel}</strong> to <strong>${orgName}</strong> on TeeVents. You can now log in and start managing tournaments.`
-    : `${greeting}<br><br>You've been invited to join <strong>${orgName}</strong> as a <strong>${roleLabel}</strong> on TeeVents. Click the button below to accept the invitation and get started.`;
+    : magicLinkUrl
+      ? `${greeting}<br><br>You've been invited to join <strong>${orgName}</strong> as a <strong>${roleLabel}</strong> on TeeVents.<br><br>Click the button below to accept the invitation — no password needed. You'll be signed in automatically.`
+      : `${greeting}<br><br>You've been invited to join <strong>${orgName}</strong> as a <strong>${roleLabel}</strong> on TeeVents. Click the button below to accept the invitation and get started.`;
 
-  const buttonText = autoAccepted ? "Go to Dashboard" : "Accept Invitation";
-  const buttonUrl = autoAccepted ? `${baseUrl}/dashboard` : acceptUrl;
+  const buttonText = autoAccepted
+    ? "Go to Dashboard"
+    : "Accept Invitation";
+
+  const expiryNote = !autoAccepted && magicLinkUrl
+    ? `<p style="margin: 16px 0 0; color: #6b7280; font-size: 13px; text-align: center;">This link expires in 24 hours. If it has expired, ask the tournament organizer to resend the invitation.</p>`
+    : "";
 
   const html = `
 <!DOCTYPE html>
@@ -182,7 +226,8 @@ async function sendInvitationEmail(
           <div style="text-align: center; margin: 28px 0;">
             <a href="${buttonUrl}" style="display: inline-block; background: #1a5c38; color: #ffffff; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">${buttonText}</a>
           </div>
-          <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">If you didn't expect this invitation, you can safely ignore this email.</p>
+          ${expiryNote}
+          <p style="margin: 16px 0 0; color: #9ca3af; font-size: 12px; text-align: center;">If you didn't expect this invitation, you can safely ignore this email.</p>
         </td></tr>
         <tr><td style="padding: 16px 32px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
           <p style="margin: 0; color: #9ca3af; font-size: 12px;">Sent by <a href="https://www.teevents.golf" style="color: #1a5c38; text-decoration: none; font-weight: bold;">TeeVents</a></p>

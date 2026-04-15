@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +13,7 @@ import { toast } from "sonner";
 import {
   DollarSign, TrendingUp, CreditCard, RotateCcw, Loader2, Search,
   Trophy, Download, Receipt, Mail, CheckCircle, XCircle, Clock,
-  ArrowUpRight, ArrowDownRight, Users, RefreshCw, Wallet, Calendar,
-  Banknote, Info, ShieldCheck, FileText, AlertTriangle,
+  ArrowUpRight, Users, FileText, Info, ExternalLink,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -68,31 +67,14 @@ interface PlatformTransaction {
   amount_cents: number;
   platform_fee_cents: number;
   net_amount_cents: number;
-  hold_amount_cents: number | null;
-  hold_status: string | null;
-  hold_release_date: string | null;
   type: string;
   status: string;
   description: string | null;
   created_at: string;
   tournament_id: string | null;
+  metadata: any;
+  stripe_payment_intent_id: string | null;
 }
-
-interface Payout {
-  id: string;
-  amount_cents: number;
-  platform_fees_cents: number;
-  status: string;
-  period_start: string;
-  period_end: string;
-  transaction_count: number;
-  notes: string | null;
-  created_at: string;
-  stripe_transfer_id: string | null;
-}
-
-const RESERVE_PERCENT = 15;
-const MIN_WITHDRAWAL = 2500; // $25 in cents
 
 const Finances = () => {
   const { org } = useOrgContext();
@@ -103,13 +85,11 @@ const Finances = () => {
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
   const [platformTransactions, setPlatformTransactions] = useState<PlatformTransaction[]>([]);
-  const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);
-  const [withdrawing, setWithdrawing] = useState(false);
 
   // CSV report state
   const [reportType, setReportType] = useState("transactions");
@@ -131,21 +111,14 @@ const Finances = () => {
         setLoading(false);
       });
 
-    Promise.all([
-      supabase
-        .from("platform_transactions")
-        .select("*")
-        .eq("organization_id", org.orgId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("organization_payouts")
-        .select("*")
-        .eq("organization_id", org.orgId)
-        .order("created_at", { ascending: false }),
-    ]).then(([txRes, payoutRes]) => {
-      setPlatformTransactions((txRes.data as PlatformTransaction[]) || []);
-      setPayouts((payoutRes.data as Payout[]) || []);
-    });
+    supabase
+      .from("platform_transactions")
+      .select("*")
+      .eq("organization_id", org.orgId)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setPlatformTransactions((data as PlatformTransaction[]) || []);
+      });
   }, [org]);
 
   const fetchData = useCallback(async () => {
@@ -193,107 +166,12 @@ const Finances = () => {
   };
 
   const paidRegistrations = registrations.filter((r) => r.payment_status === "paid");
-  const refundedRegistrations = registrations.filter((r) => r.payment_status === "refunded");
-  const totalRevenue = paidRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
-  const totalRefunded = refundedRegistrations.reduce((sum, r) => sum + getRegistrationAmount(r), 0);
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
-  // Escrow calculations - use hold_status and hold_amount_cents from DB
-  const totalCollected = platformTransactions
-    .reduce((sum, t) => sum + t.amount_cents, 0);
-
-  const totalPlatformFees = platformTransactions
-    .reduce((sum, t) => sum + t.platform_fee_cents, 0);
-
-  // Pending hold = hold_amount on transactions where hold is still active
-  const pendingHold = platformTransactions
-    .filter((t) => t.hold_status === "active" && t.status !== "paid_out")
-    .reduce((sum, t) => sum + (t.hold_amount_cents || 0), 0);
-
-  // Available = released holds (full net) + held transactions (net minus hold) - already paid out
-  const releasedAvailable = platformTransactions
-    .filter((t) => t.hold_status === "released" && t.status !== "paid_out")
-    .reduce((sum, t) => sum + t.net_amount_cents, 0);
-
-  const heldAvailable = platformTransactions
-    .filter((t) => t.hold_status === "active" && t.status === "held")
-    .reduce((sum, t) => sum + (t.net_amount_cents - (t.hold_amount_cents || 0)), 0);
-
-  const availableForPayout = releasedAvailable + heldAvailable;
-
-  // 5-business-day clearance logic
-  const addBusinessDays = (date: Date, days: number): Date => {
-    const result = new Date(date);
-    let added = 0;
-    while (added < days) {
-      result.setDate(result.getDate() + 1);
-      const day = result.getDay();
-      if (day !== 0 && day !== 6) added++;
-    }
-    return result;
-  };
-
-  const now = new Date();
-
-  // Pending clearance: transactions created within last 5 business days
-  const pendingClearanceTxs = platformTransactions.filter((t) => {
-    const clearDate = addBusinessDays(new Date(t.created_at), 5);
-    return clearDate > now && t.status !== "paid_out";
-  });
-  const pendingClearance = pendingClearanceTxs.reduce((sum, t) => sum + t.net_amount_cents, 0);
-  const pendingClearanceCount = pendingClearanceTxs.length;
-
-  // Cleared available: transactions past 5-day hold AND not yet paid out
-  const clearedAvailable = platformTransactions
-    .filter((t) => {
-      const clearDate = addBusinessDays(new Date(t.created_at), 5);
-      return clearDate <= now && t.status !== "paid_out";
-    })
-    .reduce((sum, t) => sum + t.net_amount_cents - (t.hold_amount_cents || 0), 0);
-
-  const totalPaidOut = payouts
-    .filter((p) => p.status === "completed")
-    .reduce((sum, p) => sum + p.amount_cents, 0);
-
-  // Next payout date
-  const getNextPayoutDate = () => {
-    const now = new Date();
-    const day = now.getDate();
-    const month = now.getMonth();
-    const year = now.getFullYear();
-    if (day < 15) return new Date(year, month, 15);
-    return new Date(year, month + 1, 1);
-  };
-  const nextPayoutDate = getNextPayoutDate();
-
-  // Manual withdrawal with 7-day dispute check
-  const handleWithdraw = async () => {
-    if (demoGuard()) return;
-    if (availableForPayout < MIN_WITHDRAWAL) {
-      toast.error(`Minimum withdrawal is $${(MIN_WITHDRAWAL / 100).toFixed(2)}`);
-      return;
-    }
-    setWithdrawing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("process-biweekly-payouts", {
-        body: { manual: true, organization_id: org?.orgId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const amount = data?.results?.[0]?.amount;
-      toast.success(amount ? `Withdrawal of $${(amount / 100).toFixed(2)} initiated! Funds arrive in 1-3 business days.` : "Withdrawal processed!");
-      // Refresh data
-      const [txRes, payoutRes] = await Promise.all([
-        supabase.from("platform_transactions").select("*").eq("organization_id", org!.orgId).order("created_at", { ascending: false }),
-        supabase.from("organization_payouts").select("*").eq("organization_id", org!.orgId).order("created_at", { ascending: false }),
-      ]);
-      setPlatformTransactions((txRes.data as PlatformTransaction[]) || []);
-      setPayouts((payoutRes.data as Payout[]) || []);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to process withdrawal");
-    }
-    setWithdrawing(false);
-  };
+  // Summary stats from platform_transactions
+  const totalCollected = platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
+  const totalPlatformFees = platformTransactions.reduce((sum, t) => sum + t.platform_fee_cents, 0);
+  const totalNetToOrganizer = platformTransactions.reduce((sum, t) => sum + t.net_amount_cents, 0);
 
   // CSV report generation
   const getDateFilterRange = (): { start: Date | null; end: Date | null } => {
@@ -335,52 +213,36 @@ const Finances = () => {
   };
 
   const handleGenerateReport = () => {
-    const tournamentMap = Object.fromEntries(tournaments.map((t) => [t.id, t]));
-
     if (reportType === "transactions") {
       const filtered = filterByDate(platformTransactions);
       const headers = [
-        "Transaction ID", "Type", "Date", "Gross Amount ($)", "Platform Fee 5% ($)",
-        "Hold Amount 15% ($)", "Net Available ($)", "Hold Status", "Status",
+        "Date", "Type", "Description", "Gross Amount ($)", "Platform Fee ($)",
+        "Net to Organizer ($)", "Status",
       ];
-      const rows = filtered.map((tx) => {
-        const holdAmt = tx.hold_amount_cents || 0;
-        const netAvailable = tx.net_amount_cents - holdAmt;
-        return [
-          tx.id, tx.type, new Date(tx.created_at).toLocaleDateString(),
-          (tx.amount_cents / 100).toFixed(2), (tx.platform_fee_cents / 100).toFixed(2),
-          (holdAmt / 100).toFixed(2), (netAvailable / 100).toFixed(2),
-          tx.hold_status || "n/a", tx.status,
-        ];
-      });
+      const rows = filtered.map((tx) => [
+        new Date(tx.created_at).toLocaleDateString(),
+        tx.type,
+        tx.description || "-",
+        (tx.amount_cents / 100).toFixed(2),
+        (tx.platform_fee_cents / 100).toFixed(2),
+        (tx.net_amount_cents / 100).toFixed(2),
+        tx.status,
+      ]);
       downloadCSV("transaction-history.csv", headers, rows);
       toast.success(`Exported ${rows.length} transactions`);
-    } else if (reportType === "payouts") {
-      const filtered = filterByDate(payouts);
-      const headers = [
-        "Payout Date", "Amount ($)", "Method", "Transactions", "Status", "Transfer ID",
-      ];
-      const rows = filtered.map((p) => [
-        new Date(p.created_at).toLocaleDateString(), (p.amount_cents / 100).toFixed(2),
-        "Stripe", String(p.transaction_count), p.status, p.stripe_transfer_id || "-",
-      ]);
-      downloadCSV("payout-history.csv", headers, rows);
-      toast.success(`Exported ${rows.length} payouts`);
     } else if (reportType === "summary") {
       const headers = [
-        "Event Name", "Event Date", "Total Registrations", "Gross Revenue ($)",
-        "Platform Fees ($)", "Held Amount ($)", "Released ($)", "Paid Out ($)",
+        "Event Name", "Total Transactions", "Gross Revenue ($)",
+        "Platform Fees ($)", "Net to Organizer ($)",
       ];
       const rows = tournaments.map((t) => {
         const txs = platformTransactions.filter((tx) => tx.tournament_id === t.id);
         const gross = txs.reduce((s, tx) => s + tx.amount_cents, 0);
         const fees = txs.reduce((s, tx) => s + tx.platform_fee_cents, 0);
-        const held = txs.filter((tx) => tx.status === "held").reduce((s, tx) => s + tx.net_amount_cents, 0);
-        const paid = txs.filter((tx) => tx.status === "paid_out").reduce((s, tx) => s + tx.net_amount_cents, 0);
+        const net = txs.reduce((s, tx) => s + tx.net_amount_cents, 0);
         return [
-          t.title, "-", String(txs.length),
-          (gross / 100).toFixed(2), (fees / 100).toFixed(2),
-          (held / 100).toFixed(2), "0.00", (paid / 100).toFixed(2),
+          t.title, String(txs.length),
+          (gross / 100).toFixed(2), (fees / 100).toFixed(2), (net / 100).toFixed(2),
         ];
       });
       downloadCSV("event-summary.csv", headers, rows);
@@ -389,8 +251,8 @@ const Finances = () => {
       const year = new Date().getFullYear();
       const gross = platformTransactions.reduce((s, t) => s + t.amount_cents, 0);
       const fees = platformTransactions.reduce((s, t) => s + t.platform_fee_cents, 0);
-      const net = gross - fees;
-      const headers = ["Year", "Total Gross Revenue ($)", "Total Platform Fees ($)", "Total Net Received ($)"];
+      const net = platformTransactions.reduce((s, t) => s + t.net_amount_cents, 0);
+      const headers = ["Year", "Total Gross Revenue ($)", "Total Platform Fees ($)", "Total Net to Organizer ($)"];
       const rows = [[String(year), (gross / 100).toFixed(2), (fees / 100).toFixed(2), (net / 100).toFixed(2)]];
       downloadCSV("tax-summary.csv", headers, rows);
       toast.success("Tax summary exported");
@@ -509,16 +371,6 @@ const Finances = () => {
     }
   };
 
-  const payoutStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed": return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle className="h-3 w-3 mr-1" />Paid</Badge>;
-      case "processing": return <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50"><Loader2 className="h-3 w-3 mr-1 animate-spin" />Processing</Badge>;
-      case "pending_setup": return <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-3 w-3 mr-1" />Setup Required</Badge>;
-      case "failed": return <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50"><XCircle className="h-3 w-3 mr-1" />Failed</Badge>;
-      default: return <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-3 w-3 mr-1" />{status}</Badge>;
-    }
-  };
-
   if (loading && tournaments.length === 0) {
     return (
       <div className="flex justify-center py-12">
@@ -543,7 +395,7 @@ const Finances = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Finances</h1>
-          <p className="text-muted-foreground mt-1">Revenue, payouts, reserves, and refund management</p>
+          <p className="text-muted-foreground mt-1">Transaction history and revenue tracking</p>
         </div>
         <div className="flex items-center gap-3">
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
@@ -564,16 +416,16 @@ const Finances = () => {
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 flex items-start gap-3">
         <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
         <div>
-          <p className="text-sm font-medium text-foreground">Payments split automatically at checkout — TeeVents never holds your money.</p>
+          <p className="text-sm font-medium text-foreground">Payments go directly to your Stripe account — TeeVents never holds your money.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Stripe deducts the 5% platform fee and processing fee, then deposits net proceeds directly in your connected Stripe account. Withdraw to your bank on your schedule.{" "}
+            At checkout, Stripe deducts the $5 platform fee and processing fee, then deposits the net proceeds directly in your connected Stripe account. Withdraw to your bank on your schedule.{" "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
           </p>
         </div>
       </div>
 
-      {/* Revenue Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+      {/* Revenue Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100">
@@ -585,128 +437,74 @@ const Finances = () => {
           <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4 border-secondary/30">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-secondary/10">
-              <Wallet className="h-4 w-4 text-secondary" />
-            </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Pending Hold <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[220px]">15% of gross registration held until 15 days after event ends to cover chargebacks.</TooltipContent></Tooltip>
-          </div>
-          <p className="text-2xl font-bold text-secondary">${(pendingHold / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">15% reserve active</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4 border-amber-200">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-amber-100">
-              <ShieldCheck className="h-4 w-4 text-amber-600" />
+              <Receipt className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">TeeVents Platform Fee (5%) <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">TeeVents charges a 5% platform fee per transaction covering processing, platform, and support.</TooltipContent></Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">
+                  Platform Fees <Info className="h-3 w-3" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[220px]">$5 flat fee per transaction deducted automatically by Stripe at checkout.</TooltipContent>
+            </Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">5% per transaction</p>
+          <p className="text-xs text-muted-foreground mt-1">$5 per transaction</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card rounded-lg border border-border p-4 border-blue-200">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-blue-100">
-              <Clock className="h-4 w-4 text-blue-600" />
-            </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Pending Clearance <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">Funds are held for 5 business days to ensure payment clearance. This protects both organizers and players from chargebacks or disputes.</TooltipContent></Tooltip>
-          </div>
-          <p className="text-2xl font-bold text-blue-600">${(pendingClearance / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{pendingClearanceCount > 0 ? `${pendingClearanceCount} transaction(s) clearing` : "All funds cleared"}</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-primary/10">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
-            <Tooltip><TooltipTrigger asChild><span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">Available <Info className="h-3 w-3" /></span></TooltipTrigger><TooltipContent className="max-w-[240px]">Funds that have cleared the 5-business-day hold period and are ready for payout.</TooltipContent></Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">
+                  Net to Your Stripe <Info className="h-3 w-3" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[240px]">Total deposited directly to your connected Stripe account after platform and processing fees.</TooltipContent>
+            </Tooltip>
           </div>
-          <p className="text-2xl font-bold text-primary">${(Math.max(0, clearedAvailable) / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{clearedAvailable > 0 ? "Ready for payout" : "No cleared funds"}</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-blue-100">
-              <Calendar className="h-4 w-4 text-blue-600" />
-            </div>
-            <span className="text-xs text-muted-foreground font-medium">Next Auto Payout</span>
-          </div>
-          <p className="text-lg font-bold text-foreground">
-            {nextPayoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {clearedAvailable > 0 ? `~$${(clearedAvailable / 100).toFixed(2)}` : "No funds available"}
-          </p>
-          <p className="text-xs text-muted-foreground">Funds available 5 days after each transaction</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-emerald-100">
-              <Banknote className="h-4 w-4 text-emerald-600" />
-            </div>
-            <span className="text-xs text-muted-foreground font-medium">Total Paid Out</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">${(totalPaidOut / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{payouts.filter((p) => p.status === "completed").length} payouts</p>
+          <p className="text-2xl font-bold text-primary">${(totalNetToOrganizer / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe account</p>
         </motion.div>
       </div>
 
-      {/* Fees Paid Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-card rounded-lg border border-border p-4 flex items-center gap-4">
-          <div className="p-3 rounded-full bg-muted">
-            <Receipt className="h-5 w-5 text-muted-foreground" />
+      {/* Stripe Dashboard Link */}
+      <div className="bg-card rounded-lg border border-border p-4 mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-full bg-primary/10">
+            <ArrowUpRight className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">TeeVents Platform Fee (5%)</p>
-            <p className="text-xl font-bold text-foreground">${(totalPlatformFees / 100).toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">5% per transaction</p>
+            <p className="text-sm font-medium text-foreground">Manage Your Funds</p>
+            <p className="text-xs text-muted-foreground">View balances, payout history, and transfer funds to your bank in your Stripe Dashboard.</p>
           </div>
         </div>
-
-        {/* Manual withdrawal */}
-        <div className="bg-card rounded-lg border border-border p-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <ArrowUpRight className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Withdraw Funds</p>
-              <p className="text-sm text-muted-foreground">Min $25.00 • Available: ${(Math.max(0, clearedAvailable) / 100).toFixed(2)}</p>
-            </div>
-          </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="sm"
-                disabled={availableForPayout < MIN_WITHDRAWAL || withdrawing}
-              >
-                {withdrawing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Banknote className="h-4 w-4 mr-1" />}
-                Withdraw
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Withdraw Funds</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Transfer <span className="font-semibold">${(availableForPayout / 100).toFixed(2)}</span> to your connected Stripe account? This cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleWithdraw}>
-                  Yes, Withdraw
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={async () => {
+            try {
+              const { data, error } = await supabase.functions.invoke("stripe-connect-dashboard");
+              if (error || !data?.url) {
+                toast.error("Unable to open Stripe Dashboard. Please ensure Stripe is connected in Payout Settings.");
+                return;
+              }
+              window.open(data.url, "_blank");
+            } catch {
+              toast.error("Unable to open Stripe Dashboard.");
+            }
+          }}
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          Open Stripe Dashboard
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -716,10 +514,6 @@ const Finances = () => {
             <TabsTrigger value="transactions">
               <CreditCard className="h-4 w-4 mr-1.5" />
               Transactions
-            </TabsTrigger>
-            <TabsTrigger value="payouts">
-              <Banknote className="h-4 w-4 mr-1.5" />
-              Payouts
             </TabsTrigger>
             <TabsTrigger value="refunds">
               <RotateCcw className="h-4 w-4 mr-1.5" />
@@ -755,7 +549,7 @@ const Finances = () => {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search transactions..."
+              placeholder="Search by name or email..."
               className="pl-9 bg-card"
             />
           </div>
@@ -772,14 +566,12 @@ const Finances = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                     <tr className="border-b border-border bg-muted/30">
+                    <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee (5%)</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Platform Fee</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net to Stripe</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Clear Date</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Actions</th>
                     </tr>
@@ -787,12 +579,8 @@ const Finances = () => {
                   <tbody>
                     {filteredRegistrations.map((reg) => {
                       const gross = getRegistrationAmount(reg);
-                      const fee = Math.round(gross * 0.05);
-                      const afterFee = gross - fee;
-                      const hold = Math.round(afterFee * 0.15);
-                      const net = afterFee - hold;
-                      const clearDate = addBusinessDays(new Date(reg.created_at), 5);
-                      const isCleared = clearDate <= now;
+                      const fee = 500; // $5 flat fee
+                      const net = gross - fee;
                       return (
                         <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="p-3">
@@ -800,22 +588,9 @@ const Finances = () => {
                             <p className="text-xs text-muted-foreground">{reg.email}</p>
                           </td>
                           <td className="p-3 font-semibold text-sm text-foreground">${(gross / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(fee / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-amber-600 hidden lg:table-cell">${(hold / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">$5.00</td>
                           <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
                           <td className="p-3">{statusBadge(reg.payment_status)}</td>
-                          <td className="p-3 hidden md:table-cell">
-                            {isCleared ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs"><CheckCircle className="h-3 w-3 mr-1" />Cleared</Badge>
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50 text-xs cursor-help"><Clock className="h-3 w-3 mr-1" />{clearDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>Funds clear on {clearDate.toLocaleDateString()}</TooltipContent>
-                              </Tooltip>
-                            )}
-                          </td>
                           <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
                           <td className="p-3">
                             <div className="flex items-center justify-end gap-1">
@@ -837,7 +612,7 @@ const Finances = () => {
                                         <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
                                         <AlertDialogDescription>
                                           Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                          {" "}(${(gross / 100).toFixed(2)})? This will process the refund from held funds and cannot be undone.
+                                          {" "}(${(gross / 100).toFixed(2)})? The refund will be processed through Stripe and cannot be undone.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
@@ -858,59 +633,6 @@ const Finances = () => {
                   </tbody>
                 </table>
               </div>
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Payouts Tab */}
-        <TabsContent value="payouts" className="space-y-4">
-          {payouts.length === 0 ? (
-            <div className="text-center py-12 bg-muted/20 rounded-lg border border-border">
-              <Banknote className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-sm font-medium text-muted-foreground">No payouts yet</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Payouts are processed automatically on the 1st and 15th of each month. A 15% reserve is held until 15 days post-event.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {payouts.map((payout) => (
-                <div key={payout.id} className="bg-card rounded-lg border border-border p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="font-semibold text-foreground text-lg">${(payout.amount_cents / 100).toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(payout.period_start).toLocaleDateString()} — {new Date(payout.period_end).toLocaleDateString()}
-                      </p>
-                    </div>
-                    {payoutStatusBadge(payout.status)}
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Transactions</p>
-                      <p className="font-medium text-foreground">{payout.transaction_count}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Platform Fee (5%)</p>
-                      <p className="font-medium text-foreground">${(payout.platform_fees_cents / 100).toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Method</p>
-                      <p className="font-medium text-foreground">Stripe</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Net Payout</p>
-                      <p className="font-bold text-primary">${(payout.amount_cents / 100).toFixed(2)}</p>
-                    </div>
-                  </div>
-                  {payout.stripe_transfer_id && (
-                    <p className="text-xs text-muted-foreground mt-2">Transfer: {payout.stripe_transfer_id}</p>
-                  )}
-                  {payout.notes && (
-                    <p className="text-xs text-muted-foreground mt-2 italic">{payout.notes}</p>
-                  )}
-                </div>
-              ))}
             </div>
           )}
         </TabsContent>
@@ -979,7 +701,7 @@ const Finances = () => {
                               <AlertDialogDescription>
                                 Are you sure you want to approve a ${(req.amount_cents / 100).toFixed(2)} refund for{" "}
                                 <span className="font-semibold">{req.registration?.first_name} {req.registration?.last_name}</span>?
-                                This will be deducted from held funds and cannot be undone.
+                                The refund will be processed through Stripe and cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -1038,7 +760,6 @@ const Finances = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="transactions">Transaction History</SelectItem>
-                    <SelectItem value="payouts">Payout History</SelectItem>
                     <SelectItem value="summary">Event Summary</SelectItem>
                     <SelectItem value="tax">Tax Summary (Annual)</SelectItem>
                   </SelectContent>
@@ -1078,17 +799,16 @@ const Finances = () => {
 
             <div className="mt-6 border-t border-border pt-4">
               <h4 className="text-sm font-medium text-muted-foreground mb-3">Available Reports</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { type: "transactions", title: "Transaction History", desc: "All registrations with fee & hold breakdown" },
-                  { type: "payouts", title: "Payout History", desc: "All completed and pending payouts" },
+                  { type: "transactions", title: "Transaction History", desc: "All transactions with fee breakdown" },
                   { type: "summary", title: "Event Summary", desc: "Revenue totals per tournament" },
-                  { type: "tax", title: "Tax Summary", desc: "Annual gross, fees, and net for tax reporting" },
+                  { type: "tax", title: "Tax Summary", desc: "Annual totals for tax reporting" },
                 ].map((r) => (
                   <button
                     key={r.type}
                     onClick={() => { setReportType(r.type); handleGenerateReport(); }}
-                    className="text-left p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                    className="text-left p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 transition-colors"
                   >
                     <p className="text-sm font-medium text-foreground">{r.title}</p>
                     <p className="text-xs text-muted-foreground">{r.desc}</p>

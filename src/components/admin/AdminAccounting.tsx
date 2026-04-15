@@ -18,9 +18,6 @@ interface Transaction {
   amount_cents: number;
   platform_fee_cents: number;
   net_amount_cents: number;
-  hold_amount_cents: number | null;
-  hold_status: string | null;
-  hold_release_date: string | null;
   type: string;
   status: string;
   description: string | null;
@@ -136,9 +133,8 @@ const AdminAccounting = () => {
   // Summary stats
   const totalPlatformRevenue = filteredTx.reduce((s, t) => s + t.platform_fee_cents, 0);
   const totalGross = filteredTx.reduce((s, t) => s + t.amount_cents, 0);
-  const totalHeld = filteredTx.filter((t) => t.hold_status === "active").reduce((s, t) => s + (t.hold_amount_cents || 0), 0);
+  const totalNetToOrganizers = filteredTx.reduce((s, t) => s + t.net_amount_cents, 0);
   const totalPaidOut = payouts.filter((p) => p.status === "completed").reduce((s, p) => s + p.amount_cents, 0);
-  const pendingPayouts = filteredTx.filter((t) => t.status === "held" && t.hold_status !== "active").reduce((s, t) => s + t.net_amount_cents, 0);
 
   // Discrepancy check
   const discrepancies = filteredTx.filter((tx) => {
@@ -160,8 +156,8 @@ const AdminAccounting = () => {
   const handleExportTransactions = () => {
     const headers = [
       "Transaction ID", "Date", "Organizer", "Tournament", "Type", "Status",
-      "Gross ($)", "Platform Fee $5 ($)", "Hold 15% ($)", "Net to Organizer ($)",
-      "Hold Status", "Hold Release Date", "Stripe PI", "Stripe Session",
+      "Gross ($)", "Platform Fee ($)", "Net to Organizer ($)",
+      "Stripe PI", "Stripe Session",
     ];
     const rows = filteredTx.map((tx) => [
       tx.id, new Date(tx.created_at).toLocaleDateString(),
@@ -169,8 +165,7 @@ const AdminAccounting = () => {
       tx.tournament_id ? (tournamentMap[tx.tournament_id]?.title || tx.tournament_id) : "-",
       tx.type, tx.status,
       (tx.amount_cents / 100).toFixed(2), (tx.platform_fee_cents / 100).toFixed(2),
-      ((tx.hold_amount_cents || 0) / 100).toFixed(2), (tx.net_amount_cents / 100).toFixed(2),
-      tx.hold_status || "-", tx.hold_release_date || "-",
+      (tx.net_amount_cents / 100).toFixed(2),
       tx.stripe_payment_intent_id || "-", tx.stripe_session_id || "-",
     ]);
     downloadCSV(`teevents-transactions-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
@@ -210,14 +205,14 @@ const AdminAccounting = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100"><TrendingUp className="h-4 w-4 text-emerald-600" /></div>
             <span className="text-xs text-muted-foreground font-medium">Platform Revenue</span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalPlatformRevenue / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">5% per transaction</p>
+          <p className="text-xs text-muted-foreground">$5 per transaction</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -229,11 +224,11 @@ const AdminAccounting = () => {
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-amber-100"><ShieldCheck className="h-4 w-4 text-amber-600" /></div>
-            <span className="text-xs text-muted-foreground font-medium">Total Reserve Held</span>
+            <div className="p-2 rounded-full bg-primary/10"><DollarSign className="h-4 w-4 text-primary" /></div>
+            <span className="text-xs text-muted-foreground font-medium">Net to Organizers</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600">${(totalHeld / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">15% active holds</p>
+          <p className="text-2xl font-bold text-primary">${(totalNetToOrganizers / 100).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Sent directly via Stripe</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -242,14 +237,6 @@ const AdminAccounting = () => {
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalPaidOut / 100).toFixed(2)}</p>
           <p className="text-xs text-muted-foreground">{payouts.filter((p) => p.status === "completed").length} payouts</p>
-        </div>
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 rounded-full bg-primary/10"><Clock className="h-4 w-4 text-primary" /></div>
-            <span className="text-xs text-muted-foreground font-medium">Pending Payouts</span>
-          </div>
-          <p className="text-2xl font-bold text-primary">${(pendingPayouts / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">Awaiting payout cycle</p>
         </div>
       </div>
 
@@ -317,7 +304,6 @@ const AdminAccounting = () => {
         <TabsList className="bg-card border border-border">
           <TabsTrigger value="transactions"><CreditCard className="h-4 w-4 mr-1.5" />Transactions ({filteredTx.length})</TabsTrigger>
           <TabsTrigger value="payouts"><Banknote className="h-4 w-4 mr-1.5" />Payouts ({payouts.length})</TabsTrigger>
-          <TabsTrigger value="reserves"><ShieldCheck className="h-4 w-4 mr-1.5" />Reserves</TabsTrigger>
           <TabsTrigger value="reconciliation"><FileText className="h-4 w-4 mr-1.5" />Reconciliation</TabsTrigger>
         </TabsList>
 
@@ -333,9 +319,8 @@ const AdminAccounting = () => {
                     <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Tournament</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-3">Type</th>
                     <th className="text-right text-xs font-medium text-muted-foreground p-3">Gross</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee ($5)</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Hold (15%)</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground p-3">Net</th>
+                     <th className="text-right text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Fee ($5)</th>
+                     <th className="text-right text-xs font-medium text-muted-foreground p-3">Net</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
                   </tr>
                 </thead>
@@ -348,7 +333,6 @@ const AdminAccounting = () => {
                       <td className="p-3"><Badge variant="outline" className="text-xs capitalize">{tx.type}</Badge></td>
                       <td className="p-3 text-sm font-semibold text-foreground text-right">${(tx.amount_cents / 100).toFixed(2)}</td>
                       <td className="p-3 text-sm text-muted-foreground text-right hidden md:table-cell">${(tx.platform_fee_cents / 100).toFixed(2)}</td>
-                      <td className="p-3 text-sm text-amber-600 text-right hidden lg:table-cell">${((tx.hold_amount_cents || 0) / 100).toFixed(2)}</td>
                       <td className="p-3 text-sm font-medium text-primary text-right">${(tx.net_amount_cents / 100).toFixed(2)}</td>
                       <td className="p-3">{statusBadge(tx.status)}</td>
                     </tr>
@@ -395,42 +379,6 @@ const AdminAccounting = () => {
           </div>
         </TabsContent>
 
-        {/* Reserves */}
-        <TabsContent value="reserves">
-          <div className="bg-card rounded-lg border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Organizer</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Tournament</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground p-3">Hold Amount</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Release Date</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.filter((t) => (t.hold_amount_cents || 0) > 0).map((tx) => (
-                    <tr key={tx.id} className="border-b border-border last:border-0 hover:bg-muted/20">
-                      <td className="p-3 text-sm font-medium text-foreground">{orgMap[tx.organization_id]?.name || "—"}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{tx.tournament_id ? (tournamentMap[tx.tournament_id]?.title || "—") : "—"}</td>
-                      <td className="p-3 text-sm font-semibold text-amber-600 text-right">${((tx.hold_amount_cents || 0) / 100).toFixed(2)}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{tx.hold_release_date || "—"}</td>
-                      <td className="p-3">
-                        {tx.hold_status === "active" ? (
-                          <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-xs">Active</Badge>
-                        ) : (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-xs">Released</Badge>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </TabsContent>
-
         {/* Reconciliation */}
         <TabsContent value="reconciliation">
           <div className="space-y-4">
@@ -440,23 +388,21 @@ const AdminAccounting = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/30">
+                     <tr className="border-b border-border bg-muted/30">
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Organizer</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Gross</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Fees ($5)</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Held</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Net Owed</th>
+                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Net to Organizer</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Paid Out</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                     </tr>
+                   </thead>
+                   <tbody>
                     {orgs.map((org) => {
                       const orgTx = transactions.filter((t) => t.organization_id === org.id);
                       const gross = orgTx.reduce((s, t) => s + t.amount_cents, 0);
                       if (gross === 0) return null;
                       const fees = orgTx.reduce((s, t) => s + t.platform_fee_cents, 0);
-                      const held = orgTx.filter((t) => t.hold_status === "active").reduce((s, t) => s + (t.hold_amount_cents || 0), 0);
                       const netOwed = orgTx.reduce((s, t) => s + t.net_amount_cents, 0);
                       const paidOut = payouts.filter((p) => p.organization_id === org.id && p.status === "completed").reduce((s, p) => s + p.amount_cents, 0);
                       const balance = netOwed - paidOut;
@@ -465,7 +411,6 @@ const AdminAccounting = () => {
                           <td className="p-3 text-sm font-medium text-foreground">{org.name}</td>
                           <td className="p-3 text-sm text-right">${(gross / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right text-muted-foreground">${(fees / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-right text-amber-600">${(held / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right font-medium">${(netOwed / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right text-emerald-600">${(paidOut / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm text-right font-bold text-primary">${(balance / 100).toFixed(2)}</td>

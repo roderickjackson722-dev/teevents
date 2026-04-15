@@ -1,11 +1,11 @@
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
-import { ArrowLeft, DollarSign, Shield, Info, Zap } from "lucide-react";
+import { ArrowLeft, DollarSign, Shield, Zap } from "lucide-react";
 
 const FeesAndHold = () => (
   <Layout>
-    <SEO title="Fees & Payment Flow | TeeVents Help" description="Understand TeeVents' 5% platform fee and automatic payment splitting. TeeVents never holds your money." />
+    <SEO title="Fees & Payment Flow | TeeVents Help" description="Understand TeeVents' $5 flat platform fee and automatic payment splitting. TeeVents never holds your money." />
     <div className="max-w-3xl mx-auto px-4 py-16">
       <Link to="/help" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-6">
         <ArrowLeft className="h-4 w-4 mr-1" /> Back to Help Center
@@ -23,7 +23,7 @@ const FeesAndHold = () => (
           </p>
           <ol className="space-y-2 ml-6 list-decimal text-muted-foreground">
             <li>Charges the golfer the full amount</li>
-            <li>Sends TeeVents the 5% platform fee</li>
+            <li>Sends TeeVents the $5 flat platform fee</li>
             <li>Deducts Stripe's processing fee (2.9% + $0.30)</li>
             <li>Deposits the remaining balance directly in <strong>your</strong> connected Stripe account</li>
           </ol>
@@ -33,32 +33,18 @@ const FeesAndHold = () => (
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><DollarSign className="h-5 w-5 text-primary" /> The 5% Platform Fee</h2>
-          <p className="text-muted-foreground mb-4">TeeVents charges a 5% platform fee per transaction. This fee is automatically deducted by Stripe at checkout.</p>
+          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><DollarSign className="h-5 w-5 text-primary" /> The $5 Flat Platform Fee</h2>
+          <p className="text-muted-foreground mb-4">TeeVents charges a <strong>$5 flat fee per transaction</strong>. This fee is automatically deducted by Stripe at checkout.</p>
           
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h4 className="font-semibold text-foreground mb-2">Model A: Pass Fees to Golfers (Default)</h4>
-              <p className="text-sm text-muted-foreground mb-3">The golfer pays the base price plus the 5% fee and Stripe processing fee.</p>
-              <div className="text-sm space-y-1 bg-muted/50 rounded p-3">
-                <div className="flex justify-between"><span>Registration</span><span>$100.00</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>$5.00</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Processing Fee</span><span>$3.35</span></div>
-                <hr className="my-1 border-border" />
-                <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$108.35</span></div>
-                <div className="flex justify-between text-primary font-medium"><span>Deposited in Your Stripe</span><span>$100.00</span></div>
-              </div>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h4 className="font-semibold text-foreground mb-2">Model B: Absorb Fees</h4>
-              <p className="text-sm text-muted-foreground mb-3">The golfer pays only the base registration fee. Fees are deducted from your proceeds.</p>
-              <div className="text-sm space-y-1 bg-muted/50 rounded p-3">
-                <div className="flex justify-between"><span>Registration</span><span>$100.00</span></div>
-                <hr className="my-1 border-border" />
-                <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$100.00</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>−$5.00</span></div>
-                <div className="flex justify-between text-primary font-medium"><span>Deposited in Your Stripe</span><span>$95.00</span></div>
-              </div>
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h4 className="font-semibold text-foreground mb-2">Example: $150 Registration</h4>
+            <div className="text-sm space-y-1 bg-muted/50 rounded p-3">
+              <div className="flex justify-between"><span>Registration Fee</span><span>$150.00</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>TeeVents Platform Fee</span><span>−$5.00</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Stripe Processing (2.9% + $0.30)</span><span>−$4.65</span></div>
+              <hr className="my-1 border-border" />
+              <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$150.00</span></div>
+              <div className="flex justify-between text-primary font-medium"><span>Deposited in Your Stripe</span><span>$140.35</span></div>
             </div>
           </div>
         </section>

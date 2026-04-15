@@ -338,6 +338,16 @@ export default function Leaderboard() {
             </Button>
           </>
         )}
+
+        {/* Gross/Net toggle */}
+        {selectedTournament && handicapEnabled && !isTeamFormat && !isStableford && (
+          <Tabs value={scoreView} onValueChange={(v) => setScoreView(v as "gross" | "net")} className="w-auto">
+            <TabsList>
+              <TabsTrigger value="gross">Gross</TabsTrigger>
+              <TabsTrigger value="net">Net</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
       </div>
 
       {selectedTournament && leaderboardSponsors && leaderboardSponsors.length > 0 && (
@@ -502,22 +512,32 @@ export default function Leaderboard() {
                       {holes.map((h) => (
                         <TableHead key={h} className="text-center w-12 min-w-[48px]">{h}</TableHead>
                       ))}
-                      <TableHead className="text-center font-bold min-w-[60px]">Total</TableHead>
+                      <TableHead className="text-center font-bold min-w-[60px]">Gross</TableHead>
+                      {handicapEnabled && <TableHead className="text-center font-bold min-w-[60px]">Net</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {playerScores.map((ps) => {
-                      const currentTotal = holes.reduce((sum, h) => {
+                      const grossTotal = holes.reduce((sum, h) => {
                         const val = getScore(ps, h);
                         return sum + (typeof val === "number" ? val : 0);
                       }, 0);
+                      const netTotal = handicapEnabled && ps.strokes_per_hole
+                        ? holes.reduce((sum, h) => {
+                            const val = getScore(ps, h);
+                            if (typeof val !== "number") return sum;
+                            return sum + val - (ps.strokes_per_hole?.[h - 1] || 0);
+                          }, 0)
+                        : grossTotal;
                       return (
                         <TableRow key={ps.registration_id}>
                           <TableCell className="sticky left-0 bg-card z-10 font-medium">
                             {ps.first_name} {ps.last_name}
-                            {ps.handicap !== null && (
+                            {handicapEnabled && ps.playing_handicap != null ? (
+                              <span className="text-xs text-muted-foreground ml-1">({ps.playing_handicap})</span>
+                            ) : ps.handicap !== null ? (
                               <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
-                            )}
+                            ) : null}
                           </TableCell>
                           {isTeamFormat && (
                             <TableCell className="text-center text-xs text-muted-foreground">
@@ -537,8 +557,13 @@ export default function Leaderboard() {
                             </TableCell>
                           ))}
                           <TableCell className="text-center font-bold text-lg">
-                            {currentTotal > 0 ? currentTotal : "—"}
+                            {grossTotal > 0 ? grossTotal : "—"}
                           </TableCell>
+                          {handicapEnabled && (
+                            <TableCell className="text-center font-bold text-lg text-primary">
+                              {grossTotal > 0 ? netTotal : "—"}
+                            </TableCell>
+                          )}
                         </TableRow>
                       );
                     })}

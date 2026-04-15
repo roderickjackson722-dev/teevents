@@ -77,6 +77,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-yellow-400",
     items: [
       { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null },
+      { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null },
       { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget" },
       { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
       { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store" },

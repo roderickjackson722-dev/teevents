@@ -159,7 +159,7 @@ const plans = [
     price: "$0",
     period: "per tournament",
     description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    fee: "$5 platform fee per transaction + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",
@@ -177,7 +177,7 @@ const plans = [
     price: "$299",
     period: "per tournament",
     description: "Unlimited players. We build your tournament platform for you.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    fee: "$5 platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Base (unlimited players)",
       "We build your website for you",
@@ -199,13 +199,11 @@ const plans = [
     name: "Premium",
     price: "$999",
     period: "per tournament",
-    description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "White-glove consulting & full-service setup.",
+    fee: "$5 platform fee per transaction + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",
-      "Reduced 10% reserve (vs 15%)",
-      "Faster bi-weekly payouts",
       "$25,000 hole-in-one insurance (up to 72 golfers)",
       "Auction item included",
       "Merchandise store",

@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download } from "lucide-react";
+import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
+import HandicapSettings from "@/components/dashboard/HandicapSettings";
 
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();
@@ -112,6 +113,9 @@ export default function Scoring() {
             </TabsTrigger>
             <TabsTrigger value="players">
               <Users className="h-4 w-4 mr-1.5" /> Player Codes
+            </TabsTrigger>
+            <TabsTrigger value="handicap">
+              <Calculator className="h-4 w-4 mr-1.5" /> Handicap
             </TabsTrigger>
           </TabsList>
 
@@ -346,6 +350,10 @@ export default function Scoring() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          {/* ===== HANDICAP SETTINGS TAB ===== */}
+          <TabsContent value="handicap" className="space-y-4">
+            <HandicapSettings tournamentId={selectedTournament} scoringFormat={selectedData?.scoring_format || undefined} />
           </TabsContent>
         </Tabs>
       )}

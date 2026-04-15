@@ -464,7 +464,7 @@ const HowItWorks = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Golfer pays</span>
-                    <span className="font-display font-bold text-foreground">$162.15</span>
+                    <span className="font-display font-bold text-foreground">$150.00</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">TeeVents platform fee (5%)</span>
@@ -472,11 +472,11 @@ const HowItWorks = () => {
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Stripe processing (~2.9% + $0.30)</span>
-                    <span className="font-display font-bold text-destructive">−$4.70</span>
+                    <span className="font-display font-bold text-destructive">−$4.65</span>
                   </div>
                   <div className="flex justify-between items-center pt-1 bg-primary/5 rounded-lg px-3 py-2">
                     <span className="font-semibold text-primary">Net to Organizer</span>
-                    <span className="font-display font-bold text-primary text-2xl">$152.45</span>
+                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">

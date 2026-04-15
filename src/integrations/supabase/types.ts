@@ -1723,6 +1723,89 @@ export type Database = {
           },
         ]
       }
+      test_participants: {
+        Row: {
+          course_handicap: number | null
+          created_at: string
+          handicap_index: number | null
+          id: string
+          name: string
+          playing_handicap: number | null
+          tournament_id: string
+        }
+        Insert: {
+          course_handicap?: number | null
+          created_at?: string
+          handicap_index?: number | null
+          id?: string
+          name: string
+          playing_handicap?: number | null
+          tournament_id: string
+        }
+        Update: {
+          course_handicap?: number | null
+          created_at?: string
+          handicap_index?: number | null
+          id?: string
+          name?: string
+          playing_handicap?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_scores: {
+        Row: {
+          gross_score: number | null
+          hole_number: number
+          id: string
+          net_score: number | null
+          test_participant_id: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          gross_score?: number | null
+          hole_number: number
+          id?: string
+          net_score?: number | null
+          test_participant_id: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          gross_score?: number | null
+          hole_number?: number
+          id?: string
+          net_score?: number | null
+          test_participant_id?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_scores_test_participant_id_fkey"
+            columns: ["test_participant_id"]
+            isOneToOne: false
+            referencedRelation: "test_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_scores_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_auction_bids: {
         Row: {
           amount: number
@@ -2938,6 +3021,7 @@ export type Database = {
           slug: string | null
           status: string
           template: string | null
+          test_mode_enabled: boolean | null
           title: string
           updated_at: string
           waitlist_deposit_cents: number | null
@@ -2999,6 +3083,7 @@ export type Database = {
           slug?: string | null
           status?: string
           template?: string | null
+          test_mode_enabled?: boolean | null
           title: string
           updated_at?: string
           waitlist_deposit_cents?: number | null
@@ -3060,6 +3145,7 @@ export type Database = {
           slug?: string | null
           status?: string
           template?: string | null
+          test_mode_enabled?: boolean | null
           title?: string
           updated_at?: string
           waitlist_deposit_cents?: number | null

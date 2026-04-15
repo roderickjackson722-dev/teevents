@@ -15,13 +15,24 @@ interface Player {
   last_name: string;
   handicap: number | null;
   group_number: number | null;
+  playing_handicap: number | null;
+  strokes_per_hole: number[] | null;
+}
+
+interface TournamentData {
+  id: string;
+  title: string;
+  course_par: number | null;
+  scoring_format?: string;
+  handicap_enabled?: boolean;
 }
 
 export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
-  const [tournament, setTournament] = useState<{ id: string; title: string; course_par: number | null; scoring_format?: string } | null>(null);
+  const [tournament, setTournament] = useState<TournamentData | null>(null);
   const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
+  const [courseStrokeIndexes, setCourseStrokeIndexes] = useState<number[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);
   const [groupInput, setGroupInput] = useState("");
@@ -38,14 +49,15 @@ export default function LiveScoring() {
     if (!slug) return;
     supabase
       .from("tournaments")
-      .select("id, title, course_par, scoring_format")
+      .select("id, title, course_par, scoring_format, handicap_enabled")
       .eq("slug", slug)
       .eq("site_published", true)
       .single()
       .then(({ data }) => {
-        setTournament(data);
+        setTournament(data as TournamentData | null);
         setLoading(false);
         if (data) {
+          // Load sponsors
           supabase
             .from("tournament_sponsors")
             .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
@@ -53,6 +65,21 @@ export default function LiveScoring() {
             .eq("show_on_leaderboard", true)
             .order("sort_order")
             .then(({ data: sp }) => setSponsors(sp || []));
+
+          // Load course stroke indexes if handicap enabled
+          if ((data as any).handicap_enabled) {
+            supabase
+              .from("golf_courses")
+              .select("stroke_indexes")
+              .eq("tournament_id", data.id)
+              .limit(1)
+              .single()
+              .then(({ data: course }) => {
+                if (course?.stroke_indexes) {
+                  setCourseStrokeIndexes(course.stroke_indexes as number[]);
+                }
+              });
+          }
         }
       });
   }, [slug]);
@@ -62,7 +89,7 @@ export default function LiveScoring() {
     const code = searchParams.get("code");
     if (!code || !tournament || autoLogging) return;
     setAutoLogging(true);
-    
+
     (async () => {
       const { data } = await supabase
         .from("tournament_registrations")
@@ -85,7 +112,7 @@ export default function LiveScoring() {
 
     const { data: groupPlayers } = await supabase
       .from("tournament_registrations")
-      .select("id, first_name, last_name, handicap, group_number")
+      .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole")
       .eq("tournament_id", tournament.id)
       .eq("group_number", gNum)
       .order("group_position");
@@ -108,7 +135,17 @@ export default function LiveScoring() {
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
 
-    setPlayers(groupPlayers);
+    const mappedPlayers: Player[] = groupPlayers.map((p) => ({
+      id: p.id,
+      first_name: p.first_name,
+      last_name: p.last_name,
+      handicap: p.handicap,
+      group_number: p.group_number,
+      playing_handicap: p.playing_handicap,
+      strokes_per_hole: p.strokes_per_hole as number[] | null,
+    }));
+
+    setPlayers(mappedPlayers);
     setScores(scoreMap);
     setGroupNumber(gNum);
     setLoginMode(false);
@@ -154,6 +191,11 @@ export default function LiveScoring() {
     return editedScores[regId]?.[hole] ?? scores[regId]?.[hole] ?? "";
   };
 
+  const getStrokesOnHole = (player: Player, holeIndex: number): number => {
+    if (!player.strokes_per_hole || !Array.isArray(player.strokes_per_hole)) return 0;
+    return player.strokes_per_hole[holeIndex] || 0;
+  };
+
   const handleSave = async () => {
     if (!tournament) return;
     setSaving(true);
@@ -186,6 +228,7 @@ export default function LiveScoring() {
 
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const hasEdits = Object.keys(editedScores).length > 0;
+  const handicapEnabled = tournament?.handicap_enabled === true;
 
   if (loading || autoLogging) {
     return (
@@ -279,37 +322,84 @@ export default function LiveScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">Player</TableHead>
+                    {handicapEnabled && courseStrokeIndexes && (
+                      <TableHead className="text-center w-10 text-xs text-muted-foreground">SI</TableHead>
+                    )}
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}
-                    <TableHead className="text-center font-bold min-w-[50px]">Tot</TableHead>
+                    <TableHead className="text-center font-bold min-w-[50px]">Gross</TableHead>
+                    {handicapEnabled && <TableHead className="text-center font-bold min-w-[50px]">Net</TableHead>}
                   </TableRow>
+                  {/* SI row */}
+                  {handicapEnabled && courseStrokeIndexes && (
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground">SI</TableHead>
+                      {holes.map((h) => (
+                        <TableHead key={h} className="text-center text-[10px] text-muted-foreground">
+                          {courseStrokeIndexes[h - 1] || ""}
+                        </TableHead>
+                      ))}
+                      <TableHead />
+                      {handicapEnabled && <TableHead />}
+                    </TableRow>
+                  )}
                 </TableHeader>
                 <TableBody>
                   {players.map((p) => {
-                    const total = holes.reduce((sum, h) => {
+                    const grossTotal = holes.reduce((sum, h) => {
                       const val = getScore(p.id, h);
                       return sum + (typeof val === "number" ? val : 0);
                     }, 0);
+                    const netTotal = handicapEnabled
+                      ? holes.reduce((sum, h) => {
+                          const val = getScore(p.id, h);
+                          if (typeof val !== "number") return sum;
+                          return sum + val - getStrokesOnHole(p, h - 1);
+                        }, 0)
+                      : 0;
+
                     return (
                       <TableRow key={p.id}>
                         <TableCell className="sticky left-0 bg-card z-10 font-medium text-sm">
                           {p.first_name} {p.last_name?.[0]}.
-                          {p.handicap !== null && <span className="text-xs text-muted-foreground ml-1">({p.handicap})</span>}
+                          {handicapEnabled && p.playing_handicap != null && (
+                            <span className="text-xs text-muted-foreground ml-1">({p.playing_handicap})</span>
+                          )}
+                          {!handicapEnabled && p.handicap !== null && (
+                            <span className="text-xs text-muted-foreground ml-1">({p.handicap})</span>
+                          )}
                         </TableCell>
-                        {holes.map((h) => (
-                          <TableCell key={h} className="p-0.5 text-center">
-                            <Input
-                              type="number"
-                              min={0}
-                              max={20}
-                              value={getScore(p.id, h)}
-                              onChange={(e) => updateScore(p.id, h, e.target.value)}
-                              className="w-11 h-8 text-center text-sm p-0"
-                            />
+                        {holes.map((h) => {
+                          const strokeDots = handicapEnabled ? getStrokesOnHole(p, h - 1) : 0;
+                          return (
+                            <TableCell key={h} className="p-0.5 text-center">
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={20}
+                                  value={getScore(p.id, h)}
+                                  onChange={(e) => updateScore(p.id, h, e.target.value)}
+                                  className="w-11 h-8 text-center text-sm p-0"
+                                />
+                                {strokeDots > 0 && (
+                                  <div className="flex justify-center gap-0.5 mt-0.5">
+                                    {Array.from({ length: strokeDots }, (_, i) => (
+                                      <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell className="text-center font-bold">{grossTotal > 0 ? grossTotal : "—"}</TableCell>
+                        {handicapEnabled && (
+                          <TableCell className="text-center font-bold text-primary">
+                            {grossTotal > 0 ? netTotal : "—"}
                           </TableCell>
-                        ))}
-                        <TableCell className="text-center font-bold">{total > 0 ? total : "—"}</TableCell>
+                        )}
                       </TableRow>
                     );
                   })}

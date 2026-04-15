@@ -190,7 +190,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     setSaving(true);
     const { error } = await supabase
       .from("org_members")
-      .update({ role: editRole, permissions: editPerms, name: editName.trim() || null })
+      .update({ role: editRole, permissions: editPerms as any, name: editName.trim() || null })
       .eq("id", editingMember.id);
     if (error) toast.error(error.message);
     else {

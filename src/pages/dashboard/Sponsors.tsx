@@ -47,6 +47,7 @@ import {
   Check,
   Package,
 } from "lucide-react";
+import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
 
 interface Sponsor {
   id: string;

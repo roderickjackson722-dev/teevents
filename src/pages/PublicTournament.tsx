@@ -954,7 +954,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     {/* CTA */}
                     <div className="p-6 pt-2">
                       <a
-                        href={`/sponsor/${slug}?tier=${tier.id}`}
+                        href={`/t/${slug}/sponsor?tier=${tier.id}`}
                         className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
                         style={{ backgroundColor: secondary, color: primary }}
                       >

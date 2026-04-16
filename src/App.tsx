@@ -88,6 +88,7 @@ import HowPaymentsWork from "./pages/help/HowPaymentsWork";
 import CompareEventbrite from "./pages/CompareEventbrite";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
+import SponsorRegistration from "./pages/SponsorRegistration";
 
 const queryClient = new QueryClient();
 

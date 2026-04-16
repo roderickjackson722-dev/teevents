@@ -677,6 +677,14 @@ const Sponsors = () => {
         </div>
       )}
 
+      {/* Sponsorship Tiers & Online Registration */}
+      {selectedTournament && (
+        <SponsorshipTiersManager
+          tournaments={tournaments}
+          selectedTournament={selectedTournament}
+        />
+      )}
+
       {/* Sponsor Asset Management */}
       {selectedTournament && sponsors.length > 0 && (
         <SponsorAssetManager

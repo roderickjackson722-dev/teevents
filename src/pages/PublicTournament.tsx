@@ -297,6 +297,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setRegTiers((tiersRes.data as TierPublic[]) || []);
         setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
         setContests((contestsRes.data as any[]) || []);
+        setSponsorshipTiers((sponsorshipTiersRes.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));

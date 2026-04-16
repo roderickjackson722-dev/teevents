@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Download, Search, ExternalLink, StickyNote, ArrowLeft, AlertTriangle, RefreshCw, Users } from "lucide-react";
+import { Download, Search, ExternalLink, StickyNote, ArrowLeft, AlertTriangle, RefreshCw, Users, History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PayoutRow {

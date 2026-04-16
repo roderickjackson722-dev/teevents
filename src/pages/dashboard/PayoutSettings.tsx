@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -35,6 +36,14 @@ interface PayoutMethod {
   created_at: string;
 }
 
+interface ActivityLog {
+  id: string;
+  action_type: string;
+  description: string | null;
+  metadata: any;
+  created_at: string;
+}
+
 interface AuditLog {
   id: string;
   action: string;
@@ -53,17 +62,23 @@ export default function PayoutSettings() {
   const [mailingAddress, setMailingAddress] = useState("");
   const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("stripe");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [showChangeBankModal, setShowChangeBankModal] = useState(false);
   const [changingBank, setChangingBank] = useState(false);
   const [savingCheck, setSavingCheck] = useState(false);
 
+  // Legal acknowledgment state
+  const [ackFee, setAckFee] = useState(false);
+  const [ackEscrow, setAckEscrow] = useState(false);
+
   useEffect(() => {
     if (org?.orgId) {
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
       fetchOrgSettings();
+      fetchActivityLogs();
     }
   }, [org?.orgId]);
 
@@ -143,6 +158,16 @@ export default function PayoutSettings() {
     if (data) setAuditLogs(data as unknown as AuditLog[]);
   };
 
+  const fetchActivityLogs = async () => {
+    const { data } = await supabase
+      .from("activity_logs")
+      .select("id, action_type, description, metadata, created_at")
+      .eq("organization_id", org!.orgId)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (data) setActivityLogs(data as unknown as ActivityLog[]);
+  };
+
   const logAudit = async (action: string, details: Record<string, string>) => {
     if (!org?.orgId) return;
     await supabase.from("payout_audit_log").insert({
@@ -154,21 +179,46 @@ export default function PayoutSettings() {
     } as any);
   };
 
+  const logActivity = async (actionType: string, description: string, metadata?: Record<string, any>) => {
+    if (!org?.orgId) return;
+    await supabase.from("activity_logs").insert({
+      organization_id: org.orgId,
+      user_id: org.userId,
+      action_type: actionType,
+      description,
+      metadata: { ...metadata, user_agent: navigator.userAgent },
+    } as any);
+  };
+
+  const notifyAdmin = async (type: string, message: string) => {
+    await supabase.from("admin_notifications").insert({
+      type,
+      organization_id: org?.orgId,
+      message,
+    } as any);
+  };
+
   const checkStripeStatus = async () => {
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-status", { body: {} });
       if (!error && data?.charges_enabled) {
         toast.success("Your Stripe account is fully verified and ready for payouts!");
         await logAudit("stripe_verified", { summary: "Stripe account verified and active" });
+        await logActivity("stripe_verified", "Stripe account verified and active");
       }
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
+      fetchActivityLogs();
     } catch {
       fetchPayoutMethodAndSync();
     }
   };
 
   const handleStripeConnect = async () => {
+    if (!ackFee) {
+      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      return;
+    }
     setConnectingStripe(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
@@ -177,6 +227,8 @@ export default function PayoutSettings() {
         return;
       }
       await logAudit("stripe_onboarding_started", { summary: "Started Stripe Connect onboarding" });
+      await logActivity("payout_method_selected", `Selected Stripe Connect as payout method`, { new_method: "stripe" });
+      await notifyAdmin("payout_method_selected", `${org?.orgName} selected Stripe Connect as their payout method.`);
       window.location.href = data.url;
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -194,6 +246,7 @@ export default function PayoutSettings() {
         return;
       }
       await logAudit("stripe_bank_update_started", { summary: "Opened Stripe portal to update bank account" });
+      await logActivity("payout_settings_changed", "Opened Stripe portal to update bank account");
       window.location.href = data.url;
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -217,9 +270,12 @@ export default function PayoutSettings() {
       }
       toast.success("Stripe account disconnected. You can reconnect a new account anytime.");
       await logAudit("stripe_disconnected", { summary: "Stripe account disconnected by organizer" });
+      await logActivity("payout_settings_changed", "Stripe account disconnected", { old_method: "stripe" });
+      await notifyAdmin("payout_method_changed", `${org?.orgName} disconnected their Stripe account.`);
       setShowDisconnectModal(false);
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
+      fetchActivityLogs();
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -232,8 +288,13 @@ export default function PayoutSettings() {
       toast.error("Please enter a valid PayPal email address.");
       return;
     }
+    if (!ackFee || !ackEscrow) {
+      toast.error("Please acknowledge both checkboxes before saving.");
+      return;
+    }
     if (!org?.orgId) return;
     setSavingPaypal(true);
+    const oldMethod = selectedMethod;
     const oldEmail = payoutMethod?.paypal_email || null;
     const { error } = await supabase
       .from("organization_payout_methods")
@@ -249,15 +310,21 @@ export default function PayoutSettings() {
     if (error) {
       toast.error("Failed to save PayPal email.");
     } else {
-      // Also update org payout_method
       await supabase.from("organizations").update({ payout_method: "paypal" } as any).eq("id", org.orgId);
       setSelectedMethod("paypal");
       toast.success("PayPal email saved. Payouts will be processed manually every two weeks.");
       await logAudit(oldEmail ? "paypal_updated" : "paypal_added", {
         summary: oldEmail ? `PayPal email updated to ${paypalEmail}` : `PayPal email added: ${paypalEmail}`,
       });
+      await logActivity("payout_method_selected", `Changed payout method from ${oldMethod} to PayPal`, {
+        old_method: oldMethod,
+        new_method: "paypal",
+        paypal_email: paypalEmail,
+      });
+      await notifyAdmin("payout_method_selected", `${org?.orgName} selected PayPal as their payout method (${paypalEmail}).`);
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
+      fetchActivityLogs();
     }
     setSavingPaypal(false);
   };
@@ -267,8 +334,13 @@ export default function PayoutSettings() {
       toast.error("Please enter a mailing address.");
       return;
     }
+    if (!ackFee || !ackEscrow) {
+      toast.error("Please acknowledge both checkboxes before saving.");
+      return;
+    }
     if (!org?.orgId) return;
     setSavingCheck(true);
+    const oldMethod = selectedMethod;
     const { error } = await supabase
       .from("organizations")
       .update({ payout_method: "check", mailing_address: mailingAddress.trim() } as any)
@@ -279,19 +351,37 @@ export default function PayoutSettings() {
       setSelectedMethod("check");
       toast.success("Check payout method saved. Request payouts from the Finances page.");
       await logAudit("check_method_set", { summary: `Check payout method set. Address: ${mailingAddress.trim()}` });
+      await logActivity("payout_method_selected", `Changed payout method from ${oldMethod} to Check`, {
+        old_method: oldMethod,
+        new_method: "check",
+        mailing_address: mailingAddress.trim(),
+      });
+      await notifyAdmin("payout_method_selected", `${org?.orgName} selected Check as their payout method.`);
       fetchAuditLogs();
+      fetchActivityLogs();
     }
     setSavingCheck(false);
   };
 
   const handleSelectStripe = async () => {
+    if (!ackFee) {
+      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      return;
+    }
     if (!org?.orgId) return;
+    const oldMethod = selectedMethod;
     await supabase.from("organizations").update({ payout_method: "stripe" } as any).eq("id", org.orgId);
     await supabase.from("organization_payout_methods").update({ preferred_method: "stripe" } as any).eq("organization_id", org.orgId);
     setSelectedMethod("stripe");
     toast.success("Payout method set to Stripe Connect (automatic).");
     await logAudit("preferred_method_changed", { summary: "Payout method changed to Stripe Connect" });
+    await logActivity("payout_method_selected", `Changed payout method from ${oldMethod} to Stripe Connect`, {
+      old_method: oldMethod,
+      new_method: "stripe",
+    });
+    await notifyAdmin("payout_method_selected", `${org?.orgName} switched to Stripe Connect.`);
     fetchAuditLogs();
+    fetchActivityLogs();
   };
 
   if (orgLoading || loading) {
@@ -304,6 +394,11 @@ export default function PayoutSettings() {
 
   const stripeConnected = payoutMethod?.stripe_onboarding_complete === true;
   const stripeStarted = !!payoutMethod?.stripe_account_id;
+  const isManualMethod = selectedMethod === "paypal" || selectedMethod === "check";
+  const combinedLogs = [
+    ...activityLogs.map(l => ({ id: l.id, action: l.action_type, description: l.description, details: l.metadata, created_at: l.created_at, source: "activity" as const })),
+    ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, source: "audit" as const })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 30);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -464,7 +559,7 @@ export default function PayoutSettings() {
               <Label htmlFor="mailing-address" className="text-sm">Mailing Address</Label>
               <Textarea
                 id="mailing-address"
-                placeholder="123 Main St&#10;Suite 100&#10;Phoenix, AZ 85001"
+                placeholder={"123 Main St\nSuite 100\nPhoenix, AZ 85001"}
                 value={mailingAddress}
                 onChange={(e) => setMailingAddress(e.target.value)}
                 rows={3}
@@ -478,9 +573,48 @@ export default function PayoutSettings() {
         </Card>
       </motion.div>
 
-      {/* Audit Log */}
-      {auditLogs.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+      {/* ──── Legal Acknowledgment ──── */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <Card className="border border-border">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-base">Acknowledgment</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="ack-fee"
+                checked={ackFee}
+                onCheckedChange={(checked) => setAckFee(checked === true)}
+              />
+              <label htmlFor="ack-fee" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+              </label>
+            </div>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="ack-escrow"
+                checked={ackEscrow}
+                onCheckedChange={(checked) => setAckEscrow(checked === true)}
+              />
+              <label htmlFor="ack-escrow" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                I understand that if I select PayPal or Check, my funds will be held in TeeVents' Stripe escrow account until I request a payout or until the next manual batch.
+              </label>
+            </div>
+            {!ackFee && (
+              <p className="text-xs text-amber-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> You must acknowledge the platform fee to save any payout method.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* ──── Activity Log ──── */}
+      {combinedLogs.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -492,17 +626,19 @@ export default function PayoutSettings() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="text-xs">Date</TableHead>
                     <TableHead className="text-xs">Action</TableHead>
                     <TableHead className="text-xs">Details</TableHead>
-                    <TableHead className="text-xs">Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {auditLogs.map((log) => (
-                    <TableRow key={log.id}>
+                  {combinedLogs.map((log) => (
+                    <TableRow key={`${log.source}-${log.id}`}>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                        {new Date(log.created_at).toLocaleString()}
+                      </TableCell>
                       <TableCell className="text-sm font-medium">{log.action.replace(/_/g, " ")}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{log.details?.summary || "—"}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{new Date(log.created_at).toLocaleString()}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{log.description || "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

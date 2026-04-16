@@ -537,6 +537,18 @@ export default function Leaderboard() {
                       <TableHead className="text-center font-bold min-w-[60px]">Gross</TableHead>
                       {handicapEnabled && <TableHead className="text-center font-bold min-w-[60px]">Net</TableHead>}
                     </TableRow>
+                    {/* Par row */}
+                    {holePars && (
+                      <TableRow className="bg-muted/30">
+                        <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
+                        {isTeamFormat && <TableHead />}
+                        {holes.map((h) => (
+                          <TableHead key={h} className="text-center text-xs text-muted-foreground">{getHolePar(h)}</TableHead>
+                        ))}
+                        <TableHead className="text-center text-xs font-semibold text-muted-foreground">{coursePar}</TableHead>
+                        {handicapEnabled && <TableHead />}
+                      </TableRow>
+                    )}
                   </TableHeader>
                   <TableBody>
                     {playerScores.map((ps) => {

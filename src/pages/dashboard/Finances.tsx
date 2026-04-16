@@ -623,6 +623,7 @@ const Finances = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
+                      <th className="w-8 p-3"></th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Platform Fee</th>
@@ -637,8 +638,16 @@ const Finances = () => {
                       const gross = getRegistrationAmount(reg);
                       const fee = Math.round(gross * 0.05); // 5% platform fee
                       const net = gross - fee;
+                      const matchingTx = platformTransactions.find(
+                        (tx: any) => tx.metadata?.registration_ids?.includes?.(reg.id) || (tx as any).registration_id === reg.id
+                      );
+                      const expanded = expandedTxRows.has(reg.id);
                       return (
-                        <tr key={reg.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                        <Fragment key={reg.id}>
+                        <tr className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggleTxRow(reg.id)}>
+                          <td className="p-3">
+                            {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                          </td>
                           <td className="p-3">
                             <p className="font-medium text-sm text-foreground">{reg.first_name} {reg.last_name}</p>
                             <p className="text-xs text-muted-foreground">{reg.email}</p>
@@ -648,7 +657,7 @@ const Finances = () => {
                           <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
                           <td className="p-3">{statusBadge(reg.payment_status)}</td>
                           <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
-                          <td className="p-3">
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1">
                               {reg.payment_status === "paid" && (
                                 <>
@@ -684,6 +693,28 @@ const Finances = () => {
                             </div>
                           </td>
                         </tr>
+                        {expanded && (
+                          <tr className="bg-muted/20 border-b border-border">
+                            <td colSpan={8} className="p-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                <div className="space-y-1">
+                                  <div><span className="text-muted-foreground">Stripe Payment Intent:</span> <code className="text-xs">{matchingTx?.stripe_payment_intent_id || "—"}</code></div>
+                                  <div><span className="text-muted-foreground">Stripe Session:</span> <code className="text-xs">{matchingTx?.stripe_session_id || "—"}</code></div>
+                                  <div><span className="text-muted-foreground">Registration ID:</span> <code className="text-xs">{reg.id}</code></div>
+                                </div>
+                                <div className="space-y-1">
+                                  <div><span className="text-muted-foreground">Payout Method:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{matchingTx?.payout_method || "—"}</Badge></div>
+                                  <div><span className="text-muted-foreground">Payout Status:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{matchingTx?.status || "—"}</Badge></div>
+                                  <div><span className="text-muted-foreground">Stripe Fee:</span> ${((matchingTx?.stripe_fee_cents || 0) / 100).toFixed(2)}</div>
+                                  {matchingTx?.failure_reason && (
+                                    <div className="text-destructive"><span className="text-muted-foreground">Failure:</span> {matchingTx.failure_reason}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        </Fragment>
                       );
                     })}
                   </tbody>

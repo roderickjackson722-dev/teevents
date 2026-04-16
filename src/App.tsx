@@ -181,7 +181,8 @@ const App = () => (
            <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
-            <Route path="/sales-flyer" element={<SalesFlyer />} />
+             <Route path="/sales-flyer" element={<SalesFlyer />} />
+             <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

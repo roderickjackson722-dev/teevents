@@ -287,7 +287,7 @@ const Sponsors = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title")
+      .select("id, title, slug")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {

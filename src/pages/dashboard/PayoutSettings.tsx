@@ -68,6 +68,7 @@ export default function PayoutSettings() {
   const [showChangeBankModal, setShowChangeBankModal] = useState(false);
   const [changingBank, setChangingBank] = useState(false);
   const [savingCheck, setSavingCheck] = useState(false);
+  const [pendingMethod, setPendingMethod] = useState<"stripe" | "paypal" | "check" | null>(null);
 
   // Legal acknowledgment state
   const [ackFee, setAckFee] = useState(false);
@@ -92,6 +93,18 @@ export default function PayoutSettings() {
       setSelectedMethod(((data as any).payout_method || "stripe") as "stripe" | "paypal" | "check");
       setMailingAddress((data as any).mailing_address || "");
     }
+  };
+
+  const beginMethodSelection = (method: "stripe" | "paypal" | "check") => {
+    setPendingMethod(method);
+    setAckFee(false);
+    setAckEscrow(false);
+  };
+
+  const clearPendingMethod = () => {
+    setPendingMethod(null);
+    setAckFee(false);
+    setAckEscrow(false);
   };
 
   const fetchPayoutMethodAndSync = async () => {
@@ -229,6 +242,7 @@ export default function PayoutSettings() {
       await logAudit("stripe_onboarding_started", { summary: "Started Stripe Connect onboarding" });
       await logActivity("payout_method_selected", `Selected Stripe Connect as payout method`, { new_method: "stripe" });
       await notifyAdmin("payout_method_selected", `${org?.orgName} selected Stripe Connect as their payout method.`);
+      clearPendingMethod();
       window.location.href = data.url;
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -322,6 +336,7 @@ export default function PayoutSettings() {
         paypal_email: paypalEmail,
       });
       await notifyAdmin("payout_method_selected", `${org?.orgName} selected PayPal as their payout method (${paypalEmail}).`);
+      clearPendingMethod();
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
       fetchActivityLogs();
@@ -357,6 +372,7 @@ export default function PayoutSettings() {
         mailing_address: mailingAddress.trim(),
       });
       await notifyAdmin("payout_method_selected", `${org?.orgName} selected Check as their payout method.`);
+      clearPendingMethod();
       fetchAuditLogs();
       fetchActivityLogs();
     }
@@ -380,6 +396,7 @@ export default function PayoutSettings() {
       new_method: "stripe",
     });
     await notifyAdmin("payout_method_selected", `${org?.orgName} switched to Stripe Connect.`);
+    clearPendingMethod();
     fetchAuditLogs();
     fetchActivityLogs();
   };
@@ -394,7 +411,6 @@ export default function PayoutSettings() {
 
   const stripeConnected = payoutMethod?.stripe_onboarding_complete === true;
   const stripeStarted = !!payoutMethod?.stripe_account_id;
-  const isManualMethod = selectedMethod === "paypal" || selectedMethod === "check";
   const combinedLogs = [
     ...activityLogs.map(l => ({ id: l.id, action: l.action_type, description: l.description, details: l.metadata, created_at: l.created_at, source: "activity" as const })),
     ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, source: "audit" as const })),
@@ -423,7 +439,7 @@ export default function PayoutSettings() {
 
       {/* ──── Stripe Connect ──── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className={`border-2 ${selectedMethod === "stripe" ? "border-emerald-500/50" : "border-border"}`}>
+        <Card className={`border-2 ${selectedMethod === "stripe" || pendingMethod === "stripe" ? "border-emerald-500/50" : "border-border"}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -461,7 +477,9 @@ export default function PayoutSettings() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {selectedMethod !== "stripe" && (
-                    <Button size="sm" onClick={handleSelectStripe}>Use Stripe Connect</Button>
+                    <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")}>
+                      {pendingMethod === "stripe" ? "Confirm Stripe Connect" : "Use Stripe Connect"}
+                    </Button>
                   )}
                   <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)} disabled={changingBank}>
                     <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Bank Account
@@ -478,9 +496,30 @@ export default function PayoutSettings() {
                   <li>Fastest option: no manual work needed</li>
                   <li>Withdraw from Stripe to your bank on your schedule</li>
                 </ul>
-                <Button onClick={handleStripeConnect} disabled={connectingStripe}>
+                {pendingMethod === "stripe" && (
+                  <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="ack-fee-stripe"
+                        checked={ackFee}
+                        onCheckedChange={(checked) => setAckFee(checked === true)}
+                      />
+                      <label htmlFor="ack-fee-stripe" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                        I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button onClick={handleStripeConnect} disabled={connectingStripe}>
+                        {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                        {stripeStarted ? "Complete Stripe Setup" : "Connect Stripe Account"}
+                      </Button>
+                      <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+                <Button onClick={pendingMethod === "stripe" ? handleStripeConnect : () => beginMethodSelection("stripe")} disabled={connectingStripe && pendingMethod === "stripe"}>
                   {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                  {stripeStarted ? "Complete Stripe Setup" : "Connect Stripe Account"}
+                  {pendingMethod === "stripe" ? (stripeStarted ? "Complete Stripe Setup" : "Connect Stripe Account") : "Select Stripe Connect"}
                 </Button>
               </>
             )}
@@ -490,7 +529,7 @@ export default function PayoutSettings() {
 
       {/* ──── PayPal ──── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Card className={`border-2 ${selectedMethod === "paypal" ? "border-blue-500/50" : "border-border"}`}>
+        <Card className={`border-2 ${selectedMethod === "paypal" || pendingMethod === "paypal" ? "border-blue-500/50" : "border-border"}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -522,9 +561,40 @@ export default function PayoutSettings() {
                 onChange={(e) => setPaypalEmail(e.target.value)}
               />
             </div>
-            <Button onClick={handleSavePaypal} disabled={savingPaypal || !paypalEmail.trim()}>
-              {savingPaypal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-              Save PayPal & Set as Active
+            {pendingMethod === "paypal" && (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="ack-fee-paypal"
+                    checked={ackFee}
+                    onCheckedChange={(checked) => setAckFee(checked === true)}
+                  />
+                  <label htmlFor="ack-fee-paypal" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                    I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                  </label>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="ack-escrow-paypal"
+                    checked={ackEscrow}
+                    onCheckedChange={(checked) => setAckEscrow(checked === true)}
+                  />
+                  <label htmlFor="ack-escrow-paypal" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                    I understand that if I select PayPal, my funds will be held in TeeVents' Stripe escrow account until I request a payout or until the next manual batch.
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={handleSavePaypal} disabled={savingPaypal || !paypalEmail.trim()}>
+                    {savingPaypal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+                    Save PayPal & Set as Active
+                  </Button>
+                  <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                </div>
+              </div>
+            )}
+            <Button onClick={pendingMethod === "paypal" ? handleSavePaypal : () => beginMethodSelection("paypal")} disabled={savingPaypal || !paypalEmail.trim()}>
+              {savingPaypal && pendingMethod === "paypal" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+              {pendingMethod === "paypal" ? "Save PayPal & Set as Active" : "Select PayPal"}
             </Button>
           </CardContent>
         </Card>
@@ -532,7 +602,7 @@ export default function PayoutSettings() {
 
       {/* ──── Check ──── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Card className={`border-2 ${selectedMethod === "check" ? "border-amber-500/50" : "border-border"}`}>
+        <Card className={`border-2 ${selectedMethod === "check" || pendingMethod === "check" ? "border-amber-500/50" : "border-border"}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -565,49 +635,41 @@ export default function PayoutSettings() {
                 rows={3}
               />
             </div>
-            <Button onClick={handleSaveCheck} disabled={savingCheck || !mailingAddress.trim()}>
-              {savingCheck ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
-              Save Address & Set as Active
-            </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* ──── Legal Acknowledgment ──── */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-        <Card className="border border-border">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-base">Acknowledgment</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="ack-fee"
-                checked={ackFee}
-                onCheckedChange={(checked) => setAckFee(checked === true)}
-              />
-              <label htmlFor="ack-fee" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
-              </label>
-            </div>
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="ack-escrow"
-                checked={ackEscrow}
-                onCheckedChange={(checked) => setAckEscrow(checked === true)}
-              />
-              <label htmlFor="ack-escrow" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                I understand that if I select PayPal or Check, my funds will be held in TeeVents' Stripe escrow account until I request a payout or until the next manual batch.
-              </label>
-            </div>
-            {!ackFee && (
-              <p className="text-xs text-amber-600 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> You must acknowledge the platform fee to save any payout method.
-              </p>
+            {pendingMethod === "check" && (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="ack-fee-check"
+                    checked={ackFee}
+                    onCheckedChange={(checked) => setAckFee(checked === true)}
+                  />
+                  <label htmlFor="ack-fee-check" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                    I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                  </label>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="ack-escrow-check"
+                    checked={ackEscrow}
+                    onCheckedChange={(checked) => setAckEscrow(checked === true)}
+                  />
+                  <label htmlFor="ack-escrow-check" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                    I understand that if I select Check, my funds will be held in TeeVents' Stripe escrow account until I request a payout or until the next manual batch.
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={handleSaveCheck} disabled={savingCheck || !mailingAddress.trim()}>
+                    {savingCheck ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
+                    Save Address & Set as Active
+                  </Button>
+                  <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                </div>
+              </div>
             )}
+            <Button onClick={pendingMethod === "check" ? handleSaveCheck : () => beginMethodSelection("check")} disabled={savingCheck || !mailingAddress.trim()}>
+              {savingCheck && pendingMethod === "check" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
+              {pendingMethod === "check" ? "Save Address & Set as Active" : "Select Check"}
+            </Button>
           </CardContent>
         </Card>
       </motion.div>

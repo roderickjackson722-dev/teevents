@@ -455,6 +455,15 @@ const Sponsors = () => {
         </Select>
       </div>
 
+      {selectedTournament && (
+        <div className="mb-6">
+          <SponsorshipTiersManager
+            tournaments={tournaments}
+            selectedTournament={selectedTournament}
+          />
+        </div>
+      )}
+
       {/* Summary */}
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-5">
@@ -676,14 +685,6 @@ const Sponsors = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {/* Sponsorship Tiers & Online Registration */}
-      {selectedTournament && (
-        <SponsorshipTiersManager
-          tournaments={tournaments}
-          selectedTournament={selectedTournament}
-        />
       )}
 
       {/* Sponsor Asset Management */}

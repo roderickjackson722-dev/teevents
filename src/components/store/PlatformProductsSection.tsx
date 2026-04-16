@@ -272,6 +272,12 @@ export default function PlatformProductsSection() {
           </AccordionItem>
         </Accordion>
       </div>
+
+      <DirectorShopCheckoutModal
+        open={!!checkoutProduct}
+        onOpenChange={(open) => { if (!open) setCheckoutProduct(null); }}
+        product={checkoutProduct}
+      />
     </div>
   );
 }

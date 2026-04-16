@@ -801,9 +801,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             )}
 
             {/* Sponsors button */}
-            {sponsors.length > 0 && style.ctaLayout === "three" && (
+            {(sponsors.length > 0 || sponsorshipTiers.length > 0) && style.ctaLayout === "three" && (
               <button
-                onClick={() => scrollTo("#sponsors")}
+                onClick={() => scrollTo(sponsorshipTiers.length > 0 ? "#become-a-sponsor" : "#sponsors")}
                 className="flex-1 max-w-[260px] py-4 text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
                 style={{
                   backgroundColor: tpl === "modern" ? "#b71c1c" : primary,

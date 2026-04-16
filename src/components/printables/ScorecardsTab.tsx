@@ -56,7 +56,7 @@ function getScoringUrl(slug: string | undefined, scoringCode: string | undefined
   return `${window.location.origin}/t/${slug}/scoring?code=${scoringCode}`;
 }
 
-function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string) {
+function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string, courseData?: CourseDataProp | null) {
   const color = getPrimaryColor(tournament);
   const fontMap: Record<string, string> = {
     georgia: "'Georgia', serif",

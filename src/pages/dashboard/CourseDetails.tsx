@@ -205,7 +205,7 @@ export default function CourseDetails() {
 
   return (
     <div className="space-y-6 p-4 md:p-6 max-w-5xl">
-      <SEO title="Course Details" />
+      <SEO title="Course Details" description="Configure golf course details for your tournament." />
 
       {/* Header */}
       <div className="flex items-center justify-between">

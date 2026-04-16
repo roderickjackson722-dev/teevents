@@ -141,11 +141,37 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Fetch organizer payout method and primary registrant info
+        const { data: orgPayout } = await supabaseAdmin
+          .from("organizations")
+          .select("payout_method")
+          .eq("id", organizationId)
+          .single();
+
+        let golferName: string | null = null;
+        let golferEmail: string | null = null;
+        if (registrationIds.length > 0) {
+          const { data: firstReg } = await supabaseAdmin
+            .from("tournament_registrations")
+            .select("first_name, last_name, email")
+            .eq("id", registrationIds[0])
+            .single();
+          if (firstReg) {
+            golferName = `${firstReg.first_name} ${firstReg.last_name}`.trim();
+            golferEmail = firstReg.email;
+          }
+        }
+
         await supabaseAdmin.from("platform_transactions").insert({
           organization_id: organizationId,
           tournament_id: tournamentId || null,
+          registration_id: registrationIds[0] || null,
+          golfer_name: golferName,
+          golfer_email: golferEmail,
+          payout_method: orgPayout?.payout_method || "check",
           amount_cents: grossAmount,
           platform_fee_cents: platformFeeCents,
+          stripe_fee_cents: stripeFeeCents,
           net_amount_cents: netAmountCents,
           hold_amount_cents: holdAmountCents,
           hold_release_date: holdReleaseDate,
@@ -266,6 +292,98 @@ Deno.serve(async (req) => {
         JSON.stringify({ verified: true, status: "paid" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
+    }
+
+    // Handle non-paid status — log failure and notify
+    if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") {
+      try {
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const organizationId = session.metadata?.organization_id;
+        const tournamentId = session.metadata?.tournament_id;
+        const failureReason = `Stripe checkout status: ${session.payment_status}`;
+
+        if (organizationId) {
+          await supabaseAdmin.from("platform_transactions").insert({
+            organization_id: organizationId,
+            tournament_id: tournamentId || null,
+            amount_cents: session.amount_total || 0,
+            platform_fee_cents: 0,
+            stripe_fee_cents: 0,
+            net_amount_cents: 0,
+            type: "registration",
+            status: "failed",
+            failure_reason: failureReason,
+            stripe_session_id: session_id,
+            stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+            description: `Failed registration payment — ${failureReason}`,
+            metadata: { session_status: session.payment_status },
+          });
+
+          await supabaseAdmin.from("admin_notifications").insert({
+            type: "transaction_failed",
+            organization_id: organizationId,
+            message: `Failed transaction for session ${session_id}: ${failureReason}`,
+          });
+
+          // Email organizer + admin
+          const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+          if (RESEND_API_KEY) {
+            const { data: orgData } = await supabaseAdmin
+              .from("organizations")
+              .select("name")
+              .eq("id", organizationId)
+              .single();
+
+            const { data: notifEmails } = await supabaseAdmin
+              .from("notification_emails")
+              .select("email")
+              .eq("organization_id", organizationId)
+              .eq("notify_registration", true);
+
+            const recipients = (notifEmails || []).map((n: any) => n.email);
+            const html = buildNotificationHtml("⚠️ Payment Issue", [
+              `A recent registration payment could not be processed.`,
+              `<strong>Reason:</strong> ${failureReason}`,
+              `<strong>Session:</strong> ${session_id}`,
+              `Please log in to your dashboard to review and retry.`,
+            ]);
+
+            if (recipients.length > 0) {
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+                body: JSON.stringify({
+                  from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+                  to: recipients,
+                  subject: `Action Required: Payment issue`,
+                  html,
+                }),
+              });
+            }
+
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+              body: JSON.stringify({
+                from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+                to: ["info@teevents.golf"],
+                subject: `⚠️ Failed transaction – ${orgData?.name || "Unknown Org"}`,
+                html: buildNotificationHtml("Failed Transaction", [
+                  `Transaction <strong>${session_id}</strong> failed.`,
+                  `<strong>Organizer:</strong> ${orgData?.name || "Unknown"}`,
+                  `<strong>Reason:</strong> ${failureReason}`,
+                  `Please investigate.`,
+                ]),
+              }),
+            });
+          }
+        }
+      } catch (failErr) {
+        console.error("Failure logging error:", failErr);
+      }
     }
 
     return new Response(

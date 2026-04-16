@@ -47,6 +47,7 @@ import {
   Check,
   Package,
 } from "lucide-react";
+import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
 
 interface Sponsor {
   id: string;
@@ -65,6 +66,7 @@ interface Sponsor {
 interface Tournament {
   id: string;
   title: string;
+  slug: string | null;
 }
 
 const tiers = [
@@ -285,7 +287,7 @@ const Sponsors = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title")
+      .select("id, title, slug")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -674,6 +676,14 @@ const Sponsors = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Sponsorship Tiers & Online Registration */}
+      {selectedTournament && (
+        <SponsorshipTiersManager
+          tournaments={tournaments}
+          selectedTournament={selectedTournament}
+        />
       )}
 
       {/* Sponsor Asset Management */}

@@ -88,6 +88,7 @@ import HowPaymentsWork from "./pages/help/HowPaymentsWork";
 import CompareEventbrite from "./pages/CompareEventbrite";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
+import SponsorRegistration from "./pages/SponsorRegistration";
 
 const queryClient = new QueryClient();
 
@@ -180,7 +181,8 @@ const App = () => (
            <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
-            <Route path="/sales-flyer" element={<SalesFlyer />} />
+             <Route path="/sales-flyer" element={<SalesFlyer />} />
+             <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

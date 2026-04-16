@@ -481,6 +481,62 @@ export type Database = {
           },
         ]
       }
+      director_shop_orders: {
+        Row: {
+          amount_cents: number
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          id: string
+          logo_url: string | null
+          order_notes: string | null
+          payment_status: string
+          product_id: string | null
+          product_name: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          order_notes?: string | null
+          payment_status?: string
+          product_id?: string | null
+          product_name: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          order_notes?: string | null
+          payment_status?: string
+          product_id?: string | null
+          product_name?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "director_shop_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "platform_store_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_access_requests: {
         Row: {
           created_at: string

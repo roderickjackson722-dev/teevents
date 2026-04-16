@@ -1,6 +1,5 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,9 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TAX_RATE = 6.25; // percent
-const SIGNAGE_SHIPPING_CENTS = 3995; // $39.95 flat rate
-const STANDARD_SHIPPING_CENTS = 1299; // $12.99 for non-signage
+const TAX_RATE = 6.25;
+const SIGNAGE_SHIPPING_CENTS = 3995;
+const STANDARD_SHIPPING_CENTS = 1299;
 const SIGNAGE_CATEGORY = "signage";
 
 Deno.serve(async (req) => {
@@ -19,7 +18,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { product_id, buyer_email } = await req.json();
+    const {
+      product_id,
+      buyer_email,
+      contact_name,
+      contact_phone,
+      logo_url,
+      order_notes,
+    } = await req.json();
     if (!product_id) throw new Error("Missing product_id");
 
     const supabaseAdmin = createClient(
@@ -39,6 +45,25 @@ Deno.serve(async (req) => {
     const priceCents = Math.round(product.price * 100);
     if (priceCents < 50) throw new Error("Price too low for checkout");
 
+    // Create order record with pending_payment status
+    const { data: order, error: orderErr } = await supabaseAdmin
+      .from("director_shop_orders")
+      .insert({
+        product_id: product.id,
+        product_name: product.name,
+        contact_name: contact_name || "",
+        contact_email: buyer_email || "",
+        contact_phone: contact_phone || "",
+        logo_url: logo_url || null,
+        order_notes: order_notes || null,
+        payment_status: "pending_payment",
+        amount_cents: priceCents,
+      })
+      .select("id")
+      .single();
+
+    if (orderErr) throw new Error("Failed to create order: " + orderErr.message);
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -51,7 +76,6 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
-    // Build line items
     const lineItems: any[] = [
       {
         price_data: {
@@ -67,24 +91,19 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Add shipping
     const isSignage = (product.category || "").toLowerCase() === SIGNAGE_CATEGORY;
     const shippingCents = isSignage ? SIGNAGE_SHIPPING_CENTS : STANDARD_SHIPPING_CENTS;
     lineItems.push({
       price_data: {
         currency: "usd",
         product_data: {
-          name: isSignage
-            ? "Shipping — Standard Ground (UPS/FedEx/USPS)"
-            : "Shipping",
+          name: isSignage ? "Shipping — Standard Ground (UPS/FedEx/USPS)" : "Shipping",
         },
         unit_amount: shippingCents,
       },
       quantity: 1,
     });
 
-    // Create a Stripe Tax Rate on-the-fly (or reuse)
-    // We'll use automatic_tax off and add a tax line manually via tax_rates
     const taxRates = await stripe.taxRates.list({ limit: 10, active: true });
     let taxRateId = taxRates.data.find(
       (tr) => tr.percentage === TAX_RATE && tr.inclusive === false && tr.display_name === "Sales Tax",
@@ -99,7 +118,6 @@ Deno.serve(async (req) => {
       taxRateId = newTaxRate.id;
     }
 
-    // Attach tax rate to product line item (not shipping)
     lineItems[0].tax_rates = [taxRateId];
 
     const session = await stripe.checkout.sessions.create({
@@ -107,43 +125,25 @@ Deno.serve(async (req) => {
       customer_email: customerId ? undefined : buyer_email || undefined,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/store?purchased=true`,
-      cancel_url: `${origin}/store`,
+      success_url: `${origin}/dashboard/director-shop?purchased=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/dashboard/director-shop`,
       metadata: {
-        type: "platform_store_purchase",
+        type: "director_shop_order",
+        order_id: order.id,
         product_id,
+        contact_name: contact_name || "",
+        contact_email: buyer_email || "",
+        product_name: product.name,
       },
     });
 
-    // Send admin notification email
-    try {
-      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-      if (RESEND_API_KEY) {
-        const adminEmail = "info@teevents.golf";
-        const shippingNote = isSignage ? " + $39.95 shipping" : " + $12.99 shipping";
-        const html = buildNotificationHtml("New Platform Store Purchase", [
-          `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>${shippingNote} + 6.25% tax.`,
-          buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Guest buyer (no email provided)",
-          `🆔 Product ID: ${product.id}`,
-        ]);
+    // Update order with stripe session id
+    await supabaseAdmin
+      .from("director_shop_orders")
+      .update({ stripe_session_id: session.id })
+      .eq("id", order.id);
 
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: "TeeVents <notifications@notifications.teevents.golf>",
-            to: [adminEmail],
-            subject: `New Store Purchase — ${product.name}`,
-            html,
-          }),
-        });
-      }
-    } catch (e) {
-      console.error("Notification error:", e);
-    }
+    // NO email sent here — email is sent only after payment verification
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Package, Search, ShoppingCart, ExternalLink, Truck } from "lucide-react";
+import { Loader2, Package, Search, ShoppingCart, ExternalLink, Truck, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fmt } from "@/components/store/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import DirectorShopCheckoutModal from "@/components/store/DirectorShopCheckoutModal";
+import { useSearchParams } from "react-router-dom";
 
 interface PlatformProduct {
   id: string;
@@ -30,11 +32,35 @@ const categoryLabels: Record<string, string> = {
 
 export default function PlatformProductsSection() {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<PlatformProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [checkoutProduct, setCheckoutProduct] = useState<PlatformProduct | null>(null);
+  const [purchaseVerified, setPurchaseVerified] = useState(false);
+  const [verifiedProductName, setVerifiedProductName] = useState("");
+
+  // Verify payment on return from Stripe
+  useEffect(() => {
+    const purchased = searchParams.get("purchased");
+    const sessionId = searchParams.get("session_id");
+    if (purchased === "true" && sessionId) {
+      supabase.functions.invoke("verify-platform-purchase", {
+        body: { session_id: sessionId },
+      }).then(({ data }) => {
+        if (data?.verified) {
+          setPurchaseVerified(true);
+          setVerifiedProductName(data.product_name || "your item");
+        }
+      }).catch(console.error).finally(() => {
+        // Clean URL params
+        searchParams.delete("purchased");
+        searchParams.delete("session_id");
+        setSearchParams(searchParams, { replace: true });
+      });
+    }
+  }, []);
 
   useEffect(() => {
     supabase
@@ -47,24 +73,6 @@ export default function PlatformProductsSection() {
         setLoading(false);
       });
   }, []);
-
-  const handlePurchase = async (product: PlatformProduct) => {
-    setPurchasing(product.id);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const email = session?.user?.email;
-
-      const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
-        body: { product_id: product.id, buyer_email: email },
-      });
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch (err: any) {
-      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
-    } finally {
-      setPurchasing(null);
-    }
-  };
 
   const categories = [...new Set(products.map((p) => p.category))];
 
@@ -89,6 +97,19 @@ export default function PlatformProductsSection() {
 
   return (
     <div className="mb-10">
+      {/* Purchase success banner */}
+      {purchaseVerified && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 p-4 flex items-start gap-3">
+          <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold text-green-900 dark:text-green-200">Payment Confirmed!</p>
+            <p className="text-sm text-green-800 dark:text-green-300">
+              Your order for <strong>{verifiedProductName}</strong> has been received. Our team will contact you within 2 business days to confirm details.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
           <ShoppingCart className="h-6 w-6 text-primary" />
@@ -206,14 +227,9 @@ export default function PlatformProductsSection() {
                   <Button
                     size="sm"
                     className="w-full"
-                    onClick={() => handlePurchase(product)}
-                    disabled={purchasing === product.id}
+                    onClick={() => setCheckoutProduct(product)}
                   >
-                    {purchasing === product.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4 mr-1.5" />
-                    )}
+                    <ExternalLink className="h-4 w-4 mr-1.5" />
                     Purchase
                   </Button>
                 </div>
@@ -256,6 +272,12 @@ export default function PlatformProductsSection() {
           </AccordionItem>
         </Accordion>
       </div>
+
+      <DirectorShopCheckoutModal
+        open={!!checkoutProduct}
+        onOpenChange={(open) => { if (!open) setCheckoutProduct(null); }}
+        product={checkoutProduct}
+      />
     </div>
   );
 }

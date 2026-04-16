@@ -594,8 +594,9 @@ export default function Leaderboard() {
                                   onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
                                   className={`w-12 h-8 text-center text-sm p-0 ${scoreColorClass}`}
                                 />
-                            </TableCell>
-                          ))}
+                              </TableCell>
+                            );
+                          })}
                           <TableCell className="text-center font-bold text-lg">
                             {grossTotal > 0 ? grossTotal : "—"}
                           </TableCell>

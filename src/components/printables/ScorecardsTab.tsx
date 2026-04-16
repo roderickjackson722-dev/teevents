@@ -220,7 +220,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           <div className="flex flex-wrap gap-1">
             {Array.from({ length: numHoles }, (_, i) => (
               <span key={i} className="inline-flex items-center justify-center w-8 h-8 text-xs font-medium bg-card border border-border rounded">
-                {getHolePar(tournament, i, numHoles)}
+                {getHolePar(tournament, i, numHoles, courseData)}
               </span>
             ))}
           </div>
@@ -287,7 +287,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                     <tr>
                       {Array.from({ length: numHoles }, (_, i) => (
                         <td key={i} className="border border-border px-1.5 py-1 text-center text-muted-foreground">
-                          {getHolePar(tournament, i, numHoles)}
+                          {getHolePar(tournament, i, numHoles, courseData)}
                         </td>
                       ))}
                       <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{totalPar}</td>

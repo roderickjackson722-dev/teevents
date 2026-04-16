@@ -32,11 +32,35 @@ const categoryLabels: Record<string, string> = {
 
 export default function PlatformProductsSection() {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<PlatformProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [checkoutProduct, setCheckoutProduct] = useState<PlatformProduct | null>(null);
+  const [purchaseVerified, setPurchaseVerified] = useState(false);
+  const [verifiedProductName, setVerifiedProductName] = useState("");
+
+  // Verify payment on return from Stripe
+  useEffect(() => {
+    const purchased = searchParams.get("purchased");
+    const sessionId = searchParams.get("session_id");
+    if (purchased === "true" && sessionId) {
+      supabase.functions.invoke("verify-platform-purchase", {
+        body: { session_id: sessionId },
+      }).then(({ data }) => {
+        if (data?.verified) {
+          setPurchaseVerified(true);
+          setVerifiedProductName(data.product_name || "your item");
+        }
+      }).catch(console.error).finally(() => {
+        // Clean URL params
+        searchParams.delete("purchased");
+        searchParams.delete("session_id");
+        setSearchParams(searchParams, { replace: true });
+      });
+    }
+  }, []);
 
   useEffect(() => {
     supabase
@@ -49,24 +73,6 @@ export default function PlatformProductsSection() {
         setLoading(false);
       });
   }, []);
-
-  const handlePurchase = async (product: PlatformProduct) => {
-    setPurchasing(product.id);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const email = session?.user?.email;
-
-      const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
-        body: { product_id: product.id, buyer_email: email },
-      });
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch (err: any) {
-      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
-    } finally {
-      setPurchasing(null);
-    }
-  };
 
   const categories = [...new Set(products.map((p) => p.category))];
 

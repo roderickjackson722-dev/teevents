@@ -580,6 +580,15 @@ const Finances = () => {
             <Button
               variant="outline"
               size="sm"
+              onClick={exportMyTransactionsCSV}
+              disabled={platformTransactions.length === 0}
+            >
+              <Download className="h-4 w-4 mr-1.5" />
+              Export CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleResendAll}
               disabled={resendingId === "all" || paidRegistrations.length === 0}
             >

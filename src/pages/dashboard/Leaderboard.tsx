@@ -84,6 +84,28 @@ export default function Leaderboard() {
   const isStableford = scoringFormat?.scoring === "stableford";
   const handicapEnabled = (selectedTournamentData as any)?.handicap_enabled === true;
   const coursePar = selectedTournamentData?.course_par || 72;
+
+  // Fetch course data for hole pars
+  const { data: courseData } = useQuery({
+    queryKey: ["leaderboard-course", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("golf_courses")
+        .select("hole_pars, stroke_indexes, name, tee_name, par")
+        .eq("tournament_id", selectedTournament)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const holePars = (courseData?.hole_pars as number[] | null) ?? null;
+  const getHolePar = (h: number): number => {
+    if (holePars && holePars[h - 1] != null) return holePars[h - 1];
+    return Math.round(coursePar / 18);
+  };
   const holePar = coursePar / 18;
 
   const { data: registrations } = useQuery({

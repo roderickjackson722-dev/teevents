@@ -92,7 +92,7 @@ export default function AdminNotifications() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [crRes, msgRes, auditRes] = await Promise.all([
+    const [crRes, msgRes, auditRes, notifRes] = await Promise.all([
       supabase
         .from("payout_change_requests")
         .select("*")
@@ -108,15 +108,22 @@ export default function AdminNotifications() {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50),
+      supabase
+        .from("admin_notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50),
     ]);
 
     const crs = (crRes.data || []) as unknown as ChangeRequest[];
     const msgs = (msgRes.data || []) as unknown as OrgMessage[];
     const audits = (auditRes.data || []) as unknown as AuditEntry[];
+    const notifs = (notifRes.data || []) as unknown as AdminNotification[];
 
     setChangeRequests(crs);
     setMessages(msgs);
     setAuditLogs(audits);
+    setNotifications(notifs);
 
     // Fetch org names for all unique org IDs
     const orgIds = [...new Set([

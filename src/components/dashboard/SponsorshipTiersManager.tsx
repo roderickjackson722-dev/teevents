@@ -168,14 +168,19 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       is_active: true,
     };
 
-    if (editTier) {
-      const { error } = await supabase.from("sponsorship_tiers").update(payload).eq("id", editTier.id);
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-      else toast({ title: "Tier updated" });
+    const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+      body: {
+        action: editTier ? "update" : "create",
+        tournament_id: selectedTournament,
+        tier_id: editTier?.id,
+        payload,
+      },
+    });
+
+    if (error || data?.error) {
+      toast({ title: "Error", description: data?.error || error.message, variant: "destructive" });
     } else {
-      const { error } = await supabase.from("sponsorship_tiers").insert(payload);
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-      else toast({ title: "Tier created" });
+      toast({ title: editTier ? "Tier updated" : "Tier created" });
     }
     resetForm();
     setDialogOpen(false);
@@ -197,7 +202,13 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
 
   const handleDelete = async (id: string) => {
     if (demoGuard()) return;
-    await supabase.from("sponsorship_tiers").delete().eq("id", id);
+    const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+      body: { action: "delete", tier_id: id },
+    });
+    if (error || data?.error) {
+      toast({ title: "Error", description: data?.error || error.message, variant: "destructive" });
+      return;
+    }
     toast({ title: "Tier deleted" });
     fetchData();
   };
@@ -214,8 +225,14 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       display_order: i + 1,
       is_active: true,
     }));
-    const { error } = await supabase.from("sponsorship_tiers").insert(inserts);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+      body: {
+        action: "apply_template",
+        tournament_id: selectedTournament,
+        tiers: inserts,
+      },
+    });
+    if (error || data?.error) toast({ title: "Error", description: data?.error || error.message, variant: "destructive" });
     else toast({ title: `${template.name} template applied!` });
     fetchData();
   };
@@ -226,7 +243,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   };
 
   const sponsorUrl = selectedTournamentData?.slug
-    ? `${window.location.origin}/t/${selectedTournamentData.slug}?tab=sponsors`
+    ? `${window.location.origin}/t/${selectedTournamentData.slug}#become-a-sponsor`
     : null;
 
   const totalPaid = registrations.filter(r => r.payment_status === "paid").reduce((s, r) => s + r.amount_cents, 0);

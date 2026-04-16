@@ -292,6 +292,26 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                       ))}
                       <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{totalPar}</td>
                     </tr>
+                    {courseData?.stroke_indexes && (
+                      <tr>
+                        {Array.from({ length: numHoles }, (_, i) => (
+                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
+                            {(courseData.stroke_indexes as number[])[i] || ""}
+                          </td>
+                        ))}
+                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">SI</td>
+                      </tr>
+                    )}
+                    {courseData?.hole_distances && (courseData.hole_distances as number[]).some((d: number) => d > 0) && (
+                      <tr>
+                        {Array.from({ length: numHoles }, (_, i) => (
+                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
+                            {(courseData.hole_distances as number[])[i] || ""}
+                          </td>
+                        ))}
+                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">Yds</td>
+                      </tr>
+                    )}
                     <tr>
                       {Array.from({ length: numHoles + 1 }, (_, i) => (
                         <td key={i} className="border border-border px-1.5 py-3 text-center">&nbsp;</td>

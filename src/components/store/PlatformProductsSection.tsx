@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Package, Search, ShoppingCart, ExternalLink, Truck } from "lucide-react";
+import { Loader2, Package, Search, ShoppingCart, ExternalLink, Truck, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fmt } from "@/components/store/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import DirectorShopCheckoutModal from "@/components/store/DirectorShopCheckoutModal";
+import { useSearchParams } from "react-router-dom";
 
 interface PlatformProduct {
   id: string;

@@ -56,6 +56,15 @@ interface AuditEntry {
   organization_id: string;
 }
 
+interface AdminNotification {
+  id: string;
+  type: string;
+  organization_id: string | null;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 // Helper to fetch org name by ID
 const orgNameCache: Record<string, string> = {};
 
@@ -63,6 +72,7 @@ export default function AdminNotifications() {
   const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
   const [messages, setMessages] = useState<OrgMessage[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [orgNames, setOrgNames] = useState<Record<string, string>>({});
 
@@ -82,7 +92,7 @@ export default function AdminNotifications() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [crRes, msgRes, auditRes] = await Promise.all([
+    const [crRes, msgRes, auditRes, notifRes] = await Promise.all([
       supabase
         .from("payout_change_requests")
         .select("*")
@@ -98,15 +108,22 @@ export default function AdminNotifications() {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50),
+      supabase
+        .from("admin_notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50),
     ]);
 
     const crs = (crRes.data || []) as unknown as ChangeRequest[];
     const msgs = (msgRes.data || []) as unknown as OrgMessage[];
     const audits = (auditRes.data || []) as unknown as AuditEntry[];
+    const notifs = (notifRes.data || []) as unknown as AdminNotification[];
 
     setChangeRequests(crs);
     setMessages(msgs);
     setAuditLogs(audits);
+    setNotifications(notifs);
 
     // Fetch org names for all unique org IDs
     const orgIds = [...new Set([
@@ -291,6 +308,18 @@ export default function AdminNotifications() {
 
   const pendingRequests = changeRequests.filter(r => r.status === "pending").length;
   const unreadMessages = messages.filter(m => m.status === "unread" && m.direction === "incoming").length;
+  const unreadNotifications = notifications.filter(n => !n.is_read).length;
+
+  const handleMarkAllNotificationsRead = async () => {
+    const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+    if (!unreadIds.length) return;
+    await supabase
+      .from("admin_notifications")
+      .update({ is_read: true } as any)
+      .in("id", unreadIds);
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    toast.success("All notifications marked as read.");
+  };
 
   if (loading) {
     return (
@@ -303,7 +332,7 @@ export default function AdminNotifications() {
   return (
     <div className="space-y-6">
       {/* Summary badges */}
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-2">
           <Shield className="h-4 w-4 text-amber-600" />
           <span className="text-sm font-medium">{pendingRequests} pending bank change request{pendingRequests !== 1 ? "s" : ""}</span>
@@ -312,10 +341,19 @@ export default function AdminNotifications() {
           <MessageSquare className="h-4 w-4 text-blue-600" />
           <span className="text-sm font-medium">{unreadMessages} unread message{unreadMessages !== 1 ? "s" : ""}</span>
         </div>
+        {unreadNotifications > 0 && (
+          <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg px-4 py-2">
+            <Bell className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">{unreadNotifications} new notification{unreadNotifications !== 1 ? "s" : ""}</span>
+          </div>
+        )}
       </div>
 
-      <Tabs defaultValue="bank-requests">
+      <Tabs defaultValue="notifications">
         <TabsList>
+          <TabsTrigger value="notifications">
+            Notifications {unreadNotifications > 0 && <Badge className="ml-2 bg-primary text-primary-foreground">{unreadNotifications}</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="bank-requests">
             Bank Change Requests {pendingRequests > 0 && <Badge className="ml-2 bg-amber-500 text-white">{pendingRequests}</Badge>}
           </TabsTrigger>
@@ -324,6 +362,54 @@ export default function AdminNotifications() {
           </TabsTrigger>
           <TabsTrigger value="audit-log">Audit Log</TabsTrigger>
         </TabsList>
+
+        {/* TAB 0: Platform Notifications */}
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Platform Notifications</CardTitle>
+                  <CardDescription>Payout method changes, new organizers, and system alerts</CardDescription>
+                </div>
+                {unreadNotifications > 0 && (
+                  <Button variant="outline" size="sm" onClick={handleMarkAllNotificationsRead}>
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark all read
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {notifications.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No notifications yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {notifications.map(n => (
+                    <div
+                      key={n.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border ${
+                        n.is_read ? "border-border bg-background" : "border-primary/20 bg-primary/5"
+                      }`}
+                    >
+                      <Bell className={`h-4 w-4 mt-0.5 flex-shrink-0 ${n.is_read ? "text-muted-foreground" : "text-primary"}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${n.is_read ? "text-muted-foreground" : "text-foreground font-medium"}`}>
+                          {n.message}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(n.created_at).toLocaleString()}
+                          </span>
+                          <Badge variant="outline" className="text-xs">{n.type.replace(/_/g, " ")}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* TAB 1: Bank Change Requests */}
         <TabsContent value="bank-requests">

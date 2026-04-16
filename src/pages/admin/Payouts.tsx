@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Download, Search, ExternalLink, StickyNote, ArrowLeft, AlertTriangle, RefreshCw, Users } from "lucide-react";
+import { Download, Search, ExternalLink, StickyNote, ArrowLeft, AlertTriangle, RefreshCw, Users, History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PayoutRow {
@@ -38,11 +38,14 @@ interface PayoutNote {
 interface OrgStripeInfo {
   id: string;
   name: string;
+  payout_method: string | null;
   stripe_account_id: string | null;
   stripe_account_last4: string | null;
   stripe_account_brand: string | null;
   stripe_onboarding_complete: boolean;
   stripe_account_status: string | null;
+  paypal_email: string | null;
+  mailing_address: string | null;
 }
 
 const cents = (v: number) => `$${(v / 100).toFixed(2)}`;
@@ -65,6 +68,9 @@ export default function AdminPayouts() {
   const [resetOrg, setResetOrg] = useState<OrgStripeInfo | null>(null);
   const [resetReason, setResetReason] = useState("");
   const [resetting, setResetting] = useState(false);
+  const [viewLogOrg, setViewLogOrg] = useState<OrgStripeInfo | null>(null);
+  const [orgActivityLogs, setOrgActivityLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -75,16 +81,15 @@ export default function AdminPayouts() {
     setOrgsLoading(true);
     const { data: orgList } = await supabase
       .from("organizations")
-      .select("id, name, stripe_account_id")
+      .select("id, name, stripe_account_id, payout_method, mailing_address")
       .order("name");
 
     if (!orgList) { setOrgsLoading(false); return; }
 
-    // Get payout method details
     const orgIds = orgList.map(o => o.id);
     const { data: payoutMethods } = await supabase
       .from("organization_payout_methods")
-      .select("organization_id, stripe_account_id, stripe_account_last4, stripe_account_brand, stripe_onboarding_complete, stripe_account_status")
+      .select("organization_id, stripe_account_id, stripe_account_last4, stripe_account_brand, stripe_onboarding_complete, stripe_account_status, paypal_email")
       .in("organization_id", orgIds);
 
     const pmMap: Record<string, any> = {};
@@ -93,15 +98,30 @@ export default function AdminPayouts() {
     const combined: OrgStripeInfo[] = orgList.map(o => ({
       id: o.id,
       name: o.name,
+      payout_method: (o as any).payout_method || "stripe",
       stripe_account_id: pmMap[o.id]?.stripe_account_id || o.stripe_account_id || null,
       stripe_account_last4: pmMap[o.id]?.stripe_account_last4 || null,
       stripe_account_brand: pmMap[o.id]?.stripe_account_brand || null,
       stripe_onboarding_complete: pmMap[o.id]?.stripe_onboarding_complete || false,
       stripe_account_status: pmMap[o.id]?.stripe_account_status || null,
+      paypal_email: pmMap[o.id]?.paypal_email || null,
+      mailing_address: (o as any).mailing_address || null,
     }));
 
     setOrgs(combined);
     setOrgsLoading(false);
+  };
+
+  const loadOrgActivityLogs = async (orgId: string) => {
+    setLoadingLogs(true);
+    const { data } = await supabase
+      .from("activity_logs")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setOrgActivityLogs(data || []);
+    setLoadingLogs(false);
   };
 
   const handleResetStripe = async () => {
@@ -412,15 +432,15 @@ export default function AdminPayouts() {
             <Input placeholder="Search organizations…" value={orgSearch} onChange={(e) => setOrgSearch(e.target.value)} className="pl-9 max-w-md" />
           </div>
 
-          <Card>
+           <Card>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Organization</TableHead>
+                    <TableHead>Payout Method</TableHead>
                     <TableHead>Stripe Status</TableHead>
-                    <TableHead>Account</TableHead>
-                    <TableHead>Stripe ID</TableHead>
+                    <TableHead>Connected Account</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -434,6 +454,15 @@ export default function AdminPayouts() {
                       <TableRow key={o.id}>
                         <TableCell className="font-medium">{o.name}</TableCell>
                         <TableCell>
+                          <Badge variant="outline" className={
+                            o.payout_method === "stripe" ? "text-emerald-600 border-emerald-500/30"
+                            : o.payout_method === "paypal" ? "text-blue-600 border-blue-500/30"
+                            : "text-amber-600 border-amber-500/30"
+                          }>
+                            {o.payout_method === "stripe" ? "Stripe" : o.payout_method === "paypal" ? "PayPal" : "Check"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
                           {o.stripe_onboarding_complete ? (
                             <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30">Connected</Badge>
                           ) : o.stripe_account_id ? (
@@ -443,29 +472,37 @@ export default function AdminPayouts() {
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {o.stripe_account_brand && o.stripe_account_last4
+                          {o.payout_method === "paypal" && o.paypal_email
+                            ? o.paypal_email
+                            : o.payout_method === "check" && o.mailing_address
+                            ? o.mailing_address.split("\n")[0]
+                            : o.stripe_account_brand && o.stripe_account_last4
                             ? `${o.stripe_account_brand} •••• ${o.stripe_account_last4}`
                             : o.stripe_account_last4
                             ? `•••• ${o.stripe_account_last4}`
                             : "—"}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground font-mono">
-                          {o.stripe_account_id ? o.stripe_account_id.slice(0, 12) + "…" : "—"}
-                        </TableCell>
                         <TableCell className="text-right">
-                          {o.stripe_account_id ? (
+                          <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-destructive hover:text-destructive gap-1.5"
-                              onClick={() => { setResetOrg(o); setResetReason(""); }}
+                              onClick={() => { setViewLogOrg(o); loadOrgActivityLogs(o.id); }}
                             >
-                              <RefreshCw className="h-3.5 w-3.5" />
-                              Reset Stripe
+                              <History className="h-3.5 w-3.5 mr-1" /> View Log
                             </Button>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">No action needed</span>
-                          )}
+                            {o.stripe_account_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:text-destructive gap-1.5"
+                                onClick={() => { setResetOrg(o); setResetReason(""); }}
+                              >
+                                <RefreshCw className="h-3.5 w-3.5" />
+                                Reset Stripe
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -577,6 +614,40 @@ export default function AdminPayouts() {
                 <Button variant="outline" onClick={() => setResetOrg(null)}>Cancel</Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Activity Log Dialog */}
+      <Dialog open={!!viewLogOrg} onOpenChange={(o) => !o && setViewLogOrg(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Activity Log — {viewLogOrg?.name}</DialogTitle>
+            <DialogDescription>Full activity history for this organizer</DialogDescription>
+          </DialogHeader>
+          {loadingLogs ? (
+            <div className="flex justify-center py-8"><span className="text-muted-foreground">Loading…</span></div>
+          ) : orgActivityLogs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No activity logs found for this organizer.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orgActivityLogs.map((log: any) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-xs whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</TableCell>
+                    <TableCell className="text-xs capitalize font-medium">{(log.action_type || "").replace(/_/g, " ")}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{log.description || "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </DialogContent>
       </Dialog>

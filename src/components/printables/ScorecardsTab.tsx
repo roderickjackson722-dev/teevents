@@ -10,11 +10,20 @@ import type { Tournament, Registration } from "./types";
 import { getPrimaryColor } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 
+interface CourseDataProp {
+  hole_pars: number[] | null;
+  stroke_indexes: number[] | null;
+  hole_distances: number[] | null;
+  name: string | null;
+  tee_name: string | null;
+}
+
 interface Props {
   tournament: Tournament | null;
   registrations: Registration[];
   loading: boolean;
   slug?: string;
+  courseData?: CourseDataProp | null;
 }
 
 interface EditableReg extends Registration {
@@ -23,7 +32,11 @@ interface EditableReg extends Registration {
   customGroupNumber?: number | null;
 }
 
-function getHolePar(tournament: Tournament | null, holeIndex: number, numHoles: number): number {
+function getHolePar(tournament: Tournament | null, holeIndex: number, numHoles: number, courseData?: CourseDataProp | null): number {
+  // Prefer course data from golf_courses table
+  if (courseData?.hole_pars && Array.isArray(courseData.hole_pars) && courseData.hole_pars[holeIndex] != null) {
+    return courseData.hole_pars[holeIndex];
+  }
   if (tournament?.hole_pars && Array.isArray(tournament.hole_pars) && tournament.hole_pars[holeIndex] != null) {
     return tournament.hole_pars[holeIndex];
   }

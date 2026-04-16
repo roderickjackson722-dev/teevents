@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
           if (RESEND_API_KEY) {
             const { data: tournament } = await supabaseAdmin
               .from("tournaments")
-              .select("title")
+              .select("title, slug, contact_email")
               .eq("id", tournamentId)
               .single();
 
@@ -194,9 +194,61 @@ Deno.serve(async (req) => {
                 html: adminHtml,
               }),
             });
+
+            // Send confirmation email to sponsor
+            const tournamentPageUrl = tournament?.slug
+              ? `https://www.teevents.golf/t/${tournament.slug}`
+              : null;
+
+            const sponsorConfirmHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+        <tr><td style="background:#1a5c38;padding:28px 32px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:32px;">⛳</p>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Sponsorship Confirmed!</h1>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">Dear <strong>${reg.contact_name}</strong>,</p>
+          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">Thank you for becoming a <strong>${tierName}</strong> sponsor for <strong>${tournament?.title || "the tournament"}</strong>!</p>
+          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">💰 <strong>Amount:</strong> $${(grossAmountCents / 100).toFixed(2)}</p>
+          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">Your logo and company information will appear on the tournament website within 24 hours.</p>
+          <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;"><strong>Next steps:</strong></p>
+          <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">• The tournament organizer will reach out with any additional asset requests.</p>
+          <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">• Your sponsorship benefits will be delivered as described on the tournament website.</p>
+          ${tournament?.contact_email ? `<p style="margin:14px 0;color:#374151;font-size:15px;line-height:1.7;">If you have any questions, please contact the organizer at <a href="mailto:${tournament.contact_email}" style="color:#1a5c38;">${tournament.contact_email}</a>.</p>` : ""}
+          <p style="margin:14px 0 0;color:#374151;font-size:15px;line-height:1.7;">Thank you for your support! ⛳</p>
+        </td></tr>${tournamentPageUrl ? `
+        <tr><td style="padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
+          <a href="${tournamentPageUrl}" style="display:inline-block;padding:12px 28px;background-color:#1a5c38;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">View Tournament Page</a>
+        </td></tr>` : ""}
+        <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a> | <a href="mailto:info@teevents.golf" style="color:#9ca3af;text-decoration:underline;">Need help? Contact support</a></p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+              body: JSON.stringify({
+                from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+                to: [reg.contact_email],
+                subject: `Sponsorship Confirmed — ${tournament?.title || "Tournament"}`,
+                html: sponsorConfirmHtml,
+              }),
+            });
+            console.log(`[Confirmation] Sponsor confirmation sent to ${reg.contact_email}`);
           }
         } catch (e) {
-          console.error("Admin sponsor notification error:", e);
+          console.error("Admin/sponsor notification error:", e);
         }
       }
 

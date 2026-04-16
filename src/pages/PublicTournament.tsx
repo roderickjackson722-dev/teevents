@@ -842,12 +842,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </motion.div>
       </section>
 
-      {/* ===== SPONSORS CAROUSEL ===== */}
+      {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
       {sponsors.length > 0 && (
         <section id="sponsors" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-              SPONSORS
+              THANK YOU SPONSORS
             </h2>
             <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
 
@@ -862,10 +862,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               )}
 
               <div className="flex items-center justify-center gap-12 min-h-[100px]">
-                {visibleSponsors.map((s) => (
+                {visibleSponsors.map((s) => {
+                  const sponsorUrl = s.website_url
+                    ? (s.website_url.startsWith("http://") || s.website_url.startsWith("https://") ? s.website_url : `https://${s.website_url}`)
+                    : null;
+                  return (
                   <div key={s.id} className="flex flex-col items-center">
-                    {s.website_url ? (
-                      <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="group">
+                    {sponsorUrl ? (
+                      <a href={sponsorUrl} target="_blank" rel="noopener noreferrer" className="group">
                         {s.logo_url ? (
                           <img src={s.logo_url} alt={s.name} className="h-20 w-auto max-w-[180px] object-contain group-hover:scale-105 transition-transform" />
                         ) : (
@@ -883,7 +887,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       </span>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {sponsorPages > 1 && (
@@ -898,6 +903,15 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </div>
         </section>
       )}
+
+      {/* ===== DIVIDER BETWEEN SPONSORS AND BECOME A SPONSOR ===== */}
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
+          <Award className="h-5 w-5" style={{ color: secondary }} />
+          <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
+        </div>
+      </div>
 
       {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
       <section id="become-a-sponsor" className="py-16" style={{ backgroundColor: "#fafafa" }}>

@@ -381,6 +381,22 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     }
   }, [registered, sessionId]);
 
+  // Verify sponsor payment on return from Stripe
+  useEffect(() => {
+    const sponsorSuccessParam = searchParams.get("sponsor_success");
+    if (sponsorSuccessParam === "true" && sessionId) {
+      setSponsorVerifying(true);
+      supabase.functions.invoke("verify-sponsor-payment", {
+        body: { session_id: sessionId },
+      }).then(({ data }) => {
+        if (data?.verified) {
+          setSponsorSuccess(true);
+        }
+        setSponsorVerifying(false);
+      }).catch(() => setSponsorVerifying(false));
+    }
+  }, [searchParams, sessionId]);
+
   // Event countdown timer
   useEffect(() => {
     if (!tournament?.date) return;

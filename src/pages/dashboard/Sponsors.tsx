@@ -66,6 +66,7 @@ interface Sponsor {
 interface Tournament {
   id: string;
   title: string;
+  slug: string | null;
 }
 
 const tiers = [

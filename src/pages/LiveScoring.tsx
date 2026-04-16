@@ -27,12 +27,21 @@ interface TournamentData {
   handicap_enabled?: boolean;
 }
 
+interface CourseData {
+  hole_pars: number[] | null;
+  stroke_indexes: number[] | null;
+  hole_distances: number[] | null;
+  name: string | null;
+  tee_name: string | null;
+}
+
 export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [tournament, setTournament] = useState<TournamentData | null>(null);
   const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
   const [courseStrokeIndexes, setCourseStrokeIndexes] = useState<number[] | null>(null);
+  const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);
   const [groupInput, setGroupInput] = useState("");
@@ -66,20 +75,25 @@ export default function LiveScoring() {
             .order("sort_order")
             .then(({ data: sp }) => setSponsors(sp || []));
 
-          // Load course stroke indexes if handicap enabled
-          if ((data as any).handicap_enabled) {
-            supabase
-              .from("golf_courses")
-              .select("stroke_indexes")
-              .eq("tournament_id", data.id)
-              .limit(1)
-              .single()
-              .then(({ data: course }) => {
-                if (course?.stroke_indexes) {
-                  setCourseStrokeIndexes(course.stroke_indexes as number[]);
-                }
-              });
-          }
+          // Load course data (pars, SI, distances)
+          supabase
+            .from("golf_courses")
+            .select("stroke_indexes, hole_pars, hole_distances, name, tee_name")
+            .eq("tournament_id", data.id)
+            .limit(1)
+            .single()
+            .then(({ data: course }) => {
+              if (course) {
+                setCourseStrokeIndexes(course.stroke_indexes as number[] | null);
+                setCourseData({
+                  hole_pars: course.hole_pars as number[] | null,
+                  stroke_indexes: course.stroke_indexes as number[] | null,
+                  hole_distances: course.hole_distances as number[] | null,
+                  name: course.name,
+                  tee_name: course.tee_name,
+                });
+              }
+            });
         }
       });
   }, [slug]);

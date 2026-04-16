@@ -578,16 +578,22 @@ export default function Leaderboard() {
                               {ps.group_number ?? "—"}
                             </TableCell>
                           )}
-                          {holes.map((h) => (
-                            <TableCell key={h} className="p-1 text-center">
-                              <Input
-                                type="number"
-                                min={0}
-                                max={20}
-                                value={getScore(ps, h)}
-                                onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
-                                className="w-12 h-8 text-center text-sm p-0"
-                              />
+                          {holes.map((h) => {
+                            const val = getScore(ps, h);
+                            const hp = getHolePar(h);
+                            const scoreColorClass = typeof val === "number"
+                              ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
+                              : "";
+                            return (
+                              <TableCell key={h} className="p-1 text-center">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={20}
+                                  value={val}
+                                  onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
+                                  className={`w-12 h-8 text-center text-sm p-0 ${scoreColorClass}`}
+                                />
                             </TableCell>
                           ))}
                           <TableCell className="text-center font-bold text-lg">

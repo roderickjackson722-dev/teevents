@@ -888,6 +888,91 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
+      {sponsorshipTiers.length > 0 && (
+        <section id="become-a-sponsor" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
+                BECOME A SPONSOR
+              </h2>
+              <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+              <p className="text-center text-sm mb-10" style={{ color: "#888" }}>
+                Partner with us to make this event a success. Choose a sponsorship level below.
+              </p>
+
+              {/* Sponsor success confirmation */}
+              {sponsorSuccess && (
+                <div className="max-w-md mx-auto mb-10 bg-white rounded-xl border-2 p-8 text-center" style={{ borderColor: `${secondary}40` }}>
+                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
+                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>Thank You!</h3>
+                  <p style={{ color: "#666" }}>
+                    Your sponsorship has been confirmed. The tournament organizer will reach out with next steps.
+                  </p>
+                </div>
+              )}
+
+              {sponsorVerifying && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} />
+                  <p style={{ color: "#666" }}>Verifying your sponsorship payment...</p>
+                </div>
+              )}
+
+              <div className={`grid gap-6 ${sponsorshipTiers.length === 1 ? "max-w-md mx-auto" : sponsorshipTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                {sponsorshipTiers.map((tier, i) => (
+                  <motion.div
+                    key={tier.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                    style={{ borderColor: "#e5e5e5" }}
+                  >
+                    {/* Tier header */}
+                    <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
+                      <Award className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
+                      <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
+                      <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
+                      </p>
+                      {tier.description && (
+                        <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
+                      )}
+                    </div>
+
+                    {/* Benefits */}
+                    {tier.benefits && (
+                      <div className="flex-1 px-6 py-4 border-t" style={{ borderColor: "#f0f0f0" }}>
+                        <div className="text-sm whitespace-pre-line" style={{ color: "#555" }}>
+                          {tier.benefits}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CTA */}
+                    <div className="p-6 pt-2">
+                      <a
+                        href={`/sponsor/${slug}?tier=${tier.id}`}
+                        className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: secondary, color: primary }}
+                      >
+                        Select
+                      </a>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <p className="text-center text-xs mt-6" style={{ color: "#aaa" }}>
+                5% platform fee + Stripe processing fee added at checkout.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* ===== ABOUT ===== */}
       {tournament.description && (
         <section id="about" className="py-16" style={{ backgroundColor: "#fafafa" }}>

@@ -97,6 +97,19 @@ export default function PlatformProductsSection() {
 
   return (
     <div className="mb-10">
+      {/* Purchase success banner */}
+      {purchaseVerified && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 p-4 flex items-start gap-3">
+          <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold text-green-900 dark:text-green-200">Payment Confirmed!</p>
+            <p className="text-sm text-green-800 dark:text-green-300">
+              Your order for <strong>{verifiedProductName}</strong> has been received. Our team will contact you within 2 business days to confirm details.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
           <ShoppingCart className="h-6 w-6 text-primary" />
@@ -214,14 +227,9 @@ export default function PlatformProductsSection() {
                   <Button
                     size="sm"
                     className="w-full"
-                    onClick={() => handlePurchase(product)}
-                    disabled={purchasing === product.id}
+                    onClick={() => setCheckoutProduct(product)}
                   >
-                    {purchasing === product.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4 mr-1.5" />
-                    )}
+                    <ExternalLink className="h-4 w-4 mr-1.5" />
                     Purchase
                   </Button>
                 </div>

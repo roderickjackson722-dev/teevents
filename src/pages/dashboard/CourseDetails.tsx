@@ -12,9 +12,10 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2, Trophy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
+import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 
 interface HoleData {
@@ -29,7 +30,35 @@ const TEE_OPTIONS = ["Black", "Blue", "White", "Red", "Gold", "Green", "Silver",
 
 export default function CourseDetails() {
   const queryClient = useQueryClient();
-  const tournamentId = localStorage.getItem("selectedTournamentId");
+  const { org } = useOrgContext();
+  const [tournamentId, setTournamentId] = useState<string | null>(() => localStorage.getItem("selectedTournamentId"));
+
+  const { data: tournaments } = useQuery({
+    queryKey: ["course-details-tournaments", org?.orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("id, title, date")
+        .eq("organization_id", org!.orgId)
+        .order("date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!org,
+  });
+
+  useEffect(() => {
+    if (!tournamentId && tournaments && tournaments.length > 0) {
+      const first = tournaments[0].id;
+      setTournamentId(first);
+      localStorage.setItem("selectedTournamentId", first);
+    }
+  }, [tournaments, tournamentId]);
+
+  const handleTournamentChange = (id: string) => {
+    setTournamentId(id);
+    localStorage.setItem("selectedTournamentId", id);
+  };
 
   // Fetch existing course
   const { data: course, isLoading } = useQuery({
@@ -265,11 +294,7 @@ export default function CourseDetails() {
     },
   });
 
-  if (!tournamentId) {
-    return <div className="p-6 text-muted-foreground">Please select a tournament first.</div>;
-  }
-
-  if (isLoading) {
+  if (isLoading && tournamentId) {
     return <div className="p-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;
   }
 
@@ -278,18 +303,52 @@ export default function CourseDetails() {
       <SEO title="Course Details" description="Configure golf course details for your tournament." />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Course Details</h1>
           <p className="text-sm text-muted-foreground">
             Enter your course info for handicap calculations, scorecards, and live scoring.
           </p>
         </div>
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !tournamentId}>
           {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
           Save Course Details
         </Button>
       </div>
+
+      {/* Tournament Selector */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-primary" />
+            Select Tournament
+          </CardTitle>
+          <CardDescription>Choose which tournament's course you're configuring.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {tournaments && tournaments.length > 0 ? (
+            <Select value={tournamentId ?? ""} onValueChange={handleTournamentChange}>
+              <SelectTrigger><SelectValue placeholder="Select a tournament..." /></SelectTrigger>
+              <SelectContent>
+                {tournaments.map(t => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.title}{t.date ? ` — ${new Date(t.date).toLocaleDateString()}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <p className="text-sm text-muted-foreground">No tournaments yet. Create one first from the Tournaments page.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {!tournamentId && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>Select a tournament above to configure its course details.</AlertDescription>
+        </Alert>
+      )}
 
       {/* Validation Banner */}
       {!validation.isComplete ? (

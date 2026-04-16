@@ -291,6 +291,28 @@ export default function CourseDetails() {
         </Button>
       </div>
 
+      {/* Validation Banner */}
+      {!validation.isComplete ? (
+        <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <p className="font-semibold mb-1">Complete Course Details before publishing to enable handicaps and scorecards.</p>
+            <ul className="list-disc list-inside text-sm space-y-0.5">
+              {validation.issues.map((issue, i) => (
+                <li key={i}>{issue}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert className="border-primary/30 bg-primary/5">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-primary font-medium">
+            Course details are complete. Handicaps, scorecards, and live scoring are ready.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Basic Info */}
       <Card>
         <CardHeader>

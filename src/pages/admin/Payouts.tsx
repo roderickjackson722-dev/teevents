@@ -68,6 +68,9 @@ export default function AdminPayouts() {
   const [resetOrg, setResetOrg] = useState<OrgStripeInfo | null>(null);
   const [resetReason, setResetReason] = useState("");
   const [resetting, setResetting] = useState(false);
+  const [viewLogOrg, setViewLogOrg] = useState<OrgStripeInfo | null>(null);
+  const [orgActivityLogs, setOrgActivityLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   useEffect(() => {
     loadData();

@@ -116,7 +116,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
         <div>
           ${opts.showTournamentTitle ? `<div style="font-size:10px;font-weight:600;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};letter-spacing:2px;text-transform:uppercase;">${tournament?.title ?? ""}</div>` : ""}
           <div style="font-size:18px;font-weight:bold;">${firstName} ${lastName}</div>
-          ${opts.showCourseName && tournament?.course_name ? `<div style="font-size:12px;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};">${tournament.course_name} &bull; Par ${totalPar} &bull; ${numHoles} Holes</div>` : ""}
+          ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:12px;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""} &bull; Par ${totalPar} &bull; ${numHoles} Holes</div>` : ""}
         </div>
         ${opts.showLogo && tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" style="height:40px;object-fit:contain;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
       </div>
@@ -124,6 +124,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
         <table style="border-collapse:collapse;width:100%;">
           <tr style="background:#f5f5f5;">${holeCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:700;background:#e8e8e8;">TOT</td></tr>
           <tr>${parCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;font-weight:600;">${totalPar}</td></tr>
+          ${siCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">SI</td>${siCells.substring(siCells.indexOf('>')+1)}</tr>` : ""}
+          ${distCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">Yds</td>${distCells.substring(distCells.indexOf('>')+1)}</tr>` : ""}
           <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
         </table>
       </div>

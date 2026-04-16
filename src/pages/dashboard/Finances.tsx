@@ -96,6 +96,45 @@ const Finances = () => {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [expandedTxRows, setExpandedTxRows] = useState<Set<string>>(new Set());
+
+  const toggleTxRow = (id: string) => {
+    setExpandedTxRows(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const exportMyTransactionsCSV = () => {
+    const headers = [
+      "Date", "Golfer Name", "Golfer Email",
+      "Gross ($)", "Platform Fee ($)", "Stripe Fee ($)", "Net to You ($)",
+      "Payout Method", "Status", "Stripe Payment Intent", "Stripe Session",
+    ];
+    const rows = platformTransactions.map(t => [
+      new Date(t.created_at).toLocaleString(),
+      t.golfer_name || "",
+      t.golfer_email || "",
+      (t.amount_cents / 100).toFixed(2),
+      (t.platform_fee_cents / 100).toFixed(2),
+      ((t.stripe_fee_cents || 0) / 100).toFixed(2),
+      (t.net_amount_cents / 100).toFixed(2),
+      t.payout_method || "",
+      t.status,
+      t.stripe_payment_intent_id || "",
+      t.stripe_session_id || "",
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `my-transactions-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} transactions`);
+  };
 
   // CSV report state
   const [reportType, setReportType] = useState("transactions");

@@ -1506,13 +1506,19 @@ export type Database = {
           amount_cents: number
           created_at: string
           description: string | null
+          failure_reason: string | null
+          golfer_email: string | null
+          golfer_name: string | null
           id: string
           metadata: Json | null
           net_amount_cents: number
           organization_id: string
           payout_id: string | null
+          payout_method: string | null
           platform_fee_cents: number
+          registration_id: string | null
           status: string
+          stripe_fee_cents: number
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           tournament_id: string | null
@@ -1523,13 +1529,19 @@ export type Database = {
           amount_cents: number
           created_at?: string
           description?: string | null
+          failure_reason?: string | null
+          golfer_email?: string | null
+          golfer_name?: string | null
           id?: string
           metadata?: Json | null
           net_amount_cents?: number
           organization_id: string
           payout_id?: string | null
+          payout_method?: string | null
           platform_fee_cents?: number
+          registration_id?: string | null
           status?: string
+          stripe_fee_cents?: number
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           tournament_id?: string | null
@@ -1540,13 +1552,19 @@ export type Database = {
           amount_cents?: number
           created_at?: string
           description?: string | null
+          failure_reason?: string | null
+          golfer_email?: string | null
+          golfer_name?: string | null
           id?: string
           metadata?: Json | null
           net_amount_cents?: number
           organization_id?: string
           payout_id?: string | null
+          payout_method?: string | null
           platform_fee_cents?: number
+          registration_id?: string | null
           status?: string
+          stripe_fee_cents?: number
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           tournament_id?: string | null

@@ -617,6 +617,40 @@ export default function AdminPayouts() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Activity Log Dialog */}
+      <Dialog open={!!viewLogOrg} onOpenChange={(o) => !o && setViewLogOrg(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Activity Log — {viewLogOrg?.name}</DialogTitle>
+            <DialogDescription>Full activity history for this organizer</DialogDescription>
+          </DialogHeader>
+          {loadingLogs ? (
+            <div className="flex justify-center py-8"><span className="text-muted-foreground">Loading…</span></div>
+          ) : orgActivityLogs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No activity logs found for this organizer.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orgActivityLogs.map((log: any) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-xs whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</TableCell>
+                    <TableCell className="text-xs capitalize font-medium">{(log.action_type || "").replace(/_/g, " ")}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{log.description || "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

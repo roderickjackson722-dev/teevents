@@ -141,11 +141,37 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Fetch organizer payout method and primary registrant info
+        const { data: orgPayout } = await supabaseAdmin
+          .from("organizations")
+          .select("payout_method")
+          .eq("id", organizationId)
+          .single();
+
+        let golferName: string | null = null;
+        let golferEmail: string | null = null;
+        if (registrationIds.length > 0) {
+          const { data: firstReg } = await supabaseAdmin
+            .from("tournament_registrations")
+            .select("first_name, last_name, email")
+            .eq("id", registrationIds[0])
+            .single();
+          if (firstReg) {
+            golferName = `${firstReg.first_name} ${firstReg.last_name}`.trim();
+            golferEmail = firstReg.email;
+          }
+        }
+
         await supabaseAdmin.from("platform_transactions").insert({
           organization_id: organizationId,
           tournament_id: tournamentId || null,
+          registration_id: registrationIds[0] || null,
+          golfer_name: golferName,
+          golfer_email: golferEmail,
+          payout_method: orgPayout?.payout_method || "check",
           amount_cents: grossAmount,
           platform_fee_cents: platformFeeCents,
+          stripe_fee_cents: stripeFeeCents,
           net_amount_cents: netAmountCents,
           hold_amount_cents: holdAmountCents,
           hold_release_date: holdReleaseDate,

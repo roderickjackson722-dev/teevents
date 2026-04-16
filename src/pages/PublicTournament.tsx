@@ -515,6 +515,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     { label: "Home", href: "#top" },
     ...(contests.length > 0 ? [{ label: "Event Day Contests", href: "#contests" }] : []),
     { label: "Registration", href: "#register" },
+    ...(sponsorshipTiers.length > 0 ? [{ label: "Sponsors", href: "#become-a-sponsor" }] : []),
     { label: "Photos", href: "#photos" },
     { label: "Location", href: "#location" },
     { label: "Event Agenda", href: "#schedule" },

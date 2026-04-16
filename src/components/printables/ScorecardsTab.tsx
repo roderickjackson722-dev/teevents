@@ -173,7 +173,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
   const cancelEdit = () => setEditingId(null);
 
   const editableRegs = registrations.map(getEditableReg);
-  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug)).join("");
+  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug, courseData)).join("");
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (registrations.length === 0) return <div className="text-center py-12 bg-card rounded-lg border border-border"><p className="text-muted-foreground">No registered players yet.</p></div>;

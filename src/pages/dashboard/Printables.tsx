@@ -40,6 +40,14 @@ const Printables = () => {
       });
   }, [org]);
 
+  const [courseData, setCourseData] = useState<{
+    hole_pars: number[] | null;
+    stroke_indexes: number[] | null;
+    hole_distances: number[] | null;
+    name: string | null;
+    tee_name: string | null;
+  } | null>(null);
+
   useEffect(() => {
     if (!selectedTournament) return;
     setLoading(true);
@@ -57,9 +65,22 @@ const Printables = () => {
         .select("id, name, tier, logo_url, website_url")
         .eq("tournament_id", selectedTournament)
         .order("sort_order", { ascending: true }),
-    ]).then(([regRes, sponsorRes]) => {
+      supabase
+        .from("golf_courses")
+        .select("hole_pars, stroke_indexes, hole_distances, name, tee_name")
+        .eq("tournament_id", selectedTournament)
+        .limit(1)
+        .maybeSingle(),
+    ]).then(([regRes, sponsorRes, courseRes]) => {
       setRegistrations((regRes.data || []) as Registration[]);
       setSponsors((sponsorRes.data || []) as Sponsor[]);
+      setCourseData(courseRes.data ? {
+        hole_pars: courseRes.data.hole_pars as number[] | null,
+        stroke_indexes: courseRes.data.stroke_indexes as number[] | null,
+        hole_distances: courseRes.data.hole_distances as number[] | null,
+        name: courseRes.data.name,
+        tee_name: courseRes.data.tee_name,
+      } : null);
       setLoading(false);
     });
   }, [selectedTournament, tournaments]);
@@ -122,7 +143,7 @@ const Printables = () => {
           <CartSignsTab tournament={tournament} registrations={registrations} loading={loading} />
         </TabsContent>
         <TabsContent value="scorecards">
-          <ScorecardsTab tournament={tournament} registrations={registrations} loading={loading} slug={tournament?.slug || undefined} />
+          <ScorecardsTab tournament={tournament} registrations={registrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} />
         </TabsContent>
         <TabsContent value="name-badges">
           <NameBadgesTab tournament={tournament} registrations={registrations} loading={loading} />

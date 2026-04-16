@@ -10,11 +10,20 @@ import type { Tournament, Registration } from "./types";
 import { getPrimaryColor } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 
+interface CourseDataProp {
+  hole_pars: number[] | null;
+  stroke_indexes: number[] | null;
+  hole_distances: number[] | null;
+  name: string | null;
+  tee_name: string | null;
+}
+
 interface Props {
   tournament: Tournament | null;
   registrations: Registration[];
   loading: boolean;
   slug?: string;
+  courseData?: CourseDataProp | null;
 }
 
 interface EditableReg extends Registration {
@@ -23,7 +32,11 @@ interface EditableReg extends Registration {
   customGroupNumber?: number | null;
 }
 
-function getHolePar(tournament: Tournament | null, holeIndex: number, numHoles: number): number {
+function getHolePar(tournament: Tournament | null, holeIndex: number, numHoles: number, courseData?: CourseDataProp | null): number {
+  // Prefer course data from golf_courses table
+  if (courseData?.hole_pars && Array.isArray(courseData.hole_pars) && courseData.hole_pars[holeIndex] != null) {
+    return courseData.hole_pars[holeIndex];
+  }
   if (tournament?.hole_pars && Array.isArray(tournament.hole_pars) && tournament.hole_pars[holeIndex] != null) {
     return tournament.hole_pars[holeIndex];
   }
@@ -43,7 +56,7 @@ function getScoringUrl(slug: string | undefined, scoringCode: string | undefined
   return `${window.location.origin}/t/${slug}/scoring?code=${scoringCode}`;
 }
 
-function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string) {
+function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string, courseData?: CourseDataProp | null) {
   const color = getPrimaryColor(tournament);
   const fontMap: Record<string, string> = {
     georgia: "'Georgia', serif",
@@ -71,8 +84,18 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   ).join("");
 
   const parCells = Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles)}</td>`
+    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles, courseData)}</td>`
   ).join("");
+
+  const siValues = courseData?.stroke_indexes;
+  const siCells = siValues ? Array.from({ length: numHoles }, (_, i) =>
+    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${siValues[i] || ""}</td>`
+  ).join("") : "";
+
+  const distValues = courseData?.hole_distances;
+  const distCells = distValues && (distValues as number[]).some((d: number) => d > 0) ? Array.from({ length: numHoles }, (_, i) =>
+    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${(distValues as number[])[i] || ""}</td>`
+  ).join("") : "";
 
   const emptyCells = Array.from({ length: numHoles }, () =>
     `<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td>`
@@ -93,7 +116,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
         <div>
           ${opts.showTournamentTitle ? `<div style="font-size:10px;font-weight:600;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};letter-spacing:2px;text-transform:uppercase;">${tournament?.title ?? ""}</div>` : ""}
           <div style="font-size:18px;font-weight:bold;">${firstName} ${lastName}</div>
-          ${opts.showCourseName && tournament?.course_name ? `<div style="font-size:12px;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};">${tournament.course_name} &bull; Par ${totalPar} &bull; ${numHoles} Holes</div>` : ""}
+          ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:12px;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""} &bull; Par ${totalPar} &bull; ${numHoles} Holes</div>` : ""}
         </div>
         ${opts.showLogo && tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" style="height:40px;object-fit:contain;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
       </div>
@@ -101,6 +124,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
         <table style="border-collapse:collapse;width:100%;">
           <tr style="background:#f5f5f5;">${holeCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:700;background:#e8e8e8;">TOT</td></tr>
           <tr>${parCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;font-weight:600;">${totalPar}</td></tr>
+          ${siCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">SI</td>${siCells.substring(siCells.indexOf('>')+1)}</tr>` : ""}
+          ${distCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">Yds</td>${distCells.substring(distCells.indexOf('>')+1)}</tr>` : ""}
           <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
         </table>
       </div>
@@ -109,7 +134,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
     </div>`;
 }
 
-export default function ScorecardsTab({ tournament, registrations, loading, slug }: Props) {
+export default function ScorecardsTab({ tournament, registrations, loading, slug, courseData }: Props) {
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, EditableReg>>({});
@@ -148,7 +173,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
   const cancelEdit = () => setEditingId(null);
 
   const editableRegs = registrations.map(getEditableReg);
-  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug)).join("");
+  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug, courseData)).join("");
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (registrations.length === 0) return <div className="text-center py-12 bg-card rounded-lg border border-border"><p className="text-muted-foreground">No registered players yet.</p></div>;
@@ -195,7 +220,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           <div className="flex flex-wrap gap-1">
             {Array.from({ length: numHoles }, (_, i) => (
               <span key={i} className="inline-flex items-center justify-center w-8 h-8 text-xs font-medium bg-card border border-border rounded">
-                {getHolePar(tournament, i, numHoles)}
+                {getHolePar(tournament, i, numHoles, courseData)}
               </span>
             ))}
           </div>
@@ -262,11 +287,31 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                     <tr>
                       {Array.from({ length: numHoles }, (_, i) => (
                         <td key={i} className="border border-border px-1.5 py-1 text-center text-muted-foreground">
-                          {getHolePar(tournament, i, numHoles)}
+                          {getHolePar(tournament, i, numHoles, courseData)}
                         </td>
                       ))}
                       <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{totalPar}</td>
                     </tr>
+                    {courseData?.stroke_indexes && (
+                      <tr>
+                        {Array.from({ length: numHoles }, (_, i) => (
+                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
+                            {(courseData.stroke_indexes as number[])[i] || ""}
+                          </td>
+                        ))}
+                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">SI</td>
+                      </tr>
+                    )}
+                    {courseData?.hole_distances && (courseData.hole_distances as number[]).some((d: number) => d > 0) && (
+                      <tr>
+                        {Array.from({ length: numHoles }, (_, i) => (
+                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
+                            {(courseData.hole_distances as number[])[i] || ""}
+                          </td>
+                        ))}
+                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">Yds</td>
+                      </tr>
+                    )}
                     <tr>
                       {Array.from({ length: numHoles + 1 }, (_, i) => (
                         <td key={i} className="border border-border px-1.5 py-3 text-center">&nbsp;</td>

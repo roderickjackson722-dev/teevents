@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,8 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import SEO from "@/components/SEO";
 
 interface HoleData {
@@ -108,6 +110,29 @@ export default function CourseDetails() {
   const frontDist = holes.slice(0, 9).reduce((s, h) => s + (parseInt(h.distance) || 0), 0);
   const backDist = holes.slice(9).reduce((s, h) => s + (parseInt(h.distance) || 0), 0);
 
+  // Validation
+  const validation = useMemo(() => {
+    const issues: string[] = [];
+    if (!courseName.trim()) issues.push("Course Name is missing");
+    if (!courseRating || parseFloat(courseRating) === 0) issues.push("Course Rating is missing");
+    if (!slopeRating || parseInt(slopeRating) === 0) issues.push("Slope Rating is missing");
+
+    const siValues = holes.map(h => parseInt(h.si) || 0);
+    const allSIFilled = siValues.every(v => v >= 1 && v <= 18);
+    if (!allSIFilled) issues.push("Not all holes have Stroke Indexes (1-18)");
+
+    const siSet = new Set(siValues.filter(v => v >= 1 && v <= 18));
+    if (allSIFilled && siSet.size !== 18) issues.push("Stroke Indexes must each be unique (1-18, each used once)");
+
+    const allParsFilled = holes.every(h => {
+      const p = parseInt(h.par);
+      return p >= 3 && p <= 5;
+    });
+    if (!allParsFilled) issues.push("Not all holes have valid Par values (3-5)");
+
+    return { issues, isComplete: issues.length === 0 };
+  }, [courseName, courseRating, slopeRating, holes]);
+
   const updateHole = (idx: number, field: keyof HoleData, value: string) => {
     setHoles(prev => {
       const next = [...prev];
@@ -137,17 +162,62 @@ export default function CourseDetails() {
         course_website: courseWebsite || null,
       };
 
-      if (course?.id) {
-        const { error } = await supabase.from("golf_courses").update(payload).eq("id", course.id);
+      let courseId = course?.id;
+      if (courseId) {
+        const { error } = await supabase.from("golf_courses").update(payload).eq("id", courseId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("golf_courses").insert(payload);
+        const { data, error } = await supabase.from("golf_courses").insert(payload).select("id").single();
         if (error) throw error;
+        courseId = data.id;
+      }
+
+      // Also update the tournament's course_par to match
+      await supabase.from("tournaments").update({
+        course_par: parTotal,
+        golf_course_id: courseId,
+      }).eq("id", tournamentId!);
+
+      // Auto-recalculate handicaps if enabled
+      const { data: tourney } = await supabase
+        .from("tournaments")
+        .select("handicap_enabled, handicap_allowance, max_handicap")
+        .eq("id", tournamentId!)
+        .single();
+
+      if (tourney?.handicap_enabled) {
+        const { data: players } = await supabase
+          .from("tournament_registrations")
+          .select("id, handicap_index, handicap")
+          .eq("tournament_id", tournamentId!);
+
+        if (players && players.length > 0) {
+          const slope = parseInt(slopeRating) || 113;
+          const cr = parseFloat(courseRating) || 72.0;
+          const allow = tourney.handicap_allowance ?? 95;
+          const maxVal = tourney.max_handicap;
+
+          for (const p of players) {
+            const hcIndex = p.handicap_index ?? p.handicap;
+            if (hcIndex == null) continue;
+            let courseHc = calcCourseHandicap(hcIndex, slope, cr, parTotal);
+            if (maxVal != null && courseHc > maxVal) courseHc = maxVal;
+            const playingHc = calcPlayingHandicap(courseHc, allow);
+            const strokesArr = allocateStrokes(playingHc, holeSIs);
+
+            await supabase.from("tournament_registrations").update({
+              course_handicap: courseHc,
+              playing_handicap: playingHc,
+              strokes_per_hole: strokesArr,
+            }).eq("id", p.id);
+          }
+        }
       }
     },
     onSuccess: () => {
       toast({ title: "Course details saved!" });
       queryClient.invalidateQueries({ queryKey: ["course-details", tournamentId] });
+      queryClient.invalidateQueries({ queryKey: ["handicap-players", tournamentId] });
     },
     onError: (e: Error) => {
       toast({ title: "Error saving", description: e.message, variant: "destructive" });
@@ -220,6 +290,28 @@ export default function CourseDetails() {
           Save Course Details
         </Button>
       </div>
+
+      {/* Validation Banner */}
+      {!validation.isComplete ? (
+        <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <p className="font-semibold mb-1">Complete Course Details before publishing to enable handicaps and scorecards.</p>
+            <ul className="list-disc list-inside text-sm space-y-0.5">
+              {validation.issues.map((issue, i) => (
+                <li key={i}>{issue}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert className="border-primary/30 bg-primary/5">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-primary font-medium">
+            Course details are complete. Handicaps, scorecards, and live scoring are ready.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Basic Info */}
       <Card>

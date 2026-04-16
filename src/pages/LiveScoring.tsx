@@ -27,12 +27,21 @@ interface TournamentData {
   handicap_enabled?: boolean;
 }
 
+interface CourseData {
+  hole_pars: number[] | null;
+  stroke_indexes: number[] | null;
+  hole_distances: number[] | null;
+  name: string | null;
+  tee_name: string | null;
+}
+
 export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [tournament, setTournament] = useState<TournamentData | null>(null);
   const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
   const [courseStrokeIndexes, setCourseStrokeIndexes] = useState<number[] | null>(null);
+  const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);
   const [groupInput, setGroupInput] = useState("");
@@ -66,20 +75,25 @@ export default function LiveScoring() {
             .order("sort_order")
             .then(({ data: sp }) => setSponsors(sp || []));
 
-          // Load course stroke indexes if handicap enabled
-          if ((data as any).handicap_enabled) {
-            supabase
-              .from("golf_courses")
-              .select("stroke_indexes")
-              .eq("tournament_id", data.id)
-              .limit(1)
-              .single()
-              .then(({ data: course }) => {
-                if (course?.stroke_indexes) {
-                  setCourseStrokeIndexes(course.stroke_indexes as number[]);
-                }
-              });
-          }
+          // Load course data (pars, SI, distances)
+          supabase
+            .from("golf_courses")
+            .select("stroke_indexes, hole_pars, hole_distances, name, tee_name")
+            .eq("tournament_id", data.id)
+            .limit(1)
+            .single()
+            .then(({ data: course }) => {
+              if (course) {
+                setCourseStrokeIndexes(course.stroke_indexes as number[] | null);
+                setCourseData({
+                  hole_pars: course.hole_pars as number[] | null,
+                  stroke_indexes: course.stroke_indexes as number[] | null,
+                  hole_distances: course.hole_distances as number[] | null,
+                  name: course.name,
+                  tee_name: course.tee_name,
+                });
+              }
+            });
         }
       });
   }, [slug]);
@@ -305,7 +319,11 @@ export default function LiveScoring() {
               <ArrowLeft className="h-3.5 w-3.5" /> Change Hole
             </button>
             <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
-            <p className="text-xs text-muted-foreground">Par {tournament.course_par || 72}</p>
+            <p className="text-xs text-muted-foreground">
+              {courseData?.name && `${courseData.name} · `}
+              {courseData?.tee_name && `${courseData.tee_name} Tees · `}
+              Par {tournament.course_par || 72}
+            </p>
           </div>
           {hasEdits && (
             <Button onClick={handleSave} disabled={saving} size="sm">
@@ -322,19 +340,29 @@ export default function LiveScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">Player</TableHead>
-                    {handicapEnabled && courseStrokeIndexes && (
-                      <TableHead className="text-center w-10 text-xs text-muted-foreground">SI</TableHead>
-                    )}
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}
                     <TableHead className="text-center font-bold min-w-[50px]">Gross</TableHead>
                     {handicapEnabled && <TableHead className="text-center font-bold min-w-[50px]">Net</TableHead>}
                   </TableRow>
+                  {/* Par row */}
+                  {courseData?.hole_pars && (
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
+                      {holes.map((h) => (
+                        <TableHead key={h} className="text-center text-xs text-muted-foreground">
+                          {courseData.hole_pars?.[h - 1] ?? ""}
+                        </TableHead>
+                      ))}
+                      <TableHead className="text-center text-xs font-semibold text-muted-foreground">{tournament.course_par || 72}</TableHead>
+                      {handicapEnabled && <TableHead />}
+                    </TableRow>
+                  )}
                   {/* SI row */}
                   {handicapEnabled && courseStrokeIndexes && (
-                    <TableRow className="bg-muted/30">
-                      <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground">SI</TableHead>
+                    <TableRow className="bg-muted/20">
+                      <TableHead className="sticky left-0 bg-muted/20 z-10 text-[10px] text-muted-foreground">SI</TableHead>
                       {holes.map((h) => (
                         <TableHead key={h} className="text-center text-[10px] text-muted-foreground">
                           {courseStrokeIndexes[h - 1] || ""}

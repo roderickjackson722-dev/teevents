@@ -84,6 +84,28 @@ export default function Leaderboard() {
   const isStableford = scoringFormat?.scoring === "stableford";
   const handicapEnabled = (selectedTournamentData as any)?.handicap_enabled === true;
   const coursePar = selectedTournamentData?.course_par || 72;
+
+  // Fetch course data for hole pars
+  const { data: courseData } = useQuery({
+    queryKey: ["leaderboard-course", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("golf_courses")
+        .select("hole_pars, stroke_indexes, name, tee_name, par")
+        .eq("tournament_id", selectedTournament)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const holePars = (courseData?.hole_pars as number[] | null) ?? null;
+  const getHolePar = (h: number): number => {
+    if (holePars && holePars[h - 1] != null) return holePars[h - 1];
+    return Math.round(coursePar / 18);
+  };
   const holePar = coursePar / 18;
 
   const { data: registrations } = useQuery({
@@ -515,6 +537,18 @@ export default function Leaderboard() {
                       <TableHead className="text-center font-bold min-w-[60px]">Gross</TableHead>
                       {handicapEnabled && <TableHead className="text-center font-bold min-w-[60px]">Net</TableHead>}
                     </TableRow>
+                    {/* Par row */}
+                    {holePars && (
+                      <TableRow className="bg-muted/30">
+                        <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
+                        {isTeamFormat && <TableHead />}
+                        {holes.map((h) => (
+                          <TableHead key={h} className="text-center text-xs text-muted-foreground">{getHolePar(h)}</TableHead>
+                        ))}
+                        <TableHead className="text-center text-xs font-semibold text-muted-foreground">{coursePar}</TableHead>
+                        {handicapEnabled && <TableHead />}
+                      </TableRow>
+                    )}
                   </TableHeader>
                   <TableBody>
                     {playerScores.map((ps) => {
@@ -544,18 +578,25 @@ export default function Leaderboard() {
                               {ps.group_number ?? "—"}
                             </TableCell>
                           )}
-                          {holes.map((h) => (
-                            <TableCell key={h} className="p-1 text-center">
-                              <Input
-                                type="number"
-                                min={0}
-                                max={20}
-                                value={getScore(ps, h)}
-                                onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
-                                className="w-12 h-8 text-center text-sm p-0"
-                              />
-                            </TableCell>
-                          ))}
+                          {holes.map((h) => {
+                            const val = getScore(ps, h);
+                            const hp = getHolePar(h);
+                            const scoreColorClass = typeof val === "number"
+                              ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
+                              : "";
+                            return (
+                              <TableCell key={h} className="p-1 text-center">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={20}
+                                  value={val}
+                                  onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
+                                  className={`w-12 h-8 text-center text-sm p-0 ${scoreColorClass}`}
+                                />
+                              </TableCell>
+                            );
+                          })}
                           <TableCell className="text-center font-bold text-lg">
                             {grossTotal > 0 ? grossTotal : "—"}
                           </TableCell>

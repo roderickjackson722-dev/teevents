@@ -1756,6 +1756,122 @@ export type Database = {
           },
         ]
       }
+      sponsor_registrations: {
+        Row: {
+          amount_cents: number
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          paid_at: string | null
+          payment_status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tier_id: string | null
+          tournament_id: string
+          website_url: string | null
+        }
+        Insert: {
+          amount_cents: number
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier_id?: string | null
+          tournament_id: string
+          website_url?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier_id?: string | null
+          tournament_id?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_registrations_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsor_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsorship_tiers: {
+        Row: {
+          benefits: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price_cents: number
+          tournament_id: string
+        }
+        Insert: {
+          benefits?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price_cents: number
+          tournament_id: string
+        }
+        Update: {
+          benefits?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price_cents?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_tiers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_onboarding_logs: {
         Row: {
           created_at: string | null

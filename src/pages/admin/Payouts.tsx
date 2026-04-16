@@ -432,15 +432,15 @@ export default function AdminPayouts() {
             <Input placeholder="Search organizations…" value={orgSearch} onChange={(e) => setOrgSearch(e.target.value)} className="pl-9 max-w-md" />
           </div>
 
-          <Card>
+           <Card>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Organization</TableHead>
+                    <TableHead>Payout Method</TableHead>
                     <TableHead>Stripe Status</TableHead>
-                    <TableHead>Account</TableHead>
-                    <TableHead>Stripe ID</TableHead>
+                    <TableHead>Connected Account</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -454,6 +454,15 @@ export default function AdminPayouts() {
                       <TableRow key={o.id}>
                         <TableCell className="font-medium">{o.name}</TableCell>
                         <TableCell>
+                          <Badge variant="outline" className={
+                            o.payout_method === "stripe" ? "text-emerald-600 border-emerald-500/30"
+                            : o.payout_method === "paypal" ? "text-blue-600 border-blue-500/30"
+                            : "text-amber-600 border-amber-500/30"
+                          }>
+                            {o.payout_method === "stripe" ? "Stripe" : o.payout_method === "paypal" ? "PayPal" : "Check"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
                           {o.stripe_onboarding_complete ? (
                             <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30">Connected</Badge>
                           ) : o.stripe_account_id ? (
@@ -463,29 +472,37 @@ export default function AdminPayouts() {
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {o.stripe_account_brand && o.stripe_account_last4
+                          {o.payout_method === "paypal" && o.paypal_email
+                            ? o.paypal_email
+                            : o.payout_method === "check" && o.mailing_address
+                            ? o.mailing_address.split("\n")[0]
+                            : o.stripe_account_brand && o.stripe_account_last4
                             ? `${o.stripe_account_brand} •••• ${o.stripe_account_last4}`
                             : o.stripe_account_last4
                             ? `•••• ${o.stripe_account_last4}`
                             : "—"}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground font-mono">
-                          {o.stripe_account_id ? o.stripe_account_id.slice(0, 12) + "…" : "—"}
-                        </TableCell>
                         <TableCell className="text-right">
-                          {o.stripe_account_id ? (
+                          <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-destructive hover:text-destructive gap-1.5"
-                              onClick={() => { setResetOrg(o); setResetReason(""); }}
+                              onClick={() => { setViewLogOrg(o); loadOrgActivityLogs(o.id); }}
                             >
-                              <RefreshCw className="h-3.5 w-3.5" />
-                              Reset Stripe
+                              <History className="h-3.5 w-3.5 mr-1" /> View Log
                             </Button>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">No action needed</span>
-                          )}
+                            {o.stripe_account_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:text-destructive gap-1.5"
+                                onClick={() => { setResetOrg(o); setResetReason(""); }}
+                              >
+                                <RefreshCw className="h-3.5 w-3.5" />
+                                Reset Stripe
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

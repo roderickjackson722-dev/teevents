@@ -30,7 +30,35 @@ const TEE_OPTIONS = ["Black", "Blue", "White", "Red", "Gold", "Green", "Silver",
 
 export default function CourseDetails() {
   const queryClient = useQueryClient();
-  const tournamentId = localStorage.getItem("selectedTournamentId");
+  const { org } = useOrgContext();
+  const [tournamentId, setTournamentId] = useState<string | null>(() => localStorage.getItem("selectedTournamentId"));
+
+  const { data: tournaments } = useQuery({
+    queryKey: ["course-details-tournaments", org?.orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("id, title, date")
+        .eq("organization_id", org!.orgId)
+        .order("date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!org,
+  });
+
+  useEffect(() => {
+    if (!tournamentId && tournaments && tournaments.length > 0) {
+      const first = tournaments[0].id;
+      setTournamentId(first);
+      localStorage.setItem("selectedTournamentId", first);
+    }
+  }, [tournaments, tournamentId]);
+
+  const handleTournamentChange = (id: string) => {
+    setTournamentId(id);
+    localStorage.setItem("selectedTournamentId", id);
+  };
 
   // Fetch existing course
   const { data: course, isLoading } = useQuery({

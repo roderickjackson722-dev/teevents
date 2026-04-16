@@ -84,8 +84,18 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   ).join("");
 
   const parCells = Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles)}</td>`
+    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles, courseData)}</td>`
   ).join("");
+
+  const siValues = courseData?.stroke_indexes;
+  const siCells = siValues ? Array.from({ length: numHoles }, (_, i) =>
+    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${siValues[i] || ""}</td>`
+  ).join("") : "";
+
+  const distValues = courseData?.hole_distances;
+  const distCells = distValues && (distValues as number[]).some((d: number) => d > 0) ? Array.from({ length: numHoles }, (_, i) =>
+    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${(distValues as number[])[i] || ""}</td>`
+  ).join("") : "";
 
   const emptyCells = Array.from({ length: numHoles }, () =>
     `<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td>`

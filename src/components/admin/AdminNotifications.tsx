@@ -56,6 +56,15 @@ interface AuditEntry {
   organization_id: string;
 }
 
+interface AdminNotification {
+  id: string;
+  type: string;
+  organization_id: string | null;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 // Helper to fetch org name by ID
 const orgNameCache: Record<string, string> = {};
 
@@ -63,6 +72,7 @@ export default function AdminNotifications() {
   const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
   const [messages, setMessages] = useState<OrgMessage[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [orgNames, setOrgNames] = useState<Record<string, string>>({});
 

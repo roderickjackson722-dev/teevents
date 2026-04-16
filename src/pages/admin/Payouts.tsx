@@ -81,16 +81,15 @@ export default function AdminPayouts() {
     setOrgsLoading(true);
     const { data: orgList } = await supabase
       .from("organizations")
-      .select("id, name, stripe_account_id")
+      .select("id, name, stripe_account_id, payout_method, mailing_address")
       .order("name");
 
     if (!orgList) { setOrgsLoading(false); return; }
 
-    // Get payout method details
     const orgIds = orgList.map(o => o.id);
     const { data: payoutMethods } = await supabase
       .from("organization_payout_methods")
-      .select("organization_id, stripe_account_id, stripe_account_last4, stripe_account_brand, stripe_onboarding_complete, stripe_account_status")
+      .select("organization_id, stripe_account_id, stripe_account_last4, stripe_account_brand, stripe_onboarding_complete, stripe_account_status, paypal_email")
       .in("organization_id", orgIds);
 
     const pmMap: Record<string, any> = {};
@@ -99,15 +98,30 @@ export default function AdminPayouts() {
     const combined: OrgStripeInfo[] = orgList.map(o => ({
       id: o.id,
       name: o.name,
+      payout_method: (o as any).payout_method || "stripe",
       stripe_account_id: pmMap[o.id]?.stripe_account_id || o.stripe_account_id || null,
       stripe_account_last4: pmMap[o.id]?.stripe_account_last4 || null,
       stripe_account_brand: pmMap[o.id]?.stripe_account_brand || null,
       stripe_onboarding_complete: pmMap[o.id]?.stripe_onboarding_complete || false,
       stripe_account_status: pmMap[o.id]?.stripe_account_status || null,
+      paypal_email: pmMap[o.id]?.paypal_email || null,
+      mailing_address: (o as any).mailing_address || null,
     }));
 
     setOrgs(combined);
     setOrgsLoading(false);
+  };
+
+  const loadOrgActivityLogs = async (orgId: string) => {
+    setLoadingLogs(true);
+    const { data } = await supabase
+      .from("activity_logs")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setOrgActivityLogs(data || []);
+    setLoadingLogs(false);
   };
 
   const handleResetStripe = async () => {

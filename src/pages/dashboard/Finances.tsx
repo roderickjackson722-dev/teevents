@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import {
   DollarSign, TrendingUp, CreditCard, RotateCcw, Loader2, Search,
   Trophy, Download, Receipt, Mail, CheckCircle, XCircle, Clock,
-  ArrowUpRight, Users, FileText, Info, ExternalLink,
+  ArrowUpRight, Users, FileText, Info, ExternalLink, ChevronDown, ChevronRight,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,

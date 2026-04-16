@@ -38,11 +38,14 @@ interface PayoutNote {
 interface OrgStripeInfo {
   id: string;
   name: string;
+  payout_method: string | null;
   stripe_account_id: string | null;
   stripe_account_last4: string | null;
   stripe_account_brand: string | null;
   stripe_onboarding_complete: boolean;
   stripe_account_status: string | null;
+  paypal_email: string | null;
+  mailing_address: string | null;
 }
 
 const cents = (v: number) => `$${(v / 100).toFixed(2)}`;

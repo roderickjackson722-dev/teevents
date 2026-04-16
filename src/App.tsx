@@ -32,6 +32,7 @@ import Leaderboard from "./pages/dashboard/Leaderboard";
 import Scoring from "./pages/dashboard/Scoring";
 import TestScoringSimulator from "./pages/dashboard/TestScoringSimulator";
 import TeeSheet from "./pages/dashboard/TeeSheet";
+import CourseDetails from "./pages/dashboard/CourseDetails";
 import WaitlistPage from "./pages/dashboard/Waitlist";
 import CheckIn from "./pages/dashboard/CheckIn";
 import Auction from "./pages/dashboard/Auction";
@@ -128,6 +129,7 @@ const App = () => (
           <Route path="/dashboard/scoring" element={<DashboardLayout><Scoring /></DashboardLayout>} />
           <Route path="/dashboard/test-simulator" element={<DashboardLayout><TestScoringSimulator /></DashboardLayout>} />
           <Route path="/dashboard/tee-sheet" element={<DashboardLayout><TeeSheet /></DashboardLayout>} />
+          <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
           <Route path="/dashboard/waitlist" element={<DashboardLayout><WaitlistPage /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
           <Route path="/dashboard/auction" element={<DashboardLayout><PlanGate feature="auction"><Auction /></PlanGate></DashboardLayout>} />

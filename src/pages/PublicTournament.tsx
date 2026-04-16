@@ -192,36 +192,41 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
-  const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
-  const [products, setProducts] = useState<PublicProduct[]>([]);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
-  const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
-  const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
-  const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
-  const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sponsorIndex, setSponsorIndex] = useState(0);
+   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
+   const [products, setProducts] = useState<PublicProduct[]>([]);
+   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
+   const [photos, setPhotos] = useState<Photo[]>([]);
+   const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
+   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
+   const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
+   const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
+   const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [notFound, setNotFound] = useState(false);
+   const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
+   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+   const [sponsorIndex, setSponsorIndex] = useState(0);
 
-  // Forms
-  const [bidForm, setBidForm] = useState<{ itemId: string; name: string; email: string; amount: string } | null>(null);
-  const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);
-  const [surveyEmail, setSurveyEmail] = useState("");
-  const [surveyAnswers, setSurveyAnswers] = useState<Record<string, string>>({});
-  const [donationAmount, setDonationAmount] = useState<number | null>(null);
-  const [customDonation, setCustomDonation] = useState("");
-  const [donorEmail, setDonorEmail] = useState("");
-  const [donationLoading, setDonationLoading] = useState(false);
-  const [surveySubmitted, setSurveySubmitted] = useState(false);
-  const [donationTotal, setDonationTotal] = useState(0);
-  const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
-  const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
+  // Sponsorship tiers for public display
+  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number }[]>([]);
+  const [sponsorSuccess, setSponsorSuccess] = useState(false);
+  const [sponsorVerifying, setSponsorVerifying] = useState(false);
+
+   // Forms
+   const [bidForm, setBidForm] = useState<{ itemId: string; name: string; email: string; amount: string } | null>(null);
+   const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);
+   const [surveyEmail, setSurveyEmail] = useState("");
+   const [surveyAnswers, setSurveyAnswers] = useState<Record<string, string>>({});
+   const [donationAmount, setDonationAmount] = useState<number | null>(null);
+   const [customDonation, setCustomDonation] = useState("");
+   const [donorEmail, setDonorEmail] = useState("");
+   const [donationLoading, setDonationLoading] = useState(false);
+   const [surveySubmitted, setSurveySubmitted] = useState(false);
+   const [donationTotal, setDonationTotal] = useState(0);
+   const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
+   const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
+   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
 
@@ -271,7 +276,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -282,6 +287,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_registration_tiers").select("id, name, description, eligibility_description, price_cents, max_registrants").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
+          supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);

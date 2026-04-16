@@ -66,6 +66,7 @@ interface PlatformTransaction {
   id: string;
   amount_cents: number;
   platform_fee_cents: number;
+  stripe_fee_cents: number;
   net_amount_cents: number;
   type: string;
   status: string;
@@ -74,6 +75,11 @@ interface PlatformTransaction {
   tournament_id: string | null;
   metadata: any;
   stripe_payment_intent_id: string | null;
+  stripe_session_id: string | null;
+  golfer_name: string | null;
+  golfer_email: string | null;
+  payout_method: string | null;
+  failure_reason: string | null;
 }
 
 const Finances = () => {

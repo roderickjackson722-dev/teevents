@@ -88,7 +88,11 @@ const SponsorRegistrationPage = () => {
         .order("display_order", { ascending: true });
 
       setTiers((tierData as Tier[]) || []);
-      if (tierData && tierData.length > 0) setSelectedTier(tierData[0].id);
+      if (tierData && tierData.length > 0) {
+        const preselectedTier = searchParams.get("tier");
+        const matchedTier = preselectedTier ? tierData.find((t: any) => t.id === preselectedTier) : null;
+        setSelectedTier(matchedTier ? matchedTier.id : tierData[0].id);
+      }
       setLoading(false);
     };
     fetchData();

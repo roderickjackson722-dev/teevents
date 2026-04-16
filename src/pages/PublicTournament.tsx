@@ -192,36 +192,41 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
-  const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
-  const [products, setProducts] = useState<PublicProduct[]>([]);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
-  const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
-  const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
-  const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
-  const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sponsorIndex, setSponsorIndex] = useState(0);
+   const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
+   const [products, setProducts] = useState<PublicProduct[]>([]);
+   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
+   const [photos, setPhotos] = useState<Photo[]>([]);
+   const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
+   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
+   const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
+   const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
+   const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [notFound, setNotFound] = useState(false);
+   const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
+   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+   const [sponsorIndex, setSponsorIndex] = useState(0);
 
-  // Forms
-  const [bidForm, setBidForm] = useState<{ itemId: string; name: string; email: string; amount: string } | null>(null);
-  const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);
-  const [surveyEmail, setSurveyEmail] = useState("");
-  const [surveyAnswers, setSurveyAnswers] = useState<Record<string, string>>({});
-  const [donationAmount, setDonationAmount] = useState<number | null>(null);
-  const [customDonation, setCustomDonation] = useState("");
-  const [donorEmail, setDonorEmail] = useState("");
-  const [donationLoading, setDonationLoading] = useState(false);
-  const [surveySubmitted, setSurveySubmitted] = useState(false);
-  const [donationTotal, setDonationTotal] = useState(0);
-  const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
-  const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
+  // Sponsorship tiers for public display
+  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number }[]>([]);
+  const [sponsorSuccess, setSponsorSuccess] = useState(false);
+  const [sponsorVerifying, setSponsorVerifying] = useState(false);
+
+   // Forms
+   const [bidForm, setBidForm] = useState<{ itemId: string; name: string; email: string; amount: string } | null>(null);
+   const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);
+   const [surveyEmail, setSurveyEmail] = useState("");
+   const [surveyAnswers, setSurveyAnswers] = useState<Record<string, string>>({});
+   const [donationAmount, setDonationAmount] = useState<number | null>(null);
+   const [customDonation, setCustomDonation] = useState("");
+   const [donorEmail, setDonorEmail] = useState("");
+   const [donationLoading, setDonationLoading] = useState(false);
+   const [surveySubmitted, setSurveySubmitted] = useState(false);
+   const [donationTotal, setDonationTotal] = useState(0);
+   const [storeBuyLoading, setStoreBuyLoading] = useState<string | null>(null);
+   const [auctionBuyLoading, setAuctionBuyLoading] = useState<string | null>(null);
+   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
 
@@ -271,7 +276,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -282,6 +287,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_registration_tiers").select("id, name, description, eligibility_description, price_cents, max_registrants").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
+          supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
@@ -291,6 +297,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setRegTiers((tiersRes.data as TierPublic[]) || []);
         setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
         setContests((contestsRes.data as any[]) || []);
+        setSponsorshipTiers((sponsorshipTiersRes.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
@@ -373,6 +380,22 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       });
     }
   }, [registered, sessionId]);
+
+  // Verify sponsor payment on return from Stripe
+  useEffect(() => {
+    const sponsorSuccessParam = searchParams.get("sponsor_success");
+    if (sponsorSuccessParam === "true" && sessionId) {
+      setSponsorVerifying(true);
+      supabase.functions.invoke("verify-sponsor-payment", {
+        body: { session_id: sessionId },
+      }).then(({ data }) => {
+        if (data?.verified) {
+          setSponsorSuccess(true);
+        }
+        setSponsorVerifying(false);
+      }).catch(() => setSponsorVerifying(false));
+    }
+  }, [searchParams, sessionId]);
 
   // Event countdown timer
   useEffect(() => {
@@ -492,6 +515,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     { label: "Home", href: "#top" },
     ...(contests.length > 0 ? [{ label: "Event Day Contests", href: "#contests" }] : []),
     { label: "Registration", href: "#register" },
+    ...(sponsorshipTiers.length > 0 ? [{ label: "Sponsors", href: "#become-a-sponsor" }] : []),
     { label: "Photos", href: "#photos" },
     { label: "Location", href: "#location" },
     { label: "Event Agenda", href: "#schedule" },
@@ -777,9 +801,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             )}
 
             {/* Sponsors button */}
-            {sponsors.length > 0 && style.ctaLayout === "three" && (
+            {(sponsors.length > 0 || sponsorshipTiers.length > 0) && style.ctaLayout === "three" && (
               <button
-                onClick={() => scrollTo("#sponsors")}
+                onClick={() => scrollTo(sponsorshipTiers.length > 0 ? "#become-a-sponsor" : "#sponsors")}
                 className="flex-1 max-w-[260px] py-4 text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
                 style={{
                   backgroundColor: tpl === "modern" ? "#b71c1c" : primary,
@@ -860,6 +884,91 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 </button>
               )}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
+      {sponsorshipTiers.length > 0 && (
+        <section id="become-a-sponsor" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
+                BECOME A SPONSOR
+              </h2>
+              <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+              <p className="text-center text-sm mb-10" style={{ color: "#888" }}>
+                Partner with us to make this event a success. Choose a sponsorship level below.
+              </p>
+
+              {/* Sponsor success confirmation */}
+              {sponsorSuccess && (
+                <div className="max-w-md mx-auto mb-10 bg-white rounded-xl border-2 p-8 text-center" style={{ borderColor: `${secondary}40` }}>
+                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
+                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>Thank You!</h3>
+                  <p style={{ color: "#666" }}>
+                    Your sponsorship has been confirmed. The tournament organizer will reach out with next steps.
+                  </p>
+                </div>
+              )}
+
+              {sponsorVerifying && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} />
+                  <p style={{ color: "#666" }}>Verifying your sponsorship payment...</p>
+                </div>
+              )}
+
+              <div className={`grid gap-6 ${sponsorshipTiers.length === 1 ? "max-w-md mx-auto" : sponsorshipTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                {sponsorshipTiers.map((tier, i) => (
+                  <motion.div
+                    key={tier.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                    style={{ borderColor: "#e5e5e5" }}
+                  >
+                    {/* Tier header */}
+                    <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
+                      <Award className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
+                      <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
+                      <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
+                      </p>
+                      {tier.description && (
+                        <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
+                      )}
+                    </div>
+
+                    {/* Benefits */}
+                    {tier.benefits && (
+                      <div className="flex-1 px-6 py-4 border-t" style={{ borderColor: "#f0f0f0" }}>
+                        <div className="text-sm whitespace-pre-line" style={{ color: "#555" }}>
+                          {tier.benefits}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CTA */}
+                    <div className="p-6 pt-2">
+                      <a
+                        href={`/t/${slug}/sponsor?tier=${tier.id}`}
+                        className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: secondary, color: primary }}
+                      >
+                        Select
+                      </a>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <p className="text-center text-xs mt-6" style={{ color: "#aaa" }}>
+                5% platform fee + Stripe processing fee added at checkout.
+              </p>
+            </motion.div>
           </div>
         </section>
       )}

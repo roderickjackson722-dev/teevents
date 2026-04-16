@@ -134,7 +134,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
     </div>`;
 }
 
-export default function ScorecardsTab({ tournament, registrations, loading, slug }: Props) {
+export default function ScorecardsTab({ tournament, registrations, loading, slug, courseData }: Props) {
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, EditableReg>>({});

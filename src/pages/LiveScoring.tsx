@@ -319,7 +319,11 @@ export default function LiveScoring() {
               <ArrowLeft className="h-3.5 w-3.5" /> Change Hole
             </button>
             <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
-            <p className="text-xs text-muted-foreground">Par {tournament.course_par || 72}</p>
+            <p className="text-xs text-muted-foreground">
+              {courseData?.name && `${courseData.name} · `}
+              {courseData?.tee_name && `${courseData.tee_name} Tees · `}
+              Par {tournament.course_par || 72}
+            </p>
           </div>
           {hasEdits && (
             <Button onClick={handleSave} disabled={saving} size="sm">
@@ -336,19 +340,29 @@ export default function LiveScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">Player</TableHead>
-                    {handicapEnabled && courseStrokeIndexes && (
-                      <TableHead className="text-center w-10 text-xs text-muted-foreground">SI</TableHead>
-                    )}
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}
                     <TableHead className="text-center font-bold min-w-[50px]">Gross</TableHead>
                     {handicapEnabled && <TableHead className="text-center font-bold min-w-[50px]">Net</TableHead>}
                   </TableRow>
+                  {/* Par row */}
+                  {courseData?.hole_pars && (
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
+                      {holes.map((h) => (
+                        <TableHead key={h} className="text-center text-xs text-muted-foreground">
+                          {courseData.hole_pars?.[h - 1] ?? ""}
+                        </TableHead>
+                      ))}
+                      <TableHead className="text-center text-xs font-semibold text-muted-foreground">{tournament.course_par || 72}</TableHead>
+                      {handicapEnabled && <TableHead />}
+                    </TableRow>
+                  )}
                   {/* SI row */}
                   {handicapEnabled && courseStrokeIndexes && (
-                    <TableRow className="bg-muted/30">
-                      <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground">SI</TableHead>
+                    <TableRow className="bg-muted/20">
+                      <TableHead className="sticky left-0 bg-muted/20 z-10 text-[10px] text-muted-foreground">SI</TableHead>
                       {holes.map((h) => (
                         <TableHead key={h} className="text-center text-[10px] text-muted-foreground">
                           {courseStrokeIndexes[h - 1] || ""}

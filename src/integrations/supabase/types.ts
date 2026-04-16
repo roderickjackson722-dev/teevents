@@ -355,6 +355,59 @@ export type Database = {
         }
         Relationships: []
       }
+      course_tee_sets: {
+        Row: {
+          course_rating: number
+          created_at: string
+          hole_distances: Json | null
+          hole_pars: Json
+          hole_stroke_indexes: Json
+          id: string
+          is_default: boolean | null
+          par_total: number
+          slope_rating: number
+          tee_name: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          course_rating?: number
+          created_at?: string
+          hole_distances?: Json | null
+          hole_pars?: Json
+          hole_stroke_indexes?: Json
+          id?: string
+          is_default?: boolean | null
+          par_total?: number
+          slope_rating?: number
+          tee_name: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          course_rating?: number
+          created_at?: string
+          hole_distances?: Json | null
+          hole_pars?: Json
+          hole_stroke_indexes?: Json
+          id?: string
+          is_default?: boolean | null
+          par_total?: number
+          slope_rating?: number
+          tee_name?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_tee_sets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_access_requests: {
         Row: {
           created_at: string
@@ -532,8 +585,13 @@ export type Database = {
       }
       golf_courses: {
         Row: {
+          course_address: string | null
+          course_map_url: string | null
           course_rating: number
+          course_website: string | null
           created_at: string
+          hole_distances: Json | null
+          hole_pars: Json | null
           id: string
           name: string
           par: number
@@ -544,8 +602,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          course_address?: string | null
+          course_map_url?: string | null
           course_rating?: number
+          course_website?: string | null
           created_at?: string
+          hole_distances?: Json | null
+          hole_pars?: Json | null
           id?: string
           name: string
           par?: number
@@ -556,8 +619,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          course_address?: string | null
+          course_map_url?: string | null
           course_rating?: number
+          course_website?: string | null
           created_at?: string
+          hole_distances?: Json | null
+          hole_pars?: Json | null
           id?: string
           name?: string
           par?: number

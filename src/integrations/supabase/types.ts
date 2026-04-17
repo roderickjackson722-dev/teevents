@@ -816,6 +816,44 @@ export type Database = {
           },
         ]
       }
+      leaderboard_gallery: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_hero: boolean
+          sort_order: number
+          tournament_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_hero?: boolean
+          sort_order?: number
+          tournament_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_hero?: boolean
+          sort_order?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_gallery_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_payouts: {
         Row: {
           amount_cents: number
@@ -2918,8 +2956,10 @@ export type Database = {
           amount: number | null
           created_at: string
           description: string | null
+          display_order: number
           id: string
           is_paid: boolean | null
+          leaderboard_placement: string
           logo_url: string | null
           name: string
           show_on_leaderboard: boolean
@@ -2932,8 +2972,10 @@ export type Database = {
           amount?: number | null
           created_at?: string
           description?: string | null
+          display_order?: number
           id?: string
           is_paid?: boolean | null
+          leaderboard_placement?: string
           logo_url?: string | null
           name: string
           show_on_leaderboard?: boolean
@@ -2946,8 +2988,10 @@ export type Database = {
           amount?: number | null
           created_at?: string
           description?: string | null
+          display_order?: number
           id?: string
           is_paid?: boolean | null
+          leaderboard_placement?: string
           logo_url?: string | null
           name?: string
           show_on_leaderboard?: boolean
@@ -3320,6 +3364,8 @@ export type Database = {
           image_url: string | null
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
+          live_display_enabled: boolean
+          live_display_refresh_seconds: number
           location: string | null
           max_group_size: number
           max_handicap: number | null
@@ -3386,6 +3432,8 @@ export type Database = {
           image_url?: string | null
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
+          live_display_enabled?: boolean
+          live_display_refresh_seconds?: number
           location?: string | null
           max_group_size?: number
           max_handicap?: number | null
@@ -3452,6 +3500,8 @@ export type Database = {
           image_url?: string | null
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
+          live_display_enabled?: boolean
+          live_display_refresh_seconds?: number
           location?: string | null
           max_group_size?: number
           max_handicap?: number | null

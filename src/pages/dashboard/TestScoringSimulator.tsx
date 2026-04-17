@@ -394,6 +394,52 @@ export default function TestScoringSimulator() {
                   </Badge>
                 )}
               </div>
+
+              {tournament.test_mode_enabled && (
+                <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => generateRandom.mutate()}
+                    disabled={generateRandom.isPending || !participants || participants.length === 0}
+                  >
+                    {generateRandom.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    ) : (
+                      <Dice5 className="h-4 w-4 mr-1.5" />
+                    )}
+                    Generate Random Scores
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                        <RotateCcw className="h-4 w-4 mr-1.5" /> Reset All Test Data
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset all test data?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently deletes all mock participants and test scores for this tournament.
+                          Real registrations and live scores are NOT affected.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => resetAll.mutate()}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Reset Everything
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <p className="text-xs text-muted-foreground ml-auto">
+                    Real golfers never see test data.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -317,6 +318,12 @@ export default function Leaderboard() {
 
   return (
     <div className="space-y-6">
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+      </Link>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Live Leaderboard & Scoring</h1>

@@ -388,6 +388,47 @@ export default function WaitlistManagement() {
           </Card>
         </>
       )}
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingEntry ? "Edit Waitlist Entry" : "Add Player to Waitlist"}</DialogTitle>
+            <DialogDescription>
+              {editingEntry ? "Update this player's information." : "Manually add a potential player to the waitlist."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-sm">Name *</Label>
+              <Input value={form.user_name} onChange={(e) => setForm({ ...form, user_name: e.target.value })} placeholder="John Smith" />
+            </div>
+            <div>
+              <Label className="text-sm">Email *</Label>
+              <Input type="email" value={form.user_email} onChange={(e) => setForm({ ...form, user_email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm">Phone</Label>
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="555-1234" />
+              </div>
+              <div>
+                <Label className="text-sm">Group Size</Label>
+                <Input type="number" min={1} max={4} value={form.group_size} onChange={(e) => setForm({ ...form, group_size: parseInt(e.target.value) || 1 })} />
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm">Notes</Label>
+              <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Optional notes..." />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)} disabled={saving}>Cancel</Button>
+            <Button onClick={saveEntry} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editingEntry ? "Save Changes" : "Add to Waitlist"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

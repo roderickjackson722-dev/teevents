@@ -46,7 +46,11 @@ import {
   FileImage,
   Check,
   Package,
+  QrCode,
+  Copy,
+  Download,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
 
 interface Sponsor {
@@ -454,6 +458,13 @@ const Sponsors = () => {
           </SelectContent>
         </Select>
       </div>
+
+      {selectedTournament && (
+        <SponsorPageShareCard
+          tournamentSlug={tournaments.find((t) => t.id === selectedTournament)?.slug || null}
+          tournamentTitle={tournaments.find((t) => t.id === selectedTournament)?.title || ""}
+        />
+      )}
 
       {selectedTournament && (
         <div className="mb-6">

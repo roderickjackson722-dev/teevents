@@ -382,11 +382,11 @@ export default function Leaderboard() {
       </div>
 
       {selectedTournament && (
-        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-900/50">
+        <Card className="bg-accent/30 border-accent">
           <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-amber-100 dark:bg-amber-900/40">
-                <FlaskConical className="h-5 w-5 text-amber-700 dark:text-amber-400" />
+              <div className="p-2 rounded-md bg-accent">
+                <FlaskConical className="h-5 w-5 text-accent-foreground" />
               </div>
               <div>
                 <p className="text-sm font-semibold">Preview Leaderboard with Mock Data</p>

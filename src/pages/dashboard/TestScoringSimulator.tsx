@@ -13,7 +13,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
-  FlaskConical, Loader2, Plus, Trash2, Edit, Trophy, Users, PenLine, Save, AlertTriangle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  FlaskConical, Loader2, Plus, Trash2, Edit, Trophy, Users, PenLine, Save, AlertTriangle, Dice5, RotateCcw,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -195,7 +199,75 @@ export default function TestScoringSimulator() {
     },
   });
 
-  /* ─── save scores ─── */
+  /* ─── Generate random scores for all participants ─── */
+  const generateRandom = useMutation({
+    mutationFn: async () => {
+      if (!participants || participants.length === 0) {
+        throw new Error("Add mock golfers first.");
+      }
+      // Build score rows: realistic gross per hole (par ± random)
+      const rows: Array<{
+        tournament_id: string;
+        test_participant_id: string;
+        hole_number: number;
+        gross_score: number;
+        net_score: number;
+      }> = [];
+      for (const p of participants) {
+        const playingHc = p.playing_handicap || 0;
+        const strokesArr = allocateStrokes(playingHc, strokeIndexes);
+        for (let h = 1; h <= 18; h++) {
+          const par = holePars[h - 1] || 4;
+          // skill bias: lower handicap → closer to par
+          const hc = p.handicap_index ?? 18;
+          const skillBias = Math.min(2, Math.max(-1, (hc - 10) / 8));
+          const variance = Math.floor(Math.random() * 4) - 1; // -1..+2
+          const gross = Math.max(2, Math.round(par + skillBias + variance));
+          const net = gross - (strokesArr[h - 1] || 0);
+          rows.push({
+            tournament_id: selectedTournament,
+            test_participant_id: p.id,
+            hole_number: h,
+            gross_score: gross,
+            net_score: net,
+          });
+        }
+      }
+      const { error } = await supabase
+        .from("test_scores")
+        .upsert(rows, { onConflict: "test_participant_id,hole_number" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test-scores", selectedTournament] });
+      toast({ title: "Random scores generated!", description: "Check the Leaderboard tab to see results." });
+    },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  /* ─── Reset all test data ─── */
+  const resetAll = useMutation({
+    mutationFn: async () => {
+      const { error: scoreErr } = await supabase
+        .from("test_scores")
+        .delete()
+        .eq("tournament_id", selectedTournament);
+      if (scoreErr) throw scoreErr;
+      const { error: partErr } = await supabase
+        .from("test_participants")
+        .delete()
+        .eq("tournament_id", selectedTournament);
+      if (partErr) throw partErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test-participants", selectedTournament] });
+      queryClient.invalidateQueries({ queryKey: ["test-scores", selectedTournament] });
+      setScoringPlayer(null);
+      setEditedScores({});
+      toast({ title: "All test data cleared." });
+    },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
   const saveScores = useMutation({
     mutationFn: async () => {
       if (!scoringPlayer) return;
@@ -322,6 +394,52 @@ export default function TestScoringSimulator() {
                   </Badge>
                 )}
               </div>
+
+              {tournament.test_mode_enabled && (
+                <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => generateRandom.mutate()}
+                    disabled={generateRandom.isPending || !participants || participants.length === 0}
+                  >
+                    {generateRandom.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    ) : (
+                      <Dice5 className="h-4 w-4 mr-1.5" />
+                    )}
+                    Generate Random Scores
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                        <RotateCcw className="h-4 w-4 mr-1.5" /> Reset All Test Data
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset all test data?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently deletes all mock participants and test scores for this tournament.
+                          Real registrations and live scores are NOT affected.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => resetAll.mutate()}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Reset Everything
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <p className="text-xs text-muted-foreground ml-auto">
+                    Real golfers never see test data.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

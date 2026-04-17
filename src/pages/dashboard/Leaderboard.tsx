@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -380,6 +380,29 @@ export default function Leaderboard() {
           </Tabs>
         )}
       </div>
+
+      {selectedTournament && (
+        <Card className="bg-accent/30 border-accent">
+          <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-md bg-accent">
+                <FlaskConical className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Preview Leaderboard with Mock Data</p>
+                <p className="text-xs text-muted-foreground">
+                  Try the leaderboard with simulated players and scores before going live.
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/dashboard/test-simulator">
+                <FlaskConical className="h-4 w-4 mr-1.5" /> Open Test Simulator
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {selectedTournament && leaderboardSponsors && leaderboardSponsors.length > 0 && (
         <SponsorBanner sponsors={leaderboardSponsors} />

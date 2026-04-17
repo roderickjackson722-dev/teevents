@@ -107,8 +107,93 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
               </div>
             )}
           </div>
+
+          {/* Live Preview */}
+          <ScorecardMiniPreview options={options} showCourseName={showCourseName} />
         </div>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+/** Live mini-preview that updates as font/layout/toggles change. */
+function ScorecardMiniPreview({ options, showCourseName }: { options: PrintableOptions; showCourseName: boolean }) {
+  const fontMap: Record<string, string> = {
+    georgia: "'Georgia', serif",
+    helvetica: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    playfair: "'Playfair Display', Georgia, serif",
+    roboto: "'Roboto', 'Helvetica Neue', sans-serif",
+    courier: "'Courier New', Courier, monospace",
+  };
+  const font = fontMap[options.font] || fontMap.georgia;
+  const layout = options.layout;
+  const accent = "hsl(var(--primary))";
+
+  const borderStyle =
+    layout === "bold" ? `3px solid ${accent}` : layout === "modern" ? `1px solid hsl(var(--border))` : `2px solid ${accent}`;
+  const headerBg = layout === "bold" ? accent : "transparent";
+  const headerColor = layout === "bold" ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))";
+
+  return (
+    <div className="space-y-2 pt-2 border-t border-border">
+      <Label className="text-xs font-medium text-muted-foreground">Live Preview</Label>
+      <div
+        className="rounded-md overflow-hidden bg-card max-w-md"
+        style={{ border: borderStyle, fontFamily: font }}
+      >
+        <div
+          className="flex items-center justify-between px-3 py-2"
+          style={{ background: headerBg, color: headerColor }}
+        >
+          <div>
+            {options.showTournamentTitle && (
+              <div className="text-[9px] font-semibold tracking-widest uppercase opacity-70">
+                Spring Charity Classic
+              </div>
+            )}
+            <div className="text-sm font-bold">John Smith</div>
+            {showCourseName && options.showCourseName && (
+              <div className="text-[10px] opacity-70">Pebble Hills CC • Blue Tees • Par 72 • 18 Holes</div>
+            )}
+          </div>
+          {options.showLogo && (
+            <div
+              className="text-[9px] font-bold border px-1.5 py-0.5 rounded"
+              style={{ borderColor: layout === "bold" ? "hsl(var(--primary-foreground))" : accent, color: layout === "bold" ? "hsl(var(--primary-foreground))" : accent }}
+            >
+              LOGO
+            </div>
+          )}
+        </div>
+        <div className="p-2">
+          <table className="w-full border-collapse text-[10px]">
+            <tbody>
+              <tr className="bg-muted/50">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((h) => (
+                  <td key={h} className="border border-border px-1 py-0.5 text-center font-semibold">{h}</td>
+                ))}
+                <td className="border border-border px-1 py-0.5 text-center font-bold bg-muted">OUT</td>
+              </tr>
+              <tr>
+                {[4, 4, 3, 5, 4, 4, 3, 5, 4].map((p, i) => (
+                  <td key={i} className="border border-border px-1 py-0.5 text-center text-muted-foreground">{p}</td>
+                ))}
+                <td className="border border-border px-1 py-0.5 text-center font-semibold">36</td>
+              </tr>
+              <tr>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((h) => (
+                  <td key={h} className="border border-border px-1 py-2">&nbsp;</td>
+                ))}
+                <td className="border border-border px-1 py-2">&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+          {options.showStartingHole && (
+            <div className="text-[10px] mt-1.5" style={{ color: accent }}>Starting Hole: 4</div>
+          )}
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground">Updates instantly as you change font, layout, or toggles.</p>
+    </div>
   );
 }

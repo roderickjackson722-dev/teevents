@@ -52,6 +52,49 @@ export default function WaitlistManagement() {
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<WaitlistEntry | null>(null);
+  const [form, setForm] = useState({ user_name: "", user_email: "", phone: "", group_size: 1, notes: "" });
+  const [saving, setSaving] = useState(false);
+
+  const resetForm = () => setForm({ user_name: "", user_email: "", phone: "", group_size: 1, notes: "" });
+  const openAdd = () => { resetForm(); setEditingEntry(null); setAddOpen(true); };
+  const openEdit = (e: WaitlistEntry) => {
+    setEditingEntry(e);
+    setForm({
+      user_name: e.user_name, user_email: e.user_email, phone: e.phone || "",
+      group_size: e.group_size || 1, notes: e.notes || "",
+    });
+    setAddOpen(true);
+  };
+  const saveEntry = async () => {
+    if (demoGuard()) return;
+    if (!form.user_name.trim() || !form.user_email.trim()) {
+      toast({ title: "Name and email required", variant: "destructive" }); return;
+    }
+    setSaving(true);
+    if (editingEntry) {
+      const { error } = await supabase.from("tournament_waitlist").update({
+        user_name: form.user_name, user_email: form.user_email,
+        phone: form.phone || null, group_size: form.group_size, notes: form.notes || null,
+      }).eq("id", editingEntry.id);
+      setSaving(false);
+      if (error) { toast({ title: "Error updating", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Entry updated" });
+    } else {
+      const { error } = await supabase.from("tournament_waitlist").insert({
+        tournament_id: selectedTournament,
+        user_name: form.user_name, user_email: form.user_email,
+        phone: form.phone || null, group_size: form.group_size, notes: form.notes || null,
+        status: "waiting", position: 0,
+      });
+      setSaving(false);
+      if (error) { toast({ title: "Error adding player", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Player added to waitlist" });
+    }
+    setAddOpen(false); resetForm(); setEditingEntry(null);
+    await loadEntries();
+  };
 
   useEffect(() => {
     if (!org) return;

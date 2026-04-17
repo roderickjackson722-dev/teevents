@@ -90,6 +90,7 @@ import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
 import TournamentSearch from "./pages/TournamentSearch";
+import LiveLeaderboard from "./pages/LiveLeaderboard";
 
 const queryClient = new QueryClient();
 
@@ -154,6 +155,7 @@ const App = () => (
           <Route path="/tournament/:slug" element={<PublicTournament />} />
           <Route path="/tournaments/search" element={<TournamentSearch />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
+          <Route path="/live/:slug" element={<LiveLeaderboard />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/deck" element={<SalesDeck />} />

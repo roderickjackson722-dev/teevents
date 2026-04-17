@@ -13,6 +13,8 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
+import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 
 interface PlayerScore {
   registration_id: string;
@@ -614,6 +616,17 @@ export default function Leaderboard() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {selectedTournament && (
+        <LiveDisplayShareCard
+          tournamentId={selectedTournament}
+          tournamentSlug={selectedTournamentData?.slug || null}
+        />
+      )}
+
+      {selectedTournament && org && (
+        <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
       )}
     </div>
   );

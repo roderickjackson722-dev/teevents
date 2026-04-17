@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";

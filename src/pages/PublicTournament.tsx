@@ -253,12 +253,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   useEffect(() => {
     if (!slug) return;
+    // Look up by custom_slug OR slug (custom_slug takes precedence for matches)
     supabase
       .from("tournaments")
       .select("*")
-      .eq("slug", slug)
+      .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
       .eq("site_published", true)
-      .single()
+      .limit(1)
+      .maybeSingle()
       .then(async ({ data, error }) => {
         if (error || !data) { setNotFound(true); setLoading(false); return; }
         const t = data as unknown as TournamentSite;

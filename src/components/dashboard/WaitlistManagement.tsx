@@ -10,12 +10,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Clock, Users, Download, Loader2, Send, Trash2, Trophy } from "lucide-react";
+import { Clock, Users, Download, Loader2, Send, Trash2, Plus, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface WaitlistEntry {
   id: string;
@@ -29,6 +33,7 @@ interface WaitlistEntry {
   status: string;
   offer_expires_at: string | null;
   created_at: string;
+  notes?: string | null;
 }
 
 interface Tournament {

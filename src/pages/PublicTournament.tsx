@@ -667,8 +667,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
           {/* Title */}
           <h1
-            className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight"
-            style={{ color: "#ffffff", textShadow: "0 2px 20px rgba(0,0,0,0.4)" }}
+            className="font-display font-bold leading-tight tournament-title mx-auto"
+            style={{
+              color: "#ffffff",
+              textShadow: "0 2px 20px rgba(0,0,0,0.4)",
+              fontSize: "clamp(1.75rem, 5vw, 3.75rem)",
+              letterSpacing: "normal",
+              whiteSpace: "nowrap",
+              textAlign: "center",
+              maxWidth: "100%",
+            }}
           >
             {heroTitle}
           </h1>

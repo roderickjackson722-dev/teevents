@@ -130,3 +130,12 @@
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
+
+/* Tournament hero title — single-line on desktop, wrap gracefully on mobile */
+@media (max-width: 640px) {
+  .tournament-title {
+    white-space: normal !important;
+    word-break: break-word;
+    max-width: 92%;
+  }
+}

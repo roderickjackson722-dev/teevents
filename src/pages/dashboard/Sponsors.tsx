@@ -710,15 +710,33 @@ const Sponsors = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="show_on_leaderboard"
-                  checked={form.show_on_leaderboard}
-                  onCheckedChange={(checked) => setForm({ ...form, show_on_leaderboard: !!checked })}
-                />
-                <Label htmlFor="show_on_leaderboard" className="text-sm font-normal cursor-pointer">
-                  Show on Live Scoreboard & Leaderboard
-                </Label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show_on_leaderboard"
+                    checked={form.show_on_leaderboard}
+                    onCheckedChange={(checked) => setForm({ ...form, show_on_leaderboard: !!checked })}
+                  />
+                  <Label htmlFor="show_on_leaderboard" className="text-sm font-normal cursor-pointer">
+                    Show on Live Scoreboard & Leaderboard
+                  </Label>
+                </div>
+                {form.show_on_leaderboard && (
+                  <div>
+                    <Label className="text-xs">Placement on Live Leaderboard</Label>
+                    <Select
+                      value={form.leaderboard_placement}
+                      onValueChange={(v) => setForm({ ...form, leaderboard_placement: v })}
+                    >
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="banner">Top banner (rotating)</SelectItem>
+                        <SelectItem value="sidebar">Sidebar grid</SelectItem>
+                        <SelectItem value="footer">Rotating footer ticker</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <Button type="submit" className="w-full" disabled={saving}>

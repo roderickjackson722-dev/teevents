@@ -110,6 +110,7 @@ export default function Leaderboard() {
     return Math.round(coursePar / 18);
   };
   const holePar = coursePar / 18;
+  const holes = Array.from({ length: 18 }, (_, i) => i + 1);
 
   const { data: registrations } = useQuery({
     queryKey: ["leaderboard-players", selectedTournament],

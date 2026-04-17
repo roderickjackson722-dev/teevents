@@ -201,6 +201,9 @@ interface SiteSettings {
   printable_layout: string | null;
   hole_pars: number[] | null;
   countdown_style: string | null;
+  custom_slug: string | null;
+  url_edit_count: number | null;
+  show_in_public_search: boolean | null;
 }
 
 const SiteBuilder = () => {
@@ -953,6 +956,58 @@ const SiteBuilder = () => {
                 ) : (
                   <p className="text-sm text-muted-foreground italic">Slug will be generated when you save.</p>
                 )}
+              </div>
+
+              {/* Custom URL Slug */}
+              <CustomSlugEditor
+                tournamentId={settings.id}
+                currentSlug={settings.slug}
+                customSlug={settings.custom_slug || null}
+                editCount={settings.url_edit_count || 0}
+                onSaved={(newSlug, newCount) => {
+                  setSettings({
+                    ...settings,
+                    custom_slug: newSlug,
+                    url_edit_count: newCount,
+                  });
+                }}
+              />
+
+              {/* Public Tournament Search Opt-in */}
+              <div className="border border-border rounded-lg p-4 bg-card">
+                <div className="flex items-start gap-3">
+                  <Switch
+                    checked={!!settings.show_in_public_search}
+                    onCheckedChange={async (v) => {
+                      updateField("show_in_public_search", v);
+                      const { error } = await supabase
+                        .from("tournaments")
+                        .update({ show_in_public_search: v } as any)
+                        .eq("id", settings.id);
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                        updateField("show_in_public_search", !v);
+                      } else {
+                        toast({
+                          title: v ? "Listed publicly" : "Removed from public listing",
+                          description: v
+                            ? "Your tournament now appears on the TeeVents directory."
+                            : "Your tournament has been removed from the public directory.",
+                        });
+                      }
+                    }}
+                  />
+                  <div className="flex-1">
+                    <Label className="text-sm font-semibold cursor-pointer">
+                      List this tournament on the public TeeVents directory
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Make your tournament visible to anyone browsing tournaments at{" "}
+                      <span className="font-mono">teevents.golf/tournaments/search</span>. Great for
+                      increasing visibility and attracting new players.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* "Already have a website?" explainer */}

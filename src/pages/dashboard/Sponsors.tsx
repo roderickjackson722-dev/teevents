@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +46,11 @@ import {
   FileImage,
   Check,
   Package,
+  QrCode,
+  Copy,
+  Download,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
 
 interface Sponsor {
@@ -259,6 +263,124 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
   );
 }
 
+const DOMAIN = "www.teevents.golf";
+
+function SponsorPageShareCard({
+  tournamentSlug,
+  tournamentTitle,
+}: {
+  tournamentSlug: string | null;
+  tournamentTitle: string;
+}) {
+  const { toast } = useToast();
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  if (!tournamentSlug) {
+    return (
+      <Card className="mb-6 border-dashed">
+        <CardContent className="py-6 text-center">
+          <QrCode className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">
+            Publish your tournament site to generate a sponsor page link & QR code.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const sponsorUrl = `https://${DOMAIN}/t/${tournamentSlug}?tab=sponsors`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(sponsorUrl);
+    toast({ title: "Copied!", description: "Sponsor page link copied to clipboard." });
+  };
+
+  const downloadQR = () => {
+    if (!qrRef.current) return;
+    const svg = qrRef.current.querySelector("svg");
+    if (!svg) return;
+    const canvas = document.createElement("canvas");
+    const size = 900;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    const img = new window.Image();
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(svg)], {
+      type: "image/svg+xml",
+    });
+    img.onload = () => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${tournamentSlug}-sponsor-qr.png`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, "image/png");
+    };
+    img.src = URL.createObjectURL(svgBlob);
+  };
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <QrCode className="h-4 w-4 text-primary" />
+          Sponsor Page Link & QR Code
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid md:grid-cols-2 gap-6 items-start">
+          {/* Link side */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                Shareable Link
+              </Label>
+              <div className="mt-1.5 flex items-center gap-2 p-2.5 bg-muted/50 rounded-md border border-border">
+                <code className="text-xs font-mono text-foreground break-all flex-1">
+                  {sponsorUrl}
+                </code>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={copyLink}>
+                <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <a href={sponsorUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open
+                </a>
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Share this link to send sponsors directly to the sponsor section of{" "}
+              <strong>{tournamentTitle}</strong>'s public tournament page, where they
+              can review tiers and register.
+            </p>
+          </div>
+
+          {/* QR side */}
+          <div className="flex flex-col items-center gap-3">
+            <div ref={qrRef} className="bg-white p-3 rounded-lg border border-border">
+              <QRCodeSVG value={sponsorUrl} size={160} level="H" includeMargin fgColor="#1a5c38" />
+            </div>
+            <Button size="sm" variant="outline" onClick={downloadQR}>
+              <Download className="h-3.5 w-3.5 mr-1.5" /> Download QR (PNG)
+            </Button>
+            <p className="text-xs text-muted-foreground text-center max-w-[220px]">
+              Print on flyers or display at events to attract sponsors.
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 const Sponsors = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
@@ -454,6 +576,13 @@ const Sponsors = () => {
           </SelectContent>
         </Select>
       </div>
+
+      {selectedTournament && (
+        <SponsorPageShareCard
+          tournamentSlug={tournaments.find((t) => t.id === selectedTournament)?.slug || null}
+          tournamentTitle={tournaments.find((t) => t.id === selectedTournament)?.title || ""}
+        />
+      )}
 
       {selectedTournament && (
         <div className="mb-6">

@@ -3306,6 +3306,7 @@ export type Database = {
           course_par: number | null
           created_at: string
           custom_domain: string | null
+          custom_slug: string | null
           date: string | null
           description: string | null
           donation_goal_cents: number | null
@@ -3342,6 +3343,7 @@ export type Database = {
           reserve_percentage: number | null
           schedule_info: string | null
           scoring_format: string
+          show_in_public_search: boolean
           site_hero_image_url: string | null
           site_hero_subtitle: string | null
           site_hero_title: string | null
@@ -3355,6 +3357,8 @@ export type Database = {
           test_mode_enabled: boolean | null
           title: string
           updated_at: string
+          url_edit_count: number
+          url_edited_at: string | null
           waitlist_deposit_cents: number | null
           waitlist_enabled: boolean
         }
@@ -3368,6 +3372,7 @@ export type Database = {
           course_par?: number | null
           created_at?: string
           custom_domain?: string | null
+          custom_slug?: string | null
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
@@ -3404,6 +3409,7 @@ export type Database = {
           reserve_percentage?: number | null
           schedule_info?: string | null
           scoring_format?: string
+          show_in_public_search?: boolean
           site_hero_image_url?: string | null
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
@@ -3417,6 +3423,8 @@ export type Database = {
           test_mode_enabled?: boolean | null
           title: string
           updated_at?: string
+          url_edit_count?: number
+          url_edited_at?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
         }
@@ -3430,6 +3438,7 @@ export type Database = {
           course_par?: number | null
           created_at?: string
           custom_domain?: string | null
+          custom_slug?: string | null
           date?: string | null
           description?: string | null
           donation_goal_cents?: number | null
@@ -3466,6 +3475,7 @@ export type Database = {
           reserve_percentage?: number | null
           schedule_info?: string | null
           scoring_format?: string
+          show_in_public_search?: boolean
           site_hero_image_url?: string | null
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
@@ -3479,6 +3489,8 @@ export type Database = {
           test_mode_enabled?: boolean | null
           title?: string
           updated_at?: string
+          url_edit_count?: number
+          url_edited_at?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
         }

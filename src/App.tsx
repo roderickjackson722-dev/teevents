@@ -89,6 +89,7 @@ import CompareEventbrite from "./pages/CompareEventbrite";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
+import TournamentSearch from "./pages/TournamentSearch";
 
 const queryClient = new QueryClient();
 
@@ -150,6 +151,8 @@ const App = () => (
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
+          <Route path="/tournament/:slug" element={<PublicTournament />} />
+          <Route path="/tournaments/search" element={<TournamentSearch />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

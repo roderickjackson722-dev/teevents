@@ -65,6 +65,8 @@ interface Sponsor {
   is_paid: boolean | null;
   sort_order: number | null;
   show_on_leaderboard: boolean;
+  leaderboard_placement: string;
+  display_order: number | null;
 }
 
 interface Tournament {
@@ -403,6 +405,7 @@ const Sponsors = () => {
     description: "",
     amount: "",
     show_on_leaderboard: true,
+    leaderboard_placement: "sidebar",
   });
 
   useEffect(() => {
@@ -446,7 +449,7 @@ const Sponsors = () => {
   }, [selectedTournament]);
 
   const resetForm = () => {
-    setForm({ name: "", tier: "silver", logo_url: "", website_url: "", description: "", amount: "", show_on_leaderboard: true });
+    setForm({ name: "", tier: "silver", logo_url: "", website_url: "", description: "", amount: "", show_on_leaderboard: true, leaderboard_placement: "sidebar" });
     setEditSponsor(null);
   };
 
@@ -460,6 +463,7 @@ const Sponsors = () => {
       description: sponsor.description || "",
       amount: sponsor.amount?.toString() || "",
       show_on_leaderboard: sponsor.show_on_leaderboard ?? true,
+      leaderboard_placement: sponsor.leaderboard_placement || "sidebar",
     });
     setDialogOpen(true);
   };
@@ -497,6 +501,7 @@ const Sponsors = () => {
       description: form.description.trim() || null,
       amount: form.amount ? parseFloat(form.amount) : null,
       show_on_leaderboard: form.show_on_leaderboard,
+      leaderboard_placement: form.leaderboard_placement,
     };
 
     if (editSponsor) {

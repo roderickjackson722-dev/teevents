@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Download, Copy, Check, ChevronRight, BookOpen, Shield, CreditCard, Users, Zap, HelpCircle, BarChart3, FileText } from "lucide-react";
+import { Download, Copy, Check, ChevronRight, BookOpen, Shield, CreditCard, Users, Zap, HelpCircle, BarChart3, FileText, Trophy, Award, Search } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,13 @@ const sections = [
   { id: "organizer", label: "Organizer Features", icon: Users },
   { id: "golfer", label: "Golfer Experience", icon: Zap },
   { id: "payments", label: "Payment & Money Flow", icon: CreditCard },
+  { id: "payouts", label: "Payout Methods", icon: BarChart3 },
+  { id: "handicap", label: "Handicap System", icon: Trophy },
+  { id: "course", label: "Course Details", icon: FileText },
+  { id: "leaderboard", label: "Live Leaderboard & Scoring", icon: Trophy },
+  { id: "sponsors", label: "Sponsor Management", icon: Award },
+  { id: "team", label: "Team Management", icon: Users },
+  { id: "search", label: "Public Tournament Search", icon: Search },
   { id: "technical", label: "Technical Architecture", icon: FileText },
   { id: "security", label: "Security & Compliance", icon: Shield },
   { id: "support", label: "Support & Resources", icon: HelpCircle },
@@ -48,592 +55,395 @@ const StudySheet = () => {
   };
 
   const handleDownloadPdf = () => {
-    if (!contentRef.current) return;
-    downloadHtmlAsPdf("TeeVents Platform Study Sheet", `
-      <style>
-        body { font-family: 'Georgia', serif; color: #1a1a1a; max-width: 800px; margin: 0 auto; }
-        h1 { font-size: 28px; color: #1a5c38; border-bottom: 3px solid #1a5c38; padding-bottom: 8px; margin-bottom: 16px; }
-        h2 { font-size: 20px; color: #1a5c38; margin-top: 32px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-        h3 { font-size: 16px; color: #333; margin-top: 20px; }
-        p, li { font-size: 13px; line-height: 1.7; }
-        ul { padding-left: 20px; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #f0f7f3; color: #1a5c38; font-weight: 600; }
-        .page-break { page-break-before: always; }
-        .badge { display: inline-block; background: #e8f5ee; color: #1a5c38; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-      </style>
-      <h1>🏌️ TeeVents — Platform Study Sheet</h1>
-      <p style="color:#666;font-size:12px;">Internal Training & Reference Guide · Last Updated: ${new Date().toLocaleDateString()}</p>
-
-      <h2>Table of Contents</h2>
-      <ol style="font-size:13px;">
-        <li>Platform Overview</li>
-        <li>Tournament Organizer Features</li>
-        <li>Golfer Experience</li>
-        <li>Payment & Money Flow</li>
-        <li>Technical Architecture</li>
-        <li>Security & Compliance</li>
-        <li>Support & Resources</li>
-        <li>Key Metrics & Limits</li>
-        <li>Glossary</li>
-      </ol>
-
-      <div class="page-break"></div>
-
-      <h2>1. Platform Overview</h2>
-      <h3>What is TeeVents?</h3>
-      <p>TeeVents is an all-in-one golf tournament management platform that handles registration, payments, communications, and day-of logistics. It automates the operational burden so organizers can focus on their event and fundraising goals.</p>
-      <h3>Who is it for?</h3>
-      <ul>
-        <li><strong>Nonprofits & Charities</strong> — Fundraising golf tournaments with donation tracking and 501(c)(3) support</li>
-        <li><strong>Corporate Planners</strong> — Company outings with branding, sponsor management, and team registration</li>
-        <li><strong>Golf Clubs & Courses</strong> — Member tournaments, leagues, and events</li>
-        <li><strong>Independent Organizers</strong> — Anyone running a golf tournament, from first-timers to seasoned pros</li>
-      </ul>
-      <h3>Core Value Proposition</h3>
-      <p>All-in-one tournament management with automated payments. One platform replaces spreadsheets, Venmo, paper sign-ups, and manual pairings. Organizers get paid automatically — no chasing checks.</p>
-
-      <h2>2. Tournament Organizer Features</h2>
-
-      <h3>2.1 Tournament Creation</h3>
-      <ul>
-        <li>Set registration fee (any amount from $1 to $10,000)</li>
-        <li>Choose fee model:
-          <ul>
-             <li><strong>Pass to Golfer:</strong> Golfer pays registration + 5% platform fee + Stripe processing fees</li>
-            <li><strong>Absorb Fees:</strong> Golfer pays registration only; organizer receives registration minus 5% fee minus Stripe fees</li>
-          </ul>
-        </li>
-        <li>Set event date, location, course name, max players</li>
-        <li>Publish / unpublish tournament site</li>
-        <li>Customize tournament site (logo, colors, hero image, template)</li>
-        <li>Custom registration fields (shirt size, handicap, dietary needs, etc.)</li>
-      </ul>
-
-      <h3>2.2 Registration Management</h3>
-      <ul>
-        <li>View all registrations in real-time</li>
-        <li>Edit player details (name, handicap, shirt size, dietary needs)</li>
-        <li>Manual registration for offline/cash payments</li>
-        <li>Export registrations to CSV</li>
-        <li>Send bulk emails to registrants</li>
-        <li>Promo codes for discounted registration</li>
-        <li>Waitlist management with automatic offers</li>
-      </ul>
-
-      <h3>2.3 Payment & Financial Dashboard</h3>
-      <ul>
-        <li><strong>Balance Cards:</strong> Available balance, Pending hold, Total collected, Fees paid</li>
-        <li><strong>Transaction History:</strong> Every golfer payment with full breakdown</li>
-        <li><strong>Payout History:</strong> All past payouts with dates and amounts</li>
-        <li><strong>CSV Exports:</strong> Transactions, payouts, summary, and tax reports</li>
-      </ul>
-
-      <h3>2.4 Payout Settings</h3>
-      <table>
-        <tr><th>Feature</th><th>Stripe Connect</th><th>PayPal</th></tr>
-        <tr><td>Setup time</td><td>2-3 minutes</td><td>1 minute</td></tr>
-        <tr><td>Payout speed</td><td>1-3 business days</td><td>5-7 business days</td></tr>
-        <tr><td>Additional fees</td><td>None</td><td>1% or $0.50</td></tr>
-        <tr><td>Automatic payouts</td><td>✅ Bi-weekly</td><td>❌ Manual only</td></tr>
-        <tr><td>Minimum withdrawal</td><td>$25</td><td>$25</td></tr>
-      </table>
-
-      <h3>2.5 Volunteer Management</h3>
-      <ul>
-        <li>Create volunteer roles with shift times and slot counts</li>
-        <li>Assign volunteers manually or via sign-up</li>
-        <li>QR code check-in on event day</li>
-        <li>Track check-in status in real-time</li>
-      </ul>
-
-      <h3>2.6 Sponsor Management</h3>
-      <ul>
-        <li>Add sponsors (name, level, contact info, contract amount)</li>
-        <li>Upload assets (logos, hole signs, digital ads, banners)</li>
-        <li>Track asset delivery status</li>
-        <li>Sponsor visibility on public tournament page</li>
-      </ul>
-
-      <h3>2.7 Live Leaderboard <span class="badge">Starter+</span></h3>
-      <ul>
-        <li>Enable public leaderboard on tournament page</li>
-        <li>Live scoring with player codes</li>
-        <li>Multiple scoring formats (stroke play, scramble, stableford, best ball, match play)</li>
-      </ul>
-
-      <h3>2.8 Auction & Raffle <span class="badge">Premium</span></h3>
-      <ul>
-        <li>Silent auction items with bidding</li>
-        <li>Raffle items with ticket pricing</li>
-        <li>Payment processing through Stripe (5% platform fee applies)</li>
-      </ul>
-
-      <h3>2.9 Additional Features</h3>
-      <ul>
-        <li><strong>Printables:</strong> Scorecards, name badges, cart signs, hole assignments, sponsor signs, alpha list</li>
-        <li><strong>Photo Gallery:</strong> Upload and share event photos</li>
-        <li><strong>Surveys:</strong> Post-event satisfaction surveys</li>
-        <li><strong>Budget Tracker:</strong> Track income and expenses</li>
-        <li><strong>Planning Checklist:</strong> 30-item timeline from 12 months to post-event</li>
-        <li><strong>Site Builder:</strong> Customizable public tournament pages</li>
-        <li><strong>Donations:</strong> Accept donations with goal tracking</li>
-      </ul>
-
-      <div class="page-break"></div>
-
-      <h2>3. Golfer Experience</h2>
-
-      <h3>3.1 Registration Flow</h3>
-      <ol>
-        <li>Visit tournament URL (teevents.golf/t/your-tournament)</li>
-        <li>Enter player details (name, email, handicap, shirt size, dietary needs)</li>
-        <li>Group registration (up to 4 players per group)</li>
-        <li>Checkout with Stripe (credit card, Apple Pay, Google Pay)</li>
-        <li>Receive confirmation email with QR code</li>
-      </ol>
-
-      <h3>3.2 Day-of-Event</h3>
-      <ul>
-        <li>QR code check-in at registration desk</li>
-        <li>View pairings and tee times</li>
-        <li>Live scoring (enter scores via unique player code)</li>
-        <li>Leaderboard view on any device</li>
-      </ul>
-
-      <h3>3.3 Post-Event</h3>
-      <ul>
-        <li>Survey completion (if enabled)</li>
-        <li>Photo gallery access</li>
-        <li>Final leaderboard and results</li>
-      </ul>
-
-      <div class="page-break"></div>
-
-      <h2>4. Payment & Money Flow</h2>
-
-      <h3>4.1 How Funds Move</h3>
-      <p>Golfer pays → Stripe processes → TeeVents takes 5% platform fee → 15% hold reserved → Remaining goes to organizer's available balance → Automatic bi-weekly payout or manual withdrawal</p>
-
-      <h3>4.2 Fee Model Comparison</h3>
-      <table>
-        <tr><th>Model</th><th>Golfer Pays</th><th>Organizer Receives</th><th>Best For</th></tr>
-        <tr><td><strong>Pass to Golfer</strong></td><td>$100 + $5 (5%) + ~$3.35 = ~$108.35</td><td>$100 (minus 15% hold)</td><td>Premium events, corporate outings</td></tr>
-        <tr><td><strong>Absorb Fees</strong></td><td>$100 exactly</td><td>$100 - $5 (5%) - ~$3.20 = ~$91.80 (minus 15% hold)</td><td>Nonprofits, charity events</td></tr>
-      </table>
-
-      <h3>4.3 Hold Release Timeline</h3>
-      <ul>
-        <li>15% of each registration is held for chargeback protection</li>
-        <li>Hold is released 15 days after the event end date</li>
-        <li>Daily cron job (release-holds) processes releases at 6:00 AM UTC</li>
-        <li>Released funds added to available balance automatically</li>
-      </ul>
-
-      <h3>4.4 Chargeback Protection</h3>
-      <ul>
-        <li>15% hold covers chargeback risk</li>
-        <li>If chargeback occurs, hold is used first</li>
-        <li>Organizer never pays out of pocket</li>
-        <li>Chargebacks are rare (&lt;0.5% of transactions)</li>
-      </ul>
-
-      <div class="page-break"></div>
-
-      <h2>5. Technical Architecture</h2>
-
-      <h3>5.1 Stack</h3>
-      <table>
-        <tr><th>Layer</th><th>Technology</th></tr>
-        <tr><td>Frontend</td><td>React, TypeScript, Tailwind CSS, shadcn/ui</td></tr>
-        <tr><td>Backend</td><td>Supabase (PostgreSQL, Auth, Storage)</td></tr>
-        <tr><td>Payments</td><td>Stripe Connect (Express accounts)</td></tr>
-        <tr><td>Edge Functions</td><td>Deno (Supabase Edge Functions)</td></tr>
-        <tr><td>Emails</td><td>Resend</td></tr>
-        <tr><td>SMS</td><td>Twilio</td></tr>
-        <tr><td>Hosting</td><td>Lovable Cloud</td></tr>
-      </table>
-
-      <h3>5.2 Key Database Tables</h3>
-      <table>
-        <tr><th>Table</th><th>Purpose</th></tr>
-        <tr><td>tournaments</td><td>Event details, settings, dates</td></tr>
-        <tr><td>tournament_registrations</td><td>Golfer registrations</td></tr>
-        <tr><td>platform_transactions</td><td>Payment records with hold tracking</td></tr>
-        <tr><td>organizations</td><td>Organizer accounts</td></tr>
-        <tr><td>organization_payout_methods</td><td>Stripe/PayPal connections</td></tr>
-        <tr><td>organization_payouts</td><td>Payout history</td></tr>
-        <tr><td>tournament_volunteers</td><td>Volunteer assignments</td></tr>
-        <tr><td>tournament_sponsors</td><td>Sponsor details</td></tr>
-        <tr><td>sponsor_assets</td><td>Sponsor deliverables</td></tr>
-      </table>
-
-      <h3>5.3 Edge Functions</h3>
-      <table>
-        <tr><th>Function</th><th>Purpose</th></tr>
-        <tr><td>create-registration-checkout</td><td>Creates Stripe checkout session</td></tr>
-        <tr><td>verify-registration</td><td>Confirms payment and records transaction</td></tr>
-        <tr><td>release-holds</td><td>Releases 15% hold 15 days after event (daily cron)</td></tr>
-        <tr><td>process-biweekly-payouts</td><td>Automatic payouts every other Monday</td></tr>
-        <tr><td>stripe-connect-onboard</td><td>Stripe Connect onboarding flow</td></tr>
-        <tr><td>process-refund</td><td>Handles refund requests</td></tr>
-        <tr><td>create-donation</td><td>Donation checkout session</td></tr>
-        <tr><td>create-auction-checkout</td><td>Auction/raffle payment</td></tr>
-      </table>
-
-      <div class="page-break"></div>
-
-      <h2>6. Security & Compliance</h2>
-      <ul>
-        <li><strong>PCI Compliance:</strong> Stripe handles all payment card data — no card numbers stored on our servers</li>
-        <li><strong>Data Encryption:</strong> All data encrypted at rest and in transit (TLS 1.2+)</li>
-        <li><strong>Authentication:</strong> Supabase Auth with email/password, JWT tokens, role-based access</li>
-        <li><strong>Row Level Security:</strong> All database tables protected with RLS policies</li>
-        <li><strong>PII Handling:</strong> No sensitive payment data stored — Stripe tokens only</li>
-        <li><strong>Audit Logging:</strong> All payout changes logged for security review</li>
-        <li><strong>1099-K:</strong> Stripe provides tax forms for organizers earning &gt;$600/year</li>
-      </ul>
-
-      <h2>7. Support & Resources</h2>
-      <table>
-        <tr><th>Resource</th><th>Location</th></tr>
-        <tr><td>Help Center</td><td>/help (6 articles covering payments, Stripe, refunds)</td></tr>
-        <tr><td>Email Support</td><td>info@teevents.golf</td></tr>
-        <tr><td>Demo Request</td><td>info@teevents.golf</td></tr>
-        <tr><td>How It Works</td><td>/how-it-works</td></tr>
-        <tr><td>Pricing</td><td>/pricing</td></tr>
-        <tr><td>FAQ</td><td>/faq</td></tr>
-      </table>
-
-      <h2>8. Key Metrics & Limits</h2>
-      <table>
-        <tr><th>Metric</th><th>Value</th></tr>
-        <tr><td>Tournaments per organizer</td><td>Unlimited (Starter+)</td></tr>
-        <tr><td>Golfers per tournament</td><td>500+ (Starter+)</td></tr>
-        <tr><td>Registration fee range</td><td>$1 – $10,000</td></tr>
-        <tr><td>Platform fee</td><td>4%</td></tr>
-        <tr><td>Hold percentage</td><td>15%</td></tr>
-        <tr><td>Hold release</td><td>15 days after event ends</td></tr>
-        <tr><td>Minimum payout</td><td>$25</td></tr>
-        <tr><td>Payout frequency</td><td>Bi-weekly (automatic) or manual anytime</td></tr>
-        <tr><td>Base plan limit</td><td>1 tournament, 72 players</td></tr>
-        <tr><td>Starter plan</td><td>$299 — Unlimited tournaments & players</td></tr>
-        <tr><td>Premium plan</td><td>$999 — Custom domain, 10% hold, advanced features</td></tr>
-      </table>
-
-      <div class="page-break"></div>
-
-      <h2>9. Glossary</h2>
-      <table>
-        <tr><th>Term</th><th>Definition</th></tr>
-        <tr><td><strong>Chargeback</strong></td><td>When a credit cardholder disputes a charge with their bank</td></tr>
-        <tr><td><strong>Hold</strong></td><td>15% of registration fee set aside for 15 days after event for chargeback protection</td></tr>
-        <tr><td><strong>Platform Fee</strong></td><td>5% fee charged on all transactions processed through TeeVents</td></tr>
-        <tr><td><strong>Stripe Connect</strong></td><td>Stripe's platform for marketplace-style payments; enables organizer payouts</td></tr>
-        <tr><td><strong>Express Account</strong></td><td>Simplified Stripe Connect account type for organizers</td></tr>
-        <tr><td><strong>Application Fee</strong></td><td>Stripe mechanism to automatically take the 5% platform fee from each payment</td></tr>
-        <tr><td><strong>Destination Charge</strong></td><td>Stripe flow where money goes to platform account first, then transferred to organizer</td></tr>
-        <tr><td><strong>RLS</strong></td><td>Row Level Security — database-level access control ensuring users only see their own data</td></tr>
-        <tr><td><strong>Edge Function</strong></td><td>Serverless function that runs close to the user for low-latency backend logic</td></tr>
-        <tr><td><strong>Cron Job</strong></td><td>Scheduled task that runs automatically (e.g., daily hold releases, bi-weekly payouts)</td></tr>
-      </table>
-
-      <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential — For internal use only.</p>
-    `);
+    downloadHtmlAsPdf("TeeVents Platform Study Sheet — 2026 Edition", buildPdfHtml());
   };
 
-  if (loading) return <Layout><div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div></Layout>;
+  if (loading) {
+    return <Layout><div className="min-h-screen flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading study sheet…</div></div></Layout>;
+  }
 
   return (
     <Layout>
-      <section className="py-12 px-4 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <section className="container mx-auto px-4 py-12 max-w-5xl">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-display font-bold text-foreground">Platform Study Sheet</h1>
-            <p className="text-muted-foreground mt-1">Internal training & reference guide for TeeVents</p>
+            <h1 className="text-3xl font-display font-bold text-foreground">📚 TeeVents Platform Study Sheet</h1>
+            <p className="text-muted-foreground mt-1">2026 Edition · Complete reference for organizers, sales team, and support staff</p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleCopy} variant="outline" className="gap-2">
+          <div className="flex gap-2 self-start">
+            <Button variant="outline" onClick={handleCopy} className="gap-2">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Copied!" : "Copy to Clipboard"}
+              {copied ? "Copied" : "Copy"}
             </Button>
             <Button onClick={handleDownloadPdf} className="gap-2">
-              <Download className="h-4 w-4" />
-              Download PDF
+              <Download className="h-4 w-4" /> Download PDF
             </Button>
           </div>
         </div>
 
         {/* Table of Contents */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-8">
-          <h2 className="font-semibold text-lg mb-3">Table of Contents</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+        <nav className="bg-muted/40 border border-border rounded-xl p-5 mb-10">
+          <h2 className="font-semibold text-foreground mb-3">Table of Contents</h2>
+          <ol className="grid sm:grid-cols-2 gap-y-1 text-sm">
             {sections.map((s, i) => (
-              <a key={s.id} href={`#${s.id}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors py-1">
-                <s.icon className="h-4 w-4" />
-                <span>{i + 1}. {s.label}</span>
-                <ChevronRight className="h-3 w-3 ml-auto" />
-              </a>
+              <li key={s.id}>
+                <a href={`#${s.id}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                  <ChevronRight className="h-3 w-3" />
+                  <span>{i + 1}. {s.label}</span>
+                </a>
+              </li>
             ))}
-          </div>
-        </div>
+          </ol>
+        </nav>
 
-        {/* Content */}
-        <div ref={contentRef} className="space-y-10">
-          {/* Section 1 */}
-          <section id="overview">
-            <SectionHeader num={1} title="Platform Overview" />
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">What is TeeVents?</h3>
-                <p>TeeVents is an all-in-one golf tournament management platform that handles registration, payments, communications, and day-of logistics. It automates the operational burden so organizers can focus on their event and fundraising goals.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Who is it for?</h3>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><strong>Nonprofits & Charities</strong> — Fundraising golf tournaments with donation tracking</li>
-                  <li><strong>Corporate Planners</strong> — Company outings with branding and sponsor management</li>
-                  <li><strong>Golf Clubs & Courses</strong> — Member tournaments, leagues, and events</li>
-                  <li><strong>Independent Organizers</strong> — Anyone running a golf tournament</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Core Value Proposition</h3>
-                <p>All-in-one tournament management with automated payments. One platform replaces spreadsheets, Venmo, paper sign-ups, and manual pairings.</p>
-              </div>
-            </div>
-          </section>
+        <div ref={contentRef} className="space-y-12">
+          <Section id="overview" num={1} title="Platform Overview">
+            <h3 className="font-semibold text-foreground">What is TeeVents?</h3>
+            <p>All-in-one golf tournament management platform handling registration, payments, communications, live scoring, handicaps, and day-of logistics.</p>
+            <h3 className="font-semibold text-foreground mt-4">Who is it for?</h3>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li><strong>Nonprofits</strong> — Fundraising tournaments with donation tracking, auctions, raffles</li>
+              <li><strong>Corporate Planners</strong> — Company outings with branded websites and sponsor management</li>
+              <li><strong>Golf Clubs</strong> — Member events with custom URLs and public search visibility</li>
+              <li><strong>Independent Organizers</strong> — Anyone running a tournament from 10 to 500+ players</li>
+            </ul>
+            <p className="mt-3"><strong>Core Promise:</strong> Run your tournament like a pro — no spreadsheets, no manual payments, no stress.</p>
+          </Section>
 
-          {/* Section 2 */}
-          <section id="organizer">
-            <SectionHeader num={2} title="Tournament Organizer Features" />
-            <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
-              <FeatureBlock title="2.1 Tournament Creation" items={[
-                "Set registration fee (any amount from $1 to $10,000)",
-                "Choose fee model: Pass to Golfer or Absorb Fees",
-                "Set event date, location, course name, max players",
-                "Publish / unpublish tournament site",
-                "Customize tournament site (logo, colors, hero image, template)",
-                "Custom registration fields (shirt size, handicap, dietary needs)",
-              ]} />
-              <FeatureBlock title="2.2 Registration Management" items={[
-                "View all registrations in real-time",
-                "Edit player details (name, handicap, shirt size, dietary needs)",
-                "Manual registration for offline/cash payments",
-                "Export registrations to CSV",
-                "Send bulk emails to registrants",
-                "Promo codes for discounted registration",
-                "Waitlist management with automatic offers",
-              ]} />
-              <FeatureBlock title="2.3 Payment & Financial Dashboard" items={[
-                "Balance Cards: Available balance, Pending hold, Total collected, Fees paid",
-                "Transaction History: Every golfer payment with full breakdown",
-                "Payout History: All past payouts with dates and amounts",
-                "CSV Exports: Transactions, payouts, summary, and tax reports",
-              ]} />
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">2.4 Payout Settings</h3>
-                <SimpleTable headers={["Feature", "Stripe Connect", "PayPal"]} rows={[
-                  ["Setup time", "2-3 minutes", "1 minute"],
-                  ["Payout speed", "1-3 business days", "5-7 business days"],
-                  ["Additional fees", "None", "1% or $0.50"],
-                  ["Automatic payouts", "✅ Bi-weekly", "❌ Manual only"],
-                  ["Minimum withdrawal", "$25", "$25"],
-                ]} />
-              </div>
-              <FeatureBlock title="2.5 Volunteer Management" items={[
-                "Create volunteer roles with shift times and slot counts",
-                "Assign volunteers manually or via sign-up",
-                "QR code check-in on event day",
-                "Track check-in status in real-time",
-              ]} />
-              <FeatureBlock title="2.6 Sponsor Management" items={[
-                "Add sponsors (name, level, contact info, contract amount)",
-                "Upload assets (logos, hole signs, digital ads, banners)",
-                "Track asset delivery status",
-                "Sponsor visibility on public tournament page",
-              ]} />
-              <FeatureBlock title="2.7 Live Leaderboard (Starter+)" items={[
-                "Enable public leaderboard on tournament page",
-                "Live scoring with unique player codes",
-                "Multiple scoring formats: stroke play, scramble, stableford, best ball, match play",
-              ]} />
-              <FeatureBlock title="2.8 Auction & Raffle (Premium)" items={[
-                "Silent auction items with bidding",
-                "Raffle items with ticket pricing",
-                "Payment processing through Stripe (5% platform fee applies)",
-              ]} />
-              <FeatureBlock title="2.9 Additional Features" items={[
-                "Printables: Scorecards, name badges, cart signs, hole assignments, sponsor signs",
-                "Photo Gallery: Upload and share event photos",
-                "Surveys: Post-event satisfaction surveys",
-                "Budget Tracker: Track income and expenses",
-                "Planning Checklist: 30-item timeline from 12 months to post-event",
-                "Site Builder: Customizable public tournament pages",
-                "Donations: Accept donations with goal tracking",
-              ]} />
-            </div>
-          </section>
+          <Section id="organizer" num={2} title="Tournament Organizer Features">
+            <SubHeader>2.1 Tournament Creation</SubHeader>
+            <SimpleTable headers={["Feature", "Description"]} rows={[
+              ["Registration Fee", "Set any amount ($1–$10,000)"],
+              ["Fee Model", "Pass to Golfer or Absorb Fees"],
+              ["Event Details", "Date, location, max players, description"],
+              ["Custom URL", "Editable /tournament/{custom-slug} (3 edits max, 301 redirects)"],
+              ["Public Search", "Opt-in to appear on /tournaments/search"],
+            ]} />
+            <SubHeader>2.2 Registration Management</SubHeader>
+            <SimpleTable headers={["Feature", "Description"]} rows={[
+              ["Real-time registrations", "Live counter and player list"],
+              ["Player details", "Edit name, email, handicap, shirt size, dietary needs"],
+              ["Manual registration", "Add players offline"],
+              ["CSV export", "Download full player list"],
+              ["Group registration", "Foursomes (up to 4 players)"],
+              ["Promo codes", "Discount codes for early bird, sponsors, etc."],
+              ["Waitlist", "Auto-notify when spots open"],
+            ]} />
+            <SubHeader>2.3 Additional Features</SubHeader>
+            <SimpleTable headers={["Feature", "Description"]} rows={[
+              ["Volunteers", "Shift scheduling, QR check-in, automated reminders"],
+              ["Auction & Raffle", "Silent auction, 50/50 raffle, auto-draw"],
+              ["Add On Store", "Sell branded merchandise with Stripe checkout"],
+              ["Donations", "Fundraising page with progress bar"],
+              ["Flyer Studio", "Canva-integrated template gallery"],
+              ["Director Shop", "Premium add-ons (consulting, signage, insurance)"],
+              ["Printables", "Scorecards, cart signs, name badges, sponsor signs"],
+              ["Photo Gallery", "Upload event photos to public site"],
+              ["Surveys", "Post-event feedback with ratings and comments"],
+              ["Planning Guide", "30-item checklist from 12 months out"],
+              ["QR Check-in", "Scan QR codes on any tablet, manual search fallback"],
+              ["Messages & Email Templates", "Email/SMS blasts, scheduled delivery"],
+            ]} />
+          </Section>
 
-          {/* Section 3 */}
-          <section id="golfer">
-            <SectionHeader num={3} title="Golfer Experience" />
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">3.1 Registration Flow</h3>
-                <ol className="list-decimal list-inside space-y-1 ml-2">
-                  <li>Visit tournament URL (teevents.golf/t/your-tournament)</li>
-                  <li>Enter player details (name, email, handicap, shirt size, dietary needs)</li>
-                  <li>Group registration (up to 4 players per group)</li>
-                  <li>Checkout with Stripe (credit card, Apple Pay, Google Pay)</li>
-                  <li>Receive confirmation email with QR code</li>
-                </ol>
-              </div>
-              <FeatureBlock title="3.2 Day-of-Event" items={[
-                "QR code check-in at registration desk",
-                "View pairings and tee times",
-                "Live scoring (enter scores via unique player code)",
-                "Leaderboard view on any device",
-              ]} />
-              <FeatureBlock title="3.3 Post-Event" items={[
-                "Survey completion (if enabled)",
-                "Photo gallery access",
-                "Final leaderboard and results",
-              ]} />
-            </div>
-          </section>
+          <Section id="golfer" num={3} title="Golfer Experience">
+            <SubHeader>Registration Flow</SubHeader>
+            <ol className="list-decimal list-inside ml-2 space-y-1">
+              <li>Visit tournament URL (<code>/tournament/{"{slug}"}</code> or custom URL)</li>
+              <li>Enter player details (name, email, handicap, shirt size, dietary needs)</li>
+              <li>Group registration for foursomes</li>
+              <li>Checkout with Stripe (credit card, Apple Pay, Google Pay, Cash App Pay)</li>
+              <li>Receive confirmation email with QR code</li>
+            </ol>
+            <SubHeader>Day-of-Event</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>QR code check-in at registration desk</li>
+              <li>View live leaderboard (gross/net)</li>
+              <li>Enter scores using unique player code (scan QR on scorecard)</li>
+            </ul>
+            <SubHeader>Post-Event</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Post-event survey</li>
+              <li>Photo gallery</li>
+              <li>Final results and leaderboard</li>
+            </ul>
+          </Section>
 
-          {/* Section 4 */}
-          <section id="payments">
-            <SectionHeader num={4} title="Payment & Money Flow" />
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">4.1 How Funds Move</h3>
-                <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">
-                  Golfer pays → Stripe processes → 5% platform fee taken → 15% hold reserved → Remaining = available balance → Bi-weekly payout or manual withdrawal
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">4.2 Fee Model Comparison</h3>
-                <SimpleTable headers={["Model", "Golfer Pays", "Organizer Receives", "Best For"]} rows={[
-                  ["Pass to Golfer", "$100 + $5 (5%) + ~$3.35 = ~$108.35", "$100 (minus 15% hold)", "Premium events"],
-                  ["Absorb Fees", "$100 exactly", "~$91.80 (minus 15% hold)", "Nonprofits, charities"],
-                ]} />
-              </div>
-              <FeatureBlock title="4.3 Hold Release Timeline" items={[
-                "15% of each registration held for chargeback protection",
-                "Released 15 days after the event end date",
-                "Daily cron job processes releases at 6:00 AM UTC",
-                "Released funds added to available balance automatically",
-              ]} />
-              <FeatureBlock title="4.4 Chargeback Protection" items={[
-                "15% hold covers chargeback risk",
-                "If chargeback occurs, hold is used first",
-                "Organizer never pays out of pocket",
-                "Chargebacks are rare (<0.5% of transactions)",
-              ]} />
-            </div>
-          </section>
+          <Section id="payments" num={4} title="Payment & Money Flow">
+            <p>Standard flow uses Stripe Connect destination charges. The 5% platform fee is split automatically at checkout — TeeVents never holds organizer funds.</p>
+            <SimpleTable headers={["Step", "What Happens"]} rows={[
+              ["1. Golfer registers", "Pays via Stripe Checkout (card, Apple Pay, Google Pay, Cash App Pay)"],
+              ["2. Stripe processes", "Charges golfer's card; deducts 2.9% + $0.30 processing fee"],
+              ["3. Funds split", "5% application fee → TeeVents; remainder → organizer's connected Stripe account"],
+              ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (1-3 days)"],
+            ]} />
+            <p className="mt-3"><strong>Pass to Golfer (default):</strong> Golfer sees registration + 5% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
+            <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 5% and Stripe processing fees.</p>
+          </Section>
 
-          {/* Section 5 */}
-          <section id="technical">
-            <SectionHeader num={5} title="Technical Architecture" />
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">5.1 Stack</h3>
-                <SimpleTable headers={["Layer", "Technology"]} rows={[
-                  ["Frontend", "React, TypeScript, Tailwind CSS, shadcn/ui"],
-                  ["Backend", "Supabase (PostgreSQL, Auth, Storage)"],
-                  ["Payments", "Stripe Connect (Express accounts)"],
-                  ["Edge Functions", "Deno (Supabase)"],
-                  ["Emails", "Resend"],
-                  ["SMS", "Twilio"],
-                  ["Hosting", "Lovable Cloud"],
-                ]} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">5.2 Key Edge Functions</h3>
-                <SimpleTable headers={["Function", "Purpose"]} rows={[
-                  ["create-registration-checkout", "Creates Stripe checkout session"],
-                  ["verify-registration", "Confirms payment and records transaction"],
-                  ["release-holds", "Releases 15% hold 15 days post-event"],
-                  ["process-biweekly-payouts", "Automatic payouts every other Monday"],
-                  ["stripe-connect-onboard", "Stripe Connect onboarding"],
-                  ["process-refund", "Handles refund requests"],
-                ]} />
-              </div>
-            </div>
-          </section>
+          <Section id="payouts" num={5} title="Payout Methods">
+            <SimpleTable headers={["Feature", "Stripe Connect", "PayPal", "Check"]} rows={[
+              ["Setup Time", "2-3 min", "1 min", "Enter address"],
+              ["Payout Speed", "1-3 days", "5-7 days", "Upon request"],
+              ["Automatic", "✅ Bi-weekly", "❌ Manual", "❌ Manual"],
+              ["Additional Fee", "None", "1% (min $0.50)", "None"],
+              ["Default Method", "Recommended", "Backup", "Default (escrow)"],
+            ]} />
+            <p className="mt-3">New organizers default to <strong>Check</strong> until they configure a payout method. Funds are held in TeeVents escrow until payout is configured or manually requested.</p>
+          </Section>
 
-          {/* Section 6 */}
-          <section id="security">
-            <SectionHeader num={6} title="Security & Compliance" />
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              <ul className="list-disc list-inside space-y-2 ml-2">
-                <li><strong>PCI Compliance:</strong> Stripe handles all payment card data</li>
-                <li><strong>Data Encryption:</strong> All data encrypted at rest and in transit (TLS 1.2+)</li>
-                <li><strong>Authentication:</strong> Supabase Auth with JWT tokens, role-based access</li>
-                <li><strong>Row Level Security:</strong> All tables protected with RLS policies</li>
-                <li><strong>Audit Logging:</strong> All payout changes logged for security review</li>
-                <li><strong>1099-K:</strong> Stripe provides tax forms for organizers earning &gt;$600/year</li>
-              </ul>
-            </div>
-          </section>
+          <Section id="handicap" num={6} title="Handicap System">
+            <SubHeader>USGA Course Handicap Formula</SubHeader>
+            <p><code>Course Handicap = Index × (Slope ÷ 113) + (Course Rating − Par)</code></p>
+            <p><code>Playing Handicap = Course Handicap × Allowance</code></p>
+            <SubHeader>Default Allowances by Format</SubHeader>
+            <SimpleTable headers={["Format", "Allowance"]} rows={[
+              ["Individual Stroke Play", "95%"],
+              ["Four-Ball (Best Ball)", "85% per player"],
+              ["Scramble", "25-35% combined"],
+              ["Match Play", "100%"],
+            ]} />
+            <SubHeader>Stroke Allocation (Dots/Pops)</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Strokes are allocated to holes based on Stroke Index (1=hardest)</li>
+              <li>A player with Playing Handicap 12 receives one stroke on holes ranked 1-12</li>
+              <li>Displayed as dots (●) on scorecards and scoring interface</li>
+            </ul>
+          </Section>
 
-          {/* Section 7 */}
-          <section id="support">
-            <SectionHeader num={7} title="Support & Resources" />
-            <div className="text-sm text-muted-foreground">
-              <SimpleTable headers={["Resource", "Location"]} rows={[
-                ["Help Center", "/help (6 articles)"],
-                ["Email Support", "info@teevents.golf"],
-                ["Demo Request", "info@teevents.golf"],
-                ["How It Works", "/how-it-works"],
-                ["Pricing", "/pricing"],
-                ["FAQ", "/faq"],
-              ]} />
-            </div>
-          </section>
+          <Section id="course" num={7} title="Course Details">
+            <SubHeader>Required Fields</SubHeader>
+            <SimpleTable headers={["Field", "Example", "Used For"]} rows={[
+              ["Course Name", "Pebble Beach Golf Links", "Scorecards, public display"],
+              ["Tee Set", "Blue Tees", "Different flights"],
+              ["Par", "72", "Handicap formula, scorecards"],
+              ["Course Rating", "72.5", "Handicap formula"],
+              ["Slope Rating", "135", "Handicap formula"],
+              ["Hole Pars (1-18)", "[4,5,3,4,4,4,5,3,4,…]", "Scorecards, scoring"],
+              ["Stroke Indexes (1-18)", "[5,11,17,3,7,15,1,13,9,…]", "Stroke allocation"],
+              ["Distances (optional)", "[380,520,180,…]", "Scorecards"],
+            ]} />
+            <SubHeader>Validation</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Par total must match sum of hole pars</li>
+              <li>Stroke Indexes must include each number 1-18 exactly once</li>
+              <li>Course Rating typically 60-80, Slope 55-155</li>
+            </ul>
+          </Section>
 
-          {/* Section 8 */}
-          <section id="metrics">
-            <SectionHeader num={8} title="Key Metrics & Limits" />
-            <div className="text-sm text-muted-foreground">
-              <SimpleTable headers={["Metric", "Value"]} rows={[
-                ["Tournaments per organizer", "Unlimited (Starter+)"],
-                ["Golfers per tournament", "500+ (Starter+)"],
-                ["Registration fee range", "$1 – $10,000"],
-                ["Platform fee", "4%"],
-                ["Hold percentage", "15%"],
-                ["Hold release", "15 days after event ends"],
-                ["Minimum payout", "$25"],
-                ["Payout frequency", "Bi-weekly (auto) or manual"],
-                ["Base plan limit", "1 tournament, 72 players"],
-                ["Starter plan", "$299"],
-                ["Premium plan", "$999"],
-              ]} />
-            </div>
-          </section>
+          <Section id="leaderboard" num={8} title="Live Leaderboard & Scoring">
+            <SubHeader>Public Routes</SubHeader>
+            <SimpleTable headers={["Route", "Purpose"]} rows={[
+              ["/t/{slug}", "Public tournament page (info, registration, leaderboard tab)"],
+              ["/live/{slug}", "Dedicated TV/display leaderboard (dark mode, large fonts, auto-refresh)"],
+              ["/tournament/{custom-slug}", "Custom URL (if organizer sets one)"],
+            ]} />
+            <SubHeader>Leaderboard Features</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Real-time score updates (polling every 10 seconds or Supabase Realtime)</li>
+              <li>Gross/Net toggle</li>
+              <li>Sponsor logos (rotating banner or sidebar)</li>
+              <li>Gallery slideshow (uploaded event photos)</li>
+              <li>Fullscreen mode (<code>?display=1</code> hides navigation)</li>
+            </ul>
+            <SubHeader>Player Score Entry</SubHeader>
+            <ol className="list-decimal list-inside ml-2 space-y-1">
+              <li>Player receives unique code at registration</li>
+              <li>Scan QR code on scorecard → opens scoring page</li>
+              <li>Enter gross scores hole-by-hole</li>
+              <li>System calculates net score using handicap</li>
+              <li>Leaderboard updates instantly</li>
+            </ol>
+            <SubHeader>Test Scoring Simulator</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Organizer can enable test mode to practice scoring before live event</li>
+              <li>Add mock participants with handicaps</li>
+              <li>Simulate scores and verify leaderboard behavior</li>
+              <li>Real golfers never see test data</li>
+            </ul>
+          </Section>
 
-          {/* Section 9 */}
-          <section id="glossary">
-            <SectionHeader num={9} title="Glossary" />
-            <div className="text-sm text-muted-foreground">
-              <SimpleTable headers={["Term", "Definition"]} rows={[
-                ["Chargeback", "When a cardholder disputes a charge with their bank"],
-                ["Hold", "15% of registration fee set aside for 15 days post-event"],
-                ["Platform Fee", "5% fee charged on all transactions"],
-                ["Stripe Connect", "Stripe's platform for marketplace payments"],
-                ["Express Account", "Simplified Stripe Connect account type"],
-                ["Application Fee", "Stripe mechanism to take the 5% platform fee"],
-                ["RLS", "Row Level Security — database-level access control"],
-                ["Edge Function", "Serverless backend function"],
-                ["Cron Job", "Scheduled task (e.g., daily hold releases)"],
-              ]} />
-            </div>
-          </section>
+          <Section id="sponsors" num={9} title="Sponsor Management">
+            <SubHeader>Sponsor Tiers</SubHeader>
+            <p>Organizers create tiers with name, price, description, benefits, and display order.</p>
+            <SubHeader>Base Templates</SubHeader>
+            <SimpleTable headers={["Template", "Tiers"]} rows={[
+              ["Nonprofit Charity", "Presenting ($5k), Platinum ($2.5k), Gold ($1k), Silver ($500), Bronze ($250)"],
+              ["Corporate Outing", "Title ($10k), Eagle ($5k), Birdie ($2.5k), Friend ($1k)"],
+              ["Club Championship", "Major ($3k), Supporting ($1.5k), Patron ($500)"],
+            ]} />
+            <SubHeader>Sponsor Registration Flow</SubHeader>
+            <ol className="list-decimal list-inside ml-2 space-y-1">
+              <li>Sponsor visits <code>/sponsor/{"{tournament_slug}"}</code> or scans QR code</li>
+              <li>Selects tier, fills out company info</li>
+              <li>Uploads logo (PNG, JPG, SVG, max 5MB)</li>
+              <li>Proceeds to Stripe Checkout</li>
+              <li>Pays full tier amount (5% platform fee + Stripe fee deducted)</li>
+              <li>Net proceeds go to organizer's Stripe account</li>
+              <li>Sponsor appears in organizer's Sponsor Management dashboard</li>
+            </ol>
+            <SubHeader>Live Leaderboard Integration</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Organizer can toggle which sponsors appear on leaderboard</li>
+              <li>Placement options: top banner, sidebar, rotating footer</li>
+              <li>Display order configurable</li>
+            </ul>
+          </Section>
+
+          <Section id="team" num={10} title="Team Management">
+            <SubHeader>Adding Team Members</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Organizer enters name and email</li>
+              <li>Selects role: Admin, Editor, or Viewer</li>
+              <li>System sends magic link invitation (no password required)</li>
+            </ul>
+            <SubHeader>Roles & Permissions</SubHeader>
+            <SimpleTable headers={["Role", "Access"]} rows={[
+              ["Admin", "Full access – everything the tournament organizer can do"],
+              ["Editor", "Manage players, scores, sponsors, volunteers; cannot change payout settings"],
+              ["Viewer", "Read-only: view registrations, leaderboard, finances (no edits)"],
+            ]} />
+            <SubHeader>Activity Log</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Every login and action is logged</li>
+              <li>Organizer can see who made changes and when</li>
+              <li>Admin can view logs across all organizers</li>
+            </ul>
+          </Section>
+
+          <Section id="search" num={11} title="Public Tournament Search">
+            <p>URL: <code>/tournaments/search</code></p>
+            <SubHeader>Features</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Search by tournament name, location, date</li>
+              <li>Filters: location, date range, tournament type</li>
+              <li>Results show opted-in tournaments only</li>
+            </ul>
+            <SubHeader>Organizer Opt-in</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Tournament Settings → "List on public TeeVents search"</li>
+              <li>Default: OFF (opt-in required)</li>
+              <li>Once opted in, tournament appears in search results</li>
+            </ul>
+            <SubHeader>Admin Controls</SubHeader>
+            <ul className="list-disc list-inside ml-2 space-y-1">
+              <li>Global toggle to enable/disable public search</li>
+              <li>Admin can feature specific tournaments</li>
+            </ul>
+          </Section>
+
+          <Section id="technical" num={12} title="Technical Architecture">
+            <SimpleTable headers={["Layer", "Technology"]} rows={[
+              ["Frontend", "React, TypeScript, Tailwind CSS, shadcn/ui"],
+              ["Backend", "Supabase (PostgreSQL, Auth, Storage, Realtime)"],
+              ["Payments", "Stripe Connect (destination charges, 5% application fee)"],
+              ["Emails", "Resend (transactional, magic links, notifications)"],
+              ["SMS", "Twilio (optional)"],
+              ["Hosting", "Lovable Cloud / Vercel"],
+              ["Edge Functions", "Deno (Supabase Edge Functions)"],
+            ]} />
+            <SubHeader>Key Edge Functions</SubHeader>
+            <SimpleTable headers={["Function", "Purpose"]} rows={[
+              ["create-registration-checkout", "Golfer registration payment"],
+              ["create-sponsor-checkout", "Sponsor registration payment"],
+              ["stripe-connect-onboard", "Organizer Stripe onboarding"],
+              ["stripe-webhook", "Handle Stripe events"],
+              ["calculate-course-handicap", "USGA handicap calculation"],
+              ["generate-scorecard-pdf", "Printable scorecard generation"],
+              ["search-tournaments", "Public tournament search"],
+            ]} />
+          </Section>
+
+          <Section id="security" num={13} title="Security & Compliance">
+            <SimpleTable headers={["Area", "Implementation"]} rows={[
+              ["PCI Compliance", "Stripe handles all card data; TeeVents never touches PANs"],
+              ["Data Encryption", "TLS 1.2+ in transit, encrypted at rest (Supabase)"],
+              ["Authentication", "Supabase Auth with JWT + Row Level Security (RLS)"],
+              ["Audit Logging", "All payout changes and admin actions logged"],
+              ["Tax Forms", "Stripe provides 1099-K for organizers earning >$600/year"],
+              ["PII Handling", "No sensitive data stored (Stripe tokens only)"],
+            ]} />
+          </Section>
+
+          <Section id="support" num={14} title="Support & Resources">
+            <SimpleTable headers={["Resource", "Location"]} rows={[
+              ["Help Center", "/help (12+ articles)"],
+              ["How It Works", "/how-it-works"],
+              ["Pricing", "/pricing"],
+              ["FAQ", "/faq"],
+              ["Comparison", "/compare/eventbrite-vs-teevents"],
+              ["Email Support", "info@teevents.golf"],
+              ["Demo Request", "Calendly link (in sales hub)"],
+            ]} />
+            <SubHeader>Help Center Articles</SubHeader>
+            <ol className="list-decimal list-inside ml-2 space-y-1">
+              <li>How to Connect Your Bank Account for Payouts</li>
+              <li>Understanding TeeVents Fees & Hold</li>
+              <li>Payout Schedule & Timing</li>
+              <li>Tax Information for Organizers</li>
+              <li>Setting Up Your Tournament Payment Settings</li>
+              <li>Refunds & Chargebacks</li>
+              <li>How to Use the Handicap System</li>
+              <li>Setting Up Course Details</li>
+              <li>Live Leaderboard Display Mode</li>
+              <li>Sponsor Registration & Payment</li>
+              <li>Team Management & Roles</li>
+              <li>Public Tournament Search</li>
+            </ol>
+          </Section>
+
+          <Section id="metrics" num={15} title="Key Metrics & Limits">
+            <SimpleTable headers={["Metric", "Value"]} rows={[
+              ["Platform Fee", "5% per transaction"],
+              ["Stripe Processing Fee", "2.9% + $0.30"],
+              ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
+              ["Minimum Payout", "$25"],
+              ["Payout Speed (Stripe)", "1-3 business days"],
+              ["Payout Speed (PayPal)", "5-7 business days"],
+              ["Payout Speed (Check)", "Upon request (mailing time)"],
+              ["Custom URL Edits", "3 max per tournament"],
+              ["Team Members", "Unlimited (by plan)"],
+              ["Player Capacity (Base)", "72 players"],
+              ["Player Capacity (Starter)", "Unlimited"],
+              ["Player Capacity (Premium)", "Unlimited"],
+            ]} />
+            <SubHeader>Plan Comparison</SubHeader>
+            <SimpleTable headers={["Feature", "Base (Free)", "Starter ($299/event)", "Premium ($999/event)"]} rows={[
+              ["Tournaments", "1", "Unlimited", "Unlimited"],
+              ["Players", "72", "Unlimited", "Unlimited"],
+              ["Live Leaderboard", "❌", "✅", "✅"],
+              ["Handicap System", "❌", "✅", "✅"],
+              ["Sponsor Management", "❌", "✅", "✅"],
+              ["Volunteer Coordination", "❌", "✅", "✅"],
+              ["Auction & Raffle", "❌", "❌", "✅"],
+              ["Add On Store", "❌", "❌", "✅"],
+              ["Flyer Studio", "❌", "❌", "✅"],
+              ["Public Search Opt-in", "❌", "✅", "✅"],
+              ["Custom URL", "❌", "✅", "✅"],
+              ["Priority Support", "❌", "❌", "✅"],
+            ]} />
+          </Section>
+
+          <Section id="glossary" num={16} title="Glossary">
+            <SimpleTable headers={["Term", "Definition"]} rows={[
+              ["Chargeback", "When a cardholder disputes a charge with their bank"],
+              ["Course Handicap", "Number of strokes a player receives based on course difficulty (USGA formula)"],
+              ["Course Rating", "USGA measure of difficulty for a scratch golfer"],
+              ["Destination Charge", "Stripe Connect flow where funds go to platform account first then split"],
+              ["Edge Function", "Serverless Deno function running on Supabase"],
+              ["Handicap Index", "Player's demonstrated ability (e.g., 12.4)"],
+              ["Hold", "(Legacy – no longer used) Previously 15% held for 15 days"],
+              ["Magic Link", "Passwordless authentication link sent via email"],
+              ["Net Score", "Gross score minus Playing Handicap"],
+              ["Platform Fee", "5% fee on all transactions (TeeVents revenue)"],
+              ["Playing Handicap", "Course Handicap × Allowance (used for competition)"],
+              ["RLS", "Row Level Security (Supabase)"],
+              ["Slope Rating", "USGA measure of difficulty for a bogey golfer (113 = average)"],
+              ["Stripe Connect", "Stripe's marketplace payment platform"],
+              ["Stroke Index", "Ranking of holes by difficulty (1=hardest)"],
+              ["USGA", "United States Golf Association (handicap authority)"],
+            ]} />
+          </Section>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-12">
@@ -644,19 +454,15 @@ const StudySheet = () => {
   );
 };
 
-const SectionHeader = ({ num, title }: { num: number; title: string }) => (
-  <h2 className="text-xl font-display font-bold text-foreground border-b border-border pb-2 mb-4">
-    {num}. {title}
-  </h2>
+const Section = ({ id, num, title, children }: { id: string; num: number; title: string; children: React.ReactNode }) => (
+  <section id={id} className="scroll-mt-24">
+    <h2 className="text-xl font-display font-bold text-foreground border-b border-border pb-2 mb-4">{num}. {title}</h2>
+    <div className="text-sm text-muted-foreground space-y-3">{children}</div>
+  </section>
 );
 
-const FeatureBlock = ({ title, items }: { title: string; items: string[] }) => (
-  <div>
-    <h3 className="font-semibold text-foreground mb-2">{title}</h3>
-    <ul className="list-disc list-inside space-y-1 ml-2">
-      {items.map((item, i) => <li key={i}>{item}</li>)}
-    </ul>
-  </div>
+const SubHeader = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="font-semibold text-foreground mt-4 mb-1">{children}</h3>
 );
 
 const SimpleTable = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
@@ -673,7 +479,7 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: string[][] })
         {rows.map((row, i) => (
           <tr key={i}>
             {row.map((cell, j) => (
-              <td key={j} className="p-2 border border-border">{cell}</td>
+              <td key={j} className="p-2 border border-border align-top">{cell}</td>
             ))}
           </tr>
         ))}
@@ -681,5 +487,370 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: string[][] })
     </table>
   </div>
 );
+
+// ── PDF Builder ──
+function buildPdfHtml(): string {
+  const t = (headers: string[], rows: string[][]) =>
+    `<table><thead><tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr></thead>` +
+    `<tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+
+  return `
+    <style>
+      body { font-family: 'Georgia', serif; color: #1a1a1a; max-width: 820px; margin: 0 auto; }
+      h1 { font-size: 26px; color: #1a5c38; border-bottom: 3px solid #1a5c38; padding-bottom: 8px; margin-bottom: 8px; }
+      h2 { font-size: 18px; color: #1a5c38; margin-top: 26px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+      h3 { font-size: 14px; color: #333; margin-top: 16px; }
+      p, li, td, th { font-size: 12px; line-height: 1.55; }
+      ul, ol { padding-left: 22px; margin: 6px 0; }
+      table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11.5px; }
+      th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+      th { background: #f0f7f3; color: #1a5c38; font-weight: 600; }
+      code { background: #f3f4f6; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+      .toc ol { columns: 2; -webkit-columns: 2; -moz-columns: 2; }
+      .page-break { page-break-before: always; }
+      section { page-break-inside: avoid; }
+    </style>
+    <h1>📚 TeeVents Platform Study Sheet — 2026 Edition</h1>
+    <p style="color:#666;font-size:11px;">Complete reference guide for tournament organizers, sales team, and support staff · ${new Date().toLocaleDateString()}</p>
+
+    <h2>Table of Contents</h2>
+    <div class="toc"><ol>${sections.map((s) => `<li>${s.label}</li>`).join("")}</ol></div>
+
+    <div class="page-break"></div>
+
+    <section><h2>1. Platform Overview</h2>
+      <h3>What is TeeVents?</h3>
+      <p>All-in-one golf tournament management platform handling registration, payments, communications, live scoring, handicaps, and day-of logistics.</p>
+      <h3>Who is it for?</h3>
+      <ul>
+        <li><strong>Nonprofits</strong> — Fundraising tournaments with donation tracking, auctions, raffles</li>
+        <li><strong>Corporate Planners</strong> — Company outings with branded websites and sponsor management</li>
+        <li><strong>Golf Clubs</strong> — Member events with custom URLs and public search visibility</li>
+        <li><strong>Independent Organizers</strong> — Anyone running a tournament from 10 to 500+ players</li>
+      </ul>
+      <p><strong>Core Promise:</strong> Run your tournament like a pro — no spreadsheets, no manual payments, no stress.</p>
+    </section>
+
+    <section><h2>2. Tournament Organizer Features</h2>
+      <h3>2.1 Tournament Creation</h3>
+      ${t(["Feature", "Description"], [
+        ["Registration Fee", "Set any amount ($1–$10,000)"],
+        ["Fee Model", "Pass to Golfer or Absorb Fees"],
+        ["Event Details", "Date, location, max players, description"],
+        ["Custom URL", "Editable /tournament/{custom-slug} (3 edits max, 301 redirects)"],
+        ["Public Search", "Opt-in to appear on /tournaments/search"],
+      ])}
+      <h3>2.2 Registration Management</h3>
+      ${t(["Feature", "Description"], [
+        ["Real-time registrations", "Live counter and player list"],
+        ["Player details", "Edit name, email, handicap, shirt size, dietary needs"],
+        ["Manual registration", "Add players offline"],
+        ["CSV export", "Download full player list"],
+        ["Group registration", "Foursomes (up to 4 players)"],
+        ["Promo codes", "Discount codes for early bird, sponsors, etc."],
+        ["Waitlist", "Auto-notify when spots open"],
+      ])}
+      <h3>2.3 Additional Features</h3>
+      ${t(["Feature", "Description"], [
+        ["Volunteers", "Shift scheduling, QR check-in, automated reminders"],
+        ["Auction & Raffle", "Silent auction, 50/50 raffle, auto-draw"],
+        ["Add On Store", "Sell branded merchandise with Stripe checkout"],
+        ["Donations", "Fundraising page with progress bar"],
+        ["Flyer Studio", "Canva-integrated template gallery"],
+        ["Director Shop", "Premium add-ons (consulting, signage, insurance)"],
+        ["Printables", "Scorecards, cart signs, name badges, sponsor signs"],
+        ["Photo Gallery", "Upload event photos to public site"],
+        ["Surveys", "Post-event feedback with ratings and comments"],
+        ["Planning Guide", "30-item checklist from 12 months out"],
+        ["QR Check-in", "Scan QR codes on any tablet, manual search fallback"],
+        ["Messages & Email Templates", "Email/SMS blasts, scheduled delivery"],
+      ])}
+    </section>
+
+    <section><h2>3. Golfer Experience</h2>
+      <h3>Registration Flow</h3>
+      <ol>
+        <li>Visit tournament URL (<code>/tournament/{slug}</code> or custom URL)</li>
+        <li>Enter player details (name, email, handicap, shirt size, dietary needs)</li>
+        <li>Group registration for foursomes</li>
+        <li>Checkout with Stripe (credit card, Apple Pay, Google Pay, Cash App Pay)</li>
+        <li>Receive confirmation email with QR code</li>
+      </ol>
+      <h3>Day-of-Event</h3>
+      <ul>
+        <li>QR code check-in at registration desk</li>
+        <li>View live leaderboard (gross/net)</li>
+        <li>Enter scores using unique player code (scan QR on scorecard)</li>
+      </ul>
+      <h3>Post-Event</h3>
+      <ul>
+        <li>Post-event survey</li>
+        <li>Photo gallery</li>
+        <li>Final results and leaderboard</li>
+      </ul>
+    </section>
+
+    <section><h2>4. Payment & Money Flow</h2>
+      ${t(["Step", "What Happens"], [
+        ["1. Golfer registers", "Pays via Stripe Checkout (card, Apple Pay, Google Pay, Cash App Pay)"],
+        ["2. Stripe processes", "Charges golfer's card; deducts 2.9% + $0.30 processing fee"],
+        ["3. Funds split", "5% application fee → TeeVents; remainder → organizer's connected Stripe account"],
+        ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (1-3 days)"],
+      ])}
+      <p><strong>Pass to Golfer (default):</strong> Golfer sees registration + 5% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
+      <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 5% and Stripe processing fees.</p>
+    </section>
+
+    <section><h2>5. Payout Methods</h2>
+      ${t(["Feature", "Stripe Connect", "PayPal", "Check"], [
+        ["Setup Time", "2-3 min", "1 min", "Enter address"],
+        ["Payout Speed", "1-3 days", "5-7 days", "Upon request"],
+        ["Automatic", "✅ Bi-weekly", "❌ Manual", "❌ Manual"],
+        ["Additional Fee", "None", "1% (min $0.50)", "None"],
+        ["Default Method", "Recommended", "Backup", "Default (escrow)"],
+      ])}
+      <p>New organizers default to <strong>Check</strong> until they configure a payout method. Funds are held in TeeVents escrow until payout is configured or manually requested.</p>
+    </section>
+
+    <section><h2>6. Handicap System</h2>
+      <h3>USGA Course Handicap Formula</h3>
+      <p><code>Course Handicap = Index × (Slope ÷ 113) + (Course Rating − Par)</code></p>
+      <p><code>Playing Handicap = Course Handicap × Allowance</code></p>
+      <h3>Default Allowances by Format</h3>
+      ${t(["Format", "Allowance"], [
+        ["Individual Stroke Play", "95%"],
+        ["Four-Ball (Best Ball)", "85% per player"],
+        ["Scramble", "25-35% combined"],
+        ["Match Play", "100%"],
+      ])}
+      <h3>Stroke Allocation (Dots/Pops)</h3>
+      <ul>
+        <li>Strokes are allocated to holes based on Stroke Index (1=hardest)</li>
+        <li>A player with Playing Handicap 12 receives one stroke on holes ranked 1-12</li>
+        <li>Displayed as dots (●) on scorecards and scoring interface</li>
+      </ul>
+    </section>
+
+    <section><h2>7. Course Details</h2>
+      <h3>Required Fields</h3>
+      ${t(["Field", "Example", "Used For"], [
+        ["Course Name", "Pebble Beach Golf Links", "Scorecards, public display"],
+        ["Tee Set", "Blue Tees", "Different flights"],
+        ["Par", "72", "Handicap formula, scorecards"],
+        ["Course Rating", "72.5", "Handicap formula"],
+        ["Slope Rating", "135", "Handicap formula"],
+        ["Hole Pars (1-18)", "[4,5,3,4,4,4,5,3,4,…]", "Scorecards, scoring"],
+        ["Stroke Indexes (1-18)", "[5,11,17,3,7,15,1,13,9,…]", "Stroke allocation"],
+        ["Distances (optional)", "[380,520,180,…]", "Scorecards"],
+      ])}
+      <h3>Validation</h3>
+      <ul>
+        <li>Par total must match sum of hole pars</li>
+        <li>Stroke Indexes must include each number 1-18 exactly once</li>
+        <li>Course Rating typically 60-80, Slope 55-155</li>
+      </ul>
+    </section>
+
+    <section><h2>8. Live Leaderboard & Scoring</h2>
+      <h3>Public Routes</h3>
+      ${t(["Route", "Purpose"], [
+        ["/t/{slug}", "Public tournament page (info, registration, leaderboard tab)"],
+        ["/live/{slug}", "Dedicated TV/display leaderboard (dark mode, large fonts, auto-refresh)"],
+        ["/tournament/{custom-slug}", "Custom URL (if organizer sets one)"],
+      ])}
+      <h3>Leaderboard Features</h3>
+      <ul>
+        <li>Real-time score updates (polling every 10 seconds or Supabase Realtime)</li>
+        <li>Gross/Net toggle</li>
+        <li>Sponsor logos (rotating banner or sidebar)</li>
+        <li>Gallery slideshow (uploaded event photos)</li>
+        <li>Fullscreen mode (<code>?display=1</code> hides navigation)</li>
+      </ul>
+      <h3>Player Score Entry</h3>
+      <ol>
+        <li>Player receives unique code at registration</li>
+        <li>Scan QR code on scorecard → opens scoring page</li>
+        <li>Enter gross scores hole-by-hole</li>
+        <li>System calculates net score using handicap</li>
+        <li>Leaderboard updates instantly</li>
+      </ol>
+      <h3>Test Scoring Simulator</h3>
+      <ul>
+        <li>Organizer can enable test mode to practice scoring before live event</li>
+        <li>Add mock participants with handicaps</li>
+        <li>Simulate scores and verify leaderboard behavior</li>
+        <li>Real golfers never see test data</li>
+      </ul>
+    </section>
+
+    <section><h2>9. Sponsor Management</h2>
+      <h3>Sponsor Tiers</h3>
+      <p>Organizers create tiers with name, price, description, benefits, and display order.</p>
+      <h3>Base Templates</h3>
+      ${t(["Template", "Tiers"], [
+        ["Nonprofit Charity", "Presenting ($5k), Platinum ($2.5k), Gold ($1k), Silver ($500), Bronze ($250)"],
+        ["Corporate Outing", "Title ($10k), Eagle ($5k), Birdie ($2.5k), Friend ($1k)"],
+        ["Club Championship", "Major ($3k), Supporting ($1.5k), Patron ($500)"],
+      ])}
+      <h3>Sponsor Registration Flow</h3>
+      <ol>
+        <li>Sponsor visits <code>/sponsor/{tournament_slug}</code> or scans QR code</li>
+        <li>Selects tier, fills out company info</li>
+        <li>Uploads logo (PNG, JPG, SVG, max 5MB)</li>
+        <li>Proceeds to Stripe Checkout</li>
+        <li>Pays full tier amount (5% platform fee + Stripe fee deducted)</li>
+        <li>Net proceeds go to organizer's Stripe account</li>
+        <li>Sponsor appears in organizer's Sponsor Management dashboard</li>
+      </ol>
+      <h3>Live Leaderboard Integration</h3>
+      <ul>
+        <li>Organizer can toggle which sponsors appear on leaderboard</li>
+        <li>Placement options: top banner, sidebar, rotating footer</li>
+        <li>Display order configurable</li>
+      </ul>
+    </section>
+
+    <section><h2>10. Team Management</h2>
+      <h3>Adding Team Members</h3>
+      <ul>
+        <li>Organizer enters name and email</li>
+        <li>Selects role: Admin, Editor, or Viewer</li>
+        <li>System sends magic link invitation (no password required)</li>
+      </ul>
+      <h3>Roles & Permissions</h3>
+      ${t(["Role", "Access"], [
+        ["Admin", "Full access – everything the tournament organizer can do"],
+        ["Editor", "Manage players, scores, sponsors, volunteers; cannot change payout settings"],
+        ["Viewer", "Read-only: view registrations, leaderboard, finances (no edits)"],
+      ])}
+      <h3>Activity Log</h3>
+      <ul>
+        <li>Every login and action is logged</li>
+        <li>Organizer can see who made changes and when</li>
+        <li>Admin can view logs across all organizers</li>
+      </ul>
+    </section>
+
+    <section><h2>11. Public Tournament Search</h2>
+      <p>URL: <code>/tournaments/search</code></p>
+      <h3>Features</h3>
+      <ul>
+        <li>Search by tournament name, location, date</li>
+        <li>Filters: location, date range, tournament type</li>
+        <li>Results show opted-in tournaments only</li>
+      </ul>
+      <h3>Organizer Opt-in</h3>
+      <ul>
+        <li>Tournament Settings → "List on public TeeVents search"</li>
+        <li>Default: OFF (opt-in required)</li>
+        <li>Once opted in, tournament appears in search results</li>
+      </ul>
+      <h3>Admin Controls</h3>
+      <ul>
+        <li>Global toggle to enable/disable public search</li>
+        <li>Admin can feature specific tournaments</li>
+      </ul>
+    </section>
+
+    <section><h2>12. Technical Architecture</h2>
+      ${t(["Layer", "Technology"], [
+        ["Frontend", "React, TypeScript, Tailwind CSS, shadcn/ui"],
+        ["Backend", "Supabase (PostgreSQL, Auth, Storage, Realtime)"],
+        ["Payments", "Stripe Connect (destination charges, 5% application fee)"],
+        ["Emails", "Resend (transactional, magic links, notifications)"],
+        ["SMS", "Twilio (optional)"],
+        ["Hosting", "Lovable Cloud / Vercel"],
+        ["Edge Functions", "Deno (Supabase Edge Functions)"],
+      ])}
+      <h3>Key Edge Functions</h3>
+      ${t(["Function", "Purpose"], [
+        ["create-registration-checkout", "Golfer registration payment"],
+        ["create-sponsor-checkout", "Sponsor registration payment"],
+        ["stripe-connect-onboard", "Organizer Stripe onboarding"],
+        ["stripe-webhook", "Handle Stripe events"],
+        ["calculate-course-handicap", "USGA handicap calculation"],
+        ["generate-scorecard-pdf", "Printable scorecard generation"],
+        ["search-tournaments", "Public tournament search"],
+      ])}
+    </section>
+
+    <section><h2>13. Security & Compliance</h2>
+      ${t(["Area", "Implementation"], [
+        ["PCI Compliance", "Stripe handles all card data; TeeVents never touches PANs"],
+        ["Data Encryption", "TLS 1.2+ in transit, encrypted at rest (Supabase)"],
+        ["Authentication", "Supabase Auth with JWT + Row Level Security (RLS)"],
+        ["Audit Logging", "All payout changes and admin actions logged"],
+        ["Tax Forms", "Stripe provides 1099-K for organizers earning >$600/year"],
+        ["PII Handling", "No sensitive data stored (Stripe tokens only)"],
+      ])}
+    </section>
+
+    <section><h2>14. Support & Resources</h2>
+      ${t(["Resource", "Location"], [
+        ["Help Center", "/help (12+ articles)"],
+        ["How It Works", "/how-it-works"],
+        ["Pricing", "/pricing"],
+        ["FAQ", "/faq"],
+        ["Comparison", "/compare/eventbrite-vs-teevents"],
+        ["Email Support", "info@teevents.golf"],
+        ["Demo Request", "Calendly link (in sales hub)"],
+      ])}
+    </section>
+
+    <section><h2>15. Key Metrics & Limits</h2>
+      ${t(["Metric", "Value"], [
+        ["Platform Fee", "5% per transaction"],
+        ["Stripe Processing Fee", "2.9% + $0.30"],
+        ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
+        ["Minimum Payout", "$25"],
+        ["Payout Speed (Stripe)", "1-3 business days"],
+        ["Payout Speed (PayPal)", "5-7 business days"],
+        ["Payout Speed (Check)", "Upon request (mailing time)"],
+        ["Custom URL Edits", "3 max per tournament"],
+        ["Player Capacity (Base)", "72 players"],
+        ["Player Capacity (Starter)", "Unlimited"],
+        ["Player Capacity (Premium)", "Unlimited"],
+      ])}
+      <h3>Plan Comparison</h3>
+      ${t(["Feature", "Base", "Starter", "Premium"], [
+        ["Tournaments", "1", "Unlimited", "Unlimited"],
+        ["Players", "72", "Unlimited", "Unlimited"],
+        ["Live Leaderboard", "❌", "✅", "✅"],
+        ["Handicap System", "❌", "✅", "✅"],
+        ["Sponsor Management", "❌", "✅", "✅"],
+        ["Volunteer Coordination", "❌", "✅", "✅"],
+        ["Auction & Raffle", "❌", "❌", "✅"],
+        ["Add On Store", "❌", "❌", "✅"],
+        ["Flyer Studio", "❌", "❌", "✅"],
+        ["Public Search Opt-in", "❌", "✅", "✅"],
+        ["Custom URL", "❌", "✅", "✅"],
+        ["Priority Support", "❌", "❌", "✅"],
+      ])}
+    </section>
+
+    <section><h2>16. Glossary</h2>
+      ${t(["Term", "Definition"], [
+        ["Chargeback", "When a cardholder disputes a charge with their bank"],
+        ["Course Handicap", "Number of strokes a player receives based on course difficulty (USGA formula)"],
+        ["Course Rating", "USGA measure of difficulty for a scratch golfer"],
+        ["Destination Charge", "Stripe Connect flow where funds go to platform account first then split"],
+        ["Edge Function", "Serverless Deno function running on Supabase"],
+        ["Handicap Index", "Player's demonstrated ability (e.g., 12.4)"],
+        ["Hold", "(Legacy – no longer used) Previously 15% held for 15 days"],
+        ["Magic Link", "Passwordless authentication link sent via email"],
+        ["Net Score", "Gross score minus Playing Handicap"],
+        ["Platform Fee", "5% fee on all transactions (TeeVents revenue)"],
+        ["Playing Handicap", "Course Handicap × Allowance (used for competition)"],
+        ["RLS", "Row Level Security (Supabase)"],
+        ["Slope Rating", "USGA measure of difficulty for a bogey golfer (113 = average)"],
+        ["Stripe Connect", "Stripe's marketplace payment platform"],
+        ["Stroke Index", "Ranking of holes by difficulty (1=hardest)"],
+        ["USGA", "United States Golf Association (handicap authority)"],
+      ])}
+    </section>
+
+    <p style="margin-top:24px;text-align:center;color:#888;font-size:10px;">© ${new Date().getFullYear()} TeeVents Golf · Confidential — For internal use only</p>
+  `;
+}
 
 export default StudySheet;

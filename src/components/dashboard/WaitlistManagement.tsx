@@ -10,12 +10,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Clock, Users, Download, Loader2, Send, Trash2, Trophy } from "lucide-react";
+import { Clock, Users, Download, Loader2, Send, Trash2, Plus, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface WaitlistEntry {
   id: string;
@@ -29,6 +33,7 @@ interface WaitlistEntry {
   status: string;
   offer_expires_at: string | null;
   created_at: string;
+  notes?: string | null;
 }
 
 interface Tournament {
@@ -47,6 +52,49 @@ export default function WaitlistManagement() {
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<WaitlistEntry | null>(null);
+  const [form, setForm] = useState({ user_name: "", user_email: "", phone: "", group_size: 1, notes: "" });
+  const [saving, setSaving] = useState(false);
+
+  const resetForm = () => setForm({ user_name: "", user_email: "", phone: "", group_size: 1, notes: "" });
+  const openAdd = () => { resetForm(); setEditingEntry(null); setAddOpen(true); };
+  const openEdit = (e: WaitlistEntry) => {
+    setEditingEntry(e);
+    setForm({
+      user_name: e.user_name, user_email: e.user_email, phone: e.phone || "",
+      group_size: e.group_size || 1, notes: e.notes || "",
+    });
+    setAddOpen(true);
+  };
+  const saveEntry = async () => {
+    if (demoGuard()) return;
+    if (!form.user_name.trim() || !form.user_email.trim()) {
+      toast({ title: "Name and email required", variant: "destructive" }); return;
+    }
+    setSaving(true);
+    if (editingEntry) {
+      const { error } = await supabase.from("tournament_waitlist").update({
+        user_name: form.user_name, user_email: form.user_email,
+        phone: form.phone || null, group_size: form.group_size, notes: form.notes || null,
+      }).eq("id", editingEntry.id);
+      setSaving(false);
+      if (error) { toast({ title: "Error updating", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Entry updated" });
+    } else {
+      const { error } = await supabase.from("tournament_waitlist").insert({
+        tournament_id: selectedTournament,
+        user_name: form.user_name, user_email: form.user_email,
+        phone: form.phone || null, group_size: form.group_size, notes: form.notes || null,
+        status: "waiting", position: 0,
+      });
+      setSaving(false);
+      if (error) { toast({ title: "Error adding player", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Player added to waitlist" });
+    }
+    setAddOpen(false); resetForm(); setEditingEntry(null);
+    await loadEntries();
+  };
 
   useEffect(() => {
     if (!org) return;
@@ -237,6 +285,9 @@ export default function WaitlistManagement() {
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
+                  <Button size="sm" onClick={openAdd}>
+                    <Plus className="h-4 w-4 mr-1.5" /> Add Player
+                  </Button>
                   <Button variant="outline" size="sm" onClick={clearExpired}>
                     Clear Expired
                   </Button>
@@ -256,12 +307,13 @@ export default function WaitlistManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-12">#</TableHead>
+                        <TableHead className="w-12">Pos</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
                         <TableHead className="text-center">Group</TableHead>
+                        <TableHead>Added</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Expires</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -271,18 +323,17 @@ export default function WaitlistManagement() {
                           <TableCell className="font-bold">{entry.position}</TableCell>
                           <TableCell className="font-medium">{entry.user_name}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{entry.user_email}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{entry.phone || "—"}</TableCell>
                           <TableCell className="text-center">
                             <Badge variant="outline">{entry.group_size}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(entry.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
                             <Badge className={statusColors[entry.status] || ""} variant="secondary">
                               {entry.status}
                             </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {entry.offer_expires_at
-                              ? new Date(entry.offer_expires_at).toLocaleString()
-                              : "—"}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
@@ -298,12 +349,15 @@ export default function WaitlistManagement() {
                                   ) : (
                                     <Send className="h-3.5 w-3.5 mr-1" />
                                   )}
-                                  Offer Spot
+                                  Offer
                                 </Button>
                               )}
+                              <Button size="sm" variant="ghost" onClick={() => openEdit(entry)} title="Edit">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button size="sm" variant="ghost" className="text-destructive">
+                                  <Button size="sm" variant="ghost" className="text-destructive" title="Remove">
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
                                 </AlertDialogTrigger>
@@ -334,6 +388,47 @@ export default function WaitlistManagement() {
           </Card>
         </>
       )}
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingEntry ? "Edit Waitlist Entry" : "Add Player to Waitlist"}</DialogTitle>
+            <DialogDescription>
+              {editingEntry ? "Update this player's information." : "Manually add a potential player to the waitlist."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-sm">Name *</Label>
+              <Input value={form.user_name} onChange={(e) => setForm({ ...form, user_name: e.target.value })} placeholder="John Smith" />
+            </div>
+            <div>
+              <Label className="text-sm">Email *</Label>
+              <Input type="email" value={form.user_email} onChange={(e) => setForm({ ...form, user_email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm">Phone</Label>
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="555-1234" />
+              </div>
+              <div>
+                <Label className="text-sm">Group Size</Label>
+                <Input type="number" min={1} max={4} value={form.group_size} onChange={(e) => setForm({ ...form, group_size: parseInt(e.target.value) || 1 })} />
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm">Notes</Label>
+              <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Optional notes..." />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)} disabled={saving}>Cancel</Button>
+            <Button onClick={saveEntry} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editingEntry ? "Save Changes" : "Add to Waitlist"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

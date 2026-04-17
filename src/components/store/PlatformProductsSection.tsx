@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fmt } from "@/components/store/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import DirectorShopCheckoutModal from "@/components/store/DirectorShopCheckoutModal";
+import ProductImageLightbox from "@/components/store/ProductImageLightbox";
 import { useSearchParams } from "react-router-dom";
 
 interface PlatformProduct {
@@ -38,6 +39,7 @@ export default function PlatformProductsSection() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [checkoutProduct, setCheckoutProduct] = useState<PlatformProduct | null>(null);
+  const [lightboxProduct, setLightboxProduct] = useState<PlatformProduct | null>(null);
   const [purchaseVerified, setPurchaseVerified] = useState(false);
   const [verifiedProductName, setVerifiedProductName] = useState("");
 
@@ -183,13 +185,18 @@ export default function PlatformProductsSection() {
                 className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow group"
               >
                 {product.image_url ? (
-                  <div className="aspect-video bg-muted overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setLightboxProduct(product)}
+                    className="block w-full aspect-video bg-muted overflow-hidden cursor-zoom-in"
+                    aria-label={`Enlarge image of ${product.name}`}
+                  >
                     <img
                       src={product.image_url}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                  </div>
+                  </button>
                 ) : (
                   <div className="aspect-video bg-muted flex items-center justify-center">
                     <Package className="h-10 w-10 text-muted-foreground/30" />
@@ -277,6 +284,12 @@ export default function PlatformProductsSection() {
         open={!!checkoutProduct}
         onOpenChange={(open) => { if (!open) setCheckoutProduct(null); }}
         product={checkoutProduct}
+      />
+
+      <ProductImageLightbox
+        product={lightboxProduct}
+        onClose={() => setLightboxProduct(null)}
+        onAddToCart={(p) => setCheckoutProduct(p as PlatformProduct)}
       />
     </div>
   );

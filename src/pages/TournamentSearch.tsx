@@ -108,7 +108,7 @@ const TournamentSearch = () => {
       <SEO
         title="Find a Golf Tournament | TeeVents"
         description="Browse upcoming golf tournaments and charity events. Search by location, date, and event type to find the right tournament for you."
-        canonical="https://teevents.golf/tournaments/search"
+        path="/tournaments/search"
       />
       <Navbar />
 

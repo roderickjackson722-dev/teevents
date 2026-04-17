@@ -27,6 +27,7 @@ import {
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 import { Badge } from "@/components/ui/badge";
+import CustomSlugEditor from "@/components/CustomSlugEditor";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");

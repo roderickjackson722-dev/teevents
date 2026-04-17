@@ -303,7 +303,6 @@ export default function Leaderboard() {
   };
 
   const hasEdits = Object.keys(editedScores).length > 0;
-  const holes = Array.from({ length: 18 }, (_, i) => i + 1);
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 

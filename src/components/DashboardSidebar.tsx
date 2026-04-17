@@ -3,7 +3,8 @@ import {
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
-  FlaskConical, MapPin,
+  FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
+  PartyPopper, Building2,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -46,64 +47,75 @@ interface SidebarCategory {
   items: NavItem[];
 }
 
+// Phase-based navigation: Setup → Promotion → Operations → Finance → Post-Event → Settings
 const categories: SidebarCategory[] = [
   {
-    label: "Overview",
-    color: "border-l-gray-400",
+    label: "Setup",
+    color: "border-l-blue-400",
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
-      { title: "Tournaments", url: "/dashboard/tournaments", icon: Trophy, feature: null },
+      { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null },
+      { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null },
+      { title: "Handicap Settings", url: "/dashboard/test-simulator", icon: Sliders, feature: "leaderboard" },
+      { title: "Registration Form", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
+      { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
+      { title: "Team Management", url: "/dashboard/settings", icon: Building2, feature: null },
       { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
-      { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null },
     ],
   },
   {
-    label: "Tournament Management",
-    color: "border-l-blue-400",
+    label: "Promotion",
+    color: "border-l-green-400",
     items: [
-      { title: "Registration", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
-      { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null },
-      { title: "Players", url: "/dashboard/players", icon: Users, feature: "players" },
-      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in" },
-      { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null },
-      { title: "Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard" },
-      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard" },
-      { title: "Tee Sheet", url: "/dashboard/tee-sheet", icon: Clock, feature: "leaderboard" },
-      { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null },
-      { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard" },
-      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
+      { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null },
+      { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio" },
+      { title: "Public Search", url: "/dashboard/settings", icon: SearchIcon, feature: null },
+      { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null },
     ],
   },
   {
-    label: "Finances",
+    label: "Operations",
+    color: "border-l-purple-400",
+    items: [
+      { title: "Players", url: "/dashboard/players", icon: Users, feature: "players" },
+      { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null },
+      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in" },
+      { title: "Tee Sheet", url: "/dashboard/tee-sheet", icon: Clock, feature: "leaderboard" },
+      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard" },
+      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard" },
+      { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard" },
+      { title: "Sponsor Management", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
+      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers" },
+      { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null },
+      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
+    ],
+  },
+  {
+    label: "Finance",
     color: "border-l-yellow-400",
     items: [
       { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null },
       { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null },
       { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget" },
-      { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
       { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store" },
-      { title: "Auction", url: "/dashboard/auction", icon: Gavel, feature: "auction" },
+      { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null },
     ],
   },
   {
-    label: "Engagement & Operations",
-    color: "border-l-green-400",
+    label: "Post-Event",
+    color: "border-l-teal-400",
     items: [
-      { title: "Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery" },
-      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers" },
-      { title: "Surveys", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys" },
+      { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys" },
+      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations" },
-      { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null },
-      { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: FileEdit, feature: "flyer-studio" },
+      { title: "Auction", url: "/dashboard/auction", icon: Gavel, feature: "auction" },
     ],
   },
 ];
 
 const settingsItems: NavItem[] = [
-  { title: "Settings", url: "/dashboard/settings", icon: Settings, feature: null },
-  { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null },
+  { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null },
 ];
 
 export function DashboardSidebar() {
@@ -134,7 +146,7 @@ export function DashboardSidebar() {
     const tierLabel = tier === "starter" ? "Starter" : tier === "premium" ? "Premium" : "";
 
     return (
-      <SidebarMenuItem key={item.title}>
+      <SidebarMenuItem key={`${item.title}-${item.url}`}>
         <SidebarMenuButton asChild>
           <NavLink
             to={item.url}

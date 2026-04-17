@@ -285,6 +285,9 @@ export default function WaitlistManagement() {
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
+                  <Button size="sm" onClick={openAdd}>
+                    <Plus className="h-4 w-4 mr-1.5" /> Add Player
+                  </Button>
                   <Button variant="outline" size="sm" onClick={clearExpired}>
                     Clear Expired
                   </Button>
@@ -304,12 +307,13 @@ export default function WaitlistManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-12">#</TableHead>
+                        <TableHead className="w-12">Pos</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
                         <TableHead className="text-center">Group</TableHead>
+                        <TableHead>Added</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Expires</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -319,18 +323,17 @@ export default function WaitlistManagement() {
                           <TableCell className="font-bold">{entry.position}</TableCell>
                           <TableCell className="font-medium">{entry.user_name}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{entry.user_email}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{entry.phone || "—"}</TableCell>
                           <TableCell className="text-center">
                             <Badge variant="outline">{entry.group_size}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(entry.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
                             <Badge className={statusColors[entry.status] || ""} variant="secondary">
                               {entry.status}
                             </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {entry.offer_expires_at
-                              ? new Date(entry.offer_expires_at).toLocaleString()
-                              : "—"}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
@@ -346,12 +349,15 @@ export default function WaitlistManagement() {
                                   ) : (
                                     <Send className="h-3.5 w-3.5 mr-1" />
                                   )}
-                                  Offer Spot
+                                  Offer
                                 </Button>
                               )}
+                              <Button size="sm" variant="ghost" onClick={() => openEdit(entry)} title="Edit">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button size="sm" variant="ghost" className="text-destructive">
+                                  <Button size="sm" variant="ghost" className="text-destructive" title="Remove">
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
                                 </AlertDialogTrigger>

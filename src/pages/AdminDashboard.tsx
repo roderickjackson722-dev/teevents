@@ -717,57 +717,98 @@ const AdminDashboard = () => {
       <section className="bg-golf-cream min-h-[70vh] py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
-          <div className="mb-8 border-b border-border pb-2 space-y-1">
-            <div className="flex flex-wrap gap-2">
-              {([
-                ["events", "TeeVents Tournaments", Calendar],
-                ["requests", "Access Requests", Users],
-                ["emails", "Auto-Approve Emails", Mail],
-                ["reviews", "Reviews", Star],
-              ] as const).map(([key, label, Icon]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                  {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
-                    <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
-                      {requests.filter(r => r.status === "pending").length}
-                    </span>
-                  )}
-                </button>
-              ))}
+          <div className="mb-8 border-b border-border pb-2 space-y-3">
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["all-tournaments", "TeeVents Tournaments", Trophy],
+                  ["requests", "Access Requests", Users],
+                  ["emails", "Auto-Approve Emails", Mail],
+                  ["college", "College Hub", School],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                    {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
+                      <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
+                        {requests.filter(r => r.status === "pending").length}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {([
-                ["all-tournaments", "All User Tournaments", Trophy],
-                ["demos", "Demo Events", Trophy],
-                ["sales-hub", "Sales Hub", Target],
-                ["promos", "Promo Codes", Tag],
-                ["store", "Store", ShoppingBag],
-                ["analytics", "Analytics", BarChart3],
-                ["college", "College Hub", School],
-                ["flyer-templates", "Flyer Templates", FileText],
-                ["notifications", "Notifications & Requests", Bell],
-                ["transactions", "Transactions", DollarSign],
-                ["accounting", "Accounting", DollarSign],
-                ["accounting", "Accounting", DollarSign],
-              ] as const).map(([key, label, Icon]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                </button>
-              ))}
+
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["managed-tournaments", "Managed Tournaments", Trophy],
+                  ["sponsorship-pages", "Sponsorship Pages", Target],
+                  ["sales-hub", "Outreach / Sales Hub", Target],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Other</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["events", "Marketing Events", Calendar],
+                  ["reviews", "Reviews", Star],
+                  ["demos", "Demo Events", Trophy],
+                  ["promos", "Promo Codes", Tag],
+                  ["store", "Store", ShoppingBag],
+                  ["analytics", "Analytics", BarChart3],
+                  ["flyer-templates", "Flyer Templates", FileText],
+                  ["notifications", "Notifications", Bell],
+                  ["transactions", "Transactions", DollarSign],
+                  ["accounting", "Accounting", DollarSign],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Managed Tournaments Tab */}
+          {activeTab === "managed-tournaments" && (
+            <AdminManagedTournaments
+              tournaments={allTournaments.filter((t: any) => t.managed_by_teevents)}
+              onTogglePublicSearch={togglePublicSearch}
+            />
+          )}
+
+          {/* Sponsorship Pages Tab */}
+          {activeTab === "sponsorship-pages" && (
+            <AdminSponsorshipPages
+              tournaments={allTournaments.filter((t: any) => t.managed_by_teevents)}
+            />
+          )}
 
           {/* Events Tab */}
           {activeTab === "events" && (

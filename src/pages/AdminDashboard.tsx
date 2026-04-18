@@ -18,6 +18,8 @@ import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
+import AdminManagedTournaments from "@/components/admin/AdminManagedTournaments";
+import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -36,7 +38,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "managed-tournaments" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -634,6 +636,26 @@ const AdminDashboard = () => {
       await callAdminApi("toggle-pass-fees", { tournament_id: tournamentId, pass_fees_to_registrants: !currentValue });
       setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, pass_fees_to_registrants: !currentValue } : t));
       toast({ title: !currentValue ? "Fees will be passed to registrants" : "Fees reverted to organizer" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleManagedByTeevents = async (tournamentId: string, value: boolean) => {
+    try {
+      await callAdminApi("toggle-managed-by-teevents", { tournament_id: tournamentId, managed_by_teevents: value });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, managed_by_teevents: value } : t));
+      toast({ title: value ? "Marked as Managed by TeeVents" : "Removed Managed flag" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const togglePublicSearch = async (tournamentId: string, value: boolean) => {
+    try {
+      await callAdminApi("toggle-public-search", { tournament_id: tournamentId, show_in_public_search: value });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, show_in_public_search: value } : t));
+      toast({ title: value ? "Listed on public search" : "Removed from public search" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }

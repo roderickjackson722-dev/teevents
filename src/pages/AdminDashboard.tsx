@@ -1511,6 +1511,30 @@ const AdminDashboard = () => {
                               </span>
                             )}
                           </div>
+                          <div className="flex flex-wrap gap-2 mt-1.5 text-[10px]">
+                            <label className="inline-flex items-center gap-1 cursor-pointer" title="Internal flag — never shown publicly">
+                              <input
+                                type="checkbox"
+                                className="h-3 w-3"
+                                checked={!!t.managed_by_teevents}
+                                onChange={e => toggleManagedByTeevents(t.id, e.target.checked)}
+                              />
+                              <span className={t.managed_by_teevents ? "text-primary font-semibold" : "text-muted-foreground"}>
+                                Managed by TeeVents
+                              </span>
+                            </label>
+                            <label className="inline-flex items-center gap-1 cursor-pointer" title="Show on /tournaments/search">
+                              <input
+                                type="checkbox"
+                                className="h-3 w-3"
+                                checked={!!t.show_in_public_search}
+                                onChange={e => togglePublicSearch(t.id, e.target.checked)}
+                              />
+                              <span className={t.show_in_public_search ? "text-primary font-semibold" : "text-muted-foreground"}>
+                                Public search
+                              </span>
+                            </label>
+                          </div>
                         </td>
                         <td className="p-3 text-center">
                           <div className="flex items-center justify-center gap-1">

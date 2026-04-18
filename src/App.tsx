@@ -91,6 +91,7 @@ import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
 import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
+import SponsorLandingPage from "./pages/SponsorLandingPage";
 
 const queryClient = new QueryClient();
 
@@ -188,6 +189,7 @@ const App = () => (
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
+             <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

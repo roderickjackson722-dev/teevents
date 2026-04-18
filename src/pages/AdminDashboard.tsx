@@ -18,6 +18,8 @@ import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
+import AdminManagedTournaments from "@/components/admin/AdminManagedTournaments";
+import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -36,7 +38,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "managed-tournaments" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("events");
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -639,6 +641,26 @@ const AdminDashboard = () => {
     }
   };
 
+  const toggleManagedByTeevents = async (tournamentId: string, value: boolean) => {
+    try {
+      await callAdminApi("toggle-managed-by-teevents", { tournament_id: tournamentId, managed_by_teevents: value });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, managed_by_teevents: value } : t));
+      toast({ title: value ? "Marked as Managed by TeeVents" : "Removed Managed flag" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const togglePublicSearch = async (tournamentId: string, value: boolean) => {
+    try {
+      await callAdminApi("toggle-public-search", { tournament_id: tournamentId, show_in_public_search: value });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, show_in_public_search: value } : t));
+      toast({ title: value ? "Listed on public search" : "Removed from public search" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const handleDeleteTournament = async (tournamentId: string) => {
     if (deleteConfirmStep === 0 || deletingTournament !== tournamentId) {
       setDeletingTournament(tournamentId);
@@ -695,57 +717,98 @@ const AdminDashboard = () => {
       <section className="bg-golf-cream min-h-[70vh] py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           {/* Tabs */}
-          <div className="mb-8 border-b border-border pb-2 space-y-1">
-            <div className="flex flex-wrap gap-2">
-              {([
-                ["events", "TeeVents Tournaments", Calendar],
-                ["requests", "Access Requests", Users],
-                ["emails", "Auto-Approve Emails", Mail],
-                ["reviews", "Reviews", Star],
-              ] as const).map(([key, label, Icon]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                  {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
-                    <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
-                      {requests.filter(r => r.status === "pending").length}
-                    </span>
-                  )}
-                </button>
-              ))}
+          <div className="mb-8 border-b border-border pb-2 space-y-3">
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["all-tournaments", "TeeVents Tournaments", Trophy],
+                  ["requests", "Access Requests", Users],
+                  ["emails", "Auto-Approve Emails", Mail],
+                  ["college", "College Hub", School],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                    {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
+                      <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
+                        {requests.filter(r => r.status === "pending").length}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {([
-                ["all-tournaments", "All User Tournaments", Trophy],
-                ["demos", "Demo Events", Trophy],
-                ["sales-hub", "Sales Hub", Target],
-                ["promos", "Promo Codes", Tag],
-                ["store", "Store", ShoppingBag],
-                ["analytics", "Analytics", BarChart3],
-                ["college", "College Hub", School],
-                ["flyer-templates", "Flyer Templates", FileText],
-                ["notifications", "Notifications & Requests", Bell],
-                ["transactions", "Transactions", DollarSign],
-                ["accounting", "Accounting", DollarSign],
-                ["accounting", "Accounting", DollarSign],
-              ] as const).map(([key, label, Icon]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                    activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                </button>
-              ))}
+
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["managed-tournaments", "Managed Tournaments", Trophy],
+                  ["sponsorship-pages", "Sponsorship Pages", Target],
+                  ["sales-hub", "Outreach / Sales Hub", Target],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Other</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["events", "Marketing Events", Calendar],
+                  ["reviews", "Reviews", Star],
+                  ["demos", "Demo Events", Trophy],
+                  ["promos", "Promo Codes", Tag],
+                  ["store", "Store", ShoppingBag],
+                  ["analytics", "Analytics", BarChart3],
+                  ["flyer-templates", "Flyer Templates", FileText],
+                  ["notifications", "Notifications", Bell],
+                  ["transactions", "Transactions", DollarSign],
+                  ["accounting", "Accounting", DollarSign],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Managed Tournaments Tab */}
+          {activeTab === "managed-tournaments" && (
+            <AdminManagedTournaments
+              tournaments={allTournaments.filter((t: any) => t.managed_by_teevents)}
+              onTogglePublicSearch={togglePublicSearch}
+            />
+          )}
+
+          {/* Sponsorship Pages Tab */}
+          {activeTab === "sponsorship-pages" && (
+            <AdminSponsorshipPages
+              tournaments={allTournaments.filter((t: any) => t.managed_by_teevents)}
+            />
+          )}
 
           {/* Events Tab */}
           {activeTab === "events" && (
@@ -1447,6 +1510,30 @@ const AdminDashboard = () => {
                                 EIN: {t.organizations.ein}
                               </span>
                             )}
+                          </div>
+                          <div className="flex flex-wrap gap-2 mt-1.5 text-[10px]">
+                            <label className="inline-flex items-center gap-1 cursor-pointer" title="Internal flag — never shown publicly">
+                              <input
+                                type="checkbox"
+                                className="h-3 w-3"
+                                checked={!!t.managed_by_teevents}
+                                onChange={e => toggleManagedByTeevents(t.id, e.target.checked)}
+                              />
+                              <span className={t.managed_by_teevents ? "text-primary font-semibold" : "text-muted-foreground"}>
+                                Managed by TeeVents
+                              </span>
+                            </label>
+                            <label className="inline-flex items-center gap-1 cursor-pointer" title="Show on /tournaments/search">
+                              <input
+                                type="checkbox"
+                                className="h-3 w-3"
+                                checked={!!t.show_in_public_search}
+                                onChange={e => togglePublicSearch(t.id, e.target.checked)}
+                              />
+                              <span className={t.show_in_public_search ? "text-primary font-semibold" : "text-muted-foreground"}>
+                                Public search
+                              </span>
+                            </label>
                           </div>
                         </td>
                         <td className="p-3 text-center">

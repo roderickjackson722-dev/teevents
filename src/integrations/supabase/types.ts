@@ -2013,6 +2013,68 @@ export type Database = {
           },
         ]
       }
+      sponsorship_pages: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          cta_register_label: string | null
+          custom_html: string | null
+          hero_description: string | null
+          hero_title: string | null
+          id: string
+          pdf_url: string | null
+          published: boolean
+          tiers_content: Json | null
+          tournament_id: string
+          updated_at: string
+          use_imported_tiers: boolean
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          cta_register_label?: string | null
+          custom_html?: string | null
+          hero_description?: string | null
+          hero_title?: string | null
+          id?: string
+          pdf_url?: string | null
+          published?: boolean
+          tiers_content?: Json | null
+          tournament_id: string
+          updated_at?: string
+          use_imported_tiers?: boolean
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          cta_register_label?: string | null
+          custom_html?: string | null
+          hero_description?: string | null
+          hero_title?: string | null
+          id?: string
+          pdf_url?: string | null
+          published?: boolean
+          tiers_content?: Json | null
+          tournament_id?: string
+          updated_at?: string
+          use_imported_tiers?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_pages_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sponsorship_tiers: {
         Row: {
           benefits: string | null
@@ -3367,6 +3429,7 @@ export type Database = {
           live_display_enabled: boolean
           live_display_refresh_seconds: number
           location: string | null
+          managed_by_teevents: boolean
           max_group_size: number
           max_handicap: number | null
           max_players: number | null
@@ -3435,6 +3498,7 @@ export type Database = {
           live_display_enabled?: boolean
           live_display_refresh_seconds?: number
           location?: string | null
+          managed_by_teevents?: boolean
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
@@ -3503,6 +3567,7 @@ export type Database = {
           live_display_enabled?: boolean
           live_display_refresh_seconds?: number
           location?: string | null
+          managed_by_teevents?: boolean
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null

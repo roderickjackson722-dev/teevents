@@ -39,29 +39,49 @@ export default function Gallery() {
     enabled: !!selectedTournament,
   });
 
-  const handleUpload = async (files: FileList | null) => {
-    if (!files || !selectedTournament || demoGuard()) return;
-    setUploading(true);
-
-    for (const file of Array.from(files)) {
-      const ext = file.name.split(".").pop();
-      const path = `gallery/${selectedTournament}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("tournament-assets").upload(path, file);
-      if (uploadError) {
-        toast({ title: "Upload error", description: uploadError.message, variant: "destructive" });
-        continue;
-      }
-      const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-      await supabase.from("tournament_photos").insert({
-        tournament_id: selectedTournament,
-        image_url: urlData.publicUrl,
-        caption: file.name.replace(/\.[^/.]+$/, ""),
-      });
+  const uploadFile = async (file: File) => {
+    if (!selectedTournament) return;
+    const ext = file.name.split(".").pop();
+    const path = `gallery/${selectedTournament}/${crypto.randomUUID()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("tournament-assets").upload(path, file);
+    if (uploadError) {
+      toast({ title: "Upload error", description: uploadError.message, variant: "destructive" });
+      return;
     }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    await supabase.from("tournament_photos").insert({
+      tournament_id: selectedTournament,
+      image_url: urlData.publicUrl,
+      caption: file.name.replace(/\.[^/.]+$/, ""),
+    });
+  };
 
-    setUploading(false);
-    queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
-    toast({ title: `${files.length} photo(s) uploaded!` });
+  const beginUpload = async (files: FileList | null) => {
+    if (!files || !selectedTournament || demoGuard()) return;
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+    setCropQueue(arr);
+    setCropSrc(await fileToDataUrl(arr[0]));
+    setCropOpen(true);
+  };
+
+  const handleCropped = async (cropped: File) => {
+    setUploading(true);
+    await uploadFile(cropped);
+    const remaining = cropQueue.slice(1);
+    setCropQueue(remaining);
+    if (remaining.length > 0) {
+      setCropSrc(await fileToDataUrl(remaining[0]));
+      // keep cropper open for the next image
+      setCropOpen(true);
+      setUploading(false);
+    } else {
+      setCropOpen(false);
+      setCropSrc(null);
+      setUploading(false);
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      toast({ title: "Photos uploaded!" });
+    }
   };
 
   const deleteMutation = useMutation({

@@ -28,6 +28,8 @@ export default function ProductFormDialog({ open, onOpenChange, editProduct, sel
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [form, setForm] = useState(getDefaults(editProduct));
 
   function getDefaults(p: Product | null) {
@@ -153,7 +155,18 @@ export default function ProductFormDialog({ open, onOpenChange, editProduct, sel
                 </div>
               )}
               <label className="cursor-pointer">
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!f) return;
+                    setCropSrc(await fileToDataUrl(f));
+                    setCropOpen(true);
+                  }}
+                />
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted transition-colors">
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload
                 </span>

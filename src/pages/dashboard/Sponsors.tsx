@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -105,6 +106,8 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
   const [uploadType, setUploadType] = useState("logo");
   const [uploadNotes, setUploadNotes] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const fetchAssets = useCallback(async () => {
     setLoading(true);
@@ -191,7 +194,22 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
                   <Input value={uploadNotes} onChange={e => setUploadNotes(e.target.value)} placeholder="e.g. High-res for print" />
                 </div>
                 <label className="cursor-pointer block">
-                  <input type="file" accept="image/*,.pdf,.svg" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,.svg"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!f) return;
+                      if (f.type.startsWith("image/") && f.type !== "image/svg+xml") {
+                        setCropSrc(await fileToDataUrl(f));
+                        setCropOpen(true);
+                      } else {
+                        handleUpload(f);
+                      }
+                    }}
+                  />
                   <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
                     {uploading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
                       <>
@@ -261,6 +279,14 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
           </Table>
         )}
       </CardContent>
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropSrc(null); }}
+        imageSrc={cropSrc}
+        defaultAspect="free"
+        title="Crop Sponsor Asset"
+        onCropped={(file) => handleUpload(file)}
+      />
     </Card>
   );
 }
@@ -395,6 +421,8 @@ const Sponsors = () => {
   const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [logoCropOpen, setLogoCropOpen] = useState(false);
+  const [logoCropSrc, setLogoCropSrc] = useState<string | null>(null);
   const [lbInterval, setLbInterval] = useState(5000);
   const [lbStyle, setLbStyle] = useState("banner");
   const [form, setForm] = useState({
@@ -668,7 +696,18 @@ const Sponsors = () => {
                     </div>
                   )}
                   <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!f) return;
+                        setLogoCropSrc(await fileToDataUrl(f));
+                        setLogoCropOpen(true);
+                      }}
+                    />
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted transition-colors">
                       {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                       Upload
@@ -899,6 +938,16 @@ const Sponsors = () => {
           </CardContent>
         </Card>
       )}
+
+      <ImageCropperDialog
+        open={logoCropOpen}
+        onOpenChange={(o) => { setLogoCropOpen(o); if (!o) setLogoCropSrc(null); }}
+        imageSrc={logoCropSrc}
+        defaultAspect="1:1"
+        outputMime="image/png"
+        title="Crop Sponsor Logo"
+        onCropped={(file) => handleLogoUpload(file)}
+      />
     </div>
   );
 };

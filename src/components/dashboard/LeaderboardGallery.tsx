@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Image as ImageIcon, Loader2, Trash2, Upload, Star } from "lucide-react";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
 interface GalleryItem {
   id: string;
@@ -26,6 +27,8 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [caption, setCaption] = useState("");
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const fetchItems = useCallback(async () => {
     if (!tournamentId) return;
@@ -127,10 +130,12 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const f = e.target.files?.[0];
-                  if (f) handleUpload(f);
                   e.target.value = "";
+                  if (!f) return;
+                  setCropSrc(await fileToDataUrl(f));
+                  setCropOpen(true);
                 }}
               />
               <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors h-10">
@@ -177,6 +182,14 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
           </div>
         )}
       </CardContent>
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropSrc(null); }}
+        imageSrc={cropSrc}
+        defaultAspect="free"
+        title="Crop Leaderboard Photo"
+        onCropped={(file) => handleUpload(file)}
+      />
     </Card>
   );
 }

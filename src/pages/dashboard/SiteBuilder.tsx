@@ -28,6 +28,8 @@ import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
+import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
+import { Slider } from "@/components/ui/slider";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -190,6 +192,7 @@ interface SiteSettings {
   site_primary_color: string | null;
   site_secondary_color: string | null;
   site_hero_image_url: string | null;
+  site_hero_opacity: number | null;
   contact_email: string | null;
   contact_phone: string | null;
   schedule_info: string | null;
@@ -219,6 +222,19 @@ const SiteBuilder = () => {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables">("branding");
+
+  // Cropper state
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [pendingFileSrc, setPendingFileSrc] = useState<string | null>(null);
+  const [pendingType, setPendingType] = useState<"logo" | "hero">("hero");
+  const cropAspect: AspectRatioOption = pendingType === "logo" ? "1:1" : "16:9";
+
+  const startCrop = async (file: File, type: "logo" | "hero") => {
+    const src = await fileToDataUrl(file);
+    setPendingFileSrc(src);
+    setPendingType(type);
+    setCropperOpen(true);
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -258,6 +274,7 @@ const SiteBuilder = () => {
         site_primary_color: settings.site_primary_color,
         site_secondary_color: settings.site_secondary_color,
         site_hero_image_url: settings.site_hero_image_url,
+        site_hero_opacity: settings.site_hero_opacity ?? 100,
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
         schedule_info: settings.schedule_info,
@@ -476,7 +493,8 @@ const SiteBuilder = () => {
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, "logo");
+                        if (file) startCrop(file, "logo");
+                        e.target.value = "";
                       }}
                     />
                     <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
@@ -511,7 +529,8 @@ const SiteBuilder = () => {
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, "hero");
+                        if (file) startCrop(file, "hero");
+                        e.target.value = "";
                       }}
                     />
                     <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
@@ -519,6 +538,36 @@ const SiteBuilder = () => {
                       Upload Hero Image
                     </span>
                   </label>
+
+                  {settings.site_hero_image_url && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Background Transparency</Label>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {settings.site_hero_opacity ?? 100}%
+                        </span>
+                      </div>
+                      <Slider
+                        value={[settings.site_hero_opacity ?? 100]}
+                        min={0}
+                        max={100}
+                        step={1}
+                        onValueChange={(v) => updateField("site_hero_opacity" as any, v[0])}
+                      />
+                      <div className="relative rounded-md overflow-hidden border border-border h-24" style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }}>
+                        <div
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url(${settings.site_hero_image_url})`,
+                            opacity: (settings.site_hero_opacity ?? 100) / 100,
+                          }}
+                        />
+                        <div className="relative z-10 h-full flex items-center justify-center text-white text-xs font-semibold tracking-wide drop-shadow">
+                          LIVE PREVIEW
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1360,6 +1409,19 @@ const SiteBuilder = () => {
           </div>
         </div>
       </div>
+
+      <ImageCropperDialog
+        open={cropperOpen}
+        onOpenChange={(o) => {
+          setCropperOpen(o);
+          if (!o) setPendingFileSrc(null);
+        }}
+        imageSrc={pendingFileSrc}
+        defaultAspect={cropAspect}
+        title={pendingType === "logo" ? "Crop Tournament Logo" : "Crop Hero Background"}
+        outputMime={pendingType === "logo" ? "image/png" : "image/jpeg"}
+        onCropped={(file) => handleFileUpload(file, pendingType)}
+      />
     </div>
   );
 };

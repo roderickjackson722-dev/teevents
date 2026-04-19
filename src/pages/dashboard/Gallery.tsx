@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImagePlus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
 export default function Gallery() {
   const { org, loading: orgLoading } = useOrgContext();
@@ -16,6 +17,9 @@ export default function Gallery() {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -35,29 +39,49 @@ export default function Gallery() {
     enabled: !!selectedTournament,
   });
 
-  const handleUpload = async (files: FileList | null) => {
-    if (!files || !selectedTournament || demoGuard()) return;
-    setUploading(true);
-
-    for (const file of Array.from(files)) {
-      const ext = file.name.split(".").pop();
-      const path = `gallery/${selectedTournament}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("tournament-assets").upload(path, file);
-      if (uploadError) {
-        toast({ title: "Upload error", description: uploadError.message, variant: "destructive" });
-        continue;
-      }
-      const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-      await supabase.from("tournament_photos").insert({
-        tournament_id: selectedTournament,
-        image_url: urlData.publicUrl,
-        caption: file.name.replace(/\.[^/.]+$/, ""),
-      });
+  const uploadFile = async (file: File) => {
+    if (!selectedTournament) return;
+    const ext = file.name.split(".").pop();
+    const path = `gallery/${selectedTournament}/${crypto.randomUUID()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("tournament-assets").upload(path, file);
+    if (uploadError) {
+      toast({ title: "Upload error", description: uploadError.message, variant: "destructive" });
+      return;
     }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    await supabase.from("tournament_photos").insert({
+      tournament_id: selectedTournament,
+      image_url: urlData.publicUrl,
+      caption: file.name.replace(/\.[^/.]+$/, ""),
+    });
+  };
 
-    setUploading(false);
-    queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
-    toast({ title: `${files.length} photo(s) uploaded!` });
+  const beginUpload = async (files: FileList | null) => {
+    if (!files || !selectedTournament || demoGuard()) return;
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+    setCropQueue(arr);
+    setCropSrc(await fileToDataUrl(arr[0]));
+    setCropOpen(true);
+  };
+
+  const handleCropped = async (cropped: File) => {
+    setUploading(true);
+    await uploadFile(cropped);
+    const remaining = cropQueue.slice(1);
+    setCropQueue(remaining);
+    if (remaining.length > 0) {
+      setCropSrc(await fileToDataUrl(remaining[0]));
+      // keep cropper open for the next image
+      setCropOpen(true);
+      setUploading(false);
+    } else {
+      setCropOpen(false);
+      setCropSrc(null);
+      setUploading(false);
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      toast({ title: "Photos uploaded!" });
+    }
   };
 
   const deleteMutation = useMutation({
@@ -83,7 +107,7 @@ export default function Gallery() {
         </div>
         {selectedTournament && (
           <>
-            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { beginUpload(e.target.files); e.target.value = ""; }} />
             <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImagePlus className="mr-2 h-4 w-4" />}
               {uploading ? "Uploading..." : "Upload Photos"}
@@ -123,6 +147,18 @@ export default function Gallery() {
           <p className="text-muted-foreground">No photos yet. Upload some to get started.</p>
         </div>
       ) : null}
+
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => {
+          setCropOpen(o);
+          if (!o) { setCropQueue([]); setCropSrc(null); }
+        }}
+        imageSrc={cropSrc}
+        defaultAspect="free"
+        title={cropQueue.length > 1 ? `Crop Photo (${cropQueue.length} remaining)` : "Crop Photo"}
+        onCropped={handleCropped}
+      />
     </div>
   );
 }

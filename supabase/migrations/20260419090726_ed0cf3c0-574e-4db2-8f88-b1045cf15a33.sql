@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS site_hero_opacity INTEGER NOT NULL DEFAULT 100;

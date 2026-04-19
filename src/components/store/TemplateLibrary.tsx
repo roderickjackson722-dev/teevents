@@ -263,6 +263,15 @@ export default function TemplateLibrary({ selectedTournament, onQuickAdd }: Prop
           ))}
         </div>
       )}
+
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropSrc(null); }}
+        imageSrc={cropSrc}
+        defaultAspect="1:1"
+        title="Crop Template Image"
+        onCropped={(file) => handleImageUpload(file)}
+      />
     </div>
   );
 }

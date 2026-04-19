@@ -191,6 +191,14 @@ export default function ProductFormDialog({ open, onOpenChange, editProduct, sel
           </Button>
         </form>
       </DialogContent>
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropSrc(null); }}
+        imageSrc={cropSrc}
+        defaultAspect="1:1"
+        title="Crop Product Image"
+        onCropped={(file) => handleImageUpload(file)}
+      />
     </Dialog>
   );
 }

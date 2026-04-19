@@ -1409,6 +1409,19 @@ const SiteBuilder = () => {
           </div>
         </div>
       </div>
+
+      <ImageCropperDialog
+        open={cropperOpen}
+        onOpenChange={(o) => {
+          setCropperOpen(o);
+          if (!o) setPendingFileSrc(null);
+        }}
+        imageSrc={pendingFileSrc}
+        defaultAspect={cropAspect}
+        title={pendingType === "logo" ? "Crop Tournament Logo" : "Crop Hero Background"}
+        outputMime={pendingType === "logo" ? "image/png" : "image/jpeg"}
+        onCropped={(file) => handleFileUpload(file, pendingType)}
+      />
     </div>
   );
 };

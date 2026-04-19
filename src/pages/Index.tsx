@@ -79,7 +79,7 @@ const Index = () => {
     <Layout>
       <SEO title="Home" description="The all-in-one platform for nonprofits and corporations to plan, manage, and execute world-class golf tournaments." path="/" />
       {/* Hero */}
-      <HeroSection backgroundImage={heroGolf} title="" height="h-screen">
+      <HeroSection backgroundImage={heroGolf} title="" height="min-h-screen py-20 md:py-0 md:h-screen">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -88,21 +88,21 @@ const Index = () => {
           <img
             src={logoWhite}
             alt="TeeVents Golf"
-            className="h-36 w-36 mx-auto mb-6 object-contain"
+            className="h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 mx-auto mb-4 md:mb-6 object-contain"
           />
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
             Run Your Golf Tournament
             <br />
             <span className="text-secondary">Like a Pro</span>
           </h1>
-           <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
+           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
             The all-in-one platform for nonprofits and corporations to plan,
             manage, and execute world-class golf tournaments.
-            <span className="block mt-2 text-secondary font-semibold text-base">
+            <span className="block mt-2 text-secondary font-semibold text-sm sm:text-base">
               Payments split automatically at checkout — we never hold your money.
             </span>
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
               to="/how-it-works#pricing"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"

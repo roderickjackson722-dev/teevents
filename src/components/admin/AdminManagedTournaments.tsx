@@ -35,8 +35,7 @@ export default function AdminManagedTournaments({ tournaments, onTogglePublicSea
   if (tournaments.length === 0) {
     return (
       <Card><CardContent className="p-8 text-center text-muted-foreground">
-        No tournaments are flagged as <strong>Managed by TeeVents</strong> yet.
-        Open <em>All User Tournaments</em> and toggle the "Managed by TeeVents" switch on any tournament to add it here.
+        No tournaments yet.
       </CardContent></Card>
     );
   }
@@ -44,8 +43,8 @@ export default function AdminManagedTournaments({ tournaments, onTogglePublicSea
   return (
     <div className="space-y-3">
       <div className="bg-card border border-border rounded-lg p-4 text-sm text-muted-foreground">
-        <strong className="text-foreground">Managed by TeeVents</strong> is an internal flag — it is never shown publicly.
-        Use the public-search toggle below to control whether each tournament appears on /tournaments/search.
+        Every tournament on the platform is managed by TeeVents.
+        Use the public-search toggle below to control whether each one appears on /tournaments/search.
       </div>
 
       {tournaments.map(t => {

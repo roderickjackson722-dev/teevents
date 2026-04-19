@@ -795,18 +795,18 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Managed Tournaments Tab */}
+          {/* Managed Tournaments Tab — every tournament is managed by TeeVents */}
           {activeTab === "managed-tournaments" && (
             <AdminManagedTournaments
-              tournaments={allTournaments.filter((t: any) => t.managed_by_teevents)}
+              tournaments={allTournaments}
               onTogglePublicSearch={togglePublicSearch}
             />
           )}
 
-          {/* Sponsorship Pages Tab */}
+          {/* Sponsorship Pages Tab — every tournament is managed by TeeVents */}
           {activeTab === "sponsorship-pages" && (
             <AdminSponsorshipPages
-              tournaments={allTournaments.filter((t: any) => t.managed_by_teevents)}
+              tournaments={allTournaments}
             />
           )}
 
@@ -1453,8 +1453,8 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-card rounded-lg border border-border overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="bg-card rounded-lg border border-border overflow-x-auto">
+                <table className="w-full text-sm min-w-[900px]">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="text-left p-3 font-medium">Tournament</th>
@@ -1512,17 +1512,6 @@ const AdminDashboard = () => {
                             )}
                           </div>
                           <div className="flex flex-wrap gap-2 mt-1.5 text-[10px]">
-                            <label className="inline-flex items-center gap-1 cursor-pointer" title="Internal flag — never shown publicly">
-                              <input
-                                type="checkbox"
-                                className="h-3 w-3"
-                                checked={!!t.managed_by_teevents}
-                                onChange={e => toggleManagedByTeevents(t.id, e.target.checked)}
-                              />
-                              <span className={t.managed_by_teevents ? "text-primary font-semibold" : "text-muted-foreground"}>
-                                Managed by TeeVents
-                              </span>
-                            </label>
                             <label className="inline-flex items-center gap-1 cursor-pointer" title="Show on /tournaments/search">
                               <input
                                 type="checkbox"

@@ -9,10 +9,10 @@ interface HeroSectionProps {
   height?: string;
 }
 
-const HeroSection = ({ backgroundImage, title, subtitle, children, height = "h-[85vh]" }: HeroSectionProps) => {
+const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min-h-[85vh]" }: HeroSectionProps) => {
   return (
     <section
-      className={`relative ${height} flex items-center justify-center overflow-hidden`}
+      className={`relative ${height} flex items-center justify-center overflow-hidden py-12 md:py-0`}
     >
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

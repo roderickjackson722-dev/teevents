@@ -182,6 +182,14 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
           </div>
         )}
       </CardContent>
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropSrc(null); }}
+        imageSrc={cropSrc}
+        defaultAspect="free"
+        title="Crop Leaderboard Photo"
+        onCropped={(file) => handleUpload(file)}
+      />
     </Card>
   );
 }

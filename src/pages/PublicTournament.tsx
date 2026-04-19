@@ -857,7 +857,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="relative z-10 w-full max-w-3xl mx-auto px-4 pb-0 -mb-[1px]"
         >
-          <div className={`flex ${style.ctaLayout === "two" ? "justify-center gap-0" : "justify-center gap-0"}`}>
+          <div className={`flex flex-wrap gap-3 ${flexJustify[buttonPos]}`}>
             {/* Registration button */}
             {(tournament.registration_open || tournament.registration_url) && (
               <a
@@ -867,10 +867,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 }}
                 target={tournament.registration_url ? "_blank" : undefined}
                 rel={tournament.registration_url ? "noopener noreferrer" : undefined}
-                className="flex-1 max-w-[260px] py-4 text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
                 style={{
                   backgroundColor: tpl === "modern" ? "#1565c0" : secondary,
                   color: tpl === "modern" ? "#ffffff" : primary,
+                  borderRadius: `${buttonRadius}px`,
+                  fontSize: `${buttonSize}px`,
                 }}
               >
                 {tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
@@ -881,10 +883,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             {style.ctaLayout === "three" && (
               <button
                 onClick={() => scrollTo("#become-a-sponsor")}
-                className="flex-1 max-w-[260px] py-4 text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
                 style={{
                   backgroundColor: tpl === "modern" ? "#b71c1c" : primary,
                   color: "#ffffff",
+                  borderRadius: `${buttonRadius}px`,
+                  fontSize: `${buttonSize}px`,
                 }}
               >
                 Sponsorship Opportunities
@@ -895,10 +899,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             {auctionItems.length > 0 && (
               <button
                 onClick={() => scrollTo("#auction")}
-                className="flex-1 max-w-[260px] py-4 text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
                 style={{
                   backgroundColor: tpl === "modern" ? "#424242" : tpl === "charity" ? "#1a1a1a" : "#333333",
                   color: "#ffffff",
+                  borderRadius: `${buttonRadius}px`,
+                  fontSize: `${buttonSize}px`,
                 }}
               >
                 View Auction Items

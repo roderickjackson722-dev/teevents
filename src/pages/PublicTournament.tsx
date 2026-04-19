@@ -35,6 +35,19 @@ interface TournamentSite {
   pass_fees_to_registrants?: boolean;
   allow_cover_fees?: boolean;
   refund_policy_text?: string | null;
+  // Public Page Design
+  site_show_logo?: boolean | null;
+  site_text_color?: string | null;
+  site_background_color?: string | null;
+  site_font_family?: string | null;
+  site_heading_font_size?: number | null;
+  site_body_font_size?: number | null;
+  site_button_font_size?: number | null;
+  site_logo_position?: string | null;
+  site_title_position?: string | null;
+  site_button_position?: string | null;
+  site_button_radius?: number | null;
+  site_button_hover_effect?: string | null;
 }
 interface RegFieldPublic {
   id: string; label: string; field_type: string; options: string[] | null;
@@ -522,6 +535,34 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const coursePar = tournament.course_par || 72;
   const tpl = tournament.template || "classic";
   const style = templateStyles[tpl as keyof typeof templateStyles] || templateStyles.classic;
+
+  // Public Page Design (organizer-customizable)
+  const showLogo = tournament.site_show_logo !== false;
+  const textColor = tournament.site_text_color || "#1F2937";
+  const pageBg = tournament.site_background_color || "#ffffff";
+  const fontFamilyId = tournament.site_font_family || "Inter";
+  const fontStackCss = (() => {
+    const stacks: Record<string, string> = {
+      Inter: "'Inter', system-ui, sans-serif",
+      Roboto: "'Roboto', system-ui, sans-serif",
+      Montserrat: "'Montserrat', sans-serif",
+      Lato: "'Lato', sans-serif",
+      "Open Sans": "'Open Sans', sans-serif",
+      Poppins: "'Poppins', sans-serif",
+      "Playfair Display": "'Playfair Display', Georgia, serif",
+      Merriweather: "'Merriweather', Georgia, serif",
+    };
+    return stacks[fontFamilyId] || stacks.Inter;
+  })();
+  const headingSize = tournament.site_heading_font_size ?? 60;
+  const bodySize = tournament.site_body_font_size ?? 16;
+  const buttonSize = tournament.site_button_font_size ?? 16;
+  const logoPos = (tournament.site_logo_position || "center") as "left" | "center" | "right";
+  const titlePos = (tournament.site_title_position || "center") as "left" | "center" | "right";
+  const buttonPos = (tournament.site_button_position || "center") as "left" | "center" | "right";
+  const buttonRadius = tournament.site_button_radius ?? 8;
+  const flexJustify: Record<string, string> = { left: "justify-start", center: "justify-center", right: "justify-end" };
+  const textAlignClass: Record<string, "left" | "center" | "right"> = { left: "left", center: "center", right: "right" };
 
   // Fixed nav tabs
   const navLinks: { label: string; href: string }[] = [

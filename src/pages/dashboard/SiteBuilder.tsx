@@ -1584,42 +1584,28 @@ const SiteBuilder = () => {
             )}
           </div>
           <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 220px)" }}>
-            {/* Mini Preview */}
-            <div
-              className="relative h-48 flex items-center justify-center"
-              style={{
-                backgroundColor: settings.site_primary_color || "#1a5c38",
-                backgroundImage: settings.site_hero_image_url
-                  ? `url(${settings.site_hero_image_url})`
-                  : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            >
-              {settings.site_hero_image_url && (
-                <div className="absolute inset-0 bg-black/50" />
-              )}
-              <div className="relative z-10 text-center px-4">
-                {settings.site_logo_url && (
-                  <img
-                    src={settings.site_logo_url}
-                    alt=""
-                    className="h-12 w-12 mx-auto mb-2 object-contain"
-                  />
-                )}
-                <h3
-                  className="text-xl font-bold font-display"
-                  style={{ color: "#ffffff" }}
-                >
-                  {settings.site_hero_title || settings.title}
-                </h3>
-                {(settings.site_hero_subtitle) && (
-                  <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    {settings.site_hero_subtitle}
-                  </p>
-                )}
-              </div>
-            </div>
+            {/* Mini Preview — reflects all design settings in real time */}
+            <DesignPreview
+              showLogo={settings.site_show_logo ?? true}
+              logoUrl={settings.site_logo_url}
+              heroImageUrl={settings.site_hero_image_url}
+              heroOpacity={settings.site_hero_opacity ?? 100}
+              title={settings.site_hero_title || settings.title}
+              subtitle={settings.site_hero_subtitle || ""}
+              fontFamily={settings.site_font_family || "Inter"}
+              headingSize={settings.site_heading_font_size ?? 60}
+              bodySize={settings.site_body_font_size ?? 16}
+              buttonSize={settings.site_button_font_size ?? 16}
+              textColor={settings.site_text_color || "#1F2937"}
+              backgroundColor={settings.site_background_color || "#FFFFFF"}
+              primaryColor={settings.site_primary_color || "#1a5c38"}
+              secondaryColor={settings.site_secondary_color || "#c8a84e"}
+              logoPosition={(settings.site_logo_position as Position) || "center"}
+              titlePosition={(settings.site_title_position as Position) || "center"}
+              buttonPosition={(settings.site_button_position as Position) || "center"}
+              buttonRadius={settings.site_button_radius ?? 8}
+              buttonHoverEffect={(settings.site_button_hover_effect as HoverEffect) || "darken"}
+            />
 
             {/* Preview Body */}
             <div className="p-6 space-y-6">

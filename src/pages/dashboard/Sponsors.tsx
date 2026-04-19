@@ -421,6 +421,8 @@ const Sponsors = () => {
   const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [logoCropOpen, setLogoCropOpen] = useState(false);
+  const [logoCropSrc, setLogoCropSrc] = useState<string | null>(null);
   const [lbInterval, setLbInterval] = useState(5000);
   const [lbStyle, setLbStyle] = useState("banner");
   const [form, setForm] = useState({
@@ -694,7 +696,18 @@ const Sponsors = () => {
                     </div>
                   )}
                   <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!f) return;
+                        setLogoCropSrc(await fileToDataUrl(f));
+                        setLogoCropOpen(true);
+                      }}
+                    />
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted transition-colors">
                       {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                       Upload

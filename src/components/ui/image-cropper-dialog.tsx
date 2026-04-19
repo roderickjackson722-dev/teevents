@@ -28,6 +28,13 @@ interface Props {
   outputMime?: "image/jpeg" | "image/png" | "image/webp";
   /** JPEG/WebP quality 0-1 */
   quality?: number;
+  /**
+   * Minimum width (px) for the exported cropped image. The output canvas will
+   * be upscaled (with high-quality smoothing) to at least this width while
+   * preserving the crop aspect ratio. Defaults to 1920 to keep background/hero
+   * images sharp on desktop displays.
+   */
+  minOutputWidth?: number;
   title?: string;
   onCropped: (file: File) => void | Promise<void>;
 }
@@ -39,7 +46,8 @@ export function ImageCropperDialog({
   defaultAspect = "free",
   lockAspect = false,
   outputMime = "image/jpeg",
-  quality = 0.92,
+  quality = 0.95,
+  minOutputWidth = 1920,
   title = "Crop Image",
   onCropped,
 }: Props) {
@@ -57,7 +65,7 @@ export function ImageCropperDialog({
     if (!imageSrc || !croppedAreaPixels) return;
     setProcessing(true);
     try {
-      const file = await getCroppedFile(imageSrc, croppedAreaPixels, outputMime, quality);
+      const file = await getCroppedFile(imageSrc, croppedAreaPixels, outputMime, quality, minOutputWidth);
       await onCropped(file);
       onOpenChange(false);
       // reset for next time
@@ -161,24 +169,41 @@ async function getCroppedFile(
   pixelCrop: Area,
   mime: string,
   quality: number,
+  minOutputWidth: number,
 ): Promise<File> {
   const image = await loadImage(imageSrc);
+
+  // Native crop dimensions (in original-image pixels)
+  const cropW = Math.round(pixelCrop.width);
+  const cropH = Math.round(pixelCrop.height);
+
+  // Determine output size: keep at least minOutputWidth across, but never
+  // upscale beyond ~2x to avoid soft, over-stretched results.
+  const targetWidth = Math.min(Math.max(cropW, minOutputWidth), cropW * 2);
+  const scale = targetWidth / cropW;
+  const outW = Math.round(cropW * scale);
+  const outH = Math.round(cropH * scale);
+
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(pixelCrop.width);
-  canvas.height = Math.round(pixelCrop.height);
+  canvas.width = outW;
+  canvas.height = outH;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas context unavailable");
+
+  // High-quality resampling
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   ctx.drawImage(
     image,
     pixelCrop.x,
     pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
+    cropW,
+    cropH,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height,
+    outW,
+    outH,
   );
 
   return new Promise((resolve, reject) => {

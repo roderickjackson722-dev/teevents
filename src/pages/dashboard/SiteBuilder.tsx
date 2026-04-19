@@ -535,39 +535,46 @@ const SiteBuilder = () => {
                     />
                     <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
                       {uploadingHero ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                      Upload Hero Image
+                      {settings.site_hero_image_url ? "Change Image" : "Upload Hero Image"}
                     </span>
                   </label>
+                </div>
+              </div>
 
+              {/* Background Transparency — always visible, controls current image */}
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm">Background Transparency</Label>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    {settings.site_hero_opacity ?? 100}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Adjusts the opacity of your background image on the public tournament page. Saves with the rest of your site settings.
+                </p>
+                <Slider
+                  value={[settings.site_hero_opacity ?? 100]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={(v) => updateField("site_hero_opacity" as any, v[0])}
+                />
+                <div
+                  className="relative rounded-md overflow-hidden border border-border h-28"
+                  style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }}
+                >
                   {settings.site_hero_image_url && (
-                    <div className="mt-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs">Background Transparency</Label>
-                        <span className="text-xs font-mono text-muted-foreground">
-                          {settings.site_hero_opacity ?? 100}%
-                        </span>
-                      </div>
-                      <Slider
-                        value={[settings.site_hero_opacity ?? 100]}
-                        min={0}
-                        max={100}
-                        step={1}
-                        onValueChange={(v) => updateField("site_hero_opacity" as any, v[0])}
-                      />
-                      <div className="relative rounded-md overflow-hidden border border-border h-24" style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }}>
-                        <div
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${settings.site_hero_image_url})`,
-                            opacity: (settings.site_hero_opacity ?? 100) / 100,
-                          }}
-                        />
-                        <div className="relative z-10 h-full flex items-center justify-center text-white text-xs font-semibold tracking-wide drop-shadow">
-                          LIVE PREVIEW
-                        </div>
-                      </div>
-                    </div>
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url(${settings.site_hero_image_url})`,
+                        opacity: (settings.site_hero_opacity ?? 100) / 100,
+                      }}
+                    />
                   )}
+                  <div className="relative z-10 h-full flex items-center justify-center text-white text-xs font-semibold tracking-wide drop-shadow">
+                    {settings.site_hero_image_url ? "LIVE PREVIEW" : "Upload an image to preview"}
+                  </div>
                 </div>
               </div>
 
@@ -1420,6 +1427,8 @@ const SiteBuilder = () => {
         defaultAspect={cropAspect}
         title={pendingType === "logo" ? "Crop Tournament Logo" : "Crop Hero Background"}
         outputMime={pendingType === "logo" ? "image/png" : "image/jpeg"}
+        quality={0.95}
+        minOutputWidth={pendingType === "logo" ? 1024 : 1920}
         onCropped={(file) => handleFileUpload(file, pendingType)}
       />
     </div>

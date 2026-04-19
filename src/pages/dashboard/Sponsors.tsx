@@ -279,6 +279,14 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
           </Table>
         )}
       </CardContent>
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropSrc(null); }}
+        imageSrc={cropSrc}
+        defaultAspect="free"
+        title="Crop Sponsor Asset"
+        onCropped={(file) => handleUpload(file)}
+      />
     </Card>
   );
 }

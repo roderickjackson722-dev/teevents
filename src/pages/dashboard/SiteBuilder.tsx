@@ -30,6 +30,14 @@ import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
 import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
 import { Slider } from "@/components/ui/slider";
+import {
+  FONT_FAMILIES,
+  DESIGN_PRESETS,
+  type Position,
+  type HoverEffect,
+} from "@/lib/siteDesign";
+import { DesignPreview } from "@/components/site-builder/DesignPreview";
+import { Wand2, EyeOff } from "lucide-react";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -208,6 +216,19 @@ interface SiteSettings {
   custom_slug: string | null;
   url_edit_count: number | null;
   show_in_public_search: boolean | null;
+  // Public Page Design
+  site_show_logo: boolean | null;
+  site_text_color: string | null;
+  site_background_color: string | null;
+  site_font_family: string | null;
+  site_heading_font_size: number | null;
+  site_body_font_size: number | null;
+  site_button_font_size: number | null;
+  site_logo_position: string | null;
+  site_title_position: string | null;
+  site_button_position: string | null;
+  site_button_radius: number | null;
+  site_button_hover_effect: string | null;
 }
 
 const SiteBuilder = () => {
@@ -292,6 +313,18 @@ const SiteBuilder = () => {
         printable_layout: settings.printable_layout || "classic",
         hole_pars: settings.hole_pars || null,
         countdown_style: settings.countdown_style || "glass",
+        site_show_logo: settings.site_show_logo ?? true,
+        site_text_color: settings.site_text_color || "#1F2937",
+        site_background_color: settings.site_background_color || "#FFFFFF",
+        site_font_family: settings.site_font_family || "Inter",
+        site_heading_font_size: settings.site_heading_font_size ?? 60,
+        site_body_font_size: settings.site_body_font_size ?? 16,
+        site_button_font_size: settings.site_button_font_size ?? 16,
+        site_logo_position: settings.site_logo_position || "center",
+        site_title_position: settings.site_title_position || "center",
+        site_button_position: settings.site_button_position || "center",
+        site_button_radius: settings.site_button_radius ?? 8,
+        site_button_hover_effect: settings.site_button_hover_effect || "darken",
       } as any)
       .eq("id", settings.id);
 
@@ -373,6 +406,49 @@ const SiteBuilder = () => {
     },
     [settings, org, toast]
   );
+
+  // Background removal for the tournament logo (in-browser, free, no API key).
+  const [removingBg, setRemovingBg] = useState(false);
+  const handleRemoveLogoBackground = async () => {
+    if (!settings?.site_logo_url || !org) return;
+    setRemovingBg(true);
+    try {
+      toast({
+        title: "Removing background…",
+        description: "First run downloads a small AI model — this may take ~10s.",
+      });
+      const { removeBackground } = await import("@imgly/background-removal");
+      const blob = await removeBackground(settings.site_logo_url);
+      const path = `${org.orgId}/${settings.id}/logo-nobg-${Date.now()}.png`;
+      const { error: upErr } = await supabase.storage
+        .from("tournament-assets")
+        .upload(path, blob, { upsert: true, contentType: "image/png" });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      updateField("site_logo_url", urlData.publicUrl);
+      toast({ title: "Background removed!", description: "Save your changes to apply." });
+    } catch (e: any) {
+      console.error("[bg-removal] failed", e);
+      toast({
+        title: "Couldn't remove background",
+        description: e?.message || "Try a different image, or upload a transparent PNG manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setRemovingBg(false);
+    }
+  };
+
+  // Applying a design preset overwrites all design fields (with confirmation).
+  const applyPreset = (presetId: string) => {
+    const preset = DESIGN_PRESETS.find((p) => p.id === presetId);
+    if (!preset || !settings) return;
+    if (!confirm(`Apply the "${preset.name}" preset? This will replace your current font, colors, sizes, placement, and button style.`)) {
+      return;
+    }
+    setSettings({ ...settings, ...preset.values } as SiteSettings);
+    toast({ title: `${preset.name} preset applied`, description: "Tweak any setting then click Save." });
+  };
 
   const publicUrl = settings?.slug ? `/t/${settings.slug}` : null;
 
@@ -473,8 +549,20 @@ const SiteBuilder = () => {
 
               {/* Logo Upload */}
               <div>
-                <Label>Tournament Logo</Label>
-                <div className="mt-2 flex items-center gap-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Tournament Logo</Label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Switch
+                      checked={settings.site_show_logo ?? true}
+                      onCheckedChange={(v) => updateField("site_show_logo" as any, v)}
+                    />
+                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                      <EyeOff className="h-3 w-3" />
+                      {settings.site_show_logo === false ? "Hidden on public page" : "Visible on public page"}
+                    </span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-4">
                   {settings.site_logo_url ? (
                     <img
                       src={settings.site_logo_url}
@@ -486,23 +574,39 @@ const SiteBuilder = () => {
                       <Image className="h-6 w-6 text-muted-foreground" />
                     </div>
                   )}
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) startCrop(file, "logo");
-                        e.target.value = "";
-                      }}
-                    />
-                    <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
-                      {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                      Upload Logo
-                    </span>
-                  </label>
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) startCrop(file, "logo");
+                          e.target.value = "";
+                        }}
+                      />
+                      <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
+                        {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        {settings.site_logo_url ? "Replace Logo" : "Upload Logo"}
+                      </span>
+                    </label>
+                    {settings.site_logo_url && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogoBackground}
+                        disabled={removingBg}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-xs font-medium hover:bg-muted transition-colors disabled:opacity-60"
+                      >
+                        {removingBg ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                        {removingBg ? "Removing background…" : "Remove background"}
+                      </button>
+                    )}
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Background removal runs in your browser — free, no upload to a third-party service. First run downloads a ~10 MB AI model.
+                </p>
               </div>
 
               {/* Hero Image Upload */}
@@ -669,7 +773,175 @@ const SiteBuilder = () => {
                 </div>
                </div>
 
-              {/* Countdown Timer Style */}
+              {/* ===== Public Page Design (fonts / placement / buttons / presets) ===== */}
+              <div className="pt-6 border-t border-border space-y-5">
+                <div>
+                  <h3 className="text-sm font-display font-bold text-foreground uppercase tracking-wider">Public Page Design</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Fine-tune fonts, placement, and button style. Changes update the live preview instantly.</p>
+                </div>
+
+                {/* Layout Presets */}
+                <div>
+                  <Label className="text-sm">Layout Preset</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Apply a starting point — overwrites font, colors, sizes, placement, and button style.</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {DESIGN_PRESETS.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => applyPreset(p.id)}
+                        className="text-left p-3 rounded-md border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors"
+                      >
+                        <div className="text-sm font-semibold text-foreground">{p.name}</div>
+                        <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">{p.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Text & background colors */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="textColor">Text Color (body)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="color"
+                        id="textColor"
+                        value={settings.site_text_color || "#1F2937"}
+                        onChange={(e) => updateField("site_text_color" as any, e.target.value)}
+                        className="w-10 h-10 rounded border border-border cursor-pointer"
+                      />
+                      <Input
+                        value={settings.site_text_color || "#1F2937"}
+                        onChange={(e) => updateField("site_text_color" as any, e.target.value)}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="bgColor">Page Background</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="color"
+                        id="bgColor"
+                        value={settings.site_background_color || "#FFFFFF"}
+                        onChange={(e) => updateField("site_background_color" as any, e.target.value)}
+                        className="w-10 h-10 rounded border border-border cursor-pointer"
+                      />
+                      <Input
+                        value={settings.site_background_color || "#FFFFFF"}
+                        onChange={(e) => updateField("site_background_color" as any, e.target.value)}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fonts */}
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="fontFamily">Font Family</Label>
+                    <select
+                      id="fontFamily"
+                      value={settings.site_font_family || "Inter"}
+                      onChange={(e) => updateField("site_font_family" as any, e.target.value)}
+                      className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      {FONT_FAMILIES.map((f) => (
+                        <option key={f.id} value={f.id} style={{ fontFamily: f.stack }}>{f.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="headingSize" className="text-xs">Heading (px)</Label>
+                      <Input
+                        id="headingSize"
+                        type="number"
+                        min={20}
+                        max={120}
+                        value={settings.site_heading_font_size ?? 60}
+                        onChange={(e) => updateField("site_heading_font_size" as any, parseInt(e.target.value, 10) || 60)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="bodySize" className="text-xs">Body (px)</Label>
+                      <Input
+                        id="bodySize"
+                        type="number"
+                        min={12}
+                        max={28}
+                        value={settings.site_body_font_size ?? 16}
+                        onChange={(e) => updateField("site_body_font_size" as any, parseInt(e.target.value, 10) || 16)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="buttonSize" className="text-xs">Button (px)</Label>
+                      <Input
+                        id="buttonSize"
+                        type="number"
+                        min={12}
+                        max={28}
+                        value={settings.site_button_font_size ?? 16}
+                        onChange={(e) => updateField("site_button_font_size" as any, parseInt(e.target.value, 10) || 16)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Placement */}
+                <div className="grid grid-cols-3 gap-3">
+                  {([
+                    ["site_logo_position", "Logo"],
+                    ["site_title_position", "Title"],
+                    ["site_button_position", "Buttons"],
+                  ] as const).map(([field, label]) => (
+                    <div key={field}>
+                      <Label className="text-xs">{label} position</Label>
+                      <select
+                        value={(settings as any)[field] || "center"}
+                        onChange={(e) => updateField(field as any, e.target.value)}
+                        className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Button style */}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Button Corner Radius</Label>
+                      <span className="text-xs font-mono text-muted-foreground">{settings.site_button_radius ?? 8}px</span>
+                    </div>
+                    <Slider
+                      value={[settings.site_button_radius ?? 8]}
+                      min={0}
+                      max={50}
+                      step={1}
+                      onValueChange={(v) => updateField("site_button_radius" as any, v[0])}
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Button Hover Effect</Label>
+                    <select
+                      value={settings.site_button_hover_effect || "darken"}
+                      onChange={(e) => updateField("site_button_hover_effect" as any, e.target.value)}
+                      className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="darken">Darken on hover</option>
+                      <option value="lighten">Lighten on hover</option>
+                      <option value="none">No effect</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <Label>Countdown Timer Style</Label>
                 <p className="text-xs text-muted-foreground mb-2">Choose how the event countdown appears on your tournament page.</p>
@@ -1312,42 +1584,28 @@ const SiteBuilder = () => {
             )}
           </div>
           <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 220px)" }}>
-            {/* Mini Preview */}
-            <div
-              className="relative h-48 flex items-center justify-center"
-              style={{
-                backgroundColor: settings.site_primary_color || "#1a5c38",
-                backgroundImage: settings.site_hero_image_url
-                  ? `url(${settings.site_hero_image_url})`
-                  : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            >
-              {settings.site_hero_image_url && (
-                <div className="absolute inset-0 bg-black/50" />
-              )}
-              <div className="relative z-10 text-center px-4">
-                {settings.site_logo_url && (
-                  <img
-                    src={settings.site_logo_url}
-                    alt=""
-                    className="h-12 w-12 mx-auto mb-2 object-contain"
-                  />
-                )}
-                <h3
-                  className="text-xl font-bold font-display"
-                  style={{ color: "#ffffff" }}
-                >
-                  {settings.site_hero_title || settings.title}
-                </h3>
-                {(settings.site_hero_subtitle) && (
-                  <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    {settings.site_hero_subtitle}
-                  </p>
-                )}
-              </div>
-            </div>
+            {/* Mini Preview — reflects all design settings in real time */}
+            <DesignPreview
+              showLogo={settings.site_show_logo ?? true}
+              logoUrl={settings.site_logo_url}
+              heroImageUrl={settings.site_hero_image_url}
+              heroOpacity={settings.site_hero_opacity ?? 100}
+              title={settings.site_hero_title || settings.title}
+              subtitle={settings.site_hero_subtitle || ""}
+              fontFamily={settings.site_font_family || "Inter"}
+              headingSize={settings.site_heading_font_size ?? 60}
+              bodySize={settings.site_body_font_size ?? 16}
+              buttonSize={settings.site_button_font_size ?? 16}
+              textColor={settings.site_text_color || "#1F2937"}
+              backgroundColor={settings.site_background_color || "#FFFFFF"}
+              primaryColor={settings.site_primary_color || "#1a5c38"}
+              secondaryColor={settings.site_secondary_color || "#c8a84e"}
+              logoPosition={(settings.site_logo_position as Position) || "center"}
+              titlePosition={(settings.site_title_position as Position) || "center"}
+              buttonPosition={(settings.site_button_position as Position) || "center"}
+              buttonRadius={settings.site_button_radius ?? 8}
+              buttonHoverEffect={(settings.site_button_hover_effect as HoverEffect) || "darken"}
+            />
 
             {/* Preview Body */}
             <div className="p-6 space-y-6">

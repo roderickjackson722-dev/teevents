@@ -17,6 +17,9 @@ export default function Gallery() {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],

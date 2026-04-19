@@ -107,7 +107,7 @@ export default function Gallery() {
         </div>
         {selectedTournament && (
           <>
-            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { beginUpload(e.target.files); e.target.value = ""; }} />
             <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImagePlus className="mr-2 h-4 w-4" />}
               {uploading ? "Uploading..." : "Upload Photos"}
@@ -147,6 +147,18 @@ export default function Gallery() {
           <p className="text-muted-foreground">No photos yet. Upload some to get started.</p>
         </div>
       ) : null}
+
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={(o) => {
+          setCropOpen(o);
+          if (!o) { setCropQueue([]); setCropSrc(null); }
+        }}
+        imageSrc={cropSrc}
+        defaultAspect="free"
+        title={cropQueue.length > 1 ? `Crop Photo (${cropQueue.length} remaining)` : "Crop Photo"}
+        onCropped={handleCropped}
+      />
     </div>
   );
 }

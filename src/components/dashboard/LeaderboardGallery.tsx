@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Image as ImageIcon, Loader2, Trash2, Upload, Star } from "lucide-react";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
 interface GalleryItem {
   id: string;

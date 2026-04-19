@@ -15,6 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { BookTemplate, Plus, Loader2, Trash2, Pencil, Upload, Image, Zap, Store } from "lucide-react";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 import { categories, categoryLabel, fmt, type ProductTemplate } from "./types";
 
 interface Props {

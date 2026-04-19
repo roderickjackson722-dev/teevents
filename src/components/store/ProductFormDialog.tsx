@@ -12,6 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Loader2, Upload, Image } from "lucide-react";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 import { categories, type Product } from "./types";
 
 interface Props {

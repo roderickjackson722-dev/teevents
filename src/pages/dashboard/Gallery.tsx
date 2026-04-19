@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImagePlus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
 export default function Gallery() {
   const { org, loading: orgLoading } = useOrgContext();

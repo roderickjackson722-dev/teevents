@@ -30,6 +30,14 @@ import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
 import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
 import { Slider } from "@/components/ui/slider";
+import {
+  FONT_FAMILIES,
+  DESIGN_PRESETS,
+  type Position,
+  type HoverEffect,
+} from "@/lib/siteDesign";
+import { DesignPreview } from "@/components/site-builder/DesignPreview";
+import { Wand2, EyeOff } from "lucide-react";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -208,6 +216,19 @@ interface SiteSettings {
   custom_slug: string | null;
   url_edit_count: number | null;
   show_in_public_search: boolean | null;
+  // Public Page Design
+  site_show_logo: boolean | null;
+  site_text_color: string | null;
+  site_background_color: string | null;
+  site_font_family: string | null;
+  site_heading_font_size: number | null;
+  site_body_font_size: number | null;
+  site_button_font_size: number | null;
+  site_logo_position: string | null;
+  site_title_position: string | null;
+  site_button_position: string | null;
+  site_button_radius: number | null;
+  site_button_hover_effect: string | null;
 }
 
 const SiteBuilder = () => {
@@ -292,6 +313,18 @@ const SiteBuilder = () => {
         printable_layout: settings.printable_layout || "classic",
         hole_pars: settings.hole_pars || null,
         countdown_style: settings.countdown_style || "glass",
+        site_show_logo: settings.site_show_logo ?? true,
+        site_text_color: settings.site_text_color || "#1F2937",
+        site_background_color: settings.site_background_color || "#FFFFFF",
+        site_font_family: settings.site_font_family || "Inter",
+        site_heading_font_size: settings.site_heading_font_size ?? 60,
+        site_body_font_size: settings.site_body_font_size ?? 16,
+        site_button_font_size: settings.site_button_font_size ?? 16,
+        site_logo_position: settings.site_logo_position || "center",
+        site_title_position: settings.site_title_position || "center",
+        site_button_position: settings.site_button_position || "center",
+        site_button_radius: settings.site_button_radius ?? 8,
+        site_button_hover_effect: settings.site_button_hover_effect || "darken",
       } as any)
       .eq("id", settings.id);
 

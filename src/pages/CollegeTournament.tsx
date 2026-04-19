@@ -83,6 +83,10 @@ const CollegeTournament = () => {
   });
   const [players, setPlayers] = useState([
     { first_name: "", last_name: "", year: "", position: "" },
+    { first_name: "", last_name: "", year: "", position: "" },
+    { first_name: "", last_name: "", year: "", position: "" },
+    { first_name: "", last_name: "", year: "", position: "" },
+    { first_name: "", last_name: "", year: "", position: "" },
   ]);
   const [registering, setRegistering] = useState(false);
   const [regSuccess, setRegSuccess] = useState(false);

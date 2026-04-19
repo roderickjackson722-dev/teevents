@@ -938,6 +938,16 @@ const Sponsors = () => {
           </CardContent>
         </Card>
       )}
+
+      <ImageCropperDialog
+        open={logoCropOpen}
+        onOpenChange={(o) => { setLogoCropOpen(o); if (!o) setLogoCropSrc(null); }}
+        imageSrc={logoCropSrc}
+        defaultAspect="1:1"
+        outputMime="image/png"
+        title="Crop Sponsor Logo"
+        onCropped={(file) => handleLogoUpload(file)}
+      />
     </div>
   );
 };

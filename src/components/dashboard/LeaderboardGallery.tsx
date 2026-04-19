@@ -27,6 +27,8 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [caption, setCaption] = useState("");
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const fetchItems = useCallback(async () => {
     if (!tournamentId) return;
@@ -128,10 +130,12 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const f = e.target.files?.[0];
-                  if (f) handleUpload(f);
                   e.target.value = "";
+                  if (!f) return;
+                  setCropSrc(await fileToDataUrl(f));
+                  setCropOpen(true);
                 }}
               />
               <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors h-10">

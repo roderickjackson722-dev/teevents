@@ -223,6 +223,19 @@ const SiteBuilder = () => {
   const [uploadingHero, setUploadingHero] = useState(false);
   const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables">("branding");
 
+  // Cropper state
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [pendingFileSrc, setPendingFileSrc] = useState<string | null>(null);
+  const [pendingType, setPendingType] = useState<"logo" | "hero">("hero");
+  const cropAspect: AspectRatioOption = pendingType === "logo" ? "1:1" : "16:9";
+
+  const startCrop = async (file: File, type: "logo" | "hero") => {
+    const src = await fileToDataUrl(file);
+    setPendingFileSrc(src);
+    setPendingType(type);
+    setCropperOpen(true);
+  };
+
   useEffect(() => {
     if (!id) return;
     supabase
@@ -261,6 +274,7 @@ const SiteBuilder = () => {
         site_primary_color: settings.site_primary_color,
         site_secondary_color: settings.site_secondary_color,
         site_hero_image_url: settings.site_hero_image_url,
+        site_hero_opacity: settings.site_hero_opacity ?? 100,
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
         schedule_info: settings.schedule_info,

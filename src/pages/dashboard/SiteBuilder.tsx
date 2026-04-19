@@ -28,6 +28,8 @@ import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
+import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
+import { Slider } from "@/components/ui/slider";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -190,6 +192,7 @@ interface SiteSettings {
   site_primary_color: string | null;
   site_secondary_color: string | null;
   site_hero_image_url: string | null;
+  site_hero_opacity: number | null;
   contact_email: string | null;
   contact_phone: string | null;
   schedule_info: string | null;

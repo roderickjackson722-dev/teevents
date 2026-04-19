@@ -407,6 +407,49 @@ const SiteBuilder = () => {
     [settings, org, toast]
   );
 
+  // Background removal for the tournament logo (in-browser, free, no API key).
+  const [removingBg, setRemovingBg] = useState(false);
+  const handleRemoveLogoBackground = async () => {
+    if (!settings?.site_logo_url || !org) return;
+    setRemovingBg(true);
+    try {
+      toast({
+        title: "Removing background…",
+        description: "First run downloads a small AI model — this may take ~10s.",
+      });
+      const { removeBackground } = await import("@imgly/background-removal");
+      const blob = await removeBackground(settings.site_logo_url);
+      const path = `${org.orgId}/${settings.id}/logo-nobg-${Date.now()}.png`;
+      const { error: upErr } = await supabase.storage
+        .from("tournament-assets")
+        .upload(path, blob, { upsert: true, contentType: "image/png" });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      updateField("site_logo_url", urlData.publicUrl);
+      toast({ title: "Background removed!", description: "Save your changes to apply." });
+    } catch (e: any) {
+      console.error("[bg-removal] failed", e);
+      toast({
+        title: "Couldn't remove background",
+        description: e?.message || "Try a different image, or upload a transparent PNG manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setRemovingBg(false);
+    }
+  };
+
+  // Applying a design preset overwrites all design fields (with confirmation).
+  const applyPreset = (presetId: string) => {
+    const preset = DESIGN_PRESETS.find((p) => p.id === presetId);
+    if (!preset || !settings) return;
+    if (!confirm(`Apply the "${preset.name}" preset? This will replace your current font, colors, sizes, placement, and button style.`)) {
+      return;
+    }
+    setSettings({ ...settings, ...preset.values } as SiteSettings);
+    toast({ title: `${preset.name} preset applied`, description: "Tweak any setting then click Save." });
+  };
+
   const publicUrl = settings?.slug ? `/t/${settings.slug}` : null;
 
   const tabs = [

@@ -106,6 +106,8 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
   const [uploadType, setUploadType] = useState("logo");
   const [uploadNotes, setUploadNotes] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const fetchAssets = useCallback(async () => {
     setLoading(true);
@@ -192,7 +194,22 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
                   <Input value={uploadNotes} onChange={e => setUploadNotes(e.target.value)} placeholder="e.g. High-res for print" />
                 </div>
                 <label className="cursor-pointer block">
-                  <input type="file" accept="image/*,.pdf,.svg" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,.svg"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!f) return;
+                      if (f.type.startsWith("image/") && f.type !== "image/svg+xml") {
+                        setCropSrc(await fileToDataUrl(f));
+                        setCropOpen(true);
+                      } else {
+                        handleUpload(f);
+                      }
+                    }}
+                  />
                   <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
                     {uploading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
                       <>

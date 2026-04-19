@@ -538,6 +538,36 @@ const SiteBuilder = () => {
                       Upload Hero Image
                     </span>
                   </label>
+
+                  {settings.site_hero_image_url && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Background Transparency</Label>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {settings.site_hero_opacity ?? 100}%
+                        </span>
+                      </div>
+                      <Slider
+                        value={[settings.site_hero_opacity ?? 100]}
+                        min={0}
+                        max={100}
+                        step={1}
+                        onValueChange={(v) => updateField("site_hero_opacity" as any, v[0])}
+                      />
+                      <div className="relative rounded-md overflow-hidden border border-border h-24" style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }}>
+                        <div
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url(${settings.site_hero_image_url})`,
+                            opacity: (settings.site_hero_opacity ?? 100) / 100,
+                          }}
+                        />
+                        <div className="relative z-10 h-full flex items-center justify-center text-white text-xs font-semibold tracking-wide drop-shadow">
+                          LIVE PREVIEW
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -493,7 +493,8 @@ const SiteBuilder = () => {
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, "logo");
+                        if (file) startCrop(file, "logo");
+                        e.target.value = "";
                       }}
                     />
                     <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
@@ -528,7 +529,8 @@ const SiteBuilder = () => {
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, "hero");
+                        if (file) startCrop(file, "hero");
+                        e.target.value = "";
                       }}
                     />
                     <span className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">

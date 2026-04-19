@@ -3453,14 +3453,26 @@ export type Database = {
           schedule_info: string | null
           scoring_format: string
           show_in_public_search: boolean
+          site_background_color: string | null
+          site_body_font_size: number | null
+          site_button_font_size: number | null
+          site_button_hover_effect: string | null
+          site_button_position: string | null
+          site_button_radius: number | null
+          site_font_family: string | null
+          site_heading_font_size: number | null
           site_hero_image_url: string | null
           site_hero_opacity: number
           site_hero_subtitle: string | null
           site_hero_title: string | null
+          site_logo_position: string | null
           site_logo_url: string | null
           site_primary_color: string | null
           site_published: boolean | null
           site_secondary_color: string | null
+          site_show_logo: boolean | null
+          site_text_color: string | null
+          site_title_position: string | null
           slug: string | null
           status: string
           template: string | null
@@ -3523,14 +3535,26 @@ export type Database = {
           schedule_info?: string | null
           scoring_format?: string
           show_in_public_search?: boolean
+          site_background_color?: string | null
+          site_body_font_size?: number | null
+          site_button_font_size?: number | null
+          site_button_hover_effect?: string | null
+          site_button_position?: string | null
+          site_button_radius?: number | null
+          site_font_family?: string | null
+          site_heading_font_size?: number | null
           site_hero_image_url?: string | null
           site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
+          site_logo_position?: string | null
           site_logo_url?: string | null
           site_primary_color?: string | null
           site_published?: boolean | null
           site_secondary_color?: string | null
+          site_show_logo?: boolean | null
+          site_text_color?: string | null
+          site_title_position?: string | null
           slug?: string | null
           status?: string
           template?: string | null
@@ -3593,14 +3617,26 @@ export type Database = {
           schedule_info?: string | null
           scoring_format?: string
           show_in_public_search?: boolean
+          site_background_color?: string | null
+          site_body_font_size?: number | null
+          site_button_font_size?: number | null
+          site_button_hover_effect?: string | null
+          site_button_position?: string | null
+          site_button_radius?: number | null
+          site_font_family?: string | null
+          site_heading_font_size?: number | null
           site_hero_image_url?: string | null
           site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
+          site_logo_position?: string | null
           site_logo_url?: string | null
           site_primary_color?: string | null
           site_published?: boolean | null
           site_secondary_color?: string | null
+          site_show_logo?: boolean | null
+          site_text_color?: string | null
+          site_title_position?: string | null
           slug?: string | null
           status?: string
           template?: string | null

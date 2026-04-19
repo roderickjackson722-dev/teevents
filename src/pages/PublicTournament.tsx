@@ -590,7 +590,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const visibleSponsors = sponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#ffffff" }} id="top">
+    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}
       {showConfirmation && (
         <div className="fixed top-14 left-0 right-0 z-40">
@@ -705,25 +705,27 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           style={{ textAlign: style.heroAlign }}
         >
           {/* Logo */}
-          {tournament.site_logo_url && tpl !== "modern" && (
-            <img
-              src={tournament.site_logo_url}
-              alt={heroTitle}
-              className={`object-contain mb-6 ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`}
-            />
+          {showLogo && tournament.site_logo_url && tpl !== "modern" && (
+            <div className={`w-full flex mb-6 ${flexJustify[logoPos]}`}>
+              <img
+                src={tournament.site_logo_url}
+                alt={heroTitle}
+                className={`object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`}
+              />
+            </div>
           )}
 
           {/* Title */}
           <h1
-            className="font-display font-bold leading-tight tournament-title mx-auto"
+            className="font-bold leading-tight tournament-title"
             style={{
               color: "#ffffff",
               textShadow: "0 2px 20px rgba(0,0,0,0.4)",
-              fontSize: "clamp(1.75rem, 5vw, 3.75rem)",
+              fontSize: `clamp(1.75rem, 5vw, ${headingSize}px)`,
               letterSpacing: "normal",
-              whiteSpace: "nowrap",
-              textAlign: "center",
-              maxWidth: "100%",
+              textAlign: textAlignClass[titlePos],
+              width: "100%",
+              fontFamily: fontStackCss,
             }}
           >
             {heroTitle}

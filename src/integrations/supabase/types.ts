@@ -3454,6 +3454,7 @@ export type Database = {
           scoring_format: string
           show_in_public_search: boolean
           site_hero_image_url: string | null
+          site_hero_opacity: number
           site_hero_subtitle: string | null
           site_hero_title: string | null
           site_logo_url: string | null
@@ -3523,6 +3524,7 @@ export type Database = {
           scoring_format?: string
           show_in_public_search?: boolean
           site_hero_image_url?: string | null
+          site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
           site_logo_url?: string | null
@@ -3592,6 +3594,7 @@ export type Database = {
           scoring_format?: string
           show_in_public_search?: boolean
           site_hero_image_url?: string | null
+          site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
           site_logo_url?: string | null

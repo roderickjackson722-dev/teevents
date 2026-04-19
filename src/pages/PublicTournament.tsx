@@ -24,7 +24,7 @@ interface TournamentSite {
   id: string; title: string; slug: string | null; description: string | null; date: string | null;
   location: string | null; course_name: string | null; site_logo_url: string | null;
   site_hero_title: string | null; site_hero_subtitle: string | null; site_primary_color: string | null;
-  site_secondary_color: string | null; site_hero_image_url: string | null; contact_email: string | null;
+  site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
   waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null;
@@ -639,14 +639,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       <section
         className="relative min-h-screen flex flex-col items-center justify-center pt-14"
         style={{
-          backgroundImage: tournament.site_hero_image_url
-            ? `url(${tournament.site_hero_image_url})`
-            : undefined,
           backgroundColor: primary,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
         }}
       >
+        {/* Background image (with adjustable opacity, isolated so overlay/content stay readable) */}
+        {tournament.site_hero_image_url && (
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${tournament.site_hero_image_url})`,
+              opacity: (tournament.site_hero_opacity ?? 100) / 100,
+            }}
+          />
+        )}
         {/* Overlay */}
         <div className="absolute inset-0" style={{ background: style.heroOverlay }} />
 

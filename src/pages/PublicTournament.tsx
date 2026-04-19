@@ -589,8 +589,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const sponsorPages = Math.ceil(sponsors.length / sponsorsPerPage);
   const visibleSponsors = sponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);
 
+  // Hover effect for design-controlled buttons
+  const hoverFilter =
+    tournament.site_button_hover_effect === "lighten" ? "brightness(1.12)" :
+    tournament.site_button_hover_effect === "none" ? "none" :
+    "brightness(0.88)";
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
+      {/* Design-system button hover effect (organizer-controlled) */}
+      <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}
       {showConfirmation && (
         <div className="fixed top-14 left-0 right-0 z-40">

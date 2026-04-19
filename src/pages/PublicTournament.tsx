@@ -1085,7 +1085,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               {tournament.site_logo_url && (
                 <img src={tournament.site_logo_url} alt="" className="h-16 w-16 mx-auto mb-6 object-contain" />
               )}
-              <p className="text-base md:text-lg leading-relaxed whitespace-pre-wrap" style={{ color: "#333" }}>
+              <p className="leading-relaxed whitespace-pre-wrap" style={{ color: textColor, fontSize: `${bodySize}px` }}>
                 {tournament.description}
               </p>
             </motion.div>

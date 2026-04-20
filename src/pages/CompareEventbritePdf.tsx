@@ -115,7 +115,7 @@ const CompareEventbritePdf = () => {
           <p>Start free or book a live demo to see TeeVents in action.</p>
           <div class="links">
             <a href="https://teevents.golf/get-started">teevents.golf/get-started</a> · 
-            <a href="https://calendly.com/teevents-golf/demo">Book a Demo</a> · 
+            <a href="https://www.teevents.golf/book">Book a Demo</a> · 
             info@teevents.golf · (602) 413-1338
           </div>
         </div>

@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-const CALENDLY = "https://calendly.com/teevents-golf/demo";
+const BOOK_DEMO_URL = "/book";
 
 type Status = "yes" | "no" | "warn";
 
@@ -106,15 +106,13 @@ const CompareEventbrite = () => {
               Eventbrite is great for concerts. TeeVents is built for golf tournaments.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href={CALENDLY}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to={BOOK_DEMO_URL}
                 className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
                 <Calendar className="h-4 w-4" /> Book a Live Demo
-              </a>
+              </Link>
               <Link
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-primary-foreground/10 transition-colors"
@@ -216,15 +214,13 @@ const CompareEventbrite = () => {
               Join hundreds of golf tournament organizers who chose TeeVents for lower fees, golf-specific features, and faster payouts.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href={CALENDLY}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to={BOOK_DEMO_URL}
                 className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
                 <Calendar className="h-4 w-4" /> Book a Live Demo
-              </a>
+              </Link>
               <Link
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-primary-foreground/10 transition-colors"

@@ -199,7 +199,7 @@ const SalesFlyer = () => {
                   Start Free Trial
                 </a>
                 <a
-                  href="https://www.teevents.golf/contact"
+                  href="https://www.teevents.golf/book"
                   style={{
                     display: "inline-block",
                     background: "#F5A623",

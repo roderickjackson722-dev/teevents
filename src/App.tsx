@@ -92,6 +92,7 @@ import SponsorRegistration from "./pages/SponsorRegistration";
 import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
+import Book from "./pages/Book";
 
 const queryClient = new QueryClient();
 
@@ -151,7 +152,8 @@ const App = () => (
           <Route path="/dashboard/flyer-studio" element={<DashboardLayout><PlanGate feature="flyer-studio"><FlyerStudio /></PlanGate></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/demo" element={<Navigate to="/how-it-works" replace />} />
+          <Route path="/book" element={<Book />} />
+          <Route path="/demo" element={<Navigate to="/book" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/tournament/:slug" element={<PublicTournament />} />
           <Route path="/tournaments/search" element={<TournamentSearch />} />

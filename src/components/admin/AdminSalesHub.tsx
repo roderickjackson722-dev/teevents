@@ -15,6 +15,7 @@ import {
   Clock, CheckCircle2, MessageSquare, Mail, Check, Download, BookOpen, Shield,
   Zap, BarChart3, FileText, Image, Edit, Trash2, Plus, Link2, QrCode, FolderOpen
 } from "lucide-react";
+import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
 import { downloadHtmlAsPdf } from "@/components/printables/printUtils";
 
@@ -560,9 +561,10 @@ function EmailTemplatesTab() {
 
 // ── Links & QR Codes Tab ──
 const SALES_LINKS = [
+  { name: "Book a Demo", url: "/book", useCase: "Primary demo booking landing page" },
   { name: "Comparison Page", url: "/compare/eventbrite-vs-teevents", useCase: "Share in emails & social" },
   { name: "Get Started", url: "/get-started", useCase: "Direct signups" },
-  { name: "Demo Calendly", url: "https://calendly.com/teevents-golf/demo", useCase: "Booking link", external: true },
+  { name: "Demo Calendly", url: "https://calendly.com/teevents/teevents-demo", useCase: "Booking link", external: true },
   { name: "Sample Organizer", url: "/sample-organizer", useCase: "Share with prospects (noindex)" },
   { name: "Pricing Page", url: "/pricing", useCase: "Fee explanation" },
   { name: "How It Works", url: "/how-it-works", useCase: "Platform overview" },
@@ -585,36 +587,53 @@ function LinksQrTab() {
     setTimeout(() => setCopiedIdx(null), 2000);
   };
 
+  const downloadQR = (idx: number, name: string) => {
+    const canvas = document.getElementById(`sales-qr-${idx}`) as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const url = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `qr-${name.toLowerCase().replace(/\s+/g, "-")}.png`;
+    a.click();
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-foreground">Links & QR Codes</h3>
-        <p className="text-sm text-muted-foreground">Quick-copy links for sales emails, social media, and presentations</p>
+        <p className="text-sm text-muted-foreground">Quick-copy links and downloadable QR codes for sales emails, social media, and presentations</p>
       </div>
       <div className="grid gap-3">
-        {SALES_LINKS.map((link, idx) => (
-          <Card key={idx}>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Link2 className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-foreground text-sm">{link.name}</h4>
-                <p className="text-xs text-muted-foreground truncate">{getFullUrl(link)}</p>
-                <p className="text-xs text-muted-foreground/70 mt-0.5">{link.useCase}</p>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button size="sm" variant="outline" onClick={() => handleCopy(link, idx)} className="gap-1.5">
-                  {copiedIdx === idx ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  {copiedIdx === idx ? "Copied!" : "Copy"}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => window.open(link.external ? link.url : link.url, "_blank")} className="gap-1.5">
-                  <ExternalLink className="h-3 w-3" /> Open
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {SALES_LINKS.map((link, idx) => {
+          const fullUrl = getFullUrl(link);
+          return (
+            <Card key={idx}>
+              <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="bg-white p-2 rounded-md border border-border flex-shrink-0">
+                  <QRCodeSVG value={fullUrl} size={88} />
+                  <QRCodeCanvas id={`sales-qr-${idx}`} value={fullUrl} size={512} className="hidden" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground text-sm">{link.name}</h4>
+                  <p className="text-xs text-muted-foreground truncate">{fullUrl}</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">{link.useCase}</p>
+                </div>
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                  <Button size="sm" variant="outline" onClick={() => handleCopy(link, idx)} className="gap-1.5">
+                    {copiedIdx === idx ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copiedIdx === idx ? "Copied!" : "Copy"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => downloadQR(idx, link.name)} className="gap-1.5">
+                    <Download className="h-3 w-3" /> QR
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => window.open(link.url, "_blank")} className="gap-1.5">
+                    <ExternalLink className="h-3 w-3" /> Open
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

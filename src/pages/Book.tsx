@@ -64,7 +64,7 @@ const Book = () => {
             Discover how tournament organizers save 10+ hours, collect payments automatically,
             and run a pro-level event with our all-in-one platform.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex justify-center">
             <Button
               asChild
               size="lg"
@@ -73,17 +73,6 @@ const Book = () => {
               <a href={CALENDLY_URL}>
                 <Calendar className="mr-2 h-5 w-5" />
                 Book Your Demo Now
-              </a>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground rounded-full px-8 py-6"
-            >
-              <a href="/how-it-works">
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Watch a 2-Min Overview
               </a>
             </Button>
           </div>

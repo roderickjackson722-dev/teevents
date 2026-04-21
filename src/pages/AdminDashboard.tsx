@@ -672,6 +672,8 @@ const AdminDashboard = () => {
       throw err;
     }
   };
+
+  const handleDeleteTournament = async (tournamentId: string) => {
     if (deleteConfirmStep === 0 || deletingTournament !== tournamentId) {
       setDeletingTournament(tournamentId);
       setDeleteConfirmStep(1);

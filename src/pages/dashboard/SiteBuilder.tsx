@@ -38,6 +38,7 @@ import {
 } from "@/lib/siteDesign";
 import { DesignPreview } from "@/components/site-builder/DesignPreview";
 import { Wand2, EyeOff } from "lucide-react";
+import { US_STATES } from "@/lib/usStates";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");

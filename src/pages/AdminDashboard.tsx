@@ -1553,9 +1553,44 @@ const AdminDashboard = () => {
                             </label>
                           </div>
                         </td>
-                        <td className="p-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                        <td className="p-3">
+                          {(() => {
+                            const connected = !!t.organizations?.stripe_account_id;
+                            const override = t.payment_method_override || "default";
+                            const usingDefault = !connected && override === "default";
+                            const forcedPlatform = override === "force_platform";
+                            const forcedStripe = override === "force_stripe";
+                            return (
+                              <div className="space-y-1">
+                                <div>
+                                  {connected ? (
+                                    <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.5 rounded font-medium">Stripe Connected</span>
+                                  ) : (
+                                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-medium">No Stripe</span>
+                                  )}
+                                </div>
+                                {forcedPlatform && (
+                                  <div className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded inline-block">
+                                    🔒 Forced TeeVents
+                                  </div>
+                                )}
+                                {forcedStripe && (
+                                  <div className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded inline-block">
+                                    🔒 Forced Stripe
+                                  </div>
+                                )}
+                                {usingDefault && (
+                                  <div
+                                    className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                                    title="Funds held by TeeVents until organizer connects Stripe"
+                                  >
+                                    ⚠️ Default → TeeVents
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </td>
                             <span className="font-semibold">{t.tournament_registrations?.length || 0}</span>
                             {t.max_players && (
                               <span className="text-muted-foreground text-xs">/ {t.max_players}</span>

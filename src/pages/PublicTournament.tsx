@@ -766,8 +766,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             )}
           </div>
 
-          {/* Countdown Timer */}
-          {countdown && !countdown.passed && (() => {
+          {/* Countdown Timer (organizer-controlled) */}
+          {countdown && !countdown.passed && (tournament as any)?.show_countdown && (() => {
             const countdownStyle = (tournament as any)?.countdown_style || "glass";
             const units = [
               { value: countdown.days, label: "Days" },

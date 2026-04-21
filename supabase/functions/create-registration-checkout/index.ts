@@ -226,18 +226,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const checkoutParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email.trim(),
       line_items: lineItems,
       mode: "payment",
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: {
-          destination: organizerStripeAccountId,
-        },
-        on_behalf_of: organizerStripeAccountId,
-      },
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
       metadata: {
@@ -254,8 +247,31 @@ Deno.serve(async (req) => {
         application_fee_cents: String(applicationFeeAmount),
         organizer_net_cents: String(organizerNetCents),
         charge_total_cents: String(chargeTotalCents),
+        routing: useDestinationCharge ? "destination" : "platform_escrow",
+        payment_method_override: override,
       },
-    });
+    };
+
+    if (useDestinationCharge) {
+      // Organizer Stripe Connect: destination charge with platform fee
+      checkoutParams.payment_intent_data = {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: { destination: organizerStripeAccountId },
+        on_behalf_of: organizerStripeAccountId,
+      };
+    } else {
+      // Platform escrow: charge straight to TeeVents account, hold full amount
+      // Fee is recorded but not transferred (no organizer destination yet)
+      checkoutParams.payment_intent_data = {
+        metadata: {
+          escrow_for_organization: tournament.organization_id,
+          gross_registration_cents: String(registrationFeeCents),
+          platform_fee_cents: String(platformFeeCents),
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(checkoutParams);
 
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),

@@ -361,6 +361,20 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true });
       }
 
+      if (action === "set-payment-override") {
+        if (!body.tournament_id) return jsonRes({ error: "Missing tournament_id" }, 400);
+        const allowed = ["default", "force_stripe", "force_platform"];
+        if (!allowed.includes(body.payment_method_override)) {
+          return jsonRes({ error: "Invalid payment_method_override" }, 400);
+        }
+        const { error } = await adminClient
+          .from("tournaments")
+          .update({ payment_method_override: body.payment_method_override })
+          .eq("id", body.tournament_id);
+        if (error) return jsonRes({ error: error.message }, 400);
+        return jsonRes({ success: true });
+      }
+
       if (action === "delete-demo-event") {
         // Get the demo event to find org & tournament
         const { data: demo } = await adminClient.from("admin_demo_events").select("*").eq("id", body.id).single();

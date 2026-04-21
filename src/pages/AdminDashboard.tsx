@@ -1486,6 +1486,7 @@ const AdminDashboard = () => {
                     <tr>
                       <th className="text-left p-3 font-medium">Tournament</th>
                       <th className="text-left p-3 font-medium">Organization</th>
+                      <th className="text-left p-3 font-medium">Payout</th>
                       <th className="text-center p-3 font-medium">Players</th>
                       <th className="text-left p-3 font-medium">Plan</th>
                       <th className="text-center p-3 font-medium">Published</th>

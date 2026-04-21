@@ -4,29 +4,60 @@ import { Calendar, MapPin, ExternalLink, Image, Trophy } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 
+type EventCardData = {
+  id: string;
+  title: string;
+  description: string | null;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  link: string | null;
+  gallery_url: string | null;
+  results_url: string | null;
+  status: string;
+  display_order: number;
+};
+
 const Events = () => {
-  const [events, setEvents] = useState<Tables<"events">[]>([]);
+  const [events, setEvents] = useState<EventCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvents = async () => {
+      // Read from the unified tournaments table — managed-by-TeeVents tournaments
+      // (migrated from the legacy CMS events table).
       const { data } = await supabase
-        .from("events")
-        .select("*")
+        .from("tournaments")
+        .select("id, title, description, date, location, image_url, external_link, gallery_url, results_url, status, display_order")
+        .eq("managed_by_teevents", true)
+        .order("display_order", { ascending: true })
         .order("date", { ascending: false });
-      setEvents(data || []);
+
+      const mapped: EventCardData[] = (data || []).map((t: any) => ({
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        date: t.date,
+        location: t.location,
+        image_url: t.image_url,
+        link: t.external_link,
+        gallery_url: t.gallery_url,
+        results_url: t.results_url,
+        status: t.status === "past" ? "past" : "current",
+        display_order: t.display_order ?? 0,
+      }));
+      setEvents(mapped);
       setLoading(false);
     };
     fetchEvents();
   }, []);
 
-  const currentEvents = events.filter((e) => e.status === "current");
+  const currentEvents = events.filter((e) => e.status !== "past");
   const pastEvents = events.filter((e) => e.status === "past");
 
-  const EventCard = ({ event, index }: { event: Tables<"events">; index: number }) => (
+  const EventCard = ({ event, index }: { event: EventCardData; index: number }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -52,11 +83,7 @@ const Events = () => {
           {event.date && (
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              {new Date(event.date).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {new Date(event.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
             </span>
           )}
           {event.location && (
@@ -68,32 +95,17 @@ const Events = () => {
         </div>
         <div className="flex flex-wrap gap-3">
           {event.link && (
-            <a
-              href={event.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
-            >
+            <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors">
               View Details <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}
-          {(event as any).gallery_url && (
-            <a
-              href={(event as any).gallery_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
-            >
+          {event.gallery_url && (
+            <a href={event.gallery_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors">
               <Image className="h-3.5 w-3.5" /> Gallery
             </a>
           )}
-          {(event as any).results_url && (
-            <a
-              href={(event as any).results_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors"
-            >
+          {event.results_url && (
+            <a href={event.results_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-secondary/80 transition-colors">
               <Trophy className="h-3.5 w-3.5" /> Results
             </a>
           )}
@@ -105,24 +117,14 @@ const Events = () => {
   return (
     <Layout>
       <SEO title="Events" description="Browse upcoming and past golf tournaments managed by TeeVents — view results, galleries, and event details." path="/events" />
-      {/* Hero */}
       <section className="relative py-24 md:py-32">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${aboutBg})` }} />
         <div className="absolute inset-0 bg-overlay-green" />
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-display font-bold text-primary-foreground mb-4"
-          >
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl font-display font-bold text-primary-foreground mb-4">
             Events
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-primary-foreground/80 max-w-xl mx-auto"
-          >
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-primary-foreground/80 max-w-xl mx-auto">
             Browse our current and past tournament events
           </motion.p>
         </div>

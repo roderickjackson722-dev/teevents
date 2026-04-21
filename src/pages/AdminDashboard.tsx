@@ -758,12 +758,10 @@ const AdminDashboard = () => {
             </div>
 
             <div>
-              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["teevents-managed", "TeeVents Managed Tournaments", Trophy],
-                  ["sponsorship-pages", "Sponsorship Pages", Target],
-                  ["sales-hub", "Outreach / Sales Hub", Target],
+                  ["all-tournaments", "Platform Tournaments", Trophy],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -779,10 +777,38 @@ const AdminDashboard = () => {
             </div>
 
             <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["teevents-managed", "TeeVents Managed Tournaments", Trophy],
+                  ["requests", "Access Requests", Users],
+                  ["emails", "Auto-Approve Emails", Mail],
+                  ["college", "College Hub", School],
+                  ["sponsorship-pages", "Sponsorship Pages", Target],
+                  ["sales-hub", "Outreach / Sales Hub", Target],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                    {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
+                      <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
+                        {requests.filter(r => r.status === "pending").length}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Other</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["events", "CMS Events (legacy)", Calendar],
                   ["reviews", "Reviews", Star],
                   ["demos", "Demo Events", Trophy],
                   ["promos", "Promo Codes", Tag],
@@ -807,37 +833,92 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* TeeVents Managed Tournaments Tab — only tournaments flagged managed_by_teevents */}
+          {/* TeeVents Managed Tournaments Tab — only tournaments flagged managed_by_teevents, drag to reorder */}
           {activeTab === "teevents-managed" && (
             <div className="space-y-3">
               <div className="bg-card border border-border rounded-lg p-4 text-sm text-muted-foreground">
-                Tournaments flagged as <strong>Managed by TeeVents</strong>. Toggle this flag from the Platform Tournaments tab.
+                Tournaments flagged as <strong>Managed by TeeVents</strong> appear here. Drag to reorder — this controls the display order on public listings (lower numbers first).
               </div>
               {allTournaments.filter((t: any) => t.managed_by_teevents).length === 0 && (
                 <div className="bg-card rounded-lg border border-border p-8 text-center text-muted-foreground">
                   No tournaments are currently flagged as managed by TeeVents.
                 </div>
               )}
-              {allTournaments.filter((t: any) => t.managed_by_teevents).map((t: any) => (
-                <div key={t.id} className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">{t.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {t.organizations?.name || "—"} · {t.date ? new Date(t.date).toLocaleDateString() : "No date"}
+              <DragDropContext
+                onDragEnd={async (result: DropResult) => {
+                  if (!result.destination) return;
+                  const sourceIdx = result.source.index;
+                  const destIdx = result.destination.index;
+                  if (sourceIdx === destIdx) return;
+
+                  const ordered = [...allTournaments]
+                    .filter((t: any) => t.managed_by_teevents)
+                    .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0));
+                  const [moved] = ordered.splice(sourceIdx, 1);
+                  ordered.splice(destIdx, 0, moved);
+
+                  const reorderPayload = ordered.map((t: any, idx: number) => ({ id: t.id, display_order: idx }));
+
+                  // Optimistic local update
+                  const idToOrder = new Map(reorderPayload.map(p => [p.id, p.display_order]));
+                  setAllTournaments(prev => prev.map((t: any) =>
+                    idToOrder.has(t.id) ? { ...t, display_order: idToOrder.get(t.id) } : t
+                  ));
+
+                  try {
+                    await callAdminApi("reorder-managed-tournaments", { order: reorderPayload });
+                    toast({ title: "Order saved" });
+                  } catch (err: any) {
+                    toast({ title: "Failed to save order", description: err.message, variant: "destructive" });
+                    await fetchAll();
+                  }
+                }}
+              >
+                <Droppable droppableId="managed-tournaments-list">
+                  {(dropProvided) => (
+                    <div ref={dropProvided.innerRef} {...dropProvided.droppableProps} className="space-y-2">
+                      {[...allTournaments]
+                        .filter((t: any) => t.managed_by_teevents)
+                        .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
+                        .map((t: any, idx: number) => (
+                          <Draggable key={t.id} draggableId={t.id} index={idx}>
+                            {(dragProvided, snapshot) => (
+                              <div
+                                ref={dragProvided.innerRef}
+                                {...dragProvided.draggableProps}
+                                className={`bg-card border border-border rounded-lg p-4 flex items-center justify-between ${snapshot.isDragging ? "shadow-lg ring-2 ring-primary/30" : ""}`}
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <div {...dragProvided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                    <GripVertical className="h-4 w-4" />
+                                  </div>
+                                  <div className="text-xs font-mono text-muted-foreground w-8">#{idx + 1}</div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-semibold truncate">{t.title}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {t.organizations?.name || "—"} · {t.date ? new Date(t.date).toLocaleDateString() : "No date"}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {t.slug && (
+                                    <a href={`/t/${t.slug}`} target="_blank" rel="noopener noreferrer">
+                                      <Button variant="outline" size="sm"><ExternalLink className="h-3.5 w-3.5 mr-1" />View</Button>
+                                    </a>
+                                  )}
+                                  <Button size="sm" onClick={() => setEditingTournament(t)}>
+                                    <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                      {dropProvided.placeholder}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {t.slug && (
-                      <a href={`/t/${t.slug}`} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm"><ExternalLink className="h-3.5 w-3.5 mr-1" />View</Button>
-                      </a>
-                    )}
-                    <Button size="sm" onClick={() => setEditingTournament(t)}>
-                      <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                  )}
+                </Droppable>
+              </DragDropContext>
             </div>
           )}
 

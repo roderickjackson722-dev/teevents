@@ -39,10 +39,10 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Fetch tournament
+    // Fetch tournament (include payment_method_override for routing decision)
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, site_published")
+      .select("id, title, slug, organization_id, site_published, payment_method_override")
       .eq("id", tournament_id)
       .single();
 
@@ -67,9 +67,23 @@ Deno.serve(async (req) => {
       .eq("id", tournament.organization_id)
       .single();
 
-    const organizerStripeAccountId = org?.stripe_account_id;
-    if (!organizerStripeAccountId) {
-      throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
+    const organizerStripeAccountId = org?.stripe_account_id || null;
+
+    // Determine routing using same rules as registration:
+    //   default       → organizer Stripe if connected, else platform escrow
+    //   force_stripe  → must use organizer Stripe (error if missing)
+    //   force_platform → always platform escrow (direct charge to TeeVents)
+    const override = (tournament as any).payment_method_override || "default";
+    let useDestinationCharge = false;
+    if (override === "force_stripe") {
+      if (!organizerStripeAccountId) {
+        throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
+      }
+      useDestinationCharge = true;
+    } else if (override === "force_platform") {
+      useDestinationCharge = false;
+    } else {
+      useDestinationCharge = !!organizerStripeAccountId;
     }
 
     // Insert sponsor registration as pending
@@ -138,18 +152,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const checkoutParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : contact_email.trim(),
       line_items: lineItems,
       mode: "payment",
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: {
-          destination: organizerStripeAccountId,
-        },
-        on_behalf_of: organizerStripeAccountId,
-      },
       success_url: `${origin}/t/${tournament.slug}?sponsor_success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/t/${tournament.slug}?sponsor_cancel=true`,
       metadata: {
@@ -164,8 +171,22 @@ Deno.serve(async (req) => {
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
         charge_total_cents: String(chargeTotalCents),
+        routing: useDestinationCharge ? "destination" : "platform_escrow",
+        payment_method_override: override,
       },
-    });
+    };
+
+    if (useDestinationCharge) {
+      // Destination charge to organizer's Stripe Connect account; platform keeps the fee.
+      checkoutParams.payment_intent_data = {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: { destination: organizerStripeAccountId },
+        on_behalf_of: organizerStripeAccountId,
+      };
+    }
+    // else: direct charge to TeeVents platform account (escrow). No transfer_data.
+
+    const session = await stripe.checkout.sessions.create(checkoutParams);
 
     // Store session ID on the registration
     await supabaseAdmin

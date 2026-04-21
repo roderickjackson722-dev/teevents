@@ -1563,6 +1563,7 @@ const AdminDashboard = () => {
                   </thead>
                   <tbody>
                     {allTournaments
+                      .filter(t => !t.managed_by_teevents)
                       .filter(t => {
                         if (orgFilter && t.organization_id !== orgFilter) return false;
                         if (!tournamentSearch.trim()) return true;

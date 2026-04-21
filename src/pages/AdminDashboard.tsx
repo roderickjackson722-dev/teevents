@@ -1605,19 +1605,13 @@ const AdminDashboard = () => {
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-wrap gap-2 mt-1.5 text-[10px]">
-                            <label className="inline-flex items-center gap-1 cursor-pointer" title="Show on /tournaments/search">
-                              <input
-                                type="checkbox"
-                                className="h-3 w-3"
-                                checked={!!t.show_in_public_search}
-                                onChange={e => togglePublicSearch(t.id, e.target.checked)}
-                              />
-                              <span className={t.show_in_public_search ? "text-primary font-semibold" : "text-muted-foreground"}>
-                                Public search
+                          {t.show_in_public_search && (
+                            <div className="mt-1.5">
+                              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
+                                🌐 On public search
                               </span>
-                            </label>
-                          </div>
+                            </div>
+                          )}
                         </td>
                         <td className="p-3">
                           {(() => {

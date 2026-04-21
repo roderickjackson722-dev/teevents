@@ -3457,6 +3457,7 @@ export type Database = {
           results_url: string | null
           schedule_info: string | null
           scoring_format: string
+          show_countdown: boolean
           show_in_public_search: boolean
           site_background_color: string | null
           site_body_font_size: number | null
@@ -3479,6 +3480,7 @@ export type Database = {
           site_text_color: string | null
           site_title_position: string | null
           slug: string | null
+          state: string | null
           status: string
           template: string | null
           test_mode_enabled: boolean | null
@@ -3544,6 +3546,7 @@ export type Database = {
           results_url?: string | null
           schedule_info?: string | null
           scoring_format?: string
+          show_countdown?: boolean
           show_in_public_search?: boolean
           site_background_color?: string | null
           site_body_font_size?: number | null
@@ -3566,6 +3569,7 @@ export type Database = {
           site_text_color?: string | null
           site_title_position?: string | null
           slug?: string | null
+          state?: string | null
           status?: string
           template?: string | null
           test_mode_enabled?: boolean | null
@@ -3631,6 +3635,7 @@ export type Database = {
           results_url?: string | null
           schedule_info?: string | null
           scoring_format?: string
+          show_countdown?: boolean
           show_in_public_search?: boolean
           site_background_color?: string | null
           site_body_font_size?: number | null
@@ -3653,6 +3658,7 @@ export type Database = {
           site_text_color?: string | null
           site_title_position?: string | null
           slug?: string | null
+          state?: string | null
           status?: string
           template?: string | null
           test_mode_enabled?: boolean | null

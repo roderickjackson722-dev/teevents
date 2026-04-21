@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, payment_method_override")
       .eq("id", tournament_id)
       .single();
 
@@ -70,9 +70,24 @@ Deno.serve(async (req) => {
       .eq("id", tournament.organization_id)
       .single();
 
-    const organizerStripeAccountId = org?.stripe_account_id;
-    if (!organizerStripeAccountId) {
-      throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
+    const organizerStripeAccountId = org?.stripe_account_id || null;
+
+    // Determine routing based on admin override + organizer connection state
+    // - default      → organizer Stripe if connected, else platform escrow (TeeVents direct charge)
+    // - force_stripe → must use organizer Stripe (error if missing)
+    // - force_platform → always platform escrow (TeeVents direct charge, no destination)
+    const override = (tournament as any).payment_method_override || "default";
+    let useDestinationCharge = false;
+    if (override === "force_stripe") {
+      if (!organizerStripeAccountId) {
+        throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
+      }
+      useDestinationCharge = true;
+    } else if (override === "force_platform") {
+      useDestinationCharge = false;
+    } else {
+      // default
+      useDestinationCharge = !!organizerStripeAccountId;
     }
 
     // Determine fee per player: use tier price if tier selected, else tournament default

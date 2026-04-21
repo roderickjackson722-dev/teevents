@@ -190,6 +190,12 @@ const TournamentSearch = () => {
                   </Select>
                 </div>
               </div>
+              <div className="mt-3 flex justify-end">
+                <Button onClick={runSearch} className="w-full md:w-auto">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
             </CardContent>
           </Card>
 

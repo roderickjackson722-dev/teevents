@@ -18,8 +18,8 @@ import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
-import AdminManagedTournaments from "@/components/admin/AdminManagedTournaments";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
+import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -38,7 +38,8 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "managed-tournaments" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("all-tournaments");
+  const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -661,6 +662,17 @@ const AdminDashboard = () => {
     }
   };
 
+  const setPaymentOverride = async (tournamentId: string, value: PaymentOverride) => {
+    try {
+      await callAdminApi("set-payment-override", { tournament_id: tournamentId, payment_method_override: value });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, payment_method_override: value } : t));
+      toast({ title: "Payment routing updated" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      throw err;
+    }
+  };
+
   const handleDeleteTournament = async (tournamentId: string) => {
     if (deleteConfirmStep === 0 || deletingTournament !== tournamentId) {
       setDeletingTournament(tournamentId);
@@ -722,7 +734,7 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["all-tournaments", "TeeVents Tournaments", Trophy],
+                  ["all-tournaments", "Platform Tournaments", Trophy],
                   ["requests", "Access Requests", Users],
                   ["emails", "Auto-Approve Emails", Mail],
                   ["college", "College Hub", School],
@@ -749,7 +761,7 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["managed-tournaments", "Managed Tournaments", Trophy],
+                  ["teevents-managed", "TeeVents Managed Tournaments", Trophy],
                   ["sponsorship-pages", "Sponsorship Pages", Target],
                   ["sales-hub", "Outreach / Sales Hub", Target],
                 ] as const).map(([key, label, Icon]) => (
@@ -770,7 +782,7 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Other</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["events", "Marketing Events", Calendar],
+                  ["events", "CMS Events (legacy)", Calendar],
                   ["reviews", "Reviews", Star],
                   ["demos", "Demo Events", Trophy],
                   ["promos", "Promo Codes", Tag],
@@ -795,12 +807,38 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Managed Tournaments Tab — every tournament is managed by TeeVents */}
-          {activeTab === "managed-tournaments" && (
-            <AdminManagedTournaments
-              tournaments={allTournaments}
-              onTogglePublicSearch={togglePublicSearch}
-            />
+          {/* TeeVents Managed Tournaments Tab — only tournaments flagged managed_by_teevents */}
+          {activeTab === "teevents-managed" && (
+            <div className="space-y-3">
+              <div className="bg-card border border-border rounded-lg p-4 text-sm text-muted-foreground">
+                Tournaments flagged as <strong>Managed by TeeVents</strong>. Toggle this flag from the Platform Tournaments tab.
+              </div>
+              {allTournaments.filter((t: any) => t.managed_by_teevents).length === 0 && (
+                <div className="bg-card rounded-lg border border-border p-8 text-center text-muted-foreground">
+                  No tournaments are currently flagged as managed by TeeVents.
+                </div>
+              )}
+              {allTournaments.filter((t: any) => t.managed_by_teevents).map((t: any) => (
+                <div key={t.id} className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">{t.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t.organizations?.name || "—"} · {t.date ? new Date(t.date).toLocaleDateString() : "No date"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {t.slug && (
+                      <a href={`/t/${t.slug}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm"><ExternalLink className="h-3.5 w-3.5 mr-1" />View</Button>
+                      </a>
+                    )}
+                    <Button size="sm" onClick={() => setEditingTournament(t)}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Sponsorship Pages Tab — every tournament is managed by TeeVents */}
@@ -1459,6 +1497,7 @@ const AdminDashboard = () => {
                     <tr>
                       <th className="text-left p-3 font-medium">Tournament</th>
                       <th className="text-left p-3 font-medium">Organization</th>
+                      <th className="text-left p-3 font-medium">Payout</th>
                       <th className="text-center p-3 font-medium">Players</th>
                       <th className="text-left p-3 font-medium">Plan</th>
                       <th className="text-center p-3 font-medium">Published</th>
@@ -1524,6 +1563,44 @@ const AdminDashboard = () => {
                               </span>
                             </label>
                           </div>
+                        </td>
+                        <td className="p-3">
+                          {(() => {
+                            const connected = !!t.organizations?.stripe_account_id;
+                            const override = t.payment_method_override || "default";
+                            const usingDefault = !connected && override === "default";
+                            const forcedPlatform = override === "force_platform";
+                            const forcedStripe = override === "force_stripe";
+                            return (
+                              <div className="space-y-1">
+                                <div>
+                                  {connected ? (
+                                    <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.5 rounded font-medium">Stripe Connected</span>
+                                  ) : (
+                                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-medium">No Stripe</span>
+                                  )}
+                                </div>
+                                {forcedPlatform && (
+                                  <div className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded inline-block">
+                                    🔒 Forced TeeVents
+                                  </div>
+                                )}
+                                {forcedStripe && (
+                                  <div className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded inline-block">
+                                    🔒 Forced Stripe
+                                  </div>
+                                )}
+                                {usingDefault && (
+                                  <div
+                                    className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                                    title="Funds held by TeeVents until organizer connects Stripe"
+                                  >
+                                    ⚠️ Default → TeeVents
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td className="p-3 text-center">
                           <div className="flex items-center justify-center gap-1">
@@ -1591,6 +1668,15 @@ const AdminDashboard = () => {
                         </td>
                         <td className="p-3">
                           <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => setEditingTournament(t)}
+                              title="Edit payment routing & flags"
+                            >
+                              <Pencil className="h-3 w-3 mr-1" /> Edit
+                            </Button>
                             <a
                               href={`/dashboard?admin_org=${t.organization_id}`}
                               className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium whitespace-nowrap"
@@ -1787,6 +1873,15 @@ const AdminDashboard = () => {
           {activeTab === "accounting" && <AdminAccounting />}
         </div>
       </section>
+
+      <AdminTournamentEditModal
+        open={!!editingTournament}
+        onOpenChange={(o) => { if (!o) setEditingTournament(null); }}
+        tournament={editingTournament}
+        onSavePaymentOverride={setPaymentOverride}
+        onTogglePublicSearch={togglePublicSearch}
+        onToggleManagedByTeevents={toggleManagedByTeevents}
+      />
     </Layout>
   );
 };

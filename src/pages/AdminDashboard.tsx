@@ -1591,6 +1591,9 @@ const AdminDashboard = () => {
                             );
                           })()}
                         </td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
                             <span className="font-semibold">{t.tournament_registrations?.length || 0}</span>
                             {t.max_players && (
                               <span className="text-muted-foreground text-xs">/ {t.max_players}</span>

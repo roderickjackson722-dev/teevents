@@ -39,10 +39,16 @@ const PAGE_SIZE = 12;
 const TournamentSearch = () => {
   const [tournaments, setTournaments] = useState<PublicTournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("any");
   const [dateRange, setDateRange] = useState("any");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const runSearch = () => {
+    setSearch(searchInput.trim());
+    setVisibleCount(PAGE_SIZE);
+  };
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -50,7 +56,6 @@ const TournamentSearch = () => {
       .from("tournaments")
       .select("id, title, slug, custom_slug, date, location, course_name, site_hero_image_url")
       .eq("show_in_public_search", true)
-      .eq("site_published", true)
       .or(`date.gte.${today},date.is.null`)
       .order("date", { ascending: true, nullsFirst: false })
       .limit(200)
@@ -129,16 +134,16 @@ const TournamentSearch = () => {
           {/* Filters */}
           <Card className="mb-8">
             <CardContent className="p-4 md:p-6">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="md:col-span-1 relative">
+              <div className="grid md:grid-cols-4 gap-3">
+                <div className="md:col-span-2 relative">
                   <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <Input
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setVisibleCount(PAGE_SIZE);
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") runSearch();
                     }}
-                    placeholder="Search tournaments…"
+                    placeholder="Search by tournament, course, or city…"
                     className="pl-9"
                   />
                 </div>
@@ -183,6 +188,12 @@ const TournamentSearch = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div className="mt-3 flex justify-end">
+                <Button onClick={runSearch} className="w-full md:w-auto">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
               </div>
             </CardContent>
           </Card>

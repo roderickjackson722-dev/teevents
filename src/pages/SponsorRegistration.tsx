@@ -138,28 +138,54 @@ const SponsorRegistrationPage = () => {
       logoUrl = await uploadLogo();
     }
 
-    const { data, error } = await supabase.functions.invoke("create-sponsor-checkout", {
-      body: {
-        tournament_id: tournament.id,
-        tier_id: selectedTier,
-        company_name: form.company_name,
-        contact_name: form.contact_name,
-        contact_email: form.contact_email,
-        contact_phone: form.contact_phone || null,
-        website_url: form.website_url || null,
-        description: form.description || null,
-        logo_url: logoUrl,
-      },
-    });
+    // Call edge function via fetch directly so we can read the JSON body on non-2xx responses
+    // (supabase.functions.invoke hides the response body on errors).
+    let data: any = null;
+    let errMessage: string | null = null;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/create-sponsor-checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${session?.access_token || SUPABASE_KEY}`,
+        },
+        body: JSON.stringify({
+          tournament_id: tournament.id,
+          tier_id: selectedTier,
+          company_name: form.company_name,
+          contact_name: form.contact_name,
+          contact_email: form.contact_email,
+          contact_phone: form.contact_phone || null,
+          website_url: form.website_url || null,
+          description: form.description || null,
+          logo_url: logoUrl,
+        }),
+      });
+      data = await res.json().catch(() => null);
+      if (!res.ok) errMessage = data?.error || `Request failed (${res.status})`;
+    } catch (err: any) {
+      errMessage = err?.message || "Network error";
+    }
 
-    if (error || data?.error) {
-      toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+    if (errMessage) {
+      toast({
+        title: "Sponsorship checkout unavailable",
+        description: errMessage,
+        variant: "destructive",
+      });
       setSubmitting(false);
       return;
     }
 
     if (data?.checkout_url) {
       window.location.href = data.checkout_url;
+    } else {
+      toast({ title: "Unexpected response", description: "No checkout URL returned.", variant: "destructive" });
+      setSubmitting(false);
     }
   };
 

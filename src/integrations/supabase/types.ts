@@ -3415,9 +3415,12 @@ export type Database = {
           custom_slug: string | null
           date: string | null
           description: string | null
+          display_order: number
           donation_goal_cents: number | null
           end_date: string | null
+          external_link: string | null
           foursome_registration: boolean
+          gallery_url: string | null
           golf_course_id: string | null
           handicap_allowance: number | null
           handicap_enabled: boolean | null
@@ -3451,6 +3454,7 @@ export type Database = {
           registration_open: boolean | null
           registration_url: string | null
           reserve_percentage: number | null
+          results_url: string | null
           schedule_info: string | null
           scoring_format: string
           show_in_public_search: boolean
@@ -3498,9 +3502,12 @@ export type Database = {
           custom_slug?: string | null
           date?: string | null
           description?: string | null
+          display_order?: number
           donation_goal_cents?: number | null
           end_date?: string | null
+          external_link?: string | null
           foursome_registration?: boolean
+          gallery_url?: string | null
           golf_course_id?: string | null
           handicap_allowance?: number | null
           handicap_enabled?: boolean | null
@@ -3534,6 +3541,7 @@ export type Database = {
           registration_open?: boolean | null
           registration_url?: string | null
           reserve_percentage?: number | null
+          results_url?: string | null
           schedule_info?: string | null
           scoring_format?: string
           show_in_public_search?: boolean
@@ -3581,9 +3589,12 @@ export type Database = {
           custom_slug?: string | null
           date?: string | null
           description?: string | null
+          display_order?: number
           donation_goal_cents?: number | null
           end_date?: string | null
+          external_link?: string | null
           foursome_registration?: boolean
+          gallery_url?: string | null
           golf_course_id?: string | null
           handicap_allowance?: number | null
           handicap_enabled?: boolean | null
@@ -3617,6 +3628,7 @@ export type Database = {
           registration_open?: boolean | null
           registration_url?: string | null
           reserve_percentage?: number | null
+          results_url?: string | null
           schedule_info?: string | null
           scoring_format?: string
           show_in_public_search?: boolean

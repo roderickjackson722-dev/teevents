@@ -375,6 +375,21 @@ Deno.serve(async (req) => {
         return jsonRes({ success: true });
       }
 
+      if (action === "reorder-managed-tournaments") {
+        // body.order: Array<{ id: string; display_order: number }>
+        if (!Array.isArray(body.order)) return jsonRes({ error: "Missing order array" }, 400);
+        const updates = body.order as { id: string; display_order: number }[];
+        for (const u of updates) {
+          if (!u?.id) continue;
+          const { error } = await adminClient
+            .from("tournaments")
+            .update({ display_order: Number(u.display_order) || 0 })
+            .eq("id", u.id);
+          if (error) return jsonRes({ error: error.message }, 400);
+        }
+        return jsonRes({ success: true });
+      }
+
       if (action === "delete-demo-event") {
         // Get the demo event to find org & tournament
         const { data: demo } = await adminClient.from("admin_demo_events").select("*").eq("id", body.id).single();

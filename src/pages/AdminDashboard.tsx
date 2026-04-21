@@ -735,33 +735,6 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap gap-2">
                 {([
                   ["all-tournaments", "Platform Tournaments", Trophy],
-                  ["requests", "Access Requests", Users],
-                  ["emails", "Auto-Approve Emails", Mail],
-                  ["college", "College Hub", School],
-                ] as const).map(([key, label, Icon]) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveTab(key)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" /> {label}
-                    {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
-                      <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
-                        {requests.filter(r => r.status === "pending").length}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
-              <div className="flex flex-wrap gap-2">
-                {([
-                  ["all-tournaments", "Platform Tournaments", Trophy],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}

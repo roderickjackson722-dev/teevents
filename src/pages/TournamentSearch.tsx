@@ -56,7 +56,6 @@ const TournamentSearch = () => {
       .from("tournaments")
       .select("id, title, slug, custom_slug, date, location, course_name, site_hero_image_url")
       .eq("show_in_public_search", true)
-      .eq("site_published", true)
       .or(`date.gte.${today},date.is.null`)
       .order("date", { ascending: true, nullsFirst: false })
       .limit(200)

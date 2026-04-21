@@ -795,12 +795,38 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Managed Tournaments Tab — every tournament is managed by TeeVents */}
-          {activeTab === "managed-tournaments" && (
-            <AdminManagedTournaments
-              tournaments={allTournaments}
-              onTogglePublicSearch={togglePublicSearch}
-            />
+          {/* TeeVents Managed Tournaments Tab — only tournaments flagged managed_by_teevents */}
+          {activeTab === "teevents-managed" && (
+            <div className="space-y-3">
+              <div className="bg-card border border-border rounded-lg p-4 text-sm text-muted-foreground">
+                Tournaments flagged as <strong>Managed by TeeVents</strong>. Toggle this flag from the Platform Tournaments tab.
+              </div>
+              {allTournaments.filter((t: any) => t.managed_by_teevents).length === 0 && (
+                <div className="bg-card rounded-lg border border-border p-8 text-center text-muted-foreground">
+                  No tournaments are currently flagged as managed by TeeVents.
+                </div>
+              )}
+              {allTournaments.filter((t: any) => t.managed_by_teevents).map((t: any) => (
+                <div key={t.id} className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">{t.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t.organizations?.name || "—"} · {t.date ? new Date(t.date).toLocaleDateString() : "No date"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {t.slug && (
+                      <a href={`/t/${t.slug}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm"><ExternalLink className="h-3.5 w-3.5 mr-1" />View</Button>
+                      </a>
+                    )}
+                    <Button size="sm" onClick={() => setEditingTournament(t)}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Sponsorship Pages Tab — every tournament is managed by TeeVents */}

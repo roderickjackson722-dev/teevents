@@ -735,33 +735,6 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap gap-2">
                 {([
                   ["all-tournaments", "Platform Tournaments", Trophy],
-                  ["requests", "Access Requests", Users],
-                  ["emails", "Auto-Approve Emails", Mail],
-                  ["college", "College Hub", School],
-                ] as const).map(([key, label, Icon]) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveTab(key)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
-                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" /> {label}
-                    {key === "requests" && requests.filter(r => r.status === "pending").length > 0 && (
-                      <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 ml-1">
-                        {requests.filter(r => r.status === "pending").length}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
-              <div className="flex flex-wrap gap-2">
-                {([
-                  ["all-tournaments", "Platform Tournaments", Trophy],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -1548,8 +1521,8 @@ const AdminDashboard = () => {
           {activeTab === "all-tournaments" && (
             <div className="space-y-6">
               <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="font-display font-bold text-lg mb-2">All User Tournaments</h2>
-                <p className="text-sm text-muted-foreground mb-4">View every tournament created by users across all organizations. Change an organization's plan to control feature access.</p>
+                <h2 className="font-display font-bold text-lg mb-2">Platform Tournaments</h2>
+                <p className="text-sm text-muted-foreground mb-4">Multi-vendor tournaments created by organizers on the platform. TeeVents-managed marketing tournaments live under <strong>TeeVents Operations → TeeVents Managed Tournaments</strong>.</p>
                 <div className="flex flex-wrap gap-3">
                   <Input
                     placeholder="Search by tournament name, org, or course..."
@@ -1563,7 +1536,7 @@ const AdminDashboard = () => {
                     className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm max-w-xs"
                   >
                     <option value="">All Organizations</option>
-                    {[...new Map(allTournaments.map(t => [t.organization_id, t.organizations?.name || "Unknown"])).entries()]
+                    {[...new Map(allTournaments.filter(t => !t.managed_by_teevents).map(t => [t.organization_id, t.organizations?.name || "Unknown"])).entries()]
                       .sort((a, b) => a[1].localeCompare(b[1]))
                       .map(([id, name]) => (
                         <option key={id} value={id}>{name}</option>
@@ -1590,6 +1563,7 @@ const AdminDashboard = () => {
                   </thead>
                   <tbody>
                     {allTournaments
+                      .filter(t => !t.managed_by_teevents)
                       .filter(t => {
                         if (orgFilter && t.organization_id !== orgFilter) return false;
                         if (!tournamentSearch.trim()) return true;

@@ -1657,6 +1657,15 @@ const AdminDashboard = () => {
                         </td>
                         <td className="p-3">
                           <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => setEditingTournament(t)}
+                              title="Edit payment routing & flags"
+                            >
+                              <Pencil className="h-3 w-3 mr-1" /> Edit
+                            </Button>
                             <a
                               href={`/dashboard?admin_org=${t.organization_id}`}
                               className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium whitespace-nowrap"
@@ -1853,6 +1862,15 @@ const AdminDashboard = () => {
           {activeTab === "accounting" && <AdminAccounting />}
         </div>
       </section>
+
+      <AdminTournamentEditModal
+        open={!!editingTournament}
+        onOpenChange={(o) => { if (!o) setEditingTournament(null); }}
+        tournament={editingTournament}
+        onSavePaymentOverride={setPaymentOverride}
+        onTogglePublicSearch={togglePublicSearch}
+        onToggleManagedByTeevents={toggleManagedByTeevents}
+      />
     </Layout>
   );
 };

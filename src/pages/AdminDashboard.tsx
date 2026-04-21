@@ -771,7 +771,7 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Other</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["events", "Marketing Events", Calendar],
+                  ["events", "CMS Events (legacy)", Calendar],
                   ["reviews", "Reviews", Star],
                   ["demos", "Demo Events", Trophy],
                   ["promos", "Promo Codes", Tag],

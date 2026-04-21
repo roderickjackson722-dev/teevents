@@ -3436,6 +3436,7 @@ export type Database = {
           organization_id: string
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
+          payment_method_override: string
           payout_method: string | null
           printable_font: string
           printable_layout: string
@@ -3518,6 +3519,7 @@ export type Database = {
           organization_id: string
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
+          payment_method_override?: string
           payout_method?: string | null
           printable_font?: string
           printable_layout?: string
@@ -3600,6 +3602,7 @@ export type Database = {
           organization_id?: string
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
+          payment_method_override?: string
           payout_method?: string | null
           printable_font?: string
           printable_layout?: string

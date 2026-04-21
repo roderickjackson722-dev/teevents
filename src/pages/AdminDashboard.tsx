@@ -662,7 +662,16 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteTournament = async (tournamentId: string) => {
+  const setPaymentOverride = async (tournamentId: string, value: PaymentOverride) => {
+    try {
+      await callAdminApi("set-payment-override", { tournament_id: tournamentId, payment_method_override: value });
+      setAllTournaments(prev => prev.map(t => t.id === tournamentId ? { ...t, payment_method_override: value } : t));
+      toast({ title: "Payment routing updated" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      throw err;
+    }
+  };
     if (deleteConfirmStep === 0 || deletingTournament !== tournamentId) {
       setDeletingTournament(tournamentId);
       setDeleteConfirmStep(1);

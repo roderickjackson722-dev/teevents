@@ -1521,8 +1521,8 @@ const AdminDashboard = () => {
           {activeTab === "all-tournaments" && (
             <div className="space-y-6">
               <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="font-display font-bold text-lg mb-2">All User Tournaments</h2>
-                <p className="text-sm text-muted-foreground mb-4">View every tournament created by users across all organizations. Change an organization's plan to control feature access.</p>
+                <h2 className="font-display font-bold text-lg mb-2">Platform Tournaments</h2>
+                <p className="text-sm text-muted-foreground mb-4">Multi-vendor tournaments created by organizers on the platform. TeeVents-managed marketing tournaments live under <strong>TeeVents Operations → TeeVents Managed Tournaments</strong>.</p>
                 <div className="flex flex-wrap gap-3">
                   <Input
                     placeholder="Search by tournament name, org, or course..."
@@ -1536,7 +1536,7 @@ const AdminDashboard = () => {
                     className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm max-w-xs"
                   >
                     <option value="">All Organizations</option>
-                    {[...new Map(allTournaments.map(t => [t.organization_id, t.organizations?.name || "Unknown"])).entries()]
+                    {[...new Map(allTournaments.filter(t => !t.managed_by_teevents).map(t => [t.organization_id, t.organizations?.name || "Unknown"])).entries()]
                       .sort((a, b) => a[1].localeCompare(b[1]))
                       .map(([id, name]) => (
                         <option key={id} value={id}>{name}</option>

@@ -723,7 +723,7 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Platform Management</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["all-tournaments", "TeeVents Tournaments", Trophy],
+                  ["all-tournaments", "Platform Tournaments", Trophy],
                   ["requests", "Access Requests", Users],
                   ["emails", "Auto-Approve Emails", Mail],
                   ["college", "College Hub", School],
@@ -750,7 +750,7 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["managed-tournaments", "Managed Tournaments", Trophy],
+                  ["teevents-managed", "TeeVents Managed Tournaments", Trophy],
                   ["sponsorship-pages", "Sponsorship Pages", Target],
                   ["sales-hub", "Outreach / Sales Hub", Target],
                 ] as const).map(([key, label, Icon]) => (

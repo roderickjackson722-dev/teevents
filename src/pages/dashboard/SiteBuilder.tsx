@@ -23,6 +23,7 @@ import {
   ExternalLink,
   Check,
   Printer,
+  Eye as EyeIcon,
 } from "lucide-react";
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
@@ -248,7 +249,7 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">("branding");
 
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -463,6 +464,7 @@ const SiteBuilder = () => {
     { key: "content" as const, label: "Content", icon: Type },
     { key: "contact" as const, label: "Contact", icon: Phone },
     { key: "printables" as const, label: "Printables", icon: Printer },
+    { key: "public_view" as const, label: "Public View", icon: EyeIcon },
     { key: "domain" as const, label: "Domain", icon: Globe },
   ];
 
@@ -1307,125 +1309,6 @@ const SiteBuilder = () => {
                   });
                 }}
               />
-
-              {/* Public Listing card */}
-              <div className="border border-border rounded-lg p-4 bg-card space-y-5">
-                <div>
-                  <h3 className="text-base font-bold text-foreground">Public Listing</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Control how your tournament appears on the TeeVents public directory and your event page.
-                  </p>
-                </div>
-
-                {/* Show on public search */}
-                <div className="flex items-start gap-3">
-                  <Switch
-                    checked={!!settings.show_in_public_search}
-                    onCheckedChange={async (v) => {
-                      updateField("show_in_public_search", v);
-                      const { error } = await supabase
-                        .from("tournaments")
-                        .update({ show_in_public_search: v } as any)
-                        .eq("id", settings.id);
-                      if (error) {
-                        toast({ title: "Error", description: error.message, variant: "destructive" });
-                        updateField("show_in_public_search", !v);
-                      } else {
-                        toast({
-                          title: v ? "Listed publicly" : "Removed from public listing",
-                          description: v
-                            ? "Enable this to list your tournament on the TeeVents public search page."
-                            : "Your tournament has been removed from the public directory.",
-                        });
-                      }
-                    }}
-                  />
-                  <div className="flex-1">
-                    <Label className="text-sm font-semibold cursor-pointer">
-                      Show on public tournament search
-                    </Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Enable this to list your tournament on the TeeVents public search page at{" "}
-                      <span className="font-mono">teevents.golf/tournaments/search</span>.
-                    </p>
-                  </div>
-                </div>
-
-                {/* State */}
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-semibold">
-                    State <span className="text-destructive">*</span>
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Used to filter your tournament by state on the public search page.
-                  </p>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    value={settings.state || ""}
-                    onChange={async (e) => {
-                      const v = e.target.value || null;
-                      updateField("state", v);
-                      const { error } = await supabase
-                        .from("tournaments")
-                        .update({ state: v } as any)
-                        .eq("id", settings.id);
-                      if (error) {
-                        toast({ title: "Error", description: error.message, variant: "destructive" });
-                      } else {
-                        toast({ title: "State saved" });
-                      }
-                    }}
-                  >
-                    <option value="">Select a state…</option>
-                    {US_STATES.map((s) => (
-                      <option key={s.code} value={s.code}>
-                        {s.name} ({s.code})
-                      </option>
-                    ))}
-                  </select>
-                  {settings.show_in_public_search && !settings.state && (
-                    <p className="text-xs text-amber-700">
-                      Add a state so golfers can find your event by location.
-                    </p>
-                  )}
-                </div>
-
-                {/* Show countdown */}
-                <div className="flex items-start gap-3 pt-1 border-t border-border/60">
-                  <Switch
-                    checked={!!settings.show_countdown}
-                    onCheckedChange={async (v) => {
-                      updateField("show_countdown", v);
-                      const { error } = await supabase
-                        .from("tournaments")
-                        .update({ show_countdown: v } as any)
-                        .eq("id", settings.id);
-                      if (error) {
-                        toast({ title: "Error", description: error.message, variant: "destructive" });
-                        updateField("show_countdown", !v);
-                      } else {
-                        toast({ title: v ? "Countdown enabled" : "Countdown hidden" });
-                      }
-                    }}
-                  />
-                  <div className="flex-1">
-                    <Label className="text-sm font-semibold cursor-pointer">
-                      Show countdown timer on tournament page
-                    </Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Displays a live "Tournament starts in [days] [hours] [min] [sec]" timer in the hero section.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Public Page Tabs (drag to reorder, toggle to show/hide) */}
-              <PublicTabsManager
-                tournamentId={settings.id}
-                initialVisibility={settings.public_tabs}
-                initialOrder={settings.public_tabs_order}
-              />
-
 
               <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">

@@ -23,6 +23,7 @@ import {
   ExternalLink,
   Check,
   Printer,
+  Eye as EyeIcon,
 } from "lucide-react";
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
@@ -248,7 +249,7 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">("branding");
 
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -463,6 +464,7 @@ const SiteBuilder = () => {
     { key: "content" as const, label: "Content", icon: Type },
     { key: "contact" as const, label: "Contact", icon: Phone },
     { key: "printables" as const, label: "Printables", icon: Printer },
+    { key: "public_view" as const, label: "Public View", icon: EyeIcon },
     { key: "domain" as const, label: "Domain", icon: Globe },
   ];
 
@@ -1259,56 +1261,16 @@ const SiteBuilder = () => {
             </>
           )}
 
-          {activeTab === "domain" && (
+          {activeTab === "public_view" && (
             <>
-              <h2 className="text-lg font-display font-bold text-foreground">Domain Settings</h2>
-
-              {/* Default Subdomain */}
-              <div className="bg-muted/50 rounded-lg border border-border p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-semibold">Default URL (always active)</Label>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Your tournament is automatically available at:
+              <div>
+                <h2 className="text-lg font-display font-bold text-foreground">Public View</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Choose how your tournament appears in the public directory and which sections are visible on your event page.
                 </p>
-                {settings.slug ? (
-                  <div className="flex items-center gap-2">
-                    <code className="bg-background border border-border rounded px-3 py-1.5 text-sm font-mono text-foreground">
-                      {window.location.origin}/t/{settings.slug}
-                    </code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/t/${settings.slug}`);
-                        toast({ title: "Copied!", description: "URL copied to clipboard." });
-                      }}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">Slug will be generated when you save.</p>
-                )}
               </div>
 
-              {/* Custom URL Slug */}
-              <CustomSlugEditor
-                tournamentId={settings.id}
-                currentSlug={settings.slug}
-                customSlug={settings.custom_slug || null}
-                editCount={settings.url_edit_count || 0}
-                onSaved={(newSlug, newCount) => {
-                  setSettings({
-                    ...settings,
-                    custom_slug: newSlug,
-                    url_edit_count: newCount,
-                  });
-                }}
-              />
-
-              {/* Public Listing card */}
+              {/* Card 1: Public Listing */}
               <div className="border border-border rounded-lg p-4 bg-card space-y-5">
                 <div>
                   <h3 className="text-base font-bold text-foreground">Public Listing</h3>
@@ -1334,7 +1296,7 @@ const SiteBuilder = () => {
                         toast({
                           title: v ? "Listed publicly" : "Removed from public listing",
                           description: v
-                            ? "Enable this to list your tournament on the TeeVents public search page."
+                            ? "Your tournament will appear in the TeeVents public search results."
                             : "Your tournament has been removed from the public directory.",
                         });
                       }
@@ -1345,7 +1307,7 @@ const SiteBuilder = () => {
                       Show on public tournament search
                     </Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Enable this to list your tournament on the TeeVents public search page at{" "}
+                      Lists your event at{" "}
                       <span className="font-mono">teevents.golf/tournaments/search</span>.
                     </p>
                   </div>
@@ -1357,7 +1319,7 @@ const SiteBuilder = () => {
                     State <span className="text-destructive">*</span>
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Used to filter your tournament by state on the public search page.
+                    Required so golfers can filter your tournament by location.
                   </p>
                   <select
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -1419,13 +1381,63 @@ const SiteBuilder = () => {
                 </div>
               </div>
 
-              {/* Public Page Tabs (drag to reorder, toggle to show/hide) */}
+              {/* Card 2: Public Page Tabs */}
               <PublicTabsManager
                 tournamentId={settings.id}
                 initialVisibility={settings.public_tabs}
                 initialOrder={settings.public_tabs_order}
               />
+            </>
+          )}
 
+          {activeTab === "domain" && (
+            <>
+              <h2 className="text-lg font-display font-bold text-foreground">Domain Settings</h2>
+
+              {/* Default Subdomain */}
+              <div className="bg-muted/50 rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-semibold">Default URL (always active)</Label>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Your tournament is automatically available at:
+                </p>
+                {settings.slug ? (
+                  <div className="flex items-center gap-2">
+                    <code className="bg-background border border-border rounded px-3 py-1.5 text-sm font-mono text-foreground">
+                      {window.location.origin}/t/{settings.slug}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/t/${settings.slug}`);
+                        toast({ title: "Copied!", description: "URL copied to clipboard." });
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">Slug will be generated when you save.</p>
+                )}
+              </div>
+
+              {/* Custom URL Slug */}
+              <CustomSlugEditor
+                tournamentId={settings.id}
+                currentSlug={settings.slug}
+                customSlug={settings.custom_slug || null}
+                editCount={settings.url_edit_count || 0}
+                onSaved={(newSlug, newCount) => {
+                  setSettings({
+                    ...settings,
+                    custom_slug: newSlug,
+                    url_edit_count: newCount,
+                  });
+                }}
+              />
 
               <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">

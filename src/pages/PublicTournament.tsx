@@ -1127,8 +1127,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             </motion.div>
           </div>
         </section>
+      )}
 
-      {/* ===== ABOUT ===== */}
+
       {tournament.description && (
         <section id="about" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">

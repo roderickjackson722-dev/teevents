@@ -1261,6 +1261,135 @@ const SiteBuilder = () => {
             </>
           )}
 
+          {activeTab === "public_view" && (
+            <>
+              <div>
+                <h2 className="text-lg font-display font-bold text-foreground">Public View</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Choose how your tournament appears in the public directory and which sections are visible on your event page.
+                </p>
+              </div>
+
+              {/* Card 1: Public Listing */}
+              <div className="border border-border rounded-lg p-4 bg-card space-y-5">
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Public Listing</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Control how your tournament appears on the TeeVents public directory and your event page.
+                  </p>
+                </div>
+
+                {/* Show on public search */}
+                <div className="flex items-start gap-3">
+                  <Switch
+                    checked={!!settings.show_in_public_search}
+                    onCheckedChange={async (v) => {
+                      updateField("show_in_public_search", v);
+                      const { error } = await supabase
+                        .from("tournaments")
+                        .update({ show_in_public_search: v } as any)
+                        .eq("id", settings.id);
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                        updateField("show_in_public_search", !v);
+                      } else {
+                        toast({
+                          title: v ? "Listed publicly" : "Removed from public listing",
+                          description: v
+                            ? "Your tournament will appear in the TeeVents public search results."
+                            : "Your tournament has been removed from the public directory.",
+                        });
+                      }
+                    }}
+                  />
+                  <div className="flex-1">
+                    <Label className="text-sm font-semibold cursor-pointer">
+                      Show on public tournament search
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Lists your event at{" "}
+                      <span className="font-mono">teevents.golf/tournaments/search</span>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* State */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-semibold">
+                    State <span className="text-destructive">*</span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Required so golfers can filter your tournament by location.
+                  </p>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={settings.state || ""}
+                    onChange={async (e) => {
+                      const v = e.target.value || null;
+                      updateField("state", v);
+                      const { error } = await supabase
+                        .from("tournaments")
+                        .update({ state: v } as any)
+                        .eq("id", settings.id);
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                      } else {
+                        toast({ title: "State saved" });
+                      }
+                    }}
+                  >
+                    <option value="">Select a state…</option>
+                    {US_STATES.map((s) => (
+                      <option key={s.code} value={s.code}>
+                        {s.name} ({s.code})
+                      </option>
+                    ))}
+                  </select>
+                  {settings.show_in_public_search && !settings.state && (
+                    <p className="text-xs text-amber-700">
+                      Add a state so golfers can find your event by location.
+                    </p>
+                  )}
+                </div>
+
+                {/* Show countdown */}
+                <div className="flex items-start gap-3 pt-1 border-t border-border/60">
+                  <Switch
+                    checked={!!settings.show_countdown}
+                    onCheckedChange={async (v) => {
+                      updateField("show_countdown", v);
+                      const { error } = await supabase
+                        .from("tournaments")
+                        .update({ show_countdown: v } as any)
+                        .eq("id", settings.id);
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                        updateField("show_countdown", !v);
+                      } else {
+                        toast({ title: v ? "Countdown enabled" : "Countdown hidden" });
+                      }
+                    }}
+                  />
+                  <div className="flex-1">
+                    <Label className="text-sm font-semibold cursor-pointer">
+                      Show countdown timer on tournament page
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Displays a live "Tournament starts in [days] [hours] [min] [sec]" timer in the hero section.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Public Page Tabs */}
+              <PublicTabsManager
+                tournamentId={settings.id}
+                initialVisibility={settings.public_tabs}
+                initialOrder={settings.public_tabs_order}
+              />
+            </>
+          )}
+
           {activeTab === "domain" && (
             <>
               <h2 className="text-lg font-display font-bold text-foreground">Domain Settings</h2>

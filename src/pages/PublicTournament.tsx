@@ -1146,7 +1146,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== EVENT DAY CONTESTS ===== */}
-      {contests.length > 0 && (
+      {isTabVisible("contests") && contests.length > 0 && (
       <section id="contests" className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -1171,7 +1171,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== EVENT AGENDA ===== */}
-      {tournament.schedule_info && (
+      {isTabVisible("schedule") && tournament.schedule_info && (
         <section id="schedule" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -1188,6 +1188,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== LOCATION ===== */}
+      {(isTabVisible("travel") || isTabVisible("course_details")) && (
       <section id="location" className="py-16 bg-white">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -1397,7 +1398,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== AUCTION & RAFFLE ===== */}
-      {auctionItems.length > 0 && (
+      {isTabVisible("auction") && auctionItems.length > 0 && (
         <section id="auction" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -1507,7 +1508,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== PHOTO GALLERY ===== */}
-      {photos.length > 0 && (
+      {isTabVisible("gallery") && photos.length > 0 && (
         <section id="photos" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -1526,8 +1527,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== VOLUNTEER SIGNUP ===== */}
-      {volunteerRoles.length > 0 && (
-        <section className="py-16" style={{ backgroundColor: "#fafafa" }}>
+      {isTabVisible("volunteers") && volunteerRoles.length > 0 && (
+        <section id="volunteers" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-4xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>VOLUNTEER</h2>
@@ -1624,6 +1625,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== DONATION ===== */}
+      {isTabVisible("donations") && (
       <section id="donation" className="py-16" style={{ backgroundColor: primary }}>
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>

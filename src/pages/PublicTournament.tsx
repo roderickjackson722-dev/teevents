@@ -13,6 +13,7 @@ import WaitlistSignup from "@/components/WaitlistSignup";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -48,6 +49,9 @@ interface TournamentSite {
   site_button_position?: string | null;
   site_button_radius?: number | null;
   site_button_hover_effect?: string | null;
+  // Organizer-controlled public page tabs (visibility + order)
+  public_tabs?: Record<string, boolean> | null;
+  public_tabs_order?: string[] | null;
 }
 interface RegFieldPublic {
   id: string; label: string; field_type: string; options: string[] | null;
@@ -564,16 +568,62 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const flexJustify: Record<string, string> = { left: "justify-start", center: "justify-center", right: "justify-end" };
   const textAlignClass: Record<string, "left" | "center" | "right"> = { left: "left", center: "center", right: "right" };
 
-  // Fixed nav tabs
+  // Organizer-controlled public page tabs (visibility + order).
+  // A tab is shown only if (a) the organizer enabled it AND (b) it has data to render.
+  const tabVisibility = normalizeVisibility(tournament.public_tabs);
+  const tabOrder = normalizeOrder(tournament.public_tabs_order);
+
+  const tabHasData: Record<PublicTabKey, boolean> = {
+    leaderboard: leaderboard.length > 0,
+    sponsors: sponsors.length > 0 || sponsorshipTiers.length > 0,
+    gallery: photos.length > 0,
+    volunteers: volunteerRoles.length > 0,
+    auction: auctionItems.length > 0,
+    donations: !!tournament.donation_goal_cents || donationTotal > 0,
+    course_details: !!tournament.course_name || !!tournament.location,
+    contests: contests.length > 0,
+    travel: !!tournament.location,
+    schedule: !!tournament.schedule_info,
+  };
+
+  const isTabVisible = (key: PublicTabKey) => tabVisibility[key] && tabHasData[key];
+
+  const tabHrefByKey: Record<PublicTabKey, string> = {
+    leaderboard: "#leaderboard",
+    sponsors: "#sponsors",
+    gallery: "#photos",
+    volunteers: "#volunteers",
+    auction: "#auction",
+    donations: "#donation",
+    course_details: "#location",
+    contests: "#contests",
+    travel: "#location",
+    schedule: "#schedule",
+  };
+  const tabLabelByKey: Record<PublicTabKey, string> = {
+    leaderboard: "Leaderboard",
+    sponsors: "Sponsors",
+    gallery: "Photos",
+    volunteers: "Volunteers",
+    auction: "Auction & Raffle",
+    donations: "Donation",
+    course_details: "Course",
+    contests: "Event Day Contests",
+    travel: "Location",
+    schedule: "Event Agenda",
+  };
+
+  // Build nav links: Home + Registration always; optional tabs in organizer order; Contact last.
+  const orderedOptionalLinks = tabOrder
+    .filter((k) => isTabVisible(k))
+    .map((k) => ({ label: tabLabelByKey[k], href: tabHrefByKey[k] }))
+    // De-duplicate hrefs (course_details + travel both anchor to #location)
+    .filter((link, idx, arr) => arr.findIndex((l) => l.href === link.href) === idx);
+
   const navLinks: { label: string; href: string }[] = [
     { label: "Home", href: "#top" },
-    ...(contests.length > 0 ? [{ label: "Event Day Contests", href: "#contests" }] : []),
     { label: "Registration", href: "#register" },
-    { label: "Sponsors", href: "#become-a-sponsor" },
-    { label: "Photos", href: "#photos" },
-    { label: "Location", href: "#location" },
-    { label: "Event Agenda", href: "#schedule" },
-    { label: "Donation", href: "#donation" },
+    ...orderedOptionalLinks,
     { label: "Contact Us", href: "#contact" },
   ];
 

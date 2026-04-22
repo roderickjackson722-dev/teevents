@@ -1419,8 +1419,14 @@ const SiteBuilder = () => {
                 </div>
               </div>
 
+              {/* Public Page Tabs (drag to reorder, toggle to show/hide) */}
+              <PublicTabsManager
+                tournamentId={settings.id}
+                initialVisibility={settings.public_tabs}
+                initialOrder={settings.public_tabs_order}
+              />
 
-              {/* "Already have a website?" explainer */}
+
               <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   🌐 Already have a website?

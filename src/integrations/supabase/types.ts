@@ -3443,6 +3443,8 @@ export type Database = {
           payout_method: string | null
           printable_font: string
           printable_layout: string
+          public_tabs: Json | null
+          public_tabs_order: string[] | null
           rain_date_policy: string | null
           rain_date_policy_type: string | null
           refund_deadline_days: number | null
@@ -3532,6 +3534,8 @@ export type Database = {
           payout_method?: string | null
           printable_font?: string
           printable_layout?: string
+          public_tabs?: Json | null
+          public_tabs_order?: string[] | null
           rain_date_policy?: string | null
           rain_date_policy_type?: string | null
           refund_deadline_days?: number | null
@@ -3621,6 +3625,8 @@ export type Database = {
           payout_method?: string | null
           printable_font?: string
           printable_layout?: string
+          public_tabs?: Json | null
+          public_tabs_order?: string[] | null
           rain_date_policy?: string | null
           rain_date_policy_type?: string | null
           refund_deadline_days?: number | null

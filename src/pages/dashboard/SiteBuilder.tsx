@@ -39,6 +39,7 @@ import {
 import { DesignPreview } from "@/components/site-builder/DesignPreview";
 import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
+import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -219,6 +220,8 @@ interface SiteSettings {
   show_in_public_search: boolean | null;
   state: string | null;
   show_countdown: boolean | null;
+  public_tabs: Record<string, boolean> | null;
+  public_tabs_order: string[] | null;
   // Public Page Design
   site_show_logo: boolean | null;
   site_text_color: string | null;
@@ -1416,8 +1419,14 @@ const SiteBuilder = () => {
                 </div>
               </div>
 
+              {/* Public Page Tabs (drag to reorder, toggle to show/hide) */}
+              <PublicTabsManager
+                tournamentId={settings.id}
+                initialVisibility={settings.public_tabs}
+                initialOrder={settings.public_tabs_order}
+              />
 
-              {/* "Already have a website?" explainer */}
+
               <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   🌐 Already have a website?

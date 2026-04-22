@@ -1202,9 +1202,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* ===== LIVE LEADERBOARD ===== */}
-      {leaderboard.length > 0 && (() => {
+      {isTabVisible("leaderboard") && leaderboard.length > 0 && (() => {
         const fmt = getFormatById(tournament.scoring_format || "stroke_play");
         const isStableford = fmt?.scoring === "stableford";
         const isTeam = leaderboard[0]?.isTeam;
@@ -1767,6 +1768,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>

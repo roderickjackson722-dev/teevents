@@ -75,6 +75,7 @@ interface Addon {
   price_cents: number;
   is_active: boolean;
   sort_order: number;
+  max_per_golfer: number;
 }
 
 interface PromoCode {
@@ -308,9 +309,11 @@ const Registration = () => {
   const [newAddonName, setNewAddonName] = useState("");
   const [newAddonDesc, setNewAddonDesc] = useState("");
   const [newAddonPrice, setNewAddonPrice] = useState("");
+  const [newAddonMaxQty, setNewAddonMaxQty] = useState("1");
 
   const addAddon = async () => {
     if (!newAddonName.trim()) return;
+    const maxQty = Math.max(1, Math.min(50, parseInt(newAddonMaxQty || "1", 10) || 1));
     const payload: any = {
       tournament_id: selectedTournament,
       name: newAddonName.trim(),
@@ -318,6 +321,7 @@ const Registration = () => {
       price_cents: Math.round(parseFloat(newAddonPrice || "0") * 100),
       is_active: true,
       sort_order: addons.length,
+      max_per_golfer: maxQty,
     };
     const { data, error } = await supabase.from("tournament_registration_addons").insert(payload).select("*").single();
     if (error) toast.error(error.message);
@@ -326,8 +330,19 @@ const Registration = () => {
       setNewAddonName("");
       setNewAddonDesc("");
       setNewAddonPrice("");
+      setNewAddonMaxQty("1");
       toast.success("Add-on created!");
     }
+  };
+
+  const updateAddonMaxQty = async (addon: Addon, value: string) => {
+    const maxQty = Math.max(1, Math.min(50, parseInt(value || "1", 10) || 1));
+    const { error } = await supabase
+      .from("tournament_registration_addons")
+      .update({ max_per_golfer: maxQty } as any)
+      .eq("id", addon.id!);
+    if (error) toast.error(error.message);
+    else setAddons((prev) => prev.map((a) => (a.id === addon.id ? { ...a, max_per_golfer: maxQty } : a)));
   };
 
   const toggleAddon = async (addon: Addon) => {
@@ -840,8 +855,8 @@ const Registration = () => {
               {addons.length > 0 && (
                 <div className="space-y-3">
                   {addons.map((addon) => (
-                    <div key={addon.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                      <div className="flex items-center gap-3 min-w-0">
+                    <div key={addon.id} className="flex items-center justify-between p-3 rounded-lg border border-border gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <Switch checked={addon.is_active} onCheckedChange={() => toggleAddon(addon)} />
                         <div className="min-w-0">
                           <p className="font-medium text-foreground text-sm truncate">{addon.name}</p>
@@ -850,6 +865,18 @@ const Registration = () => {
                         <Badge variant="secondary" className="text-xs whitespace-nowrap">
                           ${(addon.price_cents / 100).toFixed(2)}
                         </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`max-${addon.id}`} className="text-xs text-muted-foreground whitespace-nowrap">Max/golfer</Label>
+                        <Input
+                          id={`max-${addon.id}`}
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={addon.max_per_golfer ?? 1}
+                          onChange={(e) => updateAddonMaxQty(addon, e.target.value)}
+                          className="h-8 w-16"
+                        />
                       </div>
                       <Button variant="ghost" size="icon" onClick={() => deleteAddon(addon.id!)} className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
@@ -861,7 +888,7 @@ const Registration = () => {
 
               <div className="border border-dashed border-border rounded-lg p-4 space-y-3">
                 <p className="text-sm font-medium text-foreground">New Add-on</p>
-                <div className="grid sm:grid-cols-3 gap-3">
+                <div className="grid sm:grid-cols-4 gap-3">
                   <Input
                     placeholder="Name (e.g., Lunch Package)"
                     value={newAddonName}
@@ -875,6 +902,14 @@ const Registration = () => {
                     placeholder="Price ($)"
                     value={newAddonPrice}
                     onChange={(e) => setNewAddonPrice(e.target.value)}
+                  />
+                  <Input
+                    type="number"
+                    min="1"
+                    max="50"
+                    placeholder="Max per golfer"
+                    value={newAddonMaxQty}
+                    onChange={(e) => setNewAddonMaxQty(e.target.value)}
                   />
                   <Button onClick={addAddon} disabled={!newAddonName.trim()}>
                     <Plus className="h-4 w-4 mr-1" /> Add

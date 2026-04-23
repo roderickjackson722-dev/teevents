@@ -288,7 +288,7 @@ const Pricing = () => {
             className="mt-10 text-center"
           >
             <p className="text-xs text-muted-foreground mb-6">
-              All plans include a 5% TeeVents platform fee per transaction + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
+              All plans charge a 5% TeeVents platform fee per registration + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Nothing upfront. No monthly fees. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
               <div className="flex items-center gap-2">

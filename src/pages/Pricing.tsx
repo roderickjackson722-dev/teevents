@@ -13,8 +13,8 @@ const plans = [
     name: "Base",
     price: "$0",
     period: "per tournament",
-    description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "First-time organizers and small events. No upfront cost.",
+    fee: "5% platform fee per registration + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",

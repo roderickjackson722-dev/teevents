@@ -634,6 +634,7 @@ export default function AdminPayouts() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
+                  <TableHead>Email</TableHead>
                   <TableHead>Action</TableHead>
                   <TableHead>Details</TableHead>
                 </TableRow>
@@ -642,6 +643,7 @@ export default function AdminPayouts() {
                 {orgActivityLogs.map((log: any) => (
                   <TableRow key={log.id}>
                     <TableCell className="text-xs whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{log.email || <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell className="text-xs capitalize font-medium">{(log.action_type || "").replace(/_/g, " ")}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{log.description || "—"}</TableCell>
                   </TableRow>

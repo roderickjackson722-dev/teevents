@@ -19,6 +19,7 @@ export type Database = {
           action_type: string
           created_at: string
           description: string | null
+          email: string | null
           id: string
           metadata: Json | null
           organization_id: string
@@ -28,6 +29,7 @@ export type Database = {
           action_type: string
           created_at?: string
           description?: string | null
+          email?: string | null
           id?: string
           metadata?: Json | null
           organization_id: string
@@ -37,6 +39,7 @@ export type Database = {
           action_type?: string
           created_at?: string
           description?: string | null
+          email?: string | null
           id?: string
           metadata?: Json | null
           organization_id?: string

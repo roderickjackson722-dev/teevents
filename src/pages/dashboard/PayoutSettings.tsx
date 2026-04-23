@@ -42,6 +42,7 @@ interface ActivityLog {
   description: string | null;
   metadata: any;
   created_at: string;
+  email: string | null;
 }
 
 interface AuditLog {
@@ -174,7 +175,7 @@ export default function PayoutSettings() {
   const fetchActivityLogs = async () => {
     const { data } = await supabase
       .from("activity_logs")
-      .select("id, action_type, description, metadata, created_at")
+      .select("id, action_type, description, metadata, created_at, email")
       .eq("organization_id", org!.orgId)
       .order("created_at", { ascending: false })
       .limit(30);
@@ -194,9 +195,11 @@ export default function PayoutSettings() {
 
   const logActivity = async (actionType: string, description: string, metadata?: Record<string, any>) => {
     if (!org?.orgId) return;
+    const { data: { user } } = await supabase.auth.getUser();
     await supabase.from("activity_logs").insert({
       organization_id: org.orgId,
       user_id: org.userId,
+      email: user?.email ?? null,
       action_type: actionType,
       description,
       metadata: { ...metadata, user_agent: navigator.userAgent },
@@ -416,8 +419,8 @@ export default function PayoutSettings() {
   const stripeConnected = payoutMethod?.stripe_onboarding_complete === true;
   const stripeStarted = !!payoutMethod?.stripe_account_id;
   const combinedLogs = [
-    ...activityLogs.map(l => ({ id: l.id, action: l.action_type, description: l.description, details: l.metadata, created_at: l.created_at, source: "activity" as const })),
-    ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, source: "audit" as const })),
+    ...activityLogs.map(l => ({ id: l.id, action: l.action_type, description: l.description, details: l.metadata, created_at: l.created_at, email: l.email, source: "activity" as const })),
+    ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, email: null as string | null, source: "audit" as const })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 30);
 
   return (
@@ -693,6 +696,7 @@ export default function PayoutSettings() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">Email</TableHead>
                     <TableHead className="text-xs">Action</TableHead>
                     <TableHead className="text-xs">Details</TableHead>
                   </TableRow>
@@ -702,6 +706,9 @@ export default function PayoutSettings() {
                     <TableRow key={`${log.source}-${log.id}`}>
                       <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                         {new Date(log.created_at).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-sm text-foreground whitespace-nowrap">
+                        {log.email || <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-sm font-medium">{log.action.replace(/_/g, " ")}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{log.description || "—"}</TableCell>

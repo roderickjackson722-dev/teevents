@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -7,10 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, Plus, Minus, Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
+
+interface AddonRow {
+  id: string;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  max_per_golfer: number;
+}
 
 const playerSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(100),
@@ -223,14 +231,38 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [coverFees, setCoverFees] = useState(passFeesToRegistrants);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [showEligibility, setShowEligibility] = useState<string | null>(null);
+  const [addons, setAddons] = useState<AddonRow[]>([]);
+  const [addonQty, setAddonQty] = useState<Record<string, number>>({});
+
+  // Load active add-ons for this tournament
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("tournament_registration_addons")
+      .select("id, name, description, price_cents, max_per_golfer")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        if (cancelled) return;
+        setAddons((data as AddonRow[]) || []);
+      });
+    return () => { cancelled = true; };
+  }, [tournamentId]);
 
   const allowGroup = maxGroupSize > 1;
-  const hasFee = registrationFeeCents > 0 || (selectedTier && tiers.find(t => t.id === selectedTier)?.price_cents);
   const activeFee = selectedTier
     ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
     : registrationFeeCents;
   const playerCount = allowGroup ? players.length : 1;
-  const baseTotalCents = activeFee ? activeFee * playerCount : 0;
+  const baseRegistrationCents = activeFee ? activeFee * playerCount : 0;
+  // Add-on totals (qty is per-golfer; total = qty * playerCount * price)
+  const addonTotalCents = addons.reduce((sum, a) => {
+    const qty = addonQty[a.id] || 0;
+    return sum + qty * playerCount * a.price_cents;
+  }, 0);
+  const baseTotalCents = baseRegistrationCents + addonTotalCents;
+  const hasFee = baseTotalCents > 0;
   const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
   const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
@@ -238,6 +270,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
   const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
+
+  const setQty = (id: string, value: number, max: number) => {
+    const clamped = Math.max(0, Math.min(max, value));
+    setAddonQty((prev) => ({ ...prev, [id]: clamped }));
+  };
 
   const updatePlayer = (index: number, player: PlayerForm) => {
     setPlayers((prev) => prev.map((p, i) => (i === index ? player : p)));

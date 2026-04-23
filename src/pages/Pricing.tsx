@@ -13,8 +13,8 @@ const plans = [
     name: "Base",
     price: "$0",
     period: "per tournament",
-    description: "Get started free — limited to 1 tournament & 72 players.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "First-time organizers and small events. No upfront cost.",
+    fee: "5% platform fee per registration + Stripe processing fees",
     features: [
       "1 active tournament (max 72 players)",
       "Online registration & payments",
@@ -33,8 +33,8 @@ const plans = [
     price: "$299",
     period: "per tournament",
     subtitle: "We build it for you",
-    description: "Unlimited players. We build your tournament platform for you.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "Growing tournaments and multiple events. We build it for you.",
+    fee: "5% platform fee per registration + Stripe processing fees",
     highlighted: true,
     features: [
       "Everything in Base (unlimited players)",
@@ -58,8 +58,8 @@ const plans = [
     name: "Premium",
     price: "$999",
     period: "per tournament",
-    description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "High-volume organizers and fundraisers. White-glove consulting.",
+    fee: "5% platform fee per registration + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",
@@ -112,8 +112,8 @@ const Pricing = () => {
   return (
     <Layout>
       <SEO
-        title="Pricing | TeeVents — Choose Your Tournament Package"
-        description="Pick the perfect TeeVents plan for your golf tournament. Start with a full-featured free tier or unlock premium features. Simple, transparent pricing with no monthly subscriptions."
+        title="Pricing | TeeVents — Start Free, Pay Only When You Get Paid"
+        description="Start for free. Pay only when you get paid. TeeVents charges a 5% platform fee per registration — nothing upfront, no monthly fees."
         path="/pricing"
       />
 
@@ -126,10 +126,10 @@ const Pricing = () => {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Choose Your Package
+              Start for free. Pay only when you get paid.
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              No monthly subscriptions. No hidden fees. Pay per tournament and keep your revenue.
+              TeeVents charges a 5% platform fee per registration — nothing upfront, no monthly fees.
             </p>
           </motion.div>
         </div>
@@ -220,6 +220,29 @@ const Pricing = () => {
             ))}
           </div>
 
+          {/* How it works callout */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 rounded-xl border-2 border-secondary bg-secondary/5 p-6 md:p-8 max-w-3xl mx-auto"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-secondary/20 text-secondary text-xl">
+                💡
+              </div>
+              <div>
+                <h3 className="text-lg font-display font-bold text-foreground mb-2">
+                  How it works
+                </h3>
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  You collect registration fees. Stripe automatically deducts 5% and sends the rest to your bank account.
+                  <span className="font-semibold text-primary"> No upfront cost. No surprises.</span>
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Secure Payments Banner */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -265,7 +288,7 @@ const Pricing = () => {
             className="mt-10 text-center"
           >
             <p className="text-xs text-muted-foreground mb-6">
-              All plans include a 5% TeeVents platform fee per transaction + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
+              All plans charge a 5% TeeVents platform fee per registration + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Nothing upfront. No monthly fees. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
               <div className="flex items-center gap-2">

@@ -5,15 +5,22 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import SEO from "@/components/SEO";
 
-const features = [
-  { icon: "🏌️", title: "Live Leaderboard", desc: "Real‑time scoring, embed on your website" },
-  { icon: "🏆", title: "Sponsor Portal", desc: "Asset delivery, ROI tracking, tax receipts" },
-  { icon: "👥", title: "Volunteer Check‑in", desc: "QR codes, shift scheduling, automated reminders" },
-  { icon: "📊", title: "Financial Dashboard", desc: "Track registrations, fees, and payouts in real time" },
-  { icon: "🔗", title: "Share & Promote", desc: "QR codes, short URLs, social media templates" },
-  { icon: "💰", title: "Automatic Payouts", desc: "Payments split at checkout — funds go directly to your Stripe account" },
-  { icon: "📱", title: "Mobile Friendly", desc: "Golfers register and pay from any device" },
-  { icon: "🎨", title: "Branded Website", desc: "Your logo, your colors, your custom domain" },
+const leftFeatures = [
+  "Custom tournament website – branded, live in 10 minutes",
+  "Online registration with credit card, Apple Pay & Google Pay",
+  "QR code check‑in – players scan from their phone",
+  "Live leaderboard – real‑time gross & net scores",
+  "Automatic payout to your bank account (Stripe Connect)",
+  "Printable scorecards with player handicap strokes (dots per hole)",
+];
+
+const rightFeatures = [
+  "USGA handicap calculation – course handicap, net scores, stroke allocation",
+  "Sponsor portal – sponsors upload logos, download tax receipts, track ROI",
+  "QR scoring – players enter their own scores via unique code (no app install)",
+  "Volunteer shift scheduling & QR check‑in",
+  "Test scoring simulator – practice running the event before go‑live",
+  "Custom tournament URL – yourclub.teevents/classic",
 ];
 
 const SalesFlyer = () => {
@@ -59,6 +66,26 @@ const SalesFlyer = () => {
     }
   };
 
+  const CheckItem = ({ text }: { text: string }) => (
+    <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+      <span style={{
+        flexShrink: 0,
+        width: 18, height: 18,
+        borderRadius: 4,
+        background: "#1a5c38",
+        color: "#fff",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 12,
+        fontWeight: 700,
+        lineHeight: 1,
+        marginTop: 1,
+      }}>✓</span>
+      <span style={{ fontSize: 11.5, color: "#1F2937", lineHeight: 1.4 }}>{text}</span>
+    </div>
+  );
+
   return (
     <>
       <SEO title="Sales Flyer – TeeVents" description="Download the TeeVents one-page sales flyer." />
@@ -88,7 +115,7 @@ const SalesFlyer = () => {
             style={{
               top: "50%", left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "70%", opacity: 0.08,
+              width: "70%", opacity: 0.06,
               fontSize: 220, fontWeight: 900,
               color: "#1a5c38", lineHeight: 1,
               textAlign: "center", letterSpacing: "-0.04em",
@@ -98,138 +125,107 @@ const SalesFlyer = () => {
           </div>
 
           {/* Content */}
-          <div className="relative z-10" style={{ padding: "40px 48px 32px" }}>
+          <div className="relative z-10" style={{ padding: "44px 52px 32px" }}>
             {/* Header */}
-            <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 4, color: "#1a5c38", marginBottom: 4 }}>
-                TEEVENTS.GOLF
-              </div>
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: "#1a5c38", margin: "8px 0 16px", lineHeight: 1.15 }}>
-                Run Your Golf Tournament Like a Pro
+            <div style={{ textAlign: "center", marginBottom: 18 }}>
+              <h1 style={{ fontSize: 38, fontWeight: 900, color: "#1a5c38", margin: 0, lineHeight: 1.05, letterSpacing: "-0.01em" }}>
+                TEEVENTS GOLF
               </h1>
-              <div style={{
-                display: "inline-block",
-                background: "linear-gradient(135deg, #F5A623, #e8960e)",
-                color: "#1a5c38",
-                padding: "10px 32px",
-                borderRadius: 8,
-                fontSize: 18,
-                fontWeight: 700,
-              }}>
-                ✨ Start for Free. No money up front. ✨
+              <div style={{ fontSize: 18, fontWeight: 600, color: "#1F2937", marginTop: 6 }}>
+                Run Your Tournament Like a Pro
               </div>
             </div>
 
-            {/* Features Grid */}
+            {/* Tagline */}
+            <div style={{
+              textAlign: "center",
+              fontSize: 22,
+              fontWeight: 800,
+              color: "#1a5c38",
+              marginBottom: 8,
+              letterSpacing: "-0.01em",
+            }}>
+              Start for free. Pay only when you get paid.
+            </div>
+
+            {/* Subhead */}
+            <div style={{
+              textAlign: "center",
+              fontSize: 13,
+              fontStyle: "italic",
+              color: "#4B5563",
+              marginBottom: 22,
+              maxWidth: 620,
+              marginLeft: "auto",
+              marginRight: "auto",
+              lineHeight: 1.4,
+            }}>
+              The all‑in‑one platform for golf tournaments. No upfront cost. No monthly fees. Just 5% per registration.
+            </div>
+
+            {/* Two-column checkbox grid */}
             <div style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
-              gap: "12px 24px",
-              marginBottom: 24,
+              gap: "0 28px",
+              marginBottom: 22,
+              padding: "18px 22px",
+              background: "#f9fafb",
+              borderRadius: 10,
+              border: "1px solid #e5e7eb",
             }}>
-              {features.map((f) => (
-                <div key={f.title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{f.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#1a5c38", marginBottom: 1 }}>{f.title}</div>
-                    <div style={{ fontSize: 11.5, color: "#444", lineHeight: 1.35 }}>{f.desc}</div>
-                  </div>
-                </div>
-              ))}
+              <div>
+                {leftFeatures.map((f, i) => <CheckItem key={`l-${i}`} text={f} />)}
+              </div>
+              <div>
+                {rightFeatures.map((f, i) => <CheckItem key={`r-${i}`} text={f} />)}
+              </div>
             </div>
 
-            {/* Cash Flow Box */}
+            {/* Comparison line */}
             <div style={{
-              background: "#f0faf4",
-              border: "2px solid #1a5c38",
-              borderRadius: 12,
-              padding: "20px 28px",
               textAlign: "center",
-              marginBottom: 24,
+              fontSize: 16,
+              fontWeight: 700,
+              fontStyle: "italic",
+              color: "#1F2937",
+              marginBottom: 22,
             }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: "#1a5c38", marginBottom: 6 }}>
-                JUST 5% PER REGISTRATION
-              </div>
-              <div style={{ fontSize: 14, color: "#333", marginBottom: 4 }}>
-                Payments split automatically at checkout. We never hold your money.
-              </div>
-              <div style={{ fontSize: 11, color: "#555", marginBottom: 12 }}>
-                Stripe sends net proceeds directly to your connected account.
-              </div>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-                maxWidth: 500,
-                margin: "0 auto",
-                fontSize: 12,
-              }}>
-                <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", border: "1px solid #e0e0e0" }}>
-                  <div style={{ fontWeight: 700, color: "#b91c1c", marginBottom: 4 }}>Eventbrite</div>
-                  <div style={{ color: "#555" }}>~$8.49 on a $100 reg</div>
-                  <div style={{ fontSize: 10, color: "#888" }}>3.5% + $1.79 + processing</div>
-                </div>
-                <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", border: "2px solid #1a5c38" }}>
-                  <div style={{ fontWeight: 700, color: "#1a5c38", marginBottom: 4 }}>TeeVents</div>
-                  <div style={{ color: "#555" }}>5% + Stripe ($3.20)</div>
-                  <div style={{ fontSize: 10, color: "#1a5c38", fontWeight: 600 }}>Simple, transparent pricing</div>
-                </div>
-              </div>
+              0 spreadsheets. 0 hassle. 100% all‑in‑one.
             </div>
 
-            {/* CTA */}
-            <div style={{ textAlign: "center", marginBottom: 20 }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#1a5c38", marginBottom: 14 }}>
-                Ready to run your best tournament yet?
-              </div>
-              <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
-                <a
-                  href="https://www.teevents.golf/get-started"
-                  style={{
-                    display: "inline-block",
-                    background: "#1a5c38",
-                    color: "#fff",
-                    padding: "12px 28px",
-                    borderRadius: 8,
-                    fontWeight: 700,
-                    fontSize: 14,
-                    textDecoration: "none",
-                  }}
-                >
-                  Start Free Trial
-                </a>
-                <a
-                  href="https://www.teevents.golf/book"
-                  style={{
-                    display: "inline-block",
-                    background: "#F5A623",
-                    color: "#1a5c38",
-                    padding: "12px 28px",
-                    borderRadius: 8,
-                    fontWeight: 700,
-                    fontSize: 14,
-                    textDecoration: "none",
-                  }}
-                >
-                  Book a Live Demo
-                </a>
-              </div>
+            {/* CTA Button */}
+            <div style={{ textAlign: "center", marginBottom: 22 }}>
+              <a
+                href="https://www.teevents.golf/book"
+                style={{
+                  display: "inline-block",
+                  background: "#F5A623",
+                  color: "#1a5c38",
+                  padding: "14px 36px",
+                  borderRadius: 8,
+                  fontWeight: 800,
+                  fontSize: 16,
+                  textDecoration: "none",
+                  boxShadow: "0 4px 12px rgba(245, 166, 35, 0.3)",
+                }}
+              >
+                📅 Book a 30‑Min Demo
+              </a>
             </div>
 
             {/* Footer */}
             <div style={{
-              borderTop: "1px solid #ddd",
+              borderTop: "1px solid #e5e7eb",
               paddingTop: 14,
               textAlign: "center",
               fontSize: 11,
-              color: "#888",
+              color: "#1a5c38",
             }}>
-              <div style={{ marginBottom: 2 }}>
-                <span style={{ fontWeight: 600, color: "#1a5c38" }}>www.teevents.golf</span>
-                {" · "}
-                <span>info@teevents.golf</span>
+              <div style={{ marginBottom: 3, fontWeight: 600 }}>
+                No monthly fees. 5% platform fee per transaction. Free Base plan available.
               </div>
-              <div>Professional Golf Tournament Management Software</div>
+              <div style={{ color: "#6B7280" }}>teevents.golf/demo</div>
             </div>
           </div>
         </div>

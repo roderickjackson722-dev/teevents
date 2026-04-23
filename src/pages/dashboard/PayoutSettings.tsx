@@ -270,32 +270,36 @@ export default function PayoutSettings() {
     }
   };
 
+  const [confirmEmailSentTo, setConfirmEmailSentTo] = useState<string | null>(null);
+
   const handleDisconnectStripe = async () => {
     if (!org?.orgId) return;
     setDisconnecting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const { data, error } = await supabase.functions.invoke("stripe-disconnect", {
-        body: { confirm_email: userData.user?.email },
+      const { data, error } = await supabase.functions.invoke("request-payout-change", {
+        body: {
+          organization_id: org.orgId,
+          change_type: "remove_stripe",
+          requested_method: "check", // fallback after removal
+        },
       });
       if (error || data?.error) {
-        toast.error(data?.error || "Failed to disconnect Stripe account.");
+        toast.error(data?.error || "Failed to send confirmation email.");
         return;
       }
-      toast.success("Stripe account disconnected. You can reconnect a new account anytime.");
-      await logAudit("stripe_disconnected", { summary: "Stripe account disconnected by organizer" });
-      await logActivity("payout_settings_changed", "Stripe account disconnected", { old_method: "stripe" });
-      await notifyAdmin("payout_method_changed", `${org?.orgName} disconnected their Stripe account.`);
+      setConfirmEmailSentTo(data?.sent_to || null);
+      toast.success("Confirmation email sent. Check your inbox to finish removing Stripe.");
+      await logAudit("stripe_disconnect_requested", {
+        summary: "Email confirmation requested to disconnect Stripe",
+      });
       setShowDisconnectModal(false);
-      fetchPayoutMethodAndSync();
-      fetchAuditLogs();
-      fetchActivityLogs();
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setDisconnecting(false);
     }
   };
+
 
   const handleSavePaypal = async () => {
     if (!paypalEmail || !paypalEmail.includes("@")) {
@@ -710,21 +714,38 @@ export default function PayoutSettings() {
         </motion.div>
       )}
 
-      {/* Disconnect Stripe Modal */}
+      {/* Disconnect Stripe Modal — uses email confirmation */}
       <Dialog open={showDisconnectModal} onOpenChange={setShowDisconnectModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Disconnect Stripe Account</DialogTitle>
+            <DialogTitle>Remove Stripe Connect account</DialogTitle>
             <DialogDescription>
-              This will disconnect your Stripe account. You won't receive automatic payouts until you reconnect or choose another method.
+              For security, we'll send a confirmation link to your email. The change only takes effect after you click that link.
+              The link expires in 15 minutes.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setShowDisconnectModal(false)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDisconnectStripe} disabled={disconnecting}>
-              {disconnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-              Disconnect
+              {disconnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+              Send confirmation email
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email confirmation sent acknowledgment */}
+      <Dialog open={!!confirmEmailSentTo} onOpenChange={(o) => !o && setConfirmEmailSentTo(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Check your email</DialogTitle>
+            <DialogDescription>
+              A confirmation email has been sent to <strong>{confirmEmailSentTo}</strong>. Click the link in
+              the email to confirm this change. The link expires in 15 minutes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end pt-4">
+            <Button onClick={() => setConfirmEmailSentTo(null)}>Got it</Button>
           </div>
         </DialogContent>
       </Dialog>

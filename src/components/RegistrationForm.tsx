@@ -357,9 +357,13 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           notes: groupNotes || players[0].notes || null,
         } : null;
 
+        const addonSelections = Object.entries(addonQty)
+          .filter(([, qty]) => qty > 0)
+          .map(([id, qty]) => ({ addon_id: id, qty_per_player: qty }));
+
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;

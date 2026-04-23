@@ -5,8 +5,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, ShieldAlert } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export type PaymentOverride = "default" | "force_stripe" | "force_platform";
 
@@ -28,11 +33,34 @@ export default function AdminTournamentEditModal({
   const [managed, setManaged] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Admin payout override state
+  const [poEnabled, setPoEnabled] = useState(false);
+  const [poMethod, setPoMethod] = useState<"stripe" | "paypal" | "check">("stripe");
+  const [poPaypalEmail, setPoPaypalEmail] = useState("");
+  const [poMailingAddress, setPoMailingAddress] = useState("");
+  const [poReason, setPoReason] = useState("");
+  const [poAck, setPoAck] = useState(false);
+  const [poSaving, setPoSaving] = useState(false);
+  const [poCurrentMethod, setPoCurrentMethod] = useState<string | null>(null);
+
   useEffect(() => {
     if (tournament) {
       setOverride((tournament.payment_method_override as PaymentOverride) || "default");
       setPublicSearch(!!tournament.show_in_public_search);
       setManaged(!!tournament.managed_by_teevents);
+      setPoEnabled(false);
+      setPoReason("");
+      setPoAck(false);
+      // Best-effort: read current preferred payout method
+      const orgId = tournament.organizations?.id || tournament.organization_id;
+      if (orgId) {
+        supabase
+          .from("organization_payout_methods")
+          .select("preferred_method")
+          .eq("organization_id", orgId)
+          .maybeSingle()
+          .then(({ data }) => setPoCurrentMethod((data as any)?.preferred_method || null));
+      }
     }
   }, [tournament]);
 
@@ -143,7 +171,124 @@ export default function AdminTournamentEditModal({
             </div>
             <Switch checked={managed} onCheckedChange={setManaged} />
           </div>
+
+          {/* Admin Payout Override */}
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-destructive" />
+                <Label className="text-sm font-semibold">Admin Payout Override</Label>
+              </div>
+              <Switch checked={poEnabled} onCheckedChange={setPoEnabled} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Force-change this organization's payout method. Bypasses the email confirmation flow.
+              Logged to the admin override audit table. Use only when the organizer has lost access.
+            </p>
+
+            {poEnabled && (
+              <div className="space-y-3 pt-1">
+                <div className="text-xs text-muted-foreground">
+                  Current method: <strong className="text-foreground">{poCurrentMethod || "—"}</strong>
+                </div>
+
+                <RadioGroup value={poMethod} onValueChange={(v) => setPoMethod(v as any)}>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="stripe" id="po-stripe" />
+                    <Label htmlFor="po-stripe" className="font-normal cursor-pointer text-sm">
+                      Stripe Connect (organizer must already be connected)
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="paypal" id="po-paypal" />
+                    <Label htmlFor="po-paypal" className="font-normal cursor-pointer text-sm">PayPal</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="check" id="po-check" />
+                    <Label htmlFor="po-check" className="font-normal cursor-pointer text-sm">Check by mail</Label>
+                  </div>
+                </RadioGroup>
+
+                {poMethod === "paypal" && (
+                  <div>
+                    <Label className="text-xs">PayPal email</Label>
+                    <Input
+                      type="email"
+                      value={poPaypalEmail}
+                      onChange={(e) => setPoPaypalEmail(e.target.value)}
+                      placeholder="organizer@example.com"
+                    />
+                  </div>
+                )}
+
+                {poMethod === "check" && (
+                  <div>
+                    <Label className="text-xs">Mailing address</Label>
+                    <Textarea
+                      value={poMailingAddress}
+                      onChange={(e) => setPoMailingAddress(e.target.value)}
+                      rows={2}
+                      placeholder="123 Main St, City, ST 00000"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label className="text-xs">Reason for override (required)</Label>
+                  <Textarea
+                    value={poReason}
+                    onChange={(e) => setPoReason(e.target.value)}
+                    rows={2}
+                    placeholder="e.g. Organizer lost access to their Stripe account; switching to check per their phone request 2026-04-23."
+                  />
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="po-ack" checked={poAck} onCheckedChange={(c) => setPoAck(c === true)} />
+                  <label htmlFor="po-ack" className="text-xs text-muted-foreground cursor-pointer">
+                    I understand this overrides the organizer's settings and bypasses email confirmation.
+                  </label>
+                </div>
+
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={poSaving || !poReason.trim() || !poAck}
+                  onClick={async () => {
+                    const orgId = tournament.organizations?.id || tournament.organization_id;
+                    if (!orgId) { toast.error("Missing organization id"); return; }
+                    setPoSaving(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke("admin-payout-override", {
+                        body: {
+                          organization_id: orgId,
+                          new_method: poMethod,
+                          paypal_email: poMethod === "paypal" ? poPaypalEmail : null,
+                          mailing_address: poMethod === "check" ? poMailingAddress : null,
+                          reason: poReason,
+                        },
+                      });
+                      if (error || data?.error) throw new Error(data?.error || error?.message);
+                      toast.success("Payout method overridden and organizer notified.");
+                      setPoEnabled(false);
+                      setPoReason("");
+                      setPoAck(false);
+                      setPoCurrentMethod(poMethod);
+                    } catch (e) {
+                      toast.error((e as Error).message || "Override failed");
+                    } finally {
+                      setPoSaving(false);
+                    }
+                  }}
+                >
+                  {poSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Apply Override
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
+
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>

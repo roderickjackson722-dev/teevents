@@ -156,6 +156,50 @@ export type Database = {
           },
         ]
       }
+      admin_payout_overrides: {
+        Row: {
+          admin_id: string
+          created_at: string
+          id: string
+          mailing_address: string | null
+          new_method: string
+          old_method: string | null
+          organization_id: string
+          paypal_email: string | null
+          reason: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          id?: string
+          mailing_address?: string | null
+          new_method: string
+          old_method?: string | null
+          organization_id: string
+          paypal_email?: string | null
+          reason: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          id?: string
+          mailing_address?: string | null
+          new_method?: string
+          old_method?: string | null
+          organization_id?: string
+          paypal_email?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_payout_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       approved_emails: {
         Row: {
           created_at: string
@@ -1375,52 +1419,70 @@ export type Database = {
           account_holder_name: string | null
           admin_toggle_granted: boolean | null
           change_type: string
+          confirmed_at: string | null
           created_at: string | null
+          expires_at: string | null
           id: string
+          mailing_address: string | null
           new_account_last4: string | null
           new_routing_last4: string | null
           new_value: string | null
           old_value: string | null
           organization_id: string
+          paypal_email: string | null
           requested_by: string
+          requested_method: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string | null
+          token: string | null
         }
         Insert: {
           account_holder_name?: string | null
           admin_toggle_granted?: boolean | null
           change_type: string
+          confirmed_at?: string | null
           created_at?: string | null
+          expires_at?: string | null
           id?: string
+          mailing_address?: string | null
           new_account_last4?: string | null
           new_routing_last4?: string | null
           new_value?: string | null
           old_value?: string | null
           organization_id: string
+          paypal_email?: string | null
           requested_by: string
+          requested_method?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null
+          token?: string | null
         }
         Update: {
           account_holder_name?: string | null
           admin_toggle_granted?: boolean | null
           change_type?: string
+          confirmed_at?: string | null
           created_at?: string | null
+          expires_at?: string | null
           id?: string
+          mailing_address?: string | null
           new_account_last4?: string | null
           new_routing_last4?: string | null
           new_value?: string | null
           old_value?: string | null
           organization_id?: string
+          paypal_email?: string | null
           requested_by?: string
+          requested_method?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null
+          token?: string | null
         }
         Relationships: [
           {
@@ -2740,12 +2802,58 @@ export type Database = {
           },
         ]
       }
+      tournament_registration_addon_purchases: {
+        Row: {
+          addon_id: string
+          addon_name: string
+          created_at: string
+          id: string
+          quantity: number
+          registration_id: string
+          unit_price_cents: number
+        }
+        Insert: {
+          addon_id: string
+          addon_name: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          registration_id: string
+          unit_price_cents: number
+        }
+        Update: {
+          addon_id?: string
+          addon_name?: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          registration_id?: string
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registration_addon_purchases_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registration_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_registration_addon_purchases_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_registration_addons: {
         Row: {
           created_at: string
           description: string | null
           id: string
           is_active: boolean
+          max_per_golfer: number
           name: string
           price_cents: number
           sort_order: number | null
@@ -2756,6 +2864,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          max_per_golfer?: number
           name: string
           price_cents?: number
           sort_order?: number | null
@@ -2766,6 +2875,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          max_per_golfer?: number
           name?: string
           price_cents?: number
           sort_order?: number | null

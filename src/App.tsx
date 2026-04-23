@@ -93,6 +93,7 @@ import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
+import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
 
 const queryClient = new QueryClient();
 
@@ -192,6 +193,7 @@ const App = () => (
              <Route path="/sales-flyer" element={<SalesFlyer />} />
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
              <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
+             <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

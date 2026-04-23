@@ -494,10 +494,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         {hasFee && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
-            Registration Fee: {feeDisplay} per player
-            {allowGroup && players.length > 1 && (
+            {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
+            {addonTotalCents > 0 && (
               <span className="block text-xs mt-1 opacity-80">
-                {players.length} players × {feeDisplay} = {totalDisplay}
+                Add-ons: ${(addonTotalCents / 100).toFixed(2)}
+              </span>
+            )}
+            {totalDisplay && (
+              <span className="block text-xs mt-1 opacity-80 font-semibold">
+                Total: {totalDisplay}
               </span>
             )}
           </div>
@@ -507,6 +512,60 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
             <p className="font-semibold text-foreground">Group Registration</p>
             <p className="text-xs text-muted-foreground mt-0.5">Register up to {maxGroupSize} players. At least 1 player is required.</p>
+          </div>
+        )}
+
+        {/* Optional Add-ons */}
+        {addons.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm font-semibold text-foreground">Optional Add-ons</p>
+              {playerCount > 1 && (
+                <span className="text-xs text-muted-foreground">(quantity is per player × {playerCount} players)</span>
+              )}
+            </div>
+            <div className="grid gap-2">
+              {addons.map((addon) => {
+                const qty = addonQty[addon.id] || 0;
+                const max = Math.max(1, addon.max_per_golfer || 1);
+                return (
+                  <div key={addon.id} className="rounded-lg border border-border p-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm text-foreground">{addon.name}</span>
+                        <Badge variant="secondary" className="text-xs">${(addon.price_cents / 100).toFixed(2)}</Badge>
+                        {max > 1 && <span className="text-[10px] text-muted-foreground">max {max} per player</span>}
+                      </div>
+                      {addon.description && <p className="text-xs text-muted-foreground mt-0.5">{addon.description}</p>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setQty(addon.id, qty - 1, max)}
+                        disabled={qty <= 0}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-8 text-center text-sm font-medium">{qty}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setQty(addon.id, qty + 1, max)}
+                        disabled={qty >= max}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

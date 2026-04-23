@@ -140,6 +140,8 @@ Deno.serve(async (req) => {
 
     const baseTotalCents = registrationFeeCents + addonsTotalCents;
 
+    const hasAnyCharge = baseTotalCents > 0;
+
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({
       tournament_id,
@@ -151,7 +153,7 @@ Deno.serve(async (req) => {
       shirt_size: p.shirt_size || null,
       dietary_restrictions: p.dietary_restrictions || null,
       notes: p.notes || null,
-      payment_status: feePerPlayer > 0 ? "pending" : "paid",
+      payment_status: hasAnyCharge ? "pending" : "paid",
       tier_id: tierId || null,
       covered_fees: coverFees,
     }));
@@ -176,15 +178,15 @@ Deno.serve(async (req) => {
           `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
           `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
           isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
-          feePerPlayer > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+          hasAnyCharge ? `💳 Order total: $${(baseTotalCents / 100).toFixed(2)} (payment pending)` : "✅ No fee — confirmed.",
         ].filter(Boolean)),
       );
     } catch (e) {
       console.error("Notification error:", e);
     }
 
-    // If no fee, registration is complete
-    if (feePerPlayer <= 0) {
+    // If no charges at all (no fee, no addons), registration is complete
+    if (!hasAnyCharge) {
       try {
         await sendRegistrantConfirmationEmail(
           first_name, last_name, email.trim(),

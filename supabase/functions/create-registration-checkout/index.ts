@@ -224,30 +224,49 @@ Deno.serve(async (req) => {
     const golferPaysFees = passFeesToParticipants || coverFees;
 
     const lineItems: any[] = [];
-    const platformFeeCents = Math.round(registrationFeeCents * PLATFORM_FEE_RATE);
+    // Fees are computed on the COMBINED total (registration + add-ons)
+    const platformFeeCents = Math.round(baseTotalCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = golferPaysFees
-      ? calculateGrossedUpStripeFee(registrationFeeCents + platformFeeCents)
-      : calculateProcessingFee(registrationFeeCents);
+      ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
+      : calculateProcessingFee(baseTotalCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
     const applicationFeeAmount = combinedFeesCents;
     const organizerNetCents = golferPaysFees
-      ? registrationFeeCents
-      : Math.max(registrationFeeCents - combinedFeesCents, 0);
+      ? baseTotalCents
+      : Math.max(baseTotalCents - combinedFeesCents, 0);
     const chargeTotalCents = golferPaysFees
-      ? registrationFeeCents + combinedFeesCents
-      : registrationFeeCents;
+      ? baseTotalCents + combinedFeesCents
+      : baseTotalCents;
 
-    lineItems.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: `Registration — ${tournament.title}`,
-          description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+    if (registrationFeeCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Registration — ${tournament.title}`,
+            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+          },
+          unit_amount: feePerPlayer,
         },
-        unit_amount: feePerPlayer,
-      },
-      quantity: players.length,
-    });
+        quantity: players.length,
+      });
+    }
+
+    // Add-on line items (one line per add-on, quantity = qty_per_player × players)
+    for (const a of resolvedAddons) {
+      const totalQty = a.qty_per_player * players.length;
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: a.name,
+            description: players.length > 1 ? `${a.qty_per_player} × ${players.length} players` : undefined,
+          },
+          unit_amount: a.price_cents,
+        },
+        quantity: totalQty,
+      });
+    }
 
     if (golferPaysFees && combinedFeesCents > 0) {
       lineItems.push({
@@ -261,6 +280,12 @@ Deno.serve(async (req) => {
         quantity: 1,
       });
     }
+
+    // Compact add-on selections for metadata (Stripe metadata values must be < 500 chars)
+    const addonMetaStr = resolvedAddons
+      .map((a) => `${a.id}:${a.qty_per_player}:${a.price_cents}:${a.name.replace(/[|,]/g, " ").slice(0, 40)}`)
+      .join("|")
+      .slice(0, 480);
 
     const checkoutParams: any = {
       customer: customerId,
@@ -278,6 +303,8 @@ Deno.serve(async (req) => {
         cover_fees: String(coverFees),
         tier_id: tierId || "",
         gross_registration_cents: String(registrationFeeCents),
+        addons_total_cents: String(addonsTotalCents),
+        base_total_cents: String(baseTotalCents),
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
@@ -285,6 +312,8 @@ Deno.serve(async (req) => {
         charge_total_cents: String(chargeTotalCents),
         routing: useDestinationCharge ? "destination" : "platform_escrow",
         payment_method_override: override,
+        addon_selections: addonMetaStr,
+        player_count: String(players.length),
       },
     };
 

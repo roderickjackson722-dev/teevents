@@ -24,6 +24,10 @@ Deno.serve(async (req) => {
     const isFoursome = body.foursome === true && Array.isArray(body.players);
     const coverFees = body.cover_fees === true;
     const tierId = body.tier_id || null;
+    const addonSelections: { addon_id: string; qty_per_player: number }[] = Array.isArray(body.addons)
+      ? body.addons.filter((a: any) => a && typeof a.addon_id === "string" && Number.isFinite(Number(a.qty_per_player)) && Number(a.qty_per_player) > 0)
+        .map((a: any) => ({ addon_id: String(a.addon_id), qty_per_player: Math.floor(Number(a.qty_per_player)) }))
+      : [];
 
     const players = isFoursome
       ? body.players

@@ -106,6 +106,41 @@ Deno.serve(async (req) => {
         .update({ payment_status: "paid" })
         .in("id", registrationIds);
 
+      // Persist add-on purchases (one row per registration × add-on)
+      try {
+        const addonMeta = session.metadata?.addon_selections || "";
+        const playerCount = parseInt(session.metadata?.player_count || String(registrationIds.length), 10) || registrationIds.length;
+        if (addonMeta) {
+          const parsed = addonMeta.split("|").filter(Boolean).map((entry) => {
+            const [addon_id, qtyStr, priceStr, ...nameParts] = entry.split(":");
+            return {
+              addon_id,
+              qty_per_player: parseInt(qtyStr, 10) || 0,
+              unit_price_cents: parseInt(priceStr, 10) || 0,
+              addon_name: nameParts.join(":") || "Add-on",
+            };
+          }).filter((a) => a.addon_id && a.qty_per_player > 0);
+
+          const purchaseRows: any[] = [];
+          for (const regId of registrationIds) {
+            for (const a of parsed) {
+              purchaseRows.push({
+                registration_id: regId,
+                addon_id: a.addon_id,
+                addon_name: a.addon_name,
+                unit_price_cents: a.unit_price_cents,
+                quantity: a.qty_per_player,
+              });
+            }
+          }
+          if (purchaseRows.length > 0) {
+            await supabaseAdmin.from("tournament_registration_addon_purchases").insert(purchaseRows);
+          }
+        }
+      } catch (addonErr) {
+        console.error("Add-on purchase persistence error:", addonErr);
+      }
+
       const passFeesToGolfer = session.metadata?.pass_fees_to_golfer === "true";
       const grossRegistrationCents = parseCents(session.metadata?.gross_registration_cents);
       const grossAmount = grossRegistrationCents > 0 ? grossRegistrationCents : (session.amount_total || 0);

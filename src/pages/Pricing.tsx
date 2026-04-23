@@ -220,6 +220,29 @@ const Pricing = () => {
             ))}
           </div>
 
+          {/* How it works callout */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 rounded-xl border-2 border-secondary bg-secondary/5 p-6 md:p-8 max-w-3xl mx-auto"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-secondary/20 text-secondary text-xl">
+                💡
+              </div>
+              <div>
+                <h3 className="text-lg font-display font-bold text-foreground mb-2">
+                  How it works
+                </h3>
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  You collect registration fees. Stripe automatically deducts 5% and sends the rest to your bank account.
+                  <span className="font-semibold text-primary"> No upfront cost. No surprises.</span>
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Secure Payments Banner */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

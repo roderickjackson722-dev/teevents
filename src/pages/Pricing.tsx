@@ -126,10 +126,10 @@ const Pricing = () => {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Choose Your Package
+              Start for free. Pay only when you get paid.
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              No monthly subscriptions. No hidden fees. Pay per tournament and keep your revenue.
+              TeeVents charges a 5% platform fee per registration — nothing upfront, no monthly fees.
             </p>
           </motion.div>
         </div>

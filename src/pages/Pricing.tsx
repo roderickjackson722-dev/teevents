@@ -58,8 +58,8 @@ const plans = [
     name: "Premium",
     price: "$999",
     period: "per tournament",
-    description: "White-glove consulting, reduced reserve, faster payouts.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "High-volume organizers and fundraisers. White-glove consulting.",
+    fee: "5% platform fee per registration + Stripe processing fees",
     features: [
       "Everything in Starter",
       "White-glove consulting & setup",

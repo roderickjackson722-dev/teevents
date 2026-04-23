@@ -33,8 +33,8 @@ const plans = [
     price: "$299",
     period: "per tournament",
     subtitle: "We build it for you",
-    description: "Unlimited players. We build your tournament platform for you.",
-    fee: "5% platform fee per transaction + Stripe processing fees",
+    description: "Growing tournaments and multiple events. We build it for you.",
+    fee: "5% platform fee per registration + Stripe processing fees",
     highlighted: true,
     features: [
       "Everything in Base (unlimited players)",

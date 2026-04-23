@@ -112,8 +112,8 @@ const Pricing = () => {
   return (
     <Layout>
       <SEO
-        title="Pricing | TeeVents — Choose Your Tournament Package"
-        description="Pick the perfect TeeVents plan for your golf tournament. Start with a full-featured free tier or unlock premium features. Simple, transparent pricing with no monthly subscriptions."
+        title="Pricing | TeeVents — Start Free, Pay Only When You Get Paid"
+        description="Start for free. Pay only when you get paid. TeeVents charges a 5% platform fee per registration — nothing upfront, no monthly fees."
         path="/pricing"
       />
 

@@ -5,8 +5,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, ShieldAlert } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export type PaymentOverride = "default" | "force_stripe" | "force_platform";
 
@@ -28,11 +33,34 @@ export default function AdminTournamentEditModal({
   const [managed, setManaged] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Admin payout override state
+  const [poEnabled, setPoEnabled] = useState(false);
+  const [poMethod, setPoMethod] = useState<"stripe" | "paypal" | "check">("stripe");
+  const [poPaypalEmail, setPoPaypalEmail] = useState("");
+  const [poMailingAddress, setPoMailingAddress] = useState("");
+  const [poReason, setPoReason] = useState("");
+  const [poAck, setPoAck] = useState(false);
+  const [poSaving, setPoSaving] = useState(false);
+  const [poCurrentMethod, setPoCurrentMethod] = useState<string | null>(null);
+
   useEffect(() => {
     if (tournament) {
       setOverride((tournament.payment_method_override as PaymentOverride) || "default");
       setPublicSearch(!!tournament.show_in_public_search);
       setManaged(!!tournament.managed_by_teevents);
+      setPoEnabled(false);
+      setPoReason("");
+      setPoAck(false);
+      // Best-effort: read current preferred payout method
+      const orgId = tournament.organizations?.id || tournament.organization_id;
+      if (orgId) {
+        supabase
+          .from("organization_payout_methods")
+          .select("preferred_method")
+          .eq("organization_id", orgId)
+          .maybeSingle()
+          .then(({ data }) => setPoCurrentMethod((data as any)?.preferred_method || null));
+      }
     }
   }, [tournament]);
 

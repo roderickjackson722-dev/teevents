@@ -110,6 +110,36 @@ Deno.serve(async (req) => {
     const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
     const registrationFeeCents = feePerPlayer * players.length;
 
+    // Validate add-on selections against DB and compute add-on totals
+    type ResolvedAddon = { id: string; name: string; price_cents: number; max_per_golfer: number; qty_per_player: number };
+    let resolvedAddons: ResolvedAddon[] = [];
+    let addonsTotalCents = 0;
+    if (addonSelections.length > 0) {
+      const ids = addonSelections.map((a) => a.addon_id);
+      const { data: dbAddons, error: addonErr } = await supabaseAdmin
+        .from("tournament_registration_addons")
+        .select("id, name, price_cents, max_per_golfer, is_active, tournament_id")
+        .in("id", ids);
+      if (addonErr) throw new Error("Failed to load add-ons: " + addonErr.message);
+      const byId = new Map((dbAddons || []).map((a: any) => [a.id, a]));
+      for (const sel of addonSelections) {
+        const a = byId.get(sel.addon_id);
+        if (!a || !a.is_active || a.tournament_id !== tournament_id) continue;
+        const qty = Math.min(Math.max(1, sel.qty_per_player), Math.max(1, a.max_per_golfer || 1));
+        if (qty <= 0) continue;
+        resolvedAddons.push({
+          id: a.id,
+          name: a.name,
+          price_cents: a.price_cents,
+          max_per_golfer: a.max_per_golfer || 1,
+          qty_per_player: qty,
+        });
+        addonsTotalCents += qty * players.length * a.price_cents;
+      }
+    }
+
+    const baseTotalCents = registrationFeeCents + addonsTotalCents;
+
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({
       tournament_id,

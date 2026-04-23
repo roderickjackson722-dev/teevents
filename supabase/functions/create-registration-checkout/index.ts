@@ -24,6 +24,10 @@ Deno.serve(async (req) => {
     const isFoursome = body.foursome === true && Array.isArray(body.players);
     const coverFees = body.cover_fees === true;
     const tierId = body.tier_id || null;
+    const addonSelections: { addon_id: string; qty_per_player: number }[] = Array.isArray(body.addons)
+      ? body.addons.filter((a: any) => a && typeof a.addon_id === "string" && Number.isFinite(Number(a.qty_per_player)) && Number(a.qty_per_player) > 0)
+        .map((a: any) => ({ addon_id: String(a.addon_id), qty_per_player: Math.floor(Number(a.qty_per_player)) }))
+      : [];
 
     const players = isFoursome
       ? body.players
@@ -106,6 +110,38 @@ Deno.serve(async (req) => {
     const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
     const registrationFeeCents = feePerPlayer * players.length;
 
+    // Validate add-on selections against DB and compute add-on totals
+    type ResolvedAddon = { id: string; name: string; price_cents: number; max_per_golfer: number; qty_per_player: number };
+    let resolvedAddons: ResolvedAddon[] = [];
+    let addonsTotalCents = 0;
+    if (addonSelections.length > 0) {
+      const ids = addonSelections.map((a) => a.addon_id);
+      const { data: dbAddons, error: addonErr } = await supabaseAdmin
+        .from("tournament_registration_addons")
+        .select("id, name, price_cents, max_per_golfer, is_active, tournament_id")
+        .in("id", ids);
+      if (addonErr) throw new Error("Failed to load add-ons: " + addonErr.message);
+      const byId = new Map((dbAddons || []).map((a: any) => [a.id, a]));
+      for (const sel of addonSelections) {
+        const a = byId.get(sel.addon_id);
+        if (!a || !a.is_active || a.tournament_id !== tournament_id) continue;
+        const qty = Math.min(Math.max(1, sel.qty_per_player), Math.max(1, a.max_per_golfer || 1));
+        if (qty <= 0) continue;
+        resolvedAddons.push({
+          id: a.id,
+          name: a.name,
+          price_cents: a.price_cents,
+          max_per_golfer: a.max_per_golfer || 1,
+          qty_per_player: qty,
+        });
+        addonsTotalCents += qty * players.length * a.price_cents;
+      }
+    }
+
+    const baseTotalCents = registrationFeeCents + addonsTotalCents;
+
+    const hasAnyCharge = baseTotalCents > 0;
+
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({
       tournament_id,
@@ -117,7 +153,7 @@ Deno.serve(async (req) => {
       shirt_size: p.shirt_size || null,
       dietary_restrictions: p.dietary_restrictions || null,
       notes: p.notes || null,
-      payment_status: feePerPlayer > 0 ? "pending" : "paid",
+      payment_status: hasAnyCharge ? "pending" : "paid",
       tier_id: tierId || null,
       covered_fees: coverFees,
     }));
@@ -142,15 +178,15 @@ Deno.serve(async (req) => {
           `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
           `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
           isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
-          feePerPlayer > 0 ? `💳 Registration fee: $${(registrationFeeCents / 100).toFixed(2)} (payment pending)` : "✅ No registration fee — confirmed.",
+          hasAnyCharge ? `💳 Order total: $${(baseTotalCents / 100).toFixed(2)} (payment pending)` : "✅ No fee — confirmed.",
         ].filter(Boolean)),
       );
     } catch (e) {
       console.error("Notification error:", e);
     }
 
-    // If no fee, registration is complete
-    if (feePerPlayer <= 0) {
+    // If no charges at all (no fee, no addons), registration is complete
+    if (!hasAnyCharge) {
       try {
         await sendRegistrantConfirmationEmail(
           first_name, last_name, email.trim(),
@@ -188,30 +224,49 @@ Deno.serve(async (req) => {
     const golferPaysFees = passFeesToParticipants || coverFees;
 
     const lineItems: any[] = [];
-    const platformFeeCents = Math.round(registrationFeeCents * PLATFORM_FEE_RATE);
+    // Fees are computed on the COMBINED total (registration + add-ons)
+    const platformFeeCents = Math.round(baseTotalCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = golferPaysFees
-      ? calculateGrossedUpStripeFee(registrationFeeCents + platformFeeCents)
-      : calculateProcessingFee(registrationFeeCents);
+      ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
+      : calculateProcessingFee(baseTotalCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
     const applicationFeeAmount = combinedFeesCents;
     const organizerNetCents = golferPaysFees
-      ? registrationFeeCents
-      : Math.max(registrationFeeCents - combinedFeesCents, 0);
+      ? baseTotalCents
+      : Math.max(baseTotalCents - combinedFeesCents, 0);
     const chargeTotalCents = golferPaysFees
-      ? registrationFeeCents + combinedFeesCents
-      : registrationFeeCents;
+      ? baseTotalCents + combinedFeesCents
+      : baseTotalCents;
 
-    lineItems.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: `Registration — ${tournament.title}`,
-          description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+    if (registrationFeeCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Registration — ${tournament.title}`,
+            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+          },
+          unit_amount: feePerPlayer,
         },
-        unit_amount: feePerPlayer,
-      },
-      quantity: players.length,
-    });
+        quantity: players.length,
+      });
+    }
+
+    // Add-on line items (one line per add-on, quantity = qty_per_player × players)
+    for (const a of resolvedAddons) {
+      const totalQty = a.qty_per_player * players.length;
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: a.name,
+            description: players.length > 1 ? `${a.qty_per_player} × ${players.length} players` : undefined,
+          },
+          unit_amount: a.price_cents,
+        },
+        quantity: totalQty,
+      });
+    }
 
     if (golferPaysFees && combinedFeesCents > 0) {
       lineItems.push({
@@ -225,6 +280,12 @@ Deno.serve(async (req) => {
         quantity: 1,
       });
     }
+
+    // Compact add-on selections for metadata (Stripe metadata values must be < 500 chars)
+    const addonMetaStr = resolvedAddons
+      .map((a) => `${a.id}:${a.qty_per_player}:${a.price_cents}:${a.name.replace(/[|,]/g, " ").slice(0, 40)}`)
+      .join("|")
+      .slice(0, 480);
 
     const checkoutParams: any = {
       customer: customerId,
@@ -242,6 +303,8 @@ Deno.serve(async (req) => {
         cover_fees: String(coverFees),
         tier_id: tierId || "",
         gross_registration_cents: String(registrationFeeCents),
+        addons_total_cents: String(addonsTotalCents),
+        base_total_cents: String(baseTotalCents),
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
@@ -249,6 +312,8 @@ Deno.serve(async (req) => {
         charge_total_cents: String(chargeTotalCents),
         routing: useDestinationCharge ? "destination" : "platform_escrow",
         payment_method_override: override,
+        addon_selections: addonMetaStr,
+        player_count: String(players.length),
       },
     };
 

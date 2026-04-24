@@ -237,15 +237,37 @@ const PlanningGuide = () => {
                         className="mt-0.5"
                       />
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm font-medium ${
-                            item.is_completed
-                              ? "line-through text-muted-foreground"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {item.title}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p
+                            className={`text-sm font-medium ${
+                              item.is_completed
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {item.title}
+                          </p>
+                          {(() => {
+                            const formatted = formatDueDate(item.due_date, item.offset_days);
+                            if (!formatted) return null;
+                            const overdue = isOverdue(item.due_date, item.is_completed);
+                            return (
+                              <span
+                                className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                                  overdue
+                                    ? "bg-destructive/10 text-destructive border border-destructive/30"
+                                    : item.offset_days === 0
+                                    ? "bg-primary/10 text-primary border border-primary/30"
+                                    : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {overdue && <AlertCircle className="h-3 w-3" />}
+                                {item.offset_days === 0 ? formatted : `Due: ${formatted}`}
+                                {overdue && " · Overdue"}
+                              </span>
+                            );
+                          })()}
+                        </div>
                         {item.description && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {item.description}

@@ -67,4 +67,7 @@ verify_jwt = false
 [functions.confirm-payout-change]
 verify_jwt = false
 
+[functions.get-public-trip]
+verify_jwt = false
+
 

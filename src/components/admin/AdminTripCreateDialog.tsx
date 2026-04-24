@@ -149,6 +149,30 @@ export default function AdminTripCreateDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          {existingTrips.length > 0 && (
+            <div className="p-3 rounded-lg border bg-muted/30">
+              <Label className="text-xs flex items-center gap-1.5 mb-1.5">
+                <Copy className="h-3.5 w-3.5" /> Duplicate from existing trip (optional)
+              </Label>
+              <Select value={duplicateFromId} onValueChange={applyDuplicate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Start fresh or copy from a trip…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Start fresh</SelectItem>
+                  {existingTrips.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.title}
+                      {t.destination ? ` — ${t.destination}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Copies title, destination, dates, and description. Participants and payments are not copied.
+              </p>
+            </div>
+          )}
           <div>
             <Label>Trip Title *</Label>
             <Input

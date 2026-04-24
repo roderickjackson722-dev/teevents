@@ -272,6 +272,8 @@ function TripSection({
   confirmDelete,
   setConfirmDelete,
   onDelete,
+  onEdit,
+  onParticipants,
 }: {
   title: string;
   trips: Trip[];
@@ -279,6 +281,8 @@ function TripSection({
   confirmDelete: string | null;
   setConfirmDelete: (id: string | null) => void;
   onDelete: (id: string) => void;
+  onEdit: (trip: Trip) => void;
+  onParticipants: (trip: Trip) => void;
 }) {
   if (trips.length === 0) return null;
   return (
@@ -315,10 +319,16 @@ function TripSection({
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button asChild size="sm" variant="outline">
+            <div className="flex items-center gap-1 flex-wrap">
+              <Button size="sm" variant="outline" onClick={() => onParticipants(t)}>
+                <UserCog className="h-3.5 w-3.5 mr-1" /> Participants
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => onEdit(t)}>
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+              </Button>
+              <Button asChild size="sm" variant="ghost">
                 <Link to={`/trips/${t.id}`}>
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> Manage
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </Button>
               {t.share_token && (

@@ -175,6 +175,27 @@ const PlanningGuide = () => {
         <p className="text-xs text-muted-foreground mt-2">{progress}% complete</p>
       </motion.div>
 
+      {/* No tournament date warning */}
+      {!tournamentDate && !loading && (
+        <div className="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+          <CalendarX className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-semibold text-foreground">Set tournament date to see due dates</p>
+            <p className="text-muted-foreground mt-0.5">
+              Add a start date to your tournament so we can automatically calculate when each task is due.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {tournamentDate && (
+        <p className="text-sm text-muted-foreground mb-6">
+          Tournament starts <span className="font-semibold text-foreground">
+            {new Date(tournamentDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          </span>. Due dates are calculated automatically.
+        </p>
+      )}
+
       {/* Checklist */}
       {loading ? (
         <div className="flex justify-center py-12">

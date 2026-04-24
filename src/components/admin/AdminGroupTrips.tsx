@@ -190,14 +190,19 @@ export default function AdminGroupTrips() {
                 </CardDescription>
               </div>
             </div>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search trips..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search trips..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" /> Create Trip
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -219,6 +224,8 @@ export default function AdminGroupTrips() {
                 confirmDelete={confirmDelete}
                 setConfirmDelete={setConfirmDelete}
                 onDelete={deleteTrip}
+                onEdit={setEditTrip}
+                onParticipants={setParticipantsTrip}
               />
               {past.length > 0 && upcoming.length > 0 && <Separator />}
               <TripSection
@@ -228,11 +235,32 @@ export default function AdminGroupTrips() {
                 confirmDelete={confirmDelete}
                 setConfirmDelete={setConfirmDelete}
                 onDelete={deleteTrip}
+                onEdit={setEditTrip}
+                onParticipants={setParticipantsTrip}
               />
             </>
           )}
         </CardContent>
       </Card>
+
+      <AdminTripCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={loadTrips}
+      />
+      <AdminTripEditDrawer
+        trip={editTrip}
+        open={!!editTrip}
+        onOpenChange={(o) => !o && setEditTrip(null)}
+        onSaved={loadTrips}
+      />
+      <AdminTripParticipantsDialog
+        tripId={participantsTrip?.id || null}
+        tripTitle={participantsTrip?.title || ""}
+        shareToken={participantsTrip?.share_token || null}
+        open={!!participantsTrip}
+        onOpenChange={(o) => !o && setParticipantsTrip(null)}
+      />
     </div>
   );
 }

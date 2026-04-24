@@ -20,7 +20,13 @@ import {
   Users,
   Plane,
   KeyRound,
+  Plus,
+  Pencil,
+  UserCog,
 } from "lucide-react";
+import AdminTripCreateDialog from "./AdminTripCreateDialog";
+import AdminTripEditDrawer from "./AdminTripEditDrawer";
+import AdminTripParticipantsDialog from "./AdminTripParticipantsDialog";
 
 interface Trip {
   id: string;
@@ -51,6 +57,9 @@ export default function AdminGroupTrips() {
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTrip, setEditTrip] = useState<Trip | null>(null);
+  const [participantsTrip, setParticipantsTrip] = useState<Trip | null>(null);
 
   const loadFlag = async () => {
     const { data } = await supabase

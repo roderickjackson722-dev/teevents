@@ -793,6 +793,7 @@ const AdminDashboard = () => {
                   ["notifications", "Notifications", Bell],
                   ["transactions", "Transactions", DollarSign],
                   ["accounting", "Accounting", DollarSign],
+                  ["group-trips", "Group Trips", Plane],
                   ["feature-flags", "Feature Flags", KeyRound],
                 ] as const).map(([key, label, Icon]) => (
                   <button

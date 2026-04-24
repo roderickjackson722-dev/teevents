@@ -85,6 +85,25 @@ const PlanningGuide = () => {
   const totalCount = items.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  const currentTournament = tournaments.find((t) => t.id === selectedTournament);
+  const tournamentDate = currentTournament?.date || null;
+
+  const formatDueDate = (dueDate: string | null, offset: number | null) => {
+    if (!dueDate) return null;
+    const d = new Date(dueDate + "T00:00:00");
+    const formatted = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    if (offset === 0) return "Event day";
+    return formatted;
+  };
+
+  const isOverdue = (dueDate: string | null, completed: boolean | null) => {
+    if (!dueDate || completed) return false;
+    const d = new Date(dueDate + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d < today;
+  };
+
   const groupedItems = categoryOrder.reduce((acc, cat) => {
     const catItems = items.filter((i) => i.category === cat);
     if (catItems.length > 0) acc[cat] = catItems;

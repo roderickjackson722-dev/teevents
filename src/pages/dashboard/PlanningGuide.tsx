@@ -45,7 +45,7 @@ const PlanningGuide = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title")
+      .select("id, title, date")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {

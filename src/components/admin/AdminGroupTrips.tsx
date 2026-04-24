@@ -38,6 +38,7 @@ interface Trip {
   organizer_id: string;
   share_token: string | null;
   created_at: string;
+  is_published?: boolean;
   organizer_email?: string;
   participant_count?: number;
 }
@@ -75,7 +76,7 @@ export default function AdminGroupTrips() {
     setLoading(true);
     const { data: tripsData, error } = await supabase
       .from("golf_trips")
-      .select("id, title, destination, start_date, end_date, status, organizer_id, share_token, created_at")
+      .select("id, title, destination, start_date, end_date, status, organizer_id, share_token, created_at, is_published")
       .order("start_date", { ascending: false });
 
     if (error) {

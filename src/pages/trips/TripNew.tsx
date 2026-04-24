@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import TripsDisabled from "@/components/trips/TripsDisabled";
 
 export default function TripNew() {
   const { enabled, loading: flagLoading } = useFeatureFlag("enable_group_trips");
@@ -23,10 +24,7 @@ export default function TripNew() {
   });
 
   if (flagLoading) return null;
-  if (!enabled) {
-    navigate("/");
-    return null;
-  }
+  if (!enabled) return <TripsDisabled />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

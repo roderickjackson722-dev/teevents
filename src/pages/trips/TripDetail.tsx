@@ -20,6 +20,7 @@ import TripSkins from "@/components/trips/TripSkins";
 import TripPayments from "@/components/trips/TripPayments";
 import TripRooms from "@/components/trips/TripRooms";
 import TripLeaderboard from "@/components/trips/TripLeaderboard";
+import TripsDisabled from "@/components/trips/TripsDisabled";
 
 export default function TripDetail() {
   const { id } = useParams();
@@ -46,11 +47,9 @@ export default function TripDetail() {
     })();
   }, [id, navigate]);
 
-  if (flagLoading || loading) return null;
-  if (!enabled) {
-    navigate("/");
-    return null;
-  }
+  if (flagLoading) return null;
+  if (!enabled) return <TripsDisabled />;
+  if (loading) return null;
   if (!trip) return null;
 
   const updateStatus = async (status: string) => {

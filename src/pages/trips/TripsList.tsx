@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, MapPin, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import SEO from "@/components/SEO";
+import TripsDisabled from "@/components/trips/TripsDisabled";
 
 interface Trip {
   id: string;
@@ -51,10 +52,7 @@ export default function TripsList() {
   }, [navigate]);
 
   if (flagLoading) return null;
-  if (!enabled) {
-    const TripsDisabled = require("@/components/trips/TripsDisabled").default;
-    return <TripsDisabled />;
-  }
+  if (!enabled) return <TripsDisabled />;
 
   const upcoming = trips.filter((t) => t.status !== "completed" && t.status !== "cancelled");
   const past = trips.filter((t) => t.status === "completed" || t.status === "cancelled");

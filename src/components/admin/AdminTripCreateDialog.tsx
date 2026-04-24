@@ -20,12 +20,21 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Copy } from "lucide-react";
 
 interface OrgOption {
   user_id: string;
   email: string;
   name: string | null;
+}
+
+interface ExistingTrip {
+  id: string;
+  title: string;
+  destination: string | null;
+  start_date: string;
+  end_date: string;
+  description: string | null;
 }
 
 export default function AdminTripCreateDialog({
@@ -39,6 +48,8 @@ export default function AdminTripCreateDialog({
 }) {
   const [saving, setSaving] = useState(false);
   const [organizers, setOrganizers] = useState<OrgOption[]>([]);
+  const [existingTrips, setExistingTrips] = useState<ExistingTrip[]>([]);
+  const [duplicateFromId, setDuplicateFromId] = useState<string>("none");
   const [form, setForm] = useState({
     title: "",
     destination: "",
@@ -52,24 +63,47 @@ export default function AdminTripCreateDialog({
   useEffect(() => {
     if (!open) return;
     (async () => {
-      // Use current admin as default organizer; also load org members for selection
       const { data: { user } } = await supabase.auth.getUser();
-      const { data } = await supabase
-        .from("org_members")
-        .select("user_id, name")
-        .order("created_at", { ascending: false })
-        .limit(200);
+      const [memberRes, tripRes] = await Promise.all([
+        supabase
+          .from("org_members")
+          .select("user_id, name")
+          .order("created_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("golf_trips")
+          .select("id, title, destination, start_date, end_date, description")
+          .order("created_at", { ascending: false })
+          .limit(100),
+      ]);
       const unique = new Map<string, OrgOption>();
-      (data || []).forEach((m: any) => {
+      (memberRes.data || []).forEach((m: any) => {
         if (!unique.has(m.user_id)) {
           unique.set(m.user_id, { user_id: m.user_id, email: m.user_id, name: m.name });
         }
       });
       if (user) unique.set(user.id, { user_id: user.id, email: "Me (admin)", name: null });
       setOrganizers(Array.from(unique.values()));
+      setExistingTrips(tripRes.data || []);
       setForm((f) => ({ ...f, organizer_id: user?.id || "" }));
     })();
   }, [open]);
+
+  const applyDuplicate = (tripId: string) => {
+    setDuplicateFromId(tripId);
+    if (tripId === "none") return;
+    const src = existingTrips.find((t) => t.id === tripId);
+    if (!src) return;
+    setForm((f) => ({
+      ...f,
+      title: f.title || `${src.title} (Copy)`,
+      destination: src.destination || "",
+      start_date: src.start_date?.slice(0, 10) || "",
+      end_date: src.end_date?.slice(0, 10) || "",
+      description: src.description || "",
+    }));
+    toast.success("Copied details from existing trip");
+  };
 
   const submit = async () => {
     if (!form.title || !form.start_date || !form.end_date || !form.organizer_id) {

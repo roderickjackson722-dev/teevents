@@ -52,15 +52,8 @@ export default function TripsList() {
 
   if (flagLoading) return null;
   if (!enabled) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-24 px-4 max-w-2xl mx-auto text-center">
-          <h1 className="font-display text-3xl mb-3">Group Trips</h1>
-          <p className="text-muted-foreground">This feature is not available yet.</p>
-        </div>
-      </div>
-    );
+    const TripsDisabled = require("@/components/trips/TripsDisabled").default;
+    return <TripsDisabled />;
   }
 
   const upcoming = trips.filter((t) => t.status !== "completed" && t.status !== "cancelled");

@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Mail, CheckCircle2, Clock } from "lucide-react";
+import { Loader2, Plus, Trash2, Mail, CheckCircle2, Clock, Upload } from "lucide-react";
 import { format } from "date-fns";
 
 interface Participant {
@@ -49,10 +52,29 @@ export default function AdminTripParticipantsDialog({
   const [payments, setPayments] = useState<Payment[]>([]);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [bulkText, setBulkText] = useState("");
+  const [bulkAdding, setBulkAdding] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkRemoving, setBulkRemoving] = useState(false);
+
+  const toggleSelected = (id: string, checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleAll = (checked: boolean) => {
+    if (!checked) return setSelected(new Set());
+    setSelected(new Set(participants.map((p) => p.id)));
+  };
 
   const load = async () => {
     if (!tripId) return;
     setLoading(true);
+    setSelected(new Set());
     const [pRes, payRes] = await Promise.all([
       supabase
         .from("trip_participants")
@@ -103,6 +125,64 @@ export default function AdminTripParticipantsDialog({
       return;
     }
     toast.success("Participant removed");
+    load();
+  };
+
+  const bulkAdd = async () => {
+    if (!tripId || !bulkText.trim()) {
+      toast.error("Paste at least one row");
+      return;
+    }
+    const lines = bulkText
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l && !/^name\s*,/i.test(l)); // skip optional header
+
+    const rows = lines
+      .map((line) => {
+        const parts = line.split(/[,\t]/).map((p) => p.trim().replace(/^["']|["']$/g, ""));
+        const [name, email, phone] = parts;
+        if (!name) return null;
+        return {
+          trip_id: tripId,
+          name,
+          email: email || null,
+          phone: phone || null,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    if (rows.length === 0) {
+      toast.error("No valid rows. Use: Name, Email, Phone (one per line)");
+      return;
+    }
+
+    setBulkAdding(true);
+    const { error } = await supabase.from("trip_participants").insert(rows);
+    setBulkAdding(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Added ${rows.length} participant${rows.length === 1 ? "" : "s"}`);
+    setBulkText("");
+    load();
+  };
+
+  const bulkRemove = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`Remove ${selected.size} selected participant${selected.size === 1 ? "" : "s"}?`)) return;
+    setBulkRemoving(true);
+    const { error } = await supabase
+      .from("trip_participants")
+      .delete()
+      .in("id", Array.from(selected));
+    setBulkRemoving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Removed ${selected.size} participant${selected.size === 1 ? "" : "s"}`);
     load();
   };
 

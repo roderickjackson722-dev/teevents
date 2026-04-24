@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Mail, CheckCircle2, Clock } from "lucide-react";
+import { Loader2, Plus, Trash2, Mail, CheckCircle2, Clock, Upload } from "lucide-react";
 import { format } from "date-fns";
 
 interface Participant {
@@ -49,10 +52,29 @@ export default function AdminTripParticipantsDialog({
   const [payments, setPayments] = useState<Payment[]>([]);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [bulkText, setBulkText] = useState("");
+  const [bulkAdding, setBulkAdding] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkRemoving, setBulkRemoving] = useState(false);
+
+  const toggleSelected = (id: string, checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleAll = (checked: boolean) => {
+    if (!checked) return setSelected(new Set());
+    setSelected(new Set(participants.map((p) => p.id)));
+  };
 
   const load = async () => {
     if (!tripId) return;
     setLoading(true);
+    setSelected(new Set());
     const [pRes, payRes] = await Promise.all([
       supabase
         .from("trip_participants")
@@ -106,6 +128,64 @@ export default function AdminTripParticipantsDialog({
     load();
   };
 
+  const bulkAdd = async () => {
+    if (!tripId || !bulkText.trim()) {
+      toast.error("Paste at least one row");
+      return;
+    }
+    const lines = bulkText
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l && !/^name\s*,/i.test(l)); // skip optional header
+
+    const rows = lines
+      .map((line) => {
+        const parts = line.split(/[,\t]/).map((p) => p.trim().replace(/^["']|["']$/g, ""));
+        const [name, email, phone] = parts;
+        if (!name) return null;
+        return {
+          trip_id: tripId,
+          name,
+          email: email || null,
+          phone: phone || null,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    if (rows.length === 0) {
+      toast.error("No valid rows. Use: Name, Email, Phone (one per line)");
+      return;
+    }
+
+    setBulkAdding(true);
+    const { error } = await supabase.from("trip_participants").insert(rows);
+    setBulkAdding(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Added ${rows.length} participant${rows.length === 1 ? "" : "s"}`);
+    setBulkText("");
+    load();
+  };
+
+  const bulkRemove = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`Remove ${selected.size} selected participant${selected.size === 1 ? "" : "s"}?`)) return;
+    setBulkRemoving(true);
+    const { error } = await supabase
+      .from("trip_participants")
+      .delete()
+      .in("id", Array.from(selected));
+    setBulkRemoving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Removed ${selected.size} participant${selected.size === 1 ? "" : "s"}`);
+    load();
+  };
+
   const resendInvite = (p: Participant) => {
     if (!p.email) {
       toast.error("No email on file for this participant");
@@ -146,44 +226,95 @@ export default function AdminTripParticipantsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Add participant */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_140px_auto] gap-2 p-3 border rounded-lg bg-muted/30">
-          <Input
-            placeholder="Name *"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-          <Input
-            placeholder="Email"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-          <Input
-            placeholder="Phone"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-          <Button onClick={addParticipant} disabled={adding}>
-            {adding ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Plus className="h-4 w-4 mr-1" /> Add
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Add participants — single + bulk */}
+        <Tabs defaultValue="single">
+          <TabsList>
+            <TabsTrigger value="single">Add one</TabsTrigger>
+            <TabsTrigger value="bulk">
+              <Upload className="h-3.5 w-3.5 mr-1" /> Bulk paste
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="single">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_140px_auto] gap-2 p-3 border rounded-lg bg-muted/30">
+              <Input
+                placeholder="Name *"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+              <Input
+                placeholder="Email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+              <Input
+                placeholder="Phone"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+              <Button onClick={addParticipant} disabled={adding}>
+                {adding ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </>
+                )}
+              </Button>
+            </div>
+          </TabsContent>
+          <TabsContent value="bulk">
+            <div className="p-3 border rounded-lg bg-muted/30 space-y-2">
+              <Textarea
+                rows={6}
+                placeholder={"Paste CSV — one participant per line:\nName, Email, Phone\nJohn Smith, john@example.com, 555-1234\nJane Doe, jane@example.com,"}
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                className="font-mono text-xs"
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-muted-foreground">
+                  Comma or tab separated. Header row optional. Email and phone are optional.
+                </p>
+                <Button onClick={bulkAdd} disabled={bulkAdding} size="sm">
+                  {bulkAdding ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-1" />
+                  )}
+                  Add all
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
-        {/* Summary */}
-        <div className="flex items-center gap-4 text-sm">
-          <span>
-            <strong>{participants.length}</strong> participants
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span>
-            <strong>${(totalPaidCents / 100).toFixed(2)}</strong> collected
-          </span>
+        {/* Summary + bulk actions */}
+        <div className="flex items-center justify-between gap-4 text-sm flex-wrap">
+          <div className="flex items-center gap-3">
+            <span>
+              <strong>{participants.length}</strong> participants
+            </span>
+            <span className="text-muted-foreground">·</span>
+            <span>
+              <strong>${(totalPaidCents / 100).toFixed(2)}</strong> collected
+            </span>
+          </div>
+          {selected.size > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={bulkRemove}
+              disabled={bulkRemoving}
+            >
+              {bulkRemoving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-1" />
+              )}
+              Remove {selected.size} selected
+            </Button>
+          )}
         </div>
 
         {/* List */}
@@ -200,6 +331,15 @@ export default function AdminTripParticipantsDialog({
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left">
                 <tr>
+                  <th className="p-2 w-8">
+                    <Checkbox
+                      checked={
+                        participants.length > 0 && selected.size === participants.length
+                      }
+                      onCheckedChange={(c) => toggleAll(!!c)}
+                      aria-label="Select all"
+                    />
+                  </th>
                   <th className="p-2 font-medium">Name</th>
                   <th className="p-2 font-medium">Email</th>
                   <th className="p-2 font-medium">Payment</th>
@@ -211,6 +351,13 @@ export default function AdminTripParticipantsDialog({
                   const status = paymentFor(p.id);
                   return (
                     <tr key={p.id} className="border-t">
+                      <td className="p-2">
+                        <Checkbox
+                          checked={selected.has(p.id)}
+                          onCheckedChange={(c) => toggleSelected(p.id, !!c)}
+                          aria-label={`Select ${p.name}`}
+                        />
+                      </td>
                       <td className="p-2">
                         <div className="font-medium flex items-center gap-2">
                           {p.name}

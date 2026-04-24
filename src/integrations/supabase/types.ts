@@ -828,6 +828,7 @@ export type Database = {
           destination: string | null
           end_date: string
           id: string
+          is_published: boolean
           organizer_id: string
           share_token: string | null
           start_date: string
@@ -841,6 +842,7 @@ export type Database = {
           destination?: string | null
           end_date: string
           id?: string
+          is_published?: boolean
           organizer_id: string
           share_token?: string | null
           start_date: string
@@ -854,6 +856,7 @@ export type Database = {
           destination?: string | null
           end_date?: string
           id?: string
+          is_published?: boolean
           organizer_id?: string
           share_token?: string | null
           start_date?: string

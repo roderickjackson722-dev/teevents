@@ -20,7 +20,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Globe, EyeOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface Trip {
   id: string;
@@ -30,6 +31,7 @@ interface Trip {
   end_date: string;
   status: string;
   description?: string | null;
+  is_published?: boolean;
 }
 
 export default function AdminTripEditDrawer({
@@ -48,11 +50,10 @@ export default function AdminTripEditDrawer({
 
   useEffect(() => {
     if (trip && open) {
-      // Load full trip to get description
       (async () => {
         const { data } = await supabase
           .from("golf_trips")
-          .select("id, title, destination, start_date, end_date, status, description")
+          .select("id, title, destination, start_date, end_date, status, description, is_published")
           .eq("id", trip.id)
           .maybeSingle();
         setForm(data || trip);
@@ -73,6 +74,7 @@ export default function AdminTripEditDrawer({
         end_date: form.end_date,
         status: form.status,
         description: form.description,
+        is_published: form.is_published ?? true,
       })
       .eq("id", form.id);
     setSaving(false);
@@ -148,6 +150,28 @@ export default function AdminTripEditDrawer({
               rows={4}
               value={form.description || ""}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+
+          <div className="flex items-start justify-between gap-4 p-3 rounded-lg border bg-muted/30">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                {form.is_published === false ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Globe className="h-4 w-4 text-primary" />
+                )}
+                <Label className="text-sm font-medium cursor-pointer">
+                  {form.is_published === false ? "Trip pages unpublished" : "Trip pages published"}
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                When off, <code className="text-[10px]">/trips/:id</code> and the public share view show a "Trip Unavailable" message to everyone except the organizer and admins.
+              </p>
+            </div>
+            <Switch
+              checked={form.is_published !== false}
+              onCheckedChange={(checked) => setForm({ ...form, is_published: checked })}
             />
           </div>
         </div>

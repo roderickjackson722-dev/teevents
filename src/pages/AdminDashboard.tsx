@@ -21,6 +21,7 @@ import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
 import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import AdminFeatureFlags from "@/components/admin/AdminFeatureFlags";
+import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";

@@ -94,6 +94,10 @@ import LiveLeaderboard from "./pages/LiveLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
+import TripsList from "./pages/trips/TripsList";
+import TripNew from "./pages/trips/TripNew";
+import TripDetail from "./pages/trips/TripDetail";
+import PublicTrip from "./pages/trips/PublicTrip";
 
 const queryClient = new QueryClient();
 
@@ -194,6 +198,10 @@ const App = () => (
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
              <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
              <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />
+             <Route path="/trips" element={<TripsList />} />
+             <Route path="/trips/new" element={<TripNew />} />
+             <Route path="/trips/public/:token" element={<PublicTrip />} />
+             <Route path="/trips/:id" element={<TripDetail />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

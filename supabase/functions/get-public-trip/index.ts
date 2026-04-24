@@ -25,6 +25,12 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (trip.is_published === false) {
+      return new Response(JSON.stringify({ error: "This trip is not currently published." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const [participants, agenda, tee_times, rooms, skins] = await Promise.all([
       supabase.from("trip_participants").select("id, name, handicap_index").eq("trip_id", trip.id),

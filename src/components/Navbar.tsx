@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Menu, X, LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoWhite from "@/assets/logo-white.png";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 
-const navLinks = [
+const baseLinks = [
   { label: "Home", to: "/" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Find a Tournament", to: "/tournaments/search" },
@@ -17,6 +18,16 @@ const navLinks = [
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { pathname } = useLocation();
+  const { enabled: tripsEnabled } = useFeatureFlag("enable_group_trips");
+
+  // Insert "Group Trips" right after "Find a Tournament" when feature is on
+  const navLinks = tripsEnabled
+    ? [
+        ...baseLinks.slice(0, 3),
+        { label: "Group Trips", to: "/trips" },
+        ...baseLinks.slice(3),
+      ]
+    : baseLinks;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-golf-green-dark/95 backdrop-blur-sm border-b border-primary/20">

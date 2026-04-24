@@ -28,10 +28,12 @@ export default function TripDetail() {
   const { enabled, loading: flagLoading } = useFeatureFlag("enable_group_trips");
   const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("golf_trips")
         .select("*")
@@ -42,6 +44,24 @@ export default function TripDetail() {
         navigate("/trips");
         return;
       }
+      if (data.is_published === false) {
+        const isOrganizer = user?.id === data.organizer_id;
+        let isAdmin = false;
+        if (user) {
+          const { data: roles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .eq("role", "admin")
+            .maybeSingle();
+          isAdmin = !!roles;
+        }
+        if (!isOrganizer && !isAdmin) {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
+      }
       setTrip(data);
       setLoading(false);
     })();
@@ -50,6 +70,19 @@ export default function TripDetail() {
   if (flagLoading) return null;
   if (!enabled) return <TripsDisabled />;
   if (loading) return null;
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-32 px-4 max-w-xl mx-auto text-center">
+          <h1 className="text-2xl font-semibold mb-2">Trip Unavailable</h1>
+          <p className="text-muted-foreground">
+            This trip is not currently published. Please check back later or contact the organizer.
+          </p>
+        </div>
+      </div>
+    );
+  }
   if (!trip) return null;
 
   const updateStatus = async (status: string) => {

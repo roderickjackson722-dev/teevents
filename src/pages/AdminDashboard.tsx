@@ -20,6 +20,7 @@ import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
 import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
+import AdminFeatureFlags from "@/components/admin/AdminFeatureFlags";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -38,7 +39,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions">("all-tournaments");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags">("all-tournaments");
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -791,6 +792,7 @@ const AdminDashboard = () => {
                   ["notifications", "Notifications", Bell],
                   ["transactions", "Transactions", DollarSign],
                   ["accounting", "Accounting", DollarSign],
+                  ["feature-flags", "Feature Flags", KeyRound],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -1920,6 +1922,9 @@ const AdminDashboard = () => {
 
           {/* Accounting Tab */}
           {activeTab === "accounting" && <AdminAccounting />}
+
+          {/* Feature Flags Tab */}
+          {activeTab === "feature-flags" && <AdminFeatureFlags />}
         </div>
       </section>
 

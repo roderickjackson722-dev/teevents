@@ -303,6 +303,11 @@ function TripSection({
                 <Badge variant="secondary" className={statusColor[t.status] || ""}>
                   {t.status}
                 </Badge>
+                {t.is_published === false && (
+                  <Badge variant="outline" className="text-muted-foreground">
+                    Unpublished
+                  </Badge>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1.5">
                 {t.destination && (

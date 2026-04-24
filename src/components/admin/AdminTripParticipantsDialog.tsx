@@ -331,6 +331,15 @@ export default function AdminTripParticipantsDialog({
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left">
                 <tr>
+                  <th className="p-2 w-8">
+                    <Checkbox
+                      checked={
+                        participants.length > 0 && selected.size === participants.length
+                      }
+                      onCheckedChange={(c) => toggleAll(!!c)}
+                      aria-label="Select all"
+                    />
+                  </th>
                   <th className="p-2 font-medium">Name</th>
                   <th className="p-2 font-medium">Email</th>
                   <th className="p-2 font-medium">Payment</th>
@@ -342,6 +351,13 @@ export default function AdminTripParticipantsDialog({
                   const status = paymentFor(p.id);
                   return (
                     <tr key={p.id} className="border-t">
+                      <td className="p-2">
+                        <Checkbox
+                          checked={selected.has(p.id)}
+                          onCheckedChange={(c) => toggleSelected(p.id, !!c)}
+                          aria-label={`Select ${p.name}`}
+                        />
+                      </td>
                       <td className="p-2">
                         <div className="font-medium flex items-center gap-2">
                           {p.name}

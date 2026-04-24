@@ -20,7 +20,13 @@ import {
   Users,
   Plane,
   KeyRound,
+  Plus,
+  Pencil,
+  UserCog,
 } from "lucide-react";
+import AdminTripCreateDialog from "./AdminTripCreateDialog";
+import AdminTripEditDrawer from "./AdminTripEditDrawer";
+import AdminTripParticipantsDialog from "./AdminTripParticipantsDialog";
 
 interface Trip {
   id: string;
@@ -51,6 +57,9 @@ export default function AdminGroupTrips() {
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTrip, setEditTrip] = useState<Trip | null>(null);
+  const [participantsTrip, setParticipantsTrip] = useState<Trip | null>(null);
 
   const loadFlag = async () => {
     const { data } = await supabase
@@ -181,14 +190,19 @@ export default function AdminGroupTrips() {
                 </CardDescription>
               </div>
             </div>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search trips..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search trips..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" /> Create Trip
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -210,6 +224,8 @@ export default function AdminGroupTrips() {
                 confirmDelete={confirmDelete}
                 setConfirmDelete={setConfirmDelete}
                 onDelete={deleteTrip}
+                onEdit={setEditTrip}
+                onParticipants={setParticipantsTrip}
               />
               {past.length > 0 && upcoming.length > 0 && <Separator />}
               <TripSection
@@ -219,11 +235,32 @@ export default function AdminGroupTrips() {
                 confirmDelete={confirmDelete}
                 setConfirmDelete={setConfirmDelete}
                 onDelete={deleteTrip}
+                onEdit={setEditTrip}
+                onParticipants={setParticipantsTrip}
               />
             </>
           )}
         </CardContent>
       </Card>
+
+      <AdminTripCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={loadTrips}
+      />
+      <AdminTripEditDrawer
+        trip={editTrip}
+        open={!!editTrip}
+        onOpenChange={(o) => !o && setEditTrip(null)}
+        onSaved={loadTrips}
+      />
+      <AdminTripParticipantsDialog
+        tripId={participantsTrip?.id || null}
+        tripTitle={participantsTrip?.title || ""}
+        shareToken={participantsTrip?.share_token || null}
+        open={!!participantsTrip}
+        onOpenChange={(o) => !o && setParticipantsTrip(null)}
+      />
     </div>
   );
 }
@@ -235,6 +272,8 @@ function TripSection({
   confirmDelete,
   setConfirmDelete,
   onDelete,
+  onEdit,
+  onParticipants,
 }: {
   title: string;
   trips: Trip[];
@@ -242,6 +281,8 @@ function TripSection({
   confirmDelete: string | null;
   setConfirmDelete: (id: string | null) => void;
   onDelete: (id: string) => void;
+  onEdit: (trip: Trip) => void;
+  onParticipants: (trip: Trip) => void;
 }) {
   if (trips.length === 0) return null;
   return (
@@ -278,10 +319,16 @@ function TripSection({
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button asChild size="sm" variant="outline">
+            <div className="flex items-center gap-1 flex-wrap">
+              <Button size="sm" variant="outline" onClick={() => onParticipants(t)}>
+                <UserCog className="h-3.5 w-3.5 mr-1" /> Participants
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => onEdit(t)}>
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+              </Button>
+              <Button asChild size="sm" variant="ghost">
                 <Link to={`/trips/${t.id}`}>
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> Manage
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </Button>
               {t.share_token && (

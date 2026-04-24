@@ -1927,6 +1927,9 @@ const AdminDashboard = () => {
 
           {/* Feature Flags Tab */}
           {activeTab === "feature-flags" && <AdminFeatureFlags />}
+
+          {/* Group Trips Tab */}
+          {activeTab === "group-trips" && <AdminGroupTrips />}
         </div>
       </section>
 

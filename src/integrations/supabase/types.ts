@@ -2526,6 +2526,7 @@ export type Database = {
           due_date: string | null
           id: string
           is_completed: boolean | null
+          offset_days: number | null
           sort_order: number | null
           title: string
           tournament_id: string
@@ -2537,6 +2538,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           is_completed?: boolean | null
+          offset_days?: number | null
           sort_order?: number | null
           title: string
           tournament_id: string
@@ -2548,6 +2550,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           is_completed?: boolean | null
+          offset_days?: number | null
           sort_order?: number | null
           title?: string
           tournament_id?: string

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ClipboardCheck, Trophy, Loader2, CheckCircle2 } from "lucide-react";
+import { ClipboardCheck, Trophy, Loader2, CheckCircle2, AlertCircle, CalendarX } from "lucide-react";
 
 interface ChecklistItem {
   id: string;
@@ -13,11 +13,14 @@ interface ChecklistItem {
   category: string;
   sort_order: number | null;
   is_completed: boolean | null;
+  due_date: string | null;
+  offset_days: number | null;
 }
 
 interface Tournament {
   id: string;
   title: string;
+  date: string | null;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -42,7 +45,7 @@ const PlanningGuide = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title")
+      .select("id, title, date")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -81,6 +84,25 @@ const PlanningGuide = () => {
   const completedCount = items.filter((i) => i.is_completed).length;
   const totalCount = items.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const currentTournament = tournaments.find((t) => t.id === selectedTournament);
+  const tournamentDate = currentTournament?.date || null;
+
+  const formatDueDate = (dueDate: string | null, offset: number | null) => {
+    if (!dueDate) return null;
+    const d = new Date(dueDate + "T00:00:00");
+    const formatted = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    if (offset === 0) return "Event day";
+    return formatted;
+  };
+
+  const isOverdue = (dueDate: string | null, completed: boolean | null) => {
+    if (!dueDate || completed) return false;
+    const d = new Date(dueDate + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d < today;
+  };
 
   const groupedItems = categoryOrder.reduce((acc, cat) => {
     const catItems = items.filter((i) => i.category === cat);
@@ -153,6 +175,27 @@ const PlanningGuide = () => {
         <p className="text-xs text-muted-foreground mt-2">{progress}% complete</p>
       </motion.div>
 
+      {/* No tournament date warning */}
+      {!tournamentDate && !loading && (
+        <div className="mb-6 bg-secondary/10 border border-secondary/30 rounded-lg p-4 flex items-start gap-3">
+          <CalendarX className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-semibold text-foreground">Set tournament date to see due dates</p>
+            <p className="text-muted-foreground mt-0.5">
+              Add a start date to your tournament so we can automatically calculate when each task is due.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {tournamentDate && (
+        <p className="text-sm text-muted-foreground mb-6">
+          Tournament starts <span className="font-semibold text-foreground">
+            {new Date(tournamentDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          </span>. Due dates are calculated automatically.
+        </p>
+      )}
+
       {/* Checklist */}
       {loading ? (
         <div className="flex justify-center py-12">
@@ -194,15 +237,37 @@ const PlanningGuide = () => {
                         className="mt-0.5"
                       />
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm font-medium ${
-                            item.is_completed
-                              ? "line-through text-muted-foreground"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {item.title}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p
+                            className={`text-sm font-medium ${
+                              item.is_completed
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {item.title}
+                          </p>
+                          {(() => {
+                            const formatted = formatDueDate(item.due_date, item.offset_days);
+                            if (!formatted) return null;
+                            const overdue = isOverdue(item.due_date, item.is_completed);
+                            return (
+                              <span
+                                className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                                  overdue
+                                    ? "bg-destructive/10 text-destructive border border-destructive/30"
+                                    : item.offset_days === 0
+                                    ? "bg-primary/10 text-primary border border-primary/30"
+                                    : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {overdue && <AlertCircle className="h-3 w-3" />}
+                                {item.offset_days === 0 ? formatted : `Due: ${formatted}`}
+                                {overdue && " · Overdue"}
+                              </span>
+                            );
+                          })()}
+                        </div>
                         {item.description && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {item.description}

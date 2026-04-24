@@ -226,44 +226,95 @@ export default function AdminTripParticipantsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Add participant */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_140px_auto] gap-2 p-3 border rounded-lg bg-muted/30">
-          <Input
-            placeholder="Name *"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-          <Input
-            placeholder="Email"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-          <Input
-            placeholder="Phone"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-          <Button onClick={addParticipant} disabled={adding}>
-            {adding ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Plus className="h-4 w-4 mr-1" /> Add
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Add participants — single + bulk */}
+        <Tabs defaultValue="single">
+          <TabsList>
+            <TabsTrigger value="single">Add one</TabsTrigger>
+            <TabsTrigger value="bulk">
+              <Upload className="h-3.5 w-3.5 mr-1" /> Bulk paste
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="single">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_140px_auto] gap-2 p-3 border rounded-lg bg-muted/30">
+              <Input
+                placeholder="Name *"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+              <Input
+                placeholder="Email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+              <Input
+                placeholder="Phone"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+              <Button onClick={addParticipant} disabled={adding}>
+                {adding ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </>
+                )}
+              </Button>
+            </div>
+          </TabsContent>
+          <TabsContent value="bulk">
+            <div className="p-3 border rounded-lg bg-muted/30 space-y-2">
+              <Textarea
+                rows={6}
+                placeholder={"Paste CSV — one participant per line:\nName, Email, Phone\nJohn Smith, john@example.com, 555-1234\nJane Doe, jane@example.com,"}
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                className="font-mono text-xs"
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-muted-foreground">
+                  Comma or tab separated. Header row optional. Email and phone are optional.
+                </p>
+                <Button onClick={bulkAdd} disabled={bulkAdding} size="sm">
+                  {bulkAdding ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-1" />
+                  )}
+                  Add all
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
-        {/* Summary */}
-        <div className="flex items-center gap-4 text-sm">
-          <span>
-            <strong>{participants.length}</strong> participants
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span>
-            <strong>${(totalPaidCents / 100).toFixed(2)}</strong> collected
-          </span>
+        {/* Summary + bulk actions */}
+        <div className="flex items-center justify-between gap-4 text-sm flex-wrap">
+          <div className="flex items-center gap-3">
+            <span>
+              <strong>{participants.length}</strong> participants
+            </span>
+            <span className="text-muted-foreground">·</span>
+            <span>
+              <strong>${(totalPaidCents / 100).toFixed(2)}</strong> collected
+            </span>
+          </div>
+          {selected.size > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={bulkRemove}
+              disabled={bulkRemoving}
+            >
+              {bulkRemoving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-1" />
+              )}
+              Remove {selected.size} selected
+            </Button>
+          )}
         </div>
 
         {/* List */}

@@ -821,6 +821,48 @@ export type Database = {
           },
         ]
       }
+      golf_trips: {
+        Row: {
+          created_at: string
+          description: string | null
+          destination: string | null
+          end_date: string
+          id: string
+          organizer_id: string
+          share_token: string | null
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          destination?: string | null
+          end_date: string
+          id?: string
+          organizer_id: string
+          share_token?: string | null
+          start_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          destination?: string | null
+          end_date?: string
+          id?: string
+          organizer_id?: string
+          share_token?: string | null
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hold_releases: {
         Row: {
           amount_cents: number
@@ -1567,6 +1609,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
       }
       platform_store_products: {
         Row: {
@@ -3805,6 +3871,319 @@ export type Database = {
           },
         ]
       }
+      trip_agenda: {
+        Row: {
+          activity: string
+          created_at: string
+          day: string
+          id: string
+          location: string | null
+          notes: string | null
+          sort_order: number
+          time: string | null
+          trip_id: string
+        }
+        Insert: {
+          activity: string
+          created_at?: string
+          day: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          sort_order?: number
+          time?: string | null
+          trip_id: string
+        }
+        Update: {
+          activity?: string
+          created_at?: string
+          day?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          sort_order?: number
+          time?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_agenda_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_games: {
+        Row: {
+          created_at: string
+          details: Json
+          game_type: string
+          id: string
+          name: string | null
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          game_type: string
+          id?: string
+          name?: string | null
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          game_type?: string
+          id?: string
+          name?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_games_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_participants: {
+        Row: {
+          created_at: string
+          dietary_restrictions: string | null
+          email: string | null
+          handicap_index: number | null
+          id: string
+          is_organizer: boolean
+          name: string
+          phone: string | null
+          rooming_info: string | null
+          shirt_size: string | null
+          trip_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dietary_restrictions?: string | null
+          email?: string | null
+          handicap_index?: number | null
+          id?: string
+          is_organizer?: boolean
+          name: string
+          phone?: string | null
+          rooming_info?: string | null
+          shirt_size?: string | null
+          trip_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dietary_restrictions?: string | null
+          email?: string | null
+          handicap_index?: number | null
+          id?: string
+          is_organizer?: boolean
+          name?: string
+          phone?: string | null
+          rooming_info?: string | null
+          shirt_size?: string | null
+          trip_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_participants_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          participant_id: string | null
+          payment_type: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          trip_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          participant_id?: string | null
+          payment_type?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          trip_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          participant_id?: string | null
+          payment_type?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_payments_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_rooms: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          occupants: Json
+          room_number: string | null
+          room_type: string | null
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          occupants?: Json
+          room_number?: string | null
+          room_type?: string | null
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          occupants?: Json
+          room_number?: string | null
+          room_type?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_rooms_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_skins: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          day: string | null
+          hole_number: number | null
+          id: string
+          status: string
+          trip_id: string
+          winning_participant_id: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          day?: string | null
+          hole_number?: number | null
+          id?: string
+          status?: string
+          trip_id: string
+          winning_participant_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          day?: string | null
+          hole_number?: number | null
+          id?: string
+          status?: string
+          trip_id?: string
+          winning_participant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_skins_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_skins_winning_participant_id_fkey"
+            columns: ["winning_participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_tee_times: {
+        Row: {
+          course_name: string | null
+          created_at: string
+          day: string
+          group_name: string | null
+          id: string
+          players: Json
+          tee_time: string
+          trip_id: string
+        }
+        Insert: {
+          course_name?: string | null
+          created_at?: string
+          day: string
+          group_name?: string | null
+          id?: string
+          players?: Json
+          tee_time: string
+          trip_id: string
+        }
+        Update: {
+          course_name?: string | null
+          created_at?: string
+          day?: string
+          group_name?: string | null
+          id?: string
+          players?: Json
+          tee_time?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_tee_times_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "golf_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -3841,6 +4220,10 @@ export type Database = {
       }
       is_org_owner: {
         Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_trip_organizer: {
+        Args: { _trip_id: string; _user_id: string }
         Returns: boolean
       }
     }

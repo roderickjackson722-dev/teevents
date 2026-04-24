@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ClipboardCheck, Trophy, Loader2, CheckCircle2 } from "lucide-react";
+import { ClipboardCheck, Trophy, Loader2, CheckCircle2, AlertCircle, CalendarX } from "lucide-react";
 
 interface ChecklistItem {
   id: string;
@@ -13,11 +13,14 @@ interface ChecklistItem {
   category: string;
   sort_order: number | null;
   is_completed: boolean | null;
+  due_date: string | null;
+  offset_days: number | null;
 }
 
 interface Tournament {
   id: string;
   title: string;
+  date: string | null;
 }
 
 const categoryLabels: Record<string, string> = {

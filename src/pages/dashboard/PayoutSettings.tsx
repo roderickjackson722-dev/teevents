@@ -91,7 +91,7 @@ export default function PayoutSettings() {
       .eq("id", org!.orgId)
       .single();
     if (data) {
-      setSelectedMethod(((data as any).payout_method || "stripe") as "stripe" | "paypal" | "check");
+      setSelectedMethod(((data as any).payout_method || "check") as "stripe" | "paypal" | "check");
       setMailingAddress((data as any).mailing_address || "");
     }
   };

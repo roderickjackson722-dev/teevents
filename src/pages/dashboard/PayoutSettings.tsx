@@ -61,7 +61,7 @@ export default function PayoutSettings() {
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [mailingAddress, setMailingAddress] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("stripe");
+  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("check");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);

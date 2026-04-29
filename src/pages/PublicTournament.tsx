@@ -792,11 +792,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           {/* Subtitle */}
           {tournament.site_hero_subtitle && (
             <p
-              className="mt-4 mx-auto max-w-2xl text-center"
+              className="mt-4 mx-auto text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
               style={{
                 color: "rgba(255,255,255,0.85)",
-                fontSize: "clamp(0.95rem, 2.2vw, 1.25rem)",
-                lineHeight: 1.5,
+                fontSize: "clamp(0.75rem, 2vw, 1.25rem)",
+                lineHeight: 1.4,
               }}
             >
               {tournament.site_hero_subtitle}

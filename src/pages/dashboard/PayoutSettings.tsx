@@ -61,7 +61,7 @@ export default function PayoutSettings() {
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [mailingAddress, setMailingAddress] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("stripe");
+  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("check");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -91,7 +91,7 @@ export default function PayoutSettings() {
       .eq("id", org!.orgId)
       .single();
     if (data) {
-      setSelectedMethod(((data as any).payout_method || "stripe") as "stripe" | "paypal" | "check");
+      setSelectedMethod(((data as any).payout_method || "check") as "stripe" | "paypal" | "check");
       setMailingAddress((data as any).mailing_address || "");
     }
   };
@@ -423,11 +423,35 @@ export default function PayoutSettings() {
     ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, email: null as string | null, source: "audit" as const })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 30);
 
+  const methodLabel =
+    selectedMethod === "stripe" ? "Stripe Connect — Automatic Payouts"
+    : selectedMethod === "paypal" ? "PayPal — Bi-Weekly Payouts"
+    : "Check — Manual Payment";
+  const methodDescription =
+    selectedMethod === "stripe" ? "Payments are split automatically at checkout and sent directly to your connected Stripe account."
+    : selectedMethod === "paypal" ? "TeeVents collects payments and sends a PayPal payout every two weeks."
+    : "TeeVents holds funds and mails a check upon your request from the Finances page.";
+  const MethodIcon = selectedMethod === "stripe" ? CreditCard : selectedMethod === "paypal" ? Mail : Banknote;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="mb-8">
+      <div className="mb-2">
         <h1 className="text-3xl font-display font-bold text-foreground">Payout Settings</h1>
         <p className="text-muted-foreground mt-1">Choose how you receive payments from your tournaments.</p>
+      </div>
+
+      {/* Current Method Banner */}
+      <div className="rounded-xl border-2 border-primary bg-primary/10 p-5 shadow-sm">
+        <div className="flex items-start gap-4">
+          <div className="h-12 w-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+            <MethodIcon className="h-6 w-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs uppercase tracking-wide font-semibold text-primary mb-1">Current Payout Method</p>
+            <h2 className="text-2xl font-bold text-foreground leading-tight">{methodLabel}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{methodDescription}</p>
+          </div>
+        </div>
       </div>
 
       {/* How Payouts Work */}

@@ -423,15 +423,22 @@ export default function PayoutSettings() {
     ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, email: null as string | null, source: "audit" as const })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 30);
 
+  // Effective method: only show Stripe/PayPal if actually configured. Otherwise default to Check.
+  const paypalConfigured = !!payoutMethod?.paypal_email;
+  const effectiveMethod: "stripe" | "paypal" | "check" =
+    selectedMethod === "stripe" && stripeConnected ? "stripe"
+    : selectedMethod === "paypal" && paypalConfigured ? "paypal"
+    : "check";
+
   const methodLabel =
-    selectedMethod === "stripe" ? "Stripe Connect — Automatic Payouts"
-    : selectedMethod === "paypal" ? "PayPal — Bi-Weekly Payouts"
+    effectiveMethod === "stripe" ? "Stripe Connect — Automatic Payouts"
+    : effectiveMethod === "paypal" ? "PayPal — Bi-Weekly Payouts"
     : "Check — Manual Payment";
   const methodDescription =
-    selectedMethod === "stripe" ? "Payments are split automatically at checkout and sent directly to your connected Stripe account."
-    : selectedMethod === "paypal" ? "TeeVents collects payments and sends a PayPal payout every two weeks."
+    effectiveMethod === "stripe" ? "Payments are split automatically at checkout and sent directly to your connected Stripe account."
+    : effectiveMethod === "paypal" ? "TeeVents collects payments and sends a PayPal payout every two weeks."
     : "TeeVents holds funds and mails a check upon your request from the Finances page.";
-  const MethodIcon = selectedMethod === "stripe" ? CreditCard : selectedMethod === "paypal" ? Mail : Banknote;
+  const MethodIcon = effectiveMethod === "stripe" ? CreditCard : effectiveMethod === "paypal" ? Mail : Banknote;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

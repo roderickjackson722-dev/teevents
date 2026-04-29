@@ -250,6 +250,37 @@ const Tournaments = () => {
         </Dialog>
       </div>
 
+      {/* Rename Tournament Dialog */}
+      <Dialog open={!!renameTarget} onOpenChange={(open) => { if (!open) setRenameTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Tournament Name</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label htmlFor="rename-input">Tournament Name</Label>
+              <Input
+                id="rename-input"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                placeholder="e.g. Annual Charity Classic"
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                This updates the tournament name shown across your organizer dashboard. Your public website's <strong>Hero Title</strong> is managed separately in Site Builder and will not change.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setRenameTarget(null)} disabled={renaming}>Cancel</Button>
+              <Button onClick={handleRename} disabled={renaming}>
+                {renaming && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Save Name
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteConfirmed(false); } }}>
         <AlertDialogContent>

@@ -56,6 +56,9 @@ const Tournaments = () => {
   const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<Tournament | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
 
   const fetchTournaments = async () => {
     if (!org) return;

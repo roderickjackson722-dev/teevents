@@ -791,27 +791,36 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
           {/* Subtitle */}
           {tournament.site_hero_subtitle && (
-            <p className="mt-4 text-lg md:text-xl max-w-2xl" style={{ color: "rgba(255,255,255,0.8)" }}>
+            <p
+              className="mt-4 mx-auto max-w-2xl text-center"
+              style={{
+                color: "rgba(255,255,255,0.85)",
+                fontSize: "clamp(0.95rem, 2.2vw, 1.25rem)",
+                lineHeight: 1.5,
+              }}
+            >
               {tournament.site_hero_subtitle}
             </p>
           )}
 
           {/* Event meta badges */}
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
             {tournament.date && (
-              <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
-                <Calendar className="h-4 w-4" />
+              <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
+                <Calendar className="h-4 w-4 shrink-0" />
                 {new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
               </span>
             )}
             {tournament.course_name && (
-              <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
-                ⛳ {tournament.course_name}
+              <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap max-w-full truncate">
+                <span className="shrink-0">⛳</span>
+                <span className="truncate">{tournament.course_name}</span>
               </span>
             )}
             {tournament.location && (
-              <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
-                <MapPin className="h-4 w-4" />{tournament.location}
+              <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap max-w-full truncate">
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span className="truncate">{tournament.location}</span>
               </span>
             )}
           </div>

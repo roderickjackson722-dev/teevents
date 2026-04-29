@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2 } from "lucide-react";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2, Pencil } from "lucide-react";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface Tournament {
@@ -56,6 +56,9 @@ const Tournaments = () => {
   const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<Tournament | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
 
   const fetchTournaments = async () => {
     if (!org) return;
@@ -115,6 +118,33 @@ const Tournaments = () => {
     setDeleting(false);
     setDeleteTarget(null);
     setDeleteConfirmed(false);
+  };
+
+  const openRename = (t: Tournament) => {
+    setRenameTarget(t);
+    setRenameValue(t.title);
+  };
+
+  const handleRename = async () => {
+    if (!renameTarget || demoGuard()) return;
+    const trimmed = renameValue.trim();
+    if (!trimmed) {
+      toast({ title: "Name required", description: "Please enter a tournament name.", variant: "destructive" });
+      return;
+    }
+    setRenaming(true);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ title: trimmed })
+      .eq("id", renameTarget.id);
+    if (error) {
+      toast({ title: "Error renaming tournament", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Tournament renamed", description: "Your tournament name has been updated. The public Hero Title is unchanged." });
+      setRenameTarget(null);
+      fetchTournaments();
+    }
+    setRenaming(false);
   };
 
   const statusColors: Record<string, string> = {
@@ -220,6 +250,37 @@ const Tournaments = () => {
         </Dialog>
       </div>
 
+      {/* Rename Tournament Dialog */}
+      <Dialog open={!!renameTarget} onOpenChange={(open) => { if (!open) setRenameTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Tournament Name</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label htmlFor="rename-input">Tournament Name</Label>
+              <Input
+                id="rename-input"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                placeholder="e.g. Annual Charity Classic"
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                This updates the tournament name shown across your organizer dashboard. Your public website's <strong>Hero Title</strong> is managed separately in Site Builder and will not change.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setRenameTarget(null)} disabled={renaming}>Cancel</Button>
+              <Button onClick={handleRename} disabled={renaming}>
+                {renaming && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Save Name
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteConfirmed(false); } }}>
         <AlertDialogContent>
@@ -301,9 +362,19 @@ const Tournaments = () => {
               className="bg-card rounded-lg border border-border p-5 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-display font-bold text-foreground text-lg leading-tight">
-                  {t.title}
-                </h3>
+                <div className="flex items-start gap-2 flex-1 min-w-0">
+                  <h3 className="font-display font-bold text-foreground text-lg leading-tight">
+                    {t.title}
+                  </h3>
+                  <button
+                    onClick={() => openRename(t)}
+                    className="text-muted-foreground hover:text-primary transition-colors mt-0.5"
+                    title="Edit tournament name"
+                    aria-label="Edit tournament name"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
                 <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${statusColors[t.status] || statusColors.draft}`}>
                   {t.status}
                 </span>

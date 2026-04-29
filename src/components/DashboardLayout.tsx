@@ -45,12 +45,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         if (isAdmin) {
           const { data: org } = await supabase
             .from("organizations")
-            .select("id, name")
+            .select("id, name, dashboard_name")
             .eq("id", adminOrgId)
             .single();
 
           if (org) {
-            setOrgContext({ orgId: org.id, orgName: org.name });
+            setOrgContext({ orgId: org.id, orgName: (org as any).dashboard_name || org.name });
             setIsAdminOverride(true);
             setLoading(false);
             return;
@@ -72,12 +72,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       const { data: org } = await supabase
         .from("organizations")
-        .select("id, name")
+        .select("id, name, dashboard_name")
         .eq("id", membership.organization_id)
         .single();
 
       if (org) {
-        setOrgContext({ orgId: org.id, orgName: org.name });
+        setOrgContext({ orgId: org.id, orgName: (org as any).dashboard_name || org.name });
       }
 
       setLoading(false);

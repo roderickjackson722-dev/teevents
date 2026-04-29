@@ -147,7 +147,7 @@ const Tournaments = () => {
     setRenaming(false);
   };
 
-
+  const statusColors: Record<string, string> = {
     draft: "bg-muted text-muted-foreground",
     active: "bg-primary/10 text-primary",
     completed: "bg-secondary/10 text-secondary",

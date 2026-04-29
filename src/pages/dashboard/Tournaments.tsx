@@ -120,7 +120,34 @@ const Tournaments = () => {
     setDeleteConfirmed(false);
   };
 
-  const statusColors: Record<string, string> = {
+  const openRename = (t: Tournament) => {
+    setRenameTarget(t);
+    setRenameValue(t.title);
+  };
+
+  const handleRename = async () => {
+    if (!renameTarget || demoGuard()) return;
+    const trimmed = renameValue.trim();
+    if (!trimmed) {
+      toast({ title: "Name required", description: "Please enter a tournament name.", variant: "destructive" });
+      return;
+    }
+    setRenaming(true);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ title: trimmed })
+      .eq("id", renameTarget.id);
+    if (error) {
+      toast({ title: "Error renaming tournament", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Tournament renamed", description: "Your tournament name has been updated. The public Hero Title is unchanged." });
+      setRenameTarget(null);
+      fetchTournaments();
+    }
+    setRenaming(false);
+  };
+
+
     draft: "bg-muted text-muted-foreground",
     active: "bg-primary/10 text-primary",
     completed: "bg-secondary/10 text-secondary",

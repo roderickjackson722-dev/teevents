@@ -565,7 +565,7 @@ export default function PayoutSettings() {
                 <div className="flex flex-wrap gap-2">
                   {selectedMethod !== "stripe" && (
                     <>
-                      <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")}>
+                      <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")} disabled={pendingMethod === "stripe" && !ackFee}>
                         {pendingMethod === "stripe" ? "Save & Set as Active" : "Use Stripe Connect"}
                       </Button>
                       {pendingMethod === "stripe" && (

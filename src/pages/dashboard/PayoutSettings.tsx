@@ -74,6 +74,10 @@ export default function PayoutSettings() {
   // Legal acknowledgment state
   const [ackFee, setAckFee] = useState(false);
   const [ackEscrow, setAckEscrow] = useState(false);
+  const [showStripeConfirmModal, setShowStripeConfirmModal] = useState(false);
+
+  // Persist pending method + ackFee across navigation/reloads
+  const persistKey = org?.orgId ? `payout-pending-${org.orgId}` : null;
 
   useEffect(() => {
     if (org?.orgId) {
@@ -81,8 +85,29 @@ export default function PayoutSettings() {
       fetchAuditLogs();
       fetchOrgSettings();
       fetchActivityLogs();
+
+      // Restore persisted pending state
+      try {
+        const raw = localStorage.getItem(`payout-pending-${org.orgId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.pendingMethod) setPendingMethod(parsed.pendingMethod);
+          if (typeof parsed.ackFee === "boolean") setAckFee(parsed.ackFee);
+          if (typeof parsed.ackEscrow === "boolean") setAckEscrow(parsed.ackEscrow);
+        }
+      } catch { /* ignore */ }
     }
   }, [org?.orgId]);
+
+  // Persist whenever ack state or pending method changes
+  useEffect(() => {
+    if (!persistKey) return;
+    if (pendingMethod) {
+      localStorage.setItem(persistKey, JSON.stringify({ pendingMethod, ackFee, ackEscrow }));
+    } else {
+      localStorage.removeItem(persistKey);
+    }
+  }, [persistKey, pendingMethod, ackFee, ackEscrow]);
 
   const fetchOrgSettings = async () => {
     const { data } = await supabase
@@ -391,6 +416,15 @@ export default function PayoutSettings() {
       toast.error("Please acknowledge the 5% platform fee before continuing.");
       return;
     }
+    // Open confirmation modal first
+    setShowStripeConfirmModal(true);
+  };
+
+  const confirmActivateStripe = async () => {
+    if (!ackFee) {
+      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      return;
+    }
     if (!org?.orgId) return;
     const oldMethod = selectedMethod;
     await supabase.from("organizations").update({ payout_method: "stripe" } as any).eq("id", org.orgId);
@@ -403,6 +437,7 @@ export default function PayoutSettings() {
       new_method: "stripe",
     });
     await notifyAdmin("payout_method_selected", `${org?.orgName} switched to Stripe Connect.`);
+    setShowStripeConfirmModal(false);
     clearPendingMethod();
     fetchAuditLogs();
     fetchActivityLogs();
@@ -530,7 +565,7 @@ export default function PayoutSettings() {
                 <div className="flex flex-wrap gap-2">
                   {selectedMethod !== "stripe" && (
                     <>
-                      <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")}>
+                      <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")} disabled={pendingMethod === "stripe" && !ackFee}>
                         {pendingMethod === "stripe" ? "Save & Set as Active" : "Use Stripe Connect"}
                       </Button>
                       {pendingMethod === "stripe" && (
@@ -821,6 +856,46 @@ export default function PayoutSettings() {
             <Button onClick={handleChangeBankAccount} disabled={changingBank}>
               {changingBank ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               Open Stripe Portal
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stripe Activation Confirmation Modal */}
+      <Dialog open={showStripeConfirmModal} onOpenChange={setShowStripeConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Activate Stripe Connect as your payout method?</DialogTitle>
+            <DialogDescription>
+              Please review and confirm the platform fee details before activating Stripe Connect.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
+              <p className="text-sm font-semibold text-foreground">Platform Fee Details</p>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-5">
+                <li><strong className="text-foreground">5% platform fee</strong> applied to every transaction processed through TeeVents.</li>
+                <li>Standard <strong className="text-foreground">Stripe processing fees</strong> also apply (typically 2.9% + $0.30 per transaction).</li>
+                <li>Net proceeds are automatically transferred to your connected Stripe account at checkout.</li>
+                <li>You can withdraw funds from Stripe to your bank on your own schedule.</li>
+              </ul>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-3">
+              <Checkbox
+                id="ack-fee-modal"
+                checked={ackFee}
+                onCheckedChange={(checked) => setAckFee(checked === true)}
+              />
+              <label htmlFor="ack-fee-modal" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction, in addition to Stripe processing fees.
+              </label>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowStripeConfirmModal(false)}>Cancel</Button>
+            <Button onClick={confirmActivateStripe} disabled={!ackFee}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Confirm & Activate Stripe
             </Button>
           </div>
         </DialogContent>

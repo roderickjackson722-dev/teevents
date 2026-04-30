@@ -1,37 +1,7 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Image } from "lucide-react";
 import logoBlack from "@/assets/logo-black.png";
-import { supabase } from "@/integrations/supabase/client";
-
-type PastEventLink = {
-  id: string;
-  title: string;
-  gallery_url: string | null;
-  results_url: string | null;
-};
 
 const Footer = () => {
-  const [pastEvents, setPastEvents] = useState<PastEventLink[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("id, title, gallery_url, results_url, display_order, date")
-        .eq("managed_by_teevents", true)
-        .eq("status", "past")
-        .order("display_order", { ascending: true })
-        .order("date", { ascending: false });
-
-      const filtered = (data || []).filter(
-        (t: any) => t.gallery_url || t.results_url
-      );
-      setPastEvents(filtered as PastEventLink[]);
-    };
-    load();
-  }, []);
-
   return (
     <footer className="bg-golf-green-dark text-primary-foreground">
       <div className="container mx-auto px-4 py-12">

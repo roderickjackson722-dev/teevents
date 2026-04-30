@@ -29,18 +29,22 @@ export default function RefundRequestForm({ tournamentId, primaryColor, secondar
 
     setLoading(true);
 
-    // Look up registration by email
-    const { data: reg } = await supabase
+    // Look up the most recent paid (non-refunded) registration for this email + tournament.
+    // Note: we intentionally do NOT use .single() — a golfer may have multiple paid
+    // registrations for the same tournament (e.g. group registrations or re-registrations).
+    const { data: regs, error: lookupErr } = await supabase
       .from("tournament_registrations")
-      .select("id, payment_status, tournament_id")
+      .select("id, payment_status, tournament_id, email")
       .eq("tournament_id", tournamentId)
-      .eq("email", email.trim().toLowerCase())
+      .ilike("email", email.trim())
       .eq("payment_status", "paid")
-      .limit(1)
-      .single() as any;
+      .order("created_at", { ascending: false })
+      .limit(1) as any;
 
-    if (!reg) {
-      setError("No paid registration found with that email. Please check the email you used to register.");
+    const reg = regs?.[0];
+
+    if (lookupErr || !reg) {
+      setError("No paid registration found for this email. If you believe this is an error, please contact the tournament organizer directly.");
       setLoading(false);
       return;
     }

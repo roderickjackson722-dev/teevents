@@ -74,6 +74,10 @@ export default function PayoutSettings() {
   // Legal acknowledgment state
   const [ackFee, setAckFee] = useState(false);
   const [ackEscrow, setAckEscrow] = useState(false);
+  const [showStripeConfirmModal, setShowStripeConfirmModal] = useState(false);
+
+  // Persist pending method + ackFee across navigation/reloads
+  const persistKey = org?.orgId ? `payout-pending-${org.orgId}` : null;
 
   useEffect(() => {
     if (org?.orgId) {
@@ -81,8 +85,29 @@ export default function PayoutSettings() {
       fetchAuditLogs();
       fetchOrgSettings();
       fetchActivityLogs();
+
+      // Restore persisted pending state
+      try {
+        const raw = localStorage.getItem(`payout-pending-${org.orgId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.pendingMethod) setPendingMethod(parsed.pendingMethod);
+          if (typeof parsed.ackFee === "boolean") setAckFee(parsed.ackFee);
+          if (typeof parsed.ackEscrow === "boolean") setAckEscrow(parsed.ackEscrow);
+        }
+      } catch { /* ignore */ }
     }
   }, [org?.orgId]);
+
+  // Persist whenever ack state or pending method changes
+  useEffect(() => {
+    if (!persistKey) return;
+    if (pendingMethod) {
+      localStorage.setItem(persistKey, JSON.stringify({ pendingMethod, ackFee, ackEscrow }));
+    } else {
+      localStorage.removeItem(persistKey);
+    }
+  }, [persistKey, pendingMethod, ackFee, ackEscrow]);
 
   const fetchOrgSettings = async () => {
     const { data } = await supabase

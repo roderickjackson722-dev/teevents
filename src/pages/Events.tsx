@@ -157,6 +157,49 @@ const Events = () => {
                       <EventCard key={event.id} event={event} index={i} />
                     ))}
                   </div>
+
+                  {pastEvents.some((e) => e.gallery_url || e.results_url) && (
+                    <div className="mt-16 pt-10 border-t border-border">
+                      <h2 className="text-2xl font-display font-bold text-foreground mb-2">Previous Events</h2>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Browse photo galleries and results from past tournaments.
+                      </p>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                        {pastEvents
+                          .filter((e) => e.gallery_url || e.results_url)
+                          .map((evt) => (
+                            <li key={`prev-${evt.id}`} className="flex items-start gap-2">
+                              <Image className="h-3.5 w-3.5 mt-1 shrink-0 text-secondary" />
+                              <div className="flex flex-col">
+                                <span className="text-foreground font-medium">{evt.title}</span>
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                                  {evt.gallery_url && (
+                                    <a
+                                      href={evt.gallery_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-secondary hover:text-secondary/80 underline-offset-2 hover:underline"
+                                    >
+                                      Photos
+                                    </a>
+                                  )}
+                                  {evt.results_url && (
+                                    <a
+                                      href={evt.results_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-secondary hover:text-secondary/80 underline-offset-2 hover:underline"
+                                    >
+                                      Results
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </>

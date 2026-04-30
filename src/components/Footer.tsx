@@ -60,46 +60,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {pastEvents.length > 0 && (
-          <div className="mt-10 pt-8 border-t border-primary-foreground/10">
-            <h4 className="font-display text-base font-semibold text-primary-foreground/90 mb-4 text-center md:text-left">
-              Past Event Galleries & Results
-            </h4>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-sm text-primary-foreground/70">
-              {pastEvents.map((evt) => (
-                <li key={evt.id} className="flex items-start gap-2">
-                  <Image className="h-3.5 w-3.5 mt-1 shrink-0 text-secondary" />
-                  <div className="flex flex-col">
-                    <span className="text-primary-foreground/90">{evt.title}</span>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                      {evt.gallery_url && (
-                        <a
-                          href={evt.gallery_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-secondary transition-colors underline-offset-2 hover:underline"
-                        >
-                          Photos
-                        </a>
-                      )}
-                      {evt.results_url && (
-                        <a
-                          href={evt.results_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-secondary transition-colors underline-offset-2 hover:underline"
-                        >
-                          Results
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
           <div className="flex gap-4">
             <Link to="/privacy-policy" className="hover:text-secondary transition-colors">Privacy Policy</Link>

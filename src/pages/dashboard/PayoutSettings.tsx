@@ -513,11 +513,30 @@ export default function PayoutSettings() {
                     )}
                   </div>
                 </div>
+                {selectedMethod !== "stripe" && pendingMethod === "stripe" && (
+                  <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="ack-fee-stripe-connected"
+                        checked={ackFee}
+                        onCheckedChange={(checked) => setAckFee(checked === true)}
+                      />
+                      <label htmlFor="ack-fee-stripe-connected" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                        I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                      </label>
+                    </div>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {selectedMethod !== "stripe" && (
-                    <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")}>
-                      {pendingMethod === "stripe" ? "Confirm Stripe Connect" : "Use Stripe Connect"}
-                    </Button>
+                    <>
+                      <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")}>
+                        {pendingMethod === "stripe" ? "Save & Set as Active" : "Use Stripe Connect"}
+                      </Button>
+                      {pendingMethod === "stripe" && (
+                        <Button variant="ghost" size="sm" onClick={clearPendingMethod}>Cancel</Button>
+                      )}
+                    </>
                   )}
                   <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)} disabled={changingBank}>
                     <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Bank Account

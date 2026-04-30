@@ -290,18 +290,72 @@ Deno.serve(async (req) => {
                 const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
                 const orgName = orgData?.name || "Unknown Org";
 
-                const adminHtml = buildNotificationHtml("New Registration Transaction", [
+                // Fetch payout method details for admin visibility
+                const { data: payoutInfo } = await supabaseAdmin
+                  .from("organization_payout_methods")
+                  .select("preferred_method, stripe_account_last4, stripe_account_brand, stripe_onboarding_complete, paypal_email, account_last_four, bank_name")
+                  .eq("organization_id", tournament.organization_id)
+                  .maybeSingle() as any;
+
+                const preferred = (payoutInfo?.preferred_method || "check") as string;
+                const stripeReady = preferred === "stripe" && payoutInfo?.stripe_onboarding_complete;
+                const paypalReady = preferred === "paypal" && !!payoutInfo?.paypal_email;
+                const isManual = !stripeReady; // PayPal & Check both require manual action
+                const netDisplay = `$${(netAmountCents / 100).toFixed(2)}`;
+
+                let payoutTypeLine = "";
+                let destinationLine = "";
+                let statusLine = "";
+                if (stripeReady) {
+                  const brand = payoutInfo?.stripe_account_brand ? ` (${payoutInfo.stripe_account_brand})` : "";
+                  const last4 = payoutInfo?.stripe_account_last4 ? `•••• ${payoutInfo.stripe_account_last4}` : "Connected account";
+                  payoutTypeLine = "Stripe Connect ✅";
+                  destinationLine = `Bank ${last4}${brand}`;
+                  statusLine = "Connected — automatic payout";
+                } else if (preferred === "paypal") {
+                  payoutTypeLine = "PayPal ⚠️";
+                  destinationLine = paypalReady ? payoutInfo.paypal_email : "Not configured";
+                  statusLine = paypalReady ? "Connected — MANUAL bi-weekly payout" : "PENDING — payout method not set";
+                } else {
+                  payoutTypeLine = "Check ⚠️";
+                  destinationLine = "Mailing address on file (request to admin)";
+                  statusLine = "MANUAL check payout on request";
+                }
+
+                const actionRequired = isManual;
+                const subjectPrefix = actionRequired
+                  ? `⚠️ ACTION REQUIRED: ${preferred === "paypal" ? "PayPal" : "Check"} manual payout`
+                  : `✅ Auto-payout`;
+                const subject = `${subjectPrefix} — ${tournament.title} — ${playerNames} — ${netDisplay}`;
+
+                const banner = actionRequired
+                  ? `<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:18px;margin:0 0 18px;">
+                       <p style="margin:0 0 6px;color:#991b1b;font-size:16px;font-weight:700;">⚠️ ACTION REQUIRED — ${preferred === "paypal" ? "PayPal" : "Check"} MANUAL PAYOUT</p>
+                       <p style="margin:0;color:#7f1d1d;font-size:14px;line-height:1.5;">This tournament organizer is using <strong>${preferred === "paypal" ? "PayPal" : "Check"}</strong> payouts. You must manually pay the net amount of <strong>${netDisplay}</strong>${preferred === "paypal" && paypalReady ? ` to <strong>${payoutInfo.paypal_email}</strong>` : ""}.</p>
+                     </div>`
+                  : `<div style="background:#ecfdf5;border:2px solid #059669;border-radius:8px;padding:14px;margin:0 0 18px;">
+                       <p style="margin:0;color:#065f46;font-size:14px;font-weight:600;">✅ Automatic payout via Stripe Connect — no action needed.</p>
+                     </div>`;
+
+                const adminInner = buildNotificationHtml("New Registration Transaction", [
                   `🏌️ <strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>`,
                   `🏢 <strong>Organizer:</strong> ${orgName}`,
                   `💰 <strong>Gross Registration:</strong> $${(grossAmount / 100).toFixed(2)}`,
                   `🏷️ <strong>Platform Fee (5%):</strong> $${(platformFeeCents / 100).toFixed(2)}`,
                   `💳 <strong>Stripe Processing Fee:</strong> $${(stripeFeeCents / 100).toFixed(2)}`,
-                  `💵 <strong>Net to Organizer:</strong> $${(netAmountCents / 100).toFixed(2)}`,
+                  `💵 <strong>Net to Organizer:</strong> ${netDisplay}`,
                   passFeesToGolfer ? `📋 Fee Model: Golfer covered platform + Stripe fees` : `📋 Fee Model: Organizer absorbed platform + Stripe fees`,
                   `📧 <strong>Golfer Email:</strong> ${reg.email}`,
                   `👥 <strong>Players:</strong> ${(regs || []).length}`,
                   `📅 ${dateStr}`,
+                  `<br/><strong>PAYOUT METHOD</strong>`,
+                  `• <strong>Type:</strong> ${payoutTypeLine}`,
+                  `• <strong>Destination:</strong> ${destinationLine}`,
+                  `• <strong>Status:</strong> ${statusLine}`,
+                  `• <strong>Action needed:</strong> ${actionRequired ? "YES — process this payout manually" : "No"}`,
                 ]);
+
+                const adminHtml = banner + adminInner;
 
                 await fetch("https://api.resend.com/emails", {
                   method: "POST",
@@ -309,7 +363,7 @@ Deno.serve(async (req) => {
                   body: JSON.stringify({
                     from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
                     to: ["info@teevents.golf"],
-                    subject: `New Registration – ${tournament.title} – ${playerNames}`,
+                    subject,
                     html: adminHtml,
                   }),
                 });

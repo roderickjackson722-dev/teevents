@@ -416,6 +416,15 @@ export default function PayoutSettings() {
       toast.error("Please acknowledge the 5% platform fee before continuing.");
       return;
     }
+    // Open confirmation modal first
+    setShowStripeConfirmModal(true);
+  };
+
+  const confirmActivateStripe = async () => {
+    if (!ackFee) {
+      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      return;
+    }
     if (!org?.orgId) return;
     const oldMethod = selectedMethod;
     await supabase.from("organizations").update({ payout_method: "stripe" } as any).eq("id", org.orgId);
@@ -428,6 +437,7 @@ export default function PayoutSettings() {
       new_method: "stripe",
     });
     await notifyAdmin("payout_method_selected", `${org?.orgName} switched to Stripe Connect.`);
+    setShowStripeConfirmModal(false);
     clearPendingMethod();
     fetchAuditLogs();
     fetchActivityLogs();

@@ -127,6 +127,21 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(checkoutParams);
 
+    await logRoutingDecision(supabaseAdmin, {
+      context: "store",
+      tournamentId: product.tournament_id,
+      organizationId: tournament?.organization_id || null,
+      routing,
+      organizerChargesReady: routing.organizerChargesReady,
+      grossCents: priceCents,
+      platformFeeCents,
+      stripeFeeCents,
+      applicationFeeCents: applicationFeeAmount,
+      passFeesToParticipants,
+      stripeSessionId: session.id,
+      buyerEmail: buyer_email || null,
+    });
+
     // Send notification
     try {
       if (tournament) {

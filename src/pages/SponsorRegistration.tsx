@@ -173,7 +173,8 @@ const SponsorRegistrationPage = () => {
           contact_phone: form.contact_phone || null,
           website_url: form.website_url || null,
           description: form.description || null,
-          logo_url: logoUrl,
+          logo_base64: logoBase64,
+          logo_filename: logoFilename,
         }),
       });
       data = await res.json().catch(() => null);

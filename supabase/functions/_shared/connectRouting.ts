@@ -13,6 +13,7 @@ export type RoutingDecision = {
   useDestinationCharge: boolean;
   organizerStripeAccountId: string | null;
   override: "default" | "force_stripe" | "force_platform";
+  organizerChargesReady: boolean;
 };
 
 export async function resolveRouting(
@@ -66,7 +67,7 @@ export async function resolveRouting(
     `[Routing/${context}] tournament=${tournamentId} override=${override} acct=${organizerStripeAccountId} ready=${organizerChargesReady} → ${useDestinationCharge ? "DESTINATION (organizer)" : "PLATFORM (TeeVents)"}`,
   );
 
-  return { useDestinationCharge, organizerStripeAccountId, override };
+  return { useDestinationCharge, organizerStripeAccountId, override, organizerChargesReady };
 }
 
 // Compute platform fee + grossed-up Stripe processing fee for the application_fee_amount.
@@ -78,4 +79,48 @@ export function computeFees(grossCents: number) {
   const stripeFeeCents = Math.max(0, Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal);
   const combinedFeesCents = platformFeeCents + stripeFeeCents;
   return { platformFeeCents, stripeFeeCents, combinedFeesCents };
+}
+
+// Log a routing decision + fee snapshot to payment_routing_logs. Best-effort: never throws.
+export async function logRoutingDecision(
+  supabaseAdmin: any,
+  params: {
+    context: string;
+    tournamentId: string | null;
+    organizationId: string | null;
+    routing: RoutingDecision;
+    organizerChargesReady?: boolean;
+    grossCents: number;
+    platformFeeCents: number;
+    stripeFeeCents: number;
+    applicationFeeCents: number;
+    passFeesToParticipants?: boolean | null;
+    stripeSessionId?: string | null;
+    stripePaymentIntentId?: string | null;
+    buyerEmail?: string | null;
+    notes?: string | null;
+  },
+) {
+  try {
+    await supabaseAdmin.from("payment_routing_logs").insert({
+      context: params.context,
+      tournament_id: params.tournamentId,
+      organization_id: params.organizationId,
+      organizer_stripe_account_id: params.routing.organizerStripeAccountId,
+      organizer_charges_ready: !!params.organizerChargesReady,
+      payment_method_override: params.routing.override,
+      routing_decision: params.routing.useDestinationCharge ? "destination" : "platform_escrow",
+      gross_cents: params.grossCents,
+      platform_fee_cents: params.platformFeeCents,
+      stripe_fee_cents: params.stripeFeeCents,
+      application_fee_cents: params.applicationFeeCents,
+      pass_fees_to_participants: params.passFeesToParticipants ?? null,
+      stripe_session_id: params.stripeSessionId ?? null,
+      stripe_payment_intent_id: params.stripePaymentIntentId ?? null,
+      buyer_email: params.buyerEmail ?? null,
+      notes: params.notes ?? null,
+    });
+  } catch (e) {
+    console.error(`[Routing/${params.context}] Failed to insert payment_routing_logs:`, e);
+  }
 }

@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { resolveRouting, computeFees, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
+import { resolveRouting, computeFees, PLATFORM_FEE_RATE, logRoutingDecision } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,6 +126,21 @@ Deno.serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create(checkoutParams);
+
+    await logRoutingDecision(supabaseAdmin, {
+      context: "store",
+      tournamentId: product.tournament_id,
+      organizationId: tournament?.organization_id || null,
+      routing,
+      organizerChargesReady: routing.organizerChargesReady,
+      grossCents: priceCents,
+      platformFeeCents,
+      stripeFeeCents,
+      applicationFeeCents: applicationFeeAmount,
+      passFeesToParticipants,
+      stripeSessionId: session.id,
+      buyerEmail: buyer_email || null,
+    });
 
     // Send notification
     try {

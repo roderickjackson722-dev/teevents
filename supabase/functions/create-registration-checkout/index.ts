@@ -1,6 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
+import { logRoutingDecision } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
@@ -357,6 +358,26 @@ Deno.serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create(checkoutParams);
+
+    await logRoutingDecision(supabaseAdmin, {
+      context: "registration",
+      tournamentId: (tournament as any).id,
+      organizationId: tournament.organization_id,
+      routing: {
+        useDestinationCharge,
+        organizerStripeAccountId,
+        override: override as any,
+        organizerChargesReady,
+      },
+      organizerChargesReady,
+      grossCents: baseTotalCents,
+      platformFeeCents,
+      stripeFeeCents,
+      applicationFeeCents: applicationFeeAmount,
+      passFeesToParticipants: golferPaysFees,
+      stripeSessionId: session.id,
+      buyerEmail: email?.trim() || null,
+    });
 
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),

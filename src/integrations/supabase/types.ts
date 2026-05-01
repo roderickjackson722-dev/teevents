@@ -1421,6 +1421,179 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_routing_logs: {
+        Row: {
+          application_fee_cents: number
+          buyer_email: string | null
+          context: string
+          created_at: string
+          gross_cents: number
+          id: string
+          notes: string | null
+          organization_id: string | null
+          organizer_charges_ready: boolean
+          organizer_stripe_account_id: string | null
+          pass_fees_to_participants: boolean | null
+          payment_method_override: string
+          platform_fee_cents: number
+          routing_decision: string
+          stripe_fee_cents: number
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tournament_id: string | null
+        }
+        Insert: {
+          application_fee_cents?: number
+          buyer_email?: string | null
+          context: string
+          created_at?: string
+          gross_cents?: number
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          organizer_charges_ready?: boolean
+          organizer_stripe_account_id?: string | null
+          pass_fees_to_participants?: boolean | null
+          payment_method_override?: string
+          platform_fee_cents?: number
+          routing_decision: string
+          stripe_fee_cents?: number
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+        }
+        Update: {
+          application_fee_cents?: number
+          buyer_email?: string | null
+          context?: string
+          created_at?: string
+          gross_cents?: number
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          organizer_charges_ready?: boolean
+          organizer_stripe_account_id?: string | null
+          pass_fees_to_participants?: boolean | null
+          payment_method_override?: string
+          platform_fee_cents?: number
+          routing_decision?: string
+          stripe_fee_cents?: number
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_routing_verification_findings: {
+        Row: {
+          actual_application_fee_cents: number | null
+          actual_destination: string | null
+          amount_cents: number | null
+          context: string | null
+          created_at: string
+          detail: string | null
+          expected_application_fee_cents: number | null
+          expected_destination: string | null
+          id: string
+          organization_id: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tournament_id: string | null
+          verification_id: string
+        }
+        Insert: {
+          actual_application_fee_cents?: number | null
+          actual_destination?: string | null
+          amount_cents?: number | null
+          context?: string | null
+          created_at?: string
+          detail?: string | null
+          expected_application_fee_cents?: number | null
+          expected_destination?: string | null
+          id?: string
+          organization_id?: string | null
+          status: string
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+          verification_id: string
+        }
+        Update: {
+          actual_application_fee_cents?: number | null
+          actual_destination?: string | null
+          amount_cents?: number | null
+          context?: string | null
+          created_at?: string
+          detail?: string | null
+          expected_application_fee_cents?: number | null
+          expected_destination?: string | null
+          id?: string
+          organization_id?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_routing_verification_findings_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "payment_routing_verifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_routing_verifications: {
+        Row: {
+          completed_at: string | null
+          error: string | null
+          error_count: number
+          fee_mismatch_count: number
+          id: string
+          misrouted_count: number
+          ok_count: number
+          started_at: string
+          status: string
+          total_payments: number
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error?: string | null
+          error_count?: number
+          fee_mismatch_count?: number
+          id?: string
+          misrouted_count?: number
+          ok_count?: number
+          started_at?: string
+          status?: string
+          total_payments?: number
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          completed_at?: string | null
+          error?: string | null
+          error_count?: number
+          fee_mismatch_count?: number
+          id?: string
+          misrouted_count?: number
+          ok_count?: number
+          started_at?: string
+          status?: string
+          total_payments?: number
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       payout_audit_log: {
         Row: {
           action: string

@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logRoutingDecision } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05;
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
@@ -240,6 +241,27 @@ Deno.serve(async (req) => {
     // else: direct charge to TeeVents platform account (escrow). No transfer_data.
 
     const session = await stripe.checkout.sessions.create(checkoutParams);
+
+    await logRoutingDecision(supabaseAdmin, {
+      context: "sponsor",
+      tournamentId: tournament_id,
+      organizationId: tournament.organization_id,
+      routing: {
+        useDestinationCharge,
+        organizerStripeAccountId,
+        override: override as any,
+        organizerChargesReady,
+      },
+      organizerChargesReady,
+      grossCents: tier.price_cents,
+      platformFeeCents,
+      stripeFeeCents,
+      applicationFeeCents: applicationFeeAmount,
+      passFeesToParticipants: true,
+      stripeSessionId: session.id,
+      buyerEmail: contact_email?.trim() || null,
+      notes: `tier=${tier.name} company=${company_name.trim()}`,
+    });
 
     // Store session ID on the registration
     await supabaseAdmin

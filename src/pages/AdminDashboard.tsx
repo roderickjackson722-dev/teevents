@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
@@ -15,6 +15,7 @@ import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminTransactions from "@/components/admin/AdminTransactions";
+import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
@@ -40,7 +41,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips">("all-tournaments");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor">("all-tournaments");
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -792,6 +793,7 @@ const AdminDashboard = () => {
                   ["flyer-templates", "Flyer Templates", FileText],
                   ["notifications", "Notifications", Bell],
                   ["transactions", "Transactions", DollarSign],
+                  ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["accounting", "Accounting", DollarSign],
                   ["group-trips", "Group Trips", Plane],
                   ["feature-flags", "Feature Flags", KeyRound],
@@ -1921,6 +1923,7 @@ const AdminDashboard = () => {
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && <AdminTransactions />}
+          {activeTab === "routing-monitor" && <AdminRoutingMonitor />}
 
           {/* Accounting Tab */}
           {activeTab === "accounting" && <AdminAccounting />}

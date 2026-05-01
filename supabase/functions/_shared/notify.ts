@@ -38,15 +38,7 @@ export async function sendNotificationEmails(
       if (t?.contact_email) recipientsSet.add(String(t.contact_email).trim().toLowerCase());
     }
 
-    // 3) Organization contact email (final fallback so we never silently fail to notify)
-    if (recipientsSet.size === 0 && organizationId) {
-      const { data: org } = await supabaseAdmin
-        .from("organizations")
-        .select("contact_email")
-        .eq("id", organizationId)
-        .maybeSingle() as any;
-      if (org?.contact_email) recipientsSet.add(String(org.contact_email).trim().toLowerCase());
-    }
+    // (Organizations table has no contact_email — tournament.contact_email is the canonical organizer address.)
 
     if (recipientsSet.size === 0) {
       console.warn(`[Notification] No recipients found for ${eventType} (org=${organizationId} tournament=${tournamentId || "n/a"})`);

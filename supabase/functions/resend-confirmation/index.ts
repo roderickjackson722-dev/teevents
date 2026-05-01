@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
-const SENDER_NAME = "TeeVents";
+const SENDER_NAME = "TeeVents Golf Management";
 
 function replaceVars(text: string, vars: Record<string, string>): string {
   return text

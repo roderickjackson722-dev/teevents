@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const NOTIFY_EMAIL = "info@teevents.golf";
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
-const SENDER_NAME = "TeeVents Analytics";
+const SENDER_NAME = "TeeVents Golf Management";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

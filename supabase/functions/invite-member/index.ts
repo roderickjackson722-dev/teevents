@@ -246,7 +246,7 @@ async function sendInvitationEmail(
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "TeeVents <notifications@notifications.teevents.golf>",
+        from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
         to: [recipientEmail],
         subject,
         html,

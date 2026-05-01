@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "TeeVents <notifications@teevents.golf>",
+            from: "TeeVents <notifications@notifications.teevents.golf>",
             to: [user.email],
             subject: `Confirm payout method change for ${org?.name || "your organization"}`,
             html,

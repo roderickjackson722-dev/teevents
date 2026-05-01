@@ -28,6 +28,8 @@ Deno.serve(async (req) => {
       website_url,
       description,
       logo_url,
+      logo_base64,
+      logo_filename,
     } = body;
 
     if (!tournament_id || !tier_id || !company_name?.trim() || !contact_name?.trim() || !contact_email?.trim()) {

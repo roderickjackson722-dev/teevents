@@ -600,19 +600,33 @@ export default function PayoutSettings() {
                         I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
                       </label>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={handleStripeConnect} disabled={connectingStripe}>
-                        {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                        {stripeStarted ? "Complete Stripe Setup" : "Connect Stripe Account"}
-                      </Button>
-                      <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+                        Final Step — Confirm & Save Your Payout Method
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Click below to securely finish connecting your bank account through Stripe. This is the last step required to save Stripe Connect as your payout method.
+                      </p>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <Button onClick={handleStripeConnect} disabled={connectingStripe} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                          {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                          {stripeStarted ? "Confirm & Finish Stripe Setup" : "Confirm & Connect Stripe Account"}
+                        </Button>
+                        <Button variant="outline" onClick={handleStripeConnect} disabled={connectingStripe}>
+                          {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                          Save Payment Method
+                        </Button>
+                        <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                      </div>
                     </div>
                   </div>
                 )}
-                <Button onClick={pendingMethod === "stripe" ? handleStripeConnect : () => beginMethodSelection("stripe")} disabled={connectingStripe && pendingMethod === "stripe"}>
-                  {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                  {pendingMethod === "stripe" ? (stripeStarted ? "Complete Stripe Setup" : "Connect Stripe Account") : "Select Stripe Connect"}
-                </Button>
+                {pendingMethod !== "stripe" && (
+                  <Button onClick={() => beginMethodSelection("stripe")}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Select Stripe Connect
+                  </Button>
+                )}
               </>
             )}
           </CardContent>

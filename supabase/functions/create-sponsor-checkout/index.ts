@@ -88,6 +88,35 @@ Deno.serve(async (req) => {
       useDestinationCharge = !!organizerStripeAccountId;
     }
 
+    // Upload logo server-side using service role (sponsors are anonymous, so client-side upload is blocked by RLS)
+    let finalLogoUrl: string | null = logo_url || null;
+    if (logo_base64 && logo_filename) {
+      try {
+        const ext = (logo_filename.split(".").pop() || "png").toLowerCase();
+        const contentTypeMap: Record<string, string> = {
+          png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+          svg: "image/svg+xml", webp: "image/webp",
+        };
+        const contentType = contentTypeMap[ext] || "image/png";
+        const path = `sponsor-logos/${tournament_id}/${Date.now()}.${ext}`;
+        const base64Data = logo_base64.includes(",") ? logo_base64.split(",")[1] : logo_base64;
+        const binary = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        const { error: upErr } = await supabaseAdmin.storage
+          .from("tournament-assets")
+          .upload(path, binary, { contentType, upsert: true });
+        if (upErr) {
+          console.error("Logo upload error:", upErr);
+        } else {
+          const { data: urlData } = supabaseAdmin.storage
+            .from("tournament-assets")
+            .getPublicUrl(path);
+          finalLogoUrl = urlData.publicUrl;
+        }
+      } catch (e) {
+        console.error("Logo decode/upload failed:", e);
+      }
+    }
+
     // Insert sponsor registration as pending
     const { data: registration, error: regErr } = await supabaseAdmin
       .from("sponsor_registrations")
@@ -100,7 +129,7 @@ Deno.serve(async (req) => {
         contact_phone: contact_phone?.trim() || null,
         website_url: website_url?.trim() || null,
         description: description?.trim() || null,
-        logo_url: logo_url || null,
+        logo_url: finalLogoUrl,
         amount_cents: tier.price_cents,
         payment_status: "pending",
       })

@@ -124,9 +124,16 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    if (resendKey) {
+    let emailSent = false;
+    let emailError: string | null = null;
+
+    if (!resendKey) {
+      emailError = "RESEND_API_KEY is not configured";
+      console.error(emailError);
+    } else {
       try {
-        await fetch("https://api.resend.com/emails", {
+        console.log(`Sending payout-change confirmation email to ${user.email}`);
+        const resp = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${resendKey}`,
@@ -139,9 +146,30 @@ Deno.serve(async (req) => {
             html,
           }),
         });
+        const respText = await resp.text();
+        if (!resp.ok) {
+          emailError = `Resend ${resp.status}: ${respText}`;
+          console.error("Resend send failed:", emailError);
+        } else {
+          emailSent = true;
+          console.log("Resend send ok:", respText);
+        }
       } catch (e) {
-        console.error("Resend error:", e);
+        emailError = (e as Error).message;
+        console.error("Resend exception:", emailError);
       }
+    }
+
+    if (!emailSent) {
+      // Surface a real error so the UI can warn the user instead of showing
+      // a misleading "check your email" modal.
+      return new Response(
+        JSON.stringify({
+          error: `Failed to send confirmation email${emailError ? `: ${emailError}` : ""}`,
+          request_id: inserted.id,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     return new Response(

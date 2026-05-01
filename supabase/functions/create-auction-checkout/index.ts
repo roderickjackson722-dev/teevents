@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("organization_id, slug, pass_fees_to_participants")
+      .select("organization_id, slug, pass_fees_to_participants, payment_method_override")
       .eq("id", item.tournament_id)
       .single();
 
@@ -46,6 +46,16 @@ Deno.serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
+
+    // Resolve routing: destination charge to organizer if connected & ready, else platform escrow.
+    const routing = await resolveRouting(
+      supabaseAdmin,
+      stripe,
+      item.tournament_id,
+      tournament?.organization_id || null,
+      (tournament as any)?.payment_method_override || null,
+      "auction",
+    );
 
     let customerId: string | undefined;
     if (buyer_email) {
@@ -71,27 +81,22 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // If passing fees to participants, add platform fee + Stripe processing fee
-    if (passFeesToParticipants) {
-      const platformFeeCents = Math.round(priceCents * PLATFORM_FEE_RATE);
-      const preStripeTotal = priceCents + platformFeeCents;
-      const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
-      const combinedFees = platformFeeCents + stripeFee;
-      if (combinedFees > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Fees",
-            },
-            unit_amount: combinedFees,
-          },
-          quantity: 1,
-        });
-      }
+    // Always compute fees for application_fee; only show as line item if passing to buyer.
+    const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(priceCents);
+    if (passFeesToParticipants && combinedFeesCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: { name: "Fees" },
+          unit_amount: combinedFeesCents,
+        },
+        quantity: 1,
+      });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const applicationFeeAmount = passFeesToParticipants ? combinedFeesCents : platformFeeCents;
+
+    const checkoutParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : buyer_email || undefined,
       line_items: lineItems,
@@ -105,8 +110,23 @@ Deno.serve(async (req) => {
         organization_id: tournament?.organization_id || "",
         buyer_name: buyer_name || "",
         buyer_email: buyer_email || "",
+        platform_fee_cents: String(platformFeeCents),
+        stripe_fee_cents: String(stripeFeeCents),
+        application_fee_cents: String(applicationFeeAmount),
+        routing: routing.useDestinationCharge ? "destination" : "platform_escrow",
+        payment_method_override: routing.override,
       },
-    });
+    };
+
+    if (routing.useDestinationCharge) {
+      checkoutParams.payment_intent_data = {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: { destination: routing.organizerStripeAccountId },
+        on_behalf_of: routing.organizerStripeAccountId,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(checkoutParams);
 
     // Mark item as sold
     await supabaseAdmin

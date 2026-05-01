@@ -67,7 +67,7 @@ export async function resolveRouting(
     `[Routing/${context}] tournament=${tournamentId} override=${override} acct=${organizerStripeAccountId} ready=${organizerChargesReady} → ${useDestinationCharge ? "DESTINATION (organizer)" : "PLATFORM (TeeVents)"}`,
   );
 
-  return { useDestinationCharge, organizerStripeAccountId, override };
+  return { useDestinationCharge, organizerStripeAccountId, override, organizerChargesReady };
 }
 
 // Compute platform fee + grossed-up Stripe processing fee for the application_fee_amount.

@@ -201,6 +201,7 @@ Deno.serve(async (req) => {
           isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
           hasAnyCharge ? `💳 Order total: $${(baseTotalCents / 100).toFixed(2)} (payment pending)` : "✅ No fee — confirmed.",
         ].filter(Boolean)),
+        tournament.id,
       );
     } catch (e) {
       console.error("Notification error:", e);

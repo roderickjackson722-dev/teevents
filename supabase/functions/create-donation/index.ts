@@ -168,6 +168,7 @@ Deno.serve(async (req) => {
               `A donation of <strong>$${(amount_cents / 100).toFixed(2)}</strong> was made for <strong>${tournamentData.title}</strong>.`,
               donor_email ? `📧 Donor: ${donor_email}` : "👤 Anonymous donor",
             ]),
+            tournament_id,
           );
         }
       } catch (e) {

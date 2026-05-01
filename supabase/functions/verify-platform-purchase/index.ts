@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: `TeeVents <${SENDER_EMAIL}>`,
+          from: `TeeVents Golf Management <${SENDER_EMAIL}>`,
           to: [contactEmail],
           subject: `Order Confirmed — ${productName}`,
           html: customerHtml,
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: `TeeVents <${SENDER_EMAIL}>`,
+          from: `TeeVents Golf Management <${SENDER_EMAIL}>`,
           to: [ADMIN_EMAIL],
           subject: `New Director Shop Order — ${productName} — ${contactName}`,
           html: adminHtml,

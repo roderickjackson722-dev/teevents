@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
             method: "POST",
             headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              from: "TeeVents <notifications@notifications.teevents.golf>",
+              from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
               to: [inv.coach_email],
               subject: `Invitation: ${tournament.title}`,
               html,

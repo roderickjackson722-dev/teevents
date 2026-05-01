@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
-const SENDER_NAME = "TeeVents";
+const SENDER_NAME = "TeeVents Golf Management";
 const ADMIN_EMAIL = "info@teevents.golf";
 
 Deno.serve(async (req) => {

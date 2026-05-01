@@ -12,7 +12,7 @@ const corsHeaders = {
 };
 
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
-const SENDER_NAME = "TeeVents";
+const SENDER_NAME = "TeeVents Golf Management";
 
 const parseCents = (value?: string | null) => {
   const parsed = Number.parseInt(value ?? "", 10);

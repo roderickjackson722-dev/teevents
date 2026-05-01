@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
-const SENDER_NAME = "TeeVents";
+const SENDER_NAME = "TeeVents Golf Management";
 const ADMIN_RECIPIENT = "info@teevents.golf";
 
 // Encode a string to base64 (UTF-8 safe) without using Buffer (Deno).

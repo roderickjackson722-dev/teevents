@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "TeeVents <notifications@notifications.teevents.golf>",
+        from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
         to: [coach_email],
         subject: `Registration Confirmed: ${tournament_title}`,
         html: coachHtml,
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "TeeVents <notifications@notifications.teevents.golf>",
+        from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
         to: [contact_email],
         subject: `New Registration: ${school_name} - ${tournament_title}`,
         html: adminHtml,

@@ -29,7 +29,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "TeeVents Notifications <notifications@notifications.teevents.golf>",
+        from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
         to: ["info@teevents.golf"],
         subject: "🆕 New Free Platform Signup",
         html: `

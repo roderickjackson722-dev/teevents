@@ -84,7 +84,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "TeeVents <notifications@notifications.teevents.golf>",
+          from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
           to: [email],
           subject: "Reset Your TeeVents Password",
           html: `

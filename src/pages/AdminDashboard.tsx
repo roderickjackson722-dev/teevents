@@ -1923,6 +1923,7 @@ const AdminDashboard = () => {
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && <AdminTransactions />}
+          {activeTab === "routing-monitor" && <AdminRoutingMonitor />}
 
           {/* Accounting Tab */}
           {activeTab === "accounting" && <AdminAccounting />}

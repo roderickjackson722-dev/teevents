@@ -31,18 +31,30 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Get organization_id and fee toggle for the transaction record
+    // Get organization_id, fee toggle, and routing override for the transaction record
     let organizationId: string | null = null;
     let passFeesToParticipants = true;
+    let paymentMethodOverride: string | null = null;
     if (tournament_id) {
       const { data: tournament } = await supabaseAdmin
         .from("tournaments")
-        .select("organization_id, pass_fees_to_participants")
+        .select("organization_id, pass_fees_to_participants, payment_method_override")
         .eq("id", tournament_id)
         .single();
       organizationId = tournament?.organization_id || null;
       passFeesToParticipants = (tournament as any)?.pass_fees_to_participants !== false;
+      paymentMethodOverride = (tournament as any)?.payment_method_override || null;
     }
+
+    // Resolve routing: destination charge to organizer if connected & ready, else platform escrow.
+    const routing = await resolveRouting(
+      supabaseAdmin,
+      stripe,
+      tournament_id || "",
+      organizationId,
+      paymentMethodOverride,
+      "donation",
+    );
 
     // Check for existing Stripe customer
     let customerId: string | undefined;
@@ -68,27 +80,22 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // If passing fees to participants, add platform fee + Stripe processing fee
-    if (passFeesToParticipants) {
-      const platformFeeCents = Math.round(amount_cents * PLATFORM_FEE_RATE);
-      const preStripeTotal = amount_cents + platformFeeCents;
-      const stripeFee = Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal;
-      const combinedFees = platformFeeCents + stripeFee;
-      if (combinedFees > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Fees",
-            },
-            unit_amount: combinedFees,
-          },
-          quantity: 1,
-        });
-      }
+    // Always compute fees for application_fee; only show as line item if passing to donor.
+    const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(amount_cents);
+    if (passFeesToParticipants && combinedFeesCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: { name: "Fees" },
+          unit_amount: combinedFeesCents,
+        },
+        quantity: 1,
+      });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const applicationFeeAmount = passFeesToParticipants ? combinedFeesCents : platformFeeCents;
+
+    const checkoutParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : donor_email || undefined,
       line_items: lineItems,
@@ -100,8 +107,23 @@ Deno.serve(async (req) => {
         tournament_slug: tournament_slug || "",
         tournament_id: tournament_id || "",
         organization_id: organizationId || "",
+        platform_fee_cents: String(platformFeeCents),
+        stripe_fee_cents: String(stripeFeeCents),
+        application_fee_cents: String(applicationFeeAmount),
+        routing: routing.useDestinationCharge ? "destination" : "platform_escrow",
+        payment_method_override: routing.override,
       },
-    });
+    };
+
+    if (routing.useDestinationCharge) {
+      checkoutParams.payment_intent_data = {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: { destination: routing.organizerStripeAccountId },
+        on_behalf_of: routing.organizerStripeAccountId,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(checkoutParams);
 
     // Record donation as pending
     if (tournament_id) {

@@ -125,6 +125,21 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(checkoutParams);
 
+    await logRoutingDecision(supabaseAdmin, {
+      context: "donation",
+      tournamentId: tournament_id || null,
+      organizationId,
+      routing,
+      organizerChargesReady: routing.organizerChargesReady,
+      grossCents: amount_cents,
+      platformFeeCents,
+      stripeFeeCents,
+      applicationFeeCents: applicationFeeAmount,
+      passFeesToParticipants,
+      stripeSessionId: session.id,
+      buyerEmail: donor_email || null,
+    });
+
     // Record donation as pending
     if (tournament_id) {
       await supabaseAdmin.from("tournament_donations").insert({

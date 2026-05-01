@@ -43,6 +43,22 @@ Deno.serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
 
+      // IDEMPOTENCY GUARD: if this sponsor registration is already marked paid,
+      // skip all side effects (DB inserts, emails) to avoid duplicate notifications
+      // when the success URL is reloaded or revisited.
+      const { data: existingReg } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .select("payment_status")
+        .eq("id", sponsorRegistrationId)
+        .single();
+
+      if (existingReg?.payment_status === "paid") {
+        return new Response(
+          JSON.stringify({ verified: true, status: "paid", already_processed: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        );
+      }
+
       // Update sponsor registration to paid
       await supabaseAdmin
         .from("sponsor_registrations")
@@ -58,7 +74,11 @@ Deno.serve(async (req) => {
       const platformFeeCents = parseCents(session.metadata?.platform_fee_cents) || Math.round(grossAmountCents * PLATFORM_FEE_RATE);
       const stripeFeeCents = parseCents(session.metadata?.stripe_fee_cents);
       const applicationFeeCents = parseCents(session.metadata?.application_fee_cents) || (platformFeeCents + stripeFeeCents);
-      const netAmountCents = Math.max(grossAmountCents - applicationFeeCents, 0);
+      const chargeTotalCents = parseCents(session.metadata?.charge_total_cents) || (session.amount_total ?? (grossAmountCents + applicationFeeCents));
+      // Sponsor pays all fees on top of gross. Net to organizer = total charged − application fee
+      // (which equals the gross sponsorship amount). Previously this incorrectly subtracted
+      // fees from the gross, under-reporting the organizer's net.
+      const netAmountCents = Math.max(chargeTotalCents - applicationFeeCents, 0);
       const organizationId = session.metadata?.organization_id;
       const tournamentId = session.metadata?.tournament_id;
 

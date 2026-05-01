@@ -101,6 +101,25 @@ Deno.serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
 
+      // IDEMPOTENCY GUARD: if all these registrations are already marked paid,
+      // skip all side effects (DB inserts, confirmation emails, notifications).
+      // This prevents duplicate confirmation emails when the success page is
+      // reloaded, revisited, or kept open in a browser tab.
+      const { data: existingRegs } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("id, payment_status")
+        .in("id", registrationIds);
+
+      const allAlreadyPaid = existingRegs && existingRegs.length > 0
+        && existingRegs.every((r: any) => r.payment_status === "paid");
+
+      if (allAlreadyPaid) {
+        return new Response(
+          JSON.stringify({ verified: true, status: "paid", already_processed: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        );
+      }
+
       await supabaseAdmin
         .from("tournament_registrations")
         .update({ payment_status: "paid" })

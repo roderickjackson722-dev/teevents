@@ -793,6 +793,7 @@ const AdminDashboard = () => {
                   ["flyer-templates", "Flyer Templates", FileText],
                   ["notifications", "Notifications", Bell],
                   ["transactions", "Transactions", DollarSign],
+                  ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["accounting", "Accounting", DollarSign],
                   ["group-trips", "Group Trips", Plane],
                   ["feature-flags", "Feature Flags", KeyRound],

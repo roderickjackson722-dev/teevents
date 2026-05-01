@@ -13,6 +13,7 @@ export type RoutingDecision = {
   useDestinationCharge: boolean;
   organizerStripeAccountId: string | null;
   override: "default" | "force_stripe" | "force_platform";
+  organizerChargesReady: boolean;
 };
 
 export async function resolveRouting(

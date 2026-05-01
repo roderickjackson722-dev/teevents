@@ -169,9 +169,7 @@ Deno.serve(async (req) => {
     const applicationFeeAmount = combinedFeesCents;
     const chargeTotalCents = tier.price_cents + combinedFeesCents;
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
+    // (Stripe client already initialized above for connected-account validation)
 
     // Check for existing Stripe customer
     let customerId: string | undefined;

@@ -132,10 +132,21 @@ const SponsorRegistrationPage = () => {
 
     setSubmitting(true);
 
-    // Upload logo if selected
-    let logoUrl: string | null = null;
+    // Convert logo to base64 for server-side upload (avoids RLS issues for anonymous sponsors)
+    let logoBase64: string | null = null;
+    let logoFilename: string | null = null;
     if (logoFile) {
-      logoUrl = await uploadLogo();
+      try {
+        logoBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(logoFile);
+        });
+        logoFilename = logoFile.name;
+      } catch (err) {
+        console.error("Logo read failed:", err);
+      }
     }
 
     // Call edge function via fetch directly so we can read the JSON body on non-2xx responses

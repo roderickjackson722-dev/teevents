@@ -287,6 +287,7 @@ Deno.serve(async (req) => {
                 `📧 ${reg.email}`,
                 regs && regs.length > 1 ? `👥 Group registration (${regs.length} players)` : "",
               ].filter(Boolean)),
+              reg.tournament_id,
             );
 
             const { data: orgData } = await supabaseAdmin

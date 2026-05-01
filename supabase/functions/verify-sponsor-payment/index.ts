@@ -179,6 +179,7 @@ Deno.serve(async (req) => {
                 `🏷️ Platform fee: <strong>$${(platformFeeCents / 100).toFixed(2)}</strong>`,
                 `💵 Net to organizer: <strong>$${(netAmountCents / 100).toFixed(2)}</strong>`,
               ]),
+              tournamentId,
             );
           }
         } catch (e) {

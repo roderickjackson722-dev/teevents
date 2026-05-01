@@ -154,6 +154,7 @@ Deno.serve(async (req) => {
             `<strong>${product.name}</strong> was purchased for <strong>$${product.price.toFixed(2)}</strong>.`,
             buyer_email ? `📧 Buyer: ${buyer_email}` : "👤 Unknown buyer",
           ]),
+          product.tournament_id,
         );
       }
     } catch (e) {

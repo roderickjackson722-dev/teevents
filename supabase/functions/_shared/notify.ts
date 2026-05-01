@@ -3,22 +3,47 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SENDER_EMAIL = "notifications@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 
-// Send notification emails via Resend to configured recipients
+// Send notification emails via Resend to configured recipients PLUS the tournament's
+// contact_email entered at tournament setup (always included as a guaranteed fallback so
+// organizers receive transaction notifications even if they never opened Notification
+// Settings to opt extra emails in).
 export async function sendNotificationEmails(
   supabaseAdmin: ReturnType<typeof createClient>,
   organizationId: string,
   eventType: "notify_registration" | "notify_donation" | "notify_store_purchase" | "notify_auction_bid",
   subject: string,
   htmlBody: string,
+  tournamentId?: string | null,
 ) {
   try {
+    const recipientsSet = new Set<string>();
+
+    // 1) Configured per-event notification emails (opt-in by organizer)
     const { data: notifEmails } = await supabaseAdmin
       .from("notification_emails")
       .select("email")
       .eq("organization_id", organizationId)
       .eq(eventType, true);
+    for (const n of (notifEmails || []) as any[]) {
+      if (n?.email) recipientsSet.add(String(n.email).trim().toLowerCase());
+    }
 
-    if (!notifEmails || notifEmails.length === 0) return;
+    // 2) Tournament contact email entered during tournament setup — always included
+    if (tournamentId) {
+      const { data: t } = await supabaseAdmin
+        .from("tournaments")
+        .select("contact_email")
+        .eq("id", tournamentId)
+        .maybeSingle() as any;
+      if (t?.contact_email) recipientsSet.add(String(t.contact_email).trim().toLowerCase());
+    }
+
+    // (Organizations table has no contact_email — tournament.contact_email is the canonical organizer address.)
+
+    if (recipientsSet.size === 0) {
+      console.warn(`[Notification] No recipients found for ${eventType} (org=${organizationId} tournament=${tournamentId || "n/a"})`);
+      return;
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
@@ -26,7 +51,7 @@ export async function sendNotificationEmails(
       return;
     }
 
-    const recipients = notifEmails.map((n: any) => n.email);
+    const recipients = Array.from(recipientsSet);
 
     console.log(`[Notification] Attempting to send ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
 

@@ -166,6 +166,7 @@ Deno.serve(async (req) => {
             buyer_name ? `👤 ${buyer_name}` : "",
             buyer_email ? `📧 ${buyer_email}` : "",
           ].filter(Boolean)),
+          item.tournament_id,
         );
       }
     } catch (e) {

@@ -71,9 +71,29 @@ Deno.serve(async (req) => {
 
     const organizerStripeAccountId = org?.stripe_account_id || null;
 
+    // Init Stripe early so we can validate the connected account before creating the session.
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil",
+    });
+
+    // Validate the connected account is fully onboarded and able to accept charges.
+    // If the account exists but isn't charge-ready, we previously fell through to the platform
+    // silently — that is what caused the Atlanta sponsor charge to land in TeeVents.
+    let organizerChargesReady = false;
+    if (organizerStripeAccountId) {
+      try {
+        const acct = await stripe.accounts.retrieve(organizerStripeAccountId);
+        organizerChargesReady = !!acct.charges_enabled;
+        console.log(`[Routing] Organizer acct ${organizerStripeAccountId}: charges_enabled=${acct.charges_enabled}, payouts_enabled=${acct.payouts_enabled}, details_submitted=${acct.details_submitted}`);
+      } catch (e) {
+        console.error(`[Routing] Failed to retrieve connected account ${organizerStripeAccountId}:`, e);
+        organizerChargesReady = false;
+      }
+    }
+
     // Determine routing using same rules as registration:
-    //   default       → organizer Stripe if connected, else platform escrow
-    //   force_stripe  → must use organizer Stripe (error if missing)
+    //   default       → organizer Stripe if connected & charge-ready, else platform escrow
+    //   force_stripe  → must use organizer Stripe (error if missing or not charge-ready)
     //   force_platform → always platform escrow (direct charge to TeeVents)
     const override = (tournament as any).payment_method_override || "default";
     let useDestinationCharge = false;
@@ -81,12 +101,16 @@ Deno.serve(async (req) => {
       if (!organizerStripeAccountId) {
         throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
       }
+      if (!organizerChargesReady) {
+        throw new Error("Tournament organizer's payment account is connected but not yet enabled for charges. Please contact the organizer to complete Stripe onboarding.");
+      }
       useDestinationCharge = true;
     } else if (override === "force_platform") {
       useDestinationCharge = false;
     } else {
-      useDestinationCharge = !!organizerStripeAccountId;
+      useDestinationCharge = !!organizerStripeAccountId && organizerChargesReady;
     }
+    console.log(`[Routing] tournament=${tournament_id} override=${override} acct=${organizerStripeAccountId} ready=${organizerChargesReady} → ${useDestinationCharge ? "DESTINATION (organizer)" : "PLATFORM (TeeVents)"}`);
 
     // Upload logo server-side using service role (sponsors are anonymous, so client-side upload is blocked by RLS)
     let finalLogoUrl: string | null = logo_url || null;

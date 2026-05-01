@@ -359,6 +359,26 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(checkoutParams);
 
+    await logRoutingDecision(supabaseAdmin, {
+      context: "registration",
+      tournamentId: (tournament as any).id,
+      organizationId: tournament.organization_id,
+      routing: {
+        useDestinationCharge,
+        organizerStripeAccountId,
+        override: override as any,
+        organizerChargesReady,
+      },
+      organizerChargesReady,
+      grossCents: baseTotalCents,
+      platformFeeCents,
+      stripeFeeCents,
+      applicationFeeCents: applicationFeeAmount,
+      passFeesToParticipants: golferPaysFees,
+      stripeSessionId: session.id,
+      buyerEmail: email?.trim() || null,
+    });
+
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

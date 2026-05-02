@@ -19,13 +19,16 @@ import { toast } from "@/hooks/use-toast";
 import {
   Plus, Trash2, Pencil, Mail, Download, Loader2, ExternalLink,
   Check, X, MapPin, Copy, Send, ArrowUp, ArrowDown,
+  Upload, FileText, QrCode, ScanLine, Map, Paperclip,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import jsPDF from "jspdf";
 
 type Tournament = { id: string; title: string; slug: string | null };
 type FormQuestion = {
   id: string;
   label: string;
-  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno";
+  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno" | "file";
   options?: string[];
   required: boolean;
 };
@@ -44,6 +47,7 @@ type VendorReg = {
   status: string;
   notes: string | null;
   checked_in: boolean;
+  check_in_code: string | null;
   created_at: string;
 };
 type Booth = {

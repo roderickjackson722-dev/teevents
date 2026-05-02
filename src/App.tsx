@@ -200,7 +200,8 @@ const App = () => (
              <Route path="/sales-flyer" element={<SalesFlyer />} />
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
              <Route path="/t/:slug/vendors" element={<VendorRegistration />} />
-             <Route path="/dashboard/vendors" element={<DashboardLayout><Vendors /></DashboardLayout>} />
+            <Route path="/dashboard/vendors" element={<DashboardLayout><Vendors /></DashboardLayout>} />
+            <Route path="/dashboard/team-performance" element={<DashboardLayout><TeamPerformance /></DashboardLayout>} />
              <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
              <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />
              <Route path="/trips" element={<TripsList />} />

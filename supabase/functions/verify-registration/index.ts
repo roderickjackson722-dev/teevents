@@ -3,7 +3,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
-const HOLD_PERCENT = 15;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -178,22 +177,11 @@ Deno.serve(async (req) => {
       const tournamentId = session.metadata?.tournament_id;
 
       if (organizationId && grossAmount > 0) {
-        const holdAmountCents = Math.round(netAmountCents * (HOLD_PERCENT / 100));
-
-        let holdReleaseDate: string | null = null;
-        if (tournamentId) {
-          const { data: tData } = await supabaseAdmin
-            .from("tournaments")
-            .select("end_date, date")
-            .eq("id", tournamentId)
-            .single();
-          const eventEnd = tData?.end_date || tData?.date;
-          if (eventEnd) {
-            const d = new Date(eventEnd);
-            d.setDate(d.getDate() + 15);
-            holdReleaseDate = d.toISOString().split("T")[0];
-          }
-        }
+        // NOTE: TeeVents does not hold organizer funds. The 15% reserve hold was
+        // removed when we moved to Stripe Connect destination charges — funds are
+        // split at checkout and land directly in the organizer's Stripe account.
+        // The hold_* columns were dropped from platform_transactions in migration
+        // 20260415005850; do not insert them here.
 
         // Fetch organizer payout method and primary registrant info
         const { data: orgPayout } = await supabaseAdmin
@@ -227,11 +215,8 @@ Deno.serve(async (req) => {
           platform_fee_cents: platformFeeCents,
           stripe_fee_cents: stripeFeeCents,
           net_amount_cents: netAmountCents,
-          hold_amount_cents: holdAmountCents,
-          hold_release_date: holdReleaseDate,
-          hold_status: "active",
           type: "registration",
-          status: "held",
+          status: "succeeded",
           stripe_session_id: session_id,
           stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
           description: `Registration payment — ${registrationIds.length} player(s)${passFeesToGolfer ? " (platform + Stripe fees paid by golfer)" : " (platform + Stripe fees absorbed by organizer)"}`,

@@ -1071,7 +1071,16 @@ export default function Vendors() {
                   <div className="space-y-2">
                     {questions.map((q) => {
                       const a = viewVendor.answers?.[q.id];
-                      const display = Array.isArray(a) ? a.join(", ") : a == null || a === "" ? <span className="text-muted-foreground">—</span> : String(a);
+                      let display: React.ReactNode;
+                      if (q.type === "file" && a && typeof a === "object" && a.path) {
+                        display = (
+                          <Button size="sm" variant="outline" onClick={() => downloadVendorFile(a.path, a.name || "document")}>
+                            <Paperclip className="h-3 w-3 mr-1" /> {a.name || "Download"}
+                          </Button>
+                        );
+                      } else if (Array.isArray(a)) display = a.join(", ");
+                      else if (a == null || a === "") display = <span className="text-muted-foreground">—</span>;
+                      else display = String(a);
                       return (
                         <div key={q.id} className="border-b pb-2">
                           <div className="text-xs text-muted-foreground">{q.label}</div>

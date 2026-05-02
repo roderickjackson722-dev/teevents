@@ -97,6 +97,30 @@ const Finances = () => {
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [expandedTxRows, setExpandedTxRows] = useState<Set<string>>(new Set());
+  const [stripeBalance, setStripeBalance] = useState<{
+    connected: boolean;
+    charges_enabled?: boolean;
+    payouts_enabled?: boolean;
+    payout_schedule?: { interval?: string; delay_days?: number } | null;
+    available?: Record<string, number>;
+    pending?: Record<string, number>;
+    next_payout?: { amount: number; currency: string; arrival_date: number } | null;
+    error?: string;
+  } | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(true);
+
+  useEffect(() => {
+    if (!org) return;
+    setBalanceLoading(true);
+    supabase.functions.invoke("stripe-connect-balance").then(({ data, error }) => {
+      if (error) {
+        setStripeBalance({ connected: false, error: error.message });
+      } else {
+        setStripeBalance(data);
+      }
+      setBalanceLoading(false);
+    });
+  }, [org]);
 
   const toggleTxRow = (id: string) => {
     setExpandedTxRows(prev => {

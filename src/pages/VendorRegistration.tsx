@@ -120,6 +120,9 @@ export default function VendorRegistration() {
       if (a == null || a === "" || (Array.isArray(a) && a.length === 0)) {
         return `${q.label} is required`;
       }
+      if (q.type === "file" && (!a || typeof a !== "object" || !a.path)) {
+        return `${q.label} requires a file upload`;
+      }
     }
     return null;
   };
@@ -306,6 +309,28 @@ export default function VendorRegistration() {
                     ))}
                   </div>
                 )}
+                {q.type === "file" && (() => {
+                  const a = answers[q.id];
+                  return (
+                    <div className="mt-1 space-y-2">
+                      <Input
+                        type="file"
+                        accept=".pdf,image/jpeg,image/png,image/webp,image/heic"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleFileUpload(q.id, f);
+                        }}
+                      />
+                      {a?.uploading && <p className="text-xs text-muted-foreground">Uploading {a.name}…</p>}
+                      {a?.path && (
+                        <p className="text-xs text-emerald-700">
+                          ✓ {a.name} uploaded ({Math.round((a.size || 0) / 1024)} KB)
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">PDF or image, max 10 MB.</p>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
 

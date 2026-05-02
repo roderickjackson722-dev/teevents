@@ -270,38 +270,19 @@ export default function Vendors() {
 
   const handleAssignBooth = async (boothId: string | "none") => {
     if (!assignVendor) return;
-    if (boothId === "none") {
-      // Clear assignment
-      if (assignVendor.booth_location) {
-        await supabase
-          .from("vendor_booth_locations")
-          .update({ assigned_to: null, is_available: true })
-          .eq("tournament_id", tournamentId)
-          .eq("location_name", assignVendor.booth_location);
-      }
-      await supabase
-        .from("vendor_registrations")
-        .update({ booth_location: null })
-        .eq("id", assignVendor.id);
-    } else {
-      const booth = booths.find((b) => b.id === boothId);
-      if (!booth) return;
-      // Free previous booth this vendor had, if any
-      if (assignVendor.booth_location) {
-        await supabase
-          .from("vendor_booth_locations")
-          .update({ assigned_to: null, is_available: true })
-          .eq("tournament_id", tournamentId)
-          .eq("location_name", assignVendor.booth_location);
-      }
-      await supabase
-        .from("vendor_booth_locations")
-        .update({ assigned_to: assignVendor.id, is_available: false })
-        .eq("id", boothId);
-      await supabase
-        .from("vendor_registrations")
-        .update({ booth_location: booth.location_name })
-        .eq("id", assignVendor.id);
+    const { data, error } = await supabase.functions.invoke("assign-vendor-booth", {
+      body: {
+        vendor_registration_id: assignVendor.id,
+        booth_id: boothId === "none" ? null : boothId,
+      },
+    });
+    if (error || (data as any)?.error) {
+      toast({
+        title: "Could not assign booth",
+        description: (data as any)?.error || error?.message || "Try again",
+        variant: "destructive",
+      });
+      return;
     }
     setAssignVendor(null);
     await Promise.all([refreshVendors(), refreshBooths()]);

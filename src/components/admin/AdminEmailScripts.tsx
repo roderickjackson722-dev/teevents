@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Copy, Check, Mail, Pencil, Save, X, Send } from "lucide-react";
+import { Copy, Check, Mail, Pencil, Save, X, Send, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   templates: any[];

@@ -3,7 +3,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
 
 const PLATFORM_FEE_RATE = 0.05;
-const HOLD_PERCENT = 15;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,34 +82,17 @@ Deno.serve(async (req) => {
       const tournamentId = session.metadata?.tournament_id;
 
       if (organizationId && grossAmountCents > 0) {
-        const holdAmountCents = Math.round(netAmountCents * (HOLD_PERCENT / 100));
-
-        let holdReleaseDate: string | null = null;
-        if (tournamentId) {
-          const { data: tData } = await supabaseAdmin
-            .from("tournaments")
-            .select("end_date, date")
-            .eq("id", tournamentId)
-            .single();
-          const eventEnd = tData?.end_date || tData?.date;
-          if (eventEnd) {
-            const d = new Date(eventEnd);
-            d.setDate(d.getDate() + 15);
-            holdReleaseDate = d.toISOString().split("T")[0];
-          }
-        }
-
+        // NOTE: No reserve hold — Connect destination charges split at checkout.
+        // hold_* columns were dropped in migration 20260415005850.
         await supabaseAdmin.from("platform_transactions").insert({
           organization_id: organizationId,
           tournament_id: tournamentId || null,
           amount_cents: grossAmountCents,
           platform_fee_cents: platformFeeCents,
+          stripe_fee_cents: stripeFeeCents,
           net_amount_cents: netAmountCents,
-          hold_amount_cents: holdAmountCents,
-          hold_release_date: holdReleaseDate,
-          hold_status: "active",
           type: "sponsorship",
-          status: "held",
+          status: "succeeded",
           stripe_session_id: session_id,
           stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
           description: `Sponsorship payment — ${session.metadata?.company_name || "Unknown"} (${session.metadata?.tier_id ? "tier" : "custom"})`,

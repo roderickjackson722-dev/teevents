@@ -499,7 +499,7 @@ const Finances = () => {
             </Tooltip>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">$5 per transaction</p>
+          <p className="text-xs text-muted-foreground mt-1">5% per transaction</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4">

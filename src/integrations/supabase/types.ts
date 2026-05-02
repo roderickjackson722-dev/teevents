@@ -584,6 +584,65 @@ export type Database = {
           },
         ]
       }
+      email_send_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string
+          metadata: Json | null
+          organization_id: string | null
+          recipient_email: string
+          resend_id: string | null
+          source: string | null
+          status: string
+          subject: string | null
+          template_name: string
+          tournament_id: string | null
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id: string
+          metadata?: Json | null
+          organization_id?: string | null
+          recipient_email: string
+          resend_id?: string | null
+          source?: string | null
+          status: string
+          subject?: string | null
+          template_name: string
+          tournament_id?: string | null
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          recipient_email?: string
+          resend_id?: string | null
+          source?: string | null
+          status?: string
+          subject?: string | null
+          template_name?: string
+          tournament_id?: string | null
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_send_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_access_requests: {
         Row: {
           created_at: string

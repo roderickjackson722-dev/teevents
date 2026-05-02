@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logEmailSend } from "../_shared/emailLogger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -238,28 +239,43 @@ async function sendInvitationEmail(
 </body>
 </html>`;
 
+  const supabaseLog = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+  const messageId = crypto.randomUUID();
+  await logEmailSend(supabaseLog, {
+    messageId, templateName: "team-invitation", recipientEmail, subject,
+    status: "pending", source: "invite-member",
+  });
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
         from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
-        to: [recipientEmail],
-        subject,
-        html,
+        to: [recipientEmail], subject, html,
       }),
     });
-
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = await res.text();
-      console.error(`Failed to send invitation email to ${recipientEmail}:`, err);
+      console.error(`Failed to send invitation email to ${recipientEmail}:`, data);
+      await logEmailSend(supabaseLog, {
+        messageId, templateName: "team-invitation", recipientEmail, subject,
+        status: "failed", source: "invite-member",
+        errorMessage: data?.message || `HTTP ${res.status}`,
+      });
     } else {
-      console.log(`Invitation email sent to ${recipientEmail}`);
+      await logEmailSend(supabaseLog, {
+        messageId, templateName: "team-invitation", recipientEmail, subject,
+        status: "sent", source: "invite-member", resendId: data?.id,
+      });
     }
-  } catch (err) {
+  } catch (err: any) {
+    await logEmailSend(supabaseLog, {
+      messageId, templateName: "team-invitation", recipientEmail, subject,
+      status: "failed", source: "invite-member", errorMessage: err.message,
+    });
     console.error(`Error sending invitation email to ${recipientEmail}:`, err);
   }
 }

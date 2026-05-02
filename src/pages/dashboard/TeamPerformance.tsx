@@ -37,7 +37,7 @@ type Promoter = {
 type RegRow = {
   id: string;
   promoter_id: string | null;
-  total_amount_cents: number | null;
+  tier_id: string | null;
   payment_status: string;
   created_at: string;
 };

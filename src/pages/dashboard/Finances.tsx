@@ -254,11 +254,23 @@ const Finances = () => {
   const totalPlatformFees = platformTransactions.reduce((sum, t) => sum + t.platform_fee_cents, 0);
   const totalNetToOrganizer = platformTransactions.reduce((sum, t) => sum + t.net_amount_cents, 0);
 
-  // Approximate split: charges older than ~2 business days are "available", newer are "pending clearing".
-  // Stripe's actual settlement varies; this is a best-effort breakdown for transparency.
-  const settlementCutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
-  const availableTx = succeededTx.filter((t) => new Date(t.created_at).getTime() <= settlementCutoff);
-  const pendingTx = succeededTx.filter((t) => new Date(t.created_at).getTime() > settlementCutoff);
+  // Approximate split: new Stripe Connect accounts hold funds for up to 7 days while the
+  // platform clears. Charges newer than that window are shown as "pending (clearing)";
+  // older charges are shown as likely "available". Stripe is the source of truth — these
+  // local breakdowns are best-effort to help organizers identify which transactions
+  // contribute to each balance bucket.
+  const PENDING_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+  const settlementCutoff = Date.now() - PENDING_WINDOW_MS;
+  let availableTx = succeededTx.filter((t) => new Date(t.created_at).getTime() <= settlementCutoff);
+  let pendingTx = succeededTx.filter((t) => new Date(t.created_at).getTime() > settlementCutoff);
+  // Fallback: if the heuristic produced an empty bucket but recent succeeded charges exist,
+  // show the most recent succeeded transactions so the breakdown isn't misleadingly empty.
+  if (pendingTx.length === 0 && succeededTx.length > 0) {
+    pendingTx = succeededTx.slice(0, 20);
+  }
+  if (availableTx.length === 0 && succeededTx.length > 0) {
+    availableTx = succeededTx.slice(0, 20);
+  }
   // Next payout window is typically the most recent 24h of available funds — approximate by top-of-available.
   const nextPayoutTx = availableTx.slice(0, 50);
 
@@ -633,7 +645,7 @@ const Finances = () => {
                     type="button"
                     onClick={() => setBreakdown({
                       title: "Available to pay out",
-                      description: `Cleared funds Stripe can transfer to your bank on the next payout. Showing ${availableTx.length} settled transaction(s) (charges older than ~2 business days).`,
+                      description: `Cleared funds Stripe can transfer to your bank on the next payout. Stripe reports ${fmt(availTotal, currency)} available. Showing your most recent settled transactions that likely contributed to this balance — Stripe Dashboard is the source of truth for the exact split.`,
                       column: "net_amount_cents",
                       items: availableTx,
                     })}
@@ -649,7 +661,7 @@ const Finances = () => {
                     type="button"
                     onClick={() => setBreakdown({
                       title: "Pending (clearing)",
-                      description: `Recently captured charges still clearing through Stripe (typically 2 business days). Showing ${pendingTx.length} pending transaction(s).`,
+                      description: `Recently captured charges still clearing through Stripe. New Connect accounts can hold funds for up to 7 days. Stripe reports ${fmt(pendingTotal, currency)} pending. Showing your most recent succeeded charges that are likely contributing to this balance — Stripe Dashboard shows the exact list.`,
                       column: "net_amount_cents",
                       items: pendingTx,
                     })}

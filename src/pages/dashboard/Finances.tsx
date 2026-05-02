@@ -629,45 +629,66 @@ const Finances = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <button
+                    type="button"
+                    onClick={() => setBreakdown({
+                      title: "Available to pay out",
+                      description: `Cleared funds Stripe can transfer to your bank on the next payout. Showing ${availableTx.length} settled transaction(s) (charges older than ~2 business days).`,
+                      column: "net_amount_cents",
+                      items: availableTx,
+                    })}
+                    className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors"
+                  >
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      Available to pay out
-                      <Tooltip>
-                        <TooltipTrigger asChild><Info className="h-3 w-3" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[240px]">
-                          Cleared funds Stripe can transfer to your bank on the next payout.
-                        </TooltipContent>
-                      </Tooltip>
+                      Available to pay out <Info className="h-3 w-3" />
                     </div>
                     <p className="text-xl font-bold text-emerald-600 mt-1">{fmt(availTotal, currency)}</p>
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Click for transactions</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdown({
+                      title: "Pending (clearing)",
+                      description: `Recently captured charges still clearing through Stripe (typically 2 business days). Showing ${pendingTx.length} pending transaction(s).`,
+                      column: "net_amount_cents",
+                      items: pendingTx,
+                    })}
+                    className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:border-amber-300 hover:bg-amber-50/30 transition-colors"
+                  >
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      Pending (clearing)
-                      <Tooltip>
-                        <TooltipTrigger asChild><Info className="h-3 w-3" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[240px]">
-                          Recently captured charges that are still clearing through Stripe (typically 2 business days; longer for newly onboarded accounts).
-                        </TooltipContent>
-                      </Tooltip>
+                      Pending (clearing) <Info className="h-3 w-3" />
                     </div>
                     <p className="text-xl font-bold text-amber-600 mt-1">{fmt(pendingTotal, currency)}</p>
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/20 p-3">
-                    <div className="text-xs text-muted-foreground">Next payout</div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Click for transactions</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdown({
+                      title: "Next payout",
+                      description: stripeBalance.next_payout
+                        ? `Estimated next payout of ${fmt(stripeBalance.next_payout.amount, stripeBalance.next_payout.currency)} arriving ${new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()}. Approximate breakdown of contributing settled transactions:`
+                        : "No scheduled payout yet. Once funds clear, they will be grouped into your next payout.",
+                      column: "net_amount_cents",
+                      items: nextPayoutTx,
+                    })}
+                    className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  >
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      Next payout <Info className="h-3 w-3" />
+                    </div>
                     {stripeBalance.next_payout ? (
                       <>
                         <p className="text-xl font-bold text-primary mt-1">
                           {fmt(stripeBalance.next_payout.amount, stripeBalance.next_payout.currency)}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Arrives {new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()}
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Arrives {new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()} · Click for details
                         </p>
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground mt-2">No scheduled payout yet</p>
                     )}
-                  </div>
+                  </button>
                 </div>
 
                 <div className="text-xs text-muted-foreground space-y-1 border-t border-border pt-3">

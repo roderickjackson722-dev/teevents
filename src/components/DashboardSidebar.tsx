@@ -4,7 +4,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  PartyPopper, Building2, Store,
+  PartyPopper, Building2, Store, Target,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";

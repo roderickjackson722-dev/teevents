@@ -653,7 +653,7 @@ const Finances = () => {
                             <p className="text-xs text-muted-foreground">{reg.email}</p>
                           </td>
                           <td className="p-3 font-semibold text-sm text-foreground">${(gross / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">$5.00</td>
+                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(fee / 100).toFixed(2)}</td>
                           <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
                           <td className="p-3">{statusBadge(reg.payment_status)}</td>
                           <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>

@@ -708,6 +708,7 @@ export default function Vendors() {
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => setAddManualOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Manually</Button>
+                <Button variant="outline" size="sm" onClick={() => setCsvOpen(true)}><Upload className="h-4 w-4 mr-1" /> Import CSV</Button>
                 <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
                 <Button size="sm" disabled={selected.size === 0} onClick={() => setBulkOpen(true)}>
                   <Mail className="h-4 w-4 mr-1" /> Email Selected ({selected.size})
@@ -771,6 +772,9 @@ export default function Vendors() {
                             <div className="flex justify-end gap-1 flex-wrap">
                               <Button size="sm" variant="ghost" onClick={() => setViewVendor(v)} title="View answers">
                                 <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setQrVendor(v)} title="Show QR / check-in code">
+                                <QrCode className="h-4 w-4" />
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setAssignVendor(v)} title="Assign booth">
                                 <MapPin className="h-4 w-4" />
@@ -874,12 +878,25 @@ export default function Vendors() {
         {/* ===== Booth Locations tab ===== */}
         <TabsContent value="booths" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
               <div>
                 <CardTitle>Booth Locations</CardTitle>
                 <CardDescription>Pre-define booth spots and assign vendors from the All Vendors tab.</CardDescription>
               </div>
-              <Button onClick={() => setAddBoothOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Location</Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Label className="text-xs">Grid columns</Label>
+                <Input
+                  type="number" min={0} max={20}
+                  value={gridCols || ""}
+                  onChange={(e) => setGridCols(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="auto"
+                  className="w-20"
+                />
+                <Button variant="outline" onClick={generateBoothMapPdf} disabled={booths.length === 0}>
+                  <Map className="h-4 w-4 mr-1" /> Booth Map PDF
+                </Button>
+                <Button onClick={() => setAddBoothOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Location</Button>
+              </div>
             </CardHeader>
             <CardContent>
               {booths.length === 0 ? (

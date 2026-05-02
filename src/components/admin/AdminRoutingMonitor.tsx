@@ -211,7 +211,18 @@ export default function AdminRoutingMonitor() {
 
   return (
     <div className="space-y-6">
-      {/* Headline counters */}
+      {/* Explainer banner */}
+      <Card className="p-4 bg-emerald-50 border-emerald-200">
+        <div className="text-sm text-emerald-900">
+          <strong>How destination charges split each transaction:</strong> The buyer pays the gross amount.
+          Stripe routes funds directly to the organizer's connected Stripe account, then automatically transfers
+          back to TeeVents the <strong>5% platform fee + grossed-up Stripe processing fee</strong> as the
+          "App fee" shown below. The remainder lands in the organizer's Stripe balance. If a row shows
+          "Platform escrow" instead of "Organizer", the organizer hasn't completed Stripe Connect onboarding
+          yet — funds sit in TeeVents' account until they connect, then we pay them out via PayPal or check.
+        </div>
+      </Card>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4">
           <div className="text-xs text-muted-foreground">Recent decisions</div>

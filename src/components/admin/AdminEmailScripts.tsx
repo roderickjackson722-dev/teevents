@@ -164,6 +164,34 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
                 <X className="h-3.5 w-3.5 mr-1" /> Cancel
               </Button>
             </div>
+
+            {/* Per-user rendered preview */}
+            {(contactName || tournamentName || recipientEmail) && (() => {
+              let prevSubject = template.subject;
+              let prevBody = template.body;
+              if (contactName) {
+                prevSubject = prevSubject.replace(/\{\{contact_name\}\}/g, contactName);
+                prevBody = prevBody.replace(/\{\{contact_name\}\}/g, contactName);
+              }
+              if (tournamentName) {
+                prevSubject = prevSubject.replace(/\{\{tournament_name\}\}/g, tournamentName);
+                prevBody = prevBody.replace(/\{\{tournament_name\}\}/g, tournamentName);
+              }
+              prevSubject = prevSubject.replace(/\{\{sender_name\}\}/g, "Rod Jackson");
+              prevBody = prevBody.replace(/\{\{sender_name\}\}/g, "Rod Jackson");
+              return (
+                <div className="border border-primary/30 rounded-lg overflow-hidden bg-background">
+                  <div className="bg-primary/10 px-3 py-2 text-xs font-semibold text-primary flex items-center gap-1.5">
+                    <Eye className="h-3.5 w-3.5" /> Final preview (what {recipientEmail || "the recipient"} will see)
+                  </div>
+                  <div className="p-3 space-y-2">
+                    <div className="text-xs"><span className="text-muted-foreground">To: </span><span className="font-medium">{recipientEmail || "—"}</span></div>
+                    <div className="text-xs"><span className="text-muted-foreground">Subject: </span><span className="font-semibold">{prevSubject}</span></div>
+                    <div className="bg-muted/30 rounded p-3 text-sm whitespace-pre-wrap leading-relaxed border-t border-border mt-2">{prevBody}</div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         ) : null}
 

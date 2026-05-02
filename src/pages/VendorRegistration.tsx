@@ -83,6 +83,31 @@ export default function VendorRegistration() {
     setAnswers((a) => ({ ...a, [qid]: value }));
   };
 
+  const handleFileUpload = async (qid: string, file: File) => {
+    if (!tournament) return;
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast({ title: "Unsupported file type", description: "Use PDF or an image (JPG, PNG, WEBP, HEIC).", variant: "destructive" });
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      toast({ title: "File too large", description: "Maximum size is 10 MB.", variant: "destructive" });
+      return;
+    }
+    handleAnswer(qid, { uploading: true, name: file.name });
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${tournament.id}/${qid}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("vendor-documents").upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      handleAnswer(qid, null);
+      return;
+    }
+    handleAnswer(qid, { path, name: file.name, size: file.size, type: file.type });
+  };
+
   const validate = (): string | null => {
     if (!vendorName.trim()) return "Business name is required";
     if (!contactName.trim()) return "Contact name is required";

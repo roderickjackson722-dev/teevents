@@ -112,14 +112,16 @@ const Finances = () => {
   useEffect(() => {
     if (!org) return;
     setBalanceLoading(true);
-    supabase.functions.invoke("stripe-connect-balance").then(({ data, error }) => {
-      if (error) {
-        setStripeBalance({ connected: false, error: error.message });
-      } else {
-        setStripeBalance(data);
-      }
-      setBalanceLoading(false);
-    });
+    supabase.functions
+      .invoke("stripe-connect-balance", { body: { organization_id: org.orgId } })
+      .then(({ data, error }) => {
+        if (error) {
+          setStripeBalance({ connected: false, error: error.message });
+        } else {
+          setStripeBalance(data);
+        }
+        setBalanceLoading(false);
+      });
   }, [org]);
 
   const toggleTxRow = (id: string) => {

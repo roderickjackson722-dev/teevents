@@ -1223,6 +1223,61 @@ export default function Vendors() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* === QR / Check-in code dialog === */}
+      <Dialog open={!!qrVendor} onOpenChange={(o) => !o && setQrVendor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{qrVendor?.vendor_name}</DialogTitle>
+            <DialogDescription>Show this QR code or 6-character code at check-in.</DialogDescription>
+          </DialogHeader>
+          {qrVendor?.check_in_code && (
+            <div className="flex flex-col items-center gap-3 py-2">
+              <div className="bg-white p-4 rounded-lg border">
+                <QRCodeSVG value={qrVendor.check_in_code} size={200} level="M" />
+              </div>
+              <div className="text-3xl font-mono tracking-[0.4em] font-bold text-primary">
+                {qrVendor.check_in_code}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => {
+                navigator.clipboard.writeText(qrVendor.check_in_code!);
+                toast({ title: "Code copied" });
+              }}>
+                <Copy className="h-3 w-3 mr-1" /> Copy code
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* === CSV import dialog === */}
+      <Dialog open={csvOpen} onOpenChange={setCsvOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Vendors from CSV</DialogTitle>
+            <DialogDescription>
+              Required columns: <code>vendor_name</code>, <code>contact_name</code>, <code>contact_email</code>.
+              Optional: <code>contact_phone</code>, <code>business_type</code>. Imported vendors are added as approved.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Textarea
+              rows={10}
+              placeholder={"vendor_name,contact_name,contact_email,contact_phone,business_type\nAcme Foods,Jane Doe,jane@acme.com,555-1234,Food"}
+              value={csvText}
+              onChange={(e) => setCsvText(e.target.value)}
+              className="font-mono text-xs"
+            />
+            <p className="text-xs text-muted-foreground">Paste CSV content above. The first row must be the header.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCsvOpen(false)}>Cancel</Button>
+            <Button onClick={importCsv} disabled={csvBusy || !csvText.trim()}>
+              {csvBusy ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Importing…</> : <><Upload className="h-4 w-4 mr-1" /> Import</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1273,6 +1328,7 @@ function QuestionDialog({
                 <SelectItem value="dropdown">Dropdown (single)</SelectItem>
                 <SelectItem value="checkbox">Checkboxes (multi)</SelectItem>
                 <SelectItem value="yesno">Yes / No</SelectItem>
+                <SelectItem value="file">File upload (PDF or image)</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -419,6 +419,222 @@ export default function Vendors() {
     setSelected(new Set());
   };
 
+
+  // ===== Scanner / Check-in =====
+  const handleScan = async (codeOrId?: string) => {
+    const raw = (codeOrId ?? scanInput).trim();
+    if (!raw) return;
+    setScanning(true);
+    try {
+      const local = vendors.find(
+        (v) => v.id === raw || (v.check_in_code && v.check_in_code.toUpperCase() === raw.toUpperCase()),
+      );
+      const { data, error } = await supabase.functions.invoke("vendor-check-in", {
+        body: local
+          ? { vendor_registration_id: local.id, tournament_id: tournamentId }
+          : { code: raw, tournament_id: tournamentId },
+      });
+      if (error || (data as any)?.error) {
+        setLastScan({ ok: false, message: (data as any)?.error || error?.message || "Vendor not found" });
+        toast({ title: "Check-in failed", description: (data as any)?.error || error?.message, variant: "destructive" });
+      } else {
+        const v = (data as any).vendor as VendorReg;
+        setLastScan({
+          ok: true,
+          message: (data as any).already ? `${v.vendor_name} was already checked in.` : `${v.vendor_name} checked in!`,
+          vendor: v,
+        });
+        toast({ title: (data as any).already ? "Already checked in" : "Checked in", description: v.vendor_name });
+        await refreshVendors();
+      }
+    } finally {
+      setScanning(false);
+      setScanInput("");
+    }
+  };
+
+  // ===== File download (signed URL) =====
+  const downloadVendorFile = async (path: string, name: string) => {
+    const { data, error } = await supabase.storage
+      .from("vendor-documents")
+      .createSignedUrl(path, 60 * 5);
+    if (error || !data?.signedUrl) {
+      toast({ title: "Could not open file", description: error?.message, variant: "destructive" });
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.download = name;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.click();
+  };
+
+  // ===== CSV import =====
+  const importCsv = async () => {
+    if (!tournamentId) return;
+    setCsvBusy(true);
+    try {
+      const lines = csvText.trim().split(/\r?\n/);
+      if (lines.length < 2) throw new Error("CSV must include a header row and at least one vendor");
+      const parseLine = (line: string): string[] => {
+        const out: string[] = [];
+        let cur = "", inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (inQ) {
+            if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+            else if (c === '"') inQ = false;
+            else cur += c;
+          } else {
+            if (c === ',') { out.push(cur); cur = ""; }
+            else if (c === '"') inQ = true;
+            else cur += c;
+          }
+        }
+        out.push(cur);
+        return out.map((s) => s.trim());
+      };
+      const headers = parseLine(lines[0]).map((h) => h.toLowerCase().replace(/\s+/g, "_"));
+      const rows = lines.slice(1).map(parseLine);
+      const idx = (key: string) => headers.indexOf(key);
+      const vIdx = idx("vendor_name") >= 0 ? idx("vendor_name") : idx("business_name");
+      const cIdx = idx("contact_name");
+      const eIdx = idx("contact_email") >= 0 ? idx("contact_email") : idx("email");
+      if (vIdx < 0 || cIdx < 0 || eIdx < 0) {
+        throw new Error("CSV must include columns: vendor_name (or business_name), contact_name, contact_email (or email)");
+      }
+      const phoneIdx = idx("contact_phone") >= 0 ? idx("contact_phone") : idx("phone");
+      const typeIdx = idx("business_type") >= 0 ? idx("business_type") : idx("type");
+
+      const records = rows
+        .filter((r) => r.length && r[vIdx] && r[eIdx])
+        .map((r) => ({
+          tournament_id: tournamentId,
+          vendor_name: r[vIdx],
+          contact_name: r[cIdx] || r[vIdx],
+          contact_email: r[eIdx].toLowerCase(),
+          contact_phone: phoneIdx >= 0 ? r[phoneIdx] || null : null,
+          business_type: typeIdx >= 0 ? r[typeIdx] || null : null,
+          booth_fee_cents: boothFeeCents === "" ? null : Number(boothFeeCents),
+          status: "approved" as const,
+          payment_status: "pending" as const,
+        }));
+      if (records.length === 0) throw new Error("No valid rows found");
+      const { error } = await supabase.from("vendor_registrations").insert(records);
+      if (error) throw error;
+      toast({ title: `Imported ${records.length} vendor(s)` });
+      setCsvOpen(false);
+      setCsvText("");
+      await refreshVendors();
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message, variant: "destructive" });
+    } finally {
+      setCsvBusy(false);
+    }
+  };
+
+  // ===== Booth Map PDF =====
+  const generateBoothMapPdf = () => {
+    if (!tournament || booths.length === 0) {
+      toast({ title: "Add booth locations first", variant: "destructive" });
+      return;
+    }
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(`${tournament.title} — Booth Map`, pageW / 2, 40, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`${booths.length} booth(s) · Generated ${new Date().toLocaleDateString()}`, pageW / 2, 58, { align: "center" });
+    doc.setTextColor(0);
+
+    const cols = gridCols > 0 ? gridCols : Math.ceil(Math.sqrt(booths.length));
+    const rows = Math.ceil(booths.length / cols);
+    const marginX = 60;
+    const marginY = 90;
+    const gridW = pageW - marginX * 2;
+    const gridH = pageH - marginY - 60;
+    const cellW = gridW / cols;
+    const cellH = Math.min(gridH / Math.max(rows, 1), 110);
+
+    booths.forEach((b, i) => {
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      const x = marginX + c * cellW + 6;
+      const y = marginY + r * cellH + 6;
+      const w = cellW - 12;
+      const h = cellH - 12;
+      const assigned = b.assigned_to ? vendors.find((v) => v.id === b.assigned_to) : null;
+      doc.setFillColor(assigned ? 232 : 248, assigned ? 244 : 250, assigned ? 235 : 252);
+      doc.setDrawColor(assigned ? 26 : 200, assigned ? 92 : 200, assigned ? 56 : 200);
+      doc.setLineWidth(assigned ? 1.5 : 0.5);
+      doc.roundedRect(x, y, w, h, 6, 6, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(26, 92, 56);
+      doc.text(b.location_name, x + 8, y + 18);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(assigned ? 30 : 150);
+      const lines = doc.splitTextToSize(assigned ? assigned.vendor_name : "Available", w - 16);
+      doc.text(lines.slice(0, 2), x + 8, y + 36);
+      if (assigned?.business_type) {
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(assigned.business_type, x + 8, y + h - 8);
+      }
+    });
+
+    doc.addPage("letter", "landscape");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text(`${tournament.title} — Vendor Detail`, pageW / 2, 40, { align: "center" });
+
+    const dHeaders = ["Booth", "Vendor", "Type", "Contact", "Phone", "Fee", "Status"];
+    const colWs = [70, 170, 80, 170, 90, 60, 90];
+    let yy = 80;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    let xx = marginX;
+    dHeaders.forEach((h, i) => { doc.text(h, xx, yy); xx += colWs[i]; });
+    doc.setLineWidth(0.5);
+    doc.line(marginX, yy + 4, pageW - marginX, yy + 4);
+    yy += 18;
+    doc.setFont("helvetica", "normal");
+
+    const sortedBooths = [...booths].sort((a, b) =>
+      a.location_name.localeCompare(b.location_name, undefined, { numeric: true }),
+    );
+    sortedBooths.forEach((b) => {
+      if (yy > pageH - 40) { doc.addPage("letter", "landscape"); yy = 60; }
+      const v = b.assigned_to ? vendors.find((x) => x.id === b.assigned_to) : null;
+      const cells = [
+        b.location_name,
+        v?.vendor_name || "—",
+        v?.business_type || "—",
+        v?.contact_email || "—",
+        v?.contact_phone || "—",
+        v?.booth_fee_cents != null ? `$${(v.booth_fee_cents / 100).toFixed(2)}` : "—",
+        v ? (v.payment_status === "paid" ? "Paid" : v.payment_status === "waived" ? "Waived" : "Unpaid") : "—",
+      ];
+      let cx = marginX;
+      cells.forEach((cell, i) => {
+        const text = doc.splitTextToSize(String(cell), colWs[i] - 6).slice(0, 1);
+        doc.text(text, cx, yy);
+        cx += colWs[i];
+      });
+      yy += 16;
+    });
+
+    doc.save(`booth-map-${tournament.slug || tournament.id}.pdf`);
+  };
+
   const publicUrl = tournament?.slug
     ? `${window.location.origin}/t/${tournament.slug}/vendors`
     : null;

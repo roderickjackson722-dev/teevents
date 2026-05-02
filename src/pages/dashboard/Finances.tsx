@@ -1099,6 +1099,78 @@ const Finances = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Breakdown Dialog */}
+      <Dialog open={!!breakdown} onOpenChange={(o) => !o && setBreakdown(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{breakdown?.title}</DialogTitle>
+            <DialogDescription>{breakdown?.description}</DialogDescription>
+          </DialogHeader>
+          {breakdown && (
+            <div className="overflow-auto flex-1 -mx-6 px-6">
+              {breakdown.items.length === 0 ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  No transactions in this category yet.
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-background border-b border-border">
+                    <tr>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Date</th>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Participant</th>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Type</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Gross</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Fee (5%)</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Net</th>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {breakdown.items.map((tx) => (
+                      <tr key={tx.id} className="border-b border-border/50 hover:bg-muted/20">
+                        <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(tx.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="p-2">
+                          <p className="font-medium text-foreground">{tx.golfer_name || "—"}</p>
+                          <p className="text-xs text-muted-foreground">{tx.golfer_email || ""}</p>
+                        </td>
+                        <td className="p-2 text-xs capitalize text-muted-foreground">{tx.type}</td>
+                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                          ${(tx.amount_cents / 100).toFixed(2)}
+                        </td>
+                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground"}`}>
+                          ${(tx.platform_fee_cents / 100).toFixed(2)}
+                        </td>
+                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground"}`}>
+                          ${(tx.net_amount_cents / 100).toFixed(2)}
+                        </td>
+                        <td className="p-2">{statusBadge(tx.status === "succeeded" ? "paid" : tx.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="sticky bottom-0 bg-background border-t-2 border-border">
+                    <tr>
+                      <td colSpan={3} className="p-2 text-xs font-semibold text-foreground text-right">Total:</td>
+                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground text-xs"}`}>
+                        ${(breakdown.items.reduce((s, t) => s + t.amount_cents, 0) / 100).toFixed(2)}
+                      </td>
+                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground text-xs"}`}>
+                        ${(breakdown.items.reduce((s, t) => s + t.platform_fee_cents, 0) / 100).toFixed(2)}
+                      </td>
+                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground text-xs"}`}>
+                        ${(breakdown.items.reduce((s, t) => s + t.net_amount_cents, 0) / 100).toFixed(2)}
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">{breakdown.items.length} txn</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

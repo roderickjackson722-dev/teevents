@@ -2022,6 +2022,69 @@ export type Database = {
         }
         Relationships: []
       }
+      promoter_incentives: {
+        Row: {
+          awarded_at: string | null
+          awarded_to: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          reward_type: string | null
+          reward_value: string | null
+          threshold_rank: number | null
+          threshold_registrations: number | null
+          threshold_revenue_cents: number | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          awarded_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          reward_type?: string | null
+          reward_value?: string | null
+          threshold_rank?: number | null
+          threshold_registrations?: number | null
+          threshold_revenue_cents?: number | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          awarded_at?: string | null
+          awarded_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          reward_type?: string | null
+          reward_value?: string | null
+          threshold_rank?: number | null
+          threshold_registrations?: number | null
+          threshold_revenue_cents?: number | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promoter_incentives_awarded_to_fkey"
+            columns: ["awarded_to"]
+            isOneToOne: false
+            referencedRelation: "team_promoters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promoter_incentives_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospect_activities: {
         Row: {
           created_at: string
@@ -2130,6 +2193,38 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          ip_address: string | null
+          promoter_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          ip_address?: string | null
+          promoter_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          ip_address?: string | null
+          promoter_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_clicks_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "team_promoters"
             referencedColumns: ["id"]
           },
         ]
@@ -2457,6 +2552,50 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_promoters: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          role: string | null
+          tournament_id: string
+          unique_ref_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          role?: string | null
+          tournament_id: string
+          unique_ref_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          role?: string | null
+          tournament_id?: string
+          unique_ref_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_promoters_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
         ]
@@ -3253,6 +3392,8 @@ export type Database = {
           payment_status: string
           phone: string | null
           playing_handicap: number | null
+          promoter_id: string | null
+          referral_code_used: string | null
           scoring_code: string | null
           shirt_size: string | null
           strokes_per_hole: Json | null
@@ -3278,6 +3419,8 @@ export type Database = {
           payment_status?: string
           phone?: string | null
           playing_handicap?: number | null
+          promoter_id?: string | null
+          referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
           strokes_per_hole?: Json | null
@@ -3303,6 +3446,8 @@ export type Database = {
           payment_status?: string
           phone?: string | null
           playing_handicap?: number | null
+          promoter_id?: string | null
+          referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
           strokes_per_hole?: Json | null
@@ -3310,6 +3455,13 @@ export type Database = {
           tournament_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "team_promoters"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_registrations_tier_id_fkey"
             columns: ["tier_id"]

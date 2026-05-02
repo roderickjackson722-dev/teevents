@@ -517,52 +517,74 @@ const Finances = () => {
 
       {/* Revenue Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          onClick={() => setBreakdown({
+            title: "Total Collected",
+            description: `All ${platformTransactions.length} transactions processed for this organization (gross amount before fees).`,
+            column: "amount_cents",
+            items: platformTransactions,
+          })}
+          className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Total Collected</span>
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              Total Collected <Info className="h-3 w-3" />
+            </span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalCollected / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions</p>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions · click for details</p>
+        </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          onClick={() => setBreakdown({
+            title: "Platform Fees (5%)",
+            description: "5% platform fee deducted from each transaction at checkout.",
+            column: "platform_fee_cents",
+            items: platformTransactions.filter((t) => t.platform_fee_cents > 0),
+          })}
+          className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-amber-100">
               <Receipt className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">
-                  Platform Fees <Info className="h-3 w-3" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[220px]">5% fee per transaction deducted automatically by Stripe at checkout.</TooltipContent>
-            </Tooltip>
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              Platform Fees <Info className="h-3 w-3" />
+            </span>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">5% per transaction</p>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-1">5% per transaction · click for details</p>
+        </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          onClick={() => setBreakdown({
+            title: "Net to Your Stripe",
+            description: "Net amount deposited to your connected Stripe account after platform and processing fees.",
+            column: "net_amount_cents",
+            items: platformTransactions,
+          })}
+          className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-primary/10">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">
-                  Net to Your Stripe <Info className="h-3 w-3" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[240px]">Total deposited directly to your connected Stripe account after platform and processing fees.</TooltipContent>
-            </Tooltip>
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              Net to Your Stripe <Info className="h-3 w-3" />
+            </span>
           </div>
           <p className="text-2xl font-bold text-primary">${(totalNetToOrganizer / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe account</p>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe · click for details</p>
+        </motion.button>
       </div>
 
       {/* Stripe Balance & Payout Timing */}

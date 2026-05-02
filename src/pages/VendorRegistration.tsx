@@ -14,10 +14,19 @@ import { Loader2, CheckCircle2, Store } from "lucide-react";
 interface FormQuestion {
   id: string;
   label: string;
-  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno";
+  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno" | "file";
   options?: string[];
   required: boolean;
 }
+
+const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+];
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
 
 interface TournamentInfo {
   id: string;

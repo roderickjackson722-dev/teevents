@@ -645,7 +645,7 @@ const Finances = () => {
                     type="button"
                     onClick={() => setBreakdown({
                       title: "Available to pay out",
-                      description: `Cleared funds Stripe can transfer to your bank on the next payout. Showing ${availableTx.length} settled transaction(s) (charges older than ~2 business days).`,
+                      description: `Cleared funds Stripe can transfer to your bank on the next payout. Stripe reports ${fmt(availTotal, currency)} available. Showing your most recent settled transactions that likely contributed to this balance — Stripe Dashboard is the source of truth for the exact split.`,
                       column: "net_amount_cents",
                       items: availableTx,
                     })}
@@ -661,7 +661,7 @@ const Finances = () => {
                     type="button"
                     onClick={() => setBreakdown({
                       title: "Pending (clearing)",
-                      description: `Recently captured charges still clearing through Stripe (typically 2 business days). Showing ${pendingTx.length} pending transaction(s).`,
+                      description: `Recently captured charges still clearing through Stripe. New Connect accounts can hold funds for up to 7 days. Stripe reports ${fmt(pendingTotal, currency)} pending. Showing your most recent succeeded charges that are likely contributing to this balance — Stripe Dashboard shows the exact list.`,
                       column: "net_amount_cents",
                       items: pendingTx,
                     })}

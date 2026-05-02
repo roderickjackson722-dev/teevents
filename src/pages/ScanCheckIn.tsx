@@ -46,20 +46,33 @@ export default function ScanCheckIn() {
     const id = scanInput.trim();
     if (!id) return;
     const player = players.find((p) => p.id === id);
-    if (!player) { toast.error("Player not found"); setScanInput(""); return; }
-    if (player.checked_in) { toast.info(`${player.first_name} ${player.last_name} is already checked in.`); setScanInput(""); return; }
+    if (player) {
+      if (player.checked_in) { toast.info(`${player.first_name} ${player.last_name} is already checked in.`); setScanInput(""); return; }
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ checked_in: true, check_in_time: new Date().toISOString() })
+        .eq("id", id);
+      if (error) toast.error(error.message);
+      else {
+        const updated = { ...player, checked_in: true, check_in_time: new Date().toISOString() };
+        setPlayers((prev) => prev.map((p) => (p.id === id ? updated : p)));
+        setLastCheckedIn(updated);
+        toast.success(`${player.first_name} ${player.last_name} checked in!`);
+      }
+      setScanInput("");
+      return;
+    }
 
-    const { error } = await supabase
-      .from("tournament_registrations")
-      .update({ checked_in: true, check_in_time: new Date().toISOString() })
-      .eq("id", id);
-
-    if (error) { toast.error(error.message); }
-    else {
-      const updated = { ...player, checked_in: true, check_in_time: new Date().toISOString() };
-      setPlayers((prev) => prev.map((p) => (p.id === id ? updated : p)));
-      setLastCheckedIn(updated);
-      toast.success(`${player.first_name} ${player.last_name} checked in!`);
+    // Try vendor check-in (by code or vendor id)
+    const { data, error } = await supabase.functions.invoke("vendor-check-in", {
+      body: id.length === 6 ? { code: id, tournament_id: tournamentId } : { vendor_registration_id: id, tournament_id: tournamentId },
+    });
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || "Not found — check the code");
+    } else {
+      const v = (data as any).vendor;
+      if ((data as any).already) toast.info(`Vendor ${v.vendor_name} was already checked in.`);
+      else toast.success(`Vendor ${v.vendor_name} checked in!`);
     }
     setScanInput("");
   };

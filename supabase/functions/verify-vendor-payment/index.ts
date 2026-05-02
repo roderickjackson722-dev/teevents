@@ -90,19 +90,23 @@ Deno.serve(async (req) => {
       await supabaseAdmin.from("platform_transactions").insert({
         tournament_id: session.metadata?.tournament_id,
         organization_id: session.metadata?.organization_id,
-        transaction_type: "vendor_booth_fee",
-        gross_amount_cents: grossCents,
+        type: "vendor_booth_fee",
+        amount_cents: grossCents,
         platform_fee_cents: platformFeeCents,
         stripe_fee_cents: stripeFeeCents,
-        application_fee_cents: applicationFeeCents,
         net_amount_cents: netAmountCents,
-        charge_total_cents: chargeTotalCents,
+        status: "succeeded",
         stripe_session_id: session.id,
         stripe_payment_intent_id:
           typeof session.payment_intent === "string" ? session.payment_intent : null,
-        participant_email: (existing as any)?.contact_email || null,
-        participant_name: (existing as any)?.vendor_name || null,
-        status: "succeeded",
+        description: `Vendor booth fee — ${(existing as any)?.vendor_name || "Vendor"}`,
+        golfer_name: (existing as any)?.vendor_name || null,
+        golfer_email: (existing as any)?.contact_email || null,
+        metadata: {
+          vendor_registration_id: vendorRegId,
+          charge_total_cents: chargeTotalCents,
+          application_fee_cents: applicationFeeCents,
+        },
       });
     } catch (e) {
       console.error("[verify-vendor-payment] platform_transactions insert failed:", e);

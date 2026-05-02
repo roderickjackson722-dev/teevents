@@ -249,9 +249,18 @@ const Finances = () => {
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
   // Summary stats from platform_transactions
+  const succeededTx = platformTransactions.filter((t) => t.status === "succeeded" || t.status === "paid");
   const totalCollected = platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
   const totalPlatformFees = platformTransactions.reduce((sum, t) => sum + t.platform_fee_cents, 0);
   const totalNetToOrganizer = platformTransactions.reduce((sum, t) => sum + t.net_amount_cents, 0);
+
+  // Approximate split: charges older than ~2 business days are "available", newer are "pending clearing".
+  // Stripe's actual settlement varies; this is a best-effort breakdown for transparency.
+  const settlementCutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
+  const availableTx = succeededTx.filter((t) => new Date(t.created_at).getTime() <= settlementCutoff);
+  const pendingTx = succeededTx.filter((t) => new Date(t.created_at).getTime() > settlementCutoff);
+  // Next payout window is typically the most recent 24h of available funds — approximate by top-of-available.
+  const nextPayoutTx = availableTx.slice(0, 50);
 
   // CSV report generation
   const getDateFilterRange = (): { start: Date | null; end: Date | null } => {

@@ -29,24 +29,47 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { data: membership } = await supabaseAdmin
-      .from("org_members")
-      .select("organization_id")
-      .eq("user_id", userId)
-      .limit(1)
-      .maybeSingle();
-    if (!membership) throw new Error("No organization");
+    // Allow admin impersonation via body.organization_id
+    let requestedOrgId: string | null = null;
+    try {
+      if (req.headers.get("content-type")?.includes("application/json")) {
+        const body = await req.json().catch(() => ({}));
+        requestedOrgId = body?.organization_id || null;
+      }
+    } catch (_) { /* ignore */ }
+
+    let organizationId: string | null = null;
+    if (requestedOrgId) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
+      if (isAdmin) {
+        organizationId = requestedOrgId;
+      }
+    }
+
+    if (!organizationId) {
+      const { data: membership } = await supabaseAdmin
+        .from("org_members")
+        .select("organization_id")
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+      if (!membership) throw new Error("No organization");
+      organizationId = membership.organization_id;
+    }
 
     const { data: payoutMethod } = await supabaseAdmin
       .from("organization_payout_methods")
       .select("stripe_account_id")
-      .eq("organization_id", membership.organization_id)
+      .eq("organization_id", organizationId)
       .maybeSingle();
 
     const { data: org } = await supabaseAdmin
       .from("organizations")
       .select("stripe_account_id")
-      .eq("id", membership.organization_id)
+      .eq("id", organizationId)
       .maybeSingle();
 
     const stripeAccountId = payoutMethod?.stripe_account_id || org?.stripe_account_id || null;

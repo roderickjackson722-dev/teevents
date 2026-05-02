@@ -21,6 +21,9 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Registration {
   id: string;
@@ -108,6 +111,12 @@ const Finances = () => {
     error?: string;
   } | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(true);
+  const [breakdown, setBreakdown] = useState<{
+    title: string;
+    description: string;
+    column: "amount_cents" | "platform_fee_cents" | "net_amount_cents";
+    items: PlatformTransaction[];
+  } | null>(null);
 
   useEffect(() => {
     if (!org) return;
@@ -240,9 +249,18 @@ const Finances = () => {
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
   // Summary stats from platform_transactions
+  const succeededTx = platformTransactions.filter((t) => t.status === "succeeded" || t.status === "paid");
   const totalCollected = platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
   const totalPlatformFees = platformTransactions.reduce((sum, t) => sum + t.platform_fee_cents, 0);
   const totalNetToOrganizer = platformTransactions.reduce((sum, t) => sum + t.net_amount_cents, 0);
+
+  // Approximate split: charges older than ~2 business days are "available", newer are "pending clearing".
+  // Stripe's actual settlement varies; this is a best-effort breakdown for transparency.
+  const settlementCutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
+  const availableTx = succeededTx.filter((t) => new Date(t.created_at).getTime() <= settlementCutoff);
+  const pendingTx = succeededTx.filter((t) => new Date(t.created_at).getTime() > settlementCutoff);
+  // Next payout window is typically the most recent 24h of available funds — approximate by top-of-available.
+  const nextPayoutTx = availableTx.slice(0, 50);
 
   // CSV report generation
   const getDateFilterRange = (): { start: Date | null; end: Date | null } => {
@@ -499,52 +517,74 @@ const Finances = () => {
 
       {/* Revenue Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          onClick={() => setBreakdown({
+            title: "Total Collected",
+            description: `All ${platformTransactions.length} transactions processed for this organization (gross amount before fees).`,
+            column: "amount_cents",
+            items: platformTransactions,
+          })}
+          className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-emerald-100">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Total Collected</span>
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              Total Collected <Info className="h-3 w-3" />
+            </span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalCollected / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions</p>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions · click for details</p>
+        </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          onClick={() => setBreakdown({
+            title: "Platform Fees (5%)",
+            description: "5% platform fee deducted from each transaction at checkout.",
+            column: "platform_fee_cents",
+            items: platformTransactions.filter((t) => t.platform_fee_cents > 0),
+          })}
+          className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-amber-100">
               <Receipt className="h-4 w-4 text-amber-600" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">
-                  Platform Fees <Info className="h-3 w-3" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[220px]">5% fee per transaction deducted automatically by Stripe at checkout.</TooltipContent>
-            </Tooltip>
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              Platform Fees <Info className="h-3 w-3" />
+            </span>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">5% per transaction</p>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-1">5% per transaction · click for details</p>
+        </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-lg border border-border p-4">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          onClick={() => setBreakdown({
+            title: "Net to Your Stripe",
+            description: "Net amount deposited to your connected Stripe account after platform and processing fees.",
+            column: "net_amount_cents",
+            items: platformTransactions,
+          })}
+          className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+        >
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-full bg-primary/10">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground font-medium cursor-help flex items-center gap-1">
-                  Net to Your Stripe <Info className="h-3 w-3" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[240px]">Total deposited directly to your connected Stripe account after platform and processing fees.</TooltipContent>
-            </Tooltip>
+            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              Net to Your Stripe <Info className="h-3 w-3" />
+            </span>
           </div>
           <p className="text-2xl font-bold text-primary">${(totalNetToOrganizer / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe account</p>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe · click for details</p>
+        </motion.button>
       </div>
 
       {/* Stripe Balance & Payout Timing */}
@@ -589,45 +629,66 @@ const Finances = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <button
+                    type="button"
+                    onClick={() => setBreakdown({
+                      title: "Available to pay out",
+                      description: `Cleared funds Stripe can transfer to your bank on the next payout. Showing ${availableTx.length} settled transaction(s) (charges older than ~2 business days).`,
+                      column: "net_amount_cents",
+                      items: availableTx,
+                    })}
+                    className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors"
+                  >
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      Available to pay out
-                      <Tooltip>
-                        <TooltipTrigger asChild><Info className="h-3 w-3" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[240px]">
-                          Cleared funds Stripe can transfer to your bank on the next payout.
-                        </TooltipContent>
-                      </Tooltip>
+                      Available to pay out <Info className="h-3 w-3" />
                     </div>
                     <p className="text-xl font-bold text-emerald-600 mt-1">{fmt(availTotal, currency)}</p>
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Click for transactions</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdown({
+                      title: "Pending (clearing)",
+                      description: `Recently captured charges still clearing through Stripe (typically 2 business days). Showing ${pendingTx.length} pending transaction(s).`,
+                      column: "net_amount_cents",
+                      items: pendingTx,
+                    })}
+                    className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:border-amber-300 hover:bg-amber-50/30 transition-colors"
+                  >
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      Pending (clearing)
-                      <Tooltip>
-                        <TooltipTrigger asChild><Info className="h-3 w-3" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[240px]">
-                          Recently captured charges that are still clearing through Stripe (typically 2 business days; longer for newly onboarded accounts).
-                        </TooltipContent>
-                      </Tooltip>
+                      Pending (clearing) <Info className="h-3 w-3" />
                     </div>
                     <p className="text-xl font-bold text-amber-600 mt-1">{fmt(pendingTotal, currency)}</p>
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/20 p-3">
-                    <div className="text-xs text-muted-foreground">Next payout</div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Click for transactions</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdown({
+                      title: "Next payout",
+                      description: stripeBalance.next_payout
+                        ? `Estimated next payout of ${fmt(stripeBalance.next_payout.amount, stripeBalance.next_payout.currency)} arriving ${new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()}. Approximate breakdown of contributing settled transactions:`
+                        : "No scheduled payout yet. Once funds clear, they will be grouped into your next payout.",
+                      column: "net_amount_cents",
+                      items: nextPayoutTx,
+                    })}
+                    className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  >
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      Next payout <Info className="h-3 w-3" />
+                    </div>
                     {stripeBalance.next_payout ? (
                       <>
                         <p className="text-xl font-bold text-primary mt-1">
                           {fmt(stripeBalance.next_payout.amount, stripeBalance.next_payout.currency)}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Arrives {new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()}
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Arrives {new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()} · Click for details
                         </p>
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground mt-2">No scheduled payout yet</p>
                     )}
-                  </div>
+                  </button>
                 </div>
 
                 <div className="text-xs text-muted-foreground space-y-1 border-t border-border pt-3">
@@ -1038,6 +1099,78 @@ const Finances = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Breakdown Dialog */}
+      <Dialog open={!!breakdown} onOpenChange={(o) => !o && setBreakdown(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{breakdown?.title}</DialogTitle>
+            <DialogDescription>{breakdown?.description}</DialogDescription>
+          </DialogHeader>
+          {breakdown && (
+            <div className="overflow-auto flex-1 -mx-6 px-6">
+              {breakdown.items.length === 0 ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  No transactions in this category yet.
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-background border-b border-border">
+                    <tr>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Date</th>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Participant</th>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Type</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Gross</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Fee (5%)</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Net</th>
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {breakdown.items.map((tx) => (
+                      <tr key={tx.id} className="border-b border-border/50 hover:bg-muted/20">
+                        <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(tx.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="p-2">
+                          <p className="font-medium text-foreground">{tx.golfer_name || "—"}</p>
+                          <p className="text-xs text-muted-foreground">{tx.golfer_email || ""}</p>
+                        </td>
+                        <td className="p-2 text-xs capitalize text-muted-foreground">{tx.type}</td>
+                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                          ${(tx.amount_cents / 100).toFixed(2)}
+                        </td>
+                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground"}`}>
+                          ${(tx.platform_fee_cents / 100).toFixed(2)}
+                        </td>
+                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground"}`}>
+                          ${(tx.net_amount_cents / 100).toFixed(2)}
+                        </td>
+                        <td className="p-2">{statusBadge(tx.status === "succeeded" ? "paid" : tx.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="sticky bottom-0 bg-background border-t-2 border-border">
+                    <tr>
+                      <td colSpan={3} className="p-2 text-xs font-semibold text-foreground text-right">Total:</td>
+                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground text-xs"}`}>
+                        ${(breakdown.items.reduce((s, t) => s + t.amount_cents, 0) / 100).toFixed(2)}
+                      </td>
+                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground text-xs"}`}>
+                        ${(breakdown.items.reduce((s, t) => s + t.platform_fee_cents, 0) / 100).toFixed(2)}
+                      </td>
+                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground text-xs"}`}>
+                        ${(breakdown.items.reduce((s, t) => s + t.net_amount_cents, 0) / 100).toFixed(2)}
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">{breakdown.items.length} txn</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

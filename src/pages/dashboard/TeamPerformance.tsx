@@ -123,21 +123,30 @@ export default function TeamPerformance() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [org]);
 
+  const [tournamentFeeCents, setTournamentFeeCents] = useState(0);
+  const [tierPrices, setTierPrices] = useState<Record<string, number>>({});
+
   // Load promoters, regs, incentives, clicks per tournament
   const refresh = async () => {
     if (!tournamentId) return;
-    const [{ data: prs }, { data: rs }, { data: incs }] = await Promise.all([
+    const [{ data: prs }, { data: rs }, { data: incs }, { data: tData }, { data: tierData }] = await Promise.all([
       supabase.from("team_promoters").select("*").eq("tournament_id", tournamentId).order("created_at", { ascending: false }),
       supabase
         .from("tournament_registrations")
-        .select("id, promoter_id, total_amount_cents, payment_status, created_at")
+        .select("id, promoter_id, tier_id, payment_status, created_at")
         .eq("tournament_id", tournamentId),
       supabase.from("promoter_incentives").select("*").eq("tournament_id", tournamentId).order("created_at", { ascending: false }),
+      supabase.from("tournaments").select("registration_fee_cents").eq("id", tournamentId).single(),
+      supabase.from("tournament_registration_tiers").select("id, price_cents").eq("tournament_id", tournamentId),
     ]);
     const promoterList = (prs || []) as Promoter[];
     setPromoters(promoterList);
     setRegs((rs || []) as RegRow[]);
     setIncentives((incs || []) as Incentive[]);
+    setTournamentFeeCents((tData as any)?.registration_fee_cents || 0);
+    const map: Record<string, number> = {};
+    (tierData || []).forEach((t: any) => { map[t.id] = t.price_cents || 0; });
+    setTierPrices(map);
 
     // Clicks (only for active promoters of this tournament)
     if (promoterList.length) {
@@ -156,6 +165,8 @@ export default function TeamPerformance() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournamentId]);
 
+  const regRevenue = (r: RegRow) => (r.tier_id ? (tierPrices[r.tier_id] ?? tournamentFeeCents) : tournamentFeeCents);
+
   // Compute per-promoter performance
   const performance = useMemo(() => {
     return promoters.map((p) => {
@@ -163,7 +174,7 @@ export default function TeamPerformance() {
       const myClicks = clicks.filter((c) => c.promoter_id === p.id).length;
       const revenue = myRegs
         .filter((r) => r.payment_status === "paid")
-        .reduce((s, r) => s + (r.total_amount_cents || 0), 0);
+        .reduce((s, r) => s + regRevenue(r), 0);
       const conv = myClicks > 0 ? Math.round((myRegs.length / myClicks) * 100) : 0;
       return {
         promoter: p,
@@ -173,7 +184,8 @@ export default function TeamPerformance() {
         conversionRate: conv,
       };
     });
-  }, [promoters, regs, clicks]);
+  }, [promoters, regs, clicks, tierPrices, tournamentFeeCents]);
+
 
   const sortedLeaderboard = useMemo(
     () => [...performance].sort((a, b) => b.registrations - a.registrations || b.revenueCents - a.revenueCents),

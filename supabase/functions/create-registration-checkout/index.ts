@@ -163,6 +163,22 @@ Deno.serve(async (req) => {
 
     const hasAnyCharge = baseTotalCents > 0;
 
+    // Resolve promoter from referral code (if any)
+    const referralCode = typeof body.referral_code === "string" && body.referral_code.trim()
+      ? body.referral_code.trim()
+      : null;
+    let promoterId: string | null = null;
+    if (referralCode) {
+      const { data: promoter } = await supabaseAdmin
+        .from("team_promoters")
+        .select("id")
+        .eq("unique_ref_code", referralCode)
+        .eq("tournament_id", tournament_id)
+        .eq("is_active", true)
+        .maybeSingle();
+      promoterId = promoter?.id ?? null;
+    }
+
     // Insert registration records
     const registrationInserts = players.map((p: any) => ({
       tournament_id,
@@ -177,6 +193,8 @@ Deno.serve(async (req) => {
       payment_status: hasAnyCharge ? "pending" : "paid",
       tier_id: tierId || null,
       covered_fees: coverFees,
+      referral_code_used: referralCode,
+      promoter_id: promoterId,
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin

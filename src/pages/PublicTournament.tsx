@@ -266,7 +266,31 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     supabase.functions.invoke("track-click", {
       body: { tournament_id: tournament.id, source: sourceMap[ref] || "short_link", referrer: document.referrer || null },
     }).catch(() => {});
+
+    // Team promoter referral tracking — if ref matches a team_promoter unique_ref_code, store it
+    (async () => {
+      const { data: promoter } = await supabase
+        .from("team_promoters")
+        .select("id, tournament_id, is_active")
+        .eq("unique_ref_code", ref)
+        .eq("tournament_id", tournament.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!promoter) return;
+      // Store ref code for 30 days, but never overwrite existing attribution for this tournament
+      const storageKey = `tv_ref_${tournament.id}`;
+      const existing = localStorage.getItem(storageKey);
+      if (!existing) {
+        localStorage.setItem(storageKey, JSON.stringify({ code: ref, ts: Date.now() }));
+      }
+      // Log the click (anonymous)
+      supabase.from("referral_clicks").insert({
+        promoter_id: promoter.id,
+        user_agent: navigator.userAgent.slice(0, 500),
+      }).then(() => {}, () => {});
+    })();
   }, [tournament, searchParams]);
+
 
   useEffect(() => {
     if (!slug) return;

@@ -361,9 +361,22 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           .filter(([, qty]) => qty > 0)
           .map(([id, qty]) => ({ addon_id: id, qty_per_player: qty }));
 
+        // Read stored team-promoter referral code (if any)
+        let referralCode: string | null = null;
+        try {
+          const raw = localStorage.getItem(`tv_ref_${tournamentId}`);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            // 30-day expiry
+            if (parsed?.code && parsed?.ts && Date.now() - parsed.ts < 30 * 24 * 60 * 60 * 1000) {
+              referralCode = parsed.code;
+            }
+          }
+        } catch {}
+
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
@@ -374,6 +387,26 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       }
     } else {
       // Free registration — insert directly
+      let referralCode: string | null = null;
+      let promoterId: string | null = null;
+      try {
+        const raw = localStorage.getItem(`tv_ref_${tournamentId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.code && parsed?.ts && Date.now() - parsed.ts < 30 * 24 * 60 * 60 * 1000) {
+            referralCode = parsed.code;
+            const { data: promoter } = await supabase
+              .from("team_promoters")
+              .select("id")
+              .eq("unique_ref_code", referralCode)
+              .eq("tournament_id", tournamentId)
+              .eq("is_active", true)
+              .maybeSingle();
+            promoterId = promoter?.id || null;
+          }
+        }
+      } catch {}
+
       const inserts = (allowGroup ? parsedPlayers : [parsedPlayers[0]]).map((p, i) => ({
         tournament_id: tournamentId,
         first_name: p!.first_name,
@@ -384,6 +417,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         shirt_size: players[i].shirt_size || null,
         dietary_restrictions: players[i].dietary_restrictions || null,
         notes: i === 0 ? groupNotes || null : null,
+        referral_code_used: referralCode,
+        promoter_id: promoterId,
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);

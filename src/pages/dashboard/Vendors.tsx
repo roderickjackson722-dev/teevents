@@ -19,13 +19,16 @@ import { toast } from "@/hooks/use-toast";
 import {
   Plus, Trash2, Pencil, Mail, Download, Loader2, ExternalLink,
   Check, X, MapPin, Copy, Send, ArrowUp, ArrowDown,
+  Upload, FileText, QrCode, ScanLine, Map, Paperclip,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import jsPDF from "jspdf";
 
 type Tournament = { id: string; title: string; slug: string | null };
 type FormQuestion = {
   id: string;
   label: string;
-  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno";
+  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno" | "file";
   options?: string[];
   required: boolean;
 };
@@ -44,6 +47,7 @@ type VendorReg = {
   status: string;
   notes: string | null;
   checked_in: boolean;
+  check_in_code: string | null;
   created_at: string;
 };
 type Booth = {
@@ -114,6 +118,22 @@ export default function Vendors() {
   const [manualVendor, setManualVendor] = useState({
     vendor_name: "", contact_name: "", contact_email: "", contact_phone: "", business_type: "",
   });
+
+  // Scanner / Check-in
+  const [scanInput, setScanInput] = useState("");
+  const [lastScan, setLastScan] = useState<{ ok: boolean; message: string; vendor?: VendorReg } | null>(null);
+  const [scanning, setScanning] = useState(false);
+
+  // QR display dialog
+  const [qrVendor, setQrVendor] = useState<VendorReg | null>(null);
+
+  // CSV import
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvText, setCsvText] = useState("");
+  const [csvBusy, setCsvBusy] = useState(false);
+
+  // Booth grid sizing
+  const [gridCols, setGridCols] = useState<number>(0); // 0 = auto
 
   // Load tournaments
   useEffect(() => {
@@ -266,38 +286,19 @@ export default function Vendors() {
 
   const handleAssignBooth = async (boothId: string | "none") => {
     if (!assignVendor) return;
-    if (boothId === "none") {
-      // Clear assignment
-      if (assignVendor.booth_location) {
-        await supabase
-          .from("vendor_booth_locations")
-          .update({ assigned_to: null, is_available: true })
-          .eq("tournament_id", tournamentId)
-          .eq("location_name", assignVendor.booth_location);
-      }
-      await supabase
-        .from("vendor_registrations")
-        .update({ booth_location: null })
-        .eq("id", assignVendor.id);
-    } else {
-      const booth = booths.find((b) => b.id === boothId);
-      if (!booth) return;
-      // Free previous booth this vendor had, if any
-      if (assignVendor.booth_location) {
-        await supabase
-          .from("vendor_booth_locations")
-          .update({ assigned_to: null, is_available: true })
-          .eq("tournament_id", tournamentId)
-          .eq("location_name", assignVendor.booth_location);
-      }
-      await supabase
-        .from("vendor_booth_locations")
-        .update({ assigned_to: assignVendor.id, is_available: false })
-        .eq("id", boothId);
-      await supabase
-        .from("vendor_registrations")
-        .update({ booth_location: booth.location_name })
-        .eq("id", assignVendor.id);
+    const { data, error } = await supabase.functions.invoke("assign-vendor-booth", {
+      body: {
+        vendor_registration_id: assignVendor.id,
+        booth_id: boothId === "none" ? null : boothId,
+      },
+    });
+    if (error || (data as any)?.error) {
+      toast({
+        title: "Could not assign booth",
+        description: (data as any)?.error || error?.message || "Try again",
+        variant: "destructive",
+      });
+      return;
     }
     setAssignVendor(null);
     await Promise.all([refreshVendors(), refreshBooths()]);
@@ -418,6 +419,222 @@ export default function Vendors() {
     setSelected(new Set());
   };
 
+
+  // ===== Scanner / Check-in =====
+  const handleScan = async (codeOrId?: string) => {
+    const raw = (codeOrId ?? scanInput).trim();
+    if (!raw) return;
+    setScanning(true);
+    try {
+      const local = vendors.find(
+        (v) => v.id === raw || (v.check_in_code && v.check_in_code.toUpperCase() === raw.toUpperCase()),
+      );
+      const { data, error } = await supabase.functions.invoke("vendor-check-in", {
+        body: local
+          ? { vendor_registration_id: local.id, tournament_id: tournamentId }
+          : { code: raw, tournament_id: tournamentId },
+      });
+      if (error || (data as any)?.error) {
+        setLastScan({ ok: false, message: (data as any)?.error || error?.message || "Vendor not found" });
+        toast({ title: "Check-in failed", description: (data as any)?.error || error?.message, variant: "destructive" });
+      } else {
+        const v = (data as any).vendor as VendorReg;
+        setLastScan({
+          ok: true,
+          message: (data as any).already ? `${v.vendor_name} was already checked in.` : `${v.vendor_name} checked in!`,
+          vendor: v,
+        });
+        toast({ title: (data as any).already ? "Already checked in" : "Checked in", description: v.vendor_name });
+        await refreshVendors();
+      }
+    } finally {
+      setScanning(false);
+      setScanInput("");
+    }
+  };
+
+  // ===== File download (signed URL) =====
+  const downloadVendorFile = async (path: string, name: string) => {
+    const { data, error } = await supabase.storage
+      .from("vendor-documents")
+      .createSignedUrl(path, 60 * 5);
+    if (error || !data?.signedUrl) {
+      toast({ title: "Could not open file", description: error?.message, variant: "destructive" });
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.download = name;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.click();
+  };
+
+  // ===== CSV import =====
+  const importCsv = async () => {
+    if (!tournamentId) return;
+    setCsvBusy(true);
+    try {
+      const lines = csvText.trim().split(/\r?\n/);
+      if (lines.length < 2) throw new Error("CSV must include a header row and at least one vendor");
+      const parseLine = (line: string): string[] => {
+        const out: string[] = [];
+        let cur = "", inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (inQ) {
+            if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+            else if (c === '"') inQ = false;
+            else cur += c;
+          } else {
+            if (c === ',') { out.push(cur); cur = ""; }
+            else if (c === '"') inQ = true;
+            else cur += c;
+          }
+        }
+        out.push(cur);
+        return out.map((s) => s.trim());
+      };
+      const headers = parseLine(lines[0]).map((h) => h.toLowerCase().replace(/\s+/g, "_"));
+      const rows = lines.slice(1).map(parseLine);
+      const idx = (key: string) => headers.indexOf(key);
+      const vIdx = idx("vendor_name") >= 0 ? idx("vendor_name") : idx("business_name");
+      const cIdx = idx("contact_name");
+      const eIdx = idx("contact_email") >= 0 ? idx("contact_email") : idx("email");
+      if (vIdx < 0 || cIdx < 0 || eIdx < 0) {
+        throw new Error("CSV must include columns: vendor_name (or business_name), contact_name, contact_email (or email)");
+      }
+      const phoneIdx = idx("contact_phone") >= 0 ? idx("contact_phone") : idx("phone");
+      const typeIdx = idx("business_type") >= 0 ? idx("business_type") : idx("type");
+
+      const records = rows
+        .filter((r) => r.length && r[vIdx] && r[eIdx])
+        .map((r) => ({
+          tournament_id: tournamentId,
+          vendor_name: r[vIdx],
+          contact_name: r[cIdx] || r[vIdx],
+          contact_email: r[eIdx].toLowerCase(),
+          contact_phone: phoneIdx >= 0 ? r[phoneIdx] || null : null,
+          business_type: typeIdx >= 0 ? r[typeIdx] || null : null,
+          booth_fee_cents: boothFeeCents === "" ? null : Number(boothFeeCents),
+          status: "approved" as const,
+          payment_status: "pending" as const,
+        }));
+      if (records.length === 0) throw new Error("No valid rows found");
+      const { error } = await supabase.from("vendor_registrations").insert(records);
+      if (error) throw error;
+      toast({ title: `Imported ${records.length} vendor(s)` });
+      setCsvOpen(false);
+      setCsvText("");
+      await refreshVendors();
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message, variant: "destructive" });
+    } finally {
+      setCsvBusy(false);
+    }
+  };
+
+  // ===== Booth Map PDF =====
+  const generateBoothMapPdf = () => {
+    if (!tournament || booths.length === 0) {
+      toast({ title: "Add booth locations first", variant: "destructive" });
+      return;
+    }
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(`${tournament.title} — Booth Map`, pageW / 2, 40, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`${booths.length} booth(s) · Generated ${new Date().toLocaleDateString()}`, pageW / 2, 58, { align: "center" });
+    doc.setTextColor(0);
+
+    const cols = gridCols > 0 ? gridCols : Math.ceil(Math.sqrt(booths.length));
+    const rows = Math.ceil(booths.length / cols);
+    const marginX = 60;
+    const marginY = 90;
+    const gridW = pageW - marginX * 2;
+    const gridH = pageH - marginY - 60;
+    const cellW = gridW / cols;
+    const cellH = Math.min(gridH / Math.max(rows, 1), 110);
+
+    booths.forEach((b, i) => {
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      const x = marginX + c * cellW + 6;
+      const y = marginY + r * cellH + 6;
+      const w = cellW - 12;
+      const h = cellH - 12;
+      const assigned = b.assigned_to ? vendors.find((v) => v.id === b.assigned_to) : null;
+      doc.setFillColor(assigned ? 232 : 248, assigned ? 244 : 250, assigned ? 235 : 252);
+      doc.setDrawColor(assigned ? 26 : 200, assigned ? 92 : 200, assigned ? 56 : 200);
+      doc.setLineWidth(assigned ? 1.5 : 0.5);
+      doc.roundedRect(x, y, w, h, 6, 6, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(26, 92, 56);
+      doc.text(b.location_name, x + 8, y + 18);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(assigned ? 30 : 150);
+      const lines = doc.splitTextToSize(assigned ? assigned.vendor_name : "Available", w - 16);
+      doc.text(lines.slice(0, 2), x + 8, y + 36);
+      if (assigned?.business_type) {
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(assigned.business_type, x + 8, y + h - 8);
+      }
+    });
+
+    doc.addPage("letter", "landscape");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text(`${tournament.title} — Vendor Detail`, pageW / 2, 40, { align: "center" });
+
+    const dHeaders = ["Booth", "Vendor", "Type", "Contact", "Phone", "Fee", "Status"];
+    const colWs = [70, 170, 80, 170, 90, 60, 90];
+    let yy = 80;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    let xx = marginX;
+    dHeaders.forEach((h, i) => { doc.text(h, xx, yy); xx += colWs[i]; });
+    doc.setLineWidth(0.5);
+    doc.line(marginX, yy + 4, pageW - marginX, yy + 4);
+    yy += 18;
+    doc.setFont("helvetica", "normal");
+
+    const sortedBooths = [...booths].sort((a, b) =>
+      a.location_name.localeCompare(b.location_name, undefined, { numeric: true }),
+    );
+    sortedBooths.forEach((b) => {
+      if (yy > pageH - 40) { doc.addPage("letter", "landscape"); yy = 60; }
+      const v = b.assigned_to ? vendors.find((x) => x.id === b.assigned_to) : null;
+      const cells = [
+        b.location_name,
+        v?.vendor_name || "—",
+        v?.business_type || "—",
+        v?.contact_email || "—",
+        v?.contact_phone || "—",
+        v?.booth_fee_cents != null ? `$${(v.booth_fee_cents / 100).toFixed(2)}` : "—",
+        v ? (v.payment_status === "paid" ? "Paid" : v.payment_status === "waived" ? "Waived" : "Unpaid") : "—",
+      ];
+      let cx = marginX;
+      cells.forEach((cell, i) => {
+        const text = doc.splitTextToSize(String(cell), colWs[i] - 6).slice(0, 1);
+        doc.text(text, cx, yy);
+        cx += colWs[i];
+      });
+      yy += 16;
+    });
+
+    doc.save(`booth-map-${tournament.slug || tournament.id}.pdf`);
+  };
+
   const publicUrl = tournament?.slug
     ? `${window.location.origin}/t/${tournament.slug}/vendors`
     : null;
@@ -491,6 +708,7 @@ export default function Vendors() {
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => setAddManualOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Manually</Button>
+                <Button variant="outline" size="sm" onClick={() => setCsvOpen(true)}><Upload className="h-4 w-4 mr-1" /> Import CSV</Button>
                 <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
                 <Button size="sm" disabled={selected.size === 0} onClick={() => setBulkOpen(true)}>
                   <Mail className="h-4 w-4 mr-1" /> Email Selected ({selected.size})
@@ -554,6 +772,9 @@ export default function Vendors() {
                             <div className="flex justify-end gap-1 flex-wrap">
                               <Button size="sm" variant="ghost" onClick={() => setViewVendor(v)} title="View answers">
                                 <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setQrVendor(v)} title="Show QR / check-in code">
+                                <QrCode className="h-4 w-4" />
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setAssignVendor(v)} title="Assign booth">
                                 <MapPin className="h-4 w-4" />
@@ -657,12 +878,25 @@ export default function Vendors() {
         {/* ===== Booth Locations tab ===== */}
         <TabsContent value="booths" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
               <div>
                 <CardTitle>Booth Locations</CardTitle>
                 <CardDescription>Pre-define booth spots and assign vendors from the All Vendors tab.</CardDescription>
               </div>
-              <Button onClick={() => setAddBoothOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Location</Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Label className="text-xs">Grid columns</Label>
+                <Input
+                  type="number" min={0} max={20}
+                  value={gridCols || ""}
+                  onChange={(e) => setGridCols(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="auto"
+                  className="w-20"
+                />
+                <Button variant="outline" onClick={generateBoothMapPdf} disabled={booths.length === 0}>
+                  <Map className="h-4 w-4 mr-1" /> Booth Map PDF
+                </Button>
+                <Button onClick={() => setAddBoothOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Location</Button>
+              </div>
             </CardHeader>
             <CardContent>
               {booths.length === 0 ? (
@@ -710,8 +944,49 @@ export default function Vendors() {
         <TabsContent value="checkin" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Vendor Check-In</CardTitle>
-              <CardDescription>Mark vendors as checked in on event day.</CardDescription>
+              <CardTitle>Scan / Enter Check-In Code</CardTitle>
+              <CardDescription>
+                Each approved vendor has a 6-character code (also encoded as a QR code on their reminder emails).
+                Scan with any QR scanner that types into the field, or enter the code manually.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  autoFocus
+                  value={scanInput}
+                  onChange={(e) => setScanInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleScan()}
+                  placeholder="Scan QR or type 6-character code…"
+                  className="font-mono uppercase"
+                />
+                <Button onClick={() => handleScan()} disabled={scanning || !scanInput.trim()}>
+                  <ScanLine className="h-4 w-4 mr-1" /> Check In
+                </Button>
+              </div>
+              {lastScan && (
+                <div className={`p-3 rounded-md border ${lastScan.ok ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-rose-50 border-rose-200 text-rose-900"}`}>
+                  <div className="font-medium">{lastScan.message}</div>
+                  {lastScan.vendor && (
+                    <div className="text-xs mt-1">
+                      {lastScan.vendor.vendor_name} · Booth: {lastScan.vendor.booth_location || "Unassigned"}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground">
+                Tip: a public scanner is also available at <code>/checkin/{tournamentId}</code> — vendor codes are recognized there too.
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Approved Vendors</CardTitle>
+              <CardDescription>
+                {vendors.filter((v) => v.status === "approved" && v.checked_in).length} of{" "}
+                {vendors.filter((v) => v.status === "approved").length} checked in
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {vendors.filter((v) => v.status === "approved").length === 0 ? (
@@ -722,6 +997,7 @@ export default function Vendors() {
                     <TableRow>
                       <TableHead>Vendor</TableHead>
                       <TableHead>Booth</TableHead>
+                      <TableHead>Code</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Action</TableHead>
@@ -732,6 +1008,7 @@ export default function Vendors() {
                       <TableRow key={v.id}>
                         <TableCell className="font-medium">{v.vendor_name}</TableCell>
                         <TableCell>{v.booth_location || <span className="text-muted-foreground text-sm">Unassigned</span>}</TableCell>
+                        <TableCell className="font-mono text-xs">{v.check_in_code || "—"}</TableCell>
                         <TableCell className="text-sm">{v.contact_name} <span className="text-muted-foreground">· {v.contact_phone || v.contact_email}</span></TableCell>
                         <TableCell>
                           {v.checked_in
@@ -739,9 +1016,14 @@ export default function Vendors() {
                             : <Badge variant="outline">Not checked in</Badge>}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant={v.checked_in ? "outline" : "default"} onClick={() => handleCheckIn(v)}>
-                            {v.checked_in ? "Undo" : "Check In"}
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => setQrVendor(v)} title="QR / code">
+                              <QrCode className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant={v.checked_in ? "outline" : "default"} onClick={() => handleCheckIn(v)}>
+                              {v.checked_in ? "Undo" : "Check In"}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -789,7 +1071,16 @@ export default function Vendors() {
                   <div className="space-y-2">
                     {questions.map((q) => {
                       const a = viewVendor.answers?.[q.id];
-                      const display = Array.isArray(a) ? a.join(", ") : a == null || a === "" ? <span className="text-muted-foreground">—</span> : String(a);
+                      let display: React.ReactNode;
+                      if (q.type === "file" && a && typeof a === "object" && a.path) {
+                        display = (
+                          <Button size="sm" variant="outline" onClick={() => downloadVendorFile(a.path, a.name || "document")}>
+                            <Paperclip className="h-3 w-3 mr-1" /> {a.name || "Download"}
+                          </Button>
+                        );
+                      } else if (Array.isArray(a)) display = a.join(", ");
+                      else if (a == null || a === "") display = <span className="text-muted-foreground">—</span>;
+                      else display = String(a);
                       return (
                         <div key={q.id} className="border-b pb-2">
                           <div className="text-xs text-muted-foreground">{q.label}</div>
@@ -932,6 +1223,61 @@ export default function Vendors() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* === QR / Check-in code dialog === */}
+      <Dialog open={!!qrVendor} onOpenChange={(o) => !o && setQrVendor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{qrVendor?.vendor_name}</DialogTitle>
+            <DialogDescription>Show this QR code or 6-character code at check-in.</DialogDescription>
+          </DialogHeader>
+          {qrVendor?.check_in_code && (
+            <div className="flex flex-col items-center gap-3 py-2">
+              <div className="bg-white p-4 rounded-lg border">
+                <QRCodeSVG value={qrVendor.check_in_code} size={200} level="M" />
+              </div>
+              <div className="text-3xl font-mono tracking-[0.4em] font-bold text-primary">
+                {qrVendor.check_in_code}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => {
+                navigator.clipboard.writeText(qrVendor.check_in_code!);
+                toast({ title: "Code copied" });
+              }}>
+                <Copy className="h-3 w-3 mr-1" /> Copy code
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* === CSV import dialog === */}
+      <Dialog open={csvOpen} onOpenChange={setCsvOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Vendors from CSV</DialogTitle>
+            <DialogDescription>
+              Required columns: <code>vendor_name</code>, <code>contact_name</code>, <code>contact_email</code>.
+              Optional: <code>contact_phone</code>, <code>business_type</code>. Imported vendors are added as approved.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Textarea
+              rows={10}
+              placeholder={"vendor_name,contact_name,contact_email,contact_phone,business_type\nAcme Foods,Jane Doe,jane@acme.com,555-1234,Food"}
+              value={csvText}
+              onChange={(e) => setCsvText(e.target.value)}
+              className="font-mono text-xs"
+            />
+            <p className="text-xs text-muted-foreground">Paste CSV content above. The first row must be the header.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCsvOpen(false)}>Cancel</Button>
+            <Button onClick={importCsv} disabled={csvBusy || !csvText.trim()}>
+              {csvBusy ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Importing…</> : <><Upload className="h-4 w-4 mr-1" /> Import</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -982,6 +1328,7 @@ function QuestionDialog({
                 <SelectItem value="dropdown">Dropdown (single)</SelectItem>
                 <SelectItem value="checkbox">Checkboxes (multi)</SelectItem>
                 <SelectItem value="yesno">Yes / No</SelectItem>
+                <SelectItem value="file">File upload (PDF or image)</SelectItem>
               </SelectContent>
             </Select>
           </div>

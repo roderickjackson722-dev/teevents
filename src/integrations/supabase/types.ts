@@ -4473,6 +4473,7 @@ export type Database = {
           booth_fee_cents: number | null
           booth_location: string | null
           business_type: string | null
+          check_in_code: string | null
           checked_in: boolean
           checked_in_at: string | null
           contact_email: string
@@ -4483,6 +4484,8 @@ export type Database = {
           notes: string | null
           paid_at: string | null
           payment_status: string
+          reminder_day_sent_at: string | null
+          reminder_week_sent_at: string | null
           status: string
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
@@ -4495,6 +4498,7 @@ export type Database = {
           booth_fee_cents?: number | null
           booth_location?: string | null
           business_type?: string | null
+          check_in_code?: string | null
           checked_in?: boolean
           checked_in_at?: string | null
           contact_email: string
@@ -4505,6 +4509,8 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           payment_status?: string
+          reminder_day_sent_at?: string | null
+          reminder_week_sent_at?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
@@ -4517,6 +4523,7 @@ export type Database = {
           booth_fee_cents?: number | null
           booth_location?: string | null
           business_type?: string | null
+          check_in_code?: string | null
           checked_in?: boolean
           checked_in_at?: string | null
           contact_email?: string
@@ -4527,6 +4534,8 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           payment_status?: string
+          reminder_day_sent_at?: string | null
+          reminder_week_sent_at?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null

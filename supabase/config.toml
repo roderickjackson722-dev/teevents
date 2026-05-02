@@ -70,4 +70,10 @@ verify_jwt = false
 [functions.get-public-trip]
 verify_jwt = false
 
+[functions.submit-vendor-registration]
+verify_jwt = false
+
+[functions.send-vendor-reminders]
+verify_jwt = false
+
 

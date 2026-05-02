@@ -14,10 +14,19 @@ import { Loader2, CheckCircle2, Store } from "lucide-react";
 interface FormQuestion {
   id: string;
   label: string;
-  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno";
+  type: "text" | "textarea" | "dropdown" | "checkbox" | "yesno" | "file";
   options?: string[];
   required: boolean;
 }
+
+const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+];
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
 
 interface TournamentInfo {
   id: string;
@@ -74,6 +83,31 @@ export default function VendorRegistration() {
     setAnswers((a) => ({ ...a, [qid]: value }));
   };
 
+  const handleFileUpload = async (qid: string, file: File) => {
+    if (!tournament) return;
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast({ title: "Unsupported file type", description: "Use PDF or an image (JPG, PNG, WEBP, HEIC).", variant: "destructive" });
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      toast({ title: "File too large", description: "Maximum size is 10 MB.", variant: "destructive" });
+      return;
+    }
+    handleAnswer(qid, { uploading: true, name: file.name });
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${tournament.id}/${qid}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("vendor-documents").upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      handleAnswer(qid, null);
+      return;
+    }
+    handleAnswer(qid, { path, name: file.name, size: file.size, type: file.type });
+  };
+
   const validate = (): string | null => {
     if (!vendorName.trim()) return "Business name is required";
     if (!contactName.trim()) return "Contact name is required";
@@ -85,6 +119,9 @@ export default function VendorRegistration() {
       const a = answers[q.id];
       if (a == null || a === "" || (Array.isArray(a) && a.length === 0)) {
         return `${q.label} is required`;
+      }
+      if (q.type === "file" && (!a || typeof a !== "object" || !a.path)) {
+        return `${q.label} requires a file upload`;
       }
     }
     return null;
@@ -272,6 +309,28 @@ export default function VendorRegistration() {
                     ))}
                   </div>
                 )}
+                {q.type === "file" && (() => {
+                  const a = answers[q.id];
+                  return (
+                    <div className="mt-1 space-y-2">
+                      <Input
+                        type="file"
+                        accept=".pdf,image/jpeg,image/png,image/webp,image/heic"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleFileUpload(q.id, f);
+                        }}
+                      />
+                      {a?.uploading && <p className="text-xs text-muted-foreground">Uploading {a.name}…</p>}
+                      {a?.path && (
+                        <p className="text-xs text-emerald-700">
+                          ✓ {a.name} uploaded ({Math.round((a.size || 0) / 1024)} KB)
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">PDF or image, max 10 MB.</p>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
 

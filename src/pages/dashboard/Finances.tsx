@@ -545,6 +545,112 @@ const Finances = () => {
         </motion.div>
       </div>
 
+      {/* Stripe Balance & Payout Timing */}
+      {(() => {
+        const fmt = (cents: number, currency = "usd") =>
+          new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
+        const sumAll = (m?: Record<string, number>) => Object.values(m || {}).reduce((a, b) => a + b, 0);
+        const availTotal = sumAll(stripeBalance?.available);
+        const pendingTotal = sumAll(stripeBalance?.pending);
+        const currency =
+          Object.keys(stripeBalance?.available || {})[0] ||
+          Object.keys(stripeBalance?.pending || {})[0] ||
+          "usd";
+        const sched = stripeBalance?.payout_schedule;
+        const scheduleLabel = sched
+          ? sched.interval === "manual"
+            ? "Manual payouts"
+            : `${sched.interval || "daily"}${sched.delay_days ? ` (T+${sched.delay_days} days)` : ""}`
+          : "Standard (T+2 business days for new accounts)";
+
+        return (
+          <div className="bg-card rounded-lg border border-border p-5 mb-6">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <h3 className="text-base font-display font-semibold text-foreground flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  Stripe Balance & Payout Timing
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Live balance from your connected Stripe account. Funds appear under <em>Balances</em>, not <em>Payments</em>.
+                </p>
+              </div>
+              {balanceLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+
+            {!stripeBalance?.connected ? (
+              <div className="text-sm text-muted-foreground bg-muted/30 rounded p-3">
+                Connect a Stripe account in{" "}
+                <a href="/dashboard/payout-settings" className="text-primary underline">Payout Settings</a>{" "}
+                to see live balances and payout timing.
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      Available to pay out
+                      <Tooltip>
+                        <TooltipTrigger asChild><Info className="h-3 w-3" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[240px]">
+                          Cleared funds Stripe can transfer to your bank on the next payout.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-xl font-bold text-emerald-600 mt-1">{fmt(availTotal, currency)}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      Pending (clearing)
+                      <Tooltip>
+                        <TooltipTrigger asChild><Info className="h-3 w-3" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[240px]">
+                          Recently captured charges that are still clearing through Stripe (typically 2 business days; longer for newly onboarded accounts).
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-xl font-bold text-amber-600 mt-1">{fmt(pendingTotal, currency)}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <div className="text-xs text-muted-foreground">Next payout</div>
+                    {stripeBalance.next_payout ? (
+                      <>
+                        <p className="text-xl font-bold text-primary mt-1">
+                          {fmt(stripeBalance.next_payout.amount, stripeBalance.next_payout.currency)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Arrives {new Date(stripeBalance.next_payout.arrival_date * 1000).toLocaleDateString()}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-2">No scheduled payout yet</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-xs text-muted-foreground space-y-1 border-t border-border pt-3">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span><strong>Payout schedule:</strong> {scheduleLabel}</span>
+                  </div>
+                  {!stripeBalance.charges_enabled && (
+                    <div className="text-amber-700">⚠ Charges not yet enabled on your Stripe account — finish onboarding in Payout Settings.</div>
+                  )}
+                  {stripeBalance.charges_enabled && !stripeBalance.payouts_enabled && (
+                    <div className="text-amber-700">⚠ Stripe is holding payouts until verification clears (usually 2–7 days for new accounts).</div>
+                  )}
+                  {availTotal === 0 && pendingTotal === 0 && (
+                    <div>
+                      Newly connected Stripe accounts can show $0 for 2–7 days after the first charge while Stripe clears the platform's funds. This is normal.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Stripe Dashboard Link */}
       <div className="bg-card rounded-lg border border-border p-4 mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">

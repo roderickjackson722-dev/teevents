@@ -111,6 +111,12 @@ const Finances = () => {
     error?: string;
   } | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(true);
+  const [breakdown, setBreakdown] = useState<{
+    title: string;
+    description: string;
+    column: "amount_cents" | "platform_fee_cents" | "net_amount_cents";
+    items: PlatformTransaction[];
+  } | null>(null);
 
   useEffect(() => {
     if (!org) return;

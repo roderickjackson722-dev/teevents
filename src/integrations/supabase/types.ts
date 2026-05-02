@@ -3848,6 +3848,7 @@ export type Database = {
           updated_at: string
           url_edit_count: number
           url_edited_at: string | null
+          vendor_booth_fee_cents: number | null
           waitlist_deposit_cents: number | null
           waitlist_enabled: boolean
         }
@@ -3939,6 +3940,7 @@ export type Database = {
           updated_at?: string
           url_edit_count?: number
           url_edited_at?: string | null
+          vendor_booth_fee_cents?: number | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
         }
@@ -4030,6 +4032,7 @@ export type Database = {
           updated_at?: string
           url_edit_count?: number
           url_edited_at?: string | null
+          vendor_booth_fee_cents?: number | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
         }
@@ -4380,6 +4383,166 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vendor_booth_locations: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_available: boolean
+          location_name: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_available?: boolean
+          location_name: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_available?: boolean
+          location_name?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_booth_locations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "vendor_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_booth_locations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_forms: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          questions: Json
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          questions?: Json
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          questions?: Json
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_forms_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_registrations: {
+        Row: {
+          answers: Json | null
+          booth_fee_cents: number | null
+          booth_location: string | null
+          business_type: string | null
+          checked_in: boolean
+          checked_in_at: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          payment_status: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tournament_id: string
+          updated_at: string
+          vendor_name: string
+        }
+        Insert: {
+          answers?: Json | null
+          booth_fee_cents?: number | null
+          booth_location?: string | null
+          business_type?: string | null
+          checked_in?: boolean
+          checked_in_at?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id: string
+          updated_at?: string
+          vendor_name: string
+        }
+        Update: {
+          answers?: Json | null
+          booth_fee_cents?: number | null
+          booth_location?: string | null
+          business_type?: string | null
+          checked_in?: boolean
+          checked_in_at?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string
+          updated_at?: string
+          vendor_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

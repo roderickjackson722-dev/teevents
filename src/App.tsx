@@ -89,6 +89,8 @@ import CompareEventbrite from "./pages/CompareEventbrite";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
+import VendorRegistration from "./pages/VendorRegistration";
+import Vendors from "./pages/dashboard/Vendors";
 import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
@@ -196,6 +198,8 @@ const App = () => (
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
+             <Route path="/t/:slug/vendors" element={<VendorRegistration />} />
+             <Route path="/dashboard/vendors" element={<DashboardLayout><Vendors /></DashboardLayout>} />
              <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
              <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />
              <Route path="/trips" element={<TripsList />} />

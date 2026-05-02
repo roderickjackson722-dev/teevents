@@ -4,7 +4,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  PartyPopper, Building2,
+  PartyPopper, Building2, Store,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -87,6 +87,7 @@ const categories: SidebarCategory[] = [
       { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard" },
       { title: "Sponsor Management", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers" },
+      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null },
       { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },
     ],

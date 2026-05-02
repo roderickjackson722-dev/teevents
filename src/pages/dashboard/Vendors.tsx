@@ -119,6 +119,22 @@ export default function Vendors() {
     vendor_name: "", contact_name: "", contact_email: "", contact_phone: "", business_type: "",
   });
 
+  // Scanner / Check-in
+  const [scanInput, setScanInput] = useState("");
+  const [lastScan, setLastScan] = useState<{ ok: boolean; message: string; vendor?: VendorReg } | null>(null);
+  const [scanning, setScanning] = useState(false);
+
+  // QR display dialog
+  const [qrVendor, setQrVendor] = useState<VendorReg | null>(null);
+
+  // CSV import
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvText, setCsvText] = useState("");
+  const [csvBusy, setCsvBusy] = useState(false);
+
+  // Booth grid sizing
+  const [gridCols, setGridCols] = useState<number>(0); // 0 = auto
+
   // Load tournaments
   useEffect(() => {
     const load = async () => {

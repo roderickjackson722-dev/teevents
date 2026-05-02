@@ -944,8 +944,49 @@ export default function Vendors() {
         <TabsContent value="checkin" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Vendor Check-In</CardTitle>
-              <CardDescription>Mark vendors as checked in on event day.</CardDescription>
+              <CardTitle>Scan / Enter Check-In Code</CardTitle>
+              <CardDescription>
+                Each approved vendor has a 6-character code (also encoded as a QR code on their reminder emails).
+                Scan with any QR scanner that types into the field, or enter the code manually.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  autoFocus
+                  value={scanInput}
+                  onChange={(e) => setScanInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleScan()}
+                  placeholder="Scan QR or type 6-character code…"
+                  className="font-mono uppercase"
+                />
+                <Button onClick={() => handleScan()} disabled={scanning || !scanInput.trim()}>
+                  <ScanLine className="h-4 w-4 mr-1" /> Check In
+                </Button>
+              </div>
+              {lastScan && (
+                <div className={`p-3 rounded-md border ${lastScan.ok ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-rose-50 border-rose-200 text-rose-900"}`}>
+                  <div className="font-medium">{lastScan.message}</div>
+                  {lastScan.vendor && (
+                    <div className="text-xs mt-1">
+                      {lastScan.vendor.vendor_name} · Booth: {lastScan.vendor.booth_location || "Unassigned"}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground">
+                Tip: a public scanner is also available at <code>/checkin/{tournamentId}</code> — vendor codes are recognized there too.
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Approved Vendors</CardTitle>
+              <CardDescription>
+                {vendors.filter((v) => v.status === "approved" && v.checked_in).length} of{" "}
+                {vendors.filter((v) => v.status === "approved").length} checked in
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {vendors.filter((v) => v.status === "approved").length === 0 ? (
@@ -956,6 +997,7 @@ export default function Vendors() {
                     <TableRow>
                       <TableHead>Vendor</TableHead>
                       <TableHead>Booth</TableHead>
+                      <TableHead>Code</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Action</TableHead>
@@ -966,6 +1008,7 @@ export default function Vendors() {
                       <TableRow key={v.id}>
                         <TableCell className="font-medium">{v.vendor_name}</TableCell>
                         <TableCell>{v.booth_location || <span className="text-muted-foreground text-sm">Unassigned</span>}</TableCell>
+                        <TableCell className="font-mono text-xs">{v.check_in_code || "—"}</TableCell>
                         <TableCell className="text-sm">{v.contact_name} <span className="text-muted-foreground">· {v.contact_phone || v.contact_email}</span></TableCell>
                         <TableCell>
                           {v.checked_in
@@ -973,9 +1016,14 @@ export default function Vendors() {
                             : <Badge variant="outline">Not checked in</Badge>}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant={v.checked_in ? "outline" : "default"} onClick={() => handleCheckIn(v)}>
-                            {v.checked_in ? "Undo" : "Check In"}
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => setQrVendor(v)} title="QR / code">
+                              <QrCode className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant={v.checked_in ? "outline" : "default"} onClick={() => handleCheckIn(v)}>
+                              {v.checked_in ? "Undo" : "Check In"}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

@@ -126,10 +126,26 @@ const CustomerAuth = () => {
         setLoading(false);
         return;
       }
+      if (!fullName.trim()) {
+        toast({ title: "Please enter your full name", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (!phone.trim()) {
+        toast({ title: "Please enter a contact phone number", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            full_name: fullName.trim(),
+            phone: phone.trim(),
+          },
+        },
       });
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -140,7 +156,7 @@ const CustomerAuth = () => {
         });
         // Notify admin of new signup (fire and forget)
         supabase.functions.invoke("notify-new-signup", {
-          body: { email },
+          body: { email, full_name: fullName.trim(), phone: phone.trim() },
         });
       }
     } else {

@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
+import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 
 interface HoleData {
   par: string;

@@ -17,6 +17,7 @@ interface Tournament {
   title: string;
   date: string | null;
   is_pro?: boolean;
+  setup_checklist_dismissed?: boolean;
 }
 
 function getCountdown(dateStr: string | null) {

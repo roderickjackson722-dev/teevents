@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Circle, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -17,10 +18,19 @@ interface Props {
   compact?: boolean;
   /** Show the "Hide" / dismiss button. */
   onDismiss?: () => void;
+  /** When true, runs the smart auto-detect recompute on mount. */
+  autoRecompute?: boolean;
 }
 
-export default function SetupChecklist({ tournamentId, compact = false, onDismiss }: Props) {
-  const { items, loading, setStatus, percent, completed, total } = useSetupChecklist(tournamentId);
+export default function SetupChecklist({ tournamentId, compact = false, onDismiss, autoRecompute = false }: Props) {
+  const { items, loading, setStatus, percent, completed, total, recompute } = useSetupChecklist(tournamentId);
+
+  useEffect(() => {
+    if (autoRecompute && tournamentId) {
+      recompute();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRecompute, tournamentId]);
 
   if (loading) {
     return (

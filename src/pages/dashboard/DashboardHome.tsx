@@ -97,12 +97,12 @@ const DashboardHome = () => {
         </p>
       </div>
 
-      {/* Setup Checklist - shown until dismissed */}
+      {/* Setup Checklist - shown until dismissed. Full view with phase grouping. */}
       {latestTournament && !latestTournament.setup_checklist_dismissed && (
         <div className="mb-8">
           <SetupChecklist
             tournamentId={latestTournament.id}
-            compact
+            autoRecompute
             onDismiss={async () => {
               const prev = latestTournament;
               setLatestTournament({ ...prev, setup_checklist_dismissed: true });

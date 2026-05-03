@@ -1444,6 +1444,9 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Feature Guide PDF Tab */}
+          {activeTab === "feature-guide" && <AdminFeatureGuide />}
+
           {/* Demo Events Tab */}
           {activeTab === "demos" && (
             <>

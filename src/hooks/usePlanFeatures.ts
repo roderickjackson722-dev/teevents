@@ -1,94 +1,125 @@
 import { useOrgContext } from "./useOrgContext";
 
-// Feature access by plan tier
-// Plan limits
+// Plan tiers (new model):
+//   - free / base  → Free tier, 1 active tournament, max 72 players
+//   - pro          → Replaces legacy starter/premium. Per-tournament unlock for $399.
+//                    Org-level "pro" exists for back-compat (legacy starter/premium orgs were migrated).
+//   - enterprise   → Custom contracts. Treated as pro + unlimited.
+//
+// IMPORTANT: For per-tournament gating use `useTournamentPro(tournamentId)` instead
+// of relying on org-level plan, since Pro is unlocked per-tournament under the new model.
+
 export const PLAN_LIMITS: Record<string, { maxTournaments: number; maxPlayers: number }> = {
   free: { maxTournaments: 1, maxPlayers: 72 },
   base: { maxTournaments: 1, maxPlayers: 72 },
+  // legacy keys kept so old data still resolves
   starter: { maxTournaments: Infinity, maxPlayers: Infinity },
   premium: { maxTournaments: Infinity, maxPlayers: Infinity },
+  pro: { maxTournaments: Infinity, maxPlayers: Infinity },
+  enterprise: { maxTournaments: Infinity, maxPlayers: Infinity },
 };
+
+const FREE_FEATURES = [
+  "tournaments",
+  "registration",
+  "website",
+  "players",
+  "check-in",
+  "planning-guide",
+  "email-messaging",
+  "printables",
+  "refunds",
+  "basic-finances",
+];
+
+const PRO_FEATURES = [
+  // Everything in Free PLUS:
+  "leaderboard",
+  "live-scoring",
+  "sponsors",
+  "auction",
+  "donations",
+  "store",
+  "volunteers",
+  "sms-messaging",
+  "custom-domain",
+  "flyer-studio",
+  "surveys",
+  "gallery",
+  "advanced-pairings",
+  "budget",
+  "featured-search",
+  "team-management-5",
+  "auto-payouts",
+  "priority-support",
+  "all-templates",
+  "hole-in-one-insurance",
+];
+
+const ENTERPRISE_FEATURES = [
+  "white-label",
+  "dedicated-manager",
+  "custom-integrations",
+  "sla-guarantee",
+];
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  free: [
-    "tournaments",
-    "registration",
-    "website",
-    "players",
-    "check-in",
-    "planning-guide",
-    "email-messaging",
-    "printables",
-  ],
-  // "base" maps to same as free for backward compatibility
-  base: [
-    "tournaments",
-    "registration",
-    "website",
-    "players",
-    "check-in",
-    "planning-guide",
-    "email-messaging",
-    "printables",
-  ],
-  starter: [
-    // Everything in base +
-    "leaderboard",
-    "custom-domain",
-    "sponsors",
-    "budget",
-    "gallery",
-    "volunteers",
-    "donations",
-    "sms-messaging",
-    "all-templates",
-  ],
-  premium: [
-    // Everything in starter +
-    "store",
-    "auction",
-    "surveys",
-    "priority-support",
-    "hole-in-one-insurance",
-    "white-glove-consulting",
-    "reduced-reserve",
-    "faster-payouts",
-    "flyer-studio",
-  ],
+  free: FREE_FEATURES,
+  base: FREE_FEATURES,
+  pro: PRO_FEATURES,
+  // legacy compatibility
+  starter: PRO_FEATURES,
+  premium: PRO_FEATURES,
+  enterprise: ENTERPRISE_FEATURES,
 };
 
-// All possible features for admin toggle UI
+// Display list used by admin toggle UI
 export const ALL_FEATURES = [
   { id: "tournaments", label: "Tournaments" },
   { id: "registration", label: "Registration" },
   { id: "website", label: "Website Builder" },
   { id: "players", label: "Player Management" },
   { id: "check-in", label: "Check-In" },
-  { id: "leaderboard", label: "Leaderboard" },
   { id: "planning-guide", label: "Planning Guide" },
   { id: "email-messaging", label: "Email Messaging" },
-  { id: "custom-domain", label: "Custom Domain" },
-  { id: "sponsors", label: "Sponsor Management" },
-  { id: "budget", label: "Budget Tracking" },
-  { id: "gallery", label: "Photo Gallery" },
   { id: "printables", label: "Printables" },
-  { id: "volunteers", label: "Volunteer Coordination" },
-  { id: "donations", label: "Donations" },
-  { id: "sms-messaging", label: "SMS Messaging" },
-  { id: "all-templates", label: "All Templates" },
-  { id: "store", label: "Merchandise Store" },
-  { id: "auction", label: "Auction" },
-  { id: "surveys", label: "Surveys" },
+  { id: "refunds", label: "Refund Management" },
+  { id: "basic-finances", label: "Basic Finances" },
+  { id: "leaderboard", label: "Live Leaderboard" },
+  { id: "live-scoring", label: "Live Scoring" },
+  { id: "sponsors", label: "Sponsor Portal" },
+  { id: "auction", label: "Auction & Raffle" },
+  { id: "donations", label: "Donation Page" },
+  { id: "store", label: "Add-On Store" },
+  { id: "volunteers", label: "Volunteer Management" },
+  { id: "sms-messaging", label: "SMS Blasts" },
+  { id: "custom-domain", label: "Custom Domain" },
+  { id: "flyer-studio", label: "Flyer Studio" },
+  { id: "surveys", label: "Post-Event Surveys" },
+  { id: "gallery", label: "Photo Gallery" },
+  { id: "advanced-pairings", label: "Advanced Pairings" },
+  { id: "budget", label: "Budget Tracking" },
+  { id: "featured-search", label: "Featured in Search" },
+  { id: "team-management-5", label: "Team (5 members)" },
+  { id: "auto-payouts", label: "Auto Stripe Payouts" },
   { id: "priority-support", label: "Priority Support" },
+  { id: "all-templates", label: "All Templates" },
   { id: "hole-in-one-insurance", label: "Hole-in-One Insurance" },
   { id: "flyer-studio", label: "Flyer Studio" },
 ];
 
-const PLAN_HIERARCHY = ["free", "starter", "premium"];
+// Hierarchy used to inherit lower-tier features
+const PLAN_HIERARCHY = ["free", "pro", "enterprise"];
+
+function normalizePlan(plan: string): string {
+  if (plan === "starter" || plan === "premium") return "pro";
+  if (plan === "base") return "free";
+  return plan || "free";
+}
 
 export function usePlanFeatures() {
   const { org, loading } = useOrgContext();
-  const plan = org?.plan || "free";
+  const plan = normalizePlan(org?.plan || "free");
   const overrides = org?.featureOverrides;
   const isDemoOrg = org?.orgName === "Sample Golf Organization";
 
@@ -102,13 +133,8 @@ export function usePlanFeatures() {
   };
 
   const hasFeature = (feature: string): boolean => {
-    // Unlock everything for the demo/sample org
     if (isDemoOrg) return true;
-    // Check admin overrides first
-    if (overrides && feature in overrides) {
-      return overrides[feature];
-    }
-    // Fall back to plan-based access
+    if (overrides && feature in overrides) return overrides[feature];
     return planHasFeature(feature);
   };
 
@@ -116,7 +142,7 @@ export function usePlanFeatures() {
     for (const tier of PLAN_HIERARCHY) {
       if (PLAN_FEATURES[tier]?.includes(feature)) return tier;
     }
-    return "premium";
+    return "pro";
   };
 
   const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;

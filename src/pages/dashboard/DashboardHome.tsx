@@ -7,11 +7,15 @@ import { useAdminLink } from "@/hooks/useAdminLink";
 import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChart3, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import UpgradeToProBanner from "@/components/UpgradeToProBanner";
+import { toast } from "sonner";
+
 interface Tournament {
   id: string;
   slug: string | null;
   title: string;
   date: string | null;
+  is_pro?: boolean;
 }
 
 function getCountdown(dateStr: string | null) {
@@ -29,22 +33,44 @@ function getCountdown(dateStr: string | null) {
 const DashboardHome = () => {
   const { org } = useOrgContext();
   const { buildLink } = useAdminLink();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tournamentCount, setTournamentCount] = useState(0);
   const [latestTournament, setLatestTournament] = useState<Tournament | null>(null);
   const [countdown, setCountdown] = useState<ReturnType<typeof getCountdown>>(null);
+
+  // Verify Pro upgrade after Stripe redirect
+  useEffect(() => {
+    const sessionId = searchParams.get("upgrade_session_id");
+    if (!sessionId) return;
+    (async () => {
+      const { data, error } = await supabase.functions.invoke("verify-pro-upgrade", {
+        body: { session_id: sessionId },
+      });
+      if (!error && data?.verified) {
+        toast.success("🎉 Pro features unlocked for this tournament!");
+      } else if (error) {
+        toast.error("Could not verify Pro upgrade. Please contact support.");
+      }
+      // Clean URL
+      const next = new URLSearchParams(searchParams);
+      next.delete("upgrade_session_id");
+      next.delete("tournament_id");
+      setSearchParams(next, { replace: true });
+    })();
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, slug, title, date", { count: "exact" })
+      .select("id, slug, title, date, is_pro", { count: "exact" })
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .limit(1)
       .then(({ data, count }) => {
         setTournamentCount(count ?? 0);
         if (data && data.length > 0) {
-          setLatestTournament(data[0]);
+          setLatestTournament(data[0] as Tournament);
         }
       });
   }, [org]);
@@ -68,6 +94,16 @@ const DashboardHome = () => {
           Manage your golf tournaments from one place.
         </p>
       </div>
+
+      {/* Per-tournament Pro upgrade banner */}
+      {latestTournament && !latestTournament.is_pro && (
+        <div className="mb-8">
+          <UpgradeToProBanner
+            tournamentId={latestTournament.id}
+            tournamentTitle={latestTournament.title}
+          />
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[

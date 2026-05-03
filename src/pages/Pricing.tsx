@@ -1,124 +1,70 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Crown, Shield, Zap, Star, Lock, CreditCard, Smartphone } from "lucide-react";
+import { Check, ArrowRight, Crown, Shield, Lock, CreditCard, Smartphone, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
-const plans = [
-  {
-    key: "free",
-    name: "Base",
-    price: "$0",
-    period: "per tournament",
-    description: "First-time organizers and small events. No upfront cost.",
-    fee: "5% platform fee per registration + Stripe processing fees",
-    features: [
-      "1 active tournament (max 72 players)",
-      "Online registration & payments",
-      "Tournament website (1 template)",
-      "Player pairings tool",
-      "Check-in & QR codes",
-      "Planning guide & checklist",
-      "Email messaging",
-      "Printable scorecards",
-    ],
-    cta: "Start Free",
-  },
-  {
-    key: "starter",
-    name: "Starter",
-    price: "$299",
-    period: "per tournament",
-    subtitle: "We build it for you",
-    description: "Growing tournaments and multiple events. We build it for you.",
-    fee: "5% platform fee per registration + Stripe processing fees",
-    highlighted: true,
-    features: [
-      "Everything in Base (unlimited players)",
-      "We build your website for you",
-      "All 6 templates + custom colors",
-      "All 8 scoring formats",
-      "Live leaderboard (Stroke Play & Best Ball)",
-      "Custom domain support",
-      "Sponsor management & recognition",
-      "Photo gallery",
-      "Budget tracking",
-      "Volunteer coordination",
-      "Printable signs & name badges",
-      "Donations page",
-      "SMS texting (500 messages)",
-    ],
-    cta: "Buy Starter",
-  },
-  {
-    key: "premium",
-    name: "Premium",
-    price: "$999",
-    period: "per tournament",
-    description: "High-volume organizers and fundraisers. White-glove consulting.",
-    fee: "5% platform fee per registration + Stripe processing fees",
-    features: [
-      "Everything in Starter",
-      "White-glove consulting & setup",
-      "Reduced 10% reserve (vs 15%)",
-      "Faster bi-weekly payouts",
-      "$25,000 hole-in-one insurance (up to 72 golfers)",
-      "Auction item included",
-      "Merchandise store",
-      "Auction & raffle management",
-      "Surveys & analytics",
-      "Custom printable fonts & layouts",
-      "Priority support",
-    ],
-    cta: "Buy Premium",
-  },
+const baseFeatures = [
+  "Branded tournament website (tournament/your-slug)",
+  "Online registration — individuals & teams",
+  "Stripe payments (cards, Apple Pay, Google Pay)",
+  "QR check-in from any phone or tablet",
+  "Player roster, CSV import/export, handicap entry",
+  "Manual drag-and-drop tee sheet",
+  "Printables Studio — scorecards, cart signs, name badges",
+  "Email registration confirmations & receipts",
+  "Public listing on teevents.golf",
+  "Invite 1 additional team member",
+  "30-step interactive planning checklist",
+  "Refund management with organizer approval",
+  "Basic finances dashboard + CSV export",
+  "Manual payouts by check on request",
+];
+
+const proFeatures = [
+  "Unlimited players",
+  "Live leaderboard — embed on your website",
+  "Live scoring from player phones (no app)",
+  "Sponsor portal with tiered packages & sign-up page",
+  "Silent auction & 50/50 raffle with mobile bidding",
+  "Donation page with progress bar & tax receipts",
+  "Add-on store — mulligans, merch, dinner tickets",
+  "Volunteer sign-up, scheduling & QR check-in",
+  "Email + SMS broadcasts with templates",
+  "Custom domain (golf.myclub.com)",
+  "Flyer Studio — Canva-integrated templates",
+  "Post-event surveys with aggregated results",
+  "Photo gallery for players & sponsors",
+  "Advanced auto-pairings (handicap, team, sponsor)",
+  "Budget tracking — planned vs. actual",
+  "Featured placement in public search",
+  "Up to 5 team members",
+  "Automatic Stripe Connect payouts (1–3 days)",
+  "Priority email + chat support (2-hr response)",
+];
+
+const enterpriseFeatures = [
+  "Everything in Pro",
+  "Unlimited tournaments — no per-event fee",
+  "White-label option (remove TeeVents branding)",
+  "Dedicated account manager",
+  "Custom integrations — API, webhooks, CRM sync",
+  "SLA guarantee — 99.9% uptime, 1-hour response",
+  "Volume pricing for high-volume operators",
 ];
 
 const Pricing = () => {
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [promoCode, setPromoCode] = useState("");
-  const { toast } = useToast();
-
-  const handleCheckout = async (plan: string) => {
-    // Free plan skips Stripe — go straight to account creation
-    if (plan === "free") {
-      window.location.href = "/get-started?plan=free";
-      return;
-    }
-
-    setLoadingPlan(plan);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan, promo_code: promoCode.trim() || undefined },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "Could not start checkout.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingPlan(null);
-    }
-  };
-
   return (
     <Layout>
       <SEO
-        title="Pricing | TeeVents — Start Free, Pay Only When You Get Paid"
-        description="Start for free. Pay only when you get paid. TeeVents charges a 5% platform fee per registration — nothing upfront, no monthly fees."
+        title="Pricing | TeeVents — Start Free, Upgrade When You Need More"
+        description="Start for free. No credit card required. Upgrade to Pro for $399 per tournament to unlock live leaderboard, sponsor portal, auction, and automatic payouts."
         path="/pricing"
       />
 
       {/* Hero */}
-      <section className="bg-primary pt-24 pb-16">
+      <section className="bg-primary pt-24 pb-14">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -126,101 +72,64 @@ const Pricing = () => {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Start for free. Pay only when you get paid.
+              Start for free. Upgrade when you need more.
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              TeeVents charges a 5% platform fee per registration — nothing upfront, no monthly fees.
+              No credit card required. No time limit on the free tier.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Promo Code */}
-      <section className="bg-background border-b border-border">
-        <div className="container mx-auto px-4 py-5 flex items-center justify-center gap-3">
-          <label className="text-sm font-medium text-muted-foreground">Have a promo code?</label>
-          <input
-            type="text"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-            placeholder="ENTER CODE"
-            className="w-40 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm font-mono tracking-wider uppercase placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-      </section>
-
       {/* Plans */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="grid md:grid-cols-3 gap-6">
-            {plans.map((plan, i) => (
-              <motion.div
-                key={plan.key}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className={`relative rounded-xl p-8 border flex flex-col ${
-                  plan.highlighted
-                    ? "bg-primary text-primary-foreground border-secondary shadow-2xl lg:scale-105"
-                    : "bg-card text-card-foreground border-border"
-                }`}
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full flex items-center gap-1">
-                    <Crown className="h-3 w-3" /> Most Popular
-                  </div>
-                )}
+      <section className="bg-background py-16">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-6 items-stretch">
+            {/* BASE */}
+            <PlanCard
+              name="Base"
+              tagline="First-time organizers & small events"
+              price="$0"
+              period="forever"
+              fee="5% platform fee per transaction"
+              features={baseFeatures}
+              ctaLabel="Get Started"
+              ctaTo="/get-started?plan=free"
+              variant="default"
+              footnote="1 active tournament • Up to 72 players"
+            />
 
-                <h3 className="text-2xl font-display font-bold mb-1">{plan.name}</h3>
-                <p className={`text-sm mb-4 ${plan.highlighted ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                  {plan.description}
-                </p>
+            {/* PRO */}
+            <PlanCard
+              name="Pro"
+              tagline="Fundraisers, clubs & recurring events"
+              price="$399"
+              period="per tournament"
+              fee="5% platform fee per transaction"
+              features={proFeatures}
+              ctaLabel="Upgrade to Pro"
+              ctaTo="/get-started?plan=pro"
+              variant="highlighted"
+              badge="Most Popular"
+              footnote="Unlimited players • Pay per tournament you upgrade"
+            />
 
-                <div className="mb-2">
-                  <span className="text-4xl font-display font-bold">{plan.price}</span>
-                  <span className={`text-sm ml-2 ${plan.highlighted ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                    {plan.period}
-                  </span>
-                </div>
-                <p className={`text-xs font-semibold mb-6 ${plan.highlighted ? "text-secondary" : "text-primary"}`}>
-                  + {plan.fee}
-                </p>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <Check className={`h-4 w-4 mt-0.5 flex-shrink-0 ${plan.highlighted ? "text-secondary" : "text-primary"}`} />
-                      <span className={`text-sm ${plan.highlighted ? "text-primary-foreground/90" : "text-foreground/80"}`}>
-                        {feat}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => handleCheckout(plan.key)}
-                  disabled={!!loadingPlan}
-                  className={`w-full text-center px-6 py-3.5 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors disabled:opacity-50 ${
-                    plan.highlighted
-                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
-                >
-                  {loadingPlan === plan.key ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Processing…
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      {plan.cta} <ArrowRight className="h-4 w-4" />
-                    </span>
-                  )}
-                </button>
-              </motion.div>
-            ))}
+            {/* ENTERPRISE */}
+            <PlanCard
+              name="Enterprise"
+              tagline="5+ tournaments per year • White-label"
+              price="Custom"
+              period="quote"
+              fee="5% platform fee per transaction"
+              features={enterpriseFeatures}
+              ctaLabel="Contact Sales"
+              ctaTo="/enterprise-pricing"
+              variant="enterprise"
+              footnote="Volume discounts available"
+            />
           </div>
 
-          {/* How it works callout */}
+          {/* How it works */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -228,34 +137,33 @@ const Pricing = () => {
             className="mt-12 rounded-xl border-2 border-secondary bg-secondary/5 p-6 md:p-8 max-w-3xl mx-auto"
           >
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-secondary/20 text-secondary text-xl">
-                💡
+              <div className="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-secondary/20 text-secondary">
+                <Sparkles className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-lg font-display font-bold text-foreground mb-2">
-                  How it works
+                  How Pro works
                 </h3>
                 <p className="text-sm text-foreground/80 leading-relaxed">
-                  You collect registration fees. Stripe automatically deducts 5% and sends the rest to your bank account.
-                  <span className="font-semibold text-primary"> No upfront cost. No surprises.</span>
+                  Pro is a one-time <span className="font-semibold">$399 unlock per tournament</span> — not a subscription. Create your tournament for free, then upgrade only the events where you need live leaderboard, sponsor portal, auction, and the rest. The 5% platform fee is the same on every plan; Stripe automatically splits payments at checkout so TeeVents never holds your money.
                 </p>
               </div>
             </div>
           </motion.div>
 
-          {/* Secure Payments Banner */}
+          {/* Secure Payments */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-16 rounded-xl border border-border bg-card p-8 md:p-10"
+            transition={{ delay: 0.4 }}
+            className="mt-12 rounded-xl border border-border bg-card p-8 md:p-10"
           >
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4">
                 <Lock className="h-3.5 w-3.5" /> Secure Payment Processing
               </div>
               <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-2">
-                Your Golfers Pay Securely — Every Time
+                Your golfers pay securely — every time
               </h3>
               <p className="text-sm text-muted-foreground max-w-xl mx-auto">
                 Every TeeVents tournament uses Stripe — the same payment platform trusted by Amazon, Google, and millions of businesses worldwide. Your registrants' payment data is never stored on our servers.
@@ -280,52 +188,21 @@ const Pricing = () => {
             </div>
           </motion.div>
 
-          {/* Trust signals */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-10 text-center"
-          >
-            <p className="text-xs text-muted-foreground mb-6">
-              All plans charge a 5% TeeVents platform fee per registration + Stripe's standard processing fee of 2.9% + $0.30 per transaction. Nothing upfront. No monthly fees. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                <span className="text-sm">Secure Stripe Checkout</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                <span className="text-sm">Instant Account Setup</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4" />
-                <span className="text-sm">No Monthly Fees</span>
-              </div>
-            </div>
-          </motion.div>
+          <p className="text-center text-xs text-muted-foreground mt-8 max-w-3xl mx-auto">
+            All plans charge a 5% TeeVents platform fee per transaction + Stripe's standard processing fee. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
+          </p>
         </div>
       </section>
 
-      {/* Eventbrite Banner */}
-      <section className="bg-muted py-8">
-        <div className="container mx-auto px-4 text-center">
-          <Link to="/compare/eventbrite-vs-teevents" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
-            See how we compare to Eventbrite → <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* FAQ-style CTA */}
-      <section className="bg-primary py-16">
+      {/* Final CTA */}
+      <section className="bg-primary py-14">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <h2 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-4">
-              Not Sure Which Plan Is Right?
+              Not sure which plan is right?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
-              Start with the Base plan and upgrade anytime. Or book a quick call and we'll help you decide.
+              Start with Base and upgrade individual tournaments to Pro any time. Or book a quick call and we'll help you decide.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -347,5 +224,92 @@ const Pricing = () => {
     </Layout>
   );
 };
+
+interface PlanCardProps {
+  name: string;
+  tagline: string;
+  price: string;
+  period: string;
+  fee: string;
+  features: string[];
+  ctaLabel: string;
+  ctaTo: string;
+  variant: "default" | "highlighted" | "enterprise";
+  badge?: string;
+  footnote?: string;
+}
+
+function PlanCard({
+  name, tagline, price, period, fee, features, ctaLabel, ctaTo, variant, badge, footnote,
+}: PlanCardProps) {
+  const isHighlighted = variant === "highlighted";
+  const isEnterprise = variant === "enterprise";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className={`relative rounded-xl p-8 border flex flex-col ${
+        isHighlighted
+          ? "bg-primary text-primary-foreground border-secondary shadow-2xl lg:scale-105"
+          : isEnterprise
+          ? "bg-card text-card-foreground border-border"
+          : "bg-card text-card-foreground border-border"
+      }`}
+    >
+      {badge && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full flex items-center gap-1 whitespace-nowrap">
+          <Crown className="h-3 w-3" /> {badge}
+        </div>
+      )}
+
+      <h3 className="text-2xl font-display font-bold mb-1">{name}</h3>
+      <p className={`text-sm mb-4 ${isHighlighted ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+        {tagline}
+      </p>
+
+      <div className="mb-2">
+        <span className="text-4xl font-display font-bold">{price}</span>
+        <span className={`text-sm ml-2 ${isHighlighted ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+          {period}
+        </span>
+      </div>
+      <p className={`text-xs font-semibold mb-6 ${isHighlighted ? "text-secondary" : "text-primary"}`}>
+        {fee}
+      </p>
+
+      <ul className="space-y-2.5 mb-8 flex-1">
+        {features.map((feat) => (
+          <li key={feat} className="flex items-start gap-3">
+            <Check className={`h-4 w-4 mt-0.5 flex-shrink-0 ${isHighlighted ? "text-secondary" : "text-primary"}`} />
+            <span className={`text-sm ${isHighlighted ? "text-primary-foreground/90" : "text-foreground/80"}`}>
+              {feat}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {footnote && (
+        <p className={`text-xs mb-4 ${isHighlighted ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+          {footnote}
+        </p>
+      )}
+
+      <Link
+        to={ctaTo}
+        className={`w-full text-center px-6 py-3.5 rounded-md font-semibold text-sm tracking-wider uppercase transition-colors ${
+          isHighlighted
+            ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
+        }`}
+      >
+        <span className="inline-flex items-center justify-center gap-2">
+          {ctaLabel} <ArrowRight className="h-4 w-4" />
+        </span>
+      </Link>
+    </motion.div>
+  );
+}
 
 export default Pricing;

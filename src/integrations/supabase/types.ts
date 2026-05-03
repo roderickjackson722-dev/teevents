@@ -3996,6 +3996,7 @@ export type Database = {
           hole_pars: Json | null
           id: string
           image_url: string | null
+          is_pro: boolean
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
           live_display_enabled: boolean
@@ -4012,6 +4013,8 @@ export type Database = {
           payout_method: string | null
           printable_font: string
           printable_layout: string
+          pro_paid_at: string | null
+          pro_payment_intent_id: string | null
           public_tabs: Json | null
           public_tabs_order: string[] | null
           rain_date_policy: string | null
@@ -4088,6 +4091,7 @@ export type Database = {
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
+          is_pro?: boolean
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           live_display_enabled?: boolean
@@ -4104,6 +4108,8 @@ export type Database = {
           payout_method?: string | null
           printable_font?: string
           printable_layout?: string
+          pro_paid_at?: string | null
+          pro_payment_intent_id?: string | null
           public_tabs?: Json | null
           public_tabs_order?: string[] | null
           rain_date_policy?: string | null
@@ -4180,6 +4186,7 @@ export type Database = {
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
+          is_pro?: boolean
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           live_display_enabled?: boolean
@@ -4196,6 +4203,8 @@ export type Database = {
           payout_method?: string | null
           printable_font?: string
           printable_layout?: string
+          pro_paid_at?: string | null
+          pro_payment_intent_id?: string | null
           public_tabs?: Json | null
           public_tabs_order?: string[] | null
           rain_date_policy?: string | null

@@ -523,14 +523,17 @@ const Registration = () => {
                 <div>
                   <Label>Registration Fee ($)</Label>
                   <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     value={feeDisplay}
                     onChange={(e) => {
-                      setFeeDisplay(e.target.value);
-                      const parsed = parseFloat(e.target.value);
-                      if (!isNaN(parsed)) setFeeCents(Math.round(parsed * 100));
+                      const raw = e.target.value;
+                      // Allow only digits and a single decimal point (max 2 decimals)
+                      if (raw === "" || /^\d*\.?\d{0,2}$/.test(raw)) {
+                        setFeeDisplay(raw);
+                        const parsed = parseFloat(raw);
+                        setFeeCents(isNaN(parsed) ? 0 : Math.round(parsed * 100));
+                      }
                     }}
                     onBlur={() => setFeeDisplay((feeCents / 100).toFixed(2))}
                     placeholder="0.00"

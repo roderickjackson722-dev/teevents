@@ -233,6 +233,34 @@ const CustomerAuth = () => {
           ) : (
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignUp && (
+                  <>
+                    <div>
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Jane Smith"
+                        required
+                        maxLength={100}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Contact Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="(555) 123-4567"
+                        required
+                        maxLength={20}
+                      />
+                    </div>
+                  </>
+                )}
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input

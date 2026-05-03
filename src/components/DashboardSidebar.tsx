@@ -60,6 +60,7 @@ const categories: SidebarCategory[] = [
       { title: "Registration Form", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
       { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
       { title: "Team Management", url: "/dashboard/settings", icon: Building2, feature: null },
+      { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null },
       { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
     ],
   },

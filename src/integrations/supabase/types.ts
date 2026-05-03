@@ -2315,6 +2315,45 @@ export type Database = {
         }
         Relationships: []
       }
+      setup_checklist_tasks: {
+        Row: {
+          auto_complete: boolean
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          link: string | null
+          phase: string
+          required: boolean
+          task_key: string
+          task_name: string
+        }
+        Insert: {
+          auto_complete?: boolean
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          link?: string | null
+          phase: string
+          required?: boolean
+          task_key: string
+          task_name: string
+        }
+        Update: {
+          auto_complete?: boolean
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          link?: string | null
+          phase?: string
+          required?: boolean
+          task_key?: string
+          task_name?: string
+        }
+        Relationships: []
+      }
       site_visits: {
         Row: {
           city: string | null
@@ -3582,6 +3621,48 @@ export type Database = {
           },
         ]
       }
+      tournament_setup_progress: {
+        Row: {
+          completed_at: string | null
+          id: string
+          status: string
+          task_id: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          status?: string
+          task_id: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          status?: string
+          task_id?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_setup_progress_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "setup_checklist_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_setup_progress_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_sponsors: {
         Row: {
           amount: number | null
@@ -4031,6 +4112,7 @@ export type Database = {
           results_url: string | null
           schedule_info: string | null
           scoring_format: string
+          setup_checklist_dismissed: boolean
           show_countdown: boolean
           show_in_public_search: boolean
           site_background_color: string | null
@@ -4126,6 +4208,7 @@ export type Database = {
           results_url?: string | null
           schedule_info?: string | null
           scoring_format?: string
+          setup_checklist_dismissed?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
           site_background_color?: string | null
@@ -4221,6 +4304,7 @@ export type Database = {
           results_url?: string | null
           schedule_info?: string | null
           scoring_format?: string
+          setup_checklist_dismissed?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
           site_background_color?: string | null

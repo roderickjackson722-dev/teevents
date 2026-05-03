@@ -8,6 +8,7 @@ import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChar
 import { Button } from "@/components/ui/button";
 
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
+import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
 
 interface Tournament {
@@ -16,6 +17,7 @@ interface Tournament {
   title: string;
   date: string | null;
   is_pro?: boolean;
+  setup_checklist_dismissed?: boolean;
 }
 
 function getCountdown(dateStr: string | null) {
@@ -63,7 +65,7 @@ const DashboardHome = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, slug, title, date, is_pro", { count: "exact" })
+      .select("id, slug, title, date, is_pro, setup_checklist_dismissed", { count: "exact" })
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -94,6 +96,30 @@ const DashboardHome = () => {
           Manage your golf tournaments from one place.
         </p>
       </div>
+
+      {/* Setup Checklist - shown until dismissed */}
+      {latestTournament && !latestTournament.setup_checklist_dismissed && (
+        <div className="mb-8">
+          <SetupChecklist
+            tournamentId={latestTournament.id}
+            compact
+            onDismiss={async () => {
+              const prev = latestTournament;
+              setLatestTournament({ ...prev, setup_checklist_dismissed: true });
+              const { error } = await supabase
+                .from("tournaments")
+                .update({ setup_checklist_dismissed: true })
+                .eq("id", prev.id);
+              if (error) {
+                setLatestTournament(prev);
+                toast.error("Could not hide checklist. Please try again.");
+              } else {
+                toast.success("Checklist hidden. Find it under Setup Checklist in the sidebar.");
+              }
+            }}
+          />
+        </div>
+      )}
 
       {/* Per-tournament Pro upgrade banner */}
       {latestTournament && !latestTournament.is_pro && (

@@ -52,7 +52,7 @@ const highlights = [
 ];
 
 const steps = [
-  { num: "01", title: "Purchase Your Plan", text: "Choose Starter or Pro based on your tournament size." },
+  { num: "01", title: "Start Free", text: "Create your account on the Base plan at $0 — upgrade any tournament to Pro for $399 when you're ready." },
   { num: "02", title: "Build & Customize", text: "Set up your branded site, registration, and sponsor pages." },
   { num: "03", title: "Launch & Manage", text: "Go live and run everything from one powerful dashboard." },
 ];

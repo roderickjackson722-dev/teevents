@@ -543,13 +543,16 @@ const Registration = () => {
                 <div>
                   <Label>Max Players</Label>
                   <Input
-                    type="number"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
                     value={maxPlayersDisplay}
                     onChange={(e) => {
-                      setMaxPlayersDisplay(e.target.value);
-                      const parsed = parseInt(e.target.value);
-                      if (!isNaN(parsed) && parsed > 0) setMaxPlayers(parsed);
+                      const raw = e.target.value;
+                      if (raw === "" || /^\d+$/.test(raw)) {
+                        setMaxPlayersDisplay(raw);
+                        const parsed = parseInt(raw);
+                        if (!isNaN(parsed) && parsed > 0) setMaxPlayers(parsed);
+                      }
                     }}
                     onBlur={() => setMaxPlayersDisplay(String(maxPlayers))}
                   />

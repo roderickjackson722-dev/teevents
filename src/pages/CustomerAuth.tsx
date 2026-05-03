@@ -387,18 +387,6 @@ const CustomerAuth = () => {
                 </p>
               )}
 
-              <p className="text-center text-sm text-muted-foreground mt-6">
-                {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-                <button
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setAgreements({});
-                  }}
-                  className="text-primary font-semibold hover:underline"
-                >
-                  {isSignUp ? "Sign In" : "Sign Up"}
-                </button>
-              </p>
             </>
           )}
         </div>

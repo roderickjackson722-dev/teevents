@@ -13,6 +13,10 @@ import { Link } from "react-router-dom";
 
 const BASE_AGREEMENT_ITEMS = [
   {
+    id: "platform_fee_5",
+    label: "I understand that TeeVents charges a 5% platform fee on every paid transaction (registrations, sponsorships, donations, store, and auctions) processed through my tournament.",
+  },
+  {
     id: "stripe_fee",
     label: "I understand that Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all payments processed through my tournament.",
   },

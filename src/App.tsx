@@ -65,6 +65,7 @@ import AcceptInvitation from "./pages/AcceptInvitation";
 import Nonprofits from "./pages/Nonprofits";
 import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
+import EnterprisePricing from "./pages/EnterprisePricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import SampleDashboard from "./pages/SampleDashboard";
 import VisitTracker from "./components/VisitTracker";
@@ -176,6 +177,7 @@ const App = () => (
            <Route path="/nonprofits" element={<Nonprofits />} />
            <Route path="/how-it-works" element={<HowItWorks />} />
            <Route path="/pricing" element={<Pricing />} />
+           <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="/sample-dashboard" element={<SampleDashboard />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />

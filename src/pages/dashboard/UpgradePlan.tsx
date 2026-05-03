@@ -1,218 +1,155 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Zap, Crown } from "lucide-react";
+import { Check, ArrowRight, Loader2, Sparkles, Building2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const FEE_RATES: Record<string, string> = {
-  free: "5%",
-  starter: "0%",
-  premium: "0%",
-};
+interface TournamentRow {
+  id: string;
+  title: string;
+  date: string | null;
+  is_pro: boolean;
+}
 
-const plans = [
-  {
-    key: "starter",
-    name: "Starter",
-    price: "$299",
-    period: "per tournament",
-    subtitle: "We build it for you",
-    fee: "4% TeeVents fee + Stripe fees",
-    highlighted: true,
-    features: [
-      "Everything in Base (unlimited players)",
-      "We build your website for you",
-      "All 6 templates + custom colors",
-      "All 8 scoring formats",
-      "Live leaderboard (Stroke Play & Best Ball)",
-      "Sponsor management & recognition",
-      "Photo gallery",
-      "Custom domain support",
-      "Budget tracking",
-      "Volunteer coordination",
-      "Printable signs & name badges",
-      "Donations page",
-      "SMS texting (500 messages)",
-    ],
-  },
-  {
-    key: "premium",
-    name: "Premium",
-    price: "$999",
-    period: "per tournament",
-    fee: "5% platform fee per transaction + Stripe fees",
-    features: [
-      "Everything in Starter",
-      "White-glove consulting & setup",
-      "Priority Stripe payout support",
-      "$25,000 hole-in-one insurance (up to 72 golfers)",
-      "Auction item included",
-      "Merchandise store",
-      "Auction & raffle management",
-      "Surveys & analytics",
-      "Priority support",
-    ],
-  },
+const proHighlights = [
+  "Unlimited players",
+  "Live leaderboard + live scoring",
+  "Sponsor portal & sponsor sign-up page",
+  "Silent auction, 50/50 raffle, donation page",
+  "Add-on store (mulligans, merch, dinner)",
+  "Volunteer management with QR check-in",
+  "Email + SMS broadcasts",
+  "Custom domain & Flyer Studio",
+  "Advanced auto-pairings + budget tracking",
+  "Up to 5 team members",
+  "Automatic Stripe Connect payouts",
+  "Priority support",
 ];
 
 const UpgradePlan = () => {
   const { org } = useOrgContext();
-  const currentPlan = org?.plan || "base";
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [promoCode, setPromoCode] = useState("");
+  const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const planIndex = (plan: string) => ["free", "starter", "premium"].indexOf(plan);
+  useEffect(() => {
+    if (!org) return;
+    supabase
+      .from("tournaments")
+      .select("id, title, date, is_pro")
+      .eq("organization_id", org.orgId)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setTournaments((data as TournamentRow[]) || []));
+  }, [org]);
 
-  const handleUpgrade = async (plan: string) => {
-
-    setLoadingPlan(plan);
+  const handleUpgrade = async (tournamentId: string) => {
+    setLoadingId(tournamentId);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Please log in first");
-
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          plan,
-          email: session.user.email,
-          promo_code: promoCode.trim() || undefined,
-        },
+      const { data, error } = await supabase.functions.invoke("upgrade-to-pro", {
+        body: { tournament_id: tournamentId },
       });
       if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast.error(err.message || "Could not start checkout");
     } finally {
-      setLoadingPlan(null);
+      setLoadingId(null);
     }
   };
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Upgrade Your Plan</h1>
+        <h1 className="text-3xl font-display font-bold text-foreground">Upgrade to Pro</h1>
         <p className="text-muted-foreground mt-1">
-          Unlock more features and eliminate transaction fees.
+          Pro is a one-time <span className="font-semibold">$399 unlock per tournament</span>. No subscription, no monthly fees.
         </p>
       </div>
 
-      {/* Current plan badge */}
-      <div className="mb-6 bg-card rounded-lg border border-border p-4 flex items-center gap-3">
-        <Zap className="h-5 w-5 text-secondary" />
-        <span className="text-sm text-muted-foreground">Current plan:</span>
-        <span className="text-sm font-bold capitalize text-foreground">{currentPlan}</span>
-        <span className="text-xs text-muted-foreground">
-          ({FEE_RATES[currentPlan] || "5%"} transaction fee)
-        </span>
+      <div className="grid lg:grid-cols-2 gap-6 mb-10">
+        {/* What you get */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-border bg-card p-6"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-5 w-5 text-secondary" />
+            <h2 className="text-lg font-display font-bold text-foreground">What's in Pro</h2>
+          </div>
+          <ul className="space-y-2.5">
+            {proHighlights.map((f) => (
+              <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
+                <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+
+        {/* Enterprise */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-border bg-card p-6 flex flex-col"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Building2 className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-display font-bold text-foreground">Running 5+ tournaments / year?</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4 flex-1">
+            Enterprise gives you unlimited tournaments, white-label, dedicated account manager, custom integrations, and SLA — at a custom rate.
+          </p>
+          <Button asChild variant="outline" className="self-start">
+            <Link to="/enterprise-pricing">
+              Contact Enterprise Sales <ArrowRight className="h-4 w-4 ml-2" />
+            </Link>
+          </Button>
+        </motion.div>
       </div>
 
-      {/* Promo code */}
-      <div className="mb-8 flex items-center gap-3 max-w-md">
-        <Input
-          placeholder="Promo code (optional)"
-          value={promoCode}
-          onChange={e => setPromoCode(e.target.value)}
-          className="uppercase"
-        />
-      </div>
-
-      {/* Plans grid */}
-      <div className="grid md:grid-cols-3 gap-5">
-        {plans.map((plan, i) => {
-          const isCurrent = plan.key === currentPlan;
-          const isUpgrade = planIndex(plan.key) > planIndex(currentPlan);
-
-          return (
-            <motion.div
-              key={plan.key}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className={`relative rounded-xl p-6 border ${
-                plan.highlighted && !isCurrent
-                  ? "bg-primary text-primary-foreground border-secondary shadow-xl"
-                  : isCurrent
-                  ? "bg-secondary/5 border-secondary"
-                  : "bg-card text-card-foreground border-border"
-              }`}
-            >
-              {isCurrent && (
-                <div className="absolute -top-3 left-4 bg-secondary text-secondary-foreground text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
-                  Current Plan
+      {/* Per-tournament list */}
+      <div className="bg-card rounded-xl border border-border">
+        <div className="p-5 border-b border-border">
+          <h2 className="text-lg font-display font-bold text-foreground">Your tournaments</h2>
+          <p className="text-sm text-muted-foreground">Upgrade individual tournaments to unlock Pro features.</p>
+        </div>
+        {tournaments.length === 0 ? (
+          <p className="p-6 text-sm text-muted-foreground italic">
+            No tournaments yet. Create one first, then come back to upgrade it.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {tournaments.map((t) => (
+              <li key={t.id} className="p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">{t.title}</p>
+                  <p className="text-xs text-muted-foreground">{t.date || "No date set"}</p>
                 </div>
-              )}
-              {plan.highlighted && !isCurrent && (
-                <div className="absolute -top-3 right-4 bg-secondary text-secondary-foreground text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full flex items-center gap-1">
-                  <Crown className="h-3 w-3" /> Popular
-                </div>
-              )}
-
-              <h3 className="text-xl font-display font-bold mb-1 mt-1">{plan.name}</h3>
-              {"subtitle" in plan && (plan as any).subtitle && (
-                <p className={`text-xs font-semibold mb-1 ${plan.highlighted && !isCurrent ? "text-secondary" : "text-primary"}`}>
-                  {(plan as any).subtitle}
-                </p>
-              )}
-              <div className="mb-1">
-                <span className="text-3xl font-display font-bold">{plan.price}</span>
-                <span className={`text-xs ml-1.5 ${plan.highlighted && !isCurrent ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                  {plan.period}
-                </span>
-              </div>
-              <p className={`text-xs font-semibold mb-5 ${
-                plan.highlighted && !isCurrent ? "text-secondary" : "text-primary"
-              }`}>
-                + {plan.fee}
-              </p>
-
-              <ul className="space-y-2.5 mb-6">
-                {plan.features.map(feat => (
-                  <li key={feat} className="flex items-start gap-2">
-                    <Check className={`h-3.5 w-3.5 mt-0.5 flex-shrink-0 ${
-                      plan.highlighted && !isCurrent ? "text-secondary" : "text-primary"
-                    }`} />
-                    <span className={`text-xs ${
-                      plan.highlighted && !isCurrent ? "text-primary-foreground/90" : "text-muted-foreground"
-                    }`}>
-                      {feat}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {isCurrent ? (
-                <Button variant="outline" disabled className="w-full text-xs">
-                  Current Plan
-                </Button>
-              ) : isUpgrade ? (
-                <Button
-                  onClick={() => handleUpgrade(plan.key)}
-                  disabled={!!loadingPlan}
-                  className={`w-full text-xs ${
-                    plan.highlighted
-                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                      : ""
-                  }`}
-                >
-                  {loadingPlan === plan.key ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  ) : (
-                    <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                  )}
-                  Upgrade to {plan.name}
-                </Button>
-              ) : (
-                <Button variant="ghost" disabled className="w-full text-xs text-muted-foreground">
-                  Included in your plan
-                </Button>
-              )}
-            </motion.div>
-          );
-        })}
+                {t.is_pro ? (
+                  <span className="inline-flex items-center gap-1 bg-secondary/15 text-secondary text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                    <Check className="h-3.5 w-3.5" /> Pro Unlocked
+                  </span>
+                ) : (
+                  <Button
+                    onClick={() => handleUpgrade(t.id)}
+                    disabled={loadingId === t.id}
+                    size="sm"
+                  >
+                    {loadingId === t.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    Upgrade — $399
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

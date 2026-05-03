@@ -89,7 +89,9 @@ Deno.serve(async (req) => {
 
     if (updateError) throw new Error("Failed to disconnect Stripe account");
 
-    // Clear payout methods stripe fields
+    // Fully clear payout methods — wipe ALL Stripe-related cache so the next
+    // connection starts from a clean slate. Without this, stale account info
+    // (last4, brand, bank name, preferred_method) can shadow the new account.
     await supabaseAdmin
       .from("organization_payout_methods")
       .update({
@@ -98,9 +100,26 @@ Deno.serve(async (req) => {
         stripe_account_status: "pending",
         stripe_account_last4: null,
         stripe_account_brand: null,
+        stripe_bank_account_token: null,
+        bank_name: null,
+        account_last_four: null,
+        routing_last_four: null,
         is_verified: false,
+        preferred_method: null,
+        pending_change_email: null,
+        change_requested_at: null,
+        change_request_status: "none",
+        verification_notes: null,
       })
       .eq("organization_id", organization_id);
+
+    // Defensive: also force-clear the org's payment_method_override so we don't
+    // keep a stale "force_stripe" pointing at a disconnected account.
+    await supabaseAdmin
+      .from("tournaments")
+      .update({ payment_method_override: "default" })
+      .eq("organization_id", organization_id)
+      .eq("payment_method_override", "force_stripe");
 
     // Log the disconnect
     await supabaseAdmin.from("stripe_onboarding_logs").insert({

@@ -19,7 +19,7 @@ interface UpgradeModalProps {
 
 export function UpgradeModal({ isOpen, onClose, title, description, currentPlan = "Base" }: UpgradeModalProps) {
   const handleUpgrade = (plan: "Starter" | "Premium") => {
-    window.location.href = `/pricing`;
+    window.location.href = `/plans`;
     onClose();
   };
 

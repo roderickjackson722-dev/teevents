@@ -284,7 +284,7 @@ function StudySheetTab() {
 
         <section id="study-support">
           <SectionHeader num={7} title="Support & Resources" />
-          <SimpleTable headers={["Resource", "Location"]} rows={[["Help Center", "/help (7 articles)"], ["Email", "info@teevents.golf"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
+          <SimpleTable headers={["Resource", "Location"]} rows={[["Help Center", "/help (7 articles)"], ["Email", "info@teevents.golf"], ["How It Works", "/plans"], ["Pricing", "/plans"], ["FAQ", "/faq"]]} />
         </section>
 
         <section id="study-metrics">

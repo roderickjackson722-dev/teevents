@@ -368,8 +368,8 @@ const StudySheet = () => {
           <Section id="support" num={14} title="Support & Resources">
             <SimpleTable headers={["Resource", "Location"]} rows={[
               ["Help Center", "/help (12+ articles)"],
-              ["How It Works", "/how-it-works"],
-              ["Pricing", "/pricing"],
+              ["How It Works", "/plans"],
+              ["Pricing", "/plans"],
               ["FAQ", "/faq"],
               ["Comparison", "/compare/eventbrite-vs-teevents"],
               ["Email Support", "info@teevents.golf"],
@@ -788,8 +788,8 @@ function buildPdfHtml(): string {
     <section><h2>14. Support & Resources</h2>
       ${t(["Resource", "Location"], [
         ["Help Center", "/help (12+ articles)"],
-        ["How It Works", "/how-it-works"],
-        ["Pricing", "/pricing"],
+        ["How It Works", "/plans"],
+        ["Pricing", "/plans"],
         ["FAQ", "/faq"],
         ["Comparison", "/compare/eventbrite-vs-teevents"],
         ["Email Support", "info@teevents.golf"],

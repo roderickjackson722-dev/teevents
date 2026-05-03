@@ -191,7 +191,7 @@ const SampleDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <Badge className="bg-green-100 text-green-800 border-green-200">{t.status}</Badge>
-            <Button size="sm" variant="secondary" onClick={() => navigate("/pricing")}>Get Started</Button>
+            <Button size="sm" variant="secondary" onClick={() => navigate("/plans")}>Get Started</Button>
           </div>
         </header>
 
@@ -277,8 +277,8 @@ const SampleDashboard = () => {
             )}
           </div>
           <div className="flex gap-2 mt-2">
-            <Button onClick={() => navigate("/pricing")} className="flex-1">View Pricing</Button>
-            <Button variant="outline" onClick={() => navigate("/pricing")} className="flex-1">Start Free Trial</Button>
+            <Button onClick={() => navigate("/plans")} className="flex-1">View Pricing</Button>
+            <Button variant="outline" onClick={() => navigate("/plans")} className="flex-1">Start Free Trial</Button>
           </div>
         </DialogContent>
       </Dialog>

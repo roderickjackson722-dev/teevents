@@ -68,7 +68,8 @@ Deno.serve(async (req) => {
       .update({ stripe_account_id: null })
       .eq("id", organization_id);
 
-    // Clear stripe from payout methods table
+    // Clear stripe from payout methods table — full wipe so the next
+    // connection is clean (last4, brand, bank name, preferred method, etc.).
     await supabaseAdmin
       .from("organization_payout_methods")
       .update({
@@ -77,9 +78,25 @@ Deno.serve(async (req) => {
         stripe_account_status: "pending",
         stripe_account_last4: null,
         stripe_account_brand: null,
+        stripe_bank_account_token: null,
+        bank_name: null,
+        account_last_four: null,
+        routing_last_four: null,
         is_verified: false,
+        preferred_method: null,
+        pending_change_email: null,
+        change_requested_at: null,
+        change_request_status: "none",
+        verification_notes: null,
       })
       .eq("organization_id", organization_id);
+
+    // Force-clear any tournaments that hard-pinned to organizer Stripe routing.
+    await supabaseAdmin
+      .from("tournaments")
+      .update({ payment_method_override: "default" })
+      .eq("organization_id", organization_id)
+      .eq("payment_method_override", "force_stripe");
 
     // Log the reset
     await supabaseAdmin.from("stripe_onboarding_logs").insert({

@@ -191,23 +191,57 @@ const CustomerAuth = () => {
         </Link>
 
         <div className="bg-card rounded-xl border border-border p-8 shadow-lg">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <img src={logoBlack} alt="TeeVents" className="h-14 w-14 mx-auto mb-4 object-contain" />
             <h1 className="text-2xl font-display font-bold text-foreground">
               {isForgotPassword
                 ? "Reset Password"
                 : isSignUp
-                ? "Get Started"
+                ? "Create Your Free Account"
                 : "Welcome Back"}
             </h1>
             <p className="text-sm text-muted-foreground mt-2">
               {isForgotPassword
                 ? "Enter your email and we'll send a reset link"
                 : isSignUp
-                ? "Create your account to start managing tournaments"
+                ? "Start free in under 2 minutes — no credit card required"
                 : "Sign in to manage your tournaments"}
             </p>
           </div>
+
+          {/* Prominent Sign Up / Sign In toggle */}
+          {!isForgotPassword && (
+            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(true);
+                  setAgreements({});
+                }}
+                className={`py-2 px-4 rounded-md text-sm font-semibold transition-all ${
+                  isSignUp
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign Up
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(false);
+                  setAgreements({});
+                }}
+                className={`py-2 px-4 rounded-md text-sm font-semibold transition-all ${
+                  !isSignUp
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign In
+              </button>
+            </div>
+          )}
 
           {/* Forgot Password Form */}
           {isForgotPassword ? (

@@ -4881,6 +4881,10 @@ export type Database = {
         Args: { _trip_id: string; _user_id: string }
         Returns: boolean
       }
+      recompute_tournament_setup_progress: {
+        Args: { _tournament_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

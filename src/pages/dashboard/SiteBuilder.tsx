@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import {
   Loader2,
   Save,
@@ -383,6 +384,9 @@ const SiteBuilder = () => {
     }
 
     toast({ title: "Site saved!", description: "Your changes have been saved." });
+    if (settings.site_published) {
+      markChecklistTaskComplete(settings.id, "customize_public_site");
+    }
     setSaving(false);
   };
 

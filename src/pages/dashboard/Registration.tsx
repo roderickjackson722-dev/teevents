@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -212,6 +213,7 @@ const Registration = () => {
             : t,
         ),
       );
+      markChecklistTaskComplete(selectedTournament, "set_registration_pricing");
     }
     setSaving(false);
   };

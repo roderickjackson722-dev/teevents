@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import {
   CreditCard,
   CheckCircle2,
@@ -110,6 +111,7 @@ const Settings = () => {
       toast.success("Scoring format updated!");
       setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, scoring_format: newFormat } : t));
       setFormatEdits((prev) => { const n = { ...prev }; delete n[tournamentId]; return n; });
+      markChecklistTaskComplete(tournamentId, "choose_scoring_format");
     }
     setSavingFormat(null);
   };

@@ -68,6 +68,9 @@ const CustomerAuth = () => {
     if (params.get("plan") === "free") {
       setIsSignUp(true);
     }
+    if (params.get("mode") === "signin") {
+      setIsSignUp(false);
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {

@@ -54,7 +54,7 @@ export default function SetupChecklistPage() {
           straight to that section. Tasks auto-complete as you save your work.
         </p>
       </div>
-      <SetupChecklist tournamentId={tournamentId} />
+      <SetupChecklist tournamentId={tournamentId} autoRecompute />
     </div>
   );
 }

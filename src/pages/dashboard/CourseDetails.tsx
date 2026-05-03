@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
+import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 
 interface HoleData {
   par: string;
@@ -247,6 +248,7 @@ export default function CourseDetails() {
       toast({ title: "Course details saved!" });
       queryClient.invalidateQueries({ queryKey: ["course-details", tournamentId] });
       queryClient.invalidateQueries({ queryKey: ["handicap-players", tournamentId] });
+      markChecklistTaskComplete(tournamentId, "add_course_details");
     },
     onError: (e: Error) => {
       toast({ title: "Error saving", description: e.message, variant: "destructive" });

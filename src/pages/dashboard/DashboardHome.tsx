@@ -7,11 +7,15 @@ import { useAdminLink } from "@/hooks/useAdminLink";
 import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChart3, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import UpgradeToProBanner from "@/components/UpgradeToProBanner";
+import { toast } from "sonner";
+
 interface Tournament {
   id: string;
   slug: string | null;
   title: string;
   date: string | null;
+  is_pro?: boolean;
 }
 
 function getCountdown(dateStr: string | null) {
@@ -37,14 +41,14 @@ const DashboardHome = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, slug, title, date", { count: "exact" })
+      .select("id, slug, title, date, is_pro", { count: "exact" })
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .limit(1)
       .then(({ data, count }) => {
         setTournamentCount(count ?? 0);
         if (data && data.length > 0) {
-          setLatestTournament(data[0]);
+          setLatestTournament(data[0] as Tournament);
         }
       });
   }, [org]);

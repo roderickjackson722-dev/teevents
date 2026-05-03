@@ -157,6 +157,24 @@ const Tournaments = () => {
 
   return (
     <div>
+      {/* Setup Checklist pointer */}
+      <div className="mb-6 rounded-lg border border-secondary/40 bg-secondary/10 p-4 flex items-start gap-3">
+        <ClipboardCheck className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-foreground">New here? Start with your Setup Checklist.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Begin on the <strong>Tournament Details</strong> page below, then follow the step-by-step
+            Setup Checklist to launch your tournament. Tasks auto-complete as you save your work.
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm" className="flex-shrink-0">
+          <Link to={buildLink("/dashboard/setup-checklist")}>
+            Open Checklist
+            <ArrowRight className="h-3.5 w-3.5 ml-1" />
+          </Link>
+        </Button>
+      </div>
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Tournaments</h1>

@@ -47,8 +47,15 @@ interface SidebarCategory {
   items: NavItem[];
 }
 
-// Phase-based navigation: Setup → Promotion → Operations → Finance → Post-Event → Settings
+// Phase-based navigation: Organizer Setup → Setup → Promotion → Operations → Finance → Post-Event → Settings
 const categories: SidebarCategory[] = [
+  {
+    label: "Organizer Setup",
+    color: "border-l-secondary",
+    items: [
+      { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null },
+    ],
+  },
   {
     label: "Setup",
     color: "border-l-blue-400",
@@ -60,7 +67,6 @@ const categories: SidebarCategory[] = [
       { title: "Registration Form", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
       { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: "sponsors" },
       { title: "Team Management", url: "/dashboard/settings", icon: Building2, feature: null },
-      { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null },
       { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
     ],
   },

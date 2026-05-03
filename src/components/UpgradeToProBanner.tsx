@@ -69,7 +69,7 @@ const UpgradeToProBanner = ({ tournamentId, tournamentTitle, variant = "banner" 
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/pricing">Learn More</Link>
+            <Link to="/plans">Learn More</Link>
           </Button>
         </div>
       </div>

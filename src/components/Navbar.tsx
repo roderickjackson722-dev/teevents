@@ -7,9 +7,9 @@ import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 
 const baseLinks = [
   { label: "Home", to: "/" },
-  { label: "How It Works", to: "/how-it-works" },
+  { label: "Plans & Pricing", to: "/plans" },
   { label: "Find a Tournament", to: "/tournaments/search" },
-  { label: "Get Started", to: "/pricing" },
+  { label: "Get Started", to: "/plans" },
   { label: "About Us", to: "/about" },
   { label: "Reviews", to: "/reviews" },
   { label: "Contact", to: "/contact" },

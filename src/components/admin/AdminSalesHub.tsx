@@ -261,7 +261,7 @@ function StudySheetTab() {
 
         <section id="study-support">
           <SectionHeader num={7} title="Support & Resources" />
-          <SimpleTable headers={["Resource", "Location"]} rows={[["Help Center", "/help (7 articles)"], ["Email", "info@teevents.golf"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
+          <SimpleTable headers={["Resource", "Location"]} rows={[["Help Center", "/help (7 articles)"], ["Email", "info@teevents.golf"], ["How It Works", "/plans"], ["Pricing", "/plans"], ["FAQ", "/faq"]]} />
         </section>
 
         <section id="study-metrics">
@@ -501,7 +501,7 @@ const EMAIL_TEMPLATES = [
     id: "onboarding-welcome",
     name: "Onboarding Welcome",
     subject: "Welcome to TeeVents – Here's what to do next",
-    body: `Hi [Name],\n\nWelcome to TeeVents! I'm excited to help you run your best tournament yet.\n\nHere are your next steps:\n\n1. Log in at teevents.golf/login\n2. Create your first tournament\n3. Set your registration fee and customize your site\n4. Share your tournament link with golfers\n\nNeed help? Reply to this email or call (602) 413-1338.\n\nHere are some helpful resources:\n• How It Works: teevents.golf/how-it-works\n• Help Center: teevents.golf/help\n• FAQ: teevents.golf/faq\n\nLet's make your tournament a success!\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+    body: `Hi [Name],\n\nWelcome to TeeVents! I'm excited to help you run your best tournament yet.\n\nHere are your next steps:\n\n1. Log in at teevents.golf/login\n2. Create your first tournament\n3. Set your registration fee and customize your site\n4. Share your tournament link with golfers\n\nNeed help? Reply to this email or call (602) 413-1338.\n\nHere are some helpful resources:\n• How It Works: teevents.golf/plans\n• Help Center: teevents.golf/help\n• FAQ: teevents.golf/faq\n\nLet's make your tournament a success!\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
   },
   {
     id: "demo-followup",
@@ -566,8 +566,8 @@ const SALES_LINKS = [
   { name: "Get Started", url: "/get-started", useCase: "Direct signups" },
   { name: "Demo Calendly", url: "https://calendly.com/teevents/teevents-demo", useCase: "Booking link", external: true },
   { name: "Sample Organizer", url: "/sample-organizer", useCase: "Share with prospects (noindex)" },
-  { name: "Pricing Page", url: "/pricing", useCase: "Fee explanation" },
-  { name: "How It Works", url: "/how-it-works", useCase: "Platform overview" },
+  { name: "Pricing Page", url: "/plans", useCase: "Fee explanation" },
+  { name: "How It Works", url: "/plans", useCase: "Platform overview" },
   { name: "Help Center", url: "/help", useCase: "Support resources" },
   { name: "Demo Agenda", url: "/sales/demo-agenda", useCase: "Pre-call prep" },
 ];

@@ -1,10 +1,42 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Crown, Shield, Lock, CreditCard, Smartphone, Sparkles } from "lucide-react";
+import {
+  Check, ArrowRight, Crown, Shield, Lock, CreditCard, Smartphone, Sparkles,
+  Globe, Users, BarChart3, Award, MessageSquare, QrCode, Printer, Trophy,
+  DollarSign, Tag, Palette, Building2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 
+/* ─── Core Modules ─── */
+const coreModules = [
+  { icon: Globe, title: "Custom Tournament Website", desc: "Branded site with built-in tabs, mobile-responsive, custom domain support — no coding required." },
+  { icon: CreditCard, title: "Online Registration", desc: "Stripe-powered checkout with Apple Pay & Google Pay, add-ons, promo codes, and automated confirmations." },
+  { icon: Users, title: "Player Management & Pairings", desc: "Drag-and-drop pairings, CSV import, hole assignments, and handicap tracking." },
+  { icon: BarChart3, title: "Real-Time Budget Tracker", desc: "Revenue and expense line items by category with live profit/loss summary." },
+  { icon: Award, title: "Sponsor Management", desc: "Tiered sponsor levels, logo uploads, payment tracking, and leaderboard logo rotation." },
+  { icon: MessageSquare, title: "SMS & Email Messaging", desc: "Bulk email and SMS to golfers, sponsors, and volunteers with scheduling and delivery tracking." },
+];
+
+/* ─── Scoring Steps ─── */
+const scoringSteps = [
+  { step: "1", icon: Printer, title: "Print Scorecards", desc: "Generate professional scorecards with embedded QR codes — one click from the Printables dashboard." },
+  { step: "2", icon: QrCode, title: "Player Scans QR", desc: "Each QR is unique to the player and links directly to their group's scoring page." },
+  { step: "3", icon: Smartphone, title: "Score on Any Device", desc: "Players enter scores hole-by-hole on their phone. Supports 8 formats including Scramble and Best Ball." },
+  { step: "4", icon: Trophy, title: "Live Leaderboard", desc: "Scores update in real-time on the tournament leaderboard with sponsor logo rotations." },
+];
+
+/* ─── Why Choose Us ─── */
+const whyChooseUs = [
+  { icon: DollarSign, title: "No monthly subscriptions", desc: "Start free. Pay $399 only when you upgrade a tournament." },
+  { icon: Palette, title: "White-label branding", desc: "Your tournament, your colors, your custom domain — never our logo." },
+  { icon: Shield, title: "PCI Level 1 payments", desc: "Bank-level Stripe security on every transaction. We never hold your money." },
+  { icon: Tag, title: "Built for golf", desc: "8 scoring formats, sponsor portals, auctions, and donations — purpose-built." },
+  { icon: Building2, title: "Three payout methods", desc: "Stripe Connect (auto), PayPal (bi-weekly), or check on request." },
+  { icon: Users, title: "Real human support", desc: "Talk to golf-industry pros, not chatbots. Priority response on Pro and Enterprise." },
+];
+
+/* ─── Pricing Features ─── */
 const baseFeatures = [
   "Branded tournament website (tournament/your-slug)",
   "Online registration — individuals & teams",
@@ -54,38 +86,157 @@ const enterpriseFeatures = [
   "Volume pricing for high-volume operators",
 ];
 
-const Pricing = () => {
+/* ─── Component ─── */
+const Plans = () => {
   return (
     <Layout>
       <SEO
-        title="Pricing | TeeVents — Start Free, Upgrade When You Need More"
-        description="Start for free. No credit card required. Upgrade to Pro for $399 per tournament to unlock live leaderboard, sponsor portal, auction, and automatic payouts."
-        path="/pricing"
+        title="Plans & Pricing | TeeVents — Start Free, Upgrade When You Need More"
+        description="Six powerful tools, one dashboard. Start free with no credit card. Upgrade to Pro for $399 per tournament to unlock live leaderboard, sponsor portal, auction, and automatic payouts."
+        path="/plans"
       />
 
-      {/* Hero */}
+      {/* 1. HERO */}
       <section className="bg-primary pt-24 pb-14">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
               Start for free. Upgrade when you need more.
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               No credit card required. No time limit on the free tier.
             </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/get-started"
+                className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
+              >
+                Get Started <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="#pricing"
+                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
+              >
+                See Pricing
+              </a>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Plans */}
-      <section className="bg-background py-16">
+      {/* 2. CORE MODULES */}
+      <section className="bg-background py-20">
         <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Six Powerful Tools, One Dashboard
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to plan, promote, and run your tournament — without juggling spreadsheets and separate tools.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {coreModules.map((m, i) => (
+              <motion.div
+                key={m.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="rounded-xl border border-border bg-card p-6"
+              >
+                <div className="inline-flex items-center justify-center h-11 w-11 rounded-lg bg-primary/10 text-primary mb-4">
+                  <m.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-lg font-display font-bold text-foreground mb-2">{m.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{m.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. PLAYER EXPERIENCE — Scan. Score. Done. */}
+      <section className="bg-primary/5 py-20">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <p className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-3">Player Experience</p>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Scan. Score. Done.
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Live scoring straight from a player's phone — no apps to download, no logins, no friction.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {scoringSteps.map((s, i) => (
+              <motion.div
+                key={s.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="relative rounded-xl bg-card border border-border p-6"
+              >
+                <div className="absolute -top-3 -left-3 h-8 w-8 rounded-full bg-secondary text-secondary-foreground font-bold text-sm flex items-center justify-center">
+                  {s.step}
+                </div>
+                <s.icon className="h-7 w-7 text-primary mb-3" />
+                <h3 className="text-base font-display font-bold text-foreground mb-2">{s.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. WHY CHOOSE US */}
+      <section className="bg-background py-20">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Why Organizers Choose TeeVents
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Built for golf, priced for organizers, trusted by clubs and nonprofits across the country.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {whyChooseUs.map((b, i) => (
+              <motion.div
+                key={b.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="flex items-start gap-4"
+              >
+                <div className="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-secondary/15 text-secondary">
+                  <b.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground mb-1">{b.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. PRICING */}
+      <section id="pricing" className="bg-primary/5 py-20">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              No hidden fees. No long-term contracts. Choose the plan that fits your event.
+            </p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-6 items-stretch">
-            {/* BASE */}
             <PlanCard
               name="Base"
               tagline="First-time organizers & small events"
@@ -98,8 +249,6 @@ const Pricing = () => {
               variant="default"
               footnote="1 active tournament • Up to 72 players"
             />
-
-            {/* PRO */}
             <PlanCard
               name="Pro"
               tagline="Fundraisers, clubs & recurring events"
@@ -113,8 +262,6 @@ const Pricing = () => {
               badge="Most Popular"
               footnote="Unlimited players • Pay per tournament you upgrade"
             />
-
-            {/* ENTERPRISE */}
             <PlanCard
               name="Enterprise"
               tagline="5+ tournaments per year • White-label"
@@ -129,7 +276,7 @@ const Pricing = () => {
             />
           </div>
 
-          {/* How it works */}
+          {/* How Pro Works */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -154,8 +301,9 @@ const Pricing = () => {
           {/* Secure Payments */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
             className="mt-12 rounded-xl border border-border bg-card p-8 md:p-10"
           >
             <div className="text-center mb-8">
@@ -194,7 +342,7 @@ const Pricing = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* 6. FINAL CTA */}
       <section className="bg-primary py-14">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -243,18 +391,16 @@ function PlanCard({
   name, tagline, price, period, fee, features, ctaLabel, ctaTo, variant, badge, footnote,
 }: PlanCardProps) {
   const isHighlighted = variant === "highlighted";
-  const isEnterprise = variant === "enterprise";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       className={`relative rounded-xl p-8 border flex flex-col ${
         isHighlighted
           ? "bg-primary text-primary-foreground border-secondary shadow-2xl lg:scale-105"
-          : isEnterprise
-          ? "bg-card text-card-foreground border-border"
           : "bg-card text-card-foreground border-border"
       }`}
     >
@@ -312,4 +458,4 @@ function PlanCard({
   );
 }
 
-export default Pricing;
+export default Plans;

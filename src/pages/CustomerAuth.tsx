@@ -41,6 +41,8 @@ const FREE_PLAN_AGREEMENT_ITEM = {
 const CustomerAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -124,10 +126,26 @@ const CustomerAuth = () => {
         setLoading(false);
         return;
       }
+      if (!fullName.trim()) {
+        toast({ title: "Please enter your full name", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+      if (!phone.trim()) {
+        toast({ title: "Please enter a contact phone number", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            full_name: fullName.trim(),
+            phone: phone.trim(),
+          },
+        },
       });
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -138,7 +156,7 @@ const CustomerAuth = () => {
         });
         // Notify admin of new signup (fire and forget)
         supabase.functions.invoke("notify-new-signup", {
-          body: { email },
+          body: { email, full_name: fullName.trim(), phone: phone.trim() },
         });
       }
     } else {
@@ -215,6 +233,34 @@ const CustomerAuth = () => {
           ) : (
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignUp && (
+                  <>
+                    <div>
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Jane Smith"
+                        required
+                        maxLength={100}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Contact Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="(555) 123-4567"
+                        required
+                        maxLength={20}
+                      />
+                    </div>
+                  </>
+                )}
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input

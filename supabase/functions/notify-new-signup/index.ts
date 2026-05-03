@@ -10,7 +10,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { email } = await req.json();
+    const { email, full_name, phone } = await req.json();
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       return new Response(JSON.stringify({ error: "Email not configured" }), {
@@ -29,7 +29,9 @@ serve(async (req) => {
         <h2 style="color: #1a5c38;">New Free Platform User</h2>
         <p>A new tournament organizer has signed up for the <strong>Free (Base) Platform</strong>.</p>
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Name</td><td style="padding:8px;border:1px solid #e5e7eb;">${full_name || "—"}</td></tr>
           <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Email</td><td style="padding:8px;border:1px solid #e5e7eb;">${email}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Phone</td><td style="padding:8px;border:1px solid #e5e7eb;">${phone || "—"}</td></tr>
           <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Plan</td><td style="padding:8px;border:1px solid #e5e7eb;">Base (Free – 5% platform fee per transaction)</td></tr>
           <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Date</td><td style="padding:8px;border:1px solid #e5e7eb;">${new Date().toLocaleString("en-US")}</td></tr>
         </table>

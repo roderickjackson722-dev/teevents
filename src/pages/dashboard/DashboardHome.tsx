@@ -8,6 +8,7 @@ import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChar
 import { Button } from "@/components/ui/button";
 
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
+import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
 
 interface Tournament {

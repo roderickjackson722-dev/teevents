@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2, Pencil } from "lucide-react";
+import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2, Pencil, ClipboardCheck, ArrowRight } from "lucide-react";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 interface Tournament {

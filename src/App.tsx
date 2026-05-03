@@ -63,8 +63,7 @@ import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import Nonprofits from "./pages/Nonprofits";
-import HowItWorks from "./pages/HowItWorks";
-import Pricing from "./pages/Pricing";
+import Plans from "./pages/Plans";
 import EnterprisePricing from "./pages/EnterprisePricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import SampleDashboard from "./pages/SampleDashboard";
@@ -116,7 +115,7 @@ const App = () => (
           <Route path="/" element={<CustomDomainRouter />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/platform" element={<Navigate to="/how-it-works" replace />} />
+          <Route path="/platform" element={<Navigate to="/plans" replace />} />
           <Route path="/events" element={<Events />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/contact" element={<Contact />} />
@@ -175,8 +174,9 @@ const App = () => (
           <Route path="/flyer" element={<Flyer />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
-           <Route path="/how-it-works" element={<HowItWorks />} />
-           <Route path="/pricing" element={<Pricing />} />
+           <Route path="/plans" element={<Plans />} />
+           <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />
+           <Route path="/pricing" element={<Navigate to="/plans" replace />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
            <Route path="/sample-organizer" element={<SampleOrganizer />} />
            <Route path="/sample-dashboard" element={<SampleDashboard />} />

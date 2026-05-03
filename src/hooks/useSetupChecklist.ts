@@ -116,6 +116,14 @@ export function useSetupChecklist(tournamentId: string | null | undefined) {
     [tournamentId, load],
   );
 
+  const recompute = useCallback(async () => {
+    if (!tournamentId) return;
+    await supabase.functions.invoke("update-checklist-task", {
+      body: { tournament_id: tournamentId, recompute: true },
+    });
+    await load();
+  }, [tournamentId, load]);
+
   const total = items.length;
   const completed = items.filter((i) => i.status === "completed").length;
   const requiredTotal = items.filter((i) => i.required).length;
@@ -127,10 +135,33 @@ export function useSetupChecklist(tournamentId: string | null | undefined) {
     loading,
     setStatus,
     reload: load,
+    recompute,
     total,
     completed,
     requiredTotal,
     requiredCompleted,
     percent,
   };
+}
+
+/**
+ * Lightweight helper for save handlers across the dashboard. Marks a task done
+ * by `task_key` without needing the full hook lifecycle. Safe to fire-and-forget.
+ */
+export async function markChecklistTaskComplete(
+  tournamentId: string | null | undefined,
+  taskKey: string,
+) {
+  if (!tournamentId) return;
+  try {
+    await supabase.functions.invoke("update-checklist-task", {
+      body: {
+        tournament_id: tournamentId,
+        task_key: taskKey,
+        status: "completed",
+      },
+    });
+  } catch (e) {
+    console.warn("markChecklistTaskComplete failed", e);
+  }
 }

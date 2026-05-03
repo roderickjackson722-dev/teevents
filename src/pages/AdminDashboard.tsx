@@ -12,6 +12,7 @@ import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminStore from "@/components/admin/AdminStore";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
+import AdminFeatureGuide from "@/components/admin/AdminFeatureGuide";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminTransactions from "@/components/admin/AdminTransactions";
@@ -42,7 +43,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log">("all-tournaments");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "feature-guide">("all-tournaments");
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -798,7 +799,8 @@ const AdminDashboard = () => {
                   ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["accounting", "Accounting", DollarSign],
                   ["group-trips", "Group Trips", Plane],
-                  ["feature-flags", "Feature Flags", KeyRound],
+                   ["feature-flags", "Feature Flags", KeyRound],
+                   ["feature-guide", "Feature Guide PDF", FileText],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}

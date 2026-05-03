@@ -231,6 +231,15 @@ const HowItWorks = () => {
       window.location.href = "/get-started?plan=free";
       return;
     }
+    if (plan === "enterprise") {
+      window.location.href = "/enterprise-pricing";
+      return;
+    }
+    if (plan === "pro") {
+      // Pro is unlocked per-tournament from the organizer dashboard
+      window.location.href = "/dashboard/upgrade-plan";
+      return;
+    }
     setLoadingPlan(plan);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {

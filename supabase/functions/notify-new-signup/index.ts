@@ -50,7 +50,7 @@ serve(async (req) => {
       {
         templateName: "admin-new-signup-notification",
         source: "notify-new-signup",
-        metadata: { signup_email: email },
+        metadata: { signup_email: email, full_name, phone },
       },
     );
 

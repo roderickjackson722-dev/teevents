@@ -43,7 +43,7 @@ const FREE_PLAN_AGREEMENT_ITEM = {
 };
 
 const CustomerAuth = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");

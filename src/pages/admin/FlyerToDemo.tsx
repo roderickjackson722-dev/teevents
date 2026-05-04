@@ -435,6 +435,7 @@ Want a 15-minute demo?`;
                 <div>
                   <Label>Contact Phone</Label>
                   <Input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+                </div>
                 <div className="col-span-2 border-t pt-3 mt-1">
                   <Label>Hero Background Image (optional)</Label>
                   <p className="text-xs text-muted-foreground mb-2">

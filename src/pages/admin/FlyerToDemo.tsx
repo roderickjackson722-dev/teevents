@@ -303,24 +303,26 @@ const FlyerToDemo = () => {
   const handleDownloadAllZip = async () => {
     try {
       const zip = new JSZip();
-      const sections = [
-        { sel: "section[data-section='hero'], header, [class*='hero']", name: "01-hero.png" },
-        { sel: "[data-section='registrations'], [class*='registration']", name: "02-registrations.png" },
-        { sel: "[data-section='leaderboard'], [class*='leaderboard']", name: "03-leaderboard.png" },
-        { sel: "body", name: "04-full-page.png" },
-      ];
       let added = 0;
-      for (const s of sections) {
-        const blob = await captureIframeSection(s.sel, s.name);
+      const missing: string[] = [];
+      for (const s of SCREENSHOT_SECTIONS) {
+        const blob = await captureSectionById(s.id);
         if (blob) {
-          zip.file(s.name, blob);
+          zip.file(s.filename, blob);
           added++;
+        } else {
+          missing.push(s.label);
         }
       }
       if (added === 0) throw new Error("Could not capture any sections from the iframe.");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      downloadBlob(zipBlob, `${name.replace(/[^a-z0-9]+/gi, "-")}-demo-screenshots.zip`);
-      toast({ title: "ZIP downloaded", description: `${added} screenshots packaged.` });
+      downloadBlob(zipBlob, `${slugSafe()}-demo-screenshots.zip`);
+      toast({
+        title: "ZIP downloaded",
+        description:
+          `${added} screenshots packaged.` +
+          (missing.length ? ` Skipped (not on this site): ${missing.join(", ")}.` : ""),
+      });
     } catch (e: any) {
       console.error(e);
       toast({

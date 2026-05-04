@@ -331,7 +331,7 @@ const Index = () => {
               { num: "1", title: "Golfer Pays", desc: "Full registration amount charged at checkout via Stripe." },
               { num: "2", title: "5% Fee Deducted", desc: "TeeVents automatically receives a 5% platform fee." },
               { num: "3", title: "Stripe Fee Applied", desc: "Standard 2.9% + $0.30 processing fee deducted by Stripe." },
-              { num: "4", title: "You Get Paid", desc: "Net proceeds land directly in your connected Stripe account." },
+              { num: "4", title: "You Get Paid", desc: "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2–7 business days (standard Stripe review)." },
             ].map((step, i) => (
               <motion.div
                 key={step.num}
@@ -352,7 +352,7 @@ const Index = () => {
 
           <div className="mt-10 bg-primary/5 border border-primary/20 rounded-xl p-6 text-center">
             <p className="text-foreground font-semibold">
-              💡 TeeVents never holds your money. Stripe sends net proceeds directly to your bank account on your schedule.
+              💡 TeeVents never holds your money. Stripe sends net proceeds directly to your bank account on your schedule. For brand-new Stripe Connect accounts, Stripe applies a standard 2–7 business day review before funds become available to withdraw.
             </p>
           </div>
         </div>

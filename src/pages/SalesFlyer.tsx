@@ -10,7 +10,7 @@ const leftFeatures = [
   "Online registration with credit card, Apple Pay & Google Pay",
   "QR code check‑in – players scan from their phone",
   "Live leaderboard – real‑time gross & net scores",
-  "Automatic payout to your bank account (Stripe Connect)",
+  "Automatic payouts to your Stripe account – funds sent immediately after each registration. New accounts: 2–7 day review by Stripe.",
   "Printable scorecards with player handicap strokes (dots per hole)",
 ];
 

@@ -227,22 +227,47 @@ const FlyerToDemo = () => {
     }
   };
 
-  const captureIframeSection = async (selector: string, filename: string): Promise<Blob | null> => {
+  // Sections we capture from the public tournament site (matches ids in PublicTournament.tsx)
+  const SCREENSHOT_SECTIONS: { id: string; label: string; filename: string }[] = [
+    { id: "hero", label: "Hero", filename: "01-hero.png" },
+    { id: "register", label: "Registration", filename: "02-registration.png" },
+    { id: "leaderboard", label: "Leaderboard", filename: "03-leaderboard.png" },
+    { id: "sponsors", label: "Sponsors", filename: "04-sponsors.png" },
+    { id: "schedule", label: "Schedule", filename: "05-schedule.png" },
+    { id: "about", label: "About", filename: "06-about.png" },
+    { id: "location", label: "Location", filename: "07-location.png" },
+    { id: "contact", label: "Contact", filename: "08-contact.png" },
+  ];
+
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const captureSectionById = async (sectionId: string): Promise<Blob | null> => {
     const iframe = previewRef.current;
     if (!iframe) return null;
     const doc = iframe.contentDocument;
-    if (!doc) return null;
-    const target = (doc.querySelector(selector) as HTMLElement) || doc.body;
+    const win = iframe.contentWindow;
+    if (!doc || !win) return null;
+    const target = doc.getElementById(sectionId) as HTMLElement | null;
     if (!target) return null;
+
+    // Scroll element into view inside iframe so lazy/in-view animations render
+    target.scrollIntoView({ behavior: "instant" as ScrollBehavior, block: "start" });
+    await wait(450);
+
     const canvas = await html2canvas(target, {
       backgroundColor: "#ffffff",
       useCORS: true,
+      allowTaint: true,
       scale: 2,
       windowWidth: iframe.clientWidth,
       windowHeight: iframe.clientHeight,
+      width: target.scrollWidth,
+      height: target.scrollHeight,
     } as any);
     return await new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
   };
+
+  const slugSafe = () => (name || "tournament").toLowerCase().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
 
   const downloadBlob = (blob: Blob, filename: string) => {
     const a = document.createElement("a");
@@ -253,14 +278,18 @@ const FlyerToDemo = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleCapture = async (selector: string, filename: string) => {
+  const handleCaptureSection = async (sectionId: string, filename: string, label: string) => {
     try {
-      const blob = await captureIframeSection(selector, filename);
+      const blob = await captureSectionById(sectionId);
       if (!blob) {
-        toast({ title: "Capture failed", description: "Section not found in preview.", variant: "destructive" });
+        toast({
+          title: `${label} not found`,
+          description: "That section isn't visible on this demo (it may be hidden by tab settings).",
+          variant: "destructive",
+        });
         return;
       }
-      downloadBlob(blob, filename);
+      downloadBlob(blob, `${slugSafe()}-${filename}`);
     } catch (e: any) {
       console.error(e);
       toast({

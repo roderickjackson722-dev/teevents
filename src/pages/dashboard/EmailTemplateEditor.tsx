@@ -506,7 +506,7 @@ export default function EmailTemplateEditor() {
                   ? new Date(tournaments.find(t => t.id === selectedTournament).date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
                   : "Saturday, June 15, 2026",
                 event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
-              })
+              }, TEMPLATE_HEADERS[templateKind])
             }} />
           </div>
         </TabsContent>

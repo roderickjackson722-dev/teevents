@@ -179,7 +179,7 @@ function TaskRow({
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>
         )}
       </div>
-      {!isDone && task.link && (
+      {task.link && (
         <Button asChild variant="ghost" size="sm" className="flex-shrink-0">
           <Link to={task.link}>
             Go <ArrowRight className="h-3.5 w-3.5 ml-1" />

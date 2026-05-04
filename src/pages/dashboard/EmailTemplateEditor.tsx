@@ -660,7 +660,7 @@ function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, head
         <tr><td style="background:${config.header_bg_color};padding:28px 32px;text-align:center;">
           ${logoHtml}
           <p style="margin:0 0 8px;font-size:32px;">⛳</p>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Registration Confirmed!</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerText}</h1>
         </td></tr>
         <tr><td style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>

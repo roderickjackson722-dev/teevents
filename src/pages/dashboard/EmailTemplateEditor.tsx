@@ -553,7 +553,7 @@ export default function EmailTemplateEditor() {
           <div className="flex justify-end gap-2">
             <Button onClick={sendEmails} disabled={sending || selectedRecipients.length === 0} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send Confirmation Email{selectedRecipients.length > 1 ? "s" : ""}
+              Send {TEMPLATE_LABELS[templateKind]}{selectedRecipients.length > 1 ? "s" : ""}
             </Button>
           </div>
         </TabsContent>

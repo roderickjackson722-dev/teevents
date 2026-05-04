@@ -1242,10 +1242,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         const fmt = getFormatById(tournament.scoring_format || "stroke_play");
         const isStableford = fmt?.scoring === "stableford";
         const isTeam = leaderboard[0]?.isTeam;
-        return (
-        <section className="py-16 bg-white">
-          <div className="max-w-3xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+         return (
+         <section id="leaderboard" className="py-16 bg-white">
+           <div className="max-w-3xl mx-auto px-4">
+             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
                 LIVE LEADERBOARD
               </h2>

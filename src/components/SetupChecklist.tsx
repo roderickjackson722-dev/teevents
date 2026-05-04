@@ -96,6 +96,7 @@ export default function SetupChecklist({ tournamentId, compact = false, onDismis
                   <TaskRow
                     key={task.id}
                     task={task}
+                    tournamentId={tournamentId}
                     onToggle={(s) => setStatus(task.id, s)}
                   />
                 ))}
@@ -125,6 +126,7 @@ export default function SetupChecklist({ tournamentId, compact = false, onDismis
                     <TaskRow
                       key={task.id}
                       task={task}
+                      tournamentId={tournamentId}
                       onToggle={(s) => setStatus(task.id, s)}
                     />
                   ))}
@@ -140,12 +142,17 @@ export default function SetupChecklist({ tournamentId, compact = false, onDismis
 
 function TaskRow({
   task,
+  tournamentId,
   onToggle,
 }: {
   task: ChecklistItem;
+  tournamentId: string;
   onToggle: (status: ChecklistItem["status"]) => void;
 }) {
   const isDone = task.status === "completed";
+  // Interpolate {tid} in stored link templates so each task opens the
+  // currently-selected tournament's page.
+  const resolvedLink = task.link ? task.link.replace(/\{tid\}/g, tournamentId) : null;
   return (
     <li className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
       <button
@@ -179,9 +186,9 @@ function TaskRow({
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>
         )}
       </div>
-      {task.link && (
+      {resolvedLink && (
         <Button asChild variant="ghost" size="sm" className="flex-shrink-0">
-          <Link to={task.link}>
+          <Link to={resolvedLink}>
             Go <ArrowRight className="h-3.5 w-3.5 ml-1" />
           </Link>
         </Button>
@@ -189,3 +196,4 @@ function TaskRow({
     </li>
   );
 }
+

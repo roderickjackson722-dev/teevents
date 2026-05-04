@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator } from "lucide-react";
+import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
@@ -18,6 +19,21 @@ import HandicapSettings from "@/components/dashboard/HandicapSettings";
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();
   const [selectedTournament, setSelectedTournament] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "links";
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  // Keep URL in sync when user clicks tabs (so the Setup Checklist deep link
+  // ?tab=handicap actually opens the Handicap tab even on first load).
+  useEffect(() => {
+    const current = searchParams.get("tab");
+    if (current !== activeTab) {
+      const next = new URLSearchParams(searchParams);
+      next.set("tab", activeTab);
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -103,7 +119,7 @@ export default function Scoring() {
       )}
 
       {selectedTournament && (
-        <Tabs defaultValue="links" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="links">
               <Link2 className="h-4 w-4 mr-1.5" /> Scoring Links
@@ -115,7 +131,10 @@ export default function Scoring() {
               <Users className="h-4 w-4 mr-1.5" /> Player Codes
             </TabsTrigger>
             <TabsTrigger value="handicap">
-              <Calculator className="h-4 w-4 mr-1.5" /> Handicap
+              <Calculator className="h-4 w-4 mr-1.5" /> Handicap Settings
+            </TabsTrigger>
+            <TabsTrigger value="test-simulator">
+              <FlaskConical className="h-4 w-4 mr-1.5" /> Test Simulator
             </TabsTrigger>
           </TabsList>
 
@@ -354,6 +373,28 @@ export default function Scoring() {
           {/* ===== HANDICAP SETTINGS TAB ===== */}
           <TabsContent value="handicap" className="space-y-4">
             <HandicapSettings tournamentId={selectedTournament} scoringFormat={selectedData?.scoring_format || undefined} />
+          </TabsContent>
+
+          {/* ===== TEST SIMULATOR TAB ===== */}
+          <TabsContent value="test-simulator" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FlaskConical className="h-5 w-5" /> Test Score Simulator
+                </CardTitle>
+                <CardDescription>
+                  Spin up fake players and scores to validate handicap allowances, scoring
+                  formats, and leaderboard layout before the real round starts.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild>
+                  <RouterLink to="/dashboard/test-simulator">
+                    Open Test Simulator <ExternalLink className="h-4 w-4 ml-1.5" />
+                  </RouterLink>
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       )}

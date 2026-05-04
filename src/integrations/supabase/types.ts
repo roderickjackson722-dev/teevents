@@ -4092,6 +4092,7 @@ export type Database = {
           pass_fees_to_registrants: boolean
           payment_method_override: string
           payout_method: string | null
+          post_event_email_config: Json | null
           printable_font: string
           printable_layout: string
           pro_paid_at: string | null
@@ -4188,6 +4189,7 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
           payout_method?: string | null
+          post_event_email_config?: Json | null
           printable_font?: string
           printable_layout?: string
           pro_paid_at?: string | null
@@ -4284,6 +4286,7 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
           payout_method?: string | null
+          post_event_email_config?: Json | null
           printable_font?: string
           printable_layout?: string
           pro_paid_at?: string | null

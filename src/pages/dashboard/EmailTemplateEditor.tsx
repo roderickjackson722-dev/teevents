@@ -39,6 +39,8 @@ interface EmailConfig {
   font_family: string;
 }
 
+type TemplateKind = "confirmation" | "post_event";
+
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",
   greeting: "Hi {{first_name}},",
@@ -56,6 +58,37 @@ const DEFAULT_CONFIG: EmailConfig = {
   button_url: "",
   show_button: false,
   font_family: "Arial, sans-serif",
+};
+
+const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
+  subject: "Thanks for playing in {{event_name}}!",
+  greeting: "Hi {{first_name}},",
+  body_text:
+    "Thank you for joining us at {{event_name}}! It was a fantastic day on the course and we couldn't have done it without you. Keep an eye out for final results, photos, and a recap coming soon.",
+  closing_text:
+    "Want to be the first to know about our next tournament? Click below to stay in the loop or sign up for the next event.",
+  footer_text: "We hope to see you again soon! ⛳",
+  primary_color: "#1a5c38",
+  secondary_color: "#ffffff",
+  header_bg_color: "#1a5c38",
+  text_color: "#374151",
+  show_event_details: false,
+  show_logo: false,
+  logo_url: "",
+  button_text: "Sign Up for the Next Event",
+  button_url: "",
+  show_button: true,
+  font_family: "Arial, sans-serif",
+};
+
+const TEMPLATE_LABELS: Record<TemplateKind, string> = {
+  confirmation: "Registration Confirmation",
+  post_event: "Post-Event Thank You & Next Event",
+};
+
+const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
+  confirmation: "Registration Confirmed!",
+  post_event: "Thanks for Playing!",
 };
 
 const FONT_OPTIONS = [
@@ -77,7 +110,16 @@ const VARIABLE_TAGS = [
 export default function EmailTemplateEditor() {
   const { org } = useOrgContext();
   const { isDemoMode } = useDemoMode();
-  const [config, setConfig] = useState<EmailConfig>(DEFAULT_CONFIG);
+  // ?template=post_event deep link from the Setup Checklist opens the post-event editor.
+  const initialTemplate: TemplateKind =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("template") === "post_event"
+      ? "post_event"
+      : "confirmation";
+  const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  const [config, setConfig] = useState<EmailConfig>(
+    initialTemplate === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG,
+  );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -91,13 +133,23 @@ export default function EmailTemplateEditor() {
   const [editEmail, setEditEmail] = useState("");
   const [resendingSingle, setResendingSingle] = useState(false);
 
+  const configKey = templateKind === "post_event" ? "post_event_email_config" : "confirmation_email_config";
+  const defaultsForKind = (k: TemplateKind) =>
+    k === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG;
+
+  const loadConfigFor = (t: any, kind: TemplateKind) => {
+    const stored = t?.[kind === "post_event" ? "post_event_email_config" : "confirmation_email_config"];
+    if (stored) setConfig({ ...defaultsForKind(kind), ...(stored as any) });
+    else setConfig(defaultsForKind(kind));
+  };
+
   // Load tournaments
   useEffect(() => {
     if (!org) return;
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, confirmation_email_config, site_logo_url")
+        .select("id, title, date, location, confirmation_email_config, post_event_email_config, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -105,15 +157,12 @@ export default function EmailTemplateEditor() {
       if (tid) {
         setSelectedTournament(tid);
         const t = (data || []).find((x: any) => x.id === tid);
-        if (t?.confirmation_email_config) {
-          setConfig({ ...DEFAULT_CONFIG, ...t.confirmation_email_config as any });
-        } else {
-          setConfig(DEFAULT_CONFIG);
-        }
+        loadConfigFor(t, templateKind);
       }
       setLoading(false);
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [org]);
 
   // Load registrations when tournament changes
@@ -133,37 +182,40 @@ export default function EmailTemplateEditor() {
   const handleTournamentChange = (id: string) => {
     setSelectedTournament(id);
     const t = tournaments.find((x: any) => x.id === id);
-    if (t?.confirmation_email_config) {
-      setConfig({ ...DEFAULT_CONFIG, ...t.confirmation_email_config as any });
-    } else {
-      setConfig(DEFAULT_CONFIG);
-    }
+    loadConfigFor(t, templateKind);
     setSelectedRecipients([]);
+  };
+
+  const handleTemplateKindChange = (kind: TemplateKind) => {
+    setTemplateKind(kind);
+    const t = tournaments.find((x: any) => x.id === selectedTournament);
+    loadConfigFor(t, kind);
   };
 
   const saveTemplate = async () => {
     if (!selectedTournament) return;
     setSaving(true);
+    const update: Record<string, any> = { [configKey]: config as any };
     const { error } = await supabase
       .from("tournaments")
-      .update({ confirmation_email_config: config as any })
+      .update(update)
       .eq("id", selectedTournament);
     setSaving(false);
     if (error) {
       toast.error("Failed to save template");
     } else {
-      toast.success("Email template saved");
-      // Update local state
+      toast.success(`${TEMPLATE_LABELS[templateKind]} saved`);
       setTournaments(prev => prev.map(t =>
-        t.id === selectedTournament ? { ...t, confirmation_email_config: config } : t
+        t.id === selectedTournament ? { ...t, [configKey]: config } : t
       ));
     }
   };
 
   const resetTemplate = () => {
-    setConfig(DEFAULT_CONFIG);
+    setConfig(defaultsForKind(templateKind));
     toast.info("Template reset to default");
   };
+
 
   const copyHtml = () => {
     const html = renderEmailHtml(config, {
@@ -172,7 +224,7 @@ export default function EmailTemplateEditor() {
       event_name: "Sample Tournament",
       event_date: "Saturday, June 15, 2026",
       event_location: "Pine Valley Golf Club",
-    });
+    }, TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
@@ -265,10 +317,19 @@ export default function EmailTemplateEditor() {
             <Mail className="h-6 w-6 text-primary" /> Email Templates
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Design and send custom confirmation emails to your participants
+            Design and send custom emails to your participants — pick which template to edit below.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Select value={templateKind} onValueChange={(v) => handleTemplateKindChange(v as TemplateKind)}>
+            <SelectTrigger className="w-[260px]">
+              <SelectValue placeholder="Choose template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="confirmation">{TEMPLATE_LABELS.confirmation}</SelectItem>
+              <SelectItem value="post_event">{TEMPLATE_LABELS.post_event}</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={selectedTournament} onValueChange={handleTournamentChange}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select tournament" />
@@ -280,6 +341,18 @@ export default function EmailTemplateEditor() {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Banner explaining current template */}
+      <div className={`rounded-lg border-l-4 p-3 text-sm ${
+        templateKind === "post_event"
+          ? "bg-secondary/10 border-l-secondary text-foreground"
+          : "bg-primary/5 border-l-primary text-foreground"
+      }`}>
+        <strong>{TEMPLATE_LABELS[templateKind]}:</strong>{" "}
+        {templateKind === "post_event"
+          ? "Sent after the tournament to thank players and invite them to your next event. Use the call-to-action button to link a sign-up form, mailing list, or your next event's registration page."
+          : "Sent automatically when a player registers for this tournament."}
       </div>
 
       <Tabs defaultValue="design" className="space-y-4">
@@ -433,7 +506,7 @@ export default function EmailTemplateEditor() {
                   ? new Date(tournaments.find(t => t.id === selectedTournament).date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
                   : "Saturday, June 15, 2026",
                 event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
-              })
+              }, TEMPLATE_HEADERS[templateKind])
             }} />
           </div>
         </TabsContent>
@@ -480,7 +553,7 @@ export default function EmailTemplateEditor() {
           <div className="flex justify-end gap-2">
             <Button onClick={sendEmails} disabled={sending || selectedRecipients.length === 0} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send Confirmation Email{selectedRecipients.length > 1 ? "s" : ""}
+              Send {TEMPLATE_LABELS[templateKind]}{selectedRecipients.length > 1 ? "s" : ""}
             </Button>
           </div>
         </TabsContent>
@@ -552,7 +625,7 @@ function replaceVariables(text: string, vars: Record<string, string>): string {
     .replace(/\{\{event_location\}\}/g, vars.event_location || "");
 }
 
-function renderEmailHtml(config: EmailConfig, vars: Record<string, string>): string {
+function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, headerText: string = "Registration Confirmed!"): string {
   const greeting = replaceVariables(config.greeting, vars);
   const body = replaceVariables(config.body_text, vars);
   const closing = replaceVariables(config.closing_text, vars);
@@ -587,7 +660,7 @@ function renderEmailHtml(config: EmailConfig, vars: Record<string, string>): str
         <tr><td style="background:${config.header_bg_color};padding:28px 32px;text-align:center;">
           ${logoHtml}
           <p style="margin:0 0 8px;font-size:32px;">⛳</p>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Registration Confirmed!</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerText}</h1>
         </td></tr>
         <tr><td style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>

@@ -141,9 +141,26 @@ export default function ConfirmPayoutChange() {
           {confirmed && (
             <div className="text-center py-6 space-y-3">
               <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
-              <p className="font-semibold text-foreground">Your payout method has been updated.</p>
+              <p className="font-semibold text-foreground">Payout method change confirmed</p>
+              <p className="text-sm text-muted-foreground">
+                Thanks for verifying. Your new payout method is now active and will be used for future payouts.
+              </p>
               <Button asChild variant="outline">
                 <Link to="/dashboard/payout-settings">Back to Payout Settings</Link>
+              </Button>
+            </div>
+          )}
+
+          {!loading && alreadyConfirmed && !confirmed && (
+            <div className="text-center py-6 space-y-3">
+              <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
+              <p className="font-semibold text-foreground">This change is already in place</p>
+              <p className="text-sm text-muted-foreground">
+                You've already confirmed this payout change from a previous email link, so there's nothing more to do here.
+                You can review your current payout method any time in your dashboard.
+              </p>
+              <Button asChild variant="outline">
+                <Link to="/dashboard/payout-settings">View Payout Settings</Link>
               </Button>
             </div>
           )}

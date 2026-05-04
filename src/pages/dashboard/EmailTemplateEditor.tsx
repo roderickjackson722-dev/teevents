@@ -353,6 +353,7 @@ export default function EmailTemplateEditor() {
         {templateKind === "post_event"
           ? "Sent after the tournament to thank players and invite them to your next event. Use the call-to-action button to link a sign-up form, mailing list, or your next event's registration page."
           : "Sent automatically when a player registers for this tournament."}
+      </div>
 
       <Tabs defaultValue="design" className="space-y-4">
         <TabsList>

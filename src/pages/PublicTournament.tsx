@@ -760,6 +760,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
       {/* ===== HERO SECTION ===== */}
       <section
+        id="hero"
         className="relative min-h-screen flex flex-col items-center justify-center pt-14"
         style={{
           backgroundColor: primary,

@@ -189,3 +189,6 @@ function TaskRow({
     </li>
   );
 }
+    </li>
+  );
+}

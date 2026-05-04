@@ -182,6 +182,8 @@ const FlyerToDemo = () => {
 
       const feeCents = feeDollars ? Math.round(parseFloat(feeDollars) * 100) : 0;
 
+      const heroUrl = await uploadHeroImage();
+
       const { data: created, error: createErr } = await supabase
         .from("tournaments")
         .insert({
@@ -205,6 +207,7 @@ const FlyerToDemo = () => {
           demo_flyer_url: flyerUrl,
           site_hero_title: name,
           site_hero_subtitle: courseName || location || null,
+          site_hero_image_url: heroUrl,
         })
         .select("id, slug")
         .single();

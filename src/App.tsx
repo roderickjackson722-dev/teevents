@@ -86,6 +86,7 @@ import PaymentSettings from "./pages/help/PaymentSettings";
 import RefundsChargebacks from "./pages/help/RefundsChargebacks";
 import CustomDomain from "./pages/help/CustomDomain";
 import HowPaymentsWork from "./pages/help/HowPaymentsWork";
+import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
 import CompareEventbrite from "./pages/CompareEventbrite";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
@@ -198,7 +199,8 @@ const App = () => (
            <Route path="/help/payment-settings" element={<PaymentSettings />} />
            <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
            <Route path="/help/custom-domain" element={<CustomDomain />} />
-           <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
+          <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
+          <Route path="/help/understanding-payout-timing" element={<UnderstandingPayoutTiming />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />

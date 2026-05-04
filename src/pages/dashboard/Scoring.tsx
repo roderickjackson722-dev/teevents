@@ -119,7 +119,7 @@ export default function Scoring() {
       )}
 
       {selectedTournament && (
-        <Tabs defaultValue="links" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="links">
               <Link2 className="h-4 w-4 mr-1.5" /> Scoring Links
@@ -131,7 +131,10 @@ export default function Scoring() {
               <Users className="h-4 w-4 mr-1.5" /> Player Codes
             </TabsTrigger>
             <TabsTrigger value="handicap">
-              <Calculator className="h-4 w-4 mr-1.5" /> Handicap
+              <Calculator className="h-4 w-4 mr-1.5" /> Handicap Settings
+            </TabsTrigger>
+            <TabsTrigger value="test-simulator">
+              <FlaskConical className="h-4 w-4 mr-1.5" /> Test Simulator
             </TabsTrigger>
           </TabsList>
 

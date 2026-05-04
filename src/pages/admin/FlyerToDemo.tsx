@@ -528,17 +528,19 @@ Want a 15-minute demo?`;
                   Tip: For best results capturing the iframe, use Chrome. If capture fails, open the preview in a new tab and screenshot manually.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleCapture("section[data-section='hero'], header, [class*='hero']", "hero.png")}>
-                    <Camera className="w-4 h-4 mr-2" />Hero
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleCapture("[class*='leaderboard']", "leaderboard.png")}>
-                    <Camera className="w-4 h-4 mr-2" />Leaderboard
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleCapture("body", "full-page.png")}>
-                    <Camera className="w-4 h-4 mr-2" />Full page
-                  </Button>
-                  <Button size="sm" onClick={handleDownloadAllZip}>
-                    <Download className="w-4 h-4 mr-2" />ZIP all
+                  {SCREENSHOT_SECTIONS.map((s) => (
+                    <Button
+                      key={s.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCaptureSection(s.id, s.filename, s.label)}
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      {s.label}
+                    </Button>
+                  ))}
+                  <Button size="sm" onClick={handleDownloadAllZip} className="col-span-2">
+                    <Download className="w-4 h-4 mr-2" />Download all as ZIP
                   </Button>
                 </div>
                 <div className="mt-4 pt-4 border-t space-y-2">

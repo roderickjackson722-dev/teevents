@@ -26,7 +26,7 @@ const learnPoints = [
   "How to collect payments automatically (Stripe, Apple Pay, Google Pay)",
   "How live leaderboards, QR scoring, and handicap calculations work",
   "How to manage sponsors, volunteers, and pairings from one dashboard",
-  "How to get paid instantly (Stripe Connect — no holding)",
+  "How payouts work (Stripe Connect — funds sent immediately; new accounts: 2–7 day Stripe review)",
 ];
 
 const features = [

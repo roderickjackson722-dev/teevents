@@ -133,16 +133,42 @@ const Tournaments = () => {
       return;
     }
     setRenaming(true);
-    const { error } = await supabase
+    // Fetch current site_hero_title so we only overwrite it when it was empty or
+    // mirroring the old auto-generated title (keeps an intentionally diverged
+    // public Hero Title intact).
+    const { data: existing } = await supabase
       .from("tournaments")
-      .update({ title: trimmed })
-      .eq("id", renameTarget.id);
-    if (error) {
-      toast({ title: "Error renaming tournament", description: error.message, variant: "destructive" });
+      .select("title, site_hero_title")
+      .eq("id", renameTarget.id)
+      .single();
+
+    const updates: Record<string, any> = { title: trimmed };
+    const currentHero = (existing as any)?.site_hero_title?.trim() || "";
+    const oldTitle = (existing as any)?.title?.trim() || "";
+    if (!currentHero || currentHero === oldTitle) {
+      updates.site_hero_title = trimmed;
+    }
+
+    const { data: updated, error } = await supabase
+      .from("tournaments")
+      .update(updates)
+      .eq("id", renameTarget.id)
+      .select("id, title")
+      .single();
+
+    if (error || !updated) {
+      toast({
+        title: "Error renaming tournament",
+        description: error?.message || "No rows were updated. You may not have permission to edit this tournament.",
+        variant: "destructive",
+      });
     } else {
-      toast({ title: "Tournament renamed", description: "Your tournament name has been updated. The public Hero Title is unchanged." });
+      toast({
+        title: "Tournament renamed",
+        description: "The new name is now used across your dashboard and public site.",
+      });
       setRenameTarget(null);
-      fetchTournaments();
+      await fetchTournaments();
     }
     setRenaming(false);
   };
@@ -285,7 +311,7 @@ const Tournaments = () => {
                 autoFocus
               />
               <p className="text-xs text-muted-foreground mt-2">
-                This updates the tournament name shown across your organizer dashboard. Your public website's <strong>Hero Title</strong> is managed separately in Site Builder and will not change.
+                This name is used across your dashboard, emails, share links, and your public site's <strong>Hero Title</strong>. If you've already customized the Hero Title in Site Builder, that custom value is preserved.
               </p>
             </div>
             <div className="flex justify-end gap-2">

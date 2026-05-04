@@ -9,7 +9,6 @@ const baseLinks = [
   { label: "Home", to: "/" },
   { label: "Plans & Pricing", to: "/plans" },
   { label: "Find a Tournament", to: "/tournaments/search" },
-  { label: "Get Started", to: "/plans" },
   { label: "About Us", to: "/about" },
   { label: "Reviews", to: "/reviews" },
   { label: "Contact", to: "/contact" },

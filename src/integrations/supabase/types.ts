@@ -4064,6 +4064,8 @@ export type Database = {
           custom_domain: string | null
           custom_slug: string | null
           date: string | null
+          demo_admin_id: string | null
+          demo_flyer_url: string | null
           description: string | null
           display_order: number
           donation_goal_cents: number | null
@@ -4077,6 +4079,7 @@ export type Database = {
           hole_pars: Json | null
           id: string
           image_url: string | null
+          is_demo: boolean
           is_pro: boolean
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
@@ -4161,6 +4164,8 @@ export type Database = {
           custom_domain?: string | null
           custom_slug?: string | null
           date?: string | null
+          demo_admin_id?: string | null
+          demo_flyer_url?: string | null
           description?: string | null
           display_order?: number
           donation_goal_cents?: number | null
@@ -4174,6 +4179,7 @@ export type Database = {
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
+          is_demo?: boolean
           is_pro?: boolean
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
@@ -4258,6 +4264,8 @@ export type Database = {
           custom_domain?: string | null
           custom_slug?: string | null
           date?: string | null
+          demo_admin_id?: string | null
+          demo_flyer_url?: string | null
           description?: string | null
           display_order?: number
           donation_goal_cents?: number | null
@@ -4271,6 +4279,7 @@ export type Database = {
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
+          is_demo?: boolean
           is_pro?: boolean
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
@@ -4865,6 +4874,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_old_demo_tournaments: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

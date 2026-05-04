@@ -13,7 +13,7 @@ import {
   Play, ChevronLeft, ChevronRight, Copy, ExternalLink,
   Users, LayoutDashboard, Globe, CreditCard, Trophy, DollarSign, Tag, HelpCircle,
   Clock, CheckCircle2, MessageSquare, Mail, Check, Download, BookOpen, Shield,
-  Zap, BarChart3, FileText, Image, Edit, Trash2, Plus, Link2, QrCode, FolderOpen
+  Zap, BarChart3, FileText, Image, Edit, Trash2, Plus, Link2, QrCode, FolderOpen, Wand2
 } from "lucide-react";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
@@ -653,9 +653,28 @@ interface AdminSalesHubProps {
 }
 
 export default function AdminSalesHub({ prospects, activities, outreachTemplates, onRefresh, callAdminApi, ProspectsComponent, StatsComponent, EmailScriptsComponent, DemoScriptComponent }: AdminSalesHubProps) {
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
+      {/* Quick-launch banner for Flyer-to-Demo */}
+      <Card className="border-primary/40 bg-gradient-to-r from-primary/5 to-transparent">
+        <CardContent className="p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Wand2 className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="font-semibold">Flyer-to-Demo Generator</div>
+              <div className="text-xs text-muted-foreground">Upload a prospect's flyer → AI builds a sample tournament site you can screenshot &amp; send.</div>
+            </div>
+          </div>
+          <Button onClick={() => navigate("/admin/sales/flyer-to-demo")}>
+            <Wand2 className="h-4 w-4 mr-2" />Open
+          </Button>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="demo" className="w-full">
         <TabsList className="mb-4 flex-wrap h-auto gap-1">
           <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /> Live Demo</TabsTrigger>

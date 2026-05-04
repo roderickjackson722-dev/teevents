@@ -435,6 +435,37 @@ Want a 15-minute demo?`;
                 <div>
                   <Label>Contact Phone</Label>
                   <Input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+                <div className="col-span-2 border-t pt-3 mt-1">
+                  <Label>Hero Background Image (optional)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Replaces the default green background on the demo site's hero. Use a course or event photo for a richer look.
+                  </p>
+                  {heroImagePreview && (
+                    <img src={heroImagePreview} alt="Hero preview" className="max-h-32 rounded mb-2 border" />
+                  )}
+                  <input
+                    ref={heroImageRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeroImageChange}
+                    className="hidden"
+                  />
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => heroImageRef.current?.click()}>
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      {heroImageFile ? "Change Image" : "Choose Image"}
+                    </Button>
+                    {heroImageFile && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setHeroImageFile(null); setHeroImagePreview(null); }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 

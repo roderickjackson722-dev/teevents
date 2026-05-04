@@ -34,6 +34,8 @@ export default function Scoring() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
+
+  const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
     queryFn: async () => {
       const { data, error } = await supabase

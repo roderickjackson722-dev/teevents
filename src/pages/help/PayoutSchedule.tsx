@@ -34,10 +34,11 @@ const PayoutSchedule = () => (
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><Banknote className="h-5 w-5 text-primary" /> Accessing Your Funds</h2>
           <p className="text-muted-foreground mb-4">
-            Funds land in your Stripe account after each transaction. Stripe's standard payout schedule transfers funds to your bank account automatically:
+            Funds land in your Stripe account at the moment of checkout. Stripe's standard payout schedule then transfers funds to your bank automatically:
           </p>
           <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
             <p><strong>Standard payout:</strong> 2 business days to your bank account (automatic)</p>
+            <p><strong>New Stripe accounts:</strong> Stripe applies a 2–7 business day review on the first payouts (standard risk policy, lifts automatically). <Link to="/help/understanding-payout-timing" className="text-primary underline">Learn more</Link></p>
             <p><strong>Custom schedule:</strong> Configure daily, weekly, or monthly payouts in Stripe</p>
             <p><strong>Instant payouts:</strong> Available if enabled in your Stripe account</p>
             <p><strong>Manual transfers:</strong> Withdraw anytime from your Stripe dashboard</p>

@@ -527,6 +527,21 @@ const Finances = () => {
         </div>
       </div>
 
+      {/* New-account payout timing banner */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <Clock className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-foreground">Understanding your payouts</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Payments appear in this dashboard <strong>immediately</strong> and net proceeds are routed to your Stripe account at the moment of checkout.
+            However, <strong>Stripe holds funds for 2–7 business days on brand-new Connect accounts</strong> as part of their standard risk review.
+            This hold applies only to your first few payouts and is not a TeeVents hold.{" "}
+            <a href="/help/understanding-payout-timing" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more about Stripe payouts</a>
+          </p>
+        </div>
+      </div>
+
+
       {/* Revenue Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <motion.button

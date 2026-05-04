@@ -39,6 +39,8 @@ interface EmailConfig {
   font_family: string;
 }
 
+type TemplateKind = "confirmation" | "post_event";
+
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",
   greeting: "Hi {{first_name}},",
@@ -56,6 +58,37 @@ const DEFAULT_CONFIG: EmailConfig = {
   button_url: "",
   show_button: false,
   font_family: "Arial, sans-serif",
+};
+
+const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
+  subject: "Thanks for playing in {{event_name}}!",
+  greeting: "Hi {{first_name}},",
+  body_text:
+    "Thank you for joining us at {{event_name}}! It was a fantastic day on the course and we couldn't have done it without you. Keep an eye out for final results, photos, and a recap coming soon.",
+  closing_text:
+    "Want to be the first to know about our next tournament? Click below to stay in the loop or sign up for the next event.",
+  footer_text: "We hope to see you again soon! ⛳",
+  primary_color: "#1a5c38",
+  secondary_color: "#ffffff",
+  header_bg_color: "#1a5c38",
+  text_color: "#374151",
+  show_event_details: false,
+  show_logo: false,
+  logo_url: "",
+  button_text: "Sign Up for the Next Event",
+  button_url: "",
+  show_button: true,
+  font_family: "Arial, sans-serif",
+};
+
+const TEMPLATE_LABELS: Record<TemplateKind, string> = {
+  confirmation: "Registration Confirmation",
+  post_event: "Post-Event Thank You & Next Event",
+};
+
+const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
+  confirmation: "Registration Confirmed!",
+  post_event: "Thanks for Playing!",
 };
 
 const FONT_OPTIONS = [

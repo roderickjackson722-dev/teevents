@@ -53,8 +53,35 @@ const FlyerToDemo = () => {
   const [description, setDescription] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
+  const [heroImagePreview, setHeroImagePreview] = useState<string | null>(null);
+  const heroImageRef = useRef<HTMLInputElement>(null);
 
   const previewRef = useRef<HTMLIFrameElement>(null);
+
+  const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please upload a JPG or PNG image.", variant: "destructive" });
+      return;
+    }
+    setHeroImageFile(f);
+    setHeroImagePreview(URL.createObjectURL(f));
+  };
+
+  const uploadHeroImage = async (): Promise<string | null> => {
+    if (!heroImageFile) return null;
+    const ext = heroImageFile.name.split(".").pop() || "png";
+    const path = `hero-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("flyer-uploads").upload(path, heroImageFile, {
+      contentType: heroImageFile.type,
+      upsert: false,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from("flyer-uploads").getPublicUrl(path);
+    return data.publicUrl;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -155,6 +182,8 @@ const FlyerToDemo = () => {
 
       const feeCents = feeDollars ? Math.round(parseFloat(feeDollars) * 100) : 0;
 
+      const heroUrl = await uploadHeroImage();
+
       const { data: created, error: createErr } = await supabase
         .from("tournaments")
         .insert({
@@ -178,6 +207,7 @@ const FlyerToDemo = () => {
           demo_flyer_url: flyerUrl,
           site_hero_title: name,
           site_hero_subtitle: courseName || location || null,
+          site_hero_image_url: heroUrl,
         })
         .select("id, slug")
         .single();
@@ -405,6 +435,38 @@ Want a 15-minute demo?`;
                 <div>
                   <Label>Contact Phone</Label>
                   <Input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+                </div>
+                <div className="col-span-2 border-t pt-3 mt-1">
+                  <Label>Hero Background Image (optional)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Replaces the default green background on the demo site's hero. Use a course or event photo for a richer look.
+                  </p>
+                  {heroImagePreview && (
+                    <img src={heroImagePreview} alt="Hero preview" className="max-h-32 rounded mb-2 border" />
+                  )}
+                  <input
+                    ref={heroImageRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeroImageChange}
+                    className="hidden"
+                  />
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => heroImageRef.current?.click()}>
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      {heroImageFile ? "Change Image" : "Choose Image"}
+                    </Button>
+                    {heroImageFile && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setHeroImageFile(null); setHeroImagePreview(null); }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 

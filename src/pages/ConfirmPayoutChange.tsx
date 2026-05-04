@@ -29,6 +29,7 @@ export default function ConfirmPayoutChange() {
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [alreadyConfirmed, setAlreadyConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<RequestPreview | null>(null);
 
@@ -40,17 +41,23 @@ export default function ConfirmPayoutChange() {
     }
     (async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("confirm-payout-change", {
-          body: { token, _method: "GET" }, // body ignored; GET is sent below
-        });
-        // supabase.functions.invoke always POSTs; do a direct fetch instead for GET
+        // GET-only preview: do NOT invoke the POST endpoint here, that would
+        // apply the change before the organizer clicks "Confirm".
         const res = await fetch(
           `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/confirm-payout-change?token=${encodeURIComponent(token)}`,
           { headers: { "Content-Type": "application/json" } },
         );
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || "Could not validate this link");
-        setPreview(json);
+        if (!res.ok || !json.success) {
+          const msg = (json.error || "Could not validate this link") as string;
+          if (/already been confirmed/i.test(msg)) {
+            setAlreadyConfirmed(true);
+          } else {
+            throw new Error(msg);
+          }
+        } else {
+          setPreview(json);
+        }
       } catch (e) {
         setError((e as Error).message);
       } finally {

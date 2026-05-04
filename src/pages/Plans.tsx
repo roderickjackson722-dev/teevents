@@ -72,7 +72,7 @@ const proFeatures = [
   "Budget tracking — planned vs. actual",
   "Featured placement in public search",
   "Up to 5 team members",
-  "Automatic Stripe Connect payouts (1–3 days)",
+  "Automatic Stripe Connect payouts (T+2 days standard; new accounts may have a 2–7 day Stripe review on first payouts)",
   "Priority email + chat support (2-hr response)",
 ];
 
@@ -337,7 +337,7 @@ const Plans = () => {
           </motion.div>
 
           <p className="text-center text-xs text-muted-foreground mt-8 max-w-3xl mx-auto">
-            All plans charge a 5% TeeVents platform fee per transaction + Stripe's standard processing fee. Payments split automatically at checkout — TeeVents never holds your money. Stripe sends net proceeds directly to your connected account.
+            All plans charge a 5% TeeVents platform fee per transaction + Stripe's standard processing fee. Payments split automatically at checkout — TeeVents never holds your money. Net proceeds are sent to your Stripe account immediately. For brand-new Stripe Connect accounts, Stripe applies a standard 2–7 business day review before funds become available to withdraw. <a href="/help/understanding-payout-timing" className="text-primary underline">Learn more</a>.
           </p>
         </div>
       </section>

@@ -29,7 +29,7 @@ const HowPaymentsWork = () => (
           {[
             { step: "1", icon: CreditCard, title: "Golfer Pays", desc: "Golfer registers and pays the full amount at checkout (credit card, Apple Pay, Google Pay, Cash App)." },
             { step: "2", icon: DollarSign, title: "Stripe Splits", desc: "Stripe automatically deducts the 5% TeeVents platform fee and the ~2.9% + $0.30 Stripe processing fee." },
-            { step: "3", icon: Building, title: "Organizer Receives", desc: "The remaining net amount is deposited directly into your connected Stripe account — typically within 2 business days." },
+            { step: "3", icon: Building, title: "Organizer Receives", desc: "Net proceeds are routed to your connected Stripe account immediately. Funds become available to withdraw on your standard schedule (typically T+2 business days; new accounts may have a 2–7 day Stripe review)." },
             { step: "4", icon: Wallet, title: "You Withdraw", desc: "Transfer funds from your Stripe account to your bank whenever you want. Set up automatic daily or weekly transfers." },
           ].map((s) => (
             <div key={s.step} className="relative bg-card border border-border rounded-xl p-5 text-center">
@@ -150,7 +150,8 @@ const HowPaymentsWork = () => (
             <p className="font-semibold text-primary mb-1">✅ TeeVents</p>
             <ul className="space-y-1 text-muted-foreground">
               <li>• Funds split instantly at checkout</li>
-              <li>• Net proceeds in your Stripe within ~2 days</li>
+              <li>• Net proceeds routed to your Stripe immediately</li>
+              <li>• Available to withdraw in ~2 days (2–7 days for new Stripe accounts during their standard review)</li>
               <li>• You control your own Stripe account</li>
             </ul>
           </div>

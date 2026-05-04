@@ -317,10 +317,19 @@ export default function EmailTemplateEditor() {
             <Mail className="h-6 w-6 text-primary" /> Email Templates
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Design and send custom confirmation emails to your participants
+            Design and send custom emails to your participants — pick which template to edit below.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Select value={templateKind} onValueChange={(v) => handleTemplateKindChange(v as TemplateKind)}>
+            <SelectTrigger className="w-[260px]">
+              <SelectValue placeholder="Choose template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="confirmation">{TEMPLATE_LABELS.confirmation}</SelectItem>
+              <SelectItem value="post_event">{TEMPLATE_LABELS.post_event}</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={selectedTournament} onValueChange={handleTournamentChange}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select tournament" />
@@ -333,6 +342,17 @@ export default function EmailTemplateEditor() {
           </Select>
         </div>
       </div>
+
+      {/* Banner explaining current template */}
+      <div className={`rounded-lg border-l-4 p-3 text-sm ${
+        templateKind === "post_event"
+          ? "bg-secondary/10 border-l-secondary text-foreground"
+          : "bg-primary/5 border-l-primary text-foreground"
+      }`}>
+        <strong>{TEMPLATE_LABELS[templateKind]}:</strong>{" "}
+        {templateKind === "post_event"
+          ? "Sent after the tournament to thank players and invite them to your next event. Use the call-to-action button to link a sign-up form, mailing list, or your next event's registration page."
+          : "Sent automatically when a player registers for this tournament."}
 
       <Tabs defaultValue="design" className="space-y-4">
         <TabsList>

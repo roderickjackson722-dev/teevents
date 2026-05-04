@@ -227,22 +227,47 @@ const FlyerToDemo = () => {
     }
   };
 
-  const captureIframeSection = async (selector: string, filename: string): Promise<Blob | null> => {
+  // Sections we capture from the public tournament site (matches ids in PublicTournament.tsx)
+  const SCREENSHOT_SECTIONS: { id: string; label: string; filename: string }[] = [
+    { id: "hero", label: "Hero", filename: "01-hero.png" },
+    { id: "register", label: "Registration", filename: "02-registration.png" },
+    { id: "leaderboard", label: "Leaderboard", filename: "03-leaderboard.png" },
+    { id: "sponsors", label: "Sponsors", filename: "04-sponsors.png" },
+    { id: "schedule", label: "Schedule", filename: "05-schedule.png" },
+    { id: "about", label: "About", filename: "06-about.png" },
+    { id: "location", label: "Location", filename: "07-location.png" },
+    { id: "contact", label: "Contact", filename: "08-contact.png" },
+  ];
+
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const captureSectionById = async (sectionId: string): Promise<Blob | null> => {
     const iframe = previewRef.current;
     if (!iframe) return null;
     const doc = iframe.contentDocument;
-    if (!doc) return null;
-    const target = (doc.querySelector(selector) as HTMLElement) || doc.body;
+    const win = iframe.contentWindow;
+    if (!doc || !win) return null;
+    const target = doc.getElementById(sectionId) as HTMLElement | null;
     if (!target) return null;
+
+    // Scroll element into view inside iframe so lazy/in-view animations render
+    target.scrollIntoView({ behavior: "instant" as ScrollBehavior, block: "start" });
+    await wait(450);
+
     const canvas = await html2canvas(target, {
       backgroundColor: "#ffffff",
       useCORS: true,
+      allowTaint: true,
       scale: 2,
       windowWidth: iframe.clientWidth,
       windowHeight: iframe.clientHeight,
+      width: target.scrollWidth,
+      height: target.scrollHeight,
     } as any);
     return await new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
   };
+
+  const slugSafe = () => (name || "tournament").toLowerCase().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
 
   const downloadBlob = (blob: Blob, filename: string) => {
     const a = document.createElement("a");
@@ -253,14 +278,18 @@ const FlyerToDemo = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleCapture = async (selector: string, filename: string) => {
+  const handleCaptureSection = async (sectionId: string, filename: string, label: string) => {
     try {
-      const blob = await captureIframeSection(selector, filename);
+      const blob = await captureSectionById(sectionId);
       if (!blob) {
-        toast({ title: "Capture failed", description: "Section not found in preview.", variant: "destructive" });
+        toast({
+          title: `${label} not found`,
+          description: "That section isn't visible on this demo (it may be hidden by tab settings).",
+          variant: "destructive",
+        });
         return;
       }
-      downloadBlob(blob, filename);
+      downloadBlob(blob, `${slugSafe()}-${filename}`);
     } catch (e: any) {
       console.error(e);
       toast({
@@ -274,24 +303,26 @@ const FlyerToDemo = () => {
   const handleDownloadAllZip = async () => {
     try {
       const zip = new JSZip();
-      const sections = [
-        { sel: "section[data-section='hero'], header, [class*='hero']", name: "01-hero.png" },
-        { sel: "[data-section='registrations'], [class*='registration']", name: "02-registrations.png" },
-        { sel: "[data-section='leaderboard'], [class*='leaderboard']", name: "03-leaderboard.png" },
-        { sel: "body", name: "04-full-page.png" },
-      ];
       let added = 0;
-      for (const s of sections) {
-        const blob = await captureIframeSection(s.sel, s.name);
+      const missing: string[] = [];
+      for (const s of SCREENSHOT_SECTIONS) {
+        const blob = await captureSectionById(s.id);
         if (blob) {
-          zip.file(s.name, blob);
+          zip.file(s.filename, blob);
           added++;
+        } else {
+          missing.push(s.label);
         }
       }
       if (added === 0) throw new Error("Could not capture any sections from the iframe.");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      downloadBlob(zipBlob, `${name.replace(/[^a-z0-9]+/gi, "-")}-demo-screenshots.zip`);
-      toast({ title: "ZIP downloaded", description: `${added} screenshots packaged.` });
+      downloadBlob(zipBlob, `${slugSafe()}-demo-screenshots.zip`);
+      toast({
+        title: "ZIP downloaded",
+        description:
+          `${added} screenshots packaged.` +
+          (missing.length ? ` Skipped (not on this site): ${missing.join(", ")}.` : ""),
+      });
     } catch (e: any) {
       console.error(e);
       toast({
@@ -497,17 +528,19 @@ Want a 15-minute demo?`;
                   Tip: For best results capturing the iframe, use Chrome. If capture fails, open the preview in a new tab and screenshot manually.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleCapture("section[data-section='hero'], header, [class*='hero']", "hero.png")}>
-                    <Camera className="w-4 h-4 mr-2" />Hero
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleCapture("[class*='leaderboard']", "leaderboard.png")}>
-                    <Camera className="w-4 h-4 mr-2" />Leaderboard
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleCapture("body", "full-page.png")}>
-                    <Camera className="w-4 h-4 mr-2" />Full page
-                  </Button>
-                  <Button size="sm" onClick={handleDownloadAllZip}>
-                    <Download className="w-4 h-4 mr-2" />ZIP all
+                  {SCREENSHOT_SECTIONS.map((s) => (
+                    <Button
+                      key={s.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCaptureSection(s.id, s.filename, s.label)}
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      {s.label}
+                    </Button>
+                  ))}
+                  <Button size="sm" onClick={handleDownloadAllZip} className="col-span-2">
+                    <Download className="w-4 h-4 mr-2" />Download all as ZIP
                   </Button>
                 </div>
                 <div className="mt-4 pt-4 border-t space-y-2">

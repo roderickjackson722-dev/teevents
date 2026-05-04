@@ -19,8 +19,21 @@ import HandicapSettings from "@/components/dashboard/HandicapSettings";
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();
   const [selectedTournament, setSelectedTournament] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "links";
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
 
-  const { data: tournaments } = useQuery({
+  // Keep URL in sync when user clicks tabs (so the Setup Checklist deep link
+  // ?tab=handicap actually opens the Handicap tab even on first load).
+  useEffect(() => {
+    const current = searchParams.get("tab");
+    if (current !== activeTab) {
+      const next = new URLSearchParams(searchParams);
+      next.set("tab", activeTab);
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
     queryKey: ["tournaments", org?.orgId],
     queryFn: async () => {
       const { data, error } = await supabase

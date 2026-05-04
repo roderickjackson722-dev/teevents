@@ -110,7 +110,16 @@ const VARIABLE_TAGS = [
 export default function EmailTemplateEditor() {
   const { org } = useOrgContext();
   const { isDemoMode } = useDemoMode();
-  const [config, setConfig] = useState<EmailConfig>(DEFAULT_CONFIG);
+  // ?template=post_event deep link from the Setup Checklist opens the post-event editor.
+  const initialTemplate: TemplateKind =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("template") === "post_event"
+      ? "post_event"
+      : "confirmation";
+  const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  const [config, setConfig] = useState<EmailConfig>(
+    initialTemplate === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG,
+  );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -124,13 +133,23 @@ export default function EmailTemplateEditor() {
   const [editEmail, setEditEmail] = useState("");
   const [resendingSingle, setResendingSingle] = useState(false);
 
+  const configKey = templateKind === "post_event" ? "post_event_email_config" : "confirmation_email_config";
+  const defaultsForKind = (k: TemplateKind) =>
+    k === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG;
+
+  const loadConfigFor = (t: any, kind: TemplateKind) => {
+    const stored = t?.[kind === "post_event" ? "post_event_email_config" : "confirmation_email_config"];
+    if (stored) setConfig({ ...defaultsForKind(kind), ...(stored as any) });
+    else setConfig(defaultsForKind(kind));
+  };
+
   // Load tournaments
   useEffect(() => {
     if (!org) return;
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, confirmation_email_config, site_logo_url")
+        .select("id, title, date, location, confirmation_email_config, post_event_email_config, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -138,15 +157,12 @@ export default function EmailTemplateEditor() {
       if (tid) {
         setSelectedTournament(tid);
         const t = (data || []).find((x: any) => x.id === tid);
-        if (t?.confirmation_email_config) {
-          setConfig({ ...DEFAULT_CONFIG, ...t.confirmation_email_config as any });
-        } else {
-          setConfig(DEFAULT_CONFIG);
-        }
+        loadConfigFor(t, templateKind);
       }
       setLoading(false);
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [org]);
 
   // Load registrations when tournament changes
@@ -166,37 +182,40 @@ export default function EmailTemplateEditor() {
   const handleTournamentChange = (id: string) => {
     setSelectedTournament(id);
     const t = tournaments.find((x: any) => x.id === id);
-    if (t?.confirmation_email_config) {
-      setConfig({ ...DEFAULT_CONFIG, ...t.confirmation_email_config as any });
-    } else {
-      setConfig(DEFAULT_CONFIG);
-    }
+    loadConfigFor(t, templateKind);
     setSelectedRecipients([]);
+  };
+
+  const handleTemplateKindChange = (kind: TemplateKind) => {
+    setTemplateKind(kind);
+    const t = tournaments.find((x: any) => x.id === selectedTournament);
+    loadConfigFor(t, kind);
   };
 
   const saveTemplate = async () => {
     if (!selectedTournament) return;
     setSaving(true);
+    const update: Record<string, any> = { [configKey]: config as any };
     const { error } = await supabase
       .from("tournaments")
-      .update({ confirmation_email_config: config as any })
+      .update(update)
       .eq("id", selectedTournament);
     setSaving(false);
     if (error) {
       toast.error("Failed to save template");
     } else {
-      toast.success("Email template saved");
-      // Update local state
+      toast.success(`${TEMPLATE_LABELS[templateKind]} saved`);
       setTournaments(prev => prev.map(t =>
-        t.id === selectedTournament ? { ...t, confirmation_email_config: config } : t
+        t.id === selectedTournament ? { ...t, [configKey]: config } : t
       ));
     }
   };
 
   const resetTemplate = () => {
-    setConfig(DEFAULT_CONFIG);
+    setConfig(defaultsForKind(templateKind));
     toast.info("Template reset to default");
   };
+
 
   const copyHtml = () => {
     const html = renderEmailHtml(config, {

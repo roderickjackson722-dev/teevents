@@ -625,7 +625,7 @@ function replaceVariables(text: string, vars: Record<string, string>): string {
     .replace(/\{\{event_location\}\}/g, vars.event_location || "");
 }
 
-function renderEmailHtml(config: EmailConfig, vars: Record<string, string>): string {
+function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, headerText: string = "Registration Confirmed!"): string {
   const greeting = replaceVariables(config.greeting, vars);
   const body = replaceVariables(config.body_text, vars);
   const closing = replaceVariables(config.closing_text, vars);

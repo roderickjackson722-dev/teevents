@@ -53,8 +53,35 @@ const FlyerToDemo = () => {
   const [description, setDescription] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
+  const [heroImagePreview, setHeroImagePreview] = useState<string | null>(null);
+  const heroImageRef = useRef<HTMLInputElement>(null);
 
   const previewRef = useRef<HTMLIFrameElement>(null);
+
+  const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please upload a JPG or PNG image.", variant: "destructive" });
+      return;
+    }
+    setHeroImageFile(f);
+    setHeroImagePreview(URL.createObjectURL(f));
+  };
+
+  const uploadHeroImage = async (): Promise<string | null> => {
+    if (!heroImageFile) return null;
+    const ext = heroImageFile.name.split(".").pop() || "png";
+    const path = `hero-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("flyer-uploads").upload(path, heroImageFile, {
+      contentType: heroImageFile.type,
+      upsert: false,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from("flyer-uploads").getPublicUrl(path);
+    return data.publicUrl;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];

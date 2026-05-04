@@ -311,7 +311,7 @@ const Tournaments = () => {
                 autoFocus
               />
               <p className="text-xs text-muted-foreground mt-2">
-                This updates the tournament name shown across your organizer dashboard. Your public website's <strong>Hero Title</strong> is managed separately in Site Builder and will not change.
+                This name is used across your dashboard, emails, share links, and your public site's <strong>Hero Title</strong>. If you've already customized the Hero Title in Site Builder, that custom value is preserved.
               </p>
             </div>
             <div className="flex justify-end gap-2">

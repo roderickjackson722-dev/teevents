@@ -126,6 +126,7 @@ export default function SetupChecklist({ tournamentId, compact = false, onDismis
                     <TaskRow
                       key={task.id}
                       task={task}
+                      tournamentId={tournamentId}
                       onToggle={(s) => setStatus(task.id, s)}
                     />
                   ))}

@@ -224,7 +224,7 @@ export default function EmailTemplateEditor() {
       event_name: "Sample Tournament",
       event_date: "Saturday, June 15, 2026",
       event_location: "Pine Valley Golf Club",
-    });
+    }, TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };

@@ -374,6 +374,8 @@ const FlyerToDemo = () => {
       });
     }
   };
+
+  const handleDeleteDemo = async () => {
     if (!demoTournamentId) return;
     if (!confirm("Delete this demo tournament and all its sample data?")) return;
     const { error } = await supabase.from("tournaments").delete().eq("id", demoTournamentId);

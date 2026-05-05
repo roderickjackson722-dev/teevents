@@ -605,16 +605,62 @@ Want a 15-minute demo?`;
           {/* RIGHT COLUMN: Live preview */}
           <div className="space-y-3">
             <Card className="p-5">
-              <h2 className="font-semibold flex items-center gap-2">
-                <Eye className="w-5 h-5" />
-                Live Preview
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Renders the same template a real organizer would publish — pixel-perfect.
-              </p>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <h2 className="font-semibold flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Live Preview
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {showDashboard
+                      ? "What organizers see inside their dashboard — players, finances, leaderboard, and more."
+                      : "The public tournament site a real organizer would publish — pixel-perfect."}
+                  </p>
+                </div>
+                <div className="inline-flex rounded-md border bg-muted p-0.5">
+                  <Button
+                    size="sm"
+                    variant={!showDashboard ? "default" : "ghost"}
+                    onClick={() => setShowDashboard(false)}
+                    className="h-7 px-3 text-xs"
+                  >
+                    Public Site
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={showDashboard ? "default" : "ghost"}
+                    onClick={() => setShowDashboard(true)}
+                    className="h-7 px-3 text-xs"
+                  >
+                    Organizer Dashboard
+                  </Button>
+                </div>
+              </div>
+              {showDashboard && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={handleCaptureDashboard}>
+                    <Camera className="w-4 h-4 mr-2" />Capture current view
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href="/sample-dashboard" target="_blank" rel="noreferrer">
+                      <ExternalLink className="w-4 h-4 mr-2" />Open in new tab
+                    </a>
+                  </Button>
+                  <span className="text-[11px] text-muted-foreground self-center">
+                    Click any tab inside the dashboard, then capture to screenshot it.
+                  </span>
+                </div>
+              )}
             </Card>
             <div className="rounded-lg border overflow-hidden bg-white" style={{ height: "calc(100vh - 220px)", minHeight: 600 }}>
-              {previewUrl ? (
+              {showDashboard ? (
+                <iframe
+                  ref={dashboardRef}
+                  src="/sample-dashboard"
+                  className="w-full h-full"
+                  title="Organizer dashboard preview"
+                />
+              ) : previewUrl ? (
                 <iframe
                   ref={previewRef}
                   src={previewUrl}
@@ -623,7 +669,7 @@ Want a 15-minute demo?`;
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm p-8 text-center">
-                  Generate a demo to see the live preview here.
+                  Generate a demo to see the live preview here, or switch to "Organizer Dashboard" to show prospects what they get behind the scenes.
                 </div>
               )}
             </div>

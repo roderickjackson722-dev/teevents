@@ -336,7 +336,44 @@ const FlyerToDemo = () => {
     }
   };
 
-  const handleDeleteDemo = async () => {
+  const captureDashboard = async (): Promise<Blob | null> => {
+    const iframe = dashboardRef.current;
+    if (!iframe) return null;
+    const doc = iframe.contentDocument;
+    if (!doc) return null;
+    const target = (doc.querySelector("main") as HTMLElement) || doc.body;
+    target.scrollIntoView?.({ behavior: "instant" as ScrollBehavior, block: "start" });
+    await wait(300);
+    const canvas = await html2canvas(target, {
+      backgroundColor: "#ffffff",
+      useCORS: true,
+      allowTaint: true,
+      scale: 2,
+      windowWidth: iframe.clientWidth,
+      windowHeight: iframe.clientHeight,
+      width: target.scrollWidth,
+      height: target.scrollHeight,
+    } as any);
+    return await new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
+  };
+
+  const handleCaptureDashboard = async () => {
+    try {
+      const blob = await captureDashboard();
+      if (!blob) {
+        toast({ title: "Dashboard not ready", description: "Wait for the dashboard preview to load.", variant: "destructive" });
+        return;
+      }
+      downloadBlob(blob, `${slugSafe()}-dashboard.png`);
+    } catch (e: any) {
+      console.error(e);
+      toast({
+        title: "Capture failed",
+        description: "Open the dashboard in a new tab and use a screenshot tool.",
+        variant: "destructive",
+      });
+    }
+  };
     if (!demoTournamentId) return;
     if (!confirm("Delete this demo tournament and all its sample data?")) return;
     const { error } = await supabase.from("tournaments").delete().eq("id", demoTournamentId);

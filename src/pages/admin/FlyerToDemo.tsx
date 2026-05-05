@@ -58,6 +58,8 @@ const FlyerToDemo = () => {
   const heroImageRef = useRef<HTMLInputElement>(null);
 
   const previewRef = useRef<HTMLIFrameElement>(null);
+  const dashboardRef = useRef<HTMLIFrameElement>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];

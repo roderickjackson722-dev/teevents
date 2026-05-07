@@ -88,16 +88,18 @@ const AdminAccounting = () => {
 
   const fetchAll = async () => {
     setLoading(true);
-    const [txRes, orgRes, tRes, payRes] = await Promise.all([
+    const [txRes, orgRes, tRes, payRes, routRes] = await Promise.all([
       supabase.from("platform_transactions").select("*").order("created_at", { ascending: false }),
       supabase.from("organizations").select("id, name, plan, stripe_account_id"),
       supabase.from("tournaments").select("id, title, organization_id"),
       supabase.from("organization_payouts").select("*").order("created_at", { ascending: false }),
+      supabase.from("payment_routing_logs").select("id, created_at, context, routing_decision, gross_cents, platform_fee_cents, stripe_fee_cents, application_fee_cents, organizer_stripe_account_id").order("created_at", { ascending: false }).limit(500),
     ]);
     setTransactions((txRes.data as Transaction[]) || []);
     setOrgs((orgRes.data as Org[]) || []);
     setTournaments((tRes.data as Tournament[]) || []);
     setPayouts((payRes.data as Payout[]) || []);
+    setRoutingLogs((routRes.data as RoutingLog[]) || []);
     setLoading(false);
   };
 

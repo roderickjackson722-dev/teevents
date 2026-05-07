@@ -697,24 +697,35 @@ const Sponsors = () => {
                       <Image className="h-5 w-5 text-muted-foreground" />
                     </div>
                   )}
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const f = e.target.files?.[0];
-                        e.target.value = "";
-                        if (!f) return;
-                        setLogoCropSrc(await fileToDataUrl(f));
-                        setLogoCropOpen(true);
-                      }}
-                    />
-                    <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted transition-colors">
-                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                      Upload
-                    </span>
-                  </label>
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!f) return;
+                          setLogoCropSrc(await fileToDataUrl(f));
+                          setLogoCropOpen(true);
+                        }}
+                      />
+                      <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted transition-colors">
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        {form.logo_url ? "Replace" : "Upload"}
+                      </span>
+                    </label>
+                    {form.logo_url && (
+                      <button
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, logo_url: "" }))}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 border border-destructive/40 text-destructive rounded-md text-sm hover:bg-destructive/10 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" /> Remove
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

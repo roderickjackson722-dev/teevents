@@ -362,17 +362,22 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       payment_status: regForm.payment_status,
     };
 
+    // If editing a legacy tournament_sponsors row, migrate it: delete legacy + create new registration
+    const isLegacyEdit = editReg && (editReg as any)._source === "legacy";
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
       body: {
-        action: editReg ? "update_registration" : "create_registration",
+        action: editReg && !isLegacyEdit ? "update_registration" : "create_registration",
         tournament_id: selectedTournament,
-        registration_id: editReg?.id,
+        registration_id: editReg && !isLegacyEdit ? editReg.id : undefined,
         payload,
       },
     });
     if (error || data?.error) {
       toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
     } else {
+      if (isLegacyEdit && editReg) {
+        await supabase.from("tournament_sponsors").delete().eq("id", editReg.id);
+      }
       toast({ title: editReg ? "Sponsor updated" : "Sponsor added" });
       resetRegForm();
       setRegDialogOpen(false);

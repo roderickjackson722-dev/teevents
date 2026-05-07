@@ -947,9 +947,9 @@ const Sponsors = () => {
         open={logoCropOpen}
         onOpenChange={(o) => { setLogoCropOpen(o); if (!o) setLogoCropSrc(null); }}
         imageSrc={logoCropSrc}
-        defaultAspect="1:1"
+        defaultAspect="free"
         outputMime="image/png"
-        title="Crop Sponsor Logo"
+        title="Crop Sponsor Logo (any shape — wide, square, or tall)"
         onCropped={(file) => handleLogoUpload(file)}
       />
     </div>

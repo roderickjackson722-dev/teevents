@@ -144,6 +144,60 @@ Deno.serve(async (req) => {
     const tournamentId = await resolveTournamentId(supabaseAdmin, resolvedTournamentId, tierId);
     await verifyAccess(supabaseAdmin, user.id, tournamentId);
 
+    if (action === "create_registration" || action === "update_registration") {
+      const p = body?.payload ?? {};
+      const companyName = typeof p.company_name === "string" ? p.company_name.trim().slice(0, 200) : "";
+      if (!companyName) throw new Error("Company name is required");
+      const amountCents = Number.isFinite(Number(p.amount_cents)) ? Math.max(0, Math.trunc(Number(p.amount_cents))) : 0;
+      const tierIdValue = typeof p.tier_id === "string" && p.tier_id ? p.tier_id : null;
+      const status = typeof p.payment_status === "string" ? p.payment_status.toLowerCase() : "pending";
+      const allowed = ["pending", "paid", "refunded", "cancelled", "failed"];
+      if (!allowed.includes(status)) throw new Error("Invalid status");
+
+      const record: Record<string, unknown> = {
+        tournament_id: tournamentId,
+        tier_id: tierIdValue,
+        company_name: companyName,
+        contact_name: normalizeOptionalText(p.contact_name, 200) ?? "",
+        contact_email: normalizeOptionalText(p.contact_email, 320) ?? "",
+        contact_phone: normalizeOptionalText(p.contact_phone, 50),
+        website_url: normalizeOptionalText(p.website_url, 500),
+        description: normalizeOptionalText(p.description, 2000),
+        logo_url: normalizeOptionalText(p.logo_url, 1000),
+        amount_cents: amountCents,
+        payment_status: status,
+        paid_at: status === "paid" ? new Date().toISOString() : null,
+      };
+
+      if (action === "create_registration") {
+        const { data, error } = await supabaseAdmin
+          .from("sponsor_registrations")
+          .insert(record)
+          .select("id")
+          .single();
+        if (error) throw error;
+        return json({ success: true, id: data.id });
+      } else {
+        if (!registrationId) throw new Error("Registration not specified");
+        // Don't overwrite paid_at on update unless newly transitioning to paid
+        const { data: existing } = await supabaseAdmin
+          .from("sponsor_registrations")
+          .select("payment_status, paid_at")
+          .eq("id", registrationId)
+          .maybeSingle();
+        if (existing?.payment_status === "paid" && status === "paid") {
+          record.paid_at = existing.paid_at;
+        }
+        const { error } = await supabaseAdmin
+          .from("sponsor_registrations")
+          .update(record)
+          .eq("id", registrationId)
+          .eq("tournament_id", tournamentId);
+        if (error) throw error;
+        return json({ success: true });
+      }
+    }
+
     if (action === "update_registration_status") {
       if (!registrationId) throw new Error("Registration not specified");
       const status = String(body?.status || "").toLowerCase();

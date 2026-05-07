@@ -12,6 +12,7 @@ import {
   Calendar, Info, ShieldCheck, Banknote, CreditCard, Clock, CheckCircle,
   XCircle, RotateCcw, FileText, Building2, Users,
 } from "lucide-react";
+import PlatformFeesPanel from "./PlatformFeesPanel";
 
 interface Transaction {
   id: string;

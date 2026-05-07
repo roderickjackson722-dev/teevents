@@ -498,7 +498,7 @@ export default function AdminPayouts() {
                                 variant="outline"
                                 size="sm"
                                 className="text-destructive hover:text-destructive gap-1.5"
-                                onClick={() => { setResetOrg(o); setResetReason(""); }}
+                                onClick={() => { setResetOrg(o); setResetReason(""); setResetConfirmText(""); }}
                               >
                                 <RefreshCw className="h-3.5 w-3.5" />
                                 Reset Stripe

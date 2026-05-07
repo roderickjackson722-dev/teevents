@@ -662,9 +662,18 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                         value={reg.payment_status}
                         onValueChange={async (newStatus) => {
                           if (demoGuard()) return;
-                          const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                            body: { action: "update_registration_status", registration_id: reg.id, status: newStatus },
-                          });
+                          let error: any = null, data: any = null;
+                          if (reg._source === "legacy") {
+                            const res = await supabase.from("tournament_sponsors")
+                              .update({ is_paid: newStatus === "paid" })
+                              .eq("id", reg.id);
+                            error = res.error;
+                          } else {
+                            const res = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_status", registration_id: reg.id, status: newStatus },
+                            });
+                            data = res.data; error = res.error;
+                          }
                           if (error || data?.error) {
                             toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
                           } else {

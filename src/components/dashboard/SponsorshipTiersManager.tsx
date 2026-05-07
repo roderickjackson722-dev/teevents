@@ -58,6 +58,8 @@ interface SponsorRegistration {
   payment_status: string;
   paid_at: string | null;
   created_at: string;
+  _source?: "registration" | "legacy";
+  _legacyTier?: string | null;
 }
 
 interface Tournament {

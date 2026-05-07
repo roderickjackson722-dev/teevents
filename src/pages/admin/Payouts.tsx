@@ -68,6 +68,7 @@ export default function AdminPayouts() {
   const [resetOrg, setResetOrg] = useState<OrgStripeInfo | null>(null);
   const [resetReason, setResetReason] = useState("");
   const [resetting, setResetting] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState("");
   const [viewLogOrg, setViewLogOrg] = useState<OrgStripeInfo | null>(null);
   const [orgActivityLogs, setOrgActivityLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -137,6 +138,7 @@ export default function AdminPayouts() {
         toast({ title: "Stripe account disconnected", description: `${resetOrg.name} will need to reconnect.` });
         setResetOrg(null);
         setResetReason("");
+        setResetConfirmText("");
         loadOrgs();
       }
     } catch {
@@ -496,7 +498,7 @@ export default function AdminPayouts() {
                                 variant="outline"
                                 size="sm"
                                 className="text-destructive hover:text-destructive gap-1.5"
-                                onClick={() => { setResetOrg(o); setResetReason(""); }}
+                                onClick={() => { setResetOrg(o); setResetReason(""); setResetConfirmText(""); }}
                               >
                                 <RefreshCw className="h-3.5 w-3.5" />
                                 Reset Stripe
@@ -564,7 +566,7 @@ export default function AdminPayouts() {
       </Dialog>
 
       {/* Reset Stripe Modal */}
-      <Dialog open={!!resetOrg} onOpenChange={(o) => !o && setResetOrg(null)}>
+      <Dialog open={!!resetOrg} onOpenChange={(o) => { if (!o) { setResetOrg(null); setResetConfirmText(""); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Reset Stripe Connection</DialogTitle>
@@ -583,14 +585,27 @@ export default function AdminPayouts() {
                 <p className="text-xs text-muted-foreground font-mono">{resetOrg.stripe_account_id}</p>
               </div>
 
+              {/* Safety banner — clarifies scope of the reset */}
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
+                <p className="text-xs font-semibold text-foreground mb-1">
+                  ✅ Safe — this only affects Stripe routing
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc ml-4">
+                  <li>Tournament data, players, and registrations are NOT deleted</li>
+                  <li>The organization account stays intact</li>
+                  <li>Public site, settings, and history remain unchanged</li>
+                  <li>Only the Stripe Connect link (account ID, bank info, payout method) is cleared</li>
+                </ul>
+              </div>
+
               <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs font-medium text-foreground">After reset:</p>
                     <ul className="text-xs text-muted-foreground space-y-0.5 mt-1 list-disc ml-4">
-                      <li>Organizer will need to reconnect a Stripe account</li>
-                      <li>Any pending payouts will be held until new account is set</li>
+                      <li>Organizer will need to reconnect a Stripe account to receive auto payouts</li>
+                      <li>New paid registrations will route to platform escrow until reconnected</li>
                       <li>This action can be undone by the organizer reconnecting</li>
                     </ul>
                   </div>
@@ -607,11 +622,30 @@ export default function AdminPayouts() {
                 />
               </div>
 
+              <div>
+                <label className="text-sm font-medium text-foreground">
+                  Type <span className="font-mono font-bold">RESET</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={resetConfirmText}
+                  onChange={(e) => setResetConfirmText(e.target.value)}
+                  className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                  placeholder="RESET"
+                  autoComplete="off"
+                />
+              </div>
+
               <div className="flex gap-3">
-                <Button variant="destructive" onClick={handleResetStripe} disabled={resetting} className="flex-1">
-                  {resetting ? "Resetting…" : "Yes, Disconnect"}
+                <Button
+                  variant="destructive"
+                  onClick={handleResetStripe}
+                  disabled={resetting || resetConfirmText.trim().toUpperCase() !== "RESET"}
+                  className="flex-1"
+                >
+                  {resetting ? "Resetting…" : "Yes, Disconnect Stripe Only"}
                 </Button>
-                <Button variant="outline" onClick={() => setResetOrg(null)}>Cancel</Button>
+                <Button variant="outline" onClick={() => { setResetOrg(null); setResetConfirmText(""); }}>Cancel</Button>
               </div>
             </div>
           )}

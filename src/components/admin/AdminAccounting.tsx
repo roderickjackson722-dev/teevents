@@ -53,11 +53,24 @@ interface Payout {
   transaction_count: number;
 }
 
+interface RoutingLog {
+  id: string;
+  created_at: string;
+  context: string;
+  routing_decision: string;
+  gross_cents: number;
+  platform_fee_cents: number;
+  stripe_fee_cents: number;
+  application_fee_cents: number;
+  organizer_stripe_account_id: string | null;
+}
+
 const AdminAccounting = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [routingLogs, setRoutingLogs] = useState<RoutingLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters

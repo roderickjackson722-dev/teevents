@@ -1007,39 +1007,44 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             </h2>
             <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
 
-            <div className="relative flex items-center justify-center gap-8">
+            <div className="relative flex items-center justify-center gap-2 sm:gap-8">
               {sponsorPages > 1 && (
                 <button
                   onClick={() => setSponsorIndex((prev) => (prev - 1 + sponsorPages) % sponsorPages)}
-                  className="absolute left-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Previous sponsors"
                 >
                   <ChevronLeft className="h-6 w-6 text-gray-400" />
                 </button>
               )}
 
-              <div className="flex items-center justify-center gap-12 min-h-[100px]">
+              <div className="flex-1 flex flex-wrap items-center justify-center gap-x-8 gap-y-8 sm:gap-x-12 min-h-[120px] py-4">
                 {visibleSponsors.map((s) => {
                   const sponsorUrl = s.website_url
                     ? (s.website_url.startsWith("http://") || s.website_url.startsWith("https://") ? s.website_url : `https://${s.website_url}`)
                     : null;
+                  const isFeatured = s.tier === "title" || s.tier === "presenting" || s.tier === "platinum";
+                  const imgClass = isFeatured
+                    ? "h-28 sm:h-36 w-auto max-w-[240px] sm:max-w-[320px] object-contain"
+                    : "h-20 sm:h-24 w-auto max-w-[160px] sm:max-w-[200px] object-contain";
                   return (
                   <div key={s.id} className="flex flex-col items-center">
                     {sponsorUrl ? (
                       <a href={sponsorUrl} target="_blank" rel="noopener noreferrer" className="group">
                         {s.logo_url ? (
-                          <img src={s.logo_url} alt={s.name} className="h-20 w-auto max-w-[180px] object-contain group-hover:scale-105 transition-transform" />
+                          <img src={s.logo_url} alt={s.name} className={`${imgClass} group-hover:scale-105 transition-transform`} />
                         ) : (
                           <span className="text-lg font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{s.name}</span>
                         )}
                       </a>
                     ) : s.logo_url ? (
-                      <img src={s.logo_url} alt={s.name} className="h-20 w-auto max-w-[180px] object-contain" />
+                      <img src={s.logo_url} alt={s.name} className={imgClass} />
                     ) : (
                       <span className="text-lg font-bold text-gray-700">{s.name}</span>
                     )}
-                    {s.tier === "presenting" && (
-                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-2">
-                        Thanks to Our Presenting Sponsor
+                    {(s.tier === "presenting" || s.tier === "title") && (
+                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-2 text-center">
+                        {s.tier === "title" ? "Title Sponsor" : "Thanks to Our Presenting Sponsor"}
                       </span>
                     )}
                   </div>

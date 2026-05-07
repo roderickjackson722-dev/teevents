@@ -138,6 +138,7 @@ export default function AdminPayouts() {
         toast({ title: "Stripe account disconnected", description: `${resetOrg.name} will need to reconnect.` });
         setResetOrg(null);
         setResetReason("");
+        setResetConfirmText("");
         loadOrgs();
       }
     } catch {

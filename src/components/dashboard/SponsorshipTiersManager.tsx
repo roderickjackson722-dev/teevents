@@ -114,6 +114,21 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   const [editTier, setEditTier] = useState<SponsorshipTier | null>(null);
   const [saving, setSaving] = useState(false);
   const [viewReg, setViewReg] = useState<SponsorRegistration | null>(null);
+  const [regDialogOpen, setRegDialogOpen] = useState(false);
+  const [editReg, setEditReg] = useState<SponsorRegistration | null>(null);
+  const [savingReg, setSavingReg] = useState(false);
+  const [regForm, setRegForm] = useState({
+    company_name: "",
+    contact_name: "",
+    contact_email: "",
+    contact_phone: "",
+    website_url: "",
+    description: "",
+    logo_url: "",
+    tier_id: "",
+    amount: "",
+    payment_status: "pending",
+  });
   const [form, setForm] = useState({
     name: "",
     description: "",

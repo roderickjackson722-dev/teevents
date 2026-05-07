@@ -193,7 +193,22 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
                   <Label>Notes</Label>
                   <Input value={uploadNotes} onChange={e => setUploadNotes(e.target.value)} placeholder="e.g. High-res for print" />
                 </div>
-                <label className="cursor-pointer block">
+                <label
+                  className="cursor-pointer block"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const f = e.dataTransfer.files?.[0];
+                    if (!f) return;
+                    if (f.type.startsWith("image/") && f.type !== "image/svg+xml") {
+                      setCropSrc(await fileToDataUrl(f));
+                      setCropOpen(true);
+                    } else {
+                      handleUpload(f);
+                    }
+                  }}
+                >
                   <input
                     type="file"
                     accept="image/*,.pdf,.svg"
@@ -214,7 +229,8 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
                     {uploading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
                       <>
                         <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">Click to select file</p>
+                        <p className="text-sm text-muted-foreground">Click to select file or drag & drop here</p>
+                        <p className="text-xs text-muted-foreground mt-1">Images, PDF, or SVG</p>
                       </>
                     )}
                   </div>

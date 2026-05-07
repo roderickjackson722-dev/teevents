@@ -193,7 +193,22 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
                   <Label>Notes</Label>
                   <Input value={uploadNotes} onChange={e => setUploadNotes(e.target.value)} placeholder="e.g. High-res for print" />
                 </div>
-                <label className="cursor-pointer block">
+                <label
+                  className="cursor-pointer block"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const f = e.dataTransfer.files?.[0];
+                    if (!f) return;
+                    if (f.type.startsWith("image/") && f.type !== "image/svg+xml") {
+                      setCropSrc(await fileToDataUrl(f));
+                      setCropOpen(true);
+                    } else {
+                      handleUpload(f);
+                    }
+                  }}
+                >
                   <input
                     type="file"
                     accept="image/*,.pdf,.svg"
@@ -214,7 +229,8 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
                     {uploading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
                       <>
                         <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">Click to select file</p>
+                        <p className="text-sm text-muted-foreground">Click to select file or drag & drop here</p>
+                        <p className="text-xs text-muted-foreground mt-1">Images, PDF, or SVG</p>
                       </>
                     )}
                   </div>
@@ -687,7 +703,20 @@ const Sponsors = () => {
               {/* Logo Upload */}
               <div>
                 <Label>Sponsor Logo</Label>
-                <div className="mt-2 flex items-center gap-4">
+                <div
+                  className="mt-2 flex items-center gap-4 rounded-md p-2 border border-dashed border-transparent hover:border-border transition-colors"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add("bg-muted/40", "border-primary"); }}
+                  onDragLeave={(e) => { e.currentTarget.classList.remove("bg-muted/40", "border-primary"); }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove("bg-muted/40", "border-primary");
+                    const f = e.dataTransfer.files?.[0];
+                    if (!f || !f.type.startsWith("image/")) return;
+                    setLogoCropSrc(await fileToDataUrl(f));
+                    setLogoCropOpen(true);
+                  }}
+                >
                   {form.logo_url ? (
                     <div className="h-16 w-32 sm:w-40 rounded border border-border bg-muted flex items-center justify-center p-1.5 overflow-hidden">
                       <img src={form.logo_url} alt="" className="max-h-full max-w-full object-contain" />
@@ -725,6 +754,7 @@ const Sponsors = () => {
                         <Trash2 className="h-4 w-4" /> Remove
                       </button>
                     )}
+                    <p className="text-xs text-muted-foreground">or drag & drop an image here</p>
                   </div>
                 </div>
               </div>

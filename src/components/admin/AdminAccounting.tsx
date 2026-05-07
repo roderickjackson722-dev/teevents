@@ -255,6 +255,9 @@ const AdminAccounting = () => {
         </div>
       </div>
 
+      {/* Platform Fees collected via Stripe Connect (from routing logs) */}
+      <PlatformFeesPanel logs={routingLogs} />
+
       {/* Discrepancy Alert */}
       {discrepancies.length > 0 && (
         <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">

@@ -29,7 +29,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Loader2, Eye, DollarSign, Copy, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Eye, DollarSign, Copy, ExternalLink, Upload, Image as ImageIcon } from "lucide-react";
 
 interface SponsorshipTier {
   id: string;
@@ -468,11 +468,122 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       {/* Sponsor Registrations */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <CardTitle className="text-base">Sponsor Registrations</CardTitle>
-            <div className="flex gap-3 text-xs">
-              <span className="text-muted-foreground">Paid: <strong className="text-primary">{fmt(totalPaid)}</strong></span>
-              <span className="text-muted-foreground">Pending: <strong className="text-secondary">{fmt(totalPending)}</strong></span>
+            <div className="flex items-center gap-3">
+              <div className="flex gap-3 text-xs">
+                <span className="text-muted-foreground">Paid: <strong className="text-primary">{fmt(totalPaid)}</strong></span>
+                <span className="text-muted-foreground">Pending: <strong className="text-secondary">{fmt(totalPending)}</strong></span>
+              </div>
+              <Dialog open={regDialogOpen} onOpenChange={(v) => { setRegDialogOpen(v); if (!v) resetRegForm(); }}>
+                <DialogTrigger asChild>
+                  <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1" /> Add Sponsor</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-display">{editReg ? "Edit Sponsor" : "Add Sponsor"}</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSaveReg} className="space-y-3 mt-2">
+                    <div>
+                      <Label>Company Name *</Label>
+                      <Input value={regForm.company_name} onChange={e => setRegForm({ ...regForm, company_name: e.target.value })} required maxLength={200} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Contact Name</Label>
+                        <Input value={regForm.contact_name} onChange={e => setRegForm({ ...regForm, contact_name: e.target.value })} maxLength={200} />
+                      </div>
+                      <div>
+                        <Label>Contact Email</Label>
+                        <Input type="email" value={regForm.contact_email} onChange={e => setRegForm({ ...regForm, contact_email: e.target.value })} maxLength={320} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Phone</Label>
+                        <Input value={regForm.contact_phone} onChange={e => setRegForm({ ...regForm, contact_phone: e.target.value })} maxLength={50} />
+                      </div>
+                      <div>
+                        <Label>Website</Label>
+                        <Input value={regForm.website_url} onChange={e => setRegForm({ ...regForm, website_url: e.target.value })} placeholder="https://" maxLength={500} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Tier</Label>
+                        <Select value={regForm.tier_id || "_custom"} onValueChange={(v) => {
+                          const tierVal = v === "_custom" ? "" : v;
+                          const matched = tiers.find(t => t.id === tierVal);
+                          setRegForm(prev => ({
+                            ...prev,
+                            tier_id: tierVal,
+                            amount: matched && !prev.amount ? (matched.price_cents / 100).toFixed(2) : prev.amount,
+                          }));
+                        }}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_custom">Custom (no tier)</SelectItem>
+                            {tiers.map(t => <SelectItem key={t.id} value={t.id}>{t.name} — {fmt(t.price_cents)}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Amount ($)</Label>
+                        <Input type="number" step="0.01" min="0" value={regForm.amount} onChange={e => setRegForm({ ...regForm, amount: e.target.value })} placeholder="0.00" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Payment Status</Label>
+                      <Select value={regForm.payment_status} onValueChange={(v) => setRegForm({ ...regForm, payment_status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="refunded">Refunded</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="failed">Failed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Logo</Label>
+                      <div className="flex items-center gap-3 mt-1">
+                        {regForm.logo_url ? (
+                          <div className="h-14 w-24 rounded border border-border bg-muted flex items-center justify-center p-1 overflow-hidden">
+                            <img src={regForm.logo_url} alt="" className="max-h-full max-w-full object-contain" />
+                          </div>
+                        ) : (
+                          <div className="h-14 w-24 bg-muted rounded border border-dashed border-border flex items-center justify-center">
+                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <label className="cursor-pointer">
+                          <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                            const f = e.target.files?.[0]; e.target.value = "";
+                            if (f) await handleRegLogoUpload(f);
+                          }} />
+                          <span className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md text-sm hover:bg-muted">
+                            <Upload className="h-4 w-4" /> {regForm.logo_url ? "Replace" : "Upload"}
+                          </span>
+                        </label>
+                        {regForm.logo_url && (
+                          <button type="button" onClick={() => setRegForm(prev => ({ ...prev, logo_url: "" }))} className="text-xs text-destructive hover:underline">
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Textarea value={regForm.description} onChange={e => setRegForm({ ...regForm, description: e.target.value })} rows={2} maxLength={2000} />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={savingReg}>
+                      {savingReg && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                      {editReg ? "Update Sponsor" : "Add Sponsor"}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </CardHeader>

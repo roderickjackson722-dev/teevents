@@ -58,6 +58,8 @@ interface SponsorRegistration {
   payment_status: string;
   paid_at: string | null;
   created_at: string;
+  _source?: "registration" | "legacy";
+  _legacyTier?: string | null;
 }
 
 interface Tournament {
@@ -142,7 +144,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   const fetchData = useCallback(async () => {
     if (!selectedTournament) return;
     setLoading(true);
-    const [tiersRes, regsRes] = await Promise.all([
+    const [tiersRes, regsRes, legacyRes] = await Promise.all([
       supabase
         .from("sponsorship_tiers")
         .select("*")
@@ -153,9 +155,36 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
         .select("*")
         .eq("tournament_id", selectedTournament)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("tournament_sponsors")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("created_at", { ascending: false }),
     ]);
+    const regs: SponsorRegistration[] = ((regsRes.data as any[]) || []).map(r => ({ ...r, _source: "registration" as const }));
+    const legacy: SponsorRegistration[] = ((legacyRes.data as any[]) || []).map((s: any) => ({
+      id: s.id,
+      tournament_id: s.tournament_id,
+      tier_id: null,
+      company_name: s.name || "",
+      contact_name: "",
+      contact_email: "",
+      contact_phone: null,
+      website_url: s.website_url || null,
+      description: s.description || null,
+      logo_url: s.logo_url || null,
+      amount_cents: Math.round(Number(s.amount || 0) * 100),
+      payment_status: s.is_paid ? "paid" : "pending",
+      paid_at: null,
+      created_at: s.created_at,
+      _source: "legacy" as const,
+      _legacyTier: s.tier || null,
+    }));
+    const merged = [...regs, ...legacy].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
     setTiers((tiersRes.data as SponsorshipTier[]) || []);
-    setRegistrations((regsRes.data as SponsorRegistration[]) || []);
+    setRegistrations(merged);
     setLoading(false);
   }, [selectedTournament]);
 
@@ -252,9 +281,16 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     fetchData();
   };
 
-  const getTierName = (tierId: string | null) => {
-    if (!tierId) return "Custom";
-    return tiers.find(t => t.id === tierId)?.name || "Unknown";
+  const getTierName = (reg: SponsorRegistration) => {
+    if (reg._source === "legacy") {
+      const map: Record<string, string> = {
+        title: "Title Sponsor", platinum: "Platinum", gold: "Gold",
+        silver: "Silver", bronze: "Bronze", hole: "Hole Sponsor", inkind: "In-Kind",
+      };
+      return reg._legacyTier ? (map[reg._legacyTier] || reg._legacyTier) : "Custom";
+    }
+    if (!reg.tier_id) return "Custom";
+    return tiers.find(t => t.id === reg.tier_id)?.name || "Unknown";
   };
 
   const sponsorUrl = selectedTournamentData?.slug
@@ -326,17 +362,22 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       payment_status: regForm.payment_status,
     };
 
+    // If editing a legacy tournament_sponsors row, migrate it: delete legacy + create new registration
+    const isLegacyEdit = editReg && (editReg as any)._source === "legacy";
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
       body: {
-        action: editReg ? "update_registration" : "create_registration",
+        action: editReg && !isLegacyEdit ? "update_registration" : "create_registration",
         tournament_id: selectedTournament,
-        registration_id: editReg?.id,
+        registration_id: editReg && !isLegacyEdit ? editReg.id : undefined,
         payload,
       },
     });
     if (error || data?.error) {
       toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
     } else {
+      if (isLegacyEdit && editReg) {
+        await supabase.from("tournament_sponsors").delete().eq("id", editReg.id);
+      }
       toast({ title: editReg ? "Sponsor updated" : "Sponsor added" });
       resetRegForm();
       setRegDialogOpen(false);
@@ -614,16 +655,25 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{getTierName(reg.tier_id)}</TableCell>
+                    <TableCell className="text-sm">{getTierName(reg)}</TableCell>
                     <TableCell className="font-mono text-sm">{fmt(reg.amount_cents)}</TableCell>
                     <TableCell>
                       <Select
                         value={reg.payment_status}
                         onValueChange={async (newStatus) => {
                           if (demoGuard()) return;
-                          const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                            body: { action: "update_registration_status", registration_id: reg.id, status: newStatus },
-                          });
+                          let error: any = null, data: any = null;
+                          if (reg._source === "legacy") {
+                            const res = await supabase.from("tournament_sponsors")
+                              .update({ is_paid: newStatus === "paid" })
+                              .eq("id", reg.id);
+                            error = res.error;
+                          } else {
+                            const res = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_status", registration_id: reg.id, status: newStatus },
+                            });
+                            data = res.data; error = res.error;
+                          }
                           if (error || data?.error) {
                             toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
                           } else {
@@ -675,7 +725,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                                     </a>
                                   </div>
                                 )}
-                                <div><span className="text-muted-foreground">Tier:</span> {getTierName(reg.tier_id)}</div>
+                                <div><span className="text-muted-foreground">Tier:</span> {getTierName(reg)}</div>
                                 <div><span className="text-muted-foreground">Amount:</span> {fmt(reg.amount_cents)}</div>
                                 <div><span className="text-muted-foreground">Status:</span> {reg.payment_status}</div>
                                 {reg.paid_at && <div><span className="text-muted-foreground">Paid:</span> {new Date(reg.paid_at).toLocaleString()}</div>}
@@ -702,9 +752,16 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                               <AlertDialogAction
                                 onClick={async () => {
                                   if (demoGuard()) return;
-                                  const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                                    body: { action: "delete_registration", registration_id: reg.id },
-                                  });
+                                  let error: any = null, data: any = null;
+                                  if (reg._source === "legacy") {
+                                    const res = await supabase.from("tournament_sponsors").delete().eq("id", reg.id);
+                                    error = res.error;
+                                  } else {
+                                    const res = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                                      body: { action: "delete_registration", registration_id: reg.id },
+                                    });
+                                    data = res.data; error = res.error;
+                                  }
                                   if (error || data?.error) {
                                     toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
                                   } else {

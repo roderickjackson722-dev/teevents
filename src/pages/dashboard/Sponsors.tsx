@@ -820,9 +820,11 @@ const Sponsors = () => {
                   >
                     <div className="flex items-start gap-4">
                       {sponsor.logo_url ? (
-                        <img src={sponsor.logo_url} alt={sponsor.name} className="h-12 w-12 object-contain rounded border border-border bg-muted flex-shrink-0" />
+                        <div className="h-14 w-20 sm:w-24 rounded border border-border bg-muted flex items-center justify-center p-1 overflow-hidden flex-shrink-0">
+                          <img src={sponsor.logo_url} alt={sponsor.name} className="max-h-full max-w-full object-contain" />
+                        </div>
                       ) : (
-                        <div className="h-12 w-12 bg-muted rounded border border-border flex items-center justify-center flex-shrink-0">
+                        <div className="h-14 w-20 sm:w-24 bg-muted rounded border border-border flex items-center justify-center flex-shrink-0">
                           <Award className="h-5 w-5 text-muted-foreground" />
                         </div>
                       )}

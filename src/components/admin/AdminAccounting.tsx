@@ -12,6 +12,7 @@ import {
   Calendar, Info, ShieldCheck, Banknote, CreditCard, Clock, CheckCircle,
   XCircle, RotateCcw, FileText, Building2, Users,
 } from "lucide-react";
+import PlatformFeesPanel from "./PlatformFeesPanel";
 
 interface Transaction {
   id: string;
@@ -53,11 +54,24 @@ interface Payout {
   transaction_count: number;
 }
 
+interface RoutingLog {
+  id: string;
+  created_at: string;
+  context: string;
+  routing_decision: string;
+  gross_cents: number;
+  platform_fee_cents: number;
+  stripe_fee_cents: number;
+  application_fee_cents: number;
+  organizer_stripe_account_id: string | null;
+}
+
 const AdminAccounting = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [routingLogs, setRoutingLogs] = useState<RoutingLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -75,16 +89,18 @@ const AdminAccounting = () => {
 
   const fetchAll = async () => {
     setLoading(true);
-    const [txRes, orgRes, tRes, payRes] = await Promise.all([
+    const [txRes, orgRes, tRes, payRes, routRes] = await Promise.all([
       supabase.from("platform_transactions").select("*").order("created_at", { ascending: false }),
       supabase.from("organizations").select("id, name, plan, stripe_account_id"),
       supabase.from("tournaments").select("id, title, organization_id"),
       supabase.from("organization_payouts").select("*").order("created_at", { ascending: false }),
+      supabase.from("payment_routing_logs").select("id, created_at, context, routing_decision, gross_cents, platform_fee_cents, stripe_fee_cents, application_fee_cents, organizer_stripe_account_id").order("created_at", { ascending: false }).limit(500),
     ]);
     setTransactions((txRes.data as Transaction[]) || []);
     setOrgs((orgRes.data as Org[]) || []);
     setTournaments((tRes.data as Tournament[]) || []);
     setPayouts((payRes.data as Payout[]) || []);
+    setRoutingLogs((routRes.data as RoutingLog[]) || []);
     setLoading(false);
   };
 
@@ -239,6 +255,9 @@ const AdminAccounting = () => {
           <p className="text-xs text-muted-foreground">{payouts.filter((p) => p.status === "completed").length} payouts</p>
         </div>
       </div>
+
+      {/* Platform Fees collected via Stripe Connect (from routing logs) */}
+      <PlatformFeesPanel logs={routingLogs} />
 
       {/* Discrepancy Alert */}
       {discrepancies.length > 0 && (

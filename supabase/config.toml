@@ -76,4 +76,7 @@ verify_jwt = false
 [functions.send-vendor-reminders]
 verify_jwt = false
 
+[functions.daily-fee-summary]
+verify_jwt = false
+
 

@@ -1055,7 +1055,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               {sponsorPages > 1 && (
                 <button
                   onClick={() => setSponsorIndex((prev) => (prev + 1) % sponsorPages)}
-                  className="absolute right-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Next sponsors"
                 >
                   <ChevronRight className="h-6 w-6 text-gray-400" />
                 </button>

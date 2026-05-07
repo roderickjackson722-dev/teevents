@@ -588,6 +588,10 @@ export default function PayoutSettings() {
                       )}
                     </>
                   )}
+                  <Button variant="outline" size="sm" onClick={handleOpenStripeDashboard} disabled={openingDashboard}>
+                    {openingDashboard ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5 mr-1.5" />}
+                    View Stripe Dashboard
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)} disabled={changingBank}>
                     <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Bank Account
                   </Button>

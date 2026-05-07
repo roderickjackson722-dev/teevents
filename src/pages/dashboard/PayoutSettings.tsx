@@ -57,6 +57,21 @@ export default function PayoutSettings() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [connectingStripe, setConnectingStripe] = useState(false);
+  const [openingDashboard, setOpeningDashboard] = useState(false);
+
+  const handleOpenStripeDashboard = async () => {
+    setOpeningDashboard(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-dashboard");
+      if (error) throw error;
+      if (!data?.url) throw new Error("No dashboard URL returned");
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not open Stripe dashboard");
+    } finally {
+      setOpeningDashboard(false);
+    }
+  };
   const [savingPaypal, setSavingPaypal] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
   const [paypalEmail, setPaypalEmail] = useState("");
@@ -573,6 +588,10 @@ export default function PayoutSettings() {
                       )}
                     </>
                   )}
+                  <Button variant="outline" size="sm" onClick={handleOpenStripeDashboard} disabled={openingDashboard}>
+                    {openingDashboard ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5 mr-1.5" />}
+                    View Stripe Dashboard
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => setShowChangeBankModal(true)} disabled={changingBank}>
                     <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Bank Account
                   </Button>

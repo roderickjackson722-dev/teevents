@@ -281,9 +281,16 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     fetchData();
   };
 
-  const getTierName = (tierId: string | null) => {
-    if (!tierId) return "Custom";
-    return tiers.find(t => t.id === tierId)?.name || "Unknown";
+  const getTierName = (reg: SponsorRegistration) => {
+    if (reg._source === "legacy") {
+      const map: Record<string, string> = {
+        title: "Title Sponsor", platinum: "Platinum", gold: "Gold",
+        silver: "Silver", bronze: "Bronze", hole: "Hole Sponsor", inkind: "In-Kind",
+      };
+      return reg._legacyTier ? (map[reg._legacyTier] || reg._legacyTier) : "Custom";
+    }
+    if (!reg.tier_id) return "Custom";
+    return tiers.find(t => t.id === reg.tier_id)?.name || "Unknown";
   };
 
   const sponsorUrl = selectedTournamentData?.slug

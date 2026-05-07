@@ -703,7 +703,20 @@ const Sponsors = () => {
               {/* Logo Upload */}
               <div>
                 <Label>Sponsor Logo</Label>
-                <div className="mt-2 flex items-center gap-4">
+                <div
+                  className="mt-2 flex items-center gap-4 rounded-md p-2 border border-dashed border-transparent hover:border-border transition-colors"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add("bg-muted/40", "border-primary"); }}
+                  onDragLeave={(e) => { e.currentTarget.classList.remove("bg-muted/40", "border-primary"); }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove("bg-muted/40", "border-primary");
+                    const f = e.dataTransfer.files?.[0];
+                    if (!f || !f.type.startsWith("image/")) return;
+                    setLogoCropSrc(await fileToDataUrl(f));
+                    setLogoCropOpen(true);
+                  }}
+                >
                   {form.logo_url ? (
                     <div className="h-16 w-32 sm:w-40 rounded border border-border bg-muted flex items-center justify-center p-1.5 overflow-hidden">
                       <img src={form.logo_url} alt="" className="max-h-full max-w-full object-contain" />
@@ -741,6 +754,7 @@ const Sponsors = () => {
                         <Trash2 className="h-4 w-4" /> Remove
                       </button>
                     )}
+                    <p className="text-xs text-muted-foreground">or drag & drop an image here</p>
                   </div>
                 </div>
               </div>

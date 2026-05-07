@@ -264,6 +264,87 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   const totalPaid = registrations.filter(r => r.payment_status === "paid").reduce((s, r) => s + r.amount_cents, 0);
   const totalPending = registrations.filter(r => r.payment_status === "pending").reduce((s, r) => s + r.amount_cents, 0);
 
+  const resetRegForm = () => {
+    setEditReg(null);
+    setRegForm({
+      company_name: "", contact_name: "", contact_email: "", contact_phone: "",
+      website_url: "", description: "", logo_url: "", tier_id: "", amount: "",
+      payment_status: "pending",
+    });
+  };
+
+  const handleOpenRegEdit = (reg: SponsorRegistration) => {
+    setEditReg(reg);
+    setRegForm({
+      company_name: reg.company_name || "",
+      contact_name: reg.contact_name || "",
+      contact_email: reg.contact_email || "",
+      contact_phone: reg.contact_phone || "",
+      website_url: reg.website_url || "",
+      description: reg.description || "",
+      logo_url: reg.logo_url || "",
+      tier_id: reg.tier_id || "",
+      amount: ((reg.amount_cents || 0) / 100).toFixed(2),
+      payment_status: reg.payment_status || "pending",
+    });
+    setRegDialogOpen(true);
+  };
+
+  const handleRegLogoUpload = async (file: File) => {
+    if (!org) return;
+    const ext = file.name.split(".").pop();
+    const path = `${org.orgId}/${selectedTournament}/sponsors/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); return; }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    setRegForm(prev => ({ ...prev, logo_url: urlData.publicUrl }));
+  };
+
+  const handleSaveReg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (demoGuard()) return;
+    if (!regForm.company_name.trim()) {
+      toast({ title: "Company name is required", variant: "destructive" });
+      return;
+    }
+    setSavingReg(true);
+    const tierMatch = tiers.find(t => t.id === regForm.tier_id);
+    const amountCents = regForm.amount
+      ? Math.round(parseFloat(regForm.amount) * 100)
+      : (tierMatch?.price_cents ?? 0);
+
+    const payload = {
+      company_name: regForm.company_name.trim(),
+      contact_name: regForm.contact_name.trim(),
+      contact_email: regForm.contact_email.trim(),
+      contact_phone: regForm.contact_phone.trim() || null,
+      website_url: regForm.website_url.trim() || null,
+      description: regForm.description.trim() || null,
+      logo_url: regForm.logo_url || null,
+      tier_id: regForm.tier_id || null,
+      amount_cents: amountCents,
+      payment_status: regForm.payment_status,
+    };
+
+    const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+      body: {
+        action: editReg ? "update_registration" : "create_registration",
+        tournament_id: selectedTournament,
+        registration_id: editReg?.id,
+        payload,
+      },
+    });
+    if (error || data?.error) {
+      toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+    } else {
+      toast({ title: editReg ? "Sponsor updated" : "Sponsor added" });
+      resetRegForm();
+      setRegDialogOpen(false);
+      fetchData();
+    }
+    setSavingReg(false);
+  };
+
   if (loading) {
     return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;
   }

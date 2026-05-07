@@ -91,7 +91,10 @@ export function ImageCropperDialog({
               image={imageSrc}
               crop={crop}
               zoom={zoom}
+              minZoom={0.3}
+              maxZoom={4}
               aspect={RATIO_VALUES[aspect]}
+              objectFit="contain"
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropComplete}
@@ -99,6 +102,9 @@ export function ImageCropperDialog({
             />
           )}
         </div>
+        <p className="text-xs text-muted-foreground pt-1">
+          Tip: zoom out (slide left) to fit the entire logo inside the crop area.
+        </p>
 
         <div className="space-y-3 pt-2">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -106,7 +112,7 @@ export function ImageCropperDialog({
               <Label className="text-xs">Zoom</Label>
               <Slider
                 value={[zoom]}
-                min={1}
+                min={0.3}
                 max={4}
                 step={0.05}
                 onValueChange={(v) => setZoom(v[0])}

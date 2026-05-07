@@ -689,9 +689,11 @@ const Sponsors = () => {
                 <Label>Sponsor Logo</Label>
                 <div className="mt-2 flex items-center gap-4">
                   {form.logo_url ? (
-                    <img src={form.logo_url} alt="" className="h-14 w-14 object-contain rounded border border-border bg-muted" />
+                    <div className="h-16 w-32 sm:w-40 rounded border border-border bg-muted flex items-center justify-center p-1.5 overflow-hidden">
+                      <img src={form.logo_url} alt="" className="max-h-full max-w-full object-contain" />
+                    </div>
                   ) : (
-                    <div className="h-14 w-14 bg-muted rounded border border-dashed border-border flex items-center justify-center">
+                    <div className="h-16 w-32 sm:w-40 bg-muted rounded border border-dashed border-border flex items-center justify-center">
                       <Image className="h-5 w-5 text-muted-foreground" />
                     </div>
                   )}

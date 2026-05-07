@@ -650,7 +650,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{getTierName(reg.tier_id)}</TableCell>
+                    <TableCell className="text-sm">{getTierName(reg)}</TableCell>
                     <TableCell className="font-mono text-sm">{fmt(reg.amount_cents)}</TableCell>
                     <TableCell>
                       <Select
@@ -711,7 +711,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                                     </a>
                                   </div>
                                 )}
-                                <div><span className="text-muted-foreground">Tier:</span> {getTierName(reg.tier_id)}</div>
+                                <div><span className="text-muted-foreground">Tier:</span> {getTierName(reg)}</div>
                                 <div><span className="text-muted-foreground">Amount:</span> {fmt(reg.amount_cents)}</div>
                                 <div><span className="text-muted-foreground">Status:</span> {reg.payment_status}</div>
                                 {reg.paid_at && <div><span className="text-muted-foreground">Paid:</span> {new Date(reg.paid_at).toLocaleString()}</div>}

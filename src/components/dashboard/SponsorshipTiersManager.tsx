@@ -144,7 +144,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   const fetchData = useCallback(async () => {
     if (!selectedTournament) return;
     setLoading(true);
-    const [tiersRes, regsRes] = await Promise.all([
+    const [tiersRes, regsRes, legacyRes] = await Promise.all([
       supabase
         .from("sponsorship_tiers")
         .select("*")
@@ -155,9 +155,36 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
         .select("*")
         .eq("tournament_id", selectedTournament)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("tournament_sponsors")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("created_at", { ascending: false }),
     ]);
+    const regs: SponsorRegistration[] = ((regsRes.data as any[]) || []).map(r => ({ ...r, _source: "registration" as const }));
+    const legacy: SponsorRegistration[] = ((legacyRes.data as any[]) || []).map((s: any) => ({
+      id: s.id,
+      tournament_id: s.tournament_id,
+      tier_id: null,
+      company_name: s.name || "",
+      contact_name: "",
+      contact_email: "",
+      contact_phone: null,
+      website_url: s.website_url || null,
+      description: s.description || null,
+      logo_url: s.logo_url || null,
+      amount_cents: Math.round(Number(s.amount || 0) * 100),
+      payment_status: s.is_paid ? "paid" : "pending",
+      paid_at: null,
+      created_at: s.created_at,
+      _source: "legacy" as const,
+      _legacyTier: s.tier || null,
+    }));
+    const merged = [...regs, ...legacy].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
     setTiers((tiersRes.data as SponsorshipTier[]) || []);
-    setRegistrations((regsRes.data as SponsorRegistration[]) || []);
+    setRegistrations(merged);
     setLoading(false);
   }, [selectedTournament]);
 

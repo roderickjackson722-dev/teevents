@@ -649,6 +649,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleOpenRegEdit(reg)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setViewReg(reg)}>

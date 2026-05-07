@@ -410,46 +410,105 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <TableCell className="text-sm">{getTierName(reg.tier_id)}</TableCell>
                     <TableCell className="font-mono text-sm">{fmt(reg.amount_cents)}</TableCell>
                     <TableCell>
-                      <Badge variant={reg.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
-                        {reg.payment_status === "paid" ? "✓ Paid" : reg.payment_status}
-                      </Badge>
+                      <Select
+                        value={reg.payment_status}
+                        onValueChange={async (newStatus) => {
+                          if (demoGuard()) return;
+                          const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                            body: { action: "update_registration_status", registration_id: reg.id, status: newStatus },
+                          });
+                          if (error || data?.error) {
+                            toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                          } else {
+                            toast({ title: "Status updated" });
+                            fetchData();
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-7 w-[110px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="refunded">Refunded</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="failed">Failed</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(reg.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setViewReg(reg)}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>{reg.company_name}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-3 text-sm">
-                            {reg.logo_url && <img src={reg.logo_url} alt="" className="h-16 w-16 object-contain rounded border border-border" />}
-                            <div className="grid grid-cols-2 gap-2">
-                              <div><span className="text-muted-foreground">Contact:</span> {reg.contact_name}</div>
-                              <div><span className="text-muted-foreground">Email:</span> {reg.contact_email}</div>
-                              {reg.contact_phone && <div><span className="text-muted-foreground">Phone:</span> {reg.contact_phone}</div>}
-                              {reg.website_url && (
-                                <div>
-                                  <a href={reg.website_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                    <ExternalLink className="h-3 w-3" /> Website
-                                  </a>
-                                </div>
-                              )}
-                              <div><span className="text-muted-foreground">Tier:</span> {getTierName(reg.tier_id)}</div>
-                              <div><span className="text-muted-foreground">Amount:</span> {fmt(reg.amount_cents)}</div>
-                              <div><span className="text-muted-foreground">Status:</span> {reg.payment_status}</div>
-                              {reg.paid_at && <div><span className="text-muted-foreground">Paid:</span> {new Date(reg.paid_at).toLocaleString()}</div>}
+                      <div className="flex gap-1">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setViewReg(reg)}>
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>{reg.company_name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-3 text-sm">
+                              {reg.logo_url && <img src={reg.logo_url} alt="" className="h-16 w-16 object-contain rounded border border-border" />}
+                              <div className="grid grid-cols-2 gap-2">
+                                <div><span className="text-muted-foreground">Contact:</span> {reg.contact_name}</div>
+                                <div><span className="text-muted-foreground">Email:</span> {reg.contact_email}</div>
+                                {reg.contact_phone && <div><span className="text-muted-foreground">Phone:</span> {reg.contact_phone}</div>}
+                                {reg.website_url && (
+                                  <div>
+                                    <a href={reg.website_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                      <ExternalLink className="h-3 w-3" /> Website
+                                    </a>
+                                  </div>
+                                )}
+                                <div><span className="text-muted-foreground">Tier:</span> {getTierName(reg.tier_id)}</div>
+                                <div><span className="text-muted-foreground">Amount:</span> {fmt(reg.amount_cents)}</div>
+                                <div><span className="text-muted-foreground">Status:</span> {reg.payment_status}</div>
+                                {reg.paid_at && <div><span className="text-muted-foreground">Paid:</span> {new Date(reg.paid_at).toLocaleString()}</div>}
+                              </div>
+                              {reg.description && <div><span className="text-muted-foreground">About:</span> {reg.description}</div>}
                             </div>
-                            {reg.description && <div><span className="text-muted-foreground">About:</span> {reg.description}</div>}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                          </DialogContent>
+                        </Dialog>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove sponsor registration?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This permanently removes <strong>{reg.company_name}</strong> from this tournament's sponsor list. This cannot be undone. If a payment was already collected, refund it separately in Stripe.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={async () => {
+                                  if (demoGuard()) return;
+                                  const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                                    body: { action: "delete_registration", registration_id: reg.id },
+                                  });
+                                  if (error || data?.error) {
+                                    toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                                  } else {
+                                    toast({ title: "Sponsor removed" });
+                                    fetchData();
+                                  }
+                                }}
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

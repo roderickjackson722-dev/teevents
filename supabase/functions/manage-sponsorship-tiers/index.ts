@@ -128,8 +128,48 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const tournamentId = await resolveTournamentId(supabaseAdmin, rawTournamentId, tierId);
+    const registrationId = body?.registration_id as string | undefined;
+
+    let resolvedTournamentId = rawTournamentId;
+    if (!resolvedTournamentId && registrationId) {
+      const { data: reg } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .select("tournament_id")
+        .eq("id", registrationId)
+        .maybeSingle();
+      if (!reg?.tournament_id) throw new Error("Sponsor registration not found");
+      resolvedTournamentId = reg.tournament_id as string;
+    }
+
+    const tournamentId = await resolveTournamentId(supabaseAdmin, resolvedTournamentId, tierId);
     await verifyAccess(supabaseAdmin, user.id, tournamentId);
+
+    if (action === "update_registration_status") {
+      if (!registrationId) throw new Error("Registration not specified");
+      const status = String(body?.status || "").toLowerCase();
+      const allowed = ["pending", "paid", "refunded", "cancelled", "failed"];
+      if (!allowed.includes(status)) throw new Error("Invalid status");
+      const update: Record<string, unknown> = { payment_status: status };
+      if (status === "paid") update.paid_at = new Date().toISOString();
+      const { error } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .update(update)
+        .eq("id", registrationId)
+        .eq("tournament_id", tournamentId);
+      if (error) throw error;
+      return json({ success: true });
+    }
+
+    if (action === "delete_registration") {
+      if (!registrationId) throw new Error("Registration not specified");
+      const { error } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .delete()
+        .eq("id", registrationId)
+        .eq("tournament_id", tournamentId);
+      if (error) throw error;
+      return json({ success: true });
+    }
 
     if (action === "create") {
       const payload = sanitizeTierPayload(body?.payload ?? {}, tournamentId);

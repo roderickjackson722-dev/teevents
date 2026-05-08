@@ -537,6 +537,8 @@ const Finances = () => {
             However, <strong>Stripe holds funds for 2–7 business days on brand-new Connect accounts</strong> as part of their standard risk review.
             This hold applies only to your first few payouts and is not a TeeVents hold.{" "}
             <a href="/help/understanding-payout-timing" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more about Stripe payouts</a>
+            {" · "}
+            <a href="/help/finding-stripe-payouts" target="_blank" rel="noopener noreferrer" className="text-primary underline font-medium">Where is my money in Stripe? →</a>
           </p>
         </div>
       </div>

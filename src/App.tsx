@@ -51,6 +51,8 @@ import FlyerStudio from "./pages/dashboard/FlyerStudio";
 import Contests from "./pages/dashboard/Contests";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
+import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
+import PublicSearch from "./pages/dashboard/PublicSearch";
 import PublicTournament from "./pages/PublicTournament";
 import RefundRequest from "./pages/RefundRequest";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -141,7 +143,7 @@ const App = () => (
           <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />
           <Route path="/dashboard/messages" element={<DashboardLayout><Messages /></DashboardLayout>} />
           <Route path="/dashboard/budget" element={<DashboardLayout><PlanGate feature="budget"><Budget /></PlanGate></DashboardLayout>} />
-          <Route path="/dashboard/sponsors" element={<DashboardLayout><PlanGate feature="sponsors"><Sponsors /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><Scoring /></DashboardLayout>} />
@@ -158,6 +160,8 @@ const App = () => (
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />
+          <Route path="/dashboard/public-search" element={<DashboardLayout><PublicSearch /></DashboardLayout>} />
           <Route path="/dashboard/director-shop" element={<DashboardLayout><DirectorShop /></DashboardLayout>} />
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />
           <Route path="/dashboard/payout-settings" element={<DashboardLayout><PayoutSettings /></DashboardLayout>} />

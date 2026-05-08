@@ -278,8 +278,9 @@ export default function PayoutSettings() {
     setConnectingStripe(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
-      if (error || !data?.url) {
-        toast.error("Failed to start Stripe onboarding. Please try again.");
+      const errMsg = (error as any)?.message || (data as any)?.error;
+      if (errMsg || !data?.url) {
+        toast.error(errMsg || "Failed to start Stripe onboarding. Please try again.");
         return;
       }
       await logAudit("stripe_onboarding_started", { summary: "Started Stripe Connect onboarding" });

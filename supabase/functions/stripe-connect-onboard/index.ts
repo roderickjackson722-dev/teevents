@@ -82,29 +82,20 @@ Deno.serve(async (req) => {
     }
 
     if (!accountId) {
-      // Create a connected account using controller properties (not legacy `type`).
-      // controller.losses.payments = "stripe" matches the TeeVents Platform Profile
-      // setting "Stripe manages risk". stripe_dashboard.type = "express" preserves
-      // the Express-style hosted onboarding + dashboard UX for organizers.
+      // Create a Standard connected account. Standard matches the TeeVents
+      // Platform Profile setting "Stripe manages risk" — Stripe controls losses,
+      // and the organizer gets a full Stripe Dashboard. Express is incompatible
+      // with stripe-managed losses (Stripe error: "With a dashboard type of
+      // `express`, the Connect application must control losses").
       const account = await stripe.accounts.create({
+        type: "standard",
         country: "US",
         email: user.email,
-        controller: {
-          losses: { payments: "stripe" },
-          fees: { payer: "application" },
-          stripe_dashboard: { type: "express" },
-          requirement_collection: "stripe",
-        },
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-        business_type: "individual",
         business_profile: {
           mcc: "7941",
           url: "https://teevents.golf",
         },
-      } as any);
+      });
       accountId = account.id;
 
       // Save to organizations table

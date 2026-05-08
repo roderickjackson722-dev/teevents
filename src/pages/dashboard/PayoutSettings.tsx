@@ -288,8 +288,8 @@ export default function PayoutSettings() {
       await notifyAdmin("payout_method_selected", `${org?.orgName} selected Stripe Connect as their payout method.`);
       clearPendingMethod();
       window.location.href = data.url;
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (e: any) {
+      toast.error(e?.message || "Something went wrong. Please try again.");
     } finally {
       setConnectingStripe(false);
     }

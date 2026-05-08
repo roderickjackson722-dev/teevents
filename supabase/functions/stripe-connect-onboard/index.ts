@@ -82,11 +82,19 @@ Deno.serve(async (req) => {
     }
 
     if (!accountId) {
-      // Create a new Express connected account
+      // Create a connected account using controller properties (not legacy `type`).
+      // controller.losses.payments = "stripe" matches the TeeVents Platform Profile
+      // setting "Stripe manages risk". stripe_dashboard.type = "express" preserves
+      // the Express-style hosted onboarding + dashboard UX for organizers.
       const account = await stripe.accounts.create({
-        type: "express",
         country: "US",
         email: user.email,
+        controller: {
+          losses: { payments: "stripe" },
+          fees: { payer: "application" },
+          stripe_dashboard: { type: "express" },
+          requirement_collection: "stripe",
+        },
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
@@ -96,7 +104,7 @@ Deno.serve(async (req) => {
           mcc: "7941",
           url: "https://teevents.golf",
         },
-      });
+      } as any);
       accountId = account.id;
 
       // Save to organizations table

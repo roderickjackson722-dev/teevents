@@ -203,7 +203,8 @@ const App = () => (
            <Route path="/help/refunds-chargebacks" element={<RefundsChargebacks />} />
            <Route path="/help/custom-domain" element={<CustomDomain />} />
           <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
-          <Route path="/help/understanding-payout-timing" element={<UnderstandingPayoutTiming />} />
+           <Route path="/help/understanding-payout-timing" element={<UnderstandingPayoutTiming />} />
+           <Route path="/help/finding-stripe-payouts" element={<FindingStripePayouts />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />

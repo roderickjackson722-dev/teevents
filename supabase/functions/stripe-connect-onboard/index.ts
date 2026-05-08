@@ -145,14 +145,30 @@ Deno.serve(async (req) => {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("stripe-connect-onboard error:", message);
 
-    // Provide a user-friendly message for Stripe platform config issues
-    const isPlatformConfigError = message.includes("responsibilities") || message.includes("platform-profile");
-    const userMessage = isPlatformConfigError
-      ? "Stripe Connect is being configured. Please contact TeeVents support and we'll have this resolved shortly."
-      : message;
+    const normalizedMessage = message.toLowerCase();
+    const isPlatformConfigError =
+      normalizedMessage.includes("responsibilities") ||
+      normalizedMessage.includes("platform profile") ||
+      normalizedMessage.includes("platform-profile") ||
+      normalizedMessage.includes("questionnaire") ||
+      normalizedMessage.includes("create live connected accounts");
+
+    if (isPlatformConfigError) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Stripe Connect is waiting on the platform profile questionnaire/final verification before live organizer accounts can be connected.",
+          code: "STRIPE_PLATFORM_PROFILE_INCOMPLETE",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
+      );
+    }
 
     const status = message === "Unauthorized" ? 401 : 500;
-    return new Response(JSON.stringify({ error: userMessage }), {
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,
     });

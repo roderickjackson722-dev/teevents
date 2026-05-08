@@ -88,6 +88,7 @@ import RefundsChargebacks from "./pages/help/RefundsChargebacks";
 import CustomDomain from "./pages/help/CustomDomain";
 import HowPaymentsWork from "./pages/help/HowPaymentsWork";
 import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
+import FindingStripePayouts from "./pages/help/FindingStripePayouts";
 import CompareEventbrite from "./pages/CompareEventbrite";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";

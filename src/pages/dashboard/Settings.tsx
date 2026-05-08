@@ -26,7 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
-import { TeamManagement } from "@/components/settings/TeamManagement";
+
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
 
@@ -454,8 +454,7 @@ const Settings = () => {
         </div>
       </motion.div>
 
-      {/* Team Management */}
-      {org && <TeamManagement orgId={org.orgId} userId={org.userId} />}
+      {/* Team Management moved to its own page at /dashboard/team */}
 
       {/* Nonprofit Settings */}
       {org && <NonprofitSettings orgId={org.orgId} />}

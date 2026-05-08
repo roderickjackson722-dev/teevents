@@ -94,6 +94,17 @@ export default function PayoutSettings() {
   // Persist pending method + ackFee across navigation/reloads
   const persistKey = org?.orgId ? `payout-pending-${org.orgId}` : null;
 
+  const readFunctionError = async (error: any, fallback: string) => {
+    if (!error) return fallback;
+
+    try {
+      const payload = await error.context?.json?.();
+      return payload?.error || payload?.error_message || error.message || fallback;
+    } catch {
+      return error.message || fallback;
+    }
+  };
+
   useEffect(() => {
     if (org?.orgId) {
       fetchPayoutMethodAndSync();
@@ -278,7 +289,9 @@ export default function PayoutSettings() {
     setConnectingStripe(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
-      const errMsg = (error as any)?.message || (data as any)?.error;
+      const errMsg = error
+        ? await readFunctionError(error, "Failed to start Stripe onboarding. Please try again.")
+        : (data as any)?.error;
       if (errMsg || !data?.url) {
         toast.error(errMsg || "Failed to start Stripe onboarding. Please try again.");
         return;
@@ -300,7 +313,7 @@ export default function PayoutSettings() {
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
       if (error || !data?.url) {
-        toast.error("Failed to open Stripe portal. Please try again.");
+        toast.error(await readFunctionError(error, "Failed to open Stripe portal. Please try again."));
         return;
       }
       await logAudit("stripe_bank_update_started", { summary: "Opened Stripe portal to update bank account" });

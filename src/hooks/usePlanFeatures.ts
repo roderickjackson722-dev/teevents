@@ -30,13 +30,13 @@ const FREE_FEATURES = [
   "printables",
   "refunds",
   "basic-finances",
+  "sponsors",
 ];
 
 const PRO_FEATURES = [
   // Everything in Free PLUS:
   "leaderboard",
   "live-scoring",
-  "sponsors",
   "auction",
   "donations",
   "store",

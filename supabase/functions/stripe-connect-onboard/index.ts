@@ -7,6 +7,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const stripeConfigErrorResponse = (message: string, code: string) =>
+  new Response(JSON.stringify({ error: message, code }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 200,
+  });
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -53,7 +59,23 @@ Deno.serve(async (req) => {
 
     const { organization_id } = membership;
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+
+    if (!stripeSecretKey) {
+      return stripeConfigErrorResponse(
+        "Stripe is not configured yet. Please update the Stripe secret key in the Stripe connector, then try again.",
+        "STRIPE_SECRET_KEY_MISSING",
+      );
+    }
+
+    if (!stripeSecretKey.startsWith("sk_live_") && !stripeSecretKey.startsWith("rk_live_")) {
+      return stripeConfigErrorResponse(
+        "Stripe Connect is in live mode, but the saved Stripe key is not a live secret key. Please update the Stripe connector with a live Stripe secret key, then try again.",
+        "STRIPE_LIVE_KEY_REQUIRED",
+      );
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2025-08-27.basil",
     });
 
@@ -146,6 +168,21 @@ Deno.serve(async (req) => {
     console.error("stripe-connect-onboard error:", message);
 
     const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes("expired api key")) {
+      return stripeConfigErrorResponse(
+        "The saved Stripe secret key is expired. Please update the Stripe connector with a current live secret key, then try again.",
+        "STRIPE_SECRET_KEY_EXPIRED",
+      );
+    }
+
+    if (normalizedMessage.includes("invalid api key") || normalizedMessage.includes("api key provided")) {
+      return stripeConfigErrorResponse(
+        "The saved Stripe secret key is invalid. Please update the Stripe connector with a current live secret key, then try again.",
+        "STRIPE_SECRET_KEY_INVALID",
+      );
+    }
+
     const isPlatformConfigError =
       normalizedMessage.includes("responsibilities") ||
       normalizedMessage.includes("platform profile") ||
@@ -154,16 +191,9 @@ Deno.serve(async (req) => {
       normalizedMessage.includes("create live connected accounts");
 
     if (isPlatformConfigError) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "Stripe Connect is waiting on the platform profile questionnaire/final verification before live organizer accounts can be connected.",
-          code: "STRIPE_PLATFORM_PROFILE_INCOMPLETE",
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        },
+      return stripeConfigErrorResponse(
+        "Stripe Connect is waiting on the platform profile questionnaire/final verification before live organizer accounts can be connected.",
+        "STRIPE_PLATFORM_PROFILE_INCOMPLETE",
       );
     }
 

@@ -905,7 +905,7 @@ const Finances = () => {
                                         <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
                                         <AlertDialogDescription>
                                           Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                          {" "}(${(gross / 100).toFixed(2)})? The refund will be processed through Stripe and cannot be undone.
+                                          {" "}(${(customerPaid / 100).toFixed(2)})? The refund will be processed through Stripe and cannot be undone.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>

@@ -847,9 +847,10 @@ const Finances = () => {
                     <tr className="border-b border-border bg-muted/30">
                       <th className="w-8 p-3"></th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Gross</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Customer Paid</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Platform Fee</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net to Stripe</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Stripe Fee</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net to Organizer</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
                       <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
                       <th className="text-right text-xs font-medium text-muted-foreground p-3">Actions</th>
@@ -857,12 +858,16 @@ const Finances = () => {
                   </thead>
                   <tbody>
                     {filteredRegistrations.map((reg) => {
-                      const gross = getRegistrationAmount(reg);
-                      const fee = Math.round(gross * 0.05); // 5% platform fee
-                      const net = gross - fee;
-                      const matchingTx = platformTransactions.find(
+                      const matchingTx: any = platformTransactions.find(
                         (tx: any) => tx.metadata?.registration_ids?.includes?.(reg.id) || (tx as any).registration_id === reg.id
                       );
+                      // Prefer the actual Stripe-recorded values from platform_transactions when present.
+                      // Fall back to base-price math only for unpaid/pending rows that have no transaction yet.
+                      const baseAmount = getRegistrationAmount(reg);
+                      const customerPaid = matchingTx?.amount_cents ?? baseAmount;
+                      const platformFee = matchingTx?.platform_fee_cents ?? Math.round(baseAmount * 0.05);
+                      const stripeFee = matchingTx?.stripe_fee_cents ?? 0;
+                      const netToOrganizer = matchingTx?.net_amount_cents ?? Math.max(baseAmount - platformFee, 0);
                       const expanded = expandedTxRows.has(reg.id);
                       return (
                         <Fragment key={reg.id}>
@@ -874,9 +879,10 @@ const Finances = () => {
                             <p className="font-medium text-sm text-foreground">{reg.first_name} {reg.last_name}</p>
                             <p className="text-xs text-muted-foreground">{reg.email}</p>
                           </td>
-                          <td className="p-3 font-semibold text-sm text-foreground">${(gross / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(fee / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(net / 100).toFixed(2)}</td>
+                          <td className="p-3 font-semibold text-sm text-foreground">${(customerPaid / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(platformFee / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(stripeFee / 100).toFixed(2)}</td>
+                          <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(netToOrganizer / 100).toFixed(2)}</td>
                           <td className="p-3">{statusBadge(reg.payment_status)}</td>
                           <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
                           <td className="p-3" onClick={(e) => e.stopPropagation()}>
@@ -899,7 +905,7 @@ const Finances = () => {
                                         <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
                                         <AlertDialogDescription>
                                           Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                          {" "}(${(gross / 100).toFixed(2)})? The refund will be processed through Stripe and cannot be undone.
+                                          {" "}(${(customerPaid / 100).toFixed(2)})? The refund will be processed through Stripe and cannot be undone.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>

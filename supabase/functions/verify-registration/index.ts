@@ -211,7 +211,10 @@ Deno.serve(async (req) => {
           golfer_name: golferName,
           golfer_email: golferEmail,
           payout_method: orgPayout?.payout_method || "check",
-          amount_cents: grossAmount,
+          // amount_cents = TRUE GROSS = what the customer actually paid Stripe.
+          // When fees are passed to the participant this includes platform + processing fees,
+          // so platform_fee_cents + stripe_fee_cents + net_amount_cents always reconciles to amount_cents.
+          amount_cents: chargeTotalCents,
           platform_fee_cents: platformFeeCents,
           stripe_fee_cents: stripeFeeCents,
           net_amount_cents: netAmountCents,
@@ -222,6 +225,7 @@ Deno.serve(async (req) => {
           description: `Registration payment — ${registrationIds.length} player(s)${passFeesToGolfer ? " (platform + Stripe fees paid by golfer)" : " (platform + Stripe fees absorbed by organizer)"}`,
           metadata: {
             pass_fees_to_golfer: passFeesToGolfer,
+            base_subtotal_cents: grossAmount,
             charge_total_cents: chargeTotalCents,
             application_fee_cents: applicationFeeCents,
             stripe_fee_cents: stripeFeeCents,

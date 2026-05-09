@@ -561,6 +561,31 @@ export default function PayoutSettings() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Prominent 2-7 day clearing window notice — keep this front and center */}
+            <div className="rounded-lg border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-4">
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-full bg-amber-200/70 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                  <History className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                    Heads up: Your first payout has a 2–7 business day clearing window
+                  </p>
+                  <p className="text-xs text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
+                    This is a <strong>standard Stripe rolling reserve</strong> applied to every newly onboarded
+                    Connect account — not a TeeVents hold. After your first charge, Stripe holds the funds for
+                    <strong> 2–7 business days</strong> before they appear in your Stripe balance and become available
+                    for transfer to your bank. Subsequent payouts follow your normal Stripe payout schedule (typically
+                    daily or every 2 business days). TeeVents never holds your money.
+                  </p>
+                  <p className="text-xs text-amber-900/80 dark:text-amber-200/80">
+                    What you'll see: charges show up <strong>immediately</strong> in your Finances dashboard, but the
+                    Stripe balance reads <strong>$0</strong> until clearing completes. This is normal.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {stripeConnected ? (
               <>
                 <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 space-y-2">

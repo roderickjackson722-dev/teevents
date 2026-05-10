@@ -52,7 +52,7 @@ const phases: Phase[] = [
       { num: 19, name: "Team Performance / Referral Tracking", description: "Add board members, volunteers, or staff and give each a unique referral link. Dashboard leaderboard shows registrations and revenue driven by each promoter for incentive programs." },
       { num: 20, name: "Email & SMS Messaging", description: "Send blasts to all players, specific groups, sponsors, or volunteers. Schedule sends, use templates, and track open/click rates. SMS is a Pro feature." },
       { num: 21, name: "Public Search Listing (Pro)", description: "Opt the tournament into the TeeVents public tournament search at teevents.golf/events. Filter by state, date, fundraiser status, and format." },
-      { num: 22, name: "Visitor Analytics", description: "Real-time tracking of public-site visitors, traffic sources, share-link performance, and conversion to registration. Helps measure marketing ROI." },
+      { num: 22, name: "Visitor Analytics", description: "Tracks public-site visitors, traffic sources, share-link performance, and conversion to registration. (Real-time visit-alert emails are intentionally disabled — data is viewable in the dashboard.)" },
     ],
   },
   {

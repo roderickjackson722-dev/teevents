@@ -48,10 +48,10 @@ const phases: Phase[] = [
     blurb: "Driving registrations and sponsor commitments through built-in marketing tools.",
     features: [
       { num: 17, name: "Share & Promote Hub", description: "Generate trackable short links (with ?ref= parameters), QR codes, and pre-written templates for email, SMS, Facebook, LinkedIn, and Instagram. Every share is attributed in analytics." },
-      { num: 18, name: "Flyer Studio (Premium)", description: "Canva-integrated template library for printable flyers, social posts, and sponsor decks. Branded with your tournament logo and colors automatically." },
+      { num: 18, name: "Flyer Studio (Pro)", description: "Canva-integrated template library for printable flyers, social posts, and sponsor decks. Branded with your tournament logo and colors automatically." },
       { num: 19, name: "Team Performance / Referral Tracking", description: "Add board members, volunteers, or staff and give each a unique referral link. Dashboard leaderboard shows registrations and revenue driven by each promoter for incentive programs." },
-      { num: 20, name: "Email & SMS Messaging", description: "Send blasts to all players, specific groups, sponsors, or volunteers. Schedule sends, use templates, and track open/click rates. SMS available on Starter and Premium plans." },
-      { num: 21, name: "Public Search Listing (Premium)", description: "Opt the tournament into the TeeVents public tournament search at teevents.golf/events. Filter by state, date, fundraiser status, and format." },
+      { num: 20, name: "Email & SMS Messaging", description: "Send blasts to all players, specific groups, sponsors, or volunteers. Schedule sends, use templates, and track open/click rates. SMS is a Pro feature." },
+      { num: 21, name: "Public Search Listing (Pro)", description: "Opt the tournament into the TeeVents public tournament search at teevents.golf/events. Filter by state, date, fundraiser status, and format." },
       { num: 22, name: "Visitor Analytics", description: "Real-time tracking of public-site visitors, traffic sources, share-link performance, and conversion to registration. Helps measure marketing ROI." },
     ],
   },

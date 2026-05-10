@@ -73,7 +73,9 @@ export function NotificationSettings({ orgId }: NotificationSettingsProps) {
 
     if (error) {
       if (error.code === "23505") toast.error("This email is already added");
-      else toast.error(error.message);
+      else if (error.message?.toLowerCase().includes("row-level security")) {
+        toast.error("Only the organization owner can add notification emails.");
+      } else toast.error(error.message);
     } else {
       toast.success("Notification email added");
       setNewEmail("");

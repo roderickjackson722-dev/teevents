@@ -4893,6 +4893,23 @@ export type Database = {
     }
     Functions: {
       delete_old_demo_tournaments: { Args: never; Returns: number }
+      get_player_hub_by_token: {
+        Args: { _token: string }
+        Returns: {
+          course_name: string
+          first_name: string
+          group_number: number
+          group_position: number
+          last_name: string
+          organization_id: string
+          registration_id: string
+          scoring_code: string
+          tournament_date: string
+          tournament_id: string
+          tournament_slug: string
+          tournament_title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

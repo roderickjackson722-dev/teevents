@@ -107,6 +107,7 @@ import TripsList from "./pages/trips/TripsList";
 import TripNew from "./pages/trips/TripNew";
 import TripDetail from "./pages/trips/TripDetail";
 import PublicTrip from "./pages/trips/PublicTrip";
+import PlayerHub from "./pages/PlayerHub";
 
 const queryClient = new QueryClient();
 
@@ -175,6 +176,7 @@ const App = () => (
           <Route path="/tournament/:slug" element={<PublicTournament />} />
           <Route path="/tournaments/search" element={<TournamentSearch />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
+          <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

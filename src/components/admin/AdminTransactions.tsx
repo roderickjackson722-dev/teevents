@@ -167,6 +167,26 @@ const AdminTransactions = () => {
     toast({ title: "CSV exported", description: `${rows.length} transactions exported.` });
   };
 
+  const [backfilling, setBackfilling] = useState(false);
+
+  const runBackfill = async () => {
+    if (!confirm("Re-run reporting backfill? This recalculates amount_cents and net_amount_cents on all platform transactions from stored metadata. Safe to run anytime.")) return;
+    setBackfilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-backfill-transactions");
+      if (error) throw error;
+      toast({
+        title: "Backfill complete",
+        description: `Scanned ${data.scanned} · Updated ${data.updated}${data.errors?.length ? ` · ${data.errors.length} errors` : ""}`,
+      });
+      fetchTransactions();
+    } catch (err: any) {
+      toast({ title: "Backfill failed", description: err.message, variant: "destructive" });
+    } finally {
+      setBackfilling(false);
+    }
+  };
+
   const resetFilters = () => {
     setDateFilter("30");
     setOrgFilter("all");

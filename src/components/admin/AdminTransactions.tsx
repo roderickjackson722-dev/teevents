@@ -6,7 +6,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Download, RefreshCw, DollarSign, TrendingUp, Building2, CreditCard, ChevronDown, ChevronRight } from "lucide-react";
+import { Download, RefreshCw, DollarSign, TrendingUp, Building2, CreditCard, ChevronDown, ChevronRight, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Transaction {

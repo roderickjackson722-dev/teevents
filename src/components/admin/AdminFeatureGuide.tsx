@@ -90,8 +90,8 @@ const phases: Phase[] = [
     features: [
       { num: 40, name: "QR Code Check-In", description: "Open the Scan Station on a phone or tablet, scan player QR codes from confirmation emails, and check golfers in instantly. Manual search fallback for walk-ups. Real-time check-in counter on the dashboard." },
       { num: 41, name: "Volunteer Check-In", description: "Same QR-based flow for volunteers. Each volunteer receives a digital badge with their assigned shift and station." },
-      { num: 42, name: "Live Scoring (Player-Facing)", description: "Players scan a 6-character code on their group's scorecard — no app or login required. Enter scores hole-by-hole on a phone. Designated scorer per group, optional peer attestation." },
-      { num: 43, name: "Live Leaderboard (Starter+)", description: "Real-time leaderboard updates as scores are entered. Gross and Net views, supports all 8 scoring formats. Sortable by player, team, division, or flight." },
+      { num: 42, name: "Live Scoring (Player-Facing)", description: "Players scan a 6-character auth code on their group's scorecard — no app or login required. Enter scores hole-by-hole on a phone. Designated scorer per group, optional peer attestation." },
+      { num: 43, name: "Live Leaderboard (Pro)", description: "Real-time leaderboard updates as scores are entered. Gross and Net views, supports all 8 scoring formats. Sortable by player, team, division, or flight." },
       { num: 44, name: "Live Display Mode", description: "TV-optimized leaderboard at /live/{slug}: dark background, large fonts, auto-scroll, perfect for the clubhouse screen. Includes rotating sponsor banner and scrolling ticker." },
       { num: 45, name: "Sponsor Promotion on Leaderboard", description: "Configure rotating sponsor banner ads and a scrolling ticker on the live leaderboard for added sponsor ROI. Set rotation speed, image priority, and click-through URLs." },
       { num: 46, name: "Live Auction & Donations Tracking", description: "Real-time view of auction bids, donation totals, and 50/50 raffle pool. Run the entire fundraising operation from the dashboard during the round." },

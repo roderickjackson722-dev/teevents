@@ -225,7 +225,7 @@ function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl
         </td></tr>
         <tr><td style="padding:32px;">
           ${lines.map(l => `<p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">${l}</p>`).join("")}
-        </td></tr>${tournamentBlock}
+        </td></tr>${hubBlock}${tournamentBlock}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a> | <a href="mailto:info@teevents.golf" style="color:#9ca3af;text-decoration:underline;">Need help? Contact support</a>${refundFooterLink}</p>
         </td></tr>

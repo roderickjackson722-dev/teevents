@@ -118,6 +118,14 @@ export async function sendRegistrantConfirmationEmail(
         ? `https://www.teevents.golf/refund/${tournamentId}?email=${encodeURIComponent(recipientEmail)}`
         : null;
 
+    // Personal Player Hub URL + QR (mobile bookmark for player)
+    const hubUrl = qrToken && tournamentSlug
+      ? `https://www.teevents.golf/player/${tournamentSlug}/${qrToken}`
+      : null;
+    const qrImg = hubUrl
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(hubUrl)}`
+      : null;
+
     const lines = [
       `Hi <strong>${firstName}</strong>,`,
       `We've received your registration for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
@@ -127,7 +135,7 @@ export async function sendRegistrantConfirmationEmail(
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl);
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg);
 
     console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 

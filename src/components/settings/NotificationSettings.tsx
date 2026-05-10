@@ -16,16 +16,24 @@ interface NotifEmail {
   id: string;
   email: string;
   notify_registration: boolean;
+  notify_sponsorship: boolean;
   notify_donation: boolean;
   notify_store_purchase: boolean;
   notify_auction_bid: boolean;
+  notify_auction_win: boolean;
+  notify_vendor_registration: boolean;
+  notify_refund_request: boolean;
 }
 
 const EVENT_TYPES = [
   { key: "notify_registration", label: "New Registration" },
+  { key: "notify_sponsorship", label: "New Sponsorship" },
   { key: "notify_donation", label: "New Donation" },
   { key: "notify_store_purchase", label: "Store Purchase" },
   { key: "notify_auction_bid", label: "Auction Bid" },
+  { key: "notify_auction_win", label: "Auction Win" },
+  { key: "notify_vendor_registration", label: "Vendor Registration" },
+  { key: "notify_refund_request", label: "Refund Request" },
 ] as const;
 
 export function NotificationSettings({ orgId }: NotificationSettingsProps) {

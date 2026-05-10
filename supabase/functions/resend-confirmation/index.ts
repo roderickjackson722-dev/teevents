@@ -201,6 +201,7 @@ Deno.serve(async (req) => {
             tournament.location,
             (tournament as any).slug,
             tournamentId,
+            (reg as any).qr_token || null,
           );
           sent++;
         }

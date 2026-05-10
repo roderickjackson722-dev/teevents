@@ -1071,9 +1071,13 @@ export type Database = {
           email: string
           id: string
           notify_auction_bid: boolean
+          notify_auction_win: boolean
           notify_donation: boolean
+          notify_refund_request: boolean
           notify_registration: boolean
+          notify_sponsorship: boolean
           notify_store_purchase: boolean
+          notify_vendor_registration: boolean
           organization_id: string
         }
         Insert: {
@@ -1081,9 +1085,13 @@ export type Database = {
           email: string
           id?: string
           notify_auction_bid?: boolean
+          notify_auction_win?: boolean
           notify_donation?: boolean
+          notify_refund_request?: boolean
           notify_registration?: boolean
+          notify_sponsorship?: boolean
           notify_store_purchase?: boolean
+          notify_vendor_registration?: boolean
           organization_id: string
         }
         Update: {
@@ -1091,9 +1099,13 @@ export type Database = {
           email?: string
           id?: string
           notify_auction_bid?: boolean
+          notify_auction_win?: boolean
           notify_donation?: boolean
+          notify_refund_request?: boolean
           notify_registration?: boolean
+          notify_sponsorship?: boolean
           notify_store_purchase?: boolean
+          notify_vendor_registration?: boolean
           organization_id?: string
         }
         Relationships: [
@@ -3491,6 +3503,8 @@ export type Database = {
           phone: string | null
           playing_handicap: number | null
           promoter_id: string | null
+          qr_token: string | null
+          qr_token_expires_at: string | null
           referral_code_used: string | null
           scoring_code: string | null
           shirt_size: string | null
@@ -3518,6 +3532,8 @@ export type Database = {
           phone?: string | null
           playing_handicap?: number | null
           promoter_id?: string | null
+          qr_token?: string | null
+          qr_token_expires_at?: string | null
           referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
@@ -3545,6 +3561,8 @@ export type Database = {
           phone?: string | null
           playing_handicap?: number | null
           promoter_id?: string | null
+          qr_token?: string | null
+          qr_token_expires_at?: string | null
           referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
@@ -4897,6 +4915,10 @@ export type Database = {
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }
         Returns: undefined
+      }
+      regenerate_player_qr_token: {
+        Args: { _registration_id: string }
+        Returns: string
       }
     }
     Enums: {

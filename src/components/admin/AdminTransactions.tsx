@@ -333,6 +333,10 @@ const AdminTransactions = () => {
             <Button variant="outline" size="sm" onClick={exportCSV}>
               <Download className="h-4 w-4 mr-1" /> Export CSV
             </Button>
+            <Button variant="outline" size="sm" onClick={runBackfill} disabled={backfilling}>
+              <Wrench className={`h-4 w-4 mr-1 ${backfilling ? "animate-spin" : ""}`} />
+              {backfilling ? "Backfilling..." : "Re-run Backfill"}
+            </Button>
           </div>
         </div>
       </div>

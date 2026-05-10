@@ -116,7 +116,7 @@ export default function PlayerHub() {
       <SEO
         title={`${fullName} — Player Hub | ${data.tournament_title}`}
         description={`Personal tournament hub for ${fullName} at ${data.tournament_title}.`}
-        noindex
+        noIndex
       />
 
       {/* Header */}

@@ -91,6 +91,7 @@ export async function sendRegistrantConfirmationEmail(
   tournamentLocation: string | null,
   tournamentSlug: string | null = null,
   tournamentId: string | null = null,
+  qrToken: string | null = null,
 ) {
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");

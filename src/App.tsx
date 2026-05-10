@@ -107,6 +107,7 @@ import TripsList from "./pages/trips/TripsList";
 import TripNew from "./pages/trips/TripNew";
 import TripDetail from "./pages/trips/TripDetail";
 import PublicTrip from "./pages/trips/PublicTrip";
+import PlayerHub from "./pages/PlayerHub";
 
 const queryClient = new QueryClient();
 

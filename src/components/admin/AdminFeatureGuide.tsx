@@ -80,7 +80,7 @@ const phases: Phase[] = [
       { num: 35, name: "Volunteer Coordination", description: "Recruit volunteers through a public sign-up page, assign shifts, send shift-reminder emails/SMS, and check them in on game day." },
       { num: 36, name: "Contests Setup", description: "Configure on-course contests: Long Drive, Closest to the Pin, Hole-in-One. Assign sponsors per contest, generate signage, and capture winners through the live scoring app." },
       { num: 37, name: "Printables Studio", description: "One-click generation of scorecards (with QR codes for live scoring), cart signs, name badges, alpha-list, hole-assignment sheets, and sponsor signs. Customizable inline content overrides." },
-      { num: 38, name: "Hole-in-One Insurance (Premium)", description: "Built-in workflow to purchase and document hole-in-one prize insurance through TeeVents partner providers." },
+      { num: 38, name: "Hole-in-One Insurance (Pro)", description: "Built-in workflow to purchase and document hole-in-one prize insurance through TeeVents partner providers." },
       { num: 39, name: "Organizer Support / Two-Way Messaging", description: "In-dashboard messaging that routes directly to TeeVents admin inbox. Get human help with setup, billing, or game-day issues." },
     ],
   },

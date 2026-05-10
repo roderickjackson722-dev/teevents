@@ -237,7 +237,7 @@ Deno.serve(async (req) => {
       try {
         const { data: regs } = await supabaseAdmin
           .from("tournament_registrations")
-          .select("first_name, last_name, email, tournament_id")
+          .select("first_name, last_name, email, tournament_id, qr_token")
           .in("id", registrationIds);
 
         const reg = regs?.[0];
@@ -254,6 +254,7 @@ Deno.serve(async (req) => {
                 r.first_name, r.last_name, r.email,
                 tournament.title, tournament.date, tournament.location,
                 (tournament as any).slug, reg.tournament_id,
+                (r as any).qr_token || null,
               );
             }
 

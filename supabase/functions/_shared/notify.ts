@@ -91,6 +91,7 @@ export async function sendRegistrantConfirmationEmail(
   tournamentLocation: string | null,
   tournamentSlug: string | null = null,
   tournamentId: string | null = null,
+  qrToken: string | null = null,
 ) {
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -117,6 +118,14 @@ export async function sendRegistrantConfirmationEmail(
         ? `https://www.teevents.golf/refund/${tournamentId}?email=${encodeURIComponent(recipientEmail)}`
         : null;
 
+    // Personal Player Hub URL + QR (mobile bookmark for player)
+    const hubUrl = qrToken && tournamentSlug
+      ? `https://www.teevents.golf/player/${tournamentSlug}/${qrToken}`
+      : null;
+    const qrImg = hubUrl
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(hubUrl)}`
+      : null;
+
     const lines = [
       `Hi <strong>${firstName}</strong>,`,
       `We've received your registration for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
@@ -126,7 +135,7 @@ export async function sendRegistrantConfirmationEmail(
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl);
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg);
 
     console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 
@@ -183,10 +192,19 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
 }
 
 // HTML email template for registrant confirmations (friendlier design)
-function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl: string | null = null, refundUrl: string | null = null): string {
+function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl: string | null = null, refundUrl: string | null = null, hubUrl: string | null = null, qrImg: string | null = null): string {
   const tournamentBlock = tournamentPageUrl ? `
         <tr><td style="padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
           <a href="${tournamentPageUrl}" style="display:inline-block;padding:12px 28px;background-color:#1a5c38;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">View Tournament Page</a>
+        </td></tr>` : "";
+
+  const hubBlock = hubUrl && qrImg ? `
+        <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #e5e7eb;background:#f9fafb;">
+          <p style="margin:0 0 6px;color:#1a5c38;font-size:16px;font-weight:700;">📱 Your Personal Player Hub</p>
+          <p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">Scan or tap on event day for live scoring, leaderboard, schedule & more — no login needed.</p>
+          <a href="${hubUrl}" style="text-decoration:none;"><img src="${qrImg}" width="180" height="180" alt="Your Player Hub QR Code" style="display:block;margin:0 auto 12px;border:6px solid #ffffff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08);"/></a>
+          <a href="${hubUrl}" style="display:inline-block;padding:10px 22px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:14px;font-weight:700;">Open My Player Hub</a>
+          <p style="margin:12px 0 0;color:#9ca3af;font-size:11px;">Bookmark this link on your phone — it's your personal pass for the entire tournament.</p>
         </td></tr>` : "";
 
   const refundFooterLink = refundUrl
@@ -207,7 +225,7 @@ function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl
         </td></tr>
         <tr><td style="padding:32px;">
           ${lines.map(l => `<p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">${l}</p>`).join("")}
-        </td></tr>${tournamentBlock}
+        </td></tr>${hubBlock}${tournamentBlock}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a> | <a href="mailto:info@teevents.golf" style="color:#9ca3af;text-decoration:underline;">Need help? Contact support</a>${refundFooterLink}</p>
         </td></tr>

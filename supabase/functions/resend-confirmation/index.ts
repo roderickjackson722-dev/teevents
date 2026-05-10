@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
     // Get registrations with tournament info
     const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id")
+      .select("id, first_name, last_name, email, tournament_id, qr_token")
       .in("id", registration_ids);
 
     if (regErr || !registrations || registrations.length === 0) {
@@ -201,6 +201,7 @@ Deno.serve(async (req) => {
             tournament.location,
             (tournament as any).slug,
             tournamentId,
+            (reg as any).qr_token || null,
           );
           sent++;
         }

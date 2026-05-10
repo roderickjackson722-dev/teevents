@@ -176,6 +176,7 @@ const App = () => (
           <Route path="/tournament/:slug" element={<PublicTournament />} />
           <Route path="/tournaments/search" element={<TournamentSearch />} />
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
+          <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

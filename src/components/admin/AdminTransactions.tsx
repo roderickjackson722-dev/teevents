@@ -6,7 +6,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Download, RefreshCw, DollarSign, TrendingUp, Building2, CreditCard, ChevronDown, ChevronRight } from "lucide-react";
+import { Download, RefreshCw, DollarSign, TrendingUp, Building2, CreditCard, ChevronDown, ChevronRight, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Transaction {
@@ -167,6 +167,26 @@ const AdminTransactions = () => {
     toast({ title: "CSV exported", description: `${rows.length} transactions exported.` });
   };
 
+  const [backfilling, setBackfilling] = useState(false);
+
+  const runBackfill = async () => {
+    if (!confirm("Re-run reporting backfill? This recalculates amount_cents and net_amount_cents on all platform transactions from stored metadata. Safe to run anytime.")) return;
+    setBackfilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-backfill-transactions");
+      if (error) throw error;
+      toast({
+        title: "Backfill complete",
+        description: `Scanned ${data.scanned} · Updated ${data.updated}${data.errors?.length ? ` · ${data.errors.length} errors` : ""}`,
+      });
+      fetchTransactions();
+    } catch (err: any) {
+      toast({ title: "Backfill failed", description: err.message, variant: "destructive" });
+    } finally {
+      setBackfilling(false);
+    }
+  };
+
   const resetFilters = () => {
     setDateFilter("30");
     setOrgFilter("all");
@@ -312,6 +332,10 @@ const AdminTransactions = () => {
             </Button>
             <Button variant="outline" size="sm" onClick={exportCSV}>
               <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={runBackfill} disabled={backfilling}>
+              <Wrench className={`h-4 w-4 mr-1 ${backfilling ? "animate-spin" : ""}`} />
+              {backfilling ? "Backfilling..." : "Re-run Backfill"}
             </Button>
           </div>
         </div>

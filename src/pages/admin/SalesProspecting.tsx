@@ -133,6 +133,8 @@ export default function SalesProspecting() {
             organizer_name: lead.organizer_name,
             event_date: lead.event_date,
             location: lead.location,
+            detected_setup: lead.detected_setup,
+            calendly_link: lead.calendly_link,
           },
         });
         if (error) throw error;

@@ -24,7 +24,7 @@ Sign off as "— Tom from TeeVents".`;
     const user = isFollowUp
       ? `Write a gentle follow-up. Organizer: ${organizer_name || "there"}. Tournament: ${tournament_name || "your event"}. Acknowledge they're busy, no pressure, offer help, wish them luck.`
       : `Write the first outreach message.
-Organizer name: ${organizer_name || "(unknown — use a friendly opener like "Hi there")"}
+Organizer name: ${organizer_name || "(unknown — use a friendly opener like 'Hi there')"}
 Tournament name: ${tournament_name || "(unknown)"}
 Date: ${event_date || "(unknown)"}
 Location: ${location || "(unknown)"}

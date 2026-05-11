@@ -80,6 +80,7 @@ import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
 import AdminPayouts from "./pages/admin/Payouts";
 import FlyerToDemo from "./pages/admin/FlyerToDemo";
+import SalesProspecting from "./pages/admin/SalesProspecting";
 import HelpCenter from "./pages/help/HelpCenter";
 import ConnectStripe from "./pages/help/ConnectStripe";
 import FeesAndHold from "./pages/help/FeesAndHold";
@@ -200,6 +201,7 @@ const App = () => (
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
            <Route path="/admin/sales/flyer-to-demo" element={<FlyerToDemo />} />
+           <Route path="/admin/sales/prospecting" element={<SalesProspecting />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />

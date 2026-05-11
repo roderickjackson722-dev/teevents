@@ -35,7 +35,28 @@ type Lead = {
   demo_booked_at: string | null;
   notes: string | null;
   created_at: string;
+  source_type?: string | null;
+  flyer_image_url?: string | null;
+  payment_keywords?: string[] | null;
 };
+
+async function copyRichText(html: string, plain: string) {
+  try {
+    if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" }),
+        }),
+      ]);
+      return true;
+    }
+  } catch (e) {
+    console.warn("Rich copy failed, falling back", e);
+  }
+  await navigator.clipboard.writeText(plain);
+  return false;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   new: "bg-muted text-foreground",

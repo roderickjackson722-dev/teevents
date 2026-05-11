@@ -5,6 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const MANUAL_KEYWORDS = ["venmo", "cash app", "cashapp", "zelle", "paypal", "check", "cash only", "mail a check", "money order"];
+
 function pick(html: string, regex: RegExp): string | null {
   const m = html.match(regex);
   return m ? m[1].trim().replace(/\s+/g, " ") : null;
@@ -20,12 +22,21 @@ function decodeHtml(s: string): string {
     .replace(/&nbsp;/g, " ");
 }
 
+function stripTags(s: string): string {
+  return s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+}
+
 async function scrape(url: string) {
-  const out: any = { source_url: url, source: "manual", extracted_data: {} };
+  const out: any = { source_url: url, source: "manual", detected_setup: "unknown", extracted_data: {} };
   try {
     const u = new URL(url);
-    if (u.hostname.includes("eventbrite")) out.source = "eventbrite";
-    else if (u.hostname.includes("facebook")) out.source = "facebook";
+    if (u.hostname.includes("eventbrite")) {
+      out.source = "eventbrite";
+      out.detected_setup = "eventbrite";
+    } else if (u.hostname.includes("facebook")) {
+      out.source = "facebook";
+      out.detected_setup = "facebook";
+    }
 
     const resp = await fetch(url, {
       headers: {
@@ -39,6 +50,7 @@ async function scrape(url: string) {
       return out;
     }
     const html = await resp.text();
+    let description = "";
 
     // JSON-LD
     const ldMatches = [...html.matchAll(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
@@ -50,6 +62,7 @@ async function scrape(url: string) {
           if (item["@type"] === "Event" || (Array.isArray(item["@type"]) && item["@type"].includes("Event"))) {
             out.tournament_name = item.name || out.tournament_name;
             if (item.startDate) out.event_date = String(item.startDate).slice(0, 10);
+            if (item.description) description += " " + String(item.description);
             if (item.location) {
               const loc = item.location;
               if (typeof loc === "string") out.location = loc;
@@ -74,10 +87,13 @@ async function scrape(url: string) {
       out.tournament_name = pick(html, /<meta\s+property="og:title"\s+content="([^"]+)"/i) || pick(html, /<title[^>]*>([^<]+)<\/title>/i);
       if (out.tournament_name) out.tournament_name = decodeHtml(out.tournament_name);
     }
-    if (!out.location) {
-      const ogLoc = pick(html, /<meta\s+property="event:location"\s+content="([^"]+)"/i);
-      if (ogLoc) out.location = decodeHtml(ogLoc);
-    }
+    const ogDesc = pick(html, /<meta\s+property="og:description"\s+content="([^"]+)"/i) || pick(html, /<meta\s+name="description"\s+content="([^"]+)"/i);
+    if (ogDesc) description += " " + decodeHtml(ogDesc);
+
+    // Add a chunk of body text for keyword scanning
+    const bodyText = stripTags(html).toLowerCase();
+    description = (description + " " + bodyText).toLowerCase();
+
     // Email scrape
     if (!out.contact_email) {
       const em = html.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
@@ -85,6 +101,16 @@ async function scrape(url: string) {
         out.contact_email = em[0];
       }
     }
+
+    // Manual payment detection — overrides Facebook default; only overrides Eventbrite if strong signals
+    const matchedKeyword = MANUAL_KEYWORDS.find(k => description.includes(k));
+    if (matchedKeyword) {
+      out.extracted_data.payment_keyword = matchedKeyword;
+      if (out.detected_setup !== "eventbrite") {
+        out.detected_setup = "manual";
+      }
+    }
+
     return out;
   } catch (e) {
     out.error = e instanceof Error ? e.message : "scrape failed";

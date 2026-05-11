@@ -26,6 +26,8 @@ type Lead = {
   contact_email: string | null;
   contact_social_handle: string | null;
   status: string;
+  detected_setup: string | null;
+  calendly_link: string | null;
   generated_message: string | null;
   message_sent_at: string | null;
   replied_at: string | null;
@@ -93,6 +95,7 @@ export default function SalesProspecting() {
         event_date: r.event_date || null,
         location: r.location || null,
         contact_email: r.contact_email || null,
+        detected_setup: r.detected_setup || "unknown",
         extracted_data: r.extracted_data || {},
         status: "new",
         created_by: user?.id,
@@ -130,6 +133,8 @@ export default function SalesProspecting() {
             organizer_name: lead.organizer_name,
             event_date: lead.event_date,
             location: lead.location,
+            detected_setup: lead.detected_setup,
+            calendly_link: lead.calendly_link,
           },
         });
         if (error) throw error;
@@ -239,6 +244,7 @@ export default function SalesProspecting() {
                       <TableHead className="w-8"></TableHead>
                       <TableHead>Tournament</TableHead>
                       <TableHead>Organizer</TableHead>
+                      <TableHead>Setup</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
@@ -254,6 +260,11 @@ export default function SalesProspecting() {
                           {l.source_url && <a href={l.source_url} target="_blank" rel="noreferrer" className="ml-1 inline-block text-muted-foreground"><ExternalLink className="h-3 w-3 inline" /></a>}
                         </TableCell>
                         <TableCell>{l.organizer_name || "—"}</TableCell>
+                        <TableCell>
+                          {l.detected_setup ? (
+                            <Badge variant="outline" className="capitalize">{l.detected_setup}</Badge>
+                          ) : "—"}
+                        </TableCell>
                         <TableCell>{l.event_date || "—"}</TableCell>
                         <TableCell className="max-w-[180px] truncate">{l.location || "—"}</TableCell>
                         <TableCell><Badge className={STATUS_COLORS[l.status] || ""}>{l.status}</Badge></TableCell>
@@ -293,7 +304,7 @@ export default function SalesProspecting() {
                           <TableCell className="text-right space-x-1">
                             <Button size="sm" variant="outline" onClick={async () => {
                               const { data, error } = await supabase.functions.invoke("generate-prospect-message", {
-                                body: { tournament_name: l.tournament_name, organizer_name: l.organizer_name, event_date: l.event_date, location: l.location, kind: "followup" },
+                                body: { tournament_name: l.tournament_name, organizer_name: l.organizer_name, event_date: l.event_date, location: l.location, detected_setup: l.detected_setup, calendly_link: l.calendly_link, kind: "followup" },
                               });
                               if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
                               await supabase.from("sales_leads").update({ generated_message: data.message }).eq("id", l.id);
@@ -359,6 +370,17 @@ export default function SalesProspecting() {
               <Field label="Location"><Input value={editLead.location || ""} onChange={e => setEditLead({ ...editLead, location: e.target.value })} /></Field>
               <Field label="Contact email"><Input value={editLead.contact_email || ""} onChange={e => setEditLead({ ...editLead, contact_email: e.target.value })} /></Field>
               <Field label="Social handle / Messenger"><Input value={editLead.contact_social_handle || ""} onChange={e => setEditLead({ ...editLead, contact_social_handle: e.target.value })} /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Detected setup">
+                  <Select value={editLead.detected_setup || "unknown"} onValueChange={(v) => setEditLead({ ...editLead, detected_setup: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["eventbrite", "manual", "facebook", "unknown"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Calendly link (optional override)"><Input placeholder="https://calendly.com/..." value={editLead.calendly_link || ""} onChange={e => setEditLead({ ...editLead, calendly_link: e.target.value })} /></Field>
+              </div>
               <Field label="Notes"><Textarea rows={3} value={editLead.notes || ""} onChange={e => setEditLead({ ...editLead, notes: e.target.value })} /></Field>
             </div>
           )}
@@ -380,7 +402,7 @@ export default function SalesProspecting() {
                 <div className="text-center py-6">
                   <Button onClick={async () => {
                     const { data, error } = await supabase.functions.invoke("generate-prospect-message", {
-                      body: { tournament_name: messageLead.tournament_name, organizer_name: messageLead.organizer_name, event_date: messageLead.event_date, location: messageLead.location },
+                      body: { tournament_name: messageLead.tournament_name, organizer_name: messageLead.organizer_name, event_date: messageLead.event_date, location: messageLead.location, detected_setup: messageLead.detected_setup, calendly_link: messageLead.calendly_link },
                     });
                     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
                     await supabase.from("sales_leads").update({ generated_message: data.message }).eq("id", messageLead.id);

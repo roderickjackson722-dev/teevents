@@ -304,6 +304,10 @@ export default function SalesProspecting() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="flyer" className="space-y-4">
+          <FlyerImportTab onSaved={loadLeads} />
+        </TabsContent>
+
         <TabsContent value="followups" className="space-y-4">
           <Card>
             <CardHeader><CardTitle>Awaiting reply</CardTitle></CardHeader>

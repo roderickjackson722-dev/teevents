@@ -2329,11 +2329,13 @@ export type Database = {
       }
       sales_leads: {
         Row: {
+          calendly_link: string | null
           contact_email: string | null
           contact_social_handle: string | null
           created_at: string
           created_by: string | null
           demo_booked_at: string | null
+          detected_setup: string | null
           event_date: string | null
           extracted_data: Json | null
           generated_message: string | null
@@ -2351,11 +2353,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          calendly_link?: string | null
           contact_email?: string | null
           contact_social_handle?: string | null
           created_at?: string
           created_by?: string | null
           demo_booked_at?: string | null
+          detected_setup?: string | null
           event_date?: string | null
           extracted_data?: Json | null
           generated_message?: string | null
@@ -2373,11 +2377,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          calendly_link?: string | null
           contact_email?: string | null
           contact_social_handle?: string | null
           created_at?: string
           created_by?: string | null
           demo_booked_at?: string | null
+          detected_setup?: string | null
           event_date?: string | null
           extracted_data?: Json | null
           generated_message?: string | null

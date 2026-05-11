@@ -391,7 +391,7 @@ export default function SalesProspecting() {
                 <div className="text-center py-6">
                   <Button onClick={async () => {
                     const { data, error } = await supabase.functions.invoke("generate-prospect-message", {
-                      body: { tournament_name: messageLead.tournament_name, organizer_name: messageLead.organizer_name, event_date: messageLead.event_date, location: messageLead.location },
+                      body: { tournament_name: messageLead.tournament_name, organizer_name: messageLead.organizer_name, event_date: messageLead.event_date, location: messageLead.location, detected_setup: messageLead.detected_setup, calendly_link: messageLead.calendly_link },
                     });
                     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
                     await supabase.from("sales_leads").update({ generated_message: data.message }).eq("id", messageLead.id);

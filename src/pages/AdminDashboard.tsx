@@ -781,6 +781,12 @@ const AdminDashboard = () => {
                     )}
                   </button>
                 ))}
+                <button
+                  onClick={() => navigate("/admin/sales/prospecting")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Target className="h-4 w-4" /> Sales Prospecting Tool
+                </button>
               </div>
             </div>
 

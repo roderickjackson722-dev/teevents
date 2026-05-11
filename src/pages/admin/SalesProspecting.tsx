@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Copy, Sparkles, Download, ExternalLink, Trash2, Pencil } from "lucide-react";
+import { Loader2, Copy, Sparkles, Download, ExternalLink, Trash2, Pencil, Upload, FileText } from "lucide-react";
 
 type Lead = {
   id: string;

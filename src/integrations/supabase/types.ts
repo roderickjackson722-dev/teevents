@@ -2338,15 +2338,18 @@ export type Database = {
           detected_setup: string | null
           event_date: string | null
           extracted_data: Json | null
+          flyer_image_url: string | null
           generated_message: string | null
           id: string
           location: string | null
           message_sent_at: string | null
           notes: string | null
           organizer_name: string | null
+          payment_keywords: string[] | null
           replied_at: string | null
           reply_text: string | null
           source: string
+          source_type: string | null
           source_url: string | null
           status: string
           tournament_name: string | null
@@ -2362,15 +2365,18 @@ export type Database = {
           detected_setup?: string | null
           event_date?: string | null
           extracted_data?: Json | null
+          flyer_image_url?: string | null
           generated_message?: string | null
           id?: string
           location?: string | null
           message_sent_at?: string | null
           notes?: string | null
           organizer_name?: string | null
+          payment_keywords?: string[] | null
           replied_at?: string | null
           reply_text?: string | null
           source?: string
+          source_type?: string | null
           source_url?: string | null
           status?: string
           tournament_name?: string | null
@@ -2386,15 +2392,18 @@ export type Database = {
           detected_setup?: string | null
           event_date?: string | null
           extracted_data?: Json | null
+          flyer_image_url?: string | null
           generated_message?: string | null
           id?: string
           location?: string | null
           message_sent_at?: string | null
           notes?: string | null
           organizer_name?: string | null
+          payment_keywords?: string[] | null
           replied_at?: string | null
           reply_text?: string | null
           source?: string
+          source_type?: string | null
           source_url?: string | null
           status?: string
           tournament_name?: string | null

@@ -95,6 +95,7 @@ export default function SalesProspecting() {
         event_date: r.event_date || null,
         location: r.location || null,
         contact_email: r.contact_email || null,
+        detected_setup: r.detected_setup || "unknown",
         extracted_data: r.extracted_data || {},
         status: "new",
         created_by: user?.id,

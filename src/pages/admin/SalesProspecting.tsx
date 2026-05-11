@@ -244,6 +244,7 @@ export default function SalesProspecting() {
                       <TableHead className="w-8"></TableHead>
                       <TableHead>Tournament</TableHead>
                       <TableHead>Organizer</TableHead>
+                      <TableHead>Setup</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
@@ -259,6 +260,11 @@ export default function SalesProspecting() {
                           {l.source_url && <a href={l.source_url} target="_blank" rel="noreferrer" className="ml-1 inline-block text-muted-foreground"><ExternalLink className="h-3 w-3 inline" /></a>}
                         </TableCell>
                         <TableCell>{l.organizer_name || "—"}</TableCell>
+                        <TableCell>
+                          {l.detected_setup ? (
+                            <Badge variant="outline" className="capitalize">{l.detected_setup}</Badge>
+                          ) : "—"}
+                        </TableCell>
                         <TableCell>{l.event_date || "—"}</TableCell>
                         <TableCell className="max-w-[180px] truncate">{l.location || "—"}</TableCell>
                         <TableCell><Badge className={STATUS_COLORS[l.status] || ""}>{l.status}</Badge></TableCell>

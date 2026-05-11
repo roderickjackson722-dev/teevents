@@ -226,6 +226,7 @@ export default function SalesProspecting() {
       <Tabs defaultValue="leads">
         <TabsList>
           <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
+          <TabsTrigger value="flyer">Flyer Import</TabsTrigger>
           <TabsTrigger value="followups">Follow-ups ({followUps.length})</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>

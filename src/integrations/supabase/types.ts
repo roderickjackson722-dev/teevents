@@ -2327,6 +2327,75 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_leads: {
+        Row: {
+          contact_email: string | null
+          contact_social_handle: string | null
+          created_at: string
+          created_by: string | null
+          demo_booked_at: string | null
+          event_date: string | null
+          extracted_data: Json | null
+          generated_message: string | null
+          id: string
+          location: string | null
+          message_sent_at: string | null
+          notes: string | null
+          organizer_name: string | null
+          replied_at: string | null
+          reply_text: string | null
+          source: string
+          source_url: string | null
+          status: string
+          tournament_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_social_handle?: string | null
+          created_at?: string
+          created_by?: string | null
+          demo_booked_at?: string | null
+          event_date?: string | null
+          extracted_data?: Json | null
+          generated_message?: string | null
+          id?: string
+          location?: string | null
+          message_sent_at?: string | null
+          notes?: string | null
+          organizer_name?: string | null
+          replied_at?: string | null
+          reply_text?: string | null
+          source?: string
+          source_url?: string | null
+          status?: string
+          tournament_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_social_handle?: string | null
+          created_at?: string
+          created_by?: string | null
+          demo_booked_at?: string | null
+          event_date?: string | null
+          extracted_data?: Json | null
+          generated_message?: string | null
+          id?: string
+          location?: string | null
+          message_sent_at?: string | null
+          notes?: string | null
+          organizer_name?: string | null
+          replied_at?: string | null
+          reply_text?: string | null
+          source?: string
+          source_url?: string | null
+          status?: string
+          tournament_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       setup_checklist_tasks: {
         Row: {
           auto_complete: boolean

@@ -370,6 +370,17 @@ export default function SalesProspecting() {
               <Field label="Location"><Input value={editLead.location || ""} onChange={e => setEditLead({ ...editLead, location: e.target.value })} /></Field>
               <Field label="Contact email"><Input value={editLead.contact_email || ""} onChange={e => setEditLead({ ...editLead, contact_email: e.target.value })} /></Field>
               <Field label="Social handle / Messenger"><Input value={editLead.contact_social_handle || ""} onChange={e => setEditLead({ ...editLead, contact_social_handle: e.target.value })} /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Detected setup">
+                  <Select value={editLead.detected_setup || "unknown"} onValueChange={(v) => setEditLead({ ...editLead, detected_setup: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["eventbrite", "manual", "facebook", "unknown"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Calendly link (optional override)"><Input placeholder="https://calendly.com/..." value={editLead.calendly_link || ""} onChange={e => setEditLead({ ...editLead, calendly_link: e.target.value })} /></Field>
+              </div>
               <Field label="Notes"><Textarea rows={3} value={editLead.notes || ""} onChange={e => setEditLead({ ...editLead, notes: e.target.value })} /></Field>
             </div>
           )}

@@ -432,15 +432,23 @@ export default function SalesProspecting() {
                     });
                     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
                     await supabase.from("sales_leads").update({ generated_message: data.message }).eq("id", messageLead.id);
-                    setMessageLead({ ...messageLead, generated_message: data.message });
+                    setMessageLead({ ...messageLead, generated_message: data.message, ...(data.message_html ? { generated_message_html: data.message_html } as any : {}) });
                     await loadLeads();
                   }}><Sparkles className="mr-2 h-4 w-4" />Generate message</Button>
                 </div>
               ) : (
                 <>
-                  <Textarea rows={10} value={messageLead.generated_message} onChange={e => setMessageLead({ ...messageLead, generated_message: e.target.value })} />
+                  <Textarea rows={12} value={messageLead.generated_message} onChange={e => setMessageLead({ ...messageLead, generated_message: e.target.value })} />
+                  {(messageLead as any).generated_message_html && (
+                    <div className="rounded-md border bg-muted/30 p-3 text-sm prose prose-sm max-w-none [&_a]:text-primary [&_a]:underline" dangerouslySetInnerHTML={{ __html: (messageLead as any).generated_message_html }} />
+                  )}
                   <div className="flex gap-2 flex-wrap">
-                    <Button onClick={() => { navigator.clipboard.writeText(messageLead.generated_message || ""); toast({ title: "Copied" }); }}><Copy className="mr-2 h-4 w-4" />Copy</Button>
+                    <Button onClick={async () => {
+                      const html = (messageLead as any).generated_message_html as string | undefined;
+                      if (html) { await copyRichText(html, messageLead.generated_message || ""); toast({ title: "Copied with hyperlinks" }); }
+                      else { await navigator.clipboard.writeText(messageLead.generated_message || ""); toast({ title: "Copied" }); }
+                    }}><Copy className="mr-2 h-4 w-4" />Copy (rich text)</Button>
+                    <Button variant="outline" onClick={() => { navigator.clipboard.writeText(messageLead.generated_message || ""); toast({ title: "Copied as plain text" }); }}>Copy plain</Button>
                     <Button variant="outline" onClick={async () => {
                       await supabase.from("sales_leads").update({ generated_message: messageLead.generated_message }).eq("id", messageLead.id);
                       toast({ title: "Saved" });

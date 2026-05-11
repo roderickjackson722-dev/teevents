@@ -26,6 +26,8 @@ type Lead = {
   contact_email: string | null;
   contact_social_handle: string | null;
   status: string;
+  detected_setup: string | null;
+  calendly_link: string | null;
   generated_message: string | null;
   message_sent_at: string | null;
   replied_at: string | null;

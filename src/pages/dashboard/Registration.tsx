@@ -313,6 +313,39 @@ const Registration = () => {
   const [newAddonPrice, setNewAddonPrice] = useState("");
   const [newAddonMaxQty, setNewAddonMaxQty] = useState("1");
 
+  const [editingAddonId, setEditingAddonId] = useState<string | null>(null);
+  const [editAddonName, setEditAddonName] = useState("");
+  const [editAddonDesc, setEditAddonDesc] = useState("");
+  const [editAddonPrice, setEditAddonPrice] = useState("");
+  const [editAddonMaxQty, setEditAddonMaxQty] = useState("1");
+
+  const startEditAddon = (a: Addon) => {
+    setEditingAddonId(a.id!);
+    setEditAddonName(a.name);
+    setEditAddonDesc(a.description || "");
+    setEditAddonPrice((a.price_cents / 100).toFixed(2));
+    setEditAddonMaxQty(String(a.max_per_golfer ?? 1));
+  };
+  const cancelEditAddon = () => setEditingAddonId(null);
+
+  const saveEditAddon = async (id: string) => {
+    if (demoGuard()) return;
+    if (!editAddonName.trim()) return;
+    const updates: any = {
+      name: editAddonName.trim(),
+      description: editAddonDesc.trim() || null,
+      price_cents: Math.round(parseFloat(editAddonPrice || "0") * 100),
+      max_per_golfer: Math.max(1, Math.min(50, parseInt(editAddonMaxQty || "1", 10) || 1)),
+    };
+    const { error } = await supabase.from("tournament_registration_addons").update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setAddons((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+      setEditingAddonId(null);
+      toast.success("Add-on updated!");
+    }
+  };
+
   const addAddon = async () => {
     if (!newAddonName.trim()) return;
     const maxQty = Math.max(1, Math.min(50, parseInt(newAddonMaxQty || "1", 10) || 1));

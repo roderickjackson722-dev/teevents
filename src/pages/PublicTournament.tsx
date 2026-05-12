@@ -646,6 +646,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     travel: "#location",
     schedule: "#schedule",
     about_organizer: "#about-organizer",
+    lodging: "#lodging",
   };
   const tabLabelByKey: Record<PublicTabKey, string> = {
     leaderboard: "Leaderboard",
@@ -659,6 +660,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     travel: "Location",
     schedule: "Event Agenda",
     about_organizer: "About the Organizer",
+    lodging: "Lodging",
   };
 
   // Build nav links: Home + Registration always; optional tabs in organizer order; Contact last.

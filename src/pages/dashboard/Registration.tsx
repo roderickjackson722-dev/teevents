@@ -444,6 +444,42 @@ const Registration = () => {
   const [newTierPrice, setNewTierPrice] = useState("");
   const [newTierMax, setNewTierMax] = useState("");
 
+  const [editingTierId, setEditingTierId] = useState<string | null>(null);
+  const [editTierName, setEditTierName] = useState("");
+  const [editTierDesc, setEditTierDesc] = useState("");
+  const [editTierEligibility, setEditTierEligibility] = useState("");
+  const [editTierPrice, setEditTierPrice] = useState("");
+  const [editTierMax, setEditTierMax] = useState("");
+
+  const startEditTier = (t: RegistrationTier) => {
+    setEditingTierId(t.id!);
+    setEditTierName(t.name);
+    setEditTierDesc(t.description || "");
+    setEditTierEligibility(t.eligibility_description || "");
+    setEditTierPrice((t.price_cents / 100).toFixed(2));
+    setEditTierMax(t.max_registrants ? String(t.max_registrants) : "");
+  };
+  const cancelEditTier = () => setEditingTierId(null);
+
+  const saveEditTier = async (id: string) => {
+    if (demoGuard()) return;
+    if (!editTierName.trim()) return;
+    const updates: any = {
+      name: editTierName.trim(),
+      description: editTierDesc.trim() || null,
+      eligibility_description: editTierEligibility.trim() || null,
+      price_cents: Math.round(parseFloat(editTierPrice || "0") * 100),
+      max_registrants: editTierMax ? parseInt(editTierMax) : null,
+    };
+    const { error } = await supabase.from("tournament_registration_tiers").update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setTiers((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+      setEditingTierId(null);
+      toast.success("Tier updated!");
+    }
+  };
+
   const addTier = async () => {
     if (!newTierName.trim() || demoGuard()) return;
     const payload: any = {

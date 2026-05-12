@@ -69,7 +69,7 @@ const OrganizationInfo = () => {
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const t = (data as Tournament[]) || [];
+        const t = ((data as unknown) as Tournament[]) || [];
         setTournaments(t);
         if (t.length > 0) setSelected(t[0].id);
         setLoading(false);

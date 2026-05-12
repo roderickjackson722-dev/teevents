@@ -629,6 +629,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     travel: !!tournament.location,
     schedule: !!tournament.schedule_info,
     about_organizer: ((tournament as any).show_org_tab ?? true) && hasOrgContent,
+    lodging: accommodations.length > 0,
   };
 
   const isTabVisible = (key: PublicTabKey) => tabVisibility[key] && tabHasData[key];

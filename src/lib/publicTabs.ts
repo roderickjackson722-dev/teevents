@@ -51,11 +51,12 @@ export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
   travel: false,
   schedule: true,
   about_organizer: true,
+  lodging: true,
 };
 
 export const PUBLIC_TABS_DEFAULT_ORDER: PublicTabKey[] = [
   "about_organizer", "leaderboard", "sponsors", "auction", "donations",
-  "course_details", "schedule", "gallery", "volunteers",
+  "course_details", "schedule", "lodging", "gallery", "volunteers",
   "contests", "travel",
 ];
 

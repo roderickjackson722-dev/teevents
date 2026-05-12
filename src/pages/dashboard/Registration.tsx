@@ -955,32 +955,54 @@ const Registration = () => {
               {addons.length > 0 && (
                 <div className="space-y-3">
                   {addons.map((addon) => (
-                    <div key={addon.id} className="flex items-center justify-between p-3 rounded-lg border border-border gap-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <Switch checked={addon.is_active} onCheckedChange={() => toggleAddon(addon)} />
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{addon.name}</p>
-                          {addon.description && <p className="text-xs text-muted-foreground truncate">{addon.description}</p>}
+                    <div key={addon.id} className="p-3 rounded-lg border border-border">
+                      {editingAddonId === addon.id ? (
+                        <div className="space-y-3">
+                          <div className="grid sm:grid-cols-3 gap-3">
+                            <Input value={editAddonName} onChange={(e) => setEditAddonName(e.target.value)} placeholder="Name" maxLength={100} />
+                            <Input type="number" min="0" step="0.01" value={editAddonPrice} onChange={(e) => setEditAddonPrice(e.target.value)} placeholder="Price ($)" />
+                            <Input type="number" min="1" max="50" value={editAddonMaxQty} onChange={(e) => setEditAddonMaxQty(e.target.value)} placeholder="Max per golfer" />
+                          </div>
+                          <Textarea value={editAddonDesc} onChange={(e) => setEditAddonDesc(e.target.value)} rows={2} maxLength={500} placeholder="Description (optional)" />
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => saveEditAddon(addon.id!)} disabled={!editAddonName.trim()}>
+                              <Save className="h-3.5 w-3.5 mr-1" /> Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={cancelEditAddon}>Cancel</Button>
+                          </div>
                         </div>
-                        <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                          ${(addon.price_cents / 100).toFixed(2)}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={`max-${addon.id}`} className="text-xs text-muted-foreground whitespace-nowrap">Max/golfer</Label>
-                        <Input
-                          id={`max-${addon.id}`}
-                          type="number"
-                          min="1"
-                          max="50"
-                          value={addon.max_per_golfer ?? 1}
-                          onChange={(e) => updateAddonMaxQty(addon, e.target.value)}
-                          className="h-8 w-16"
-                        />
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => deleteAddon(addon.id!)} className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <Switch checked={addon.is_active} onCheckedChange={() => toggleAddon(addon)} />
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">{addon.name}</p>
+                              {addon.description && <p className="text-xs text-muted-foreground truncate">{addon.description}</p>}
+                            </div>
+                            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                              ${(addon.price_cents / 100).toFixed(2)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`max-${addon.id}`} className="text-xs text-muted-foreground whitespace-nowrap">Max/golfer</Label>
+                            <Input
+                              id={`max-${addon.id}`}
+                              type="number"
+                              min="1"
+                              max="50"
+                              value={addon.max_per_golfer ?? 1}
+                              onChange={(e) => updateAddonMaxQty(addon, e.target.value)}
+                              className="h-8 w-16"
+                            />
+                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => startEditAddon(addon)} className="text-muted-foreground hover:text-foreground" title="Edit add-on">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => deleteAddon(addon.id!)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

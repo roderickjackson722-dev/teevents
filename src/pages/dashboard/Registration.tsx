@@ -698,31 +698,54 @@ const Registration = () => {
                 <div className="space-y-3">
                   {tiers.map((tier) => (
                     <div key={tier.id} className="p-4 rounded-lg border border-border space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Switch checked={tier.is_active} onCheckedChange={() => toggleTier(tier)} />
-                          <div>
-                            <span className="font-semibold text-foreground text-sm">{tier.name}</span>
-                            {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                      {editingTierId === tier.id ? (
+                        <div className="space-y-3">
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input value={editTierName} onChange={(e) => setEditTierName(e.target.value)} placeholder="Tier name" maxLength={100} />
+                            <Input type="number" min="0" step="0.01" value={editTierPrice} onChange={(e) => setEditTierPrice(e.target.value)} placeholder="Price ($)" />
+                          </div>
+                          <Textarea value={editTierDesc} onChange={(e) => setEditTierDesc(e.target.value)} rows={2} maxLength={500} placeholder="Description" />
+                          <Textarea value={editTierEligibility} onChange={(e) => setEditTierEligibility(e.target.value)} rows={2} maxLength={1000} placeholder="Eligibility requirements" />
+                          <div className="flex items-center gap-3">
+                            <Input type="number" min="1" value={editTierMax} onChange={(e) => setEditTierMax(e.target.value)} placeholder="Max registrants (optional)" className="max-w-[200px]" />
+                            <Button size="sm" onClick={() => saveEditTier(tier.id!)} disabled={!editTierName.trim()}>
+                              <Save className="h-3.5 w-3.5 mr-1" /> Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={cancelEditTier}>Cancel</Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                            {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
-                          </Badge>
-                          {tier.max_registrants && (
-                            <span className="text-xs text-muted-foreground">{tier.max_registrants} max</span>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Switch checked={tier.is_active} onCheckedChange={() => toggleTier(tier)} />
+                              <div>
+                                <span className="font-semibold text-foreground text-sm">{tier.name}</span>
+                                {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                                {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                              </Badge>
+                              {tier.max_registrants && (
+                                <span className="text-xs text-muted-foreground">{tier.max_registrants} max</span>
+                              )}
+                              <Button variant="ghost" size="icon" onClick={() => startEditTier(tier)} className="text-muted-foreground hover:text-foreground" title="Edit tier">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => deleteTier(tier.id!)} className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          {tier.eligibility_description && (
+                            <div className="flex items-start gap-2 bg-muted/30 rounded-md p-2.5 ml-10">
+                              <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground">{tier.eligibility_description}</p>
+                            </div>
                           )}
-                          <Button variant="ghost" size="icon" onClick={() => deleteTier(tier.id!)} className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      {tier.eligibility_description && (
-                        <div className="flex items-start gap-2 bg-muted/30 rounded-md p-2.5 ml-10">
-                          <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-muted-foreground">{tier.eligibility_description}</p>
-                        </div>
+                        </>
                       )}
                     </div>
                   ))}

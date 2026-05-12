@@ -74,6 +74,7 @@ import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
 import FAQ from "./pages/FAQ";
+import Features from "./pages/Features";
 // SalesHub moved into AdminDashboard
 import DemoTalkTrack from "./pages/DemoTalkTrack";
 import DemoAgenda from "./pages/sales/DemoAgenda";

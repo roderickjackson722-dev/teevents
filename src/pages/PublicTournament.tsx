@@ -597,6 +597,15 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const tabVisibility = normalizeVisibility(tournament.public_tabs);
   const tabOrder = normalizeOrder(tournament.public_tabs_order);
 
+  const hasOrgContent =
+    !!(tournament as any).about_us ||
+    !!(tournament as any).mission_statement ||
+    !!(tournament as any).vision_statement ||
+    !!(tournament as any).history ||
+    !!(tournament as any).org_contact_email ||
+    !!(tournament as any).org_contact_phone ||
+    !!(tournament as any).org_address;
+
   const tabHasData: Record<PublicTabKey, boolean> = {
     leaderboard: leaderboard.length > 0,
     sponsors: sponsors.length > 0 || sponsorshipTiers.length > 0,
@@ -608,6 +617,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     contests: contests.length > 0,
     travel: !!tournament.location,
     schedule: !!tournament.schedule_info,
+    about_organizer: ((tournament as any).show_org_tab ?? true) && hasOrgContent,
   };
 
   const isTabVisible = (key: PublicTabKey) => tabVisibility[key] && tabHasData[key];
@@ -623,6 +633,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     contests: "#contests",
     travel: "#location",
     schedule: "#schedule",
+    about_organizer: "#about-organizer",
   };
   const tabLabelByKey: Record<PublicTabKey, string> = {
     leaderboard: "Leaderboard",
@@ -635,6 +646,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     contests: "Event Day Contests",
     travel: "Location",
     schedule: "Event Agenda",
+    about_organizer: "About the Organizer",
   };
 
   // Build nav links: Home + Registration always; optional tabs in organizer order; Contact last.

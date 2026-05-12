@@ -45,6 +45,7 @@ import Finances from "./pages/dashboard/Finances";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
+import OrganizationInfo from "./pages/dashboard/OrganizationInfo";
 import DirectorShop from "./pages/dashboard/DirectorShop";
 import SharePromote from "./pages/dashboard/SharePromote";
 import FlyerStudio from "./pages/dashboard/FlyerStudio";
@@ -164,6 +165,7 @@ const App = () => (
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />
+          <Route path="/dashboard/organization-info" element={<DashboardLayout><OrganizationInfo /></DashboardLayout>} />
           <Route path="/dashboard/public-search" element={<DashboardLayout><PublicSearch /></DashboardLayout>} />
           <Route path="/dashboard/director-shop" element={<DashboardLayout><DirectorShop /></DashboardLayout>} />
           <Route path="/dashboard/upgrade" element={<DashboardLayout><UpgradePlan /></DashboardLayout>} />

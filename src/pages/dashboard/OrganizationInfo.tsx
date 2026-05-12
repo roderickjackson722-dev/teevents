@@ -9,8 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, Loader2, Save } from "lucide-react";
+import { Building2, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
+interface CustomSection {
+  id: string;
+  title: string;
+  content: string;
+}
 
 interface Tournament {
   id: string;
@@ -23,6 +29,7 @@ interface Tournament {
   org_contact_phone: string | null;
   org_address: string | null;
   show_org_tab: boolean | null;
+  custom_org_sections: CustomSection[] | null;
 }
 
 const MAX_LONG = 5000;
@@ -52,16 +59,17 @@ const OrganizationInfo = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [customSections, setCustomSections] = useState<CustomSection[]>([]);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, about_us, mission_statement, vision_statement, history, org_contact_email, org_contact_phone, org_address, show_org_tab")
+      .select("id, title, about_us, mission_statement, vision_statement, history, org_contact_email, org_contact_phone, org_address, show_org_tab, custom_org_sections")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const t = (data as Tournament[]) || [];
+        const t = ((data as unknown) as Tournament[]) || [];
         setTournaments(t);
         if (t.length > 0) setSelected(t[0].id);
         setLoading(false);
@@ -79,11 +87,30 @@ const OrganizationInfo = () => {
     setEmail(t.org_contact_email || "");
     setPhone(t.org_contact_phone || "");
     setAddress(t.org_address || "");
+    setCustomSections(Array.isArray(t.custom_org_sections) ? t.custom_org_sections : []);
   }, [selected, tournaments]);
+
+  const addCustomSection = () => {
+    setCustomSections((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), title: "", content: "" },
+    ]);
+  };
+
+  const updateCustomSection = (id: string, patch: Partial<CustomSection>) => {
+    setCustomSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  };
+
+  const removeCustomSection = (id: string) => {
+    setCustomSections((prev) => prev.filter((s) => s.id !== id));
+  };
 
   const save = async () => {
     if (demoGuard()) return;
     setSaving(true);
+    const cleanedCustom = customSections
+      .map((s) => ({ id: s.id, title: s.title.trim(), content: s.content.trim() }))
+      .filter((s) => s.title || s.content);
     const { error } = await supabase
       .from("tournaments")
       .update({
@@ -95,16 +122,18 @@ const OrganizationInfo = () => {
         org_contact_email: email.trim() || null,
         org_contact_phone: phone.trim() || null,
         org_address: address.trim() || null,
+        custom_org_sections: cleanedCustom,
       } as any)
       .eq("id", selected);
     setSaving(false);
     if (error) toast.error(error.message);
     else {
       toast.success("Organization info saved!");
+      setCustomSections(cleanedCustom);
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selected
-            ? { ...t, show_org_tab: showTab, about_us: aboutUs, mission_statement: mission, vision_statement: vision, history, org_contact_email: email, org_contact_phone: phone, org_address: address }
+            ? { ...t, show_org_tab: showTab, about_us: aboutUs, mission_statement: mission, vision_statement: vision, history, org_contact_email: email, org_contact_phone: phone, org_address: address, custom_org_sections: cleanedCustom }
             : t,
         ),
       );
@@ -176,6 +205,52 @@ const OrganizationInfo = () => {
             <Input type="tel" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={50} />
           </div>
           <Input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={500} />
+        </div>
+
+        <div className="space-y-3 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-semibold">Custom Sections</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Add your own titled sections (e.g. "Beneficiary", "Our Team", "Sponsors Spotlight").
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addCustomSection}>
+              <Plus className="h-4 w-4 mr-1" /> Add Section
+            </Button>
+          </div>
+
+          {customSections.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">No custom sections yet.</p>
+          )}
+
+          {customSections.map((s) => (
+            <div key={s.id} className="rounded-lg border border-border p-4 space-y-3 bg-muted/10">
+              <div className="flex items-start gap-2">
+                <Input
+                  placeholder="Section title (e.g. Beneficiary)"
+                  value={s.title}
+                  maxLength={100}
+                  onChange={(e) => updateCustomSection(s.id, { title: e.target.value })}
+                />
+                <Button type="button" variant="ghost" size="icon" onClick={() => removeCustomSection(s.id)} aria-label="Remove section">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              <div>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-xs text-muted-foreground">Description</span>
+                  <span className="text-xs text-muted-foreground">{s.content.length}/{MAX_LONG}</span>
+                </div>
+                <Textarea
+                  rows={4}
+                  placeholder="Tell golfers more about this..."
+                  value={s.content}
+                  onChange={(e) => e.target.value.length <= MAX_LONG && updateCustomSection(s.id, { content: e.target.value })}
+                />
+              </div>
+            </div>
+          ))}
         </div>
 
         <p className="text-xs text-muted-foreground">

@@ -4165,6 +4165,7 @@ export type Database = {
           course_par: number | null
           created_at: string
           custom_domain: string | null
+          custom_org_sections: Json
           custom_slug: string | null
           date: string | null
           demo_admin_id: string | null
@@ -4273,6 +4274,7 @@ export type Database = {
           course_par?: number | null
           created_at?: string
           custom_domain?: string | null
+          custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
           demo_admin_id?: string | null
@@ -4381,6 +4383,7 @@ export type Database = {
           course_par?: number | null
           created_at?: string
           custom_domain?: string | null
+          custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
           demo_admin_id?: string | null

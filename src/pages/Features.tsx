@@ -374,7 +374,7 @@ const Features = () => {
       <SEO
         title="All Features | TeeVents Golf Tournament Software"
         description="Explore every TeeVents feature: registration, live scoring, sponsors, payments, custom websites, and more — built for golf tournament organizers."
-        canonical="https://teevents.golf/features"
+        
       />
       <div className="bg-gradient-to-b from-background to-muted/30">
         <div className="container mx-auto px-4 py-16 md:py-20">

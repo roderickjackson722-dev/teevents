@@ -9,8 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, Loader2, Save } from "lucide-react";
+import { Building2, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
+interface CustomSection {
+  id: string;
+  title: string;
+  content: string;
+}
 
 interface Tournament {
   id: string;
@@ -23,6 +29,7 @@ interface Tournament {
   org_contact_phone: string | null;
   org_address: string | null;
   show_org_tab: boolean | null;
+  custom_org_sections: CustomSection[] | null;
 }
 
 const MAX_LONG = 5000;

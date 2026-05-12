@@ -278,8 +278,17 @@ export default function SalesProspecting() {
                       <TableRow key={l.id}>
                         <TableCell><Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleSelect(l.id)} /></TableCell>
                         <TableCell className="font-medium">
-                          {l.tournament_name || <span className="text-muted-foreground italic">(unknown)</span>}
-                          {l.source_url && <a href={l.source_url} target="_blank" rel="noreferrer" className="ml-1 inline-block text-muted-foreground"><ExternalLink className="h-3 w-3 inline" /></a>}
+                          <div className="flex items-center gap-2">
+                            {l.flyer_image_url && (
+                              <a href={l.flyer_image_url} target="_blank" rel="noreferrer" title="View flyer">
+                                <img src={l.flyer_image_url} alt="flyer" className="h-10 w-10 object-cover rounded border border-border" />
+                              </a>
+                            )}
+                            <span>
+                              {l.tournament_name || <span className="text-muted-foreground italic">(unknown)</span>}
+                              {l.source_url && <a href={l.source_url} target="_blank" rel="noreferrer" className="ml-1 inline-block text-muted-foreground"><ExternalLink className="h-3 w-3 inline" /></a>}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>{l.organizer_name || "—"}</TableCell>
                         <TableCell>
@@ -424,6 +433,19 @@ export default function SalesProspecting() {
           {messageLead && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">For: <strong>{messageLead.tournament_name || "—"}</strong> · {messageLead.organizer_name || "—"}</p>
+              {messageLead.flyer_image_url && (
+                <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Uploaded flyer</span>
+                    <a href={messageLead.flyer_image_url} download target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                      <Download className="h-3 w-3" /> Download
+                    </a>
+                  </div>
+                  <a href={messageLead.flyer_image_url} target="_blank" rel="noreferrer" title="Click to enlarge">
+                    <img src={messageLead.flyer_image_url} alt="Flyer" className="max-h-64 w-auto mx-auto rounded border border-border hover:opacity-90 transition-opacity" />
+                  </a>
+                </div>
+              )}
               {!messageLead.generated_message ? (
                 <div className="text-center py-6">
                   <Button onClick={async () => {

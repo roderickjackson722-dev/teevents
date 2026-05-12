@@ -278,8 +278,17 @@ export default function SalesProspecting() {
                       <TableRow key={l.id}>
                         <TableCell><Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleSelect(l.id)} /></TableCell>
                         <TableCell className="font-medium">
-                          {l.tournament_name || <span className="text-muted-foreground italic">(unknown)</span>}
-                          {l.source_url && <a href={l.source_url} target="_blank" rel="noreferrer" className="ml-1 inline-block text-muted-foreground"><ExternalLink className="h-3 w-3 inline" /></a>}
+                          <div className="flex items-center gap-2">
+                            {l.flyer_image_url && (
+                              <a href={l.flyer_image_url} target="_blank" rel="noreferrer" title="View flyer">
+                                <img src={l.flyer_image_url} alt="flyer" className="h-10 w-10 object-cover rounded border border-border" />
+                              </a>
+                            )}
+                            <span>
+                              {l.tournament_name || <span className="text-muted-foreground italic">(unknown)</span>}
+                              {l.source_url && <a href={l.source_url} target="_blank" rel="noreferrer" className="ml-1 inline-block text-muted-foreground"><ExternalLink className="h-3 w-3 inline" /></a>}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>{l.organizer_name || "—"}</TableCell>
                         <TableCell>

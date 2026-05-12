@@ -1,0 +1,9 @@
+ALTER TABLE public.tournaments
+  ADD COLUMN IF NOT EXISTS about_us TEXT,
+  ADD COLUMN IF NOT EXISTS mission_statement TEXT,
+  ADD COLUMN IF NOT EXISTS vision_statement TEXT,
+  ADD COLUMN IF NOT EXISTS history TEXT,
+  ADD COLUMN IF NOT EXISTS org_contact_email TEXT,
+  ADD COLUMN IF NOT EXISTS org_contact_phone TEXT,
+  ADD COLUMN IF NOT EXISTS org_address TEXT,
+  ADD COLUMN IF NOT EXISTS show_org_tab BOOLEAN NOT NULL DEFAULT TRUE;

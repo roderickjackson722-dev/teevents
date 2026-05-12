@@ -313,6 +313,39 @@ const Registration = () => {
   const [newAddonPrice, setNewAddonPrice] = useState("");
   const [newAddonMaxQty, setNewAddonMaxQty] = useState("1");
 
+  const [editingAddonId, setEditingAddonId] = useState<string | null>(null);
+  const [editAddonName, setEditAddonName] = useState("");
+  const [editAddonDesc, setEditAddonDesc] = useState("");
+  const [editAddonPrice, setEditAddonPrice] = useState("");
+  const [editAddonMaxQty, setEditAddonMaxQty] = useState("1");
+
+  const startEditAddon = (a: Addon) => {
+    setEditingAddonId(a.id!);
+    setEditAddonName(a.name);
+    setEditAddonDesc(a.description || "");
+    setEditAddonPrice((a.price_cents / 100).toFixed(2));
+    setEditAddonMaxQty(String(a.max_per_golfer ?? 1));
+  };
+  const cancelEditAddon = () => setEditingAddonId(null);
+
+  const saveEditAddon = async (id: string) => {
+    if (demoGuard()) return;
+    if (!editAddonName.trim()) return;
+    const updates: any = {
+      name: editAddonName.trim(),
+      description: editAddonDesc.trim() || null,
+      price_cents: Math.round(parseFloat(editAddonPrice || "0") * 100),
+      max_per_golfer: Math.max(1, Math.min(50, parseInt(editAddonMaxQty || "1", 10) || 1)),
+    };
+    const { error } = await supabase.from("tournament_registration_addons").update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setAddons((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+      setEditingAddonId(null);
+      toast.success("Add-on updated!");
+    }
+  };
+
   const addAddon = async () => {
     if (!newAddonName.trim()) return;
     const maxQty = Math.max(1, Math.min(50, parseInt(newAddonMaxQty || "1", 10) || 1));
@@ -410,6 +443,42 @@ const Registration = () => {
   const [newTierEligibility, setNewTierEligibility] = useState("");
   const [newTierPrice, setNewTierPrice] = useState("");
   const [newTierMax, setNewTierMax] = useState("");
+
+  const [editingTierId, setEditingTierId] = useState<string | null>(null);
+  const [editTierName, setEditTierName] = useState("");
+  const [editTierDesc, setEditTierDesc] = useState("");
+  const [editTierEligibility, setEditTierEligibility] = useState("");
+  const [editTierPrice, setEditTierPrice] = useState("");
+  const [editTierMax, setEditTierMax] = useState("");
+
+  const startEditTier = (t: RegistrationTier) => {
+    setEditingTierId(t.id!);
+    setEditTierName(t.name);
+    setEditTierDesc(t.description || "");
+    setEditTierEligibility(t.eligibility_description || "");
+    setEditTierPrice((t.price_cents / 100).toFixed(2));
+    setEditTierMax(t.max_registrants ? String(t.max_registrants) : "");
+  };
+  const cancelEditTier = () => setEditingTierId(null);
+
+  const saveEditTier = async (id: string) => {
+    if (demoGuard()) return;
+    if (!editTierName.trim()) return;
+    const updates: any = {
+      name: editTierName.trim(),
+      description: editTierDesc.trim() || null,
+      eligibility_description: editTierEligibility.trim() || null,
+      price_cents: Math.round(parseFloat(editTierPrice || "0") * 100),
+      max_registrants: editTierMax ? parseInt(editTierMax) : null,
+    };
+    const { error } = await supabase.from("tournament_registration_tiers").update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setTiers((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+      setEditingTierId(null);
+      toast.success("Tier updated!");
+    }
+  };
 
   const addTier = async () => {
     if (!newTierName.trim() || demoGuard()) return;
@@ -629,31 +698,54 @@ const Registration = () => {
                 <div className="space-y-3">
                   {tiers.map((tier) => (
                     <div key={tier.id} className="p-4 rounded-lg border border-border space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Switch checked={tier.is_active} onCheckedChange={() => toggleTier(tier)} />
-                          <div>
-                            <span className="font-semibold text-foreground text-sm">{tier.name}</span>
-                            {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                      {editingTierId === tier.id ? (
+                        <div className="space-y-3">
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input value={editTierName} onChange={(e) => setEditTierName(e.target.value)} placeholder="Tier name" maxLength={100} />
+                            <Input type="number" min="0" step="0.01" value={editTierPrice} onChange={(e) => setEditTierPrice(e.target.value)} placeholder="Price ($)" />
+                          </div>
+                          <Textarea value={editTierDesc} onChange={(e) => setEditTierDesc(e.target.value)} rows={2} maxLength={500} placeholder="Description" />
+                          <Textarea value={editTierEligibility} onChange={(e) => setEditTierEligibility(e.target.value)} rows={2} maxLength={1000} placeholder="Eligibility requirements" />
+                          <div className="flex items-center gap-3">
+                            <Input type="number" min="1" value={editTierMax} onChange={(e) => setEditTierMax(e.target.value)} placeholder="Max registrants (optional)" className="max-w-[200px]" />
+                            <Button size="sm" onClick={() => saveEditTier(tier.id!)} disabled={!editTierName.trim()}>
+                              <Save className="h-3.5 w-3.5 mr-1" /> Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={cancelEditTier}>Cancel</Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                            {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
-                          </Badge>
-                          {tier.max_registrants && (
-                            <span className="text-xs text-muted-foreground">{tier.max_registrants} max</span>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Switch checked={tier.is_active} onCheckedChange={() => toggleTier(tier)} />
+                              <div>
+                                <span className="font-semibold text-foreground text-sm">{tier.name}</span>
+                                {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                                {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                              </Badge>
+                              {tier.max_registrants && (
+                                <span className="text-xs text-muted-foreground">{tier.max_registrants} max</span>
+                              )}
+                              <Button variant="ghost" size="icon" onClick={() => startEditTier(tier)} className="text-muted-foreground hover:text-foreground" title="Edit tier">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => deleteTier(tier.id!)} className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          {tier.eligibility_description && (
+                            <div className="flex items-start gap-2 bg-muted/30 rounded-md p-2.5 ml-10">
+                              <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground">{tier.eligibility_description}</p>
+                            </div>
                           )}
-                          <Button variant="ghost" size="icon" onClick={() => deleteTier(tier.id!)} className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      {tier.eligibility_description && (
-                        <div className="flex items-start gap-2 bg-muted/30 rounded-md p-2.5 ml-10">
-                          <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-muted-foreground">{tier.eligibility_description}</p>
-                        </div>
+                        </>
                       )}
                     </div>
                   ))}
@@ -863,32 +955,54 @@ const Registration = () => {
               {addons.length > 0 && (
                 <div className="space-y-3">
                   {addons.map((addon) => (
-                    <div key={addon.id} className="flex items-center justify-between p-3 rounded-lg border border-border gap-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <Switch checked={addon.is_active} onCheckedChange={() => toggleAddon(addon)} />
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{addon.name}</p>
-                          {addon.description && <p className="text-xs text-muted-foreground truncate">{addon.description}</p>}
+                    <div key={addon.id} className="p-3 rounded-lg border border-border">
+                      {editingAddonId === addon.id ? (
+                        <div className="space-y-3">
+                          <div className="grid sm:grid-cols-3 gap-3">
+                            <Input value={editAddonName} onChange={(e) => setEditAddonName(e.target.value)} placeholder="Name" maxLength={100} />
+                            <Input type="number" min="0" step="0.01" value={editAddonPrice} onChange={(e) => setEditAddonPrice(e.target.value)} placeholder="Price ($)" />
+                            <Input type="number" min="1" max="50" value={editAddonMaxQty} onChange={(e) => setEditAddonMaxQty(e.target.value)} placeholder="Max per golfer" />
+                          </div>
+                          <Textarea value={editAddonDesc} onChange={(e) => setEditAddonDesc(e.target.value)} rows={2} maxLength={500} placeholder="Description (optional)" />
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => saveEditAddon(addon.id!)} disabled={!editAddonName.trim()}>
+                              <Save className="h-3.5 w-3.5 mr-1" /> Save
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={cancelEditAddon}>Cancel</Button>
+                          </div>
                         </div>
-                        <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                          ${(addon.price_cents / 100).toFixed(2)}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={`max-${addon.id}`} className="text-xs text-muted-foreground whitespace-nowrap">Max/golfer</Label>
-                        <Input
-                          id={`max-${addon.id}`}
-                          type="number"
-                          min="1"
-                          max="50"
-                          value={addon.max_per_golfer ?? 1}
-                          onChange={(e) => updateAddonMaxQty(addon, e.target.value)}
-                          className="h-8 w-16"
-                        />
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => deleteAddon(addon.id!)} className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <Switch checked={addon.is_active} onCheckedChange={() => toggleAddon(addon)} />
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground text-sm truncate">{addon.name}</p>
+                              {addon.description && <p className="text-xs text-muted-foreground truncate">{addon.description}</p>}
+                            </div>
+                            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                              ${(addon.price_cents / 100).toFixed(2)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`max-${addon.id}`} className="text-xs text-muted-foreground whitespace-nowrap">Max/golfer</Label>
+                            <Input
+                              id={`max-${addon.id}`}
+                              type="number"
+                              min="1"
+                              max="50"
+                              value={addon.max_per_golfer ?? 1}
+                              onChange={(e) => updateAddonMaxQty(addon, e.target.value)}
+                              className="h-8 w-16"
+                            />
+                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => startEditAddon(addon)} className="text-muted-foreground hover:text-foreground" title="Edit add-on">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => deleteAddon(addon.id!)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

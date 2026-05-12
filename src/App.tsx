@@ -196,6 +196,7 @@ const App = () => (
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />
+           <Route path="/features" element={<Features />} />
            <Route path="/sales-hub" element={<Navigate to="/admin" replace />} />
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />

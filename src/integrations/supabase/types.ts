@@ -4155,6 +4155,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          about_us: string | null
           allow_cover_fees: boolean
           confirmation_email_config: Json | null
           contact_email: string | null
@@ -4178,6 +4179,7 @@ export type Database = {
           golf_course_id: string | null
           handicap_allowance: number | null
           handicap_enabled: boolean | null
+          history: string | null
           hole_pars: Json | null
           id: string
           image_url: string | null
@@ -4192,6 +4194,10 @@ export type Database = {
           max_group_size: number
           max_handicap: number | null
           max_players: number | null
+          mission_statement: string | null
+          org_address: string | null
+          org_contact_email: string | null
+          org_contact_phone: string | null
           organization_id: string
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
@@ -4221,6 +4227,7 @@ export type Database = {
           setup_checklist_dismissed: boolean
           show_countdown: boolean
           show_in_public_search: boolean
+          show_org_tab: boolean
           site_background_color: string | null
           site_body_font_size: number | null
           site_button_font_size: number | null
@@ -4251,10 +4258,12 @@ export type Database = {
           url_edit_count: number
           url_edited_at: string | null
           vendor_booth_fee_cents: number | null
+          vision_statement: string | null
           waitlist_deposit_cents: number | null
           waitlist_enabled: boolean
         }
         Insert: {
+          about_us?: string | null
           allow_cover_fees?: boolean
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -4278,6 +4287,7 @@ export type Database = {
           golf_course_id?: string | null
           handicap_allowance?: number | null
           handicap_enabled?: boolean | null
+          history?: string | null
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
@@ -4292,6 +4302,10 @@ export type Database = {
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
+          mission_statement?: string | null
+          org_address?: string | null
+          org_contact_email?: string | null
+          org_contact_phone?: string | null
           organization_id: string
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
@@ -4321,6 +4335,7 @@ export type Database = {
           setup_checklist_dismissed?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
+          show_org_tab?: boolean
           site_background_color?: string | null
           site_body_font_size?: number | null
           site_button_font_size?: number | null
@@ -4351,10 +4366,12 @@ export type Database = {
           url_edit_count?: number
           url_edited_at?: string | null
           vendor_booth_fee_cents?: number | null
+          vision_statement?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
         }
         Update: {
+          about_us?: string | null
           allow_cover_fees?: boolean
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -4378,6 +4395,7 @@ export type Database = {
           golf_course_id?: string | null
           handicap_allowance?: number | null
           handicap_enabled?: boolean | null
+          history?: string | null
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
@@ -4392,6 +4410,10 @@ export type Database = {
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
+          mission_statement?: string | null
+          org_address?: string | null
+          org_contact_email?: string | null
+          org_contact_phone?: string | null
           organization_id?: string
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
@@ -4421,6 +4443,7 @@ export type Database = {
           setup_checklist_dismissed?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
+          show_org_tab?: boolean
           site_background_color?: string | null
           site_body_font_size?: number | null
           site_button_font_size?: number | null
@@ -4451,6 +4474,7 @@ export type Database = {
           url_edit_count?: number
           url_edited_at?: string | null
           vendor_booth_fee_cents?: number | null
+          vision_statement?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
         }

@@ -207,6 +207,52 @@ const OrganizationInfo = () => {
           <Input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={500} />
         </div>
 
+        <div className="space-y-3 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-semibold">Custom Sections</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Add your own titled sections (e.g. "Beneficiary", "Our Team", "Sponsors Spotlight").
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addCustomSection}>
+              <Plus className="h-4 w-4 mr-1" /> Add Section
+            </Button>
+          </div>
+
+          {customSections.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">No custom sections yet.</p>
+          )}
+
+          {customSections.map((s) => (
+            <div key={s.id} className="rounded-lg border border-border p-4 space-y-3 bg-muted/10">
+              <div className="flex items-start gap-2">
+                <Input
+                  placeholder="Section title (e.g. Beneficiary)"
+                  value={s.title}
+                  maxLength={100}
+                  onChange={(e) => updateCustomSection(s.id, { title: e.target.value })}
+                />
+                <Button type="button" variant="ghost" size="icon" onClick={() => removeCustomSection(s.id)} aria-label="Remove section">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              <div>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-xs text-muted-foreground">Description</span>
+                  <span className="text-xs text-muted-foreground">{s.content.length}/{MAX_LONG}</span>
+                </div>
+                <Textarea
+                  rows={4}
+                  placeholder="Tell golfers more about this..."
+                  value={s.content}
+                  onChange={(e) => e.target.value.length <= MAX_LONG && updateCustomSection(s.id, { content: e.target.value })}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
         <p className="text-xs text-muted-foreground">
           Tip: Press Enter twice for a paragraph break. Plain text only — formatting is rendered cleanly on your public site.
         </p>

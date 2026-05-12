@@ -46,6 +46,7 @@ import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
 import OrganizationInfo from "./pages/dashboard/OrganizationInfo";
+import Lodging from "./pages/dashboard/Lodging";
 import DirectorShop from "./pages/dashboard/DirectorShop";
 import SharePromote from "./pages/dashboard/SharePromote";
 import FlyerStudio from "./pages/dashboard/FlyerStudio";

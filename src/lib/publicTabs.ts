@@ -36,6 +36,7 @@ export const PUBLIC_TABS: PublicTabMeta[] = [
   { key: "contests",       label: "Contests",       href: "#contests",          helper: "Closest-to-pin, long drive, etc." },
   { key: "travel",         label: "Location / Travel", href: "#location",       helper: "Accommodations & travel info" },
   { key: "about_organizer",label: "About the Organizer", href: "#about-organizer", helper: "Your organization's story, mission, and contact info" },
+  { key: "lodging",        label: "Lodging",        href: "#lodging",           helper: "Hotels, room blocks, rates, and codes for traveling players" },
 ];
 
 export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {

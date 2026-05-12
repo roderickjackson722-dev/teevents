@@ -218,7 +218,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
    const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
    const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
-   const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
+  const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
+  const [accommodations, setAccommodations] = useState<Array<{
+    id: string; hotel_name: string; address: string | null; phone: string | null; website_url: string | null;
+    group_code: string | null; booking_deadline: string | null; notes: string | null; display_order: number;
+    accommodation_room_types: Array<{ id: string; room_type: string; rate_cents: number | null; rate_note: string | null; max_occupancy: number | null; display_order: number }>;
+    accommodation_custom_fields: Array<{ id: string; field_name: string; field_value: string | null; display_order: number }>;
+  }>>([]);
    const [loading, setLoading] = useState(true);
    const [notFound, setNotFound] = useState(false);
    const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });

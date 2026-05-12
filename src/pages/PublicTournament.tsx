@@ -337,6 +337,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
+          (supabase as any).from("tournament_accommodations").select("id, hotel_name, address, phone, website_url, group_code, booking_deadline, notes, display_order, accommodation_room_types(id, room_type, rate_cents, rate_note, max_occupancy, display_order, is_active), accommodation_custom_fields(id, field_name, field_value, display_order)").eq("tournament_id", t.id).eq("is_active", true).order("display_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);

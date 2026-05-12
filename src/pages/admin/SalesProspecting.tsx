@@ -433,6 +433,19 @@ export default function SalesProspecting() {
           {messageLead && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">For: <strong>{messageLead.tournament_name || "—"}</strong> · {messageLead.organizer_name || "—"}</p>
+              {messageLead.flyer_image_url && (
+                <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Uploaded flyer</span>
+                    <a href={messageLead.flyer_image_url} download target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                      <Download className="h-3 w-3" /> Download
+                    </a>
+                  </div>
+                  <a href={messageLead.flyer_image_url} target="_blank" rel="noreferrer" title="Click to enlarge">
+                    <img src={messageLead.flyer_image_url} alt="Flyer" className="max-h-64 w-auto mx-auto rounded border border-border hover:opacity-90 transition-opacity" />
+                  </a>
+                </div>
+              )}
               {!messageLead.generated_message ? (
                 <div className="text-center py-6">
                   <Button onClick={async () => {

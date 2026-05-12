@@ -12,7 +12,8 @@ export type PublicTabKey =
   | "contests"
   | "travel"
   | "schedule"
-  | "about_organizer";
+  | "about_organizer"
+  | "lodging";
 
 export interface PublicTabMeta {
   key: PublicTabKey;
@@ -35,6 +36,7 @@ export const PUBLIC_TABS: PublicTabMeta[] = [
   { key: "contests",       label: "Contests",       href: "#contests",          helper: "Closest-to-pin, long drive, etc." },
   { key: "travel",         label: "Location / Travel", href: "#location",       helper: "Accommodations & travel info" },
   { key: "about_organizer",label: "About the Organizer", href: "#about-organizer", helper: "Your organization's story, mission, and contact info" },
+  { key: "lodging",        label: "Lodging",        href: "#lodging",           helper: "Hotels, room blocks, rates, and codes for traveling players" },
 ];
 
 export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
@@ -49,11 +51,12 @@ export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
   travel: false,
   schedule: true,
   about_organizer: true,
+  lodging: true,
 };
 
 export const PUBLIC_TABS_DEFAULT_ORDER: PublicTabKey[] = [
   "about_organizer", "leaderboard", "sponsors", "auction", "donations",
-  "course_details", "schedule", "gallery", "volunteers",
+  "course_details", "schedule", "lodging", "gallery", "volunteers",
   "contests", "travel",
 ];
 

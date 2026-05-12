@@ -4,7 +4,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  PartyPopper, Building2, Store, Target,
+  PartyPopper, Building2, Store, Target, BedDouble,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -68,6 +68,7 @@ const categories: SidebarCategory[] = [
       { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: null },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null },
       { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null },
+      { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null },
       { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
     ],
   },

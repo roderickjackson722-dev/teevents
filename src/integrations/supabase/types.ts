@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      accommodation_custom_fields: {
+        Row: {
+          accommodation_id: string
+          created_at: string
+          display_order: number
+          field_name: string
+          field_value: string | null
+          id: string
+        }
+        Insert: {
+          accommodation_id: string
+          created_at?: string
+          display_order?: number
+          field_name: string
+          field_value?: string | null
+          id?: string
+        }
+        Update: {
+          accommodation_id?: string
+          created_at?: string
+          display_order?: number
+          field_name?: string
+          field_value?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accommodation_custom_fields_accommodation_id_fkey"
+            columns: ["accommodation_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_accommodations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accommodation_room_types: {
+        Row: {
+          accommodation_id: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          max_occupancy: number | null
+          rate_cents: number | null
+          rate_note: string | null
+          room_type: string
+        }
+        Insert: {
+          accommodation_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          max_occupancy?: number | null
+          rate_cents?: number | null
+          rate_note?: string | null
+          room_type: string
+        }
+        Update: {
+          accommodation_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          max_occupancy?: number | null
+          rate_cents?: number | null
+          rate_note?: string | null
+          room_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accommodation_room_types_accommodation_id_fkey"
+            columns: ["accommodation_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_accommodations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_logs: {
         Row: {
           action_type: string
@@ -2870,6 +2949,62 @@ export type Database = {
           },
           {
             foreignKeyName: "test_scores_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_accommodations: {
+        Row: {
+          address: string | null
+          booking_deadline: string | null
+          created_at: string
+          display_order: number
+          group_code: string | null
+          hotel_name: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          phone: string | null
+          tournament_id: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          booking_deadline?: string | null
+          created_at?: string
+          display_order?: number
+          group_code?: string | null
+          hotel_name: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          tournament_id: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          booking_deadline?: string | null
+          created_at?: string
+          display_order?: number
+          group_code?: string | null
+          hotel_name?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          tournament_id?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_accommodations_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"

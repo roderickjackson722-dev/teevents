@@ -218,7 +218,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
    const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);
    const [regTiers, setRegTiers] = useState<TierPublic[]>([]);
-   const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
+  const [contests, setContests] = useState<{ id: string; name: string; description: string | null; icon: string; fee_cents: number }[]>([]);
+  const [accommodations, setAccommodations] = useState<Array<{
+    id: string; hotel_name: string; address: string | null; phone: string | null; website_url: string | null;
+    group_code: string | null; booking_deadline: string | null; notes: string | null; display_order: number;
+    accommodation_room_types: Array<{ id: string; room_type: string; rate_cents: number | null; rate_note: string | null; max_occupancy: number | null; display_order: number }>;
+    accommodation_custom_fields: Array<{ id: string; field_name: string; field_value: string | null; display_order: number }>;
+  }>>([]);
    const [loading, setLoading] = useState(true);
    const [notFound, setNotFound] = useState(false);
    const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
@@ -319,7 +325,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -331,6 +337,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
+          (supabase as any).from("tournament_accommodations").select("id, hotel_name, address, phone, website_url, group_code, booking_deadline, notes, display_order, accommodation_room_types(id, room_type, rate_cents, rate_note, max_occupancy, display_order, is_active), accommodation_custom_fields(id, field_name, field_value, display_order)").eq("tournament_id", t.id).eq("is_active", true).order("display_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
@@ -341,6 +348,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setRegFields((fieldsRes.data as RegFieldPublic[]) || []);
         setContests((contestsRes.data as any[]) || []);
         setSponsorshipTiers((sponsorshipTiersRes.data as any[]) || []);
+        setAccommodations(((accommodationsRes as any)?.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
@@ -621,6 +629,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     travel: !!tournament.location,
     schedule: !!tournament.schedule_info,
     about_organizer: ((tournament as any).show_org_tab ?? true) && hasOrgContent,
+    lodging: accommodations.length > 0,
   };
 
   const isTabVisible = (key: PublicTabKey) => tabVisibility[key] && tabHasData[key];
@@ -637,6 +646,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     travel: "#location",
     schedule: "#schedule",
     about_organizer: "#about-organizer",
+    lodging: "#lodging",
   };
   const tabLabelByKey: Record<PublicTabKey, string> = {
     leaderboard: "Leaderboard",
@@ -650,6 +660,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     travel: "Location",
     schedule: "Event Agenda",
     about_organizer: "About the Organizer",
+    lodging: "Lodging",
   };
 
   // Build nav links: Home + Registration always; optional tabs in organizer order; Contact last.
@@ -1886,6 +1897,65 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     </div>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ===== LODGING ===== */}
+      {isTabVisible("lodging") && (
+        <section id="lodging" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-4xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>LODGING ACCOMMODATIONS</h2>
+              <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
+              <div className="space-y-6">
+                {accommodations.map((h) => {
+                  const rooms = (h.accommodation_room_types || []).slice().sort((a, b) => a.display_order - b.display_order);
+                  const fields = (h.accommodation_custom_fields || []).slice().sort((a, b) => a.display_order - b.display_order);
+                  return (
+                    <div key={h.id} className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                      <h3 className="text-xl font-display font-bold mb-2" style={{ color: primary }}>{h.hotel_name}</h3>
+                      {h.address && <div className="text-sm text-muted-foreground mb-1">{h.address}</div>}
+                      <div className="text-sm mb-4 flex flex-wrap gap-x-4 gap-y-1" style={{ color: "#333" }}>
+                        {h.phone && <span>📞 <a href={`tel:${h.phone}`} className="underline">{h.phone}</a></span>}
+                        {h.website_url && <span>🌐 <a href={h.website_url} target="_blank" rel="noopener noreferrer" className="underline">Website</a></span>}
+                      </div>
+                      {rooms.length > 0 && (
+                        <div className="mb-3">
+                          <div className="text-sm font-semibold mb-1" style={{ color: "#1a1a1a" }}>Room Rates:</div>
+                          <ul className="text-sm list-disc pl-5 space-y-0.5" style={{ color: "#333" }}>
+                            {rooms.map((r) => (
+                              <li key={r.id}>
+                                {r.room_type}
+                                {r.rate_cents != null && `: $${(r.rate_cents / 100).toFixed(2)}`}
+                                {r.rate_note ? ` ${r.rate_note}` : (r.rate_cents != null ? " / night" : "")}
+                                {r.max_occupancy ? ` (sleeps ${r.max_occupancy})` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {(h.group_code || h.booking_deadline) && (
+                        <div className="text-sm mb-3 space-y-0.5" style={{ color: "#333" }}>
+                          {h.group_code && <div><span className="font-semibold">Group Code:</span> {h.group_code}</div>}
+                          {h.booking_deadline && <div><span className="font-semibold">Booking Deadline:</span> {new Date(h.booking_deadline).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</div>}
+                        </div>
+                      )}
+                      {h.notes && (
+                        <div className="text-sm mb-3 whitespace-pre-wrap" style={{ color: "#333" }}>{h.notes}</div>
+                      )}
+                      {fields.length > 0 && (
+                        <div className="text-sm space-y-0.5 pt-3 border-t" style={{ color: "#333", borderColor: "#eee" }}>
+                          {fields.map((f) => (
+                            <div key={f.id}><span className="font-semibold">{f.field_name}:</span> {f.field_value}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           </div>

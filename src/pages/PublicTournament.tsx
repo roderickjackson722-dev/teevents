@@ -597,6 +597,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const tabVisibility = normalizeVisibility(tournament.public_tabs);
   const tabOrder = normalizeOrder(tournament.public_tabs_order);
 
+  const customOrgSections: Array<{ id: string; title: string; content: string }> =
+    Array.isArray((tournament as any).custom_org_sections) ? (tournament as any).custom_org_sections : [];
   const hasOrgContent =
     !!(tournament as any).about_us ||
     !!(tournament as any).mission_statement ||
@@ -604,7 +606,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     !!(tournament as any).history ||
     !!(tournament as any).org_contact_email ||
     !!(tournament as any).org_contact_phone ||
-    !!(tournament as any).org_address;
+    !!(tournament as any).org_address ||
+    customOrgSections.some((s) => (s.title?.trim() || s.content?.trim()));
 
   const tabHasData: Record<PublicTabKey, boolean> = {
     leaderboard: leaderboard.length > 0,

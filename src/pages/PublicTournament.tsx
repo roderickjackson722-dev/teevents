@@ -1903,6 +1903,65 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {/* ===== LODGING ===== */}
+      {isTabVisible("lodging") && (
+        <section id="lodging" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-4xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>LODGING ACCOMMODATIONS</h2>
+              <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
+              <div className="space-y-6">
+                {accommodations.map((h) => {
+                  const rooms = (h.accommodation_room_types || []).slice().sort((a, b) => a.display_order - b.display_order);
+                  const fields = (h.accommodation_custom_fields || []).slice().sort((a, b) => a.display_order - b.display_order);
+                  return (
+                    <div key={h.id} className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                      <h3 className="text-xl font-display font-bold mb-2" style={{ color: primary }}>{h.hotel_name}</h3>
+                      {h.address && <div className="text-sm text-muted-foreground mb-1">{h.address}</div>}
+                      <div className="text-sm mb-4 flex flex-wrap gap-x-4 gap-y-1" style={{ color: "#333" }}>
+                        {h.phone && <span>📞 <a href={`tel:${h.phone}`} className="underline">{h.phone}</a></span>}
+                        {h.website_url && <span>🌐 <a href={h.website_url} target="_blank" rel="noopener noreferrer" className="underline">Website</a></span>}
+                      </div>
+                      {rooms.length > 0 && (
+                        <div className="mb-3">
+                          <div className="text-sm font-semibold mb-1" style={{ color: "#1a1a1a" }}>Room Rates:</div>
+                          <ul className="text-sm list-disc pl-5 space-y-0.5" style={{ color: "#333" }}>
+                            {rooms.map((r) => (
+                              <li key={r.id}>
+                                {r.room_type}
+                                {r.rate_cents != null && `: $${(r.rate_cents / 100).toFixed(2)}`}
+                                {r.rate_note ? ` ${r.rate_note}` : (r.rate_cents != null ? " / night" : "")}
+                                {r.max_occupancy ? ` (sleeps ${r.max_occupancy})` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {(h.group_code || h.booking_deadline) && (
+                        <div className="text-sm mb-3 space-y-0.5" style={{ color: "#333" }}>
+                          {h.group_code && <div><span className="font-semibold">Group Code:</span> {h.group_code}</div>}
+                          {h.booking_deadline && <div><span className="font-semibold">Booking Deadline:</span> {new Date(h.booking_deadline).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</div>}
+                        </div>
+                      )}
+                      {h.notes && (
+                        <div className="text-sm mb-3 whitespace-pre-wrap" style={{ color: "#333" }}>{h.notes}</div>
+                      )}
+                      {fields.length > 0 && (
+                        <div className="text-sm space-y-0.5 pt-3 border-t" style={{ color: "#333", borderColor: "#eee" }}>
+                          {fields.map((f) => (
+                            <div key={f.id}><span className="font-semibold">{f.field_name}:</span> {f.field_value}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>
         <div className="max-w-3xl mx-auto px-4">

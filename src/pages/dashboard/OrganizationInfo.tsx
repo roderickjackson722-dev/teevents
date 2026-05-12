@@ -59,12 +59,13 @@ const OrganizationInfo = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [customSections, setCustomSections] = useState<CustomSection[]>([]);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, about_us, mission_statement, vision_statement, history, org_contact_email, org_contact_phone, org_address, show_org_tab")
+      .select("id, title, about_us, mission_statement, vision_statement, history, org_contact_email, org_contact_phone, org_address, show_org_tab, custom_org_sections")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -86,11 +87,30 @@ const OrganizationInfo = () => {
     setEmail(t.org_contact_email || "");
     setPhone(t.org_contact_phone || "");
     setAddress(t.org_address || "");
+    setCustomSections(Array.isArray(t.custom_org_sections) ? t.custom_org_sections : []);
   }, [selected, tournaments]);
+
+  const addCustomSection = () => {
+    setCustomSections((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), title: "", content: "" },
+    ]);
+  };
+
+  const updateCustomSection = (id: string, patch: Partial<CustomSection>) => {
+    setCustomSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  };
+
+  const removeCustomSection = (id: string) => {
+    setCustomSections((prev) => prev.filter((s) => s.id !== id));
+  };
 
   const save = async () => {
     if (demoGuard()) return;
     setSaving(true);
+    const cleanedCustom = customSections
+      .map((s) => ({ id: s.id, title: s.title.trim(), content: s.content.trim() }))
+      .filter((s) => s.title || s.content);
     const { error } = await supabase
       .from("tournaments")
       .update({
@@ -102,16 +122,18 @@ const OrganizationInfo = () => {
         org_contact_email: email.trim() || null,
         org_contact_phone: phone.trim() || null,
         org_address: address.trim() || null,
+        custom_org_sections: cleanedCustom,
       } as any)
       .eq("id", selected);
     setSaving(false);
     if (error) toast.error(error.message);
     else {
       toast.success("Organization info saved!");
+      setCustomSections(cleanedCustom);
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selected
-            ? { ...t, show_org_tab: showTab, about_us: aboutUs, mission_statement: mission, vision_statement: vision, history, org_contact_email: email, org_contact_phone: phone, org_address: address }
+            ? { ...t, show_org_tab: showTab, about_us: aboutUs, mission_statement: mission, vision_statement: vision, history, org_contact_email: email, org_contact_phone: phone, org_address: address, custom_org_sections: cleanedCustom }
             : t,
         ),
       );

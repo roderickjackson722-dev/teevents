@@ -1858,6 +1858,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "#333" }}>{(tournament as any).history}</p>
                   </div>
                 )}
+                {customOrgSections
+                  .filter((s) => (s.title?.trim() || s.content?.trim()))
+                  .map((s) => (
+                    <div key={s.id} className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                      {s.title?.trim() && (
+                        <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>{s.title}</h3>
+                      )}
+                      {s.content?.trim() && (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "#333" }}>{s.content}</p>
+                      )}
+                    </div>
+                  ))}
                 {((tournament as any).org_contact_email || (tournament as any).org_contact_phone || (tournament as any).org_address) && (
                   <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
                     <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Contact</h3>

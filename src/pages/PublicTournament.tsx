@@ -1822,6 +1822,61 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
       )}
 
+      {/* ===== ABOUT THE ORGANIZER ===== */}
+      {isTabVisible("about_organizer") && (
+        <section id="about-organizer" className="py-16" style={{ backgroundColor: "#ffffff" }}>
+          <div className="max-w-4xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>ABOUT THE ORGANIZER</h2>
+              <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
+
+              <div className="space-y-6">
+                {(tournament as any).about_us && (
+                  <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                    <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>About Us</h3>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "#333" }}>{(tournament as any).about_us}</p>
+                  </div>
+                )}
+                {(tournament as any).mission_statement && (
+                  <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                    <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Our Mission</h3>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "#333" }}>{(tournament as any).mission_statement}</p>
+                  </div>
+                )}
+                {(tournament as any).vision_statement && (
+                  <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                    <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Our Vision</h3>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "#333" }}>{(tournament as any).vision_statement}</p>
+                  </div>
+                )}
+                {(tournament as any).history && (
+                  <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                    <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Our History</h3>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "#333" }}>{(tournament as any).history}</p>
+                  </div>
+                )}
+                {((tournament as any).org_contact_email || (tournament as any).org_contact_phone || (tournament as any).org_address) && (
+                  <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
+                    <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Contact</h3>
+                    <div className="space-y-2 text-sm" style={{ color: "#333" }}>
+                      {(tournament as any).org_contact_email && (
+                        <div>Email: <a href={`mailto:${(tournament as any).org_contact_email}`} className="underline" style={{ color: primary }}>{(tournament as any).org_contact_email}</a></div>
+                      )}
+                      {(tournament as any).org_contact_phone && (
+                        <div>Phone: <a href={`tel:${(tournament as any).org_contact_phone}`} className="underline" style={{ color: primary }}>{(tournament as any).org_contact_phone}</a></div>
+                      )}
+                      {(tournament as any).org_address && (
+                        <div>Address: {(tournament as any).org_address}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>
         <div className="max-w-3xl mx-auto px-4">

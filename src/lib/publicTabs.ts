@@ -12,7 +12,8 @@ export type PublicTabKey =
   | "contests"
   | "travel"
   | "schedule"
-  | "about_organizer";
+  | "about_organizer"
+  | "lodging";
 
 export interface PublicTabMeta {
   key: PublicTabKey;

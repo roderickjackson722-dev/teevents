@@ -50,9 +50,9 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Pricing",
         rows: [
-          { feature: "Platform Fee", competitor: "3.5% + $1.79/ticket", teevents: "5%", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Platform Fee", competitor: "3.7% + $1.79/ticket", teevents: "5%", cStatus: "warn", tvStatus: "yes" },
           { feature: "Payment Processing Fee", competitor: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", cStatus: "warn", tvStatus: "warn" },
-          { feature: "Total on $100 Registration", competitor: "~$8.49+", teevents: "$8.20", cStatus: "no", tvStatus: "yes" },
+          { feature: "Total on $100 Registration", competitor: "~$8.69+", teevents: "$8.20", cStatus: "no", tvStatus: "yes" },
           { feature: "Monthly Subscription", competitor: "No (per-event fees)", teevents: "No", cStatus: "yes", tvStatus: "yes" },
           { feature: "Pass Fees to Golfers", competitor: "Not transparent", teevents: "Yes (toggle on/off)", cStatus: "warn", tvStatus: "yes" },
         ],

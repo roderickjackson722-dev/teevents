@@ -181,8 +181,8 @@ const SampleDashboard = () => {
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/sample-organizer")}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Demo
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Home
             </Button>
             <div className="hidden sm:block">
               <h1 className="text-sm font-bold text-foreground">{t.name}</h1>

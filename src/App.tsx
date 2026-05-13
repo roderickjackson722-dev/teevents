@@ -199,7 +199,8 @@ const App = () => (
            <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />
            <Route path="/pricing" element={<Navigate to="/plans" replace />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
-           <Route path="/sample-organizer" element={<SampleOrganizer />} />
+           <Route path="/sample-organizer" element={<SampleDashboard />} />
+           <Route path="/sample-organizer-public" element={<SampleOrganizer />} />
            <Route path="/sample-dashboard" element={<SampleDashboard />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />

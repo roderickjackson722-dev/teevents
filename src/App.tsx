@@ -223,6 +223,7 @@ const App = () => (
           <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
            <Route path="/help/understanding-payout-timing" element={<UnderstandingPayoutTiming />} />
            <Route path="/help/finding-stripe-payouts" element={<FindingStripePayouts />} />
+           <Route path="/compare" element={<Compare />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />

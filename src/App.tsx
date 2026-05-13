@@ -112,6 +112,9 @@ import TripNew from "./pages/trips/TripNew";
 import TripDetail from "./pages/trips/TripDetail";
 import PublicTrip from "./pages/trips/PublicTrip";
 import PlayerHub from "./pages/PlayerHub";
+import GolfTournamentSoftware from "./pages/seo/GolfTournamentSoftware";
+import CharityGolfTournamentPlanning from "./pages/seo/CharityGolfTournamentPlanning";
+import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
 
 const queryClient = new QueryClient();
 
@@ -232,6 +235,9 @@ const App = () => (
              <Route path="/trips/new" element={<TripNew />} />
              <Route path="/trips/public/:token" element={<PublicTrip />} />
              <Route path="/trips/:id" element={<TripDetail />} />
+             <Route path="/golf-tournament-software" element={<GolfTournamentSoftware />} />
+             <Route path="/charity-golf-tournament-planning" element={<CharityGolfTournamentPlanning />} />
+             <Route path="/golf-fundraiser-management" element={<GolfFundraiserManagement />} />
            <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

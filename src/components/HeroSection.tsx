@@ -25,7 +25,7 @@ const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight"
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight break-words"
         >
           {title}
         </motion.h1>

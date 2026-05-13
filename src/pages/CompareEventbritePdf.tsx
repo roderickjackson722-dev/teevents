@@ -50,7 +50,7 @@ const CompareEventbritePdf = () => {
 
         <div class="bottom-line">
           <h2>The Bottom Line</h2>
-          <p>Eventbrite charges <strong>~8.5% total fees</strong> on a $100 registration. TeeVents charges a <strong>5% platform fee + 2.9% + $0.30 Stripe processing = $8.20 on $100</strong>. Simple, transparent, and predictable.</p>
+          <p>Eventbrite charges <strong>~8.7% total fees</strong> on a $100 registration. TeeVents charges a <strong>5% platform fee + 2.9% + $0.30 Stripe processing = $8.20 on $100</strong>. Simple, transparent, and predictable.</p>
           <p class="save">5% platform fee + golf-specific features Eventbrite can't match</p>
         </div>
 
@@ -66,9 +66,9 @@ const CompareEventbritePdf = () => {
             <tr><td>Volunteer Check-in</td><td class="no">✗ Not available</td><td class="yes">✓ QR code + scheduling</td></tr>
 
             <tr class="cat"><td colspan="3">Pricing</td></tr>
-            <tr><td>Platform Fee</td><td class="warn">3.5% + $1.79/ticket</td><td class="yes">5%</td></tr>
+            <tr><td>Platform Fee</td><td class="warn">3.7% + $1.79/ticket</td><td class="yes">5%</td></tr>
             <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="warn">2.9% + $0.30 (Stripe)</td></tr>
-            <tr><td>Total on $100</td><td class="no">~$8.49</td><td class="yes">$8.20</td></tr>
+            <tr><td>Total on $100</td><td class="no">~$8.69</td><td class="yes">$8.20</td></tr>
 
             <tr class="cat"><td colspan="3">Payouts</td></tr>
             <tr><td>Payout Speed</td><td class="no">Holds funds until after event</td><td class="yes">Automatic split at checkout</td></tr>
@@ -84,9 +84,9 @@ const CompareEventbritePdf = () => {
           <div class="fee-box eb">
             <h3>Eventbrite · $100 Registration</h3>
             <ul>
-              <li>Platform: 3.5% + $1.79 = $5.29</li>
+              <li>Platform: 3.7% + $1.79 = $5.49</li>
               <li>Processing: 2.9% + $0.30 = $3.20</li>
-              <li class="total">Total: $8.49 (8.5%)</li>
+              <li class="total">Total: $8.69 (8.7%)</li>
             </ul>
           </div>
           <div class="fee-box tv">

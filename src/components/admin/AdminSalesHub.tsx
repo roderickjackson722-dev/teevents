@@ -374,7 +374,7 @@ KEY DIFFERENTIATOR #1: GOLF-SPECIFIC FEATURES (45 seconds)
 "With Eventbrite, you don't get live leaderboards, hole sponsor management, or volunteer check-in. With TeeVents, all of that is built in. Your golfers scan a QR code to enter scores, your sponsors get a branded portal, and your volunteers check in with their phone."
 
 KEY DIFFERENTIATOR #2: PRICING TRANSPARENCY (45 seconds)
-"Let's talk fees. On a $100 registration, Eventbrite charges about $8.49 — that's 3.5% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges a 5% platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost on $100, but on higher registrations we stay competitive. Plus you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
+"Let's talk fees. On a $100 registration, Eventbrite charges about $8.69 — that's 3.7% + $1.79 platform fee PLUS 2.9% + $0.30 processing fee. TeeVents charges a 5% platform fee plus Stripe's standard 2.9% + $0.30 — that's $8.20 total. Similar cost on $100, but on higher registrations we stay competitive. Plus you get live leaderboards, sponsor management, and automatic payouts that Eventbrite simply doesn't offer."
 
 KEY DIFFERENTIATOR #3: PAYOUT SPEED (30 seconds)
 "With Eventbrite, you wait until after your event to get paid. With TeeVents, you receive automatic bi-weekly payouts. We hold 15% for 15 days as chargeback protection, then release it automatically."
@@ -483,13 +483,13 @@ const EMAIL_TEMPLATES = [
     id: "comparison-cold",
     name: "Eventbrite Comparison Cold Email",
     subject: "Eventbrite vs. TeeVents – Which one saves you money?",
-    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.49 | TeeVents $8.20\n• Payouts: Eventbrite waits until after event | TeeVents bi-weekly\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.69 | TeeVents $8.20\n• Payouts: Eventbrite waits until after event | TeeVents bi-weekly\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
   },
   {
     id: "fee-breakdown",
     name: "Fee Breakdown Follow-up",
     subject: "Where your registration fees are actually going",
-    body: `Hi [Name],\n\nI wanted to follow up with a quick breakdown of what happens to your registration fees:\n\nOn a $100 registration:\n• TeeVents platform fee: 5% = $5.00\n• Stripe processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.20\n• You keep: $91.80 (with option to pass fees to golfers)\n\nCompare that to Eventbrite:\n• Platform fee: 3.5% + $1.79 = $5.29\n• Processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.49\n\nPlus, TeeVents includes live leaderboards, sponsor management, and QR check-in — features you'd need separate tools for with Eventbrite.\n\nWant to see it in action? Book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+    body: `Hi [Name],\n\nI wanted to follow up with a quick breakdown of what happens to your registration fees:\n\nOn a $100 registration:\n• TeeVents platform fee: 5% = $5.00\n• Stripe processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.20\n• You keep: $91.80 (with option to pass fees to golfers)\n\nCompare that to Eventbrite:\n• Platform fee: 3.7% + $1.79 = $5.49\n• Processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.69\n\nPlus, TeeVents includes live leaderboards, sponsor management, and QR check-in — features you'd need separate tools for with Eventbrite.\n\nWant to see it in action? Book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
   },
   {
     id: "feature-gap",

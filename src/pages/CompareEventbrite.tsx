@@ -38,9 +38,9 @@ const data: CompSection[] = [
   {
     category: "Pricing",
     rows: [
-      { feature: "Platform Fee", eventbrite: "3.5% + $1.79/ticket", teevents: "5%", ebStatus: "warn", tvStatus: "yes" },
+      { feature: "Platform Fee", eventbrite: "3.7% + $1.79/ticket", teevents: "5%", ebStatus: "warn", tvStatus: "yes" },
       { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", ebStatus: "warn", tvStatus: "warn" },
-      { feature: "Total on $100 Registration", eventbrite: "~$8.49+", teevents: "$8.20", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Total on $100 Registration", eventbrite: "~$8.69+", teevents: "$8.20", ebStatus: "no", tvStatus: "yes" },
       { feature: "Monthly Subscription", eventbrite: "No (per-event fees)", teevents: "No", ebStatus: "yes", tvStatus: "yes" },
       { feature: "Pass Fees to Golfers", eventbrite: "Not transparent", teevents: "Yes (toggle on/off)", ebStatus: "warn", tvStatus: "yes" },
     ],
@@ -179,9 +179,9 @@ const CompareEventbrite = () => {
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-6">
               <h3 className="text-lg font-bold text-red-700 mb-3">Eventbrite on $100 Registration</h3>
               <ul className="space-y-2 text-sm text-red-800">
-                <li>Platform fee: 3.5% + $1.79 = <strong>$5.29</strong></li>
+                <li>Platform fee: 3.7% + $1.79 = <strong>$5.49</strong></li>
                 <li>Payment processing: 2.9% + $0.30 = <strong>$3.20</strong></li>
-                <li className="border-t border-red-200 pt-2 font-bold text-base">Total: $8.49 (8.5%)</li>
+                <li className="border-t border-red-200 pt-2 font-bold text-base">Total: $8.69 (8.7%)</li>
               </ul>
             </div>
             <div className="rounded-xl border-2 p-6" style={{ borderColor: "#1a5c38", backgroundColor: "#f0f7f3" }}>

@@ -117,9 +117,25 @@ const FAQ = () => {
   return (
     <Layout>
       <SEO
-        title="FAQ | TeeVents — Frequently Asked Questions"
-        description="Get answers to common questions about TeeVents golf tournament management, payments, fees, payouts, and support."
+        title="FAQ"
+        description="Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support."
         path="/faq"
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqSections.flatMap((s) =>
+              s.items.map((i) => ({
+                "@type": "Question",
+                name: i.q,
+                acceptedAnswer: { "@type": "Answer", text: i.a },
+              }))
+            ),
+          }),
+        }}
       />
 
       <section className="bg-primary pt-24 pb-16">

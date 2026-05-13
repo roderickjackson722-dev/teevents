@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://teevents.golf/sitemap.xml
+Sitemap: https://www.teevents.golf/sitemap.xml

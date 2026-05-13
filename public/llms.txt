@@ -1,0 +1,35 @@
+# TeeVents
+
+> All-in-one golf tournament management software for charity, corporate, and nonprofit golf tournaments. Branded event sites, online registration, live scoring, sponsors, pairings, and automated payments via Stripe Connect.
+
+## Pages
+
+- [Home](/): Overview of the TeeVents platform.
+- [Plans & Pricing](/plans): Base ($0) and Pro ($399 per tournament) plans.
+- [Features](/features): Full list of platform features.
+- [Services](/services): White-glove tournament consulting and management services.
+- [About](/about): About TeeVents and the team.
+- [Nonprofits](/nonprofits): Tools for 501(c)(3) charity golf tournaments.
+- [Contact](/contact): How to reach the TeeVents team.
+- [FAQ](/faq): Frequently asked questions about pricing, payouts, and support.
+- [Book a Demo](/book): Schedule a 30-minute live demo.
+- [Get Started](/get-started): Create an organizer account.
+- [Reviews](/reviews): Customer reviews and testimonials.
+
+## SEO Landing Pages
+
+- [Golf Tournament Management Software](/golf-tournament-software): Primary product overview.
+- [Charity Golf Tournament Planning](/charity-golf-tournament-planning): For nonprofit fundraisers.
+- [Golf Fundraiser Management](/golf-fundraiser-management): Donation and revenue tools.
+- [Eventbrite vs TeeVents](/compare/eventbrite-vs-teevents): Platform comparison.
+
+## Public Tournaments
+
+- [Find Tournaments](/tournaments/search): Search public tournaments.
+- [Events](/events): Browse upcoming tournaments.
+
+## Optional
+
+- [Help Center](/help): Documentation and guides.
+- [Privacy Policy](/privacy-policy)
+- [Terms of Service](/terms-of-service)

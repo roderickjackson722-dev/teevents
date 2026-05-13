@@ -14,9 +14,13 @@ const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min
     <section
       className={`relative ${height} flex items-center justify-center overflow-hidden py-12 md:py-0`}
     >
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+      <img
+        src={backgroundImage}
+        alt=""
+        aria-hidden="true"
+        fetchPriority="high"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-overlay-dark" />
 

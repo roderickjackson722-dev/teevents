@@ -147,7 +147,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </Link>
               )}
             </header>
-            <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto">
+            <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto dashboard-scroll min-w-0">
               {children}
             </main>
           </div>

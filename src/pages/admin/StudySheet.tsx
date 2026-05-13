@@ -175,7 +175,7 @@ const StudySheet = () => {
               ["1. Golfer registers", "Pays via Stripe Checkout (card, Apple Pay, Google Pay, Cash App Pay)"],
               ["2. Stripe processes", "Charges golfer's card; deducts 2.9% + $0.30 processing fee"],
               ["3. Funds split", "5% application fee → TeeVents; remainder → organizer's connected Stripe account"],
-              ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (1-3 days)"],
+              ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (3-7 business days)"],
             ]} />
             <p className="mt-3"><strong>Pass to Golfer (default):</strong> Golfer sees registration + 5% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
             <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 5% and Stripe processing fees.</p>
@@ -184,7 +184,7 @@ const StudySheet = () => {
           <Section id="payouts" num={5} title="Payout Methods">
             <SimpleTable headers={["Feature", "Stripe Connect", "PayPal", "Check"]} rows={[
               ["Setup Time", "2-3 min", "1 min", "Enter address"],
-              ["Payout Speed", "1-3 days", "5-7 days", "Upon request"],
+              ["Payout Speed", "3-7 business days", "5-7 days", "Upon request"],
               ["Automatic", "✅ Bi-weekly", "❌ Manual", "❌ Manual"],
               ["Additional Fee", "None", "1% (min $0.50)", "None"],
               ["Default Method", "Recommended", "Backup", "Default (escrow)"],
@@ -398,7 +398,7 @@ const StudySheet = () => {
               ["Stripe Processing Fee", "2.9% + $0.30"],
               ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
               ["Minimum Payout", "$25"],
-              ["Payout Speed (Stripe)", "1-3 business days"],
+              ["Payout Speed (Stripe)", "3-7 business days"],
               ["Payout Speed (PayPal)", "5-7 business days"],
               ["Payout Speed (Check)", "Upon request (mailing time)"],
               ["Custom URL Edits", "3 max per tournament"],
@@ -595,7 +595,7 @@ function buildPdfHtml(): string {
         ["1. Golfer registers", "Pays via Stripe Checkout (card, Apple Pay, Google Pay, Cash App Pay)"],
         ["2. Stripe processes", "Charges golfer's card; deducts 2.9% + $0.30 processing fee"],
         ["3. Funds split", "5% application fee → TeeVents; remainder → organizer's connected Stripe account"],
-        ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (1-3 days)"],
+        ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (3-7 business days)"],
       ])}
       <p><strong>Pass to Golfer (default):</strong> Golfer sees registration + 5% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
       <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 5% and Stripe processing fees.</p>
@@ -604,7 +604,7 @@ function buildPdfHtml(): string {
     <section><h2>5. Payout Methods</h2>
       ${t(["Feature", "Stripe Connect", "PayPal", "Check"], [
         ["Setup Time", "2-3 min", "1 min", "Enter address"],
-        ["Payout Speed", "1-3 days", "5-7 days", "Upon request"],
+        ["Payout Speed", "3-7 business days", "5-7 days", "Upon request"],
         ["Automatic", "✅ Bi-weekly", "❌ Manual", "❌ Manual"],
         ["Additional Fee", "None", "1% (min $0.50)", "None"],
         ["Default Method", "Recommended", "Backup", "Default (escrow)"],
@@ -803,7 +803,7 @@ function buildPdfHtml(): string {
         ["Stripe Processing Fee", "2.9% + $0.30"],
         ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
         ["Minimum Payout", "$25"],
-        ["Payout Speed (Stripe)", "1-3 business days"],
+        ["Payout Speed (Stripe)", "3-7 business days"],
         ["Payout Speed (PayPal)", "5-7 business days"],
         ["Payout Speed (Check)", "Upon request (mailing time)"],
         ["Custom URL Edits", "3 max per tournament"],

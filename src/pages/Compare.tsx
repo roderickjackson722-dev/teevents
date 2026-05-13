@@ -131,7 +131,7 @@ const COMPARISONS: Comparison[] = [
         category: "Payouts",
         rows: [
           { feature: "Who Holds Funds", competitor: "Givebutter holds & disburses", teevents: "Stripe holds — TeeVents never touches", cStatus: "no", tvStatus: "yes" },
-          { feature: "Payout Speed", competitor: "Scheduled disbursements", teevents: "Automatic, 1–3 business days", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Payout Speed", competitor: "Scheduled disbursements", teevents: "Automatic, 3-7 business days", cStatus: "warn", tvStatus: "yes" },
         ],
       },
       {

@@ -196,10 +196,6 @@ const CompareEventbrite = () => {
               </p>
             </div>
           </motion.div>
-
-          <p className="text-center text-xs text-muted-foreground mt-8">
-            Sales materials available to TeeVents team in the Admin Sales Hub
-          </p>
         </div>
       </section>
 

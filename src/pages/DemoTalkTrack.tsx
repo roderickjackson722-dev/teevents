@@ -74,7 +74,7 @@ const CHARGEBACK_FAQ = [
 const COMPARISON = [
   { feature: "Setup", stripe: "2–3 minute onboarding", paypal: "Enter email address" },
   { feature: "Additional Fees", stripe: "None", paypal: "1% or $0.50 per payout (whichever is greater)" },
-  { feature: "Payout Speed", stripe: "1–3 business days", paypal: "1–5 business days" },
+  { feature: "Payout Speed", stripe: "3-7 business days", paypal: "1–5 business days" },
   { feature: "Auto Payouts", stripe: "Yes (bi-weekly)", paypal: "Manual only" },
   { feature: "Dashboard", stripe: "Embedded in TeeVents", paypal: "PayPal website" },
 ];
@@ -310,7 +310,7 @@ export default function DemoTalkTrack() {
                   <CardContent className="text-sm text-muted-foreground space-y-1">
                     <p>• Runs every other Monday at 9 AM</p>
                     <p>• Minimum balance: $25</p>
-                    <p>• Funds arrive in 1–3 business days</p>
+                    <p>• Funds arrive in 3-7 business days</p>
                     <p>• No action required from organizer</p>
                   </CardContent>
                 </Card>

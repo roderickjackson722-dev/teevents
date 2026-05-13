@@ -246,7 +246,7 @@ function StudySheetTab() {
             <FeatureBlock title="2.1 Tournament Creation" items={["Set registration fee ($1–$10,000)", "Choose fee model: Pass to Golfer or Absorb Fees", "Set event date, location, max players", "Publish/unpublish, customize site"]} />
             <FeatureBlock title="2.2 Registration" items={["Real-time registrations", "Edit player details, manual registration", "CSV export, bulk emails, promo codes, waitlist"]} />
             <FeatureBlock title="2.3 Finances" items={["Balance cards, transaction history, payout history", "CSV exports: transactions, payouts, summary, tax"]} />
-            <div><h3 className="font-semibold text-foreground mb-2">2.4 Payout Methods</h3><SimpleTable headers={["Feature", "Stripe Connect", "PayPal"]} rows={[["Setup", "2-3 min", "1 min"], ["Speed", "1-3 days", "5-7 days"], ["Auto payouts", "✅ Bi-weekly", "❌ Manual"], ["Min withdrawal", "$25", "$25"]]} /></div>
+            <div><h3 className="font-semibold text-foreground mb-2">2.4 Payout Methods</h3><SimpleTable headers={["Feature", "Stripe Connect", "PayPal"]} rows={[["Setup", "2-3 min", "1 min"], ["Speed", "3-7 business days", "5-7 days"], ["Auto payouts", "✅ Bi-weekly", "❌ Manual"], ["Min withdrawal", "$25", "$25"]]} /></div>
             <FeatureBlock title="2.5 More Features" items={["Volunteers, Sponsors, Leaderboard, Auction/Raffle", "Printables, Photo Gallery, Surveys, Budget, Donations", "Planning Checklist, Site Builder, Custom Domains"]} />
           </div>
         </section>

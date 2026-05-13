@@ -165,7 +165,7 @@ const sections: Section[] = [
     intro: "\"Wrap-up is just as automated as setup.\"",
     points: [
       "Finances: full transaction history, paid/unpaid status, budget vs. actual by category.",
-      "Payouts: Stripe Connect (1-3 days, automatic), PayPal, or check on request.",
+      "Payouts: Stripe Connect (3-7 business days, automatic), PayPal, or check on request.",
       "Post-event Surveys: automated feedback with ratings and open-ended questions.",
       "Photo Gallery: upload event photos to your public site for sponsors and players.",
       "Nonprofit mode: branded tax-deductible receipts emailed automatically.",
@@ -173,7 +173,7 @@ const sections: Section[] = [
     table: {
       headers: ["Payout Method", "Speed", "Best For"],
       rows: [
-        ["Stripe Connect", "1-3 business days", "Most organizers (recommended)"],
+        ["Stripe Connect", "3-7 business days", "Most organizers (recommended)"],
         ["PayPal Manual", "5-7 business days", "No Stripe account"],
         ["Check on Request", "Upon request", "Need paper checks"],
       ],

@@ -349,7 +349,7 @@ export default function DemoAgenda() {
                 <TableBody>
                   {[
                     ["Setup Time", "2-3 minutes", "1 minute"],
-                    ["Payout Speed", "1-3 business days", "5-7 business days"],
+                    ["Payout Speed", "3-7 business days", "5-7 business days"],
                     ["Extra Fees", "None", "1% or $0.50"],
                     ["Automatic", "✅ Bi-weekly", "Manual only"],
                   ].map(([feat, stripe, pp], i) => (

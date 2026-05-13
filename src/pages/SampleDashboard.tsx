@@ -126,17 +126,50 @@ const PlanBadge = ({ plan }: { plan: PlanTier }) => {
 const SampleDashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [upgradeModal, setUpgradeModal] = useState<PlanTier | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleTabClick = (key: string) => {
     setActiveTab(key);
+    setMobileNavOpen(false);
   };
+
+  const activeItem = allItems.find((i) => i.key === activeTab);
+
+  const SidebarNav = () => (
+    <nav className="flex-1 p-2 space-y-3 overflow-y-auto">
+      {sidebarCategories.map((cat) => (
+        <div key={cat.label}>
+          <div className={`border-l-2 ${cat.color} pl-2 mb-1`}>
+            <p className="text-[9px] font-bold text-primary-foreground/50 tracking-wider">{cat.label}</p>
+          </div>
+          <div className="space-y-0.5">
+            {cat.items.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => handleTabClick(item.key)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs transition-colors ${
+                  activeTab === item.key
+                    ? "bg-primary-foreground/15 text-primary-foreground font-semibold"
+                    : "text-primary-foreground/70 hover:bg-primary-foreground/10"
+                }`}
+              >
+                <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="flex-1 text-left">{item.label}</span>
+                <PlanBadge plan={item.plan} />
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
 
   return (
     <div className="min-h-screen bg-background flex">
       <SEO title="Sample Dashboard | TeeVents" description="Interactive sample organizer dashboard showcasing all TeeVents features." path="/sample-dashboard" />
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-primary text-primary-foreground border-r border-primary/20 min-h-screen overflow-y-auto">
         <div className="p-4 border-b border-primary-foreground/10 flex items-center gap-2">
           <img src={logoBlack} alt="TeeVents" className="h-7 w-7 object-contain brightness-0 invert" />
@@ -145,32 +178,7 @@ const SampleDashboard = () => {
             <p className="text-[10px] text-primary-foreground/60">Demo Dashboard</p>
           </div>
         </div>
-        <nav className="flex-1 p-2 space-y-3">
-          {sidebarCategories.map((cat) => (
-            <div key={cat.label}>
-              <div className={`border-l-2 ${cat.color} pl-2 mb-1`}>
-                <p className="text-[9px] font-bold text-primary-foreground/50 tracking-wider">{cat.label}</p>
-              </div>
-              <div className="space-y-0.5">
-                {cat.items.map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => handleTabClick(item.key)}
-                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors ${
-                      activeTab === item.key
-                        ? "bg-primary-foreground/15 text-primary-foreground font-semibold"
-                        : "text-primary-foreground/70 hover:bg-primary-foreground/10"
-                    }`}
-                  >
-                    <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    <PlanBadge plan={item.plan} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
+        <SidebarNav />
         <div className="p-3 border-t border-primary-foreground/10">
           <Badge variant="outline" className="w-full justify-center text-[10px] border-primary-foreground/30 text-primary-foreground/60">
             Demo Mode — No live data
@@ -179,42 +187,39 @@ const SampleDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        <header className="border-b border-border bg-card px-3 py-2 md:px-4 md:py-3 flex items-center justify-between gap-2 sticky top-0 z-20">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Mobile Hamburger */}
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden h-9 w-9 flex-shrink-0">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72 bg-primary text-primary-foreground border-r-0 flex flex-col">
+                <SheetHeader className="p-4 border-b border-primary-foreground/10 text-left">
+                  <SheetTitle className="text-primary-foreground flex items-center gap-2 text-sm">
+                    <img src={logoBlack} alt="TeeVents" className="h-6 w-6 object-contain brightness-0 invert" />
+                    TeeVents Demo
+                  </SheetTitle>
+                </SheetHeader>
+                <SidebarNav />
+              </SheetContent>
+            </Sheet>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="hidden sm:inline-flex">
               <ArrowLeft className="h-4 w-4 mr-1" /> Back to Home
             </Button>
-            <div className="hidden sm:block">
-              <h1 className="text-sm font-bold text-foreground">{t.name}</h1>
-              <p className="text-xs text-muted-foreground">{t.date} · {t.location}</p>
+            <div className="min-w-0">
+              <h1 className="text-sm font-bold text-foreground truncate">{activeItem?.label ?? t.name}</h1>
+              <p className="text-[11px] text-muted-foreground truncate hidden sm:block">{t.date} · {t.location}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-green-100 text-green-800 border-green-200">{t.status}</Badge>
-            <Button size="sm" variant="secondary" onClick={() => navigate("/plans")}>Get Started</Button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge className="bg-green-100 text-green-800 border-green-200 hidden sm:inline-flex">{t.status}</Badge>
+            <Button size="sm" variant="secondary" onClick={() => navigate("/plans")} className="text-xs px-2 md:px-3">Get Started</Button>
           </div>
         </header>
-
-        {/* Mobile Tab Switcher */}
-        <div className="md:hidden border-b border-border bg-muted/50 overflow-x-auto">
-          <div className="flex gap-1 p-2">
-            {allItems.slice(0, 10).map((item) => (
-              <button
-                key={item.key}
-                onClick={() => handleTabClick(item.key)}
-                className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] whitespace-nowrap ${
-                  activeTab === item.key
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <item.icon className="h-3 w-3" />
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <main className="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto space-y-6">
           {activeTab === "home" && <HomeTab />}

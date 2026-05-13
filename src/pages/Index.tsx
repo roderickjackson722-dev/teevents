@@ -77,7 +77,33 @@ const fadeUp = {
 const Index = () => {
   return (
     <Layout>
-      <SEO title="Home" description="Golf tournament management software for planning, registration, sponsors, live scoring, and payments. Run charity, corporate, and nonprofit golf tournaments from one dashboard." path="/" />
+      <SEO title="Home" description="All-in-one golf tournament management software — registration, payments, live scoring, sponsors, and pairings from one dashboard." path="/" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "TeeVents",
+              url: "https://www.teevents.golf/",
+              logo: "https://www.teevents.golf/og-image.png",
+              sameAs: ["https://www.teevents.golf/"],
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "TeeVents",
+              url: "https://www.teevents.golf/",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://www.teevents.golf/tournaments/search?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ]),
+        }}
+      />
       {/* Hero */}
       <HeroSection backgroundImage={heroGolf} title="" height="min-h-screen py-20 md:py-0 md:h-screen">
         <motion.div

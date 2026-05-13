@@ -18,6 +18,7 @@
   <url><loc>https://www.teevents.golf/book</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.teevents.golf/help</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://www.teevents.golf/compare/eventbrite-vs-teevents</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.teevents.golf/platform</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.teevents.golf/privacy-policy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://www.teevents.golf/terms-of-service</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

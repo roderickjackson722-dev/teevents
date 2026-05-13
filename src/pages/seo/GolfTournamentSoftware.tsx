@@ -38,7 +38,7 @@ export default function GolfTournamentSoftware() {
     <Layout>
       <SEO
         title="Golf Tournament Management Software"
-        description="The all-in-one golf tournament management software trusted by charities, corporates, and nonprofits. Online registration, live scoring, sponsorships, and payments."
+        description="All-in-one golf tournament management software for charities and corporates — registration, live scoring, sponsorships, and payments."
         path="/golf-tournament-software"
       />
       {/* JSON-LD FAQPage */}

@@ -96,6 +96,7 @@ import HowPaymentsWork from "./pages/help/HowPaymentsWork";
 import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
 import FindingStripePayouts from "./pages/help/FindingStripePayouts";
 import CompareEventbrite from "./pages/CompareEventbrite";
+import Compare from "./pages/Compare";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";

@@ -42,6 +42,7 @@ import { DesignPreview } from "@/components/site-builder/DesignPreview";
 import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
+import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -984,6 +985,10 @@ const SiteBuilder = () => {
                   ))}
                 </div>
               </div>
+
+              {id && (
+                <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+              )}
             </>
           )}
 

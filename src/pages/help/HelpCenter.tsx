@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet } from "lucide-react";
+import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet, ImageUp } from "lucide-react";
 
 const helpPages = [
   { title: "How Payments Work", description: "Understand the full payment flow — how the 5% fee works, Stripe Connect, and when you get paid.", icon: DollarSign, path: "/help/how-payments-work" },
@@ -14,6 +14,7 @@ const helpPages = [
   { title: "Payment Settings", description: "Choose whether golfers or your organization covers the platform fee.", icon: Settings, path: "/help/payment-settings" },
   { title: "Refunds & Chargebacks", description: "How refund requests, chargebacks, and dispute resolution work.", icon: RotateCcw, path: "/help/refunds-chargebacks" },
   { title: "Custom Domain Setup", description: "Use your own domain name for your tournament page.", icon: Globe, path: "/help/custom-domain" },
+  { title: "Troubleshooting Image Uploads", description: 'Fix common upload errors including the Windows "Protected Storage is empty" file picker message.', icon: ImageUp, path: "/help/uploading-images" },
 ];
 
 const HelpCenter = () => (

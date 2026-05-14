@@ -95,6 +95,7 @@ import CustomDomain from "./pages/help/CustomDomain";
 import HowPaymentsWork from "./pages/help/HowPaymentsWork";
 import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
 import FindingStripePayouts from "./pages/help/FindingStripePayouts";
+import UploadingImages from "./pages/help/UploadingImages";
 import CompareEventbrite from "./pages/CompareEventbrite";
 import Compare from "./pages/Compare";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
@@ -224,6 +225,7 @@ const App = () => (
           <Route path="/help/how-payments-work" element={<HowPaymentsWork />} />
            <Route path="/help/understanding-payout-timing" element={<UnderstandingPayoutTiming />} />
            <Route path="/help/finding-stripe-payouts" element={<FindingStripePayouts />} />
+          <Route path="/help/uploading-images" element={<UploadingImages />} />
            <Route path="/compare" element={<Compare />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />

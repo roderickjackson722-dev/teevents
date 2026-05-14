@@ -758,10 +758,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         style={{ background: style.navBg, borderColor: "rgba(255,255,255,0.1)" }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between h-14 px-4">
-          {/* Logo in nav for modern template */}
-          {tpl === "modern" && tournament.site_logo_url && (
-            <img src={tournament.site_logo_url} alt="" className="h-10 w-auto object-contain mr-6" />
-          )}
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
@@ -1212,9 +1208,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     ))}
                   </div>
 
-                  <p className="text-center text-xs mt-6" style={{ color: "#aaa" }}>
-                    5% platform fee + Stripe processing fee added at checkout.
-                  </p>
                 </>
               ) : (
                 <div className="max-w-2xl mx-auto bg-white rounded-xl border p-8 text-center" style={{ borderColor: "#e5e5e5" }}>

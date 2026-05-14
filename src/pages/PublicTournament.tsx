@@ -1581,23 +1581,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== PHOTO GALLERY ===== */}
-      {isTabVisible("gallery") && photos.length > 0 && (
-        <section id="photos" className="py-16 bg-white">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>PHOTOS</h2>
-              <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="rounded-lg overflow-hidden border" style={{ borderColor: "#e5e5e5" }}>
-                    <img src={photo.image_url} alt={photo.caption || ""} className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-300" />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      {(tournament.gallery_position || "default") === "default" && galleryNode}
 
       {/* ===== VOLUNTEER SIGNUP ===== */}
       {isTabVisible("volunteers") && volunteerRoles.length > 0 && (

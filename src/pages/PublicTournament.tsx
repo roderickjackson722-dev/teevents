@@ -844,7 +844,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           style={{ textAlign: style.heroAlign }}
         >
           {/* Logo */}
-          {showLogo && tournament.site_logo_url && tpl !== "modern" && (
+          {showLogo && tournament.site_logo_url && (
             <div className={`w-full flex mb-6 ${flexJustify[logoPos]}`}>
               <img
                 src={tournament.site_logo_url}

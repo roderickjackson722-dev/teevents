@@ -20,6 +20,8 @@ interface DesignPreviewProps {
   buttonPosition: Position;
   buttonRadius: number;
   buttonHoverEffect: HoverEffect;
+  logoOffsetX?: number;
+  logoOffsetY?: number;
 }
 
 /**

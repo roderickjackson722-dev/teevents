@@ -1777,6 +1777,8 @@ const SiteBuilder = () => {
               buttonPosition={(settings.site_button_position as Position) || "center"}
               buttonRadius={settings.site_button_radius ?? 8}
               buttonHoverEffect={(settings.site_button_hover_effect as HoverEffect) || "darken"}
+              logoOffsetX={settings.site_logo_offset_x ?? 0}
+              logoOffsetY={settings.site_logo_offset_y ?? 0}
             />
 
             {/* Preview Body */}

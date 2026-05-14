@@ -234,10 +234,13 @@ interface SiteSettings {
   site_body_font_size: number | null;
   site_button_font_size: number | null;
   site_logo_position: string | null;
+  site_logo_offset_x: number | null;
+  site_logo_offset_y: number | null;
   site_title_position: string | null;
   site_button_position: string | null;
   site_button_radius: number | null;
   site_button_hover_effect: string | null;
+  gallery_position: string | null;
 }
 
 const SiteBuilder = () => {
@@ -330,10 +333,13 @@ const SiteBuilder = () => {
         site_body_font_size: settings.site_body_font_size ?? 16,
         site_button_font_size: settings.site_button_font_size ?? 16,
         site_logo_position: settings.site_logo_position || "center",
+        site_logo_offset_x: settings.site_logo_offset_x ?? 0,
+        site_logo_offset_y: settings.site_logo_offset_y ?? 0,
         site_title_position: settings.site_title_position || "center",
         site_button_position: settings.site_button_position || "center",
         site_button_radius: settings.site_button_radius ?? 8,
         site_button_hover_effect: settings.site_button_hover_effect || "darken",
+        gallery_position: settings.gallery_position || "default",
       } as any)
       .eq("id", settings.id);
 

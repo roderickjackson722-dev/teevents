@@ -1030,7 +1030,28 @@ const SiteBuilder = () => {
               </div>
 
               {id && (
-                <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+                <>
+                  <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+
+                  <div className="pt-4 border-t border-border">
+                    <Label className="text-sm font-bold">Photo Gallery Position</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Choose where the gallery appears on your public tournament page.
+                    </p>
+                    <select
+                      value={settings.gallery_position || "default"}
+                      onChange={(e) => updateField("gallery_position" as any, e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="top">Top — right under the hero</option>
+                      <option value="after_sponsors">After Sponsors</option>
+                      <option value="after_leaderboard">After Leaderboard</option>
+                      <option value="default">Default — after Store, before Volunteers</option>
+                      <option value="after_donations">After Donation</option>
+                      <option value="bottom">Bottom — just before Contact</option>
+                    </select>
+                  </div>
+                </>
               )}
             </>
           )}

@@ -985,6 +985,10 @@ const SiteBuilder = () => {
                   ))}
                 </div>
               </div>
+
+              {id && (
+                <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+              )}
             </>
           )}
 

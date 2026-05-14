@@ -20,6 +20,8 @@ interface DesignPreviewProps {
   buttonPosition: Position;
   buttonRadius: number;
   buttonHoverEffect: HoverEffect;
+  logoOffsetX?: number;
+  logoOffsetY?: number;
 }
 
 /**
@@ -55,7 +57,14 @@ export function DesignPreview(p: DesignPreviewProps) {
         <div className={`relative z-10 h-full flex flex-col justify-center p-4 gap-2 ${POSITION_CLASS[p.titlePosition]}`} style={{ fontFamily: stack }}>
           {p.showLogo && p.logoUrl && (
             <div className={`w-full flex ${FLEX_JUSTIFY[p.logoPosition]}`}>
-              <img src={p.logoUrl} alt="" className="h-10 w-auto object-contain mb-1" />
+              <img
+                src={p.logoUrl}
+                alt=""
+                className="h-10 w-auto object-contain mb-1 transition-transform"
+                style={{
+                  transform: `translate(${(p.logoOffsetX ?? 0) * 0.45}px, ${(p.logoOffsetY ?? 0) * 0.45}px)`,
+                }}
+              />
             </div>
           )}
           <div

@@ -4311,6 +4311,7 @@ export type Database = {
           end_date: string | null
           external_link: string | null
           foursome_registration: boolean
+          gallery_position: string
           gallery_url: string | null
           golf_course_id: string | null
           handicap_allowance: number | null
@@ -4376,6 +4377,8 @@ export type Database = {
           site_hero_opacity: number
           site_hero_subtitle: string | null
           site_hero_title: string | null
+          site_logo_offset_x: number
+          site_logo_offset_y: number
           site_logo_position: string | null
           site_logo_url: string | null
           site_primary_color: string | null
@@ -4420,6 +4423,7 @@ export type Database = {
           end_date?: string | null
           external_link?: string | null
           foursome_registration?: boolean
+          gallery_position?: string
           gallery_url?: string | null
           golf_course_id?: string | null
           handicap_allowance?: number | null
@@ -4485,6 +4489,8 @@ export type Database = {
           site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
+          site_logo_offset_x?: number
+          site_logo_offset_y?: number
           site_logo_position?: string | null
           site_logo_url?: string | null
           site_primary_color?: string | null
@@ -4529,6 +4535,7 @@ export type Database = {
           end_date?: string | null
           external_link?: string | null
           foursome_registration?: boolean
+          gallery_position?: string
           gallery_url?: string | null
           golf_course_id?: string | null
           handicap_allowance?: number | null
@@ -4594,6 +4601,8 @@ export type Database = {
           site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
+          site_logo_offset_x?: number
+          site_logo_offset_y?: number
           site_logo_position?: string | null
           site_logo_url?: string | null
           site_primary_color?: string | null

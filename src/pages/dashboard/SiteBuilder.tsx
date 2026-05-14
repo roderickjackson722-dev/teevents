@@ -234,10 +234,13 @@ interface SiteSettings {
   site_body_font_size: number | null;
   site_button_font_size: number | null;
   site_logo_position: string | null;
+  site_logo_offset_x: number | null;
+  site_logo_offset_y: number | null;
   site_title_position: string | null;
   site_button_position: string | null;
   site_button_radius: number | null;
   site_button_hover_effect: string | null;
+  gallery_position: string | null;
 }
 
 const SiteBuilder = () => {
@@ -330,10 +333,13 @@ const SiteBuilder = () => {
         site_body_font_size: settings.site_body_font_size ?? 16,
         site_button_font_size: settings.site_button_font_size ?? 16,
         site_logo_position: settings.site_logo_position || "center",
+        site_logo_offset_x: settings.site_logo_offset_x ?? 0,
+        site_logo_offset_y: settings.site_logo_offset_y ?? 0,
         site_title_position: settings.site_title_position || "center",
         site_button_position: settings.site_button_position || "center",
         site_button_radius: settings.site_button_radius ?? 8,
         site_button_hover_effect: settings.site_button_hover_effect || "darken",
+        gallery_position: settings.gallery_position || "default",
       } as any)
       .eq("id", settings.id);
 
@@ -620,6 +626,43 @@ const SiteBuilder = () => {
                 <p className="text-xs text-muted-foreground mt-2">
                   Background removal runs in your browser — free, no upload to a third-party service. First run downloads a ~10 MB AI model.
                 </p>
+
+                {/* Logo Nudge sliders */}
+                {settings.site_logo_url && (
+                  <div className="mt-4 grid sm:grid-cols-2 gap-4 p-3 rounded-md border border-border bg-muted/30">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Logo nudge — horizontal</Label>
+                        <span className="text-xs font-mono text-muted-foreground">{settings.site_logo_offset_x ?? 0}px</span>
+                      </div>
+                      <Slider
+                        value={[settings.site_logo_offset_x ?? 0]}
+                        min={-200}
+                        max={200}
+                        step={1}
+                        onValueChange={(v) => updateField("site_logo_offset_x" as any, v[0])}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Logo nudge — vertical</Label>
+                        <span className="text-xs font-mono text-muted-foreground">{settings.site_logo_offset_y ?? 0}px</span>
+                      </div>
+                      <Slider
+                        value={[settings.site_logo_offset_y ?? 0]}
+                        min={-200}
+                        max={200}
+                        step={1}
+                        onValueChange={(v) => updateField("site_logo_offset_y" as any, v[0])}
+                        className="mt-2"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground sm:col-span-2 -mt-1">
+                      Use these sliders to move the logo away from the title on the public page. 0 = original placement.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Hero Image Upload */}
@@ -987,7 +1030,28 @@ const SiteBuilder = () => {
               </div>
 
               {id && (
-                <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+                <>
+                  <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+
+                  <div className="pt-4 border-t border-border">
+                    <Label className="text-sm font-bold">Photo Gallery Position</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Choose where the gallery appears on your public tournament page.
+                    </p>
+                    <select
+                      value={settings.gallery_position || "default"}
+                      onChange={(e) => updateField("gallery_position" as any, e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="top">Top — right under the hero</option>
+                      <option value="after_sponsors">After Sponsors</option>
+                      <option value="after_leaderboard">After Leaderboard</option>
+                      <option value="default">Default — after Store, before Volunteers</option>
+                      <option value="after_donations">After Donation</option>
+                      <option value="bottom">Bottom — just before Contact</option>
+                    </select>
+                  </div>
+                </>
               )}
             </>
           )}

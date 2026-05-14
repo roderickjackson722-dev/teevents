@@ -45,10 +45,13 @@ interface TournamentSite {
   site_body_font_size?: number | null;
   site_button_font_size?: number | null;
   site_logo_position?: string | null;
+  site_logo_offset_x?: number | null;
+  site_logo_offset_y?: number | null;
   site_title_position?: string | null;
   site_button_position?: string | null;
   site_button_radius?: number | null;
   site_button_hover_effect?: string | null;
+  gallery_position?: string | null;
   // Organizer-controlled public page tabs (visibility + order)
   public_tabs?: Record<string, boolean> | null;
   public_tabs_order?: string[] | null;
@@ -695,6 +698,33 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     tournament.site_button_hover_effect === "none" ? "none" :
     "brightness(0.88)";
 
+  // Photo gallery — rendered in the position the organizer picks (default: between Store and Volunteers)
+  const galleryPosition = tournament.gallery_position || "default";
+  const galleryNode = (isTabVisible("gallery") && photos.length > 0) ? (
+    <section id="photos" className="py-16 bg-white">
+      <div className="max-w-5xl mx-auto px-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {photos.map((photo) => (
+              <figure key={photo.id} className="rounded-lg overflow-hidden border bg-gray-50 flex flex-col" style={{ borderColor: "#e5e5e5" }}>
+                <img
+                  src={photo.image_url}
+                  alt={photo.caption || ""}
+                  loading="lazy"
+                  className="w-full max-h-80 object-contain hover:scale-[1.02] transition-transform duration-300"
+                />
+                {photo.caption && (
+                  <figcaption className="px-3 py-2 text-xs text-center" style={{ color: "#666" }}>{photo.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  ) : null;
+
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}
@@ -820,6 +850,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 src={tournament.site_logo_url}
                 alt={heroTitle}
                 className={`object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`}
+                style={{
+                  transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)`,
+                }}
               />
             </div>
           )}
@@ -1024,6 +1057,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </motion.div>
       </section>
 
+      {galleryPosition === "top" && galleryNode}
+
       {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
       {isTabVisible("sponsors") && sponsors.length > 0 && (
         <section id="sponsors" className="py-16 bg-white">
@@ -1211,6 +1246,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {galleryPosition === "after_sponsors" && galleryNode}
+
       {/* ===== EVENT DAY CONTESTS ===== */}
       {isTabVisible("contests") && contests.length > 0 && (
       <section id="contests" className="py-16 bg-white">
@@ -1368,6 +1405,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
         );
       })()}
+
+      {galleryPosition === "after_leaderboard" && galleryNode}
 
       {/* ===== REGISTRATION ===== */}
       {tournament.registration_open && !tournament.registration_url && (
@@ -1575,23 +1614,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== PHOTO GALLERY ===== */}
-      {isTabVisible("gallery") && photos.length > 0 && (
-        <section id="photos" className="py-16 bg-white">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>PHOTOS</h2>
-              <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="rounded-lg overflow-hidden border" style={{ borderColor: "#e5e5e5" }}>
-                    <img src={photo.image_url} alt={photo.caption || ""} className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-300" />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      {(tournament.gallery_position || "default") === "default" && galleryNode}
 
       {/* ===== VOLUNTEER SIGNUP ===== */}
       {isTabVisible("volunteers") && volunteerRoles.length > 0 && (
@@ -1836,6 +1859,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
       )}
 
+      {galleryPosition === "after_donations" && galleryNode}
+
       {/* ===== ABOUT THE ORGANIZER ===== */}
       {isTabVisible("about_organizer") && (
         <section id="about-organizer" className="py-16" style={{ backgroundColor: "#ffffff" }}>
@@ -1961,6 +1986,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </div>
         </section>
       )}
+
+      {galleryPosition === "bottom" && galleryNode}
 
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>

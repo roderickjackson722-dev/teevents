@@ -620,6 +620,43 @@ const SiteBuilder = () => {
                 <p className="text-xs text-muted-foreground mt-2">
                   Background removal runs in your browser — free, no upload to a third-party service. First run downloads a ~10 MB AI model.
                 </p>
+
+                {/* Logo Nudge sliders */}
+                {settings.site_logo_url && (
+                  <div className="mt-4 grid sm:grid-cols-2 gap-4 p-3 rounded-md border border-border bg-muted/30">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Logo nudge — horizontal</Label>
+                        <span className="text-xs font-mono text-muted-foreground">{settings.site_logo_offset_x ?? 0}px</span>
+                      </div>
+                      <Slider
+                        value={[settings.site_logo_offset_x ?? 0]}
+                        min={-200}
+                        max={200}
+                        step={1}
+                        onValueChange={(v) => updateField("site_logo_offset_x" as any, v[0])}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Logo nudge — vertical</Label>
+                        <span className="text-xs font-mono text-muted-foreground">{settings.site_logo_offset_y ?? 0}px</span>
+                      </div>
+                      <Slider
+                        value={[settings.site_logo_offset_y ?? 0]}
+                        min={-200}
+                        max={200}
+                        step={1}
+                        onValueChange={(v) => updateField("site_logo_offset_y" as any, v[0])}
+                        className="mt-2"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground sm:col-span-2 -mt-1">
+                      Use these sliders to move the logo away from the title on the public page. 0 = original placement.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Hero Image Upload */}

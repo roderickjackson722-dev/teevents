@@ -1057,6 +1057,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </motion.div>
       </section>
 
+      {galleryPosition === "top" && galleryNode}
+
       {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
       {isTabVisible("sponsors") && sponsors.length > 0 && (
         <section id="sponsors" className="py-16 bg-white">
@@ -1244,6 +1246,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {galleryPosition === "after_sponsors" && galleryNode}
+
       {/* ===== EVENT DAY CONTESTS ===== */}
       {isTabVisible("contests") && contests.length > 0 && (
       <section id="contests" className="py-16 bg-white">
@@ -1401,6 +1405,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
         );
       })()}
+
+      {galleryPosition === "after_leaderboard" && galleryNode}
 
       {/* ===== REGISTRATION ===== */}
       {tournament.registration_open && !tournament.registration_url && (
@@ -1853,6 +1859,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
       )}
 
+      {galleryPosition === "after_donations" && galleryNode}
+
       {/* ===== ABOUT THE ORGANIZER ===== */}
       {isTabVisible("about_organizer") && (
         <section id="about-organizer" className="py-16" style={{ backgroundColor: "#ffffff" }}>
@@ -1978,6 +1986,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </div>
         </section>
       )}
+
+      {galleryPosition === "bottom" && galleryNode}
 
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>

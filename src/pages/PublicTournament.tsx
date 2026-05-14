@@ -45,10 +45,13 @@ interface TournamentSite {
   site_body_font_size?: number | null;
   site_button_font_size?: number | null;
   site_logo_position?: string | null;
+  site_logo_offset_x?: number | null;
+  site_logo_offset_y?: number | null;
   site_title_position?: string | null;
   site_button_position?: string | null;
   site_button_radius?: number | null;
   site_button_hover_effect?: string | null;
+  gallery_position?: string | null;
   // Organizer-controlled public page tabs (visibility + order)
   public_tabs?: Record<string, boolean> | null;
   public_tabs_order?: string[] | null;

@@ -698,6 +698,33 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     tournament.site_button_hover_effect === "none" ? "none" :
     "brightness(0.88)";
 
+  // Photo gallery — rendered in the position the organizer picks (default: between Store and Volunteers)
+  const galleryPosition = tournament.gallery_position || "default";
+  const galleryNode = (isTabVisible("gallery") && photos.length > 0) ? (
+    <section id="photos" className="py-16 bg-white">
+      <div className="max-w-5xl mx-auto px-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {photos.map((photo) => (
+              <figure key={photo.id} className="rounded-lg overflow-hidden border bg-gray-50 flex flex-col" style={{ borderColor: "#e5e5e5" }}>
+                <img
+                  src={photo.image_url}
+                  alt={photo.caption || ""}
+                  loading="lazy"
+                  className="w-full max-h-80 object-contain hover:scale-[1.02] transition-transform duration-300"
+                />
+                {photo.caption && (
+                  <figcaption className="px-3 py-2 text-xs text-center" style={{ color: "#666" }}>{photo.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  ) : null;
+
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}

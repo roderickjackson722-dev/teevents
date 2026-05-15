@@ -1378,10 +1378,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="side-events" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <div className="text-center mb-10">
-                <h2 className="text-3xl font-display font-bold" style={{ color: "#1a1a1a" }}>{((tournament as any).side_events_section_title || "").trim() || "Side Events & Tickets"}</h2>
-                <p className="text-sm mt-2" style={{ color: "#666" }}>Buy tickets to dinners, parties, clinics and more.</p>
-              </div>
+              {(() => {
+                const raw = ((tournament as any).side_events_section_title ?? "Side Events & Tickets").toString();
+                const trimmed = raw.trim();
+                if (trimmed === "__hidden__") return null;
+                const title = trimmed === "" ? "Side Events & Tickets" : trimmed;
+                return (
+                  <div className="text-center mb-10">
+                    <h2 className="text-3xl font-display font-bold" style={{ color: "#1a1a1a" }}>{title}</h2>
+                    <p className="text-sm mt-2" style={{ color: "#666" }}>Buy tickets to dinners, parties, clinics and more.</p>
+                  </div>
+                );
+              })()}
 
               {sideEventSuccess && (
                 <div className="max-w-xl mx-auto mb-8 rounded-lg border p-4 text-sm" style={{ borderColor: "#10b98140", backgroundColor: "#10b98110", color: "#065f46" }}>

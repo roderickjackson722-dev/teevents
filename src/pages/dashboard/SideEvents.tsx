@@ -358,6 +358,10 @@ export default function SideEvents() {
                 <Switch checked={form.show_on_public} onCheckedChange={(v) => setForm({ ...form, show_on_public: v })} />
                 Show on public site
               </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.hide_ticket_count} onCheckedChange={(v) => setForm({ ...form, hide_ticket_count: v })} />
+                Hide ticket count
+              </label>
             </div>
           </div>
           <DialogFooter>

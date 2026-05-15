@@ -214,8 +214,120 @@ export default function CheckIn() {
               );
             })}
           </div>
+
+          <SideEventCheckIn tournamentId={selectedTournament} />
         </>
       )}
     </div>
   );
 }
+
+function SideEventCheckIn({ tournamentId }: { tournamentId: string }) {
+  const queryClient = useQueryClient();
+  const [code, setCode] = useState("");
+
+  const { data: events } = useQuery({
+    queryKey: ["se-checkin-events", tournamentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("side_events")
+        .select("id, name")
+        .eq("tournament_id", tournamentId);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tournamentId,
+  });
+
+  const { data: tickets } = useQuery({
+    queryKey: ["se-checkin-tickets", tournamentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("side_event_tickets")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .eq("payment_status", "paid")
+        .order("attendee_name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tournamentId,
+  });
+
+  const checkInById = async (id: string) => {
+    const { error } = await supabase
+      .from("side_event_tickets")
+      .update({ checked_in_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Ticket checked in");
+      queryClient.invalidateQueries({ queryKey: ["se-checkin-tickets", tournamentId] });
+    }
+  };
+
+  const checkInByCode = async () => {
+    if (!code.trim()) return;
+    const upper = code.trim().toUpperCase();
+    const match = tickets?.find((t: any) => t.ticket_code === upper);
+    if (!match) {
+      toast.error("Ticket code not found");
+      return;
+    }
+    if ((match as any).checked_in_at) {
+      toast(`${(match as any).attendee_name} already checked in`);
+      return;
+    }
+    await checkInById((match as any).id);
+    setCode("");
+  };
+
+  if (!events?.length) return null;
+
+  const checkedIn = tickets?.filter((t: any) => t.checked_in_at).length || 0;
+  const total = tickets?.length || 0;
+
+  return (
+    <div className="space-y-4 mt-8">
+      <div>
+        <h2 className="text-xl font-bold">Side Event Check-In</h2>
+        <p className="text-sm text-muted-foreground">
+          {checkedIn}/{total} attendees checked in (paid tickets only)
+        </p>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6 flex gap-2">
+          <Input
+            placeholder="Enter ticket code (e.g. AB12CD34)"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && checkInByCode()}
+            className="font-mono"
+          />
+          <Button onClick={checkInByCode}>Check In</Button>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        {tickets?.map((t: any) => {
+          const ev = events.find((e) => e.id === t.side_event_id);
+          return (
+            <div key={t.id} className={`border rounded-lg p-3 flex justify-between items-center ${t.checked_in_at ? "bg-primary/5 border-primary/30" : ""}`}>
+              <div>
+                <div className="font-semibold">{t.attendee_name}</div>
+                <div className="text-xs text-muted-foreground">{ev?.name} · {t.quantity}× · <span className="font-mono">{t.ticket_code}</span></div>
+              </div>
+              {t.checked_in_at ? (
+                <Badge variant="outline">✓ In</Badge>
+              ) : (
+                <Button size="sm" onClick={() => checkInById(t.id)}>Check In</Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+

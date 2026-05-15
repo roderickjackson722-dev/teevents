@@ -177,6 +177,8 @@ Deno.serve(async (req) => {
         amount_cents: amountCents,
         payment_status: status,
         paid_at: status === "paid" ? new Date().toISOString() : null,
+        show_on_public: p.show_on_public !== false,
+        manually_approved: p.manually_approved === true,
       };
 
       if (action === "create_registration") {

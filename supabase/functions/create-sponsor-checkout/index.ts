@@ -51,10 +51,10 @@ Deno.serve(async (req) => {
 
     if (tErr || !tournament) throw new Error("Tournament not found");
 
-    // Fetch tier
+    // Fetch tier (include spot tracking for sold-out guard)
     const { data: tier, error: tierErr } = await supabaseAdmin
       .from("sponsorship_tiers")
-      .select("id, name, description, price_cents")
+      .select("id, name, description, price_cents, total_spots, spots_used")
       .eq("id", tier_id)
       .eq("tournament_id", tournament_id)
       .eq("is_active", true)
@@ -62,6 +62,9 @@ Deno.serve(async (req) => {
 
     if (tierErr || !tier) throw new Error("Sponsorship tier not found or inactive");
     if (tier.price_cents <= 0) throw new Error("Invalid tier price");
+    if (tier.total_spots != null && (tier.spots_used || 0) >= tier.total_spots) {
+      throw new Error("This sponsorship level is sold out. Please choose a different package.");
+    }
 
     // Fetch organizer's Stripe Connect account
     const { data: org } = await supabaseAdmin

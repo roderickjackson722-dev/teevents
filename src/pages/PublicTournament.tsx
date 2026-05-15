@@ -23,7 +23,10 @@ interface PublicProduct {
 }
 interface TournamentSite {
   id: string; title: string; slug: string | null; description: string | null; date: string | null;
+  end_date: string | null;
   location: string | null; course_name: string | null; site_logo_url: string | null;
+  site_logo_color_mode?: string | null;
+  site_logo_color_value?: string | null;
   site_hero_title: string | null; site_hero_subtitle: string | null; site_primary_color: string | null;
   site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;

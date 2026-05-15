@@ -1134,13 +1134,25 @@ const SiteBuilder = () => {
 
               <div>
                 <Label htmlFor="description">Event Description</Label>
-                <Textarea
-                  id="description"
-                  value={settings.description || ""}
-                  onChange={(e) => updateField("description", e.target.value)}
+                <p className="text-xs text-muted-foreground mb-2">
+                  Format text with bold, headings, fonts, colors, and links. Falls back to plain text if left empty.
+                </p>
+                <RichTextEditor
+                  value={(settings as any).description_html || ""}
+                  onChange={(html) => updateField("description_html" as any, html)}
                   placeholder="Tell visitors about your tournament..."
-                  rows={4}
                 />
+                <details className="mt-2">
+                  <summary className="text-xs text-muted-foreground cursor-pointer">Plain text fallback (optional)</summary>
+                  <Textarea
+                    id="description"
+                    className="mt-2"
+                    value={settings.description || ""}
+                    onChange={(e) => updateField("description", e.target.value)}
+                    placeholder="Plain text version (used if rich text is empty)"
+                    rows={3}
+                  />
+                </details>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

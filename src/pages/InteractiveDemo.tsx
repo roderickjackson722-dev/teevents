@@ -73,7 +73,7 @@ function recordEvent(leadId: string | null, event: string, stepIndex?: number, m
   if (!leadId) return;
   supabase
     .from("demo_events")
-    .insert({ lead_id: leadId, event_name: event, step_index: stepIndex ?? null, metadata: metadata ?? null })
+    .insert([{ lead_id: leadId, event_name: event, step_index: stepIndex ?? null, metadata: (metadata ?? null) as never }])
     .then(() => {}, () => {});
 }
 

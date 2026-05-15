@@ -39,15 +39,12 @@ export default function DemoFeedbackModal({ open, leadId, onClose }: Props) {
   const submit = async () => {
     setSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("demo_leads")
-        .update({
-          feedback_reasons: reasons,
-          feedback_score: score,
-          feedback_text: text.trim().slice(0, 2000) || null,
-          feedback_submitted_at: new Date().toISOString(),
-        })
-        .eq("id", leadId);
+      const { error } = await (supabase as any).rpc("update_demo_lead_feedback", {
+        _id: leadId,
+        _reasons: reasons,
+        _score: score,
+        _text: text.trim().slice(0, 2000) || null,
+      });
       if (error) throw error;
       toast({ title: "Thanks for the feedback!" });
       onClose();

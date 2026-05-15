@@ -5547,6 +5547,28 @@ export type Database = {
     }
     Functions: {
       delete_old_demo_tournaments: { Args: never; Returns: number }
+      get_college_invitation_by_token: {
+        Args: { _token: string; _tournament_id: string }
+        Returns: {
+          coach_email: string
+          coach_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          rsvp_date: string | null
+          rsvp_response: string | null
+          school_name: string
+          status: string
+          token: string | null
+          tournament_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "college_tournament_invitations"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_player_hub_by_token: {
         Args: { _token: string }
         Returns: {
@@ -5583,6 +5605,10 @@ export type Database = {
         Args: { _trip_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_demo_lead_started: {
+        Args: { _id: string; _role: string; _user_agent: string }
+        Returns: undefined
+      }
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }
         Returns: undefined
@@ -5590,6 +5616,32 @@ export type Database = {
       regenerate_player_qr_token: {
         Args: { _registration_id: string }
         Returns: string
+      }
+      update_college_invitation_rsvp_by_token: {
+        Args: { _response: string; _token: string }
+        Returns: {
+          coach_email: string
+          coach_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          rsvp_date: string | null
+          rsvp_response: string | null
+          school_name: string
+          status: string
+          token: string | null
+          tournament_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "college_tournament_invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_demo_lead_feedback: {
+        Args: { _id: string; _reasons: string[]; _score: number; _text: string }
+        Returns: undefined
       }
     }
     Enums: {

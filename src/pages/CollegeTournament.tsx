@@ -113,16 +113,14 @@ const CollegeTournament = () => {
 
       // Check RSVP token
       if (rsvpToken) {
-        const { data: inv } = await supabase
-          .from("college_tournament_invitations")
-          .select("*")
-          .eq("token", rsvpToken)
-          .eq("tournament_id", t.id)
-          .single() as any;
+        const { data: invs } = await (supabase as any).rpc(
+          "get_college_invitation_by_token",
+          { _token: rsvpToken, _tournament_id: t.id },
+        );
+        const inv = Array.isArray(invs) ? invs[0] : invs;
         if (inv) {
           setInvitation(inv);
           if (inv.rsvp_response) setRsvpDone(true);
-          // Pre-fill registration form
           setRegForm({
             school_name: inv.school_name,
             coach_name: inv.coach_name,
@@ -140,10 +138,10 @@ const CollegeTournament = () => {
   const handleRsvp = async (response: "accepted" | "declined") => {
     if (!invitation) return;
     setRsvpSubmitting(true);
-    const { error } = await supabase
-      .from("college_tournament_invitations")
-      .update({ rsvp_response: response, rsvp_date: new Date().toISOString() } as any)
-      .eq("id", invitation.id);
+    const { error } = await (supabase as any).rpc(
+      "update_college_invitation_rsvp_by_token",
+      { _token: invitation.token, _response: response },
+    );
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

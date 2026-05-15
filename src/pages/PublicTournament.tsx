@@ -31,7 +31,7 @@ interface TournamentSite {
   site_logo_color_value?: string | null;
   site_hero_title: string | null; site_hero_subtitle: string | null; site_primary_color: string | null;
   site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
-  contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
+  contact_phone: string | null; schedule_info: string | null; schedule_info_html?: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
   waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
@@ -685,7 +685,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     course_details: !!tournament.course_name || !!tournament.location,
     contests: contests.length > 0,
     travel: !!tournament.location,
-    schedule: !!tournament.schedule_info,
+    schedule: !!tournament.schedule_info || !!(tournament as any).schedule_info_html,
     about_organizer: ((tournament as any).show_org_tab ?? true) && hasOrgContent,
     lodging: accommodations.length > 0,
   };
@@ -1669,16 +1669,24 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== EVENT AGENDA ===== */}
-      {isTabVisible("schedule") && tournament.schedule_info && (
+      {isTabVisible("schedule") && (tournament.schedule_info || (tournament as any).schedule_info_html) && (
         <section id="schedule" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>EVENT AGENDA</h2>
               <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
               <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#e5e5e5" }}>
-                <pre className="whitespace-pre-wrap font-body text-base leading-relaxed" style={{ color: "#444" }}>
-                  {tournament.schedule_info}
-                </pre>
+                {(tournament as any).schedule_info_html && (tournament as any).schedule_info_html.replace(/<[^>]*>/g, "").trim() ? (
+                  <div
+                    className="prose max-w-none font-body text-base leading-relaxed"
+                    style={{ color: "#444" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).schedule_info_html) }}
+                  />
+                ) : (
+                  <pre className="whitespace-pre-wrap font-body text-base leading-relaxed" style={{ color: "#444" }}>
+                    {tournament.schedule_info}
+                  </pre>
+                )}
               </div>
             </motion.div>
           </div>

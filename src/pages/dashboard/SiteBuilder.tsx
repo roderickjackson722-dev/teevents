@@ -43,7 +43,7 @@ import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -213,6 +213,7 @@ interface SiteSettings {
   contact_email: string | null;
   contact_phone: string | null;
   schedule_info: string | null;
+  schedule_info_html?: string | null;
   registration_url: string | null;
   registration_open: boolean | null;
   template: string | null;
@@ -315,6 +316,7 @@ const SiteBuilder = () => {
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
         schedule_info: settings.schedule_info,
+        schedule_info_html: (settings as any).schedule_info_html ?? null,
         registration_url: settings.registration_url,
         registration_open: settings.registration_open,
         description: settings.description,
@@ -1204,13 +1206,20 @@ const SiteBuilder = () => {
 
               <div>
                 <Label htmlFor="schedule">Schedule / Timeline</Label>
-                <Textarea
-                  id="schedule"
-                  value={settings.schedule_info || ""}
-                  onChange={(e) => updateField("schedule_info", e.target.value)}
-                  placeholder={"10:00 AM — Registration\n11:00 AM — Shotgun Start\n4:00 PM — Awards Dinner"}
-                  rows={5}
+                <RichTextEditor
+                  value={(settings as any).schedule_info_html || ""}
+                  onChange={(html) => {
+                    updateField("schedule_info_html" as any, html);
+                    // keep plain-text fallback in sync for legacy consumers
+                    const tmp = document.createElement("div");
+                    tmp.innerHTML = html;
+                    updateField("schedule_info", tmp.textContent || "");
+                  }}
+                  placeholder="10:00 AM — Registration\n11:00 AM — Shotgun Start"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use the toolbar to bold key items, change fonts, or highlight (e.g. SOLD OUT, LIMITED SPOTS).
+                </p>
               </div>
 
               <div>
@@ -1873,14 +1882,21 @@ const SiteBuilder = () => {
                 </div>
               )}
 
-              {settings.schedule_info && (
+              {(settings.schedule_info || (settings as any).schedule_info_html) && (
                 <div>
                   <h4 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: settings.site_primary_color || "#1a5c38" }}>
                     Schedule
                   </h4>
-                  <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">
-                    {settings.schedule_info}
-                  </pre>
+                  {(settings as any).schedule_info_html ? (
+                    <div
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml((settings as any).schedule_info_html) }}
+                    />
+                  ) : (
+                    <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">
+                      {settings.schedule_info}
+                    </pre>
+                  )}
                 </div>
               )}
 

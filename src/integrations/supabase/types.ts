@@ -4655,6 +4655,7 @@ export type Database = {
           reserve_percentage: number | null
           results_url: string | null
           schedule_info: string | null
+          schedule_info_html: string | null
           scoring_format: string
           setup_checklist_dismissed: boolean
           show_countdown: boolean
@@ -4776,6 +4777,7 @@ export type Database = {
           reserve_percentage?: number | null
           results_url?: string | null
           schedule_info?: string | null
+          schedule_info_html?: string | null
           scoring_format?: string
           setup_checklist_dismissed?: boolean
           show_countdown?: boolean
@@ -4897,6 +4899,7 @@ export type Database = {
           reserve_percentage?: number | null
           results_url?: string | null
           schedule_info?: string | null
+          schedule_info_html?: string | null
           scoring_format?: string
           setup_checklist_dismissed?: boolean
           show_countdown?: boolean

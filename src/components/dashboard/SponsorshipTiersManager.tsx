@@ -41,6 +41,9 @@ interface SponsorshipTier {
   display_order: number;
   is_active: boolean;
   created_at: string;
+  total_spots: number | null;
+  spots_used: number;
+  package_type: string | null;
 }
 
 interface SponsorRegistration {
@@ -58,6 +61,8 @@ interface SponsorRegistration {
   payment_status: string;
   paid_at: string | null;
   created_at: string;
+  show_on_public?: boolean;
+  manually_approved?: boolean;
   _source?: "registration" | "legacy";
   _legacyTier?: string | null;
 }

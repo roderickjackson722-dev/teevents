@@ -97,6 +97,7 @@ const categories: SidebarCategory[] = [
       { title: "Sponsor Management", url: "/dashboard/sponsors", icon: Award, feature: null },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null },
+      { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null },
       { title: "Team Performance", url: "/dashboard/team-performance", icon: Target, feature: null },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null },
       { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging" },

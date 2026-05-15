@@ -319,7 +319,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     setRegForm({
       company_name: "", contact_name: "", contact_email: "", contact_phone: "",
       website_url: "", description: "", logo_url: "", tier_id: "", amount: "",
-      payment_status: "pending",
+      payment_status: "pending", show_on_public: true, manually_approved: false,
     });
   };
 
@@ -336,6 +336,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       tier_id: reg.tier_id || "",
       amount: ((reg.amount_cents || 0) / 100).toFixed(2),
       payment_status: reg.payment_status || "pending",
+      show_on_public: reg.show_on_public !== false,
+      manually_approved: !!reg.manually_approved,
     });
     setRegDialogOpen(true);
   };
@@ -374,6 +376,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       tier_id: regForm.tier_id || null,
       amount_cents: amountCents,
       payment_status: regForm.payment_status,
+      show_on_public: regForm.show_on_public,
+      manually_approved: regForm.manually_approved,
     };
 
     // If editing a legacy tournament_sponsors row, migrate it: delete legacy + create new registration

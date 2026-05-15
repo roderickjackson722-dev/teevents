@@ -1240,24 +1240,40 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               {sponsorshipTiers.length > 0 ? (
                 <>
                   <div className={`grid gap-6 ${sponsorshipTiers.length === 1 ? "max-w-md mx-auto" : sponsorshipTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-                    {sponsorshipTiers.map((tier, i) => (
+                    {sponsorshipTiers.map((tier, i) => {
+                      const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
+                      const soldOut = remaining === 0;
+                      const packageLabel = tier.package_type
+                        ? tier.package_type.charAt(0).toUpperCase() + tier.package_type.slice(1).replace(/_/g, " ")
+                        : null;
+                      return (
                       <motion.div
                         key={tier.id}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.1 }}
-                        className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                        className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${soldOut ? "opacity-70" : ""}`}
                         style={{ borderColor: "#e5e5e5" }}
                       >
                         <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
                           <Award className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
+                          {packageLabel && (
+                            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider mb-1 px-2 py-0.5 rounded" style={{ backgroundColor: secondary + "20", color: "#555" }}>
+                              {packageLabel}
+                            </span>
+                          )}
                           <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
                           <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
                             {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
                           </p>
                           {tier.description && (
                             <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
+                          )}
+                          {remaining != null && (
+                            <p className={`text-xs mt-2 font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
+                              {soldOut ? "Sold Out" : `${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
+                            </p>
                           )}
                         </div>
 
@@ -1270,16 +1286,27 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                         )}
 
                         <div className="p-6 pt-2">
-                          <a
-                            href={`/t/${slug}/sponsor?tier=${tier.id}`}
-                            className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: secondary, color: primary }}
-                          >
-                            Select
-                          </a>
+                          {soldOut ? (
+                            <button
+                              type="button"
+                              disabled
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase bg-gray-200 text-gray-500 cursor-not-allowed"
+                            >
+                              Sold Out
+                            </button>
+                          ) : (
+                            <a
+                              href={`/t/${slug}/sponsor?tier=${tier.id}`}
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                              style={{ backgroundColor: secondary, color: primary }}
+                            >
+                              Select
+                            </a>
+                          )}
                         </div>
                       </motion.div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                 </>

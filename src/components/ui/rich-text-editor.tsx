@@ -47,6 +47,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
       FontFamily.configure({ types: ["textStyle"] }),
       Link.configure({ openOnClick: false, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Highlight.configure({ multicolor: true }),
     ],
     content: value || "",
     editorProps: {

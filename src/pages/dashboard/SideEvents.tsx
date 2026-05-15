@@ -1,0 +1,364 @@
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useOrgContext } from "@/hooks/useOrgContext";
+import { useDemoMode } from "@/hooks/useDemoMode";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Pencil, Trash2, Ticket } from "lucide-react";
+import { toast } from "sonner";
+
+type SideEvent = {
+  id: string;
+  tournament_id: string;
+  name: string;
+  description: string | null;
+  event_date: string | null;
+  location: string | null;
+  price_cents: number;
+  max_tickets: number | null;
+  tickets_sold: number;
+  is_active: boolean;
+  show_on_public: boolean;
+  display_order: number;
+};
+
+const empty = {
+  name: "",
+  description: "",
+  event_date: "",
+  location: "",
+  price_dollars: "0",
+  max_tickets: "",
+  is_active: true,
+  show_on_public: true,
+};
+
+export default function SideEvents() {
+  const { org } = useOrgContext();
+  const { demoGuard } = useDemoMode();
+  const qc = useQueryClient();
+  const [tournamentId, setTournamentId] = useState<string>("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<SideEvent | null>(null);
+  const [form, setForm] = useState({ ...empty });
+
+  const { data: tournaments } = useQuery({
+    queryKey: ["se-tournaments", org?.orgId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("id, title")
+        .eq("organization_id", org!.orgId)
+        .order("date", { ascending: false });
+      if (error) throw error;
+      if (data && data.length && !tournamentId) setTournamentId(data[0].id);
+      return data;
+    },
+    enabled: !!org,
+  });
+
+  const { data: events, isLoading } = useQuery({
+    queryKey: ["side-events", tournamentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("side_events")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .order("display_order")
+        .order("created_at");
+      if (error) throw error;
+      return data as SideEvent[];
+    },
+    enabled: !!tournamentId,
+  });
+
+  const { data: tickets } = useQuery({
+    queryKey: ["side-event-tickets", tournamentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("side_event_tickets")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tournamentId,
+  });
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ ...empty });
+    setOpen(true);
+  };
+
+  const openEdit = (e: SideEvent) => {
+    setEditing(e);
+    setForm({
+      name: e.name,
+      description: e.description || "",
+      event_date: e.event_date ? e.event_date.slice(0, 16) : "",
+      location: e.location || "",
+      price_dollars: (e.price_cents / 100).toFixed(2),
+      max_tickets: e.max_tickets?.toString() || "",
+      is_active: e.is_active,
+      show_on_public: e.show_on_public,
+    });
+    setOpen(true);
+  };
+
+  const save = async () => {
+    if (demoGuard()) return;
+    if (!form.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    const payload = {
+      tournament_id: tournamentId,
+      name: form.name.trim(),
+      description: form.description.trim() || null,
+      event_date: form.event_date ? new Date(form.event_date).toISOString() : null,
+      location: form.location.trim() || null,
+      price_cents: Math.round(parseFloat(form.price_dollars || "0") * 100),
+      max_tickets: form.max_tickets ? parseInt(form.max_tickets, 10) : null,
+      is_active: form.is_active,
+      show_on_public: form.show_on_public,
+    };
+    const { error } = editing
+      ? await supabase.from("side_events").update(payload).eq("id", editing.id)
+      : await supabase.from("side_events").insert(payload);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(editing ? "Side event updated" : "Side event created");
+    setOpen(false);
+    qc.invalidateQueries({ queryKey: ["side-events", tournamentId] });
+  };
+
+  const remove = async (id: string) => {
+    if (demoGuard()) return;
+    if (!confirm("Delete this side event? Sold tickets will remain in the database.")) return;
+    const { error } = await supabase.from("side_events").delete().eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Side event deleted");
+    qc.invalidateQueries({ queryKey: ["side-events", tournamentId] });
+  };
+
+  const toggleField = async (e: SideEvent, field: "is_active" | "show_on_public", value: boolean) => {
+    if (demoGuard()) return;
+    const { error } = await supabase.from("side_events").update({ [field]: value }).eq("id", e.id);
+    if (error) toast.error(error.message);
+    else qc.invalidateQueries({ queryKey: ["side-events", tournamentId] });
+  };
+
+  const checkInTicket = async (id: string) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("side_event_tickets")
+      .update({ checked_in_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Checked in");
+      qc.invalidateQueries({ queryKey: ["side-event-tickets", tournamentId] });
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Side Events</h1>
+        <p className="text-muted-foreground">
+          Sell tickets to dinners, parties, clinics, or any add-on event. Separate from golf registration.
+        </p>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6 flex items-center gap-4 flex-wrap">
+          <div className="min-w-64">
+            <Label>Tournament</Label>
+            <Select value={tournamentId} onValueChange={setTournamentId}>
+              <SelectTrigger><SelectValue placeholder="Select tournament" /></SelectTrigger>
+              <SelectContent>
+                {tournaments?.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={openCreate} disabled={!tournamentId} className="ml-auto">
+            <Plus className="h-4 w-4 mr-2" /> New Side Event
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Side Events</CardTitle></CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <p className="text-muted-foreground">Loading…</p>
+          ) : !events?.length ? (
+            <p className="text-muted-foreground">No side events yet. Create one to start selling tickets.</p>
+          ) : (
+            <div className="space-y-3">
+              {events.map((e) => {
+                const soldOut = e.max_tickets != null && e.tickets_sold >= e.max_tickets;
+                return (
+                  <div key={e.id} className="border rounded-lg p-4 flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold">{e.name}</h3>
+                        <Badge variant="outline">${(e.price_cents / 100).toFixed(2)}</Badge>
+                        {!e.is_active && <Badge variant="secondary">Inactive</Badge>}
+                        {!e.show_on_public && <Badge variant="secondary">Hidden</Badge>}
+                        {soldOut && <Badge variant="destructive">Sold Out</Badge>}
+                      </div>
+                      {e.description && <p className="text-sm text-muted-foreground mt-1">{e.description}</p>}
+                      <div className="text-xs text-muted-foreground mt-1 space-x-3">
+                        {e.event_date && <span>{new Date(e.event_date).toLocaleString()}</span>}
+                        {e.location && <span>📍 {e.location}</span>}
+                        <span>
+                          🎟 {e.tickets_sold}{e.max_tickets ? ` / ${e.max_tickets}` : ""} sold
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 mt-3">
+                        <label className="flex items-center gap-2 text-sm">
+                          <Switch checked={e.is_active} onCheckedChange={(v) => toggleField(e, "is_active", v)} />
+                          Active
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                          <Switch checked={e.show_on_public} onCheckedChange={(v) => toggleField(e, "show_on_public", v)} />
+                          Show on public site
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button size="sm" variant="outline" onClick={() => openEdit(e)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="outline" onClick={() => remove(e.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Ticket className="h-5 w-5" /> Tickets Sold</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!tickets?.length ? (
+            <p className="text-muted-foreground">No tickets sold yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="py-2 pr-4">Attendee</th>
+                    <th className="py-2 pr-4">Event</th>
+                    <th className="py-2 pr-4">Qty</th>
+                    <th className="py-2 pr-4">Status</th>
+                    <th className="py-2 pr-4">Code</th>
+                    <th className="py-2 pr-4">Check-In</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickets.map((t: any) => {
+                    const ev = events?.find((e) => e.id === t.side_event_id);
+                    return (
+                      <tr key={t.id} className="border-b">
+                        <td className="py-2 pr-4">
+                          <div>{t.attendee_name}</div>
+                          <div className="text-xs text-muted-foreground">{t.attendee_email}</div>
+                        </td>
+                        <td className="py-2 pr-4">{ev?.name || "—"}</td>
+                        <td className="py-2 pr-4">{t.quantity}</td>
+                        <td className="py-2 pr-4">
+                          <Badge variant={t.payment_status === "paid" ? "default" : "secondary"}>{t.payment_status}</Badge>
+                        </td>
+                        <td className="py-2 pr-4 font-mono">{t.ticket_code}</td>
+                        <td className="py-2 pr-4">
+                          {t.checked_in_at ? (
+                            <Badge variant="outline">✓ {new Date(t.checked_in_at).toLocaleString()}</Badge>
+                          ) : t.payment_status === "paid" ? (
+                            <Button size="sm" variant="outline" onClick={() => checkInTicket(t.id)}>Check In</Button>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{editing ? "Edit Side Event" : "New Side Event"}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Name *</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Welcome Dinner" />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Date & Time</Label>
+                <Input type="datetime-local" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
+              </div>
+              <div>
+                <Label>Location</Label>
+                <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Price (USD)</Label>
+                <Input type="number" min="0" step="0.01" value={form.price_dollars} onChange={(e) => setForm({ ...form, price_dollars: e.target.value })} />
+              </div>
+              <div>
+                <Label>Max Tickets (blank = unlimited)</Label>
+                <Input type="number" min="1" value={form.max_tickets} onChange={(e) => setForm({ ...form, max_tickets: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+                Active
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.show_on_public} onCheckedChange={(v) => setForm({ ...form, show_on_public: v })} />
+                Show on public site
+              </label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={save}>{editing ? "Save Changes" : "Create"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

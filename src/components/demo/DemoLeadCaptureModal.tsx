@@ -54,14 +54,11 @@ export default function DemoLeadCaptureModal({ open, onComplete }: Props) {
       let leadId = existing?.id as string | undefined;
 
       if (leadId) {
-        await supabase
-          .from("demo_leads")
-          .update({
-            role: parsed.data.role ?? null,
-            demo_started_at: new Date().toISOString(),
-            user_agent: navigator.userAgent,
-          })
-          .eq("id", leadId);
+        await (supabase as any).rpc("mark_demo_lead_started", {
+          _id: leadId,
+          _role: parsed.data.role ?? null,
+          _user_agent: navigator.userAgent,
+        });
       } else {
         const { data: inserted, error } = await supabase
           .from("demo_leads")

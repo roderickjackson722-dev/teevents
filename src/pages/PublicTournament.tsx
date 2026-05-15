@@ -347,7 +347,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes, paidSponsorsRes, vendorTiersRes, paidVendorsRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes, paidSponsorsRes, vendorTiersRes, paidVendorsRes, sideEventsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -363,6 +363,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
           supabase.from("vendor_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           supabase.from("vendor_registrations").select("id, vendor_name, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
+          (supabase as any).from("side_events").select("id, name, description, event_date, location, price_cents, max_tickets, tickets_sold").eq("tournament_id", t.id).eq("is_active", true).eq("show_on_public", true).order("display_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
@@ -377,6 +378,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setPaidSponsors((paidSponsorsRes.data as any[]) || []);
         setVendorTiers((vendorTiersRes.data as any[]) || []);
         setPaidVendors((paidVendorsRes.data as any[]) || []);
+        setSideEvents(((sideEventsRes as any)?.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));

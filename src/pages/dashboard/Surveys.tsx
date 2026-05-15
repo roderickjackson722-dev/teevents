@@ -31,6 +31,78 @@ export default function Surveys() {
     enabled: !!org,
   });
 
+  const { data: tournamentSettings, refetch: refetchSettings } = useQuery({
+    queryKey: ["tournament-survey-settings", selectedTournament],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tournaments")
+        .select("post_event_survey_enabled, post_event_survey_delay_days, post_event_survey_message, post_event_survey_sent_at, early_signup_enabled, early_signup_label, end_date, date")
+        .eq("id", selectedTournament)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const { data: earlySignups } = useQuery({
+    queryKey: ["early-signups", selectedTournament],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("early_signups")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const [settingsForm, setSettingsForm] = useState<any>(null);
+  const [settingsDirty, setSettingsDirty] = useState(false);
+
+  // Hydrate local settings form when tournament settings load
+  if (tournamentSettings && !settingsForm) {
+    setSettingsForm({
+      post_event_survey_enabled: tournamentSettings.post_event_survey_enabled ?? false,
+      post_event_survey_delay_days: tournamentSettings.post_event_survey_delay_days ?? 1,
+      post_event_survey_message: tournamentSettings.post_event_survey_message ?? "",
+      early_signup_enabled: tournamentSettings.early_signup_enabled ?? false,
+      early_signup_label: tournamentSettings.early_signup_label ?? "Yes, please notify me when registration opens for next year's tournament.",
+    });
+  }
+
+  const updateSetting = (patch: any) => {
+    setSettingsForm((prev: any) => ({ ...prev, ...patch }));
+    setSettingsDirty(true);
+  };
+
+  const saveSettings = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("tournaments")
+        .update(settingsForm)
+        .eq("id", selectedTournament);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setSettingsDirty(false);
+      refetchSettings();
+      toast({ title: "Survey settings saved" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const exportEarlySignups = () => {
+    if (!earlySignups || earlySignups.length === 0) return;
+    const rows = [["Email", "Name", "Source", "Date"], ...earlySignups.map((s: any) => [s.email, s.name || "", s.source || "", new Date(s.created_at).toLocaleString()])];
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `early-signups-${selectedTournament}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
   const { data: surveys } = useQuery({
     queryKey: ["surveys", selectedTournament],
     queryFn: async () => {

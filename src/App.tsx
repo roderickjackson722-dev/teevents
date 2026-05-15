@@ -72,6 +72,7 @@ import Plans from "./pages/Plans";
 import EnterprisePricing from "./pages/EnterprisePricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import SampleDashboard from "./pages/SampleDashboard";
+import InteractiveDemo from "./pages/InteractiveDemo";
 import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
@@ -202,7 +203,8 @@ const App = () => (
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
            <Route path="/sample-organizer" element={<SampleDashboard />} />
            <Route path="/sample-organizer-public" element={<SampleOrganizer />} />
-           <Route path="/sample-dashboard" element={<SampleDashboard />} />
+            <Route path="/sample-dashboard" element={<SampleDashboard />} />
+            <Route path="/interactive-demo" element={<InteractiveDemo />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
            <Route path="/faq" element={<FAQ />} />

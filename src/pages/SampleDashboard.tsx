@@ -147,6 +147,7 @@ const SampleDashboard = () => {
             {cat.items.map((item) => (
               <button
                 key={item.key}
+                data-tour={`nav-${item.key}`}
                 onClick={() => handleTabClick(item.key)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs transition-colors ${
                   activeTab === item.key
@@ -307,7 +308,7 @@ const SectionHeader = ({ title, badge, count }: { title: string; badge?: PlanTie
 /* ─── Dashboard Home ─── */
 const HomeTab = () => (
   <div className="space-y-6">
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div data-tour="overview-stats" className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {[
         { label: "Registered", value: `${t.current_registrations}/${t.max_players}`, icon: Users, color: "text-primary" },
         { label: "Revenue", value: fmt(fin.total_collected), icon: DollarSign, color: "text-green-600" },

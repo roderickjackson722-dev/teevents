@@ -122,11 +122,30 @@ function Toolbar({ editor }: { editor: Editor }) {
           {SIZES.map((s) => <SelectItem key={s} value={s}>{s}px</SelectItem>)}
         </SelectContent>
       </Select>
-      <input
-        type="color" title="Text color"
-        className="h-8 w-8 rounded border border-input cursor-pointer bg-background"
-        onChange={(e) => setColor(e.target.value)}
-      />
+      <label className="relative inline-flex items-center" title="Text color">
+        <span className="h-8 w-8 rounded border border-input flex items-center justify-center bg-background cursor-pointer text-xs font-bold">A</span>
+        <input
+          type="color"
+          className="absolute inset-0 opacity-0 cursor-pointer"
+          onChange={(e) => setColor(e.target.value)}
+        />
+      </label>
+      <Btn
+        title="Highlight"
+        active={editor.isActive("highlight")}
+        onClick={() => editor.chain().focus().toggleHighlight({ color: "#FFF59D" }).run()}
+      ><Highlighter className="h-4 w-4" /></Btn>
+      <label className="relative inline-flex items-center" title="Highlight color">
+        <span
+          className="h-8 w-8 rounded border border-input flex items-center justify-center cursor-pointer text-xs"
+          style={{ background: "linear-gradient(135deg, #FFF59D 50%, #fff 50%)" }}
+        >H</span>
+        <input
+          type="color"
+          className="absolute inset-0 opacity-0 cursor-pointer"
+          onChange={(e) => editor.chain().focus().toggleHighlight({ color: e.target.value }).run()}
+        />
+      </label>
       <div className="w-px h-6 bg-border mx-1" />
       <Btn title="Bullet list" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="h-4 w-4" /></Btn>
       <Btn title="Numbered list" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="h-4 w-4" /></Btn>
@@ -146,7 +165,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 
 export function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["b", "i", "u", "strong", "em", "h1", "h2", "h3", "h4", "p", "br", "ul", "ol", "li", "a", "span", "div", "blockquote", "code", "pre"],
-    ALLOWED_ATTR: ["href", "target", "rel", "style", "class"],
+    ALLOWED_TAGS: ["b", "i", "u", "strong", "em", "mark", "h1", "h2", "h3", "h4", "p", "br", "ul", "ol", "li", "a", "span", "div", "blockquote", "code", "pre"],
+    ALLOWED_ATTR: ["href", "target", "rel", "style", "class", "data-color"],
   });
 }

@@ -496,9 +496,18 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
               {tiers.map(tier => (
                 <div key={tier.id} className="flex items-start justify-between gap-4 p-4 rounded-lg border border-border bg-background">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-display font-bold text-foreground">{tier.name}</h4>
                       <span className="text-primary font-mono font-semibold text-sm">{fmt(tier.price_cents)}</span>
+                      {tier.package_type && <Badge variant="outline" className="text-xs capitalize">{tier.package_type}</Badge>}
+                      {tier.total_spots != null && (() => {
+                        const remaining = Math.max(0, tier.total_spots - (tier.spots_used || 0));
+                        return (
+                          <Badge variant={remaining === 0 ? "destructive" : "secondary"} className="text-xs">
+                            {remaining === 0 ? "Sold Out" : `${remaining} of ${tier.total_spots} left`}
+                          </Badge>
+                        );
+                      })()}
                       {!tier.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
                     </div>
                     {tier.description && <p className="text-sm text-muted-foreground mt-1">{tier.description}</p>}

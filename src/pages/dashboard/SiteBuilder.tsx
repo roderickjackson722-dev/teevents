@@ -318,6 +318,7 @@ const SiteBuilder = () => {
         registration_url: settings.registration_url,
         registration_open: settings.registration_open,
         description: settings.description,
+        description_html: (settings as any).description_html ?? null,
         location: settings.location,
         course_name: settings.course_name,
         date: settings.date || null,

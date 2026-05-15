@@ -43,7 +43,7 @@ import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");

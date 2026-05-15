@@ -17,6 +17,7 @@ const steps: Step[] = [
     content:
       "See how many players have registered, how much revenue you've collected, and key deadlines — all in one place.",
     placement: "bottom",
+  },
   {
     target: '[data-tour="nav-players"]',
     title: "Manage Your Players",

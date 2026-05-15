@@ -682,13 +682,19 @@ export default function Vendors() {
         </div>
       </div>
 
-      <Tabs defaultValue="vendors" className="w-full">
+      <Tabs defaultValue="packages" className="w-full">
         <TabsList>
+          <TabsTrigger value="packages">Packages</TabsTrigger>
           <TabsTrigger value="vendors">All Vendors ({vendors.length})</TabsTrigger>
           <TabsTrigger value="form">Form Builder</TabsTrigger>
           <TabsTrigger value="booths">Booth Locations ({booths.length})</TabsTrigger>
           <TabsTrigger value="checkin">Check-In</TabsTrigger>
         </TabsList>
+
+        {/* ===== Packages tab (tier-based vendor checkout) ===== */}
+        <TabsContent value="packages" className="space-y-4">
+          <VendorTiersManager tournament={tournament} />
+        </TabsContent>
 
         {/* ===== Vendors tab ===== */}
         <TabsContent value="vendors" className="space-y-4">

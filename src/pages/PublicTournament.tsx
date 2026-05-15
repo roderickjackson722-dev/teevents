@@ -1349,6 +1349,103 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
 
+      {/* Vendors / Booths section */}
+      {(vendorTiers.length > 0 || paidVendors.length > 0) && (
+        <section id="become-a-vendor" className="py-16" style={{ backgroundColor: "#ffffff" }}>
+          <div className="max-w-6xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-display font-bold" style={{ color: "#1a1a1a" }}>Vendors</h2>
+                <p className="text-sm mt-2" style={{ color: "#666" }}>Reserve a booth at {tournament.title}.</p>
+              </div>
+
+              {vendorSuccess && (
+                <div className="max-w-xl mx-auto mb-8 rounded-lg border p-4 text-sm" style={{ borderColor: "#10b98140", backgroundColor: "#10b98110", color: "#065f46" }}>
+                  Thanks! Your booth registration is confirmed. Check your email for details.
+                </div>
+              )}
+              {vendorVerifying && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} />
+                  <p style={{ color: "#666" }}>Verifying your booth payment…</p>
+                </div>
+              )}
+
+              {paidVendors.length > 0 && (
+                <div className="mb-10">
+                  <h3 className="text-center text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: "#666" }}>Confirmed Vendors</h3>
+                  <div className="flex flex-wrap justify-center gap-6 items-center">
+                    {paidVendors.map((v) => {
+                      const name = v.company_name || v.vendor_name;
+                      const inner = v.logo_url
+                        ? <img src={v.logo_url} alt={name} className="h-16 max-w-[140px] object-contain" />
+                        : <span className="px-4 py-2 rounded border text-sm" style={{ borderColor: "#e5e5e5", color: "#333" }}>{name}</span>;
+                      return v.website_url
+                        ? <a key={v.id} href={v.website_url} target="_blank" rel="noreferrer" className="hover:opacity-80 transition-opacity">{inner}</a>
+                        : <div key={v.id}>{inner}</div>;
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {vendorTiers.length > 0 && (
+                <div className={`grid gap-6 ${vendorTiers.length === 1 ? "max-w-md mx-auto" : vendorTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                  {vendorTiers.map((tier, i) => {
+                    const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
+                    const soldOut = remaining === 0;
+                    return (
+                      <motion.div
+                        key={tier.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${soldOut ? "opacity-70" : ""}`}
+                        style={{ borderColor: "#e5e5e5" }}
+                      >
+                        <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
+                          <Store className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
+                          <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
+                          <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                            {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
+                          </p>
+                          {tier.description && <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>}
+                          {remaining != null && (
+                            <p className={`text-xs mt-2 font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
+                              {soldOut ? "Sold Out" : `${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
+                            </p>
+                          )}
+                        </div>
+                        {tier.benefits && (
+                          <div className="flex-1 px-6 py-4 border-t" style={{ borderColor: "#f0f0f0" }}>
+                            <div className="text-sm whitespace-pre-line" style={{ color: "#555" }}>{tier.benefits}</div>
+                          </div>
+                        )}
+                        <div className="p-6 pt-2">
+                          {soldOut ? (
+                            <button type="button" disabled className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase bg-gray-200 text-gray-500 cursor-not-allowed">
+                              Sold Out
+                            </button>
+                          ) : (
+                            <a
+                              href={`/t/${slug}/vendor?tier=${tier.id}`}
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                              style={{ backgroundColor: secondary, color: primary }}
+                            >
+                              Reserve Booth
+                            </a>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {tournament.description && (
         <section id="about" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">

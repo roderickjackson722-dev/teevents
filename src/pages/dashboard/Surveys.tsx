@@ -241,6 +241,93 @@ export default function Surveys() {
             </Card>
           </div>
 
+          {/* Post-Event Email Settings */}
+          {settingsForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Post-Event Email Delivery</CardTitle>
+                <CardDescription>The survey is no longer shown on your public page. Players receive a unique survey link by email after the event ends.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm">Automatically email survey to players after event ends</Label>
+                  <Switch
+                    checked={!!settingsForm.post_event_survey_enabled}
+                    onCheckedChange={(v) => updateSetting({ post_event_survey_enabled: v })}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Label className="text-sm whitespace-nowrap">Send delay:</Label>
+                  <Input type="number" min={0} max={30} className="w-20" value={settingsForm.post_event_survey_delay_days}
+                    onChange={(e) => updateSetting({ post_event_survey_delay_days: parseInt(e.target.value) || 0 })}
+                  />
+                  <span className="text-sm text-muted-foreground">day(s) after event ends</span>
+                </div>
+                <div>
+                  <Label className="text-sm">Email message</Label>
+                  <textarea
+                    className="mt-1 w-full rounded-md border border-input bg-background p-2 text-sm min-h-[100px]"
+                    value={settingsForm.post_event_survey_message}
+                    placeholder="Thank you for playing! We'd love your feedback to make next year even better."
+                    onChange={(e) => updateSetting({ post_event_survey_message: e.target.value })}
+                  />
+                </div>
+                <div className="flex items-center justify-between border-t pt-4">
+                  <div>
+                    <Label className="text-sm">Add "Sign up early for next year" field to survey</Label>
+                  </div>
+                  <Switch
+                    checked={!!settingsForm.early_signup_enabled}
+                    onCheckedChange={(v) => updateSetting({ early_signup_enabled: v })}
+                  />
+                </div>
+                {settingsForm.early_signup_enabled && (
+                  <div>
+                    <Label className="text-sm">Field label</Label>
+                    <Input value={settingsForm.early_signup_label}
+                      onChange={(e) => updateSetting({ early_signup_label: e.target.value })}
+                    />
+                  </div>
+                )}
+                {tournamentSettings?.post_event_survey_sent_at && (
+                  <p className="text-xs text-muted-foreground">Survey emails were sent on {new Date(tournamentSettings.post_event_survey_sent_at).toLocaleString()}</p>
+                )}
+                <Button onClick={() => saveSettings.mutate()} disabled={!settingsDirty || saveSettings.isPending}>
+                  {saveSettings.isPending ? "Saving..." : "Save Survey Settings"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Early Signups */}
+          {earlySignups && earlySignups.length > 0 && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Early Signups for Next Year</CardTitle>
+                  <CardDescription>{earlySignups.length} {earlySignups.length === 1 ? "person has" : "people have"} asked to be notified</CardDescription>
+                </div>
+                <Button size="sm" variant="outline" onClick={exportEarlySignups}>Export CSV</Button>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow><TableHead>Email</TableHead><TableHead>Name</TableHead><TableHead>Date</TableHead></TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {earlySignups.slice(0, 50).map((s: any) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="text-sm">{s.email}</TableCell>
+                        <TableCell className="text-sm">{s.name || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Questions</h2>
             <Dialog open={questionDialog} onOpenChange={setQuestionDialog}>

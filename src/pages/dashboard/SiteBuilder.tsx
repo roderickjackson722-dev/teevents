@@ -315,6 +315,7 @@ const SiteBuilder = () => {
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
         schedule_info: settings.schedule_info,
+        schedule_info_html: (settings as any).schedule_info_html ?? null,
         registration_url: settings.registration_url,
         registration_open: settings.registration_open,
         description: settings.description,

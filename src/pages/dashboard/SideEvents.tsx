@@ -397,3 +397,61 @@ export default function SideEvents() {
     </div>
   );
 }
+
+function SectionTitleEditor({ tournamentId }: { tournamentId: string }) {
+  const qc = useQueryClient();
+  const { demoGuard } = useDemoMode();
+  const [value, setValue] = useState<string>("");
+  const [loaded, setLoaded] = useState(false);
+
+  const { data } = useQuery({
+    queryKey: ["se-section-title", tournamentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("side_events_section_title")
+        .eq("id", tournamentId)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as any)?.side_events_section_title ?? "";
+    },
+  });
+
+  if (data !== undefined && !loaded) {
+    setValue(data || "");
+    setLoaded(true);
+  }
+
+  const save = async () => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ side_events_section_title: value.trim() || null } as any)
+      .eq("id", tournamentId);
+    if (error) return toast.error(error.message);
+    toast.success("Section title saved");
+    qc.invalidateQueries({ queryKey: ["se-section-title", tournamentId] });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Public section title</CardTitle>
+      </CardHeader>
+      <CardContent className="flex items-end gap-3 flex-wrap">
+        <div className="flex-1 min-w-64">
+          <Label>Title shown above side events on the public page</Label>
+          <Input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Side Events & Tickets"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Leave blank to use the default ("Side Events & Tickets").
+          </p>
+        </div>
+        <Button onClick={save}>Save Title</Button>
+      </CardContent>
+    </Card>
+  );
+}

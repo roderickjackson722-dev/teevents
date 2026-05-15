@@ -200,6 +200,8 @@ interface SiteSettings {
   course_par: number | null;
   site_published: boolean | null;
   site_logo_url: string | null;
+  site_logo_color_mode: string | null;
+  site_logo_color_value: string | null;
   site_hero_title: string | null;
   site_hero_subtitle: string | null;
   site_primary_color: string | null;

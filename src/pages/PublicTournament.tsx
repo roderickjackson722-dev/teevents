@@ -946,10 +946,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
           {/* Event meta badges */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
-            {tournament.date && (
+            {formattedEventDate && (
               <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
                 <Calendar className="h-4 w-4 shrink-0" />
-                {new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                {formattedEventDate}
               </span>
             )}
             {tournament.course_name && (

@@ -226,6 +226,21 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    if (action === "update_registration_visibility") {
+      if (!registrationId) throw new Error("Registration not specified");
+      const update: Record<string, unknown> = {};
+      if (typeof body?.show_on_public === "boolean") update.show_on_public = body.show_on_public;
+      if (typeof body?.manually_approved === "boolean") update.manually_approved = body.manually_approved;
+      if (Object.keys(update).length === 0) throw new Error("Nothing to update");
+      const { error } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .update(update)
+        .eq("id", registrationId)
+        .eq("tournament_id", tournamentId);
+      if (error) throw error;
+      return json({ success: true });
+    }
+
     if (action === "delete_registration") {
       if (!registrationId) throw new Error("Registration not specified");
       const { error } = await supabaseAdmin

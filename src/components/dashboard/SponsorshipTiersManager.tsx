@@ -135,6 +135,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     tier_id: "",
     amount: "",
     payment_status: "pending",
+    show_on_public: true,
+    manually_approved: false,
   });
   const [form, setForm] = useState({
     name: "",
@@ -142,6 +144,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     price: "",
     benefits: "",
     display_order: "0",
+    total_spots: "",
+    package_type: "",
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);

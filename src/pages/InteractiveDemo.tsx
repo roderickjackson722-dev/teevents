@@ -99,7 +99,7 @@ export default function InteractiveDemo() {
     }
   }, [run, stepIndex]);
 
-  const onCallback = (data: CallBackProps) => {
+  const onCallback = (data: EventData) => {
     const { status, action, lifecycle, index, type } = data;
 
     if (!startedRef.current && type === EVENTS.TOUR_START) {

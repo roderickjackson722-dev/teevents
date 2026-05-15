@@ -503,7 +503,20 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     }
   }, [searchParams, sessionId]);
 
-  // Event countdown timer
+  // Verify side event ticket payment on return from Stripe
+  useEffect(() => {
+    const seParam = searchParams.get("side_event_success");
+    if (seParam === "true" && sessionId) {
+      setSideEventVerifying(true);
+      supabase.functions.invoke("verify-side-event-payment", {
+        body: { session_id: sessionId },
+      }).then(({ data }) => {
+        if ((data as any)?.verified) setSideEventSuccess(true);
+        setSideEventVerifying(false);
+      }).catch(() => setSideEventVerifying(false));
+    }
+  }, [searchParams, sessionId]);
+
   useEffect(() => {
     if (!tournament?.date) return;
     const update = () => {

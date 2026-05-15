@@ -764,6 +764,41 @@ export type Database = {
           },
         ]
       }
+      early_signups: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          source: string | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          source?: string | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          source?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_signups_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -2630,6 +2665,134 @@ export type Database = {
         }
         Relationships: []
       }
+      side_event_tickets: {
+        Row: {
+          amount_cents: number
+          attendee_email: string
+          attendee_name: string
+          attendee_phone: string | null
+          checked_in_at: string | null
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_status: string
+          quantity: number
+          side_event_id: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          ticket_code: string | null
+          tournament_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          attendee_email: string
+          attendee_name: string
+          attendee_phone?: string | null
+          checked_in_at?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          quantity?: number
+          side_event_id: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          ticket_code?: string | null
+          tournament_id: string
+        }
+        Update: {
+          amount_cents?: number
+          attendee_email?: string
+          attendee_name?: string
+          attendee_phone?: string | null
+          checked_in_at?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          quantity?: number
+          side_event_id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          ticket_code?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "side_event_tickets_side_event_id_fkey"
+            columns: ["side_event_id"]
+            isOneToOne: false
+            referencedRelation: "side_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "side_event_tickets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      side_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          event_date: string | null
+          id: string
+          is_active: boolean
+          location: string | null
+          max_tickets: number | null
+          name: string
+          price_cents: number
+          show_on_public: boolean
+          tickets_sold: number
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          max_tickets?: number | null
+          name: string
+          price_cents?: number
+          show_on_public?: boolean
+          tickets_sold?: number
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          max_tickets?: number | null
+          name?: string
+          price_cents?: number
+          show_on_public?: boolean
+          tickets_sold?: number
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "side_events_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_visits: {
         Row: {
           city: string | null
@@ -3844,6 +4007,8 @@ export type Database = {
           scoring_code: string | null
           shirt_size: string | null
           strokes_per_hole: Json | null
+          survey_completed_at: string | null
+          survey_response_token: string | null
           tier_id: string | null
           tournament_id: string
         }
@@ -3873,6 +4038,8 @@ export type Database = {
           scoring_code?: string | null
           shirt_size?: string | null
           strokes_per_hole?: Json | null
+          survey_completed_at?: string | null
+          survey_response_token?: string | null
           tier_id?: string | null
           tournament_id: string
         }
@@ -3902,6 +4069,8 @@ export type Database = {
           scoring_code?: string | null
           shirt_size?: string | null
           strokes_per_hole?: Json | null
+          survey_completed_at?: string | null
+          survey_response_token?: string | null
           tier_id?: string | null
           tournament_id?: string
         }
@@ -4424,6 +4593,8 @@ export type Database = {
           description: string | null
           display_order: number
           donation_goal_cents: number | null
+          early_signup_enabled: boolean
+          early_signup_label: string | null
           end_date: string | null
           external_link: string | null
           foursome_registration: boolean
@@ -4457,6 +4628,10 @@ export type Database = {
           payment_method_override: string
           payout_method: string | null
           post_event_email_config: Json | null
+          post_event_survey_delay_days: number
+          post_event_survey_enabled: boolean
+          post_event_survey_message: string | null
+          post_event_survey_sent_at: string | null
           printable_font: string
           printable_layout: string
           pro_paid_at: string | null
@@ -4538,6 +4713,8 @@ export type Database = {
           description?: string | null
           display_order?: number
           donation_goal_cents?: number | null
+          early_signup_enabled?: boolean
+          early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
           foursome_registration?: boolean
@@ -4571,6 +4748,10 @@ export type Database = {
           payment_method_override?: string
           payout_method?: string | null
           post_event_email_config?: Json | null
+          post_event_survey_delay_days?: number
+          post_event_survey_enabled?: boolean
+          post_event_survey_message?: string | null
+          post_event_survey_sent_at?: string | null
           printable_font?: string
           printable_layout?: string
           pro_paid_at?: string | null
@@ -4652,6 +4833,8 @@ export type Database = {
           description?: string | null
           display_order?: number
           donation_goal_cents?: number | null
+          early_signup_enabled?: boolean
+          early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
           foursome_registration?: boolean
@@ -4685,6 +4868,10 @@ export type Database = {
           payment_method_override?: string
           payout_method?: string | null
           post_event_email_config?: Json | null
+          post_event_survey_delay_days?: number
+          post_event_survey_enabled?: boolean
+          post_event_survey_message?: string | null
+          post_event_survey_sent_at?: string | null
           printable_font?: string
           printable_layout?: string
           pro_paid_at?: string | null

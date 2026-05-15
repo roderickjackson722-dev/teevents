@@ -694,7 +694,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   };
 
   // Logo color override CSS filter
-  const getLogoFilterStyle = (): React.CSSProperties => {
+  const getLogoFilterStyle = (): CSSProperties => {
     const mode = tournament?.site_logo_color_mode;
     if (!mode || mode === "original") return {};
     if (mode === "white") return { filter: "brightness(0) invert(1)" };
@@ -705,7 +705,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     }
     return {};
   };
-  const renderLogo = (src: string, alt: string, className: string, extraStyle: React.CSSProperties = {}) => {
+  const renderLogo = (src: string, alt: string, className: string, extraStyle: CSSProperties = {}) => {
     const mode = tournament?.site_logo_color_mode;
     const customColor = tournament?.site_logo_color_value;
     if (mode === "custom" && customColor) {

@@ -667,6 +667,54 @@ const SiteBuilder = () => {
                     </p>
                   </div>
                 )}
+                {/* Logo color override */}
+                {settings.site_logo_url && (
+                  <div className="mt-4 p-3 rounded-md border border-border bg-muted/30 space-y-3">
+                    <div>
+                      <Label className="text-xs">Logo color (overrides original)</Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        Useful when your logo doesn't have enough contrast against the hero background. "Original" keeps the uploaded colors.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "original", label: "Original" },
+                        { value: "white", label: "White" },
+                        { value: "black", label: "Black" },
+                        { value: "custom", label: "Custom" },
+                      ].map((opt) => {
+                        const active = (settings.site_logo_color_mode || "original") === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => updateField("site_logo_color_mode" as any, opt.value)}
+                            className={`px-3 py-1.5 rounded-md text-xs border transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-muted"}`}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {settings.site_logo_color_mode === "custom" && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="color"
+                          value={settings.site_logo_color_value || "#ffffff"}
+                          onChange={(e) => updateField("site_logo_color_value" as any, e.target.value)}
+                          className="h-9 w-14 p-1"
+                        />
+                        <Input
+                          type="text"
+                          value={settings.site_logo_color_value || ""}
+                          onChange={(e) => updateField("site_logo_color_value" as any, e.target.value)}
+                          placeholder="#ffffff"
+                          className="h-9 max-w-[140px] text-xs font-mono"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Hero Image Upload */}

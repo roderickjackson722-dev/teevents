@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -688,6 +690,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                   <TableHead>Tier</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Show on Public</TableHead>
+                  <TableHead className="text-center">Override Pending</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="w-[60px]">Actions</TableHead>
                 </TableRow>
@@ -742,6 +746,47 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                           <SelectItem value="failed">Failed</SelectItem>
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reg._source === "legacy" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <Switch
+                          checked={reg.show_on_public !== false}
+                          onCheckedChange={async (checked) => {
+                            if (demoGuard()) return;
+                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_visibility", registration_id: reg.id, show_on_public: checked },
+                            });
+                            if (error || data?.error) {
+                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                            } else {
+                              fetchData();
+                            }
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reg._source === "legacy" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <Checkbox
+                          checked={reg.manually_approved === true}
+                          disabled={reg.payment_status === "paid"}
+                          onCheckedChange={async (checked) => {
+                            if (demoGuard()) return;
+                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_visibility", registration_id: reg.id, manually_approved: checked === true },
+                            });
+                            if (error || data?.error) {
+                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                            } else {
+                              fetchData();
+                            }
+                          }}
+                        />
+                      )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(reg.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}

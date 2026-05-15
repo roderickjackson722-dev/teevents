@@ -402,6 +402,7 @@ function SectionTitleEditor({ tournamentId }: { tournamentId: string }) {
   const qc = useQueryClient();
   const { demoGuard } = useDemoMode();
   const [value, setValue] = useState<string>("");
+  const [hidden, setHidden] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const { data } = useQuery({
@@ -418,39 +419,54 @@ function SectionTitleEditor({ tournamentId }: { tournamentId: string }) {
   });
 
   if (data !== undefined && !loaded) {
-    setValue(data || "");
+    const v = (data || "").toString();
+    if (v === "__hidden__") {
+      setHidden(true);
+      setValue("");
+    } else {
+      setValue(v);
+    }
     setLoaded(true);
   }
 
   const save = async () => {
     if (demoGuard()) return;
+    const payload = hidden ? "__hidden__" : (value.trim() || null);
     const { error } = await supabase
       .from("tournaments")
-      .update({ side_events_section_title: value.trim() || null } as any)
+      .update({ side_events_section_title: payload } as any)
       .eq("id", tournamentId);
     if (error) return toast.error(error.message);
-    toast.success("Section title saved");
+    toast.success("Saved");
     qc.invalidateQueries({ queryKey: ["se-section-title", tournamentId] });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Public section title</CardTitle>
+        <CardTitle className="text-base">Public section heading</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Controls the heading shown above your side events on the public tournament page.
+        </p>
       </CardHeader>
-      <CardContent className="flex items-end gap-3 flex-wrap">
-        <div className="flex-1 min-w-64">
-          <Label>Title shown above side events on the public page</Label>
+      <CardContent className="space-y-4">
+        <label className="flex items-center gap-2 text-sm">
+          <Switch checked={hidden} onCheckedChange={setHidden} />
+          Hide the heading entirely on the public page
+        </label>
+        <div>
+          <Label>Custom heading text</Label>
           <Input
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Side Events & Tickets"
+            disabled={hidden}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Leave blank to use the default ("Side Events & Tickets").
+            Leave blank to use the default ("Side Events & Tickets"), enter your own (e.g. "Add-Ons & Experiences"), or toggle the switch above to hide it completely.
           </p>
         </div>
-        <Button onClick={save}>Save Title</Button>
+        <Button onClick={save}>Save</Button>
       </CardContent>
     </Card>
   );

@@ -1669,16 +1669,24 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== EVENT AGENDA ===== */}
-      {isTabVisible("schedule") && tournament.schedule_info && (
+      {isTabVisible("schedule") && (tournament.schedule_info || (tournament as any).schedule_info_html) && (
         <section id="schedule" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>EVENT AGENDA</h2>
               <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
               <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#e5e5e5" }}>
-                <pre className="whitespace-pre-wrap font-body text-base leading-relaxed" style={{ color: "#444" }}>
-                  {tournament.schedule_info}
-                </pre>
+                {(tournament as any).schedule_info_html && (tournament as any).schedule_info_html.replace(/<[^>]*>/g, "").trim() ? (
+                  <div
+                    className="prose max-w-none font-body text-base leading-relaxed"
+                    style={{ color: "#444" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).schedule_info_html) }}
+                  />
+                ) : (
+                  <pre className="whitespace-pre-wrap font-body text-base leading-relaxed" style={{ color: "#444" }}>
+                    {tournament.schedule_info}
+                  </pre>
+                )}
               </div>
             </motion.div>
           </div>

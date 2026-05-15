@@ -685,7 +685,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     course_details: !!tournament.course_name || !!tournament.location,
     contests: contests.length > 0,
     travel: !!tournament.location,
-    schedule: !!tournament.schedule_info,
+    schedule: !!tournament.schedule_info || !!(tournament as any).schedule_info_html,
     about_organizer: ((tournament as any).show_org_tab ?? true) && hasOrgContent,
     lodging: accommodations.length > 0,
   };

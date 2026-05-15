@@ -750,10 +750,23 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return `${startStr} – ${end.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
   })();
 
-  // Sponsor carousel
+  // Sponsor carousel — merge organizer-added sponsors with publicly-approved sponsor_registrations
+  const allSponsors: PublicSponsor[] = [
+    ...sponsors,
+    ...paidSponsors
+      .filter((p) => !sponsors.some((s) => s.name.trim().toLowerCase() === p.company_name.trim().toLowerCase()))
+      .map((p) => ({
+        id: `reg-${p.id}`,
+        name: p.company_name,
+        tier: "supporter",
+        logo_url: p.logo_url,
+        website_url: p.website_url,
+        show_on_leaderboard: false,
+      })),
+  ];
   const sponsorsPerPage = 3;
-  const sponsorPages = Math.ceil(sponsors.length / sponsorsPerPage);
-  const visibleSponsors = sponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);
+  const sponsorPages = Math.ceil(allSponsors.length / sponsorsPerPage);
+  const visibleSponsors = allSponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);
 
   // Hover effect for design-controlled buttons
   const hoverFilter =

@@ -138,10 +138,10 @@ const CollegeTournament = () => {
   const handleRsvp = async (response: "accepted" | "declined") => {
     if (!invitation) return;
     setRsvpSubmitting(true);
-    const { error } = await supabase
-      .from("college_tournament_invitations")
-      .update({ rsvp_response: response, rsvp_date: new Date().toISOString() } as any)
-      .eq("id", invitation.id);
+    const { error } = await (supabase as any).rpc(
+      "update_college_invitation_rsvp_by_token",
+      { _token: invitation.token, _response: response },
+    );
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

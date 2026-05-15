@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Joyride, { STATUS, ACTIONS, EVENTS, type CallBackProps, type Step } from "react-joyride";
+import { Joyride, STATUS, ACTIONS, EVENTS, type EventData, type Step } from "react-joyride";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";

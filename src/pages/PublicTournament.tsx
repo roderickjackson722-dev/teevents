@@ -243,6 +243,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [sponsorSuccess, setSponsorSuccess] = useState(false);
   const [sponsorVerifying, setSponsorVerifying] = useState(false);
 
+  // Vendor tiers for public display
+  const [vendorTiers, setVendorTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number }[]>([]);
+  const [paidVendors, setPaidVendors] = useState<Array<{ id: string; vendor_name: string; company_name: string | null; logo_url: string | null; website_url: string | null; tier_id: string | null }>>([]);
+  const [vendorSuccess, setVendorSuccess] = useState(false);
+  const [vendorVerifying, setVendorVerifying] = useState(false);
+
    // Forms
    const [bidForm, setBidForm] = useState<{ itemId: string; name: string; email: string; amount: string } | null>(null);
    const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);

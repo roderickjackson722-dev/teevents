@@ -85,16 +85,19 @@ const SponsorRegistrationPage = () => {
 
       const { data: tierData } = await supabase
         .from("sponsorship_tiers")
-        .select("id, name, description, price_cents, benefits, display_order")
+        .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type")
         .eq("tournament_id", t.id)
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
-      setTiers((tierData as Tier[]) || []);
-      if (tierData && tierData.length > 0) {
+      const tiers = (tierData as Tier[]) || [];
+      setTiers(tiers);
+      if (tiers.length > 0) {
         const preselectedTier = searchParams.get("tier");
-        const matchedTier = preselectedTier ? tierData.find((t: any) => t.id === preselectedTier) : null;
-        setSelectedTier(matchedTier ? matchedTier.id : tierData[0].id);
+        const isAvailable = (tt: Tier) => tt.total_spots == null || (tt.spots_used || 0) < tt.total_spots;
+        const matchedTier = preselectedTier ? tiers.find((tt) => tt.id === preselectedTier && isAvailable(tt)) : null;
+        const firstAvailable = tiers.find(isAvailable);
+        setSelectedTier(matchedTier?.id || firstAvailable?.id || "");
       }
       setLoading(false);
     };

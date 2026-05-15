@@ -106,6 +106,7 @@ import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
 import VendorRegistration from "./pages/VendorRegistration";
 import Vendors from "./pages/dashboard/Vendors";
+import SideEvents from "./pages/dashboard/SideEvents";
 import TeamPerformance from "./pages/dashboard/TeamPerformance";
 import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
@@ -239,6 +240,7 @@ const App = () => (
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
              <Route path="/t/:slug/vendors" element={<VendorRegistration />} />
             <Route path="/dashboard/vendors" element={<DashboardLayout><Vendors /></DashboardLayout>} />
+            <Route path="/dashboard/side-events" element={<DashboardLayout><SideEvents /></DashboardLayout>} />
             <Route path="/dashboard/team-performance" element={<DashboardLayout><TeamPerformance /></DashboardLayout>} />
              <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
              <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />

@@ -1882,14 +1882,21 @@ const SiteBuilder = () => {
                 </div>
               )}
 
-              {settings.schedule_info && (
+              {(settings.schedule_info || (settings as any).schedule_info_html) && (
                 <div>
                   <h4 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: settings.site_primary_color || "#1a5c38" }}>
                     Schedule
                   </h4>
-                  <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">
-                    {settings.schedule_info}
-                  </pre>
+                  {(settings as any).schedule_info_html ? (
+                    <div
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml((settings as any).schedule_info_html) }}
+                    />
+                  ) : (
+                    <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">
+                      {settings.schedule_info}
+                    </pre>
+                  )}
                 </div>
               )}
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight, Heart, DollarSign, CheckCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";

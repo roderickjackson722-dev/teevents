@@ -200,7 +200,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0" });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "" });
     setEditTier(null);
   };
 
@@ -211,6 +211,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     const priceCents = Math.round(parseFloat(form.price) * 100);
     if (priceCents <= 0) { toast({ title: "Price must be greater than $0", variant: "destructive" }); setSaving(false); return; }
 
+    const totalSpotsParsed = form.total_spots.trim() === "" ? null : Math.max(0, parseInt(form.total_spots, 10));
     const payload = {
       tournament_id: selectedTournament,
       name: form.name.trim(),
@@ -219,6 +220,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       benefits: form.benefits.trim() || null,
       display_order: parseInt(form.display_order) || 0,
       is_active: true,
+      total_spots: Number.isFinite(totalSpotsParsed as number) ? totalSpotsParsed : null,
+      package_type: form.package_type || null,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
@@ -249,6 +252,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       price: (tier.price_cents / 100).toFixed(2),
       benefits: tier.benefits || "",
       display_order: String(tier.display_order),
+      total_spots: tier.total_spots == null ? "" : String(tier.total_spots),
+      package_type: tier.package_type || "",
     });
     setDialogOpen(true);
   };

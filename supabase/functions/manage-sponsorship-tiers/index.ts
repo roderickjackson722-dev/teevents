@@ -27,7 +27,7 @@ const normalizeOptionalText = (value: unknown, maxLength: number) => {
   return trimmed ? trimmed.slice(0, maxLength) : null;
 };
 
-const sanitizeTierPayload = (payload: TierInput, tournamentId: string, fallbackOrder = 0) => {
+const sanitizeTierPayload = (payload: any, tournamentId: string, fallbackOrder = 0) => {
   const name = typeof payload.name === "string" ? payload.name.trim().slice(0, 100) : "";
   const priceCents = Number(payload.price_cents);
   const displayOrder = Number.isFinite(Number(payload.display_order))
@@ -37,6 +37,14 @@ const sanitizeTierPayload = (payload: TierInput, tournamentId: string, fallbackO
   if (!name) throw new Error("Tier name is required");
   if (!Number.isFinite(priceCents) || priceCents <= 0) throw new Error("Tier price must be greater than $0");
 
+  const totalSpotsRaw = payload.total_spots;
+  const totalSpots = totalSpotsRaw === null || totalSpotsRaw === undefined || totalSpotsRaw === ""
+    ? null
+    : Math.max(0, Math.trunc(Number(totalSpotsRaw)));
+  const packageType = typeof payload.package_type === "string" && payload.package_type.trim()
+    ? payload.package_type.trim().slice(0, 50)
+    : null;
+
   return {
     tournament_id: tournamentId,
     name,
@@ -45,6 +53,8 @@ const sanitizeTierPayload = (payload: TierInput, tournamentId: string, fallbackO
     benefits: normalizeOptionalText(payload.benefits, 4000),
     display_order: displayOrder,
     is_active: payload.is_active ?? true,
+    total_spots: Number.isFinite(totalSpots as number) ? totalSpots : null,
+    package_type: packageType,
   };
 };
 

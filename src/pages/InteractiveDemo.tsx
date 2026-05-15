@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
+import { Joyride, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
@@ -14,7 +14,6 @@ const steps: Step[] = [
     title: "Tournament at a Glance",
     content:
       "See how many players have registered, how much revenue you've collected, and key deadlines — all in one place.",
-    disableBeacon: true,
     placement: "bottom",
   },
   {
@@ -57,8 +56,7 @@ const steps: Step[] = [
     title: "Ready to Run Your Own Tournament?",
     content:
       "Get started with no credit card required. Upgrade to Pro ($399 per tournament) when you need advanced features like the live leaderboard, sponsor portal, and auction tools.",
-    placement: "center",
-    disableScrolling: true,
+    placement: "auto",
   },
 ];
 
@@ -73,13 +71,20 @@ export default function InteractiveDemo() {
   }, []);
 
   const handleCallback = (data: CallBackProps) => {
-    const { status, type } = data;
+    const { status, action, lifecycle, index } = data;
     const finished: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
     if (finished.includes(status)) {
       setRun(false);
       try {
         localStorage.setItem(STORAGE_KEY, "1");
       } catch {}
+    }
+    if (
+      action === "next" &&
+      lifecycle === "complete" &&
+      index === steps.length - 1
+    ) {
+      navigate("/login");
     }
   };
 
@@ -106,17 +111,7 @@ export default function InteractiveDemo() {
         showProgress
         showSkipButton
         scrollToFirstStep
-        disableScrolling={false}
-        callback={(data) => {
-          handleCallback(data);
-          if (
-            data.action === "next" &&
-            data.lifecycle === "complete" &&
-            data.index === steps.length - 1
-          ) {
-            navigate("/login");
-          }
-        }}
+        callback={handleCallback}
         locale={{
           back: "Back",
           close: "Close",
@@ -126,31 +121,16 @@ export default function InteractiveDemo() {
         }}
         styles={{
           options: {
-            primaryColor: "hsl(43 91% 55%)",
+            primaryColor: "#F5A623",
             textColor: "#1a5c38",
             zIndex: 10000,
             arrowColor: "#ffffff",
             backgroundColor: "#ffffff",
           },
-          buttonNext: {
-            backgroundColor: "#F5A623",
-            color: "#1a5c38",
-            fontWeight: 700,
-            borderRadius: 6,
-          },
-          buttonBack: {
-            color: "#1a5c38",
-          },
-          buttonSkip: {
-            color: "#6b7280",
-          },
-          tooltipTitle: {
-            color: "#1a5c38",
-            fontWeight: 700,
-          },
         }}
       />
 
+      {/* Floating Restart / CTA controls */}
       <div className="fixed bottom-4 left-4 z-[9999] flex gap-2">
         <Button
           size="sm"

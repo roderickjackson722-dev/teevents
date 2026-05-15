@@ -41,6 +41,9 @@ interface SponsorshipTier {
   display_order: number;
   is_active: boolean;
   created_at: string;
+  total_spots: number | null;
+  spots_used: number;
+  package_type: string | null;
 }
 
 interface SponsorRegistration {
@@ -58,6 +61,8 @@ interface SponsorRegistration {
   payment_status: string;
   paid_at: string | null;
   created_at: string;
+  show_on_public?: boolean;
+  manually_approved?: boolean;
   _source?: "registration" | "legacy";
   _legacyTier?: string | null;
 }
@@ -130,6 +135,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     tier_id: "",
     amount: "",
     payment_status: "pending",
+    show_on_public: true,
+    manually_approved: false,
   });
   const [form, setForm] = useState({
     name: "",
@@ -137,6 +144,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     price: "",
     benefits: "",
     display_order: "0",
+    total_spots: "",
+    package_type: "",
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
@@ -191,7 +200,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0" });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "" });
     setEditTier(null);
   };
 
@@ -202,6 +211,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     const priceCents = Math.round(parseFloat(form.price) * 100);
     if (priceCents <= 0) { toast({ title: "Price must be greater than $0", variant: "destructive" }); setSaving(false); return; }
 
+    const totalSpotsParsed = form.total_spots.trim() === "" ? null : Math.max(0, parseInt(form.total_spots, 10));
     const payload = {
       tournament_id: selectedTournament,
       name: form.name.trim(),
@@ -210,6 +220,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       benefits: form.benefits.trim() || null,
       display_order: parseInt(form.display_order) || 0,
       is_active: true,
+      total_spots: Number.isFinite(totalSpotsParsed as number) ? totalSpotsParsed : null,
+      package_type: form.package_type || null,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
@@ -240,6 +252,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       price: (tier.price_cents / 100).toFixed(2),
       benefits: tier.benefits || "",
       display_order: String(tier.display_order),
+      total_spots: tier.total_spots == null ? "" : String(tier.total_spots),
+      package_type: tier.package_type || "",
     });
     setDialogOpen(true);
   };
@@ -305,7 +319,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     setRegForm({
       company_name: "", contact_name: "", contact_email: "", contact_phone: "",
       website_url: "", description: "", logo_url: "", tier_id: "", amount: "",
-      payment_status: "pending",
+      payment_status: "pending", show_on_public: true, manually_approved: false,
     });
   };
 
@@ -322,6 +336,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       tier_id: reg.tier_id || "",
       amount: ((reg.amount_cents || 0) / 100).toFixed(2),
       payment_status: reg.payment_status || "pending",
+      show_on_public: reg.show_on_public !== false,
+      manually_approved: !!reg.manually_approved,
     });
     setRegDialogOpen(true);
   };
@@ -360,6 +376,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       tier_id: regForm.tier_id || null,
       amount_cents: amountCents,
       payment_status: regForm.payment_status,
+      show_on_public: regForm.show_on_public,
+      manually_approved: regForm.manually_approved,
     };
 
     // If editing a legacy tournament_sponsors row, migrate it: delete legacy + create new registration
@@ -425,6 +443,28 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <Textarea value={form.benefits} onChange={e => setForm({ ...form, benefits: e.target.value })} placeholder="• Logo on tournament website&#10;• Social media shoutout&#10;• 2 complimentary player spots" rows={5} maxLength={1000} />
                     <p className="text-xs text-muted-foreground mt-1">Use bullet points (•) for each benefit, one per line.</p>
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Total Spots</Label>
+                      <Input type="number" min="0" value={form.total_spots} onChange={e => setForm({ ...form, total_spots: e.target.value })} placeholder="Unlimited" />
+                      <p className="text-xs text-muted-foreground mt-1">Leave blank for unlimited.</p>
+                    </div>
+                    <div>
+                      <Label>Package Type</Label>
+                      <Select value={form.package_type || "_none"} onValueChange={(v) => setForm({ ...form, package_type: v === "_none" ? "" : v })}>
+                        <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_none">— None —</SelectItem>
+                          <SelectItem value="title">Title</SelectItem>
+                          <SelectItem value="presenting">Presenting</SelectItem>
+                          <SelectItem value="hole">Hole</SelectItem>
+                          <SelectItem value="beverage">Beverage</SelectItem>
+                          <SelectItem value="lunch">Lunch</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div>
                     <Label>Display Order</Label>
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />
@@ -456,9 +496,18 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
               {tiers.map(tier => (
                 <div key={tier.id} className="flex items-start justify-between gap-4 p-4 rounded-lg border border-border bg-background">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-display font-bold text-foreground">{tier.name}</h4>
                       <span className="text-primary font-mono font-semibold text-sm">{fmt(tier.price_cents)}</span>
+                      {tier.package_type && <Badge variant="outline" className="text-xs capitalize">{tier.package_type}</Badge>}
+                      {tier.total_spots != null && (() => {
+                        const remaining = Math.max(0, tier.total_spots - (tier.spots_used || 0));
+                        return (
+                          <Badge variant={remaining === 0 ? "destructive" : "secondary"} className="text-xs">
+                            {remaining === 0 ? "Sold Out" : `${remaining} of ${tier.total_spots} left`}
+                          </Badge>
+                        );
+                      })()}
                       {!tier.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
                     </div>
                     {tier.description && <p className="text-sm text-muted-foreground mt-1">{tier.description}</p>}

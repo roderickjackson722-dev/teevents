@@ -2728,8 +2728,10 @@ export type Database = {
           description: string | null
           id: string
           logo_url: string | null
+          manually_approved: boolean
           paid_at: string | null
           payment_status: string
+          show_on_public: boolean
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           tier_id: string | null
@@ -2746,8 +2748,10 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          manually_approved?: boolean
           paid_at?: string | null
           payment_status?: string
+          show_on_public?: boolean
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           tier_id?: string | null
@@ -2764,8 +2768,10 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          manually_approved?: boolean
           paid_at?: string | null
           payment_status?: string
+          show_on_public?: boolean
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           tier_id?: string | null
@@ -2860,7 +2866,10 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
+          package_type: string | null
           price_cents: number
+          spots_used: number
+          total_spots: number | null
           tournament_id: string
         }
         Insert: {
@@ -2871,7 +2880,10 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
+          package_type?: string | null
           price_cents: number
+          spots_used?: number
+          total_spots?: number | null
           tournament_id: string
         }
         Update: {
@@ -2882,7 +2894,10 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
+          package_type?: string | null
           price_cents?: number
+          spots_used?: number
+          total_spots?: number | null
           tournament_id?: string
         }
         Relationships: [
@@ -4478,6 +4493,8 @@ export type Database = {
           site_hero_opacity: number
           site_hero_subtitle: string | null
           site_hero_title: string | null
+          site_logo_color_mode: string
+          site_logo_color_value: string | null
           site_logo_offset_x: number
           site_logo_offset_y: number
           site_logo_position: string | null
@@ -4590,6 +4607,8 @@ export type Database = {
           site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
+          site_logo_color_mode?: string
+          site_logo_color_value?: string | null
           site_logo_offset_x?: number
           site_logo_offset_y?: number
           site_logo_position?: string | null
@@ -4702,6 +4721,8 @@ export type Database = {
           site_hero_opacity?: number
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
+          site_logo_color_mode?: string
+          site_logo_color_value?: string | null
           site_logo_offset_x?: number
           site_logo_offset_y?: number
           site_logo_position?: string | null
@@ -5159,6 +5180,7 @@ export type Database = {
       }
       vendor_registrations: {
         Row: {
+          amount_cents: number
           answers: Json | null
           booth_fee_cents: number | null
           booth_location: string | null
@@ -5166,24 +5188,32 @@ export type Database = {
           check_in_code: string | null
           checked_in: boolean
           checked_in_at: string | null
+          company_name: string | null
           contact_email: string
           contact_name: string
           contact_phone: string | null
           created_at: string
+          description: string | null
           id: string
+          logo_url: string | null
+          manually_approved: boolean
           notes: string | null
           paid_at: string | null
           payment_status: string
           reminder_day_sent_at: string | null
           reminder_week_sent_at: string | null
+          show_on_public: boolean
           status: string
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
+          tier_id: string | null
           tournament_id: string
           updated_at: string
           vendor_name: string
+          website_url: string | null
         }
         Insert: {
+          amount_cents?: number
           answers?: Json | null
           booth_fee_cents?: number | null
           booth_location?: string | null
@@ -5191,24 +5221,32 @@ export type Database = {
           check_in_code?: string | null
           checked_in?: boolean
           checked_in_at?: string | null
+          company_name?: string | null
           contact_email: string
           contact_name: string
           contact_phone?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          logo_url?: string | null
+          manually_approved?: boolean
           notes?: string | null
           paid_at?: string | null
           payment_status?: string
           reminder_day_sent_at?: string | null
           reminder_week_sent_at?: string | null
+          show_on_public?: boolean
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
+          tier_id?: string | null
           tournament_id: string
           updated_at?: string
           vendor_name: string
+          website_url?: string | null
         }
         Update: {
+          amount_cents?: number
           answers?: Json | null
           booth_fee_cents?: number | null
           booth_location?: string | null
@@ -5216,26 +5254,93 @@ export type Database = {
           check_in_code?: string | null
           checked_in?: boolean
           checked_in_at?: string | null
+          company_name?: string | null
           contact_email?: string
           contact_name?: string
           contact_phone?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          logo_url?: string | null
+          manually_approved?: boolean
           notes?: string | null
           paid_at?: string | null
           payment_status?: string
           reminder_day_sent_at?: string | null
           reminder_week_sent_at?: string | null
+          show_on_public?: boolean
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
+          tier_id?: string | null
           tournament_id?: string
           updated_at?: string
           vendor_name?: string
+          website_url?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "vendor_registrations_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_tiers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "vendor_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_tiers: {
+        Row: {
+          benefits: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          spots_used: number
+          total_spots: number | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          benefits?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents?: number
+          spots_used?: number
+          total_spots?: number | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          benefits?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          spots_used?: number
+          total_spots?: number | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_tiers_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"

@@ -79,4 +79,10 @@ verify_jwt = false
 [functions.daily-fee-summary]
 verify_jwt = false
 
+[functions.send-demo-welcome]
+verify_jwt = false
+
+[functions.process-demo-followups]
+verify_jwt = false
+
 

@@ -113,6 +113,7 @@ export default function SideEvents() {
       max_tickets: e.max_tickets?.toString() || "",
       is_active: e.is_active,
       show_on_public: e.show_on_public,
+      hide_ticket_count: e.hide_ticket_count ?? false,
     });
     setOpen(true);
   };

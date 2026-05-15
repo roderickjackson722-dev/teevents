@@ -693,6 +693,63 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Logo color override CSS filter
+  const getLogoFilterStyle = (): React.CSSProperties => {
+    const mode = tournament?.site_logo_color_mode;
+    if (!mode || mode === "original") return {};
+    if (mode === "white") return { filter: "brightness(0) invert(1)" };
+    if (mode === "black") return { filter: "brightness(0)" };
+    if (mode === "custom" && tournament?.site_logo_color_value) {
+      // Tint via mask: render solid color box, mask by logo. Done inline via CSS filter chain isn't perfect; use mask-image fallback approach via data attr is complex—use background-color trick.
+      return {};
+    }
+    return {};
+  };
+  const renderLogo = (src: string, alt: string, className: string, extraStyle: React.CSSProperties = {}) => {
+    const mode = tournament?.site_logo_color_mode;
+    const customColor = tournament?.site_logo_color_value;
+    if (mode === "custom" && customColor) {
+      return (
+        <div
+          aria-label={alt}
+          role="img"
+          className={className}
+          style={{
+            ...extraStyle,
+            backgroundColor: customColor,
+            WebkitMaskImage: `url(${src})`,
+            maskImage: `url(${src})`,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+          }}
+        />
+      );
+    }
+    return <img src={src} alt={alt} className={className} style={{ ...extraStyle, ...getLogoFilterStyle() }} />;
+  };
+
+  // Format the event date — supports an optional end_date for multi-day events
+  const formattedEventDate = (() => {
+    if (!tournament?.date) return null;
+    const start = new Date(tournament.date + "T00:00:00");
+    const startStr = start.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    if (!tournament.end_date || tournament.end_date === tournament.date) return startStr;
+    const end = new Date(tournament.end_date + "T00:00:00");
+    const sameYear = end.getFullYear() === start.getFullYear();
+    const sameMonth = sameYear && end.getMonth() === start.getMonth();
+    if (sameMonth) {
+      return `${start.toLocaleDateString("en-US", { month: "long", day: "numeric" })}–${end.getDate()}, ${end.getFullYear()}`;
+    }
+    if (sameYear) {
+      return `${start.toLocaleDateString("en-US", { month: "long", day: "numeric" })} – ${end.toLocaleDateString("en-US", { month: "long", day: "numeric" })}, ${end.getFullYear()}`;
+    }
+    return `${startStr} – ${end.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+  })();
+
   // Sponsor carousel
   const sponsorsPerPage = 3;
   const sponsorPages = Math.ceil(sponsors.length / sponsorsPerPage);

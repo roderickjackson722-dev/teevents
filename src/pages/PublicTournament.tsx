@@ -31,7 +31,7 @@ interface TournamentSite {
   site_logo_color_value?: string | null;
   site_hero_title: string | null; site_hero_subtitle: string | null; site_primary_color: string | null;
   site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
-  contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
+  contact_phone: string | null; schedule_info: string | null; schedule_info_html?: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
   waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;

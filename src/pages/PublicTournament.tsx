@@ -1130,7 +1130,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {galleryPosition === "top" && galleryNode}
 
       {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
-      {isTabVisible("sponsors") && sponsors.length > 0 && (
+      {isTabVisible("sponsors") && allSponsors.length > 0 && (
         <section id="sponsors" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>

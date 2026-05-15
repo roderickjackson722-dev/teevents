@@ -153,20 +153,18 @@ export default function InteractiveDemo() {
         steps={steps}
         run={run}
         continuous
-        showProgress
-        showSkipButton
         scrollToFirstStep
-        disableScrollParentFix
-        scrollOffset={100}
-        callback={onCallback}
-        styles={{
-          options: {
-            primaryColor: "#F5A623",
-            textColor: "#1a5c38",
-            arrowColor: "#ffffff",
-            backgroundColor: "#ffffff",
-            zIndex: 10000,
-          },
+        onEvent={onCallback}
+        options={{
+          primaryColor: "#F5A623",
+          textColor: "#1a5c38",
+          arrowColor: "#ffffff",
+          backgroundColor: "#ffffff",
+          zIndex: 10000,
+          showProgress: true,
+          scrollOffset: 100,
+          skipBeacon: true,
+          buttons: ["back", "skip", "primary"],
         }}
         locale={{
           back: "Back",

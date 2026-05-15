@@ -43,6 +43,28 @@ const empty = {
   hide_ticket_count: false,
 };
 
+function exportTicketsCsv(tickets: any[], events: { id: string; name: string }[]) {
+  const eventName = (id: string) => events.find((e) => e.id === id)?.name || "";
+  const escape = (v: any) => {
+    const s = v == null ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const headers = ["Event", "Attendee Name", "Email", "Phone", "Quantity", "Status", "Ticket Code", "Checked In", "Purchased At"];
+  const rows = tickets.map((t) => [
+    eventName(t.side_event_id), t.attendee_name, t.attendee_email, t.attendee_phone || "",
+    t.quantity, t.payment_status, t.ticket_code,
+    t.checked_in_at ? new Date(t.checked_in_at).toISOString() : "",
+    t.created_at ? new Date(t.created_at).toISOString() : "",
+  ]);
+  const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `side-event-tickets-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function SideEvents() {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();

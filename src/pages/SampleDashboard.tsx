@@ -147,6 +147,7 @@ const SampleDashboard = () => {
             {cat.items.map((item) => (
               <button
                 key={item.key}
+                data-tour={`nav-${item.key}`}
                 onClick={() => handleTabClick(item.key)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs transition-colors ${
                   activeTab === item.key

@@ -15,6 +15,9 @@ interface Tier {
   price_cents: number;
   benefits: string | null;
   display_order: number;
+  total_spots: number | null;
+  spots_used: number;
+  package_type: string | null;
 }
 
 interface TournamentInfo {

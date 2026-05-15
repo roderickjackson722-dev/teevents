@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +23,10 @@ interface PublicProduct {
 }
 interface TournamentSite {
   id: string; title: string; slug: string | null; description: string | null; date: string | null;
+  end_date: string | null;
   location: string | null; course_name: string | null; site_logo_url: string | null;
+  site_logo_color_mode?: string | null;
+  site_logo_color_value?: string | null;
   site_hero_title: string | null; site_hero_subtitle: string | null; site_primary_color: string | null;
   site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; registration_url: string | null;
@@ -235,7 +238,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [sponsorIndex, setSponsorIndex] = useState(0);
 
   // Sponsorship tiers for public display
-  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number }[]>([]);
+  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number; package_type: string | null }[]>([]);
+  const [paidSponsors, setPaidSponsors] = useState<Array<{ id: string; company_name: string; logo_url: string | null; website_url: string | null; tier_id: string | null }>>([]);
   const [sponsorSuccess, setSponsorSuccess] = useState(false);
   const [sponsorVerifying, setSponsorVerifying] = useState(false);
 
@@ -328,7 +332,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           })
           .catch(() => {});
 
-        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes] = await Promise.all([
+        const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes, paidSponsorsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
@@ -339,8 +343,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_registration_tiers").select("id, name, description, eligibility_description, price_cents, max_registrants").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
-          supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
+          supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           (supabase as any).from("tournament_accommodations").select("id, hotel_name, address, phone, website_url, group_code, booking_deadline, notes, display_order, accommodation_room_types(id, room_type, rate_cents, rate_note, max_occupancy, display_order, is_active), accommodation_custom_fields(id, field_name, field_value, display_order)").eq("tournament_id", t.id).eq("is_active", true).order("display_order"),
+          supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
@@ -352,6 +357,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setContests((contestsRes.data as any[]) || []);
         setSponsorshipTiers((sponsorshipTiersRes.data as any[]) || []);
         setAccommodations(((accommodationsRes as any)?.data as any[]) || []);
+        setPaidSponsors((paidSponsorsRes.data as any[]) || []);
 
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
@@ -687,10 +693,80 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Sponsor carousel
+  // Logo color override CSS filter
+  const getLogoFilterStyle = (): CSSProperties => {
+    const mode = tournament?.site_logo_color_mode;
+    if (!mode || mode === "original") return {};
+    if (mode === "white") return { filter: "brightness(0) invert(1)" };
+    if (mode === "black") return { filter: "brightness(0)" };
+    if (mode === "custom" && tournament?.site_logo_color_value) {
+      // Tint via mask: render solid color box, mask by logo. Done inline via CSS filter chain isn't perfect; use mask-image fallback approach via data attr is complex—use background-color trick.
+      return {};
+    }
+    return {};
+  };
+  const renderLogo = (src: string, alt: string, className: string, extraStyle: CSSProperties = {}) => {
+    const mode = tournament?.site_logo_color_mode;
+    const customColor = tournament?.site_logo_color_value;
+    if (mode === "custom" && customColor) {
+      return (
+        <div
+          aria-label={alt}
+          role="img"
+          className={className}
+          style={{
+            ...extraStyle,
+            backgroundColor: customColor,
+            WebkitMaskImage: `url(${src})`,
+            maskImage: `url(${src})`,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+          }}
+        />
+      );
+    }
+    return <img src={src} alt={alt} className={className} style={{ ...extraStyle, ...getLogoFilterStyle() }} />;
+  };
+
+  // Format the event date — supports an optional end_date for multi-day events
+  const formattedEventDate = (() => {
+    if (!tournament?.date) return null;
+    const start = new Date(tournament.date + "T00:00:00");
+    const startStr = start.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    if (!tournament.end_date || tournament.end_date === tournament.date) return startStr;
+    const end = new Date(tournament.end_date + "T00:00:00");
+    const sameYear = end.getFullYear() === start.getFullYear();
+    const sameMonth = sameYear && end.getMonth() === start.getMonth();
+    if (sameMonth) {
+      return `${start.toLocaleDateString("en-US", { month: "long", day: "numeric" })}–${end.getDate()}, ${end.getFullYear()}`;
+    }
+    if (sameYear) {
+      return `${start.toLocaleDateString("en-US", { month: "long", day: "numeric" })} – ${end.toLocaleDateString("en-US", { month: "long", day: "numeric" })}, ${end.getFullYear()}`;
+    }
+    return `${startStr} – ${end.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+  })();
+
+  // Sponsor carousel — merge organizer-added sponsors with publicly-approved sponsor_registrations
+  const allSponsors: PublicSponsor[] = [
+    ...sponsors,
+    ...paidSponsors
+      .filter((p) => !sponsors.some((s) => s.name.trim().toLowerCase() === p.company_name.trim().toLowerCase()))
+      .map((p) => ({
+        id: `reg-${p.id}`,
+        name: p.company_name,
+        tier: "supporter",
+        logo_url: p.logo_url,
+        website_url: p.website_url,
+        show_on_leaderboard: false,
+      })),
+  ];
   const sponsorsPerPage = 3;
-  const sponsorPages = Math.ceil(sponsors.length / sponsorsPerPage);
-  const visibleSponsors = sponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);
+  const sponsorPages = Math.ceil(allSponsors.length / sponsorsPerPage);
+  const visibleSponsors = allSponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);
 
   // Hover effect for design-controlled buttons
   const hoverFilter =
@@ -842,14 +918,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           {/* Logo */}
           {showLogo && tournament.site_logo_url && (
             <div className={`w-full flex mb-6 ${flexJustify[logoPos]}`}>
-              <img
-                src={tournament.site_logo_url}
-                alt={heroTitle}
-                className={`object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`}
-                style={{
-                  transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)`,
-                }}
-              />
+              {renderLogo(
+                tournament.site_logo_url,
+                heroTitle,
+                `object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`,
+                { transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)` },
+              )}
             </div>
           )}
 
@@ -885,10 +959,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
           {/* Event meta badges */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
-            {tournament.date && (
+            {formattedEventDate && (
               <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
                 <Calendar className="h-4 w-4 shrink-0" />
-                {new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                {formattedEventDate}
               </span>
             )}
             {tournament.course_name && (
@@ -1056,7 +1130,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {galleryPosition === "top" && galleryNode}
 
       {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
-      {isTabVisible("sponsors") && sponsors.length > 0 && (
+      {isTabVisible("sponsors") && allSponsors.length > 0 && (
         <section id="sponsors" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
@@ -1166,24 +1240,40 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               {sponsorshipTiers.length > 0 ? (
                 <>
                   <div className={`grid gap-6 ${sponsorshipTiers.length === 1 ? "max-w-md mx-auto" : sponsorshipTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-                    {sponsorshipTiers.map((tier, i) => (
+                    {sponsorshipTiers.map((tier, i) => {
+                      const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
+                      const soldOut = remaining === 0;
+                      const packageLabel = tier.package_type
+                        ? tier.package_type.charAt(0).toUpperCase() + tier.package_type.slice(1).replace(/_/g, " ")
+                        : null;
+                      return (
                       <motion.div
                         key={tier.id}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.1 }}
-                        className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                        className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${soldOut ? "opacity-70" : ""}`}
                         style={{ borderColor: "#e5e5e5" }}
                       >
                         <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
                           <Award className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
+                          {packageLabel && (
+                            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider mb-1 px-2 py-0.5 rounded" style={{ backgroundColor: secondary + "20", color: "#555" }}>
+                              {packageLabel}
+                            </span>
+                          )}
                           <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
                           <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
                             {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
                           </p>
                           {tier.description && (
                             <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
+                          )}
+                          {remaining != null && (
+                            <p className={`text-xs mt-2 font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
+                              {soldOut ? "Sold Out" : `${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
+                            </p>
                           )}
                         </div>
 
@@ -1196,16 +1286,27 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                         )}
 
                         <div className="p-6 pt-2">
-                          <a
-                            href={`/t/${slug}/sponsor?tier=${tier.id}`}
-                            className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: secondary, color: primary }}
-                          >
-                            Select
-                          </a>
+                          {soldOut ? (
+                            <button
+                              type="button"
+                              disabled
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase bg-gray-200 text-gray-500 cursor-not-allowed"
+                            >
+                              Sold Out
+                            </button>
+                          ) : (
+                            <a
+                              href={`/t/${slug}/sponsor?tier=${tier.id}`}
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                              style={{ backgroundColor: secondary, color: primary }}
+                            >
+                              Select
+                            </a>
+                          )}
                         </div>
                       </motion.div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                 </>
@@ -1229,7 +1330,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               {tournament.site_logo_url && (
-                <img src={tournament.site_logo_url} alt="" className="h-16 w-16 mx-auto mb-6 object-contain" />
+                renderLogo(tournament.site_logo_url, "", "h-16 w-16 mx-auto mb-6 object-contain")
               )}
               <p className="leading-relaxed whitespace-pre-wrap" style={{ color: textColor, fontSize: `${bodySize}px` }}>
                 {tournament.description}

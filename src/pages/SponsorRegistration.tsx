@@ -15,6 +15,9 @@ interface Tier {
   price_cents: number;
   benefits: string | null;
   display_order: number;
+  total_spots: number | null;
+  spots_used: number;
+  package_type: string | null;
 }
 
 interface TournamentInfo {
@@ -82,16 +85,19 @@ const SponsorRegistrationPage = () => {
 
       const { data: tierData } = await supabase
         .from("sponsorship_tiers")
-        .select("id, name, description, price_cents, benefits, display_order")
+        .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type")
         .eq("tournament_id", t.id)
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
-      setTiers((tierData as Tier[]) || []);
-      if (tierData && tierData.length > 0) {
+      const tiers = (tierData as Tier[]) || [];
+      setTiers(tiers);
+      if (tiers.length > 0) {
         const preselectedTier = searchParams.get("tier");
-        const matchedTier = preselectedTier ? tierData.find((t: any) => t.id === preselectedTier) : null;
-        setSelectedTier(matchedTier ? matchedTier.id : tierData[0].id);
+        const isAvailable = (tt: Tier) => tt.total_spots == null || (tt.spots_used || 0) < tt.total_spots;
+        const matchedTier = preselectedTier ? tiers.find((tt) => tt.id === preselectedTier && isAvailable(tt)) : null;
+        const firstAvailable = tiers.find(isAvailable);
+        setSelectedTier(matchedTier?.id || firstAvailable?.id || "");
       }
       setLoading(false);
     };
@@ -265,13 +271,21 @@ const SponsorRegistrationPage = () => {
           <div className="bg-card border border-border rounded-xl p-6">
             <h2 className="text-lg font-display font-bold text-foreground mb-4">Select Your Sponsorship Level</h2>
             <div className="space-y-3">
-              {tiers.map(tier => (
+              {tiers.map(tier => {
+                const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
+                const soldOut = remaining === 0;
+                const packageLabel = tier.package_type
+                  ? tier.package_type.charAt(0).toUpperCase() + tier.package_type.slice(1).replace(/_/g, " ")
+                  : null;
+                return (
                 <label
                   key={tier.id}
-                  className={`block p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    selectedTier === tier.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/40"
+                  className={`block p-4 rounded-lg border-2 transition-all ${
+                    soldOut
+                      ? "border-border bg-muted/40 opacity-60 cursor-not-allowed"
+                      : selectedTier === tier.id
+                      ? "border-primary bg-primary/5 cursor-pointer"
+                      : "border-border hover:border-primary/40 cursor-pointer"
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -280,12 +294,25 @@ const SponsorRegistrationPage = () => {
                       name="tier"
                       value={tier.id}
                       checked={selectedTier === tier.id}
-                      onChange={() => setSelectedTier(tier.id)}
+                      onChange={() => !soldOut && setSelectedTier(tier.id)}
+                      disabled={soldOut}
                       className="mt-1 accent-primary"
                     />
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-display font-bold text-foreground">{tier.name}</h3>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-display font-bold text-foreground">{tier.name}</h3>
+                          {packageLabel && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              {packageLabel}
+                            </span>
+                          )}
+                          {remaining != null && (
+                            <span className={`text-xs font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
+                              {soldOut ? "Sold Out" : `${remaining} left`}
+                            </span>
+                          )}
+                        </div>
                         <span className="font-mono font-semibold text-primary">{fmt(tier.price_cents)}</span>
                       </div>
                       {tier.description && <p className="text-sm text-muted-foreground mt-1">{tier.description}</p>}
@@ -295,7 +322,8 @@ const SponsorRegistrationPage = () => {
                     </div>
                   </div>
                 </label>
-              ))}
+                );
+              })}
             </div>
           </div>
 

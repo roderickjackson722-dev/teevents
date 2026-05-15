@@ -200,6 +200,8 @@ interface SiteSettings {
   course_par: number | null;
   site_published: boolean | null;
   site_logo_url: string | null;
+  site_logo_color_mode: string | null;
+  site_logo_color_value: string | null;
   site_hero_title: string | null;
   site_hero_subtitle: string | null;
   site_primary_color: string | null;
@@ -340,6 +342,8 @@ const SiteBuilder = () => {
         site_button_radius: settings.site_button_radius ?? 8,
         site_button_hover_effect: settings.site_button_hover_effect || "darken",
         gallery_position: settings.gallery_position || "default",
+        site_logo_color_mode: settings.site_logo_color_mode || "original",
+        site_logo_color_value: settings.site_logo_color_value || null,
       } as any)
       .eq("id", settings.id);
 
@@ -661,6 +665,54 @@ const SiteBuilder = () => {
                     <p className="text-[11px] text-muted-foreground sm:col-span-2 -mt-1">
                       Use these sliders to move the logo away from the title on the public page. 0 = original placement.
                     </p>
+                  </div>
+                )}
+                {/* Logo color override */}
+                {settings.site_logo_url && (
+                  <div className="mt-4 p-3 rounded-md border border-border bg-muted/30 space-y-3">
+                    <div>
+                      <Label className="text-xs">Logo color (overrides original)</Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        Useful when your logo doesn't have enough contrast against the hero background. "Original" keeps the uploaded colors.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "original", label: "Original" },
+                        { value: "white", label: "White" },
+                        { value: "black", label: "Black" },
+                        { value: "custom", label: "Custom" },
+                      ].map((opt) => {
+                        const active = (settings.site_logo_color_mode || "original") === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => updateField("site_logo_color_mode" as any, opt.value)}
+                            className={`px-3 py-1.5 rounded-md text-xs border transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-muted"}`}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {settings.site_logo_color_mode === "custom" && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="color"
+                          value={settings.site_logo_color_value || "#ffffff"}
+                          onChange={(e) => updateField("site_logo_color_value" as any, e.target.value)}
+                          className="h-9 w-14 p-1"
+                        />
+                        <Input
+                          type="text"
+                          value={settings.site_logo_color_value || ""}
+                          onChange={(e) => updateField("site_logo_color_value" as any, e.target.value)}
+                          placeholder="#ffffff"
+                          className="h-9 max-w-[140px] text-xs font-mono"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

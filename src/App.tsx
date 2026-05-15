@@ -106,6 +106,7 @@ import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
 import VendorRegistration from "./pages/VendorRegistration";
 import Vendors from "./pages/dashboard/Vendors";
+import SideEvents from "./pages/dashboard/SideEvents";
 import TeamPerformance from "./pages/dashboard/TeamPerformance";
 import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";

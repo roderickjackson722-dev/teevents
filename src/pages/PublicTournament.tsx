@@ -250,6 +250,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [vendorSuccess, setVendorSuccess] = useState(false);
   const [vendorVerifying, setVendorVerifying] = useState(false);
 
+  // Side events for public ticket sales
+  const [sideEvents, setSideEvents] = useState<Array<{ id: string; name: string; description: string | null; event_date: string | null; location: string | null; price_cents: number; max_tickets: number | null; tickets_sold: number }>>([]);
+  const [sideEventSuccess, setSideEventSuccess] = useState(false);
+  const [sideEventVerifying, setSideEventVerifying] = useState(false);
+  const [sideEventDialog, setSideEventDialog] = useState<{ id: string; name: string; price_cents: number } | null>(null);
+  const [seForm, setSeForm] = useState({ name: "", email: "", phone: "", quantity: "1" });
+  const [seSubmitting, setSeSubmitting] = useState(false);
+
    // Forms
    const [bidForm, setBidForm] = useState<{ itemId: string; name: string; email: string; amount: string } | null>(null);
    const [volForm, setVolForm] = useState<{ roleId: string; name: string; email: string; phone: string } | null>(null);

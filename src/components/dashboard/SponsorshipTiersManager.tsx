@@ -746,6 +746,47 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    <TableCell className="text-center">
+                      {reg._source === "legacy" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <Switch
+                          checked={reg.show_on_public !== false}
+                          onCheckedChange={async (checked) => {
+                            if (demoGuard()) return;
+                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_visibility", registration_id: reg.id, show_on_public: checked },
+                            });
+                            if (error || data?.error) {
+                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                            } else {
+                              fetchData();
+                            }
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reg._source === "legacy" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <Checkbox
+                          checked={reg.manually_approved === true}
+                          disabled={reg.payment_status === "paid"}
+                          onCheckedChange={async (checked) => {
+                            if (demoGuard()) return;
+                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_visibility", registration_id: reg.id, manually_approved: checked === true },
+                            });
+                            if (error || data?.error) {
+                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                            } else {
+                              fetchData();
+                            }
+                          }}
+                        />
+                      )}
+                    </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(reg.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </TableCell>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Joyride, STATUS, ACTIONS, type EventData, type Step } from "react-joyride";
+import { useEffect, useRef, useState } from "react";
+import { Joyride, STATUS, ACTIONS, EVENTS, type EventData, type Step } from "react-joyride";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
@@ -7,6 +7,8 @@ import SampleDashboard from "./SampleDashboard";
 import SEO from "@/components/SEO";
 
 const STORAGE_KEY = "teevents_interactive_demo_seen";
+
+const SIDEBAR_STEP_INDEXES = new Set([1, 2, 3, 4, 5]);
 
 const steps: Step[] = [
   {
@@ -21,35 +23,35 @@ const steps: Step[] = [
     title: "Manage Your Players",
     content:
       "See who has registered. Add players manually, import a CSV, or send them a registration link.",
-    placement: "right",
+    placement: "auto",
   },
   {
     target: '[data-tour="nav-leaderboard"]',
     title: "Live Leaderboard",
     content:
       "Scores update live during the event. Players enter their own scores by scanning a QR code — no app to download.",
-    placement: "right",
+    placement: "auto",
   },
   {
     target: '[data-tour="nav-finances"]',
     title: "Track Every Transaction",
     content:
-      "See gross registration fees, our 5% platform fee, Stripe's processing fee, and your net proceeds — all in real time.",
-    placement: "right",
+      "Real-time view of gross revenue, the 5% TeeVents platform fee, Stripe processing fees (2.9% + $0.30), and your net proceeds. Stripe Connect deposits net funds straight to your bank — TeeVents never holds your money.",
+    placement: "auto",
   },
   {
-    target: '[data-tour="nav-site-builder"]',
+    target: '[data-tour="nav-flyer-studio"]',
     title: "Brand Your Tournament",
     content:
-      "Change colors, upload your logo, and publish a branded tournament website in minutes. No coding required.",
-    placement: "right",
+      "Customize colors, upload your logo, and build a branded tournament site and flyers in minutes — no coding required.",
+    placement: "auto",
   },
   {
     target: '[data-tour="nav-payout-settings"]',
     title: "Get Paid Automatically",
     content:
       "Connect your Stripe account to receive automatic payouts. TeeVents never holds your money — Stripe sends net proceeds directly to you.",
-    placement: "right",
+    placement: "auto",
   },
   {
     target: '[data-tour="demo-cta"]',
@@ -60,24 +62,68 @@ const steps: Step[] = [
   },
 ];
 
+function emitAnalytics(event: string, payload: Record<string, unknown> = {}) {
+  try {
+    window.dispatchEvent(new CustomEvent("teevents:demo-tour", { detail: { event, ...payload } }));
+    // eslint-disable-next-line no-console
+    console.info("[demo-tour]", event, payload);
+  } catch {
+    /* noop */
+  }
+}
+
 export default function InteractiveDemo() {
   const navigate = useNavigate();
   const [run, setRun] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const startedRef = useRef(false);
 
   useEffect(() => {
     const seen = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY);
-    const t = setTimeout(() => setRun(!seen), 700);
+    const t = setTimeout(() => {
+      if (!seen) {
+        setRun(true);
+      }
+    }, 700);
     return () => clearTimeout(t);
   }, []);
 
-  const onEvent = (data: EventData) => {
-    const { status, action, lifecycle, index } = data;
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      setRun(false);
-      try {
-        localStorage.setItem(STORAGE_KEY, "1");
-      } catch {}
+  // Open mobile sidebar sheet for sidebar-targeted steps on small screens
+  useEffect(() => {
+    if (!run) return;
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    if (isMobile && SIDEBAR_STEP_INDEXES.has(stepIndex)) {
+      window.dispatchEvent(new CustomEvent("teevents:sample-mobile-nav", { detail: { open: true } }));
+    } else {
+      window.dispatchEvent(new CustomEvent("teevents:sample-mobile-nav", { detail: { open: false } }));
     }
+  }, [run, stepIndex]);
+
+  const onCallback = (data: EventData) => {
+    const { status, action, lifecycle, index, type } = data;
+
+    if (!startedRef.current && type === EVENTS.TOUR_START) {
+      startedRef.current = true;
+      emitAnalytics("tour_started");
+    }
+
+    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      // advance our local index so the mobile-nav effect runs for the next step
+      const next = action === ACTIONS.PREV ? Math.max(0, index - 1) : index + 1;
+      setStepIndex(next);
+      emitAnalytics("tour_step_viewed", { stepIndex: index });
+    }
+
+    if (status === STATUS.FINISHED) {
+      setRun(false);
+      try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* noop */ }
+      emitAnalytics("tour_completed");
+    } else if (status === STATUS.SKIPPED || (action === ACTIONS.CLOSE && lifecycle === "complete")) {
+      setRun(false);
+      try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* noop */ }
+      emitAnalytics("tour_skipped", { stepIndex: index });
+    }
+
     if (
       action === ACTIONS.NEXT &&
       lifecycle === "complete" &&
@@ -87,10 +133,10 @@ export default function InteractiveDemo() {
     }
   };
 
-  const restart = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
+  const startTour = () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+    startedRef.current = false;
+    setStepIndex(0);
     setRun(false);
     setTimeout(() => setRun(true), 100);
   };
@@ -108,7 +154,7 @@ export default function InteractiveDemo() {
         run={run}
         continuous
         scrollToFirstStep
-        onEvent={onEvent}
+        onEvent={onCallback}
         options={{
           primaryColor: "#F5A623",
           textColor: "#1a5c38",
@@ -116,36 +162,37 @@ export default function InteractiveDemo() {
           backgroundColor: "#ffffff",
           zIndex: 10000,
           showProgress: true,
+          scrollOffset: 100,
+          skipBeacon: true,
           buttons: ["back", "skip", "primary"],
         }}
         locale={{
           back: "Back",
           close: "Close",
-          last: "Sign Up for Free →",
+          last: "Sign Up Free →",
           next: "Next",
-          nextWithProgress: "Next ({current}/{total})",
           skip: "Skip tour",
           open: "Open the dialog",
         }}
       />
 
-      {/* Floating Restart / CTA controls */}
-      <div className="fixed bottom-4 left-4 z-[9999] flex gap-2">
+      {/* Floating Start Tour / CTA controls */}
+      <div className="fixed bottom-4 left-4 z-[9999] flex flex-wrap gap-2">
         <Button
           size="sm"
-          variant="outline"
-          onClick={restart}
-          className="shadow-lg bg-white"
+          onClick={startTour}
+          className="shadow-lg bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-bold"
         >
-          <Play className="h-3.5 w-3.5 mr-1" /> Restart Tour
+          <Play className="h-3.5 w-3.5 mr-1" /> Start Tour
         </Button>
         <Button
           data-tour="demo-cta"
           size="sm"
+          variant="outline"
           onClick={() => navigate("/login")}
-          className="shadow-lg bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-bold"
+          className="shadow-lg bg-white"
         >
-          Sign Up for Free →
+          Sign Up Free →
         </Button>
       </div>
 

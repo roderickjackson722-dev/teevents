@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, DollarSign, Trophy, Heart, UserCheck,
@@ -133,6 +133,16 @@ const SampleDashboard = () => {
     setActiveTab(key);
     setMobileNavOpen(false);
   };
+
+  // Allow the interactive demo tour to open the mobile sidebar for sidebar-targeted steps
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ open: boolean }>).detail;
+      setMobileNavOpen(!!detail?.open);
+    };
+    window.addEventListener("teevents:sample-mobile-nav", handler);
+    return () => window.removeEventListener("teevents:sample-mobile-nav", handler);
+  }, []);
 
   const activeItem = allItems.find((i) => i.key === activeTab);
 

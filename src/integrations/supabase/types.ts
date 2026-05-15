@@ -607,6 +607,107 @@ export type Database = {
           },
         ]
       }
+      demo_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          lead_id: string | null
+          metadata: Json | null
+          step_index: number | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          step_index?: number | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          step_index?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "demo_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_leads: {
+        Row: {
+          created_at: string
+          demo_completed: boolean
+          demo_completed_at: string | null
+          demo_exited_at: string | null
+          demo_started_at: string
+          email: string
+          feedback_reasons: string[] | null
+          feedback_score: number | null
+          feedback_submitted_at: string | null
+          feedback_text: string | null
+          followup_24h_sent_at: string | null
+          followup_7d_sent_at: string | null
+          id: string
+          last_step_index: number | null
+          role: string | null
+          signed_up_at: string | null
+          updated_at: string
+          user_agent: string | null
+          welcome_email_sent_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_completed?: boolean
+          demo_completed_at?: string | null
+          demo_exited_at?: string | null
+          demo_started_at?: string
+          email: string
+          feedback_reasons?: string[] | null
+          feedback_score?: number | null
+          feedback_submitted_at?: string | null
+          feedback_text?: string | null
+          followup_24h_sent_at?: string | null
+          followup_7d_sent_at?: string | null
+          id?: string
+          last_step_index?: number | null
+          role?: string | null
+          signed_up_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          welcome_email_sent_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_completed?: boolean
+          demo_completed_at?: string | null
+          demo_exited_at?: string | null
+          demo_started_at?: string
+          email?: string
+          feedback_reasons?: string[] | null
+          feedback_score?: number | null
+          feedback_submitted_at?: string | null
+          feedback_text?: string | null
+          followup_24h_sent_at?: string | null
+          followup_7d_sent_at?: string | null
+          id?: string
+          last_step_index?: number | null
+          role?: string | null
+          signed_up_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          welcome_email_sent_at?: string | null
+        }
+        Relationships: []
+      }
       director_shop_orders: {
         Row: {
           amount_cents: number

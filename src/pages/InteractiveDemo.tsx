@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Joyride, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { Joyride, STATUS, ACTIONS, type EventData, type Step } from "react-joyride";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
@@ -55,7 +55,7 @@ const steps: Step[] = [
     target: '[data-tour="demo-cta"]',
     title: "Ready to Run Your Own Tournament?",
     content:
-      "Get started with no credit card required. Upgrade to Pro ($399 per tournament) when you need advanced features like the live leaderboard, sponsor portal, and auction tools.",
+      "Get started — no credit card required. Upgrade to Pro ($399 per tournament) when you need advanced features like the live leaderboard, sponsor portal, and auction tools.",
     placement: "auto",
   },
 ];
@@ -66,21 +66,20 @@ export default function InteractiveDemo() {
 
   useEffect(() => {
     const seen = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY);
-    const t = setTimeout(() => setRun(!seen), 600);
+    const t = setTimeout(() => setRun(!seen), 700);
     return () => clearTimeout(t);
   }, []);
 
-  const handleCallback = (data: CallBackProps) => {
+  const onEvent = (data: EventData) => {
     const { status, action, lifecycle, index } = data;
-    const finished: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-    if (finished.includes(status)) {
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRun(false);
       try {
         localStorage.setItem(STORAGE_KEY, "1");
       } catch {}
     }
     if (
-      action === "next" &&
+      action === ACTIONS.NEXT &&
       lifecycle === "complete" &&
       index === steps.length - 1
     ) {
@@ -108,25 +107,25 @@ export default function InteractiveDemo() {
         steps={steps}
         run={run}
         continuous
-        showProgress
-        showSkipButton
         scrollToFirstStep
-        callback={handleCallback}
+        onEvent={onEvent}
+        options={{
+          primaryColor: "#F5A623",
+          textColor: "#1a5c38",
+          arrowColor: "#ffffff",
+          backgroundColor: "#ffffff",
+          zIndex: 10000,
+          showProgress: true,
+          buttons: ["back", "skip", "primary"],
+        }}
         locale={{
           back: "Back",
           close: "Close",
           last: "Sign Up for Free →",
           next: "Next",
+          nextWithProgress: "Next ({current}/{total})",
           skip: "Skip tour",
-        }}
-        styles={{
-          options: {
-            primaryColor: "#F5A623",
-            textColor: "#1a5c38",
-            zIndex: 10000,
-            arrowColor: "#ffffff",
-            backgroundColor: "#ffffff",
-          },
+          open: "Open the dialog",
         }}
       />
 

@@ -1379,7 +1379,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-display font-bold" style={{ color: "#1a1a1a" }}>Side Events & Tickets</h2>
+                <h2 className="text-3xl font-display font-bold" style={{ color: "#1a1a1a" }}>{((tournament as any).side_events_section_title || "").trim() || "Side Events & Tickets"}</h2>
                 <p className="text-sm mt-2" style={{ color: "#666" }}>Buy tickets to dinners, parties, clinics and more.</p>
               </div>
 

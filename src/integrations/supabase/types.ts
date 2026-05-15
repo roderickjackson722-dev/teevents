@@ -4661,6 +4661,7 @@ export type Database = {
           show_countdown: boolean
           show_in_public_search: boolean
           show_org_tab: boolean
+          side_events_section_title: string | null
           site_background_color: string | null
           site_body_font_size: number | null
           site_button_font_size: number | null
@@ -4783,6 +4784,7 @@ export type Database = {
           show_countdown?: boolean
           show_in_public_search?: boolean
           show_org_tab?: boolean
+          side_events_section_title?: string | null
           site_background_color?: string | null
           site_body_font_size?: number | null
           site_button_font_size?: number | null
@@ -4905,6 +4907,7 @@ export type Database = {
           show_countdown?: boolean
           show_in_public_search?: boolean
           show_org_tab?: boolean
+          side_events_section_title?: string | null
           site_background_color?: string | null
           site_body_font_size?: number | null
           site_button_font_size?: number | null

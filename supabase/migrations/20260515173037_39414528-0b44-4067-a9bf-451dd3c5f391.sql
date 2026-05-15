@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS side_events_section_title text;

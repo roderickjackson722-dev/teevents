@@ -1330,7 +1330,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               {tournament.site_logo_url && (
-                <img src={tournament.site_logo_url} alt="" className="h-16 w-16 mx-auto mb-6 object-contain" />
+                renderLogo(tournament.site_logo_url, "", "h-16 w-16 mx-auto mb-6 object-contain")
               )}
               <p className="leading-relaxed whitespace-pre-wrap" style={{ color: textColor, fontSize: `${bodySize}px` }}>
                 {tournament.description}

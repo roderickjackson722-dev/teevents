@@ -230,6 +230,8 @@ export default function SideEvents() {
         </CardContent>
       </Card>
 
+      {tournamentId && <SectionTitleEditor tournamentId={tournamentId} />}
+
       <Card>
         <CardHeader><CardTitle>Side Events</CardTitle></CardHeader>
         <CardContent>

@@ -905,14 +905,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           {/* Logo */}
           {showLogo && tournament.site_logo_url && (
             <div className={`w-full flex mb-6 ${flexJustify[logoPos]}`}>
-              <img
-                src={tournament.site_logo_url}
-                alt={heroTitle}
-                className={`object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`}
-                style={{
-                  transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)`,
-                }}
-              />
+              {renderLogo(
+                tournament.site_logo_url,
+                heroTitle,
+                `object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`,
+                { transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)` },
+              )}
             </div>
           )}
 

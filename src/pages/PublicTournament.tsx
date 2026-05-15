@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight, Heart, DollarSign, CheckCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1617,16 +1618,24 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
-      {tournament.description && (
+      {(((tournament as any).description_html && (tournament as any).description_html.replace(/<[^>]*>/g, "").trim()) || tournament.description) && (
         <section id="about" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               {tournament.site_logo_url && (
                 renderLogo(tournament.site_logo_url, "", "h-16 w-16 mx-auto mb-6 object-contain")
               )}
-              <p className="leading-relaxed whitespace-pre-wrap" style={{ color: textColor, fontSize: `${bodySize}px` }}>
-                {tournament.description}
-              </p>
+              {(tournament as any).description_html && (tournament as any).description_html.replace(/<[^>]*>/g, "").trim() ? (
+                <div
+                  className="prose prose-sm sm:prose-base max-w-none leading-relaxed"
+                  style={{ color: textColor, fontSize: `${bodySize}px` }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).description_html) }}
+                />
+              ) : (
+                <p className="leading-relaxed whitespace-pre-wrap" style={{ color: textColor, fontSize: `${bodySize}px` }}>
+                  {tournament.description}
+                </p>
+              )}
             </motion.div>
           </div>
         </section>

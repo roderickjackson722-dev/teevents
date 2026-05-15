@@ -2740,6 +2740,7 @@ export type Database = {
           description: string | null
           display_order: number
           event_date: string | null
+          hide_ticket_count: boolean
           id: string
           is_active: boolean
           location: string | null
@@ -2756,6 +2757,7 @@ export type Database = {
           description?: string | null
           display_order?: number
           event_date?: string | null
+          hide_ticket_count?: boolean
           id?: string
           is_active?: boolean
           location?: string | null
@@ -2772,6 +2774,7 @@ export type Database = {
           description?: string | null
           display_order?: number
           event_date?: string | null
+          hide_ticket_count?: boolean
           id?: string
           is_active?: boolean
           location?: string | null
@@ -4591,6 +4594,7 @@ export type Database = {
           demo_admin_id: string | null
           demo_flyer_url: string | null
           description: string | null
+          description_html: string | null
           display_order: number
           donation_goal_cents: number | null
           early_signup_enabled: boolean
@@ -4711,6 +4715,7 @@ export type Database = {
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
           description?: string | null
+          description_html?: string | null
           display_order?: number
           donation_goal_cents?: number | null
           early_signup_enabled?: boolean
@@ -4831,6 +4836,7 @@ export type Database = {
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
           description?: string | null
+          description_html?: string | null
           display_order?: number
           donation_goal_cents?: number | null
           early_signup_enabled?: boolean

@@ -27,6 +27,7 @@ type SideEvent = {
   tickets_sold: number;
   is_active: boolean;
   show_on_public: boolean;
+  hide_ticket_count: boolean;
   display_order: number;
 };
 
@@ -39,7 +40,30 @@ const empty = {
   max_tickets: "",
   is_active: true,
   show_on_public: true,
+  hide_ticket_count: false,
 };
+
+function exportTicketsCsv(tickets: any[], events: { id: string; name: string }[]) {
+  const eventName = (id: string) => events.find((e) => e.id === id)?.name || "";
+  const escape = (v: any) => {
+    const s = v == null ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const headers = ["Event", "Attendee Name", "Email", "Phone", "Quantity", "Status", "Ticket Code", "Checked In", "Purchased At"];
+  const rows = tickets.map((t) => [
+    eventName(t.side_event_id), t.attendee_name, t.attendee_email, t.attendee_phone || "",
+    t.quantity, t.payment_status, t.ticket_code,
+    t.checked_in_at ? new Date(t.checked_in_at).toISOString() : "",
+    t.created_at ? new Date(t.created_at).toISOString() : "",
+  ]);
+  const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `side-event-tickets-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function SideEvents() {
   const { org } = useOrgContext();
@@ -111,6 +135,7 @@ export default function SideEvents() {
       max_tickets: e.max_tickets?.toString() || "",
       is_active: e.is_active,
       show_on_public: e.show_on_public,
+      hide_ticket_count: e.hide_ticket_count ?? false,
     });
     setOpen(true);
   };
@@ -131,6 +156,7 @@ export default function SideEvents() {
       max_tickets: form.max_tickets ? parseInt(form.max_tickets, 10) : null,
       is_active: form.is_active,
       show_on_public: form.show_on_public,
+      hide_ticket_count: form.hide_ticket_count,
     };
     const { error } = editing
       ? await supabase.from("side_events").update(payload).eq("id", editing.id)
@@ -257,8 +283,11 @@ export default function SideEvents() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2"><Ticket className="h-5 w-5" /> Tickets Sold</CardTitle>
+          <Button size="sm" variant="outline" onClick={() => exportTicketsCsv(tickets || [], events || [])} disabled={!tickets?.length}>
+            Export CSV
+          </Button>
         </CardHeader>
         <CardContent>
           {!tickets?.length ? (
@@ -350,6 +379,10 @@ export default function SideEvents() {
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={form.show_on_public} onCheckedChange={(v) => setForm({ ...form, show_on_public: v })} />
                 Show on public site
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.hide_ticket_count} onCheckedChange={(v) => setForm({ ...form, hide_ticket_count: v })} />
+                Hide ticket count
               </label>
             </div>
           </div>

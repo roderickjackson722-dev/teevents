@@ -43,6 +43,7 @@ import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -193,6 +194,7 @@ interface SiteSettings {
   title: string;
   slug: string | null;
   description: string | null;
+  description_html: string | null;
   date: string | null;
   end_date: string | null;
   location: string | null;
@@ -316,6 +318,7 @@ const SiteBuilder = () => {
         registration_url: settings.registration_url,
         registration_open: settings.registration_open,
         description: settings.description,
+        description_html: (settings as any).description_html ?? null,
         location: settings.location,
         course_name: settings.course_name,
         date: settings.date || null,
@@ -1134,13 +1137,25 @@ const SiteBuilder = () => {
 
               <div>
                 <Label htmlFor="description">Event Description</Label>
-                <Textarea
-                  id="description"
-                  value={settings.description || ""}
-                  onChange={(e) => updateField("description", e.target.value)}
+                <p className="text-xs text-muted-foreground mb-2">
+                  Format text with bold, headings, fonts, colors, and links. Falls back to plain text if left empty.
+                </p>
+                <RichTextEditor
+                  value={(settings as any).description_html || ""}
+                  onChange={(html) => updateField("description_html" as any, html)}
                   placeholder="Tell visitors about your tournament..."
-                  rows={4}
                 />
+                <details className="mt-2">
+                  <summary className="text-xs text-muted-foreground cursor-pointer">Plain text fallback (optional)</summary>
+                  <Textarea
+                    id="description"
+                    className="mt-2"
+                    value={settings.description || ""}
+                    onChange={(e) => updateField("description", e.target.value)}
+                    placeholder="Plain text version (used if rich text is empty)"
+                    rows={3}
+                  />
+                </details>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

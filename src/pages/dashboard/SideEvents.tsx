@@ -134,6 +134,7 @@ export default function SideEvents() {
       max_tickets: form.max_tickets ? parseInt(form.max_tickets, 10) : null,
       is_active: form.is_active,
       show_on_public: form.show_on_public,
+      hide_ticket_count: form.hide_ticket_count,
     };
     const { error } = editing
       ? await supabase.from("side_events").update(payload).eq("id", editing.id)

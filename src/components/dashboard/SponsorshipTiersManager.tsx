@@ -443,6 +443,28 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <Textarea value={form.benefits} onChange={e => setForm({ ...form, benefits: e.target.value })} placeholder="• Logo on tournament website&#10;• Social media shoutout&#10;• 2 complimentary player spots" rows={5} maxLength={1000} />
                     <p className="text-xs text-muted-foreground mt-1">Use bullet points (•) for each benefit, one per line.</p>
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Total Spots</Label>
+                      <Input type="number" min="0" value={form.total_spots} onChange={e => setForm({ ...form, total_spots: e.target.value })} placeholder="Unlimited" />
+                      <p className="text-xs text-muted-foreground mt-1">Leave blank for unlimited.</p>
+                    </div>
+                    <div>
+                      <Label>Package Type</Label>
+                      <Select value={form.package_type || "_none"} onValueChange={(v) => setForm({ ...form, package_type: v === "_none" ? "" : v })}>
+                        <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_none">— None —</SelectItem>
+                          <SelectItem value="title">Title</SelectItem>
+                          <SelectItem value="presenting">Presenting</SelectItem>
+                          <SelectItem value="hole">Hole</SelectItem>
+                          <SelectItem value="beverage">Beverage</SelectItem>
+                          <SelectItem value="lunch">Lunch</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div>
                     <Label>Display Order</Label>
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />

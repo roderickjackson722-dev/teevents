@@ -478,6 +478,20 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     }
   }, [searchParams, sessionId]);
 
+  // Verify vendor payment on return from Stripe
+  useEffect(() => {
+    const vendorSuccessParam = searchParams.get("vendor_success");
+    if (vendorSuccessParam === "true" && sessionId) {
+      setVendorVerifying(true);
+      supabase.functions.invoke("verify-vendor-payment", {
+        body: { session_id: sessionId },
+      }).then(({ data }) => {
+        if ((data as any)?.verified) setVendorSuccess(true);
+        setVendorVerifying(false);
+      }).catch(() => setVendorVerifying(false));
+    }
+  }, [searchParams, sessionId]);
+
   // Event countdown timer
   useEffect(() => {
     if (!tournament?.date) return;

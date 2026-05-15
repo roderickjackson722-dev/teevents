@@ -60,16 +60,19 @@ export default function Surveys() {
   const [settingsForm, setSettingsForm] = useState<any>(null);
   const [settingsDirty, setSettingsDirty] = useState(false);
 
-  // Hydrate local settings form when tournament settings load
-  if (tournamentSettings && !settingsForm) {
-    setSettingsForm({
-      post_event_survey_enabled: tournamentSettings.post_event_survey_enabled ?? false,
-      post_event_survey_delay_days: tournamentSettings.post_event_survey_delay_days ?? 1,
-      post_event_survey_message: tournamentSettings.post_event_survey_message ?? "",
-      early_signup_enabled: tournamentSettings.early_signup_enabled ?? false,
-      early_signup_label: tournamentSettings.early_signup_label ?? "Yes, please notify me when registration opens for next year's tournament.",
-    });
-  }
+  // Hydrate settings form when tournament changes
+  useEffect(() => {
+    if (tournamentSettings) {
+      setSettingsForm({
+        post_event_survey_enabled: tournamentSettings.post_event_survey_enabled ?? false,
+        post_event_survey_delay_days: tournamentSettings.post_event_survey_delay_days ?? 1,
+        post_event_survey_message: tournamentSettings.post_event_survey_message ?? "",
+        early_signup_enabled: tournamentSettings.early_signup_enabled ?? false,
+        early_signup_label: tournamentSettings.early_signup_label ?? "Yes, please notify me when registration opens for next year's tournament.",
+      });
+      setSettingsDirty(false);
+    }
+  }, [tournamentSettings, selectedTournament]);
 
   const updateSetting = (patch: any) => {
     setSettingsForm((prev: any) => ({ ...prev, ...patch }));

@@ -6,10 +6,12 @@ import { Color } from "@tiptap/extension-color";
 import { FontFamily } from "@tiptap/extension-font-family";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
-import { useEffect } from "react";
+import Highlight from "@tiptap/extension-highlight";
+import { useEffect, useRef } from "react";
 import {
   Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, Heading3,
   List, ListOrdered, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, Undo, Redo,
+  Highlighter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

@@ -194,6 +194,7 @@ interface SiteSettings {
   title: string;
   slug: string | null;
   description: string | null;
+  description_html: string | null;
   date: string | null;
   end_date: string | null;
   location: string | null;

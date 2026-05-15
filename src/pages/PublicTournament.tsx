@@ -1372,6 +1372,153 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {/* Side Events / Tickets */}
+      {sideEvents.length > 0 && (
+        <section id="side-events" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-display font-bold" style={{ color: "#1a1a1a" }}>Side Events & Tickets</h2>
+                <p className="text-sm mt-2" style={{ color: "#666" }}>Buy tickets to dinners, parties, clinics and more.</p>
+              </div>
+
+              {sideEventSuccess && (
+                <div className="max-w-xl mx-auto mb-8 rounded-lg border p-4 text-sm" style={{ borderColor: "#10b98140", backgroundColor: "#10b98110", color: "#065f46" }}>
+                  Thanks! Your ticket is confirmed. Check your email for your ticket code.
+                </div>
+              )}
+              {sideEventVerifying && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} />
+                  <p style={{ color: "#666" }}>Verifying your ticket payment…</p>
+                </div>
+              )}
+
+              <div className={`grid gap-6 ${sideEvents.length === 1 ? "max-w-md mx-auto" : sideEvents.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                {sideEvents.map((ev) => {
+                  const remaining = ev.max_tickets != null ? Math.max(0, ev.max_tickets - (ev.tickets_sold || 0)) : null;
+                  const soldOut = remaining === 0;
+                  return (
+                    <div key={ev.id} className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${soldOut ? "opacity-70" : ""}`} style={{ borderColor: "#e5e5e5" }}>
+                      <div className="p-6" style={{ backgroundColor: primary + "08" }}>
+                        <Ticket className="h-8 w-8 mb-2" style={{ color: secondary }} />
+                        <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{ev.name}</h3>
+                        <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                          {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(ev.price_cents / 100)}
+                        </p>
+                        {ev.event_date && (
+                          <p className="text-sm mt-2" style={{ color: "#666" }}>
+                            <Calendar className="inline h-3 w-3 mr-1" />
+                            {new Date(ev.event_date).toLocaleString()}
+                          </p>
+                        )}
+                        {ev.location && (
+                          <p className="text-sm" style={{ color: "#666" }}>
+                            <MapPin className="inline h-3 w-3 mr-1" />
+                            {ev.location}
+                          </p>
+                        )}
+                        {remaining != null && (
+                          <p className={`text-xs mt-2 font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
+                            {soldOut ? "Sold Out" : `${remaining} ticket${remaining === 1 ? "" : "s"} left`}
+                          </p>
+                        )}
+                      </div>
+                      {ev.description && (
+                        <div className="flex-1 px-6 py-4 border-t" style={{ borderColor: "#f0f0f0" }}>
+                          <div className="text-sm whitespace-pre-line" style={{ color: "#555" }}>{ev.description}</div>
+                        </div>
+                      )}
+                      <div className="p-6 pt-2">
+                        {soldOut ? (
+                          <button type="button" disabled className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase bg-gray-200 text-gray-500 cursor-not-allowed">
+                            Sold Out
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => { setSideEventDialog({ id: ev.id, name: ev.name, price_cents: ev.price_cents }); setSeForm({ name: "", email: "", phone: "", quantity: "1" }); }}
+                            className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                            style={{ backgroundColor: secondary, color: primary }}
+                          >
+                            Buy Tickets
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      <Dialog open={!!sideEventDialog} onOpenChange={(o) => !o && setSideEventDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Buy Tickets — {sideEventDialog?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Your Name *</Label>
+              <Input value={seForm.name} onChange={(e) => setSeForm({ ...seForm, name: e.target.value })} />
+            </div>
+            <div>
+              <Label>Email *</Label>
+              <Input type="email" value={seForm.email} onChange={(e) => setSeForm({ ...seForm, email: e.target.value })} />
+            </div>
+            <div>
+              <Label>Phone (optional)</Label>
+              <Input value={seForm.phone} onChange={(e) => setSeForm({ ...seForm, phone: e.target.value })} />
+            </div>
+            <div>
+              <Label>Quantity</Label>
+              <Input type="number" min="1" value={seForm.quantity} onChange={(e) => setSeForm({ ...seForm, quantity: e.target.value })} />
+            </div>
+            {sideEventDialog && (
+              <p className="text-sm text-muted-foreground">
+                Total: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                  (sideEventDialog.price_cents * (parseInt(seForm.quantity || "1", 10) || 1)) / 100
+                )} (plus fees)
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSideEventDialog(null)}>Cancel</Button>
+            <Button
+              disabled={seSubmitting}
+              onClick={async () => {
+                if (!sideEventDialog) return;
+                if (!seForm.name.trim() || !seForm.email.trim()) {
+                  toast({ title: "Name and email required", variant: "destructive" });
+                  return;
+                }
+                setSeSubmitting(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke("create-side-event-checkout", {
+                    body: {
+                      side_event_id: sideEventDialog.id,
+                      attendee_name: seForm.name.trim(),
+                      attendee_email: seForm.email.trim(),
+                      attendee_phone: seForm.phone.trim() || null,
+                      quantity: parseInt(seForm.quantity || "1", 10) || 1,
+                    },
+                  });
+                  if (error || !(data as any)?.checkout_url) throw new Error((data as any)?.error || error?.message || "Checkout failed");
+                  window.location.href = (data as any).checkout_url;
+                } catch (e: any) {
+                  toast({ title: "Could not start checkout", description: e.message, variant: "destructive" });
+                  setSeSubmitting(false);
+                }
+              }}
+            >
+              {seSubmitting ? "Loading…" : "Continue to Payment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Vendors / Booths section */}
       {(vendorTiers.length > 0 || paidVendors.length > 0) && (

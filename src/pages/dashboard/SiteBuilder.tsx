@@ -213,6 +213,7 @@ interface SiteSettings {
   contact_email: string | null;
   contact_phone: string | null;
   schedule_info: string | null;
+  schedule_info_html?: string | null;
   registration_url: string | null;
   registration_open: boolean | null;
   template: string | null;

@@ -27,6 +27,7 @@ type SideEvent = {
   tickets_sold: number;
   is_active: boolean;
   show_on_public: boolean;
+  hide_ticket_count: boolean;
   display_order: number;
 };
 
@@ -39,6 +40,7 @@ const empty = {
   max_tickets: "",
   is_active: true,
   show_on_public: true,
+  hide_ticket_count: false,
 };
 
 export default function SideEvents() {

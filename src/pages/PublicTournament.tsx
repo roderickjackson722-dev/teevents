@@ -1876,58 +1876,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
-      {/* ===== POST-EVENT SURVEY ===== */}
-      {surveyQuestions.length > 0 && !surveySubmitted && (
-        <section className="py-16 bg-white">
-          <div className="max-w-xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>POST-EVENT SURVEY</h2>
-              <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-8" style={{ color: "#888" }}>We'd love your feedback</p>
-              <div className="bg-white rounded-xl border p-6 space-y-5" style={{ borderColor: "#e5e5e5" }}>
-                <div>
-                  <Label>Your Email</Label>
-                  <Input type="email" value={surveyEmail} onChange={(e) => setSurveyEmail(e.target.value)} placeholder="you@example.com" />
-                </div>
-                {surveyQuestions.map((q) => (
-                  <div key={q.id} className="space-y-2">
-                    <Label>{q.question}</Label>
-                    {q.type === "rating" ? (
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <button
-                            key={n}
-                            onClick={() => setSurveyAnswers({ ...surveyAnswers, [q.id]: String(n) })}
-                            className="p-2 rounded-md border transition-colors"
-                            style={{
-                              backgroundColor: surveyAnswers[q.id] === String(n) ? secondary : undefined,
-                              color: surveyAnswers[q.id] === String(n) ? primary : undefined,
-                              borderColor: surveyAnswers[q.id] === String(n) ? secondary : "#e5e5e5",
-                            }}
-                          >
-                            <Star className={`h-5 w-5 ${surveyAnswers[q.id] && parseInt(surveyAnswers[q.id]) >= n ? "fill-current" : ""}`} />
-                          </button>
-                        ))}
-                      </div>
-                    ) : q.type === "yes_no" ? (
-                      <div className="flex gap-3">
-                        {["Yes", "No"].map((opt) => (
-                          <Button key={opt} size="sm" variant={surveyAnswers[q.id] === opt ? "default" : "outline"} onClick={() => setSurveyAnswers({ ...surveyAnswers, [q.id]: opt })}>{opt}</Button>
-                        ))}
-                      </div>
-                    ) : (
-                      <Textarea value={surveyAnswers[q.id] || ""} onChange={(e) => setSurveyAnswers({ ...surveyAnswers, [q.id]: e.target.value })} rows={2} placeholder="Your answer..." />
-                    )}
-                  </div>
-                ))}
-                <Button onClick={handleSurveySubmit} disabled={!surveyEmail} className="w-full" style={{ backgroundColor: primary, color: "white" }}>
-                  <Send className="mr-2 h-4 w-4" /> Submit Feedback
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      {/* Post-event survey moved to email-only delivery after event ends */}
 
       {/* ===== DONATION ===== */}
       {isTabVisible("donations") && (

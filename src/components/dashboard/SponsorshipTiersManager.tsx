@@ -688,6 +688,8 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                   <TableHead>Tier</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Show on Public</TableHead>
+                  <TableHead className="text-center">Override Pending</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="w-[60px]">Actions</TableHead>
                 </TableRow>

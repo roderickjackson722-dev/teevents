@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import VendorTiersManager from "@/components/dashboard/VendorTiersManager";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -682,13 +683,19 @@ export default function Vendors() {
         </div>
       </div>
 
-      <Tabs defaultValue="vendors" className="w-full">
+      <Tabs defaultValue="packages" className="w-full">
         <TabsList>
+          <TabsTrigger value="packages">Packages</TabsTrigger>
           <TabsTrigger value="vendors">All Vendors ({vendors.length})</TabsTrigger>
           <TabsTrigger value="form">Form Builder</TabsTrigger>
           <TabsTrigger value="booths">Booth Locations ({booths.length})</TabsTrigger>
           <TabsTrigger value="checkin">Check-In</TabsTrigger>
         </TabsList>
+
+        {/* ===== Packages tab (tier-based vendor checkout) ===== */}
+        <TabsContent value="packages" className="space-y-4">
+          <VendorTiersManager tournament={tournament} />
+        </TabsContent>
 
         {/* ===== Vendors tab ===== */}
         <TabsContent value="vendors" className="space-y-4">

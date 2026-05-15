@@ -57,6 +57,7 @@ import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
 import PublicSearch from "./pages/dashboard/PublicSearch";
 import PublicTournament from "./pages/PublicTournament";
 import RefundRequest from "./pages/RefundRequest";
+import Survey from "./pages/Survey";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { Navigate } from "react-router-dom";
@@ -192,6 +193,7 @@ const App = () => (
           <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
+           <Route path="/survey/:token" element={<Survey />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/deck" element={<SalesDeck />} />
           <Route path="/sales-deck" element={<SalesDeck />} />

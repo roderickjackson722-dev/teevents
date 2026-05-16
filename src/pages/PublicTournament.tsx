@@ -216,6 +216,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const registered = searchParams.get("registered") === "true";
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
+  const acct = searchParams.get("acct");
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
    const [products, setProducts] = useState<PublicProduct[]>([]);

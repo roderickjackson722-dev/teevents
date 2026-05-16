@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { resolveRouting, computeFees, PLATFORM_FEE_RATE, logRoutingDecision } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, logDirectCharge } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,9 +10,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { item_id, buyer_name, buyer_email, tournament_slug } = await req.json();
@@ -29,7 +27,6 @@ Deno.serve(async (req) => {
       .eq("id", item_id)
       .eq("is_active", true)
       .single();
-
     if (iErr || !item) throw new Error("Item not found or inactive");
     if (!item.buy_now_price || item.buy_now_price <= 0) throw new Error("Buy now not available for this item");
 
@@ -37,7 +34,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("organization_id, slug, pass_fees_to_participants, payment_method_override")
+      .select("organization_id, slug, pass_fees_to_participants")
       .eq("id", item.tournament_id)
       .single();
 
@@ -47,21 +44,10 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Resolve routing: destination charge to organizer if connected & ready, else platform escrow.
-    const routing = await resolveRouting(
-      supabaseAdmin,
-      stripe,
-      item.tournament_id,
-      tournament?.organization_id || null,
-      (tournament as any)?.payment_method_override || null,
-      "auction",
+    const connected = await requireConnectedAccount(
+      supabaseAdmin, stripe, tournament?.organization_id || null, "auction",
     );
-
-    let customerId: string | undefined;
-    if (buyer_email) {
-      const customers = await stripe.customers.list({ email: buyer_email, limit: 1 });
-      if (customers.data.length > 0) customerId = customers.data[0].id;
-    }
+    const organizerStripeAccountId = connected.stripeAccountId;
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const slug = tournament_slug || tournament?.slug || "";
@@ -81,28 +67,25 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Always compute fees for application_fee; only show as line item if passing to buyer.
     const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(priceCents);
     if (passFeesToParticipants && combinedFeesCents > 0) {
       lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: { name: "Fees" },
-          unit_amount: combinedFeesCents,
-        },
+        price_data: { currency: "usd", product_data: { name: "Fees" }, unit_amount: combinedFeesCents },
         quantity: 1,
       });
     }
 
-    const applicationFeeAmount = passFeesToParticipants ? combinedFeesCents : platformFeeCents;
+    // Our application fee is always our 5%. Stripe takes its processing fee
+    // automatically out of the charge; we don't include it here.
+    const applicationFeeAmount = platformFeeCents;
 
     const checkoutParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : buyer_email || undefined,
+      customer_email: buyer_email || undefined,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${slug}?auction_purchased=true&item_id=${item_id}`,
+      success_url: `${origin}/t/${slug}?auction_purchased=true&item_id=${item_id}&acct=${organizerStripeAccountId}`,
       cancel_url: `${origin}/t/${slug}#auction`,
+      payment_intent_data: { application_fee_amount: applicationFeeAmount },
       metadata: {
         type: "auction_buy_now",
         item_id,
@@ -113,30 +96,21 @@ Deno.serve(async (req) => {
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
-        routing: routing.useDestinationCharge ? "destination" : "platform_escrow",
-        payment_method_override: routing.override,
+        routing: "direct",
       },
     };
 
-    if (routing.useDestinationCharge) {
-      checkoutParams.payment_intent_data = {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: { destination: routing.organizerStripeAccountId },
-        on_behalf_of: routing.organizerStripeAccountId,
-      };
-    }
+    const session = await stripe.checkout.sessions.create(
+      checkoutParams, { stripeAccount: organizerStripeAccountId },
+    );
 
-    const session = await stripe.checkout.sessions.create(checkoutParams);
-
-    await logRoutingDecision(supabaseAdmin, {
+    await logDirectCharge(supabaseAdmin, {
       context: "auction",
       tournamentId: item.tournament_id,
       organizationId: tournament?.organization_id || null,
-      routing,
-      organizerChargesReady: routing.organizerChargesReady,
+      stripeAccountId: organizerStripeAccountId,
       grossCents: priceCents,
-      platformFeeCents,
-      stripeFeeCents,
+      platformFeeCents, stripeFeeCents,
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants,
       stripeSessionId: session.id,
@@ -146,14 +120,9 @@ Deno.serve(async (req) => {
     // Mark item as sold
     await supabaseAdmin
       .from("tournament_auction_items")
-      .update({
-        is_active: false,
-        winner_name: buyer_name || null,
-        winner_email: buyer_email || null,
-      })
+      .update({ is_active: false, winner_name: buyer_name || null, winner_email: buyer_email || null })
       .eq("id", item_id);
 
-    // Send notification
     try {
       if (tournament) {
         await sendNotificationEmails(
@@ -178,7 +147,7 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

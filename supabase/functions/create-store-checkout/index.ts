@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { resolveRouting, computeFees, PLATFORM_FEE_RATE, logRoutingDecision } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, logDirectCharge } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,9 +10,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { product_id, buyer_email, tournament_slug } = await req.json();
@@ -29,7 +27,6 @@ Deno.serve(async (req) => {
       .eq("id", product_id)
       .eq("is_active", true)
       .single();
-
     if (pErr || !product) throw new Error("Product not found or inactive");
 
     const priceCents = Math.round(product.price * 100);
@@ -37,7 +34,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("organization_id, slug, pass_fees_to_participants, payment_method_override")
+      .select("organization_id, slug, pass_fees_to_participants")
       .eq("id", product.tournament_id)
       .single();
 
@@ -47,21 +44,10 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Resolve routing: destination charge to organizer if connected & ready, else platform escrow.
-    const routing = await resolveRouting(
-      supabaseAdmin,
-      stripe,
-      product.tournament_id,
-      tournament?.organization_id || null,
-      (tournament as any)?.payment_method_override || null,
-      "store",
+    const connected = await requireConnectedAccount(
+      supabaseAdmin, stripe, tournament?.organization_id || null, "store",
     );
-
-    let customerId: string | undefined;
-    if (buyer_email) {
-      const customers = await stripe.customers.list({ email: buyer_email, limit: 1 });
-      if (customers.data.length > 0) customerId = customers.data[0].id;
-    }
+    const organizerStripeAccountId = connected.stripeAccountId;
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const slug = tournament_slug || tournament?.slug || "";
@@ -81,29 +67,23 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Always compute fees for application_fee; only show as line item if passing to buyer.
     const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(priceCents);
     if (passFeesToParticipants && combinedFeesCents > 0) {
       lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: { name: "Fees" },
-          unit_amount: combinedFeesCents,
-        },
+        price_data: { currency: "usd", product_data: { name: "Fees" }, unit_amount: combinedFeesCents },
         quantity: 1,
       });
     }
 
-    // If absorbing fees, organizer pays them out of their net (application_fee = platform fee only).
-    const applicationFeeAmount = passFeesToParticipants ? combinedFeesCents : platformFeeCents;
+    const applicationFeeAmount = platformFeeCents;
 
     const checkoutParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : buyer_email || undefined,
+      customer_email: buyer_email || undefined,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${slug}?purchased=true`,
+      success_url: `${origin}/t/${slug}?purchased=true&acct=${organizerStripeAccountId}`,
       cancel_url: `${origin}/t/${slug}`,
+      payment_intent_data: { application_fee_amount: applicationFeeAmount },
       metadata: {
         type: "store_purchase",
         product_id,
@@ -112,37 +92,27 @@ Deno.serve(async (req) => {
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
-        routing: routing.useDestinationCharge ? "destination" : "platform_escrow",
-        payment_method_override: routing.override,
+        routing: "direct",
       },
     };
 
-    if (routing.useDestinationCharge) {
-      checkoutParams.payment_intent_data = {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: { destination: routing.organizerStripeAccountId },
-        on_behalf_of: routing.organizerStripeAccountId,
-      };
-    }
+    const session = await stripe.checkout.sessions.create(
+      checkoutParams, { stripeAccount: organizerStripeAccountId },
+    );
 
-    const session = await stripe.checkout.sessions.create(checkoutParams);
-
-    await logRoutingDecision(supabaseAdmin, {
+    await logDirectCharge(supabaseAdmin, {
       context: "store",
       tournamentId: product.tournament_id,
       organizationId: tournament?.organization_id || null,
-      routing,
-      organizerChargesReady: routing.organizerChargesReady,
+      stripeAccountId: organizerStripeAccountId,
       grossCents: priceCents,
-      platformFeeCents,
-      stripeFeeCents,
+      platformFeeCents, stripeFeeCents,
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants,
       stripeSessionId: session.id,
       buyerEmail: buyer_email || null,
     });
 
-    // Send notification
     try {
       if (tournament) {
         await sendNotificationEmails(
@@ -166,7 +136,7 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -1,9 +1,8 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
-import { logRoutingDecision } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
 
-const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
 const calculateProcessingFee = (chargeAmountCents: number) =>
@@ -16,9 +15,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const body = await req.json();
@@ -59,7 +56,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, payment_method_override")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees")
       .eq("id", tournament_id)
       .single();
 
@@ -67,53 +64,6 @@ Deno.serve(async (req) => {
     if (!tournament.registration_open || !tournament.site_published) {
       throw new Error("Registration is not open for this tournament");
     }
-
-    // Fetch organizer's Stripe Connect account ID
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("stripe_account_id")
-      .eq("id", tournament.organization_id)
-      .single();
-
-    const organizerStripeAccountId = org?.stripe_account_id || null;
-
-    // Validate the connected account is fully onboarded and able to accept charges.
-    // Without this, an account row that exists but isn't `charges_enabled` would silently
-    // fall through to the platform escrow, sending organizer funds to TeeVents.
-    const _stripeForValidation = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
-    let organizerChargesReady = false;
-    if (organizerStripeAccountId) {
-      try {
-        const acct = await _stripeForValidation.accounts.retrieve(organizerStripeAccountId);
-        organizerChargesReady = !!acct.charges_enabled;
-        console.log(`[Routing/registration] acct ${organizerStripeAccountId}: charges_enabled=${acct.charges_enabled}, payouts_enabled=${acct.payouts_enabled}, details_submitted=${acct.details_submitted}`);
-      } catch (e) {
-        console.error(`[Routing/registration] Failed to retrieve connected account ${organizerStripeAccountId}:`, e);
-      }
-    }
-
-    // Determine routing based on admin override + organizer connection state
-    // - default      → organizer Stripe if connected & charge-ready, else platform escrow
-    // - force_stripe → must use organizer Stripe (error if missing or not charge-ready)
-    // - force_platform → always platform escrow (TeeVents direct charge, no destination)
-    const override = (tournament as any).payment_method_override || "default";
-    let useDestinationCharge = false;
-    if (override === "force_stripe") {
-      if (!organizerStripeAccountId) {
-        throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
-      }
-      if (!organizerChargesReady) {
-        throw new Error("Tournament organizer's payment account is connected but not yet enabled for charges. Please contact the organizer to complete Stripe onboarding.");
-      }
-      useDestinationCharge = true;
-    } else if (override === "force_platform") {
-      useDestinationCharge = false;
-    } else {
-      useDestinationCharge = !!organizerStripeAccountId && organizerChargesReady;
-    }
-    console.log(`[Routing/registration] tournament=${(tournament as any).id} override=${override} acct=${organizerStripeAccountId} ready=${organizerChargesReady} → ${useDestinationCharge ? "DESTINATION (organizer)" : "PLATFORM (TeeVents)"}`);
 
     // Determine fee per player: use tier price if tier selected, else tournament default
     let feePerPlayer = tournament.registration_fee_cents || 0;
@@ -160,7 +110,6 @@ Deno.serve(async (req) => {
     }
 
     const baseTotalCents = registrationFeeCents + addonsTotalCents;
-
     const hasAnyCharge = baseTotalCents > 0;
 
     // Resolve promoter from referral code (if any)
@@ -236,24 +185,24 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.error("Registrant confirmation error:", e);
       }
-
       return new Response(
         JSON.stringify({ success: true, paid: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
     }
 
-    // Fee required — create Stripe checkout
+    // Fee required — initialize Stripe and require an onboarded connected account.
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check for existing Stripe customer
-    let customerId: string | undefined;
-    const customers = await stripe.customers.list({ email: email.trim(), limit: 1 });
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
+    const connected = await requireConnectedAccount(
+      supabaseAdmin,
+      stripe,
+      tournament.organization_id,
+      "registration",
+    );
+    const organizerStripeAccountId = connected.stripeAccountId;
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
@@ -270,7 +219,9 @@ Deno.serve(async (req) => {
       ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
       : calculateProcessingFee(baseTotalCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
-    const applicationFeeAmount = combinedFeesCents;
+    // Application fee = our 5% only. Stripe takes its processing fee from the
+    // gross charge automatically — we don't add it to the application fee.
+    const applicationFeeAmount = platformFeeCents;
     const organizerNetCents = golferPaysFees
       ? baseTotalCents
       : Math.max(baseTotalCents - combinedFeesCents, 0);
@@ -312,9 +263,7 @@ Deno.serve(async (req) => {
       lineItems.push({
         price_data: {
           currency: "usd",
-          product_data: {
-            name: "Fees",
-          },
+          product_data: { name: "Fees" },
           unit_amount: combinedFeesCents,
         },
         quantity: 1,
@@ -328,12 +277,17 @@ Deno.serve(async (req) => {
       .slice(0, 480);
 
     const checkoutParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : email.trim(),
+      // Customer lookups happen on the connected account in Direct Charges mode.
+      // Skipping the lookup keeps things simple — Stripe Checkout creates a new
+      // Customer on the connected account from customer_email if needed.
+      customer_email: email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
+      payment_intent_data: {
+        application_fee_amount: applicationFeeAmount,
+      },
       metadata: {
         type: "registration",
         tournament_id,
@@ -350,45 +304,22 @@ Deno.serve(async (req) => {
         application_fee_cents: String(applicationFeeAmount),
         organizer_net_cents: String(organizerNetCents),
         charge_total_cents: String(chargeTotalCents),
-        routing: useDestinationCharge ? "destination" : "platform_escrow",
-        payment_method_override: override,
+        routing: "direct",
         addon_selections: addonMetaStr,
         player_count: String(players.length),
       },
     };
 
-    if (useDestinationCharge) {
-      // Organizer Stripe Connect: destination charge with platform fee
-      checkoutParams.payment_intent_data = {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: { destination: organizerStripeAccountId },
-        on_behalf_of: organizerStripeAccountId,
-      };
-    } else {
-      // Platform escrow: charge straight to TeeVents account, hold full amount
-      // Fee is recorded but not transferred (no organizer destination yet)
-      checkoutParams.payment_intent_data = {
-        metadata: {
-          escrow_for_organization: tournament.organization_id,
-          gross_registration_cents: String(registrationFeeCents),
-          platform_fee_cents: String(platformFeeCents),
-        },
-      };
-    }
+    const session = await stripe.checkout.sessions.create(
+      checkoutParams,
+      { stripeAccount: organizerStripeAccountId },
+    );
 
-    const session = await stripe.checkout.sessions.create(checkoutParams);
-
-    await logRoutingDecision(supabaseAdmin, {
+    await logDirectCharge(supabaseAdmin, {
       context: "registration",
       tournamentId: (tournament as any).id,
       organizationId: tournament.organization_id,
-      routing: {
-        useDestinationCharge,
-        organizerStripeAccountId,
-        override: override as any,
-        organizerChargesReady,
-      },
-      organizerChargesReady,
+      stripeAccountId: organizerStripeAccountId,
       grossCents: baseTotalCents,
       platformFeeCents,
       stripeFeeCents,
@@ -403,7 +334,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

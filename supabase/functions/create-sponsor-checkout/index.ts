@@ -1,8 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { logRoutingDecision } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
 
-const PLATFORM_FEE_RATE = 0.05;
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
 
@@ -13,24 +12,13 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const body = await req.json();
     const {
-      tournament_id,
-      tier_id,
-      company_name,
-      contact_name,
-      contact_email,
-      contact_phone,
-      website_url,
-      description,
-      logo_url,
-      logo_base64,
-      logo_filename,
+      tournament_id, tier_id, company_name, contact_name, contact_email,
+      contact_phone, website_url, description, logo_url, logo_base64, logo_filename,
     } = body;
 
     if (!tournament_id || !tier_id || !company_name?.trim() || !contact_name?.trim() || !contact_email?.trim()) {
@@ -42,16 +30,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Fetch tournament (include payment_method_override for routing decision)
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, site_published, payment_method_override")
+      .select("id, title, slug, organization_id, site_published")
       .eq("id", tournament_id)
       .single();
-
     if (tErr || !tournament) throw new Error("Tournament not found");
 
-    // Fetch tier (include spot tracking for sold-out guard)
     const { data: tier, error: tierErr } = await supabaseAdmin
       .from("sponsorship_tiers")
       .select("id, name, description, price_cents, total_spots, spots_used")
@@ -59,64 +44,22 @@ Deno.serve(async (req) => {
       .eq("tournament_id", tournament_id)
       .eq("is_active", true)
       .single();
-
     if (tierErr || !tier) throw new Error("Sponsorship tier not found or inactive");
     if (tier.price_cents <= 0) throw new Error("Invalid tier price");
     if (tier.total_spots != null && (tier.spots_used || 0) >= tier.total_spots) {
       throw new Error("This sponsorship level is sold out. Please choose a different package.");
     }
 
-    // Fetch organizer's Stripe Connect account
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("stripe_account_id")
-      .eq("id", tournament.organization_id)
-      .single();
-
-    const organizerStripeAccountId = org?.stripe_account_id || null;
-
-    // Init Stripe early so we can validate the connected account before creating the session.
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Validate the connected account is fully onboarded and able to accept charges.
-    // If the account exists but isn't charge-ready, we previously fell through to the platform
-    // silently — that is what caused the Atlanta sponsor charge to land in TeeVents.
-    let organizerChargesReady = false;
-    if (organizerStripeAccountId) {
-      try {
-        const acct = await stripe.accounts.retrieve(organizerStripeAccountId);
-        organizerChargesReady = !!acct.charges_enabled;
-        console.log(`[Routing] Organizer acct ${organizerStripeAccountId}: charges_enabled=${acct.charges_enabled}, payouts_enabled=${acct.payouts_enabled}, details_submitted=${acct.details_submitted}`);
-      } catch (e) {
-        console.error(`[Routing] Failed to retrieve connected account ${organizerStripeAccountId}:`, e);
-        organizerChargesReady = false;
-      }
-    }
+    const connected = await requireConnectedAccount(
+      supabaseAdmin, stripe, tournament.organization_id, "sponsor",
+    );
+    const organizerStripeAccountId = connected.stripeAccountId;
 
-    // Determine routing using same rules as registration:
-    //   default       → organizer Stripe if connected & charge-ready, else platform escrow
-    //   force_stripe  → must use organizer Stripe (error if missing or not charge-ready)
-    //   force_platform → always platform escrow (direct charge to TeeVents)
-    const override = (tournament as any).payment_method_override || "default";
-    let useDestinationCharge = false;
-    if (override === "force_stripe") {
-      if (!organizerStripeAccountId) {
-        throw new Error("Tournament organizer has not connected a payment account. Please contact the organizer.");
-      }
-      if (!organizerChargesReady) {
-        throw new Error("Tournament organizer's payment account is connected but not yet enabled for charges. Please contact the organizer to complete Stripe onboarding.");
-      }
-      useDestinationCharge = true;
-    } else if (override === "force_platform") {
-      useDestinationCharge = false;
-    } else {
-      useDestinationCharge = !!organizerStripeAccountId && organizerChargesReady;
-    }
-    console.log(`[Routing] tournament=${tournament_id} override=${override} acct=${organizerStripeAccountId} ready=${organizerChargesReady} → ${useDestinationCharge ? "DESTINATION (organizer)" : "PLATFORM (TeeVents)"}`);
-
-    // Upload logo server-side using service role (sponsors are anonymous, so client-side upload is blocked by RLS)
+    // Upload logo server-side (anonymous sponsors can't satisfy storage RLS).
     let finalLogoUrl: string | null = logo_url || null;
     if (logo_base64 && logo_filename) {
       try {
@@ -132,25 +75,20 @@ Deno.serve(async (req) => {
         const { error: upErr } = await supabaseAdmin.storage
           .from("tournament-assets")
           .upload(path, binary, { contentType, upsert: true });
-        if (upErr) {
-          console.error("Logo upload error:", upErr);
+        if (!upErr) {
+          finalLogoUrl = supabaseAdmin.storage.from("tournament-assets").getPublicUrl(path).data.publicUrl;
         } else {
-          const { data: urlData } = supabaseAdmin.storage
-            .from("tournament-assets")
-            .getPublicUrl(path);
-          finalLogoUrl = urlData.publicUrl;
+          console.error("Logo upload error:", upErr);
         }
       } catch (e) {
         console.error("Logo decode/upload failed:", e);
       }
     }
 
-    // Insert sponsor registration as pending
     const { data: registration, error: regErr } = await supabaseAdmin
       .from("sponsor_registrations")
       .insert({
-        tournament_id,
-        tier_id,
+        tournament_id, tier_id,
         company_name: company_name.trim(),
         contact_name: contact_name.trim(),
         contact_email: contact_email.trim(),
@@ -163,24 +101,13 @@ Deno.serve(async (req) => {
       })
       .select("id")
       .single();
-
     if (regErr || !registration) throw new Error(regErr?.message || "Failed to create sponsor registration");
 
-    // Calculate fees — sponsor always pays fees (like registration flow)
     const platformFeeCents = Math.round(tier.price_cents * PLATFORM_FEE_RATE);
     const stripeFeeCents = calculateGrossedUpStripeFee(tier.price_cents + platformFeeCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
-    const applicationFeeAmount = combinedFeesCents;
+    const applicationFeeAmount = platformFeeCents;
     const chargeTotalCents = tier.price_cents + combinedFeesCents;
-
-    // (Stripe client already initialized above for connected-account validation)
-
-    // Check for existing Stripe customer
-    let customerId: string | undefined;
-    const customers = await stripe.customers.list({ email: contact_email.trim(), limit: 1 });
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
 
@@ -200,22 +127,18 @@ Deno.serve(async (req) => {
 
     if (combinedFeesCents > 0) {
       lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: { name: "Fees" },
-          unit_amount: combinedFeesCents,
-        },
+        price_data: { currency: "usd", product_data: { name: "Fees" }, unit_amount: combinedFeesCents },
         quantity: 1,
       });
     }
 
     const checkoutParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : contact_email.trim(),
+      customer_email: contact_email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?sponsor_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/t/${tournament.slug}?sponsor_success=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
       cancel_url: `${origin}/t/${tournament.slug}?sponsor_cancel=true`,
+      payment_intent_data: { application_fee_amount: applicationFeeAmount },
       metadata: {
         type: "sponsor_registration",
         tournament_id,
@@ -228,37 +151,21 @@ Deno.serve(async (req) => {
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
         charge_total_cents: String(chargeTotalCents),
-        routing: useDestinationCharge ? "destination" : "platform_escrow",
-        payment_method_override: override,
+        routing: "direct",
       },
     };
 
-    if (useDestinationCharge) {
-      // Destination charge to organizer's Stripe Connect account; platform keeps the fee.
-      checkoutParams.payment_intent_data = {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: { destination: organizerStripeAccountId },
-        on_behalf_of: organizerStripeAccountId,
-      };
-    }
-    // else: direct charge to TeeVents platform account (escrow). No transfer_data.
+    const session = await stripe.checkout.sessions.create(
+      checkoutParams, { stripeAccount: organizerStripeAccountId },
+    );
 
-    const session = await stripe.checkout.sessions.create(checkoutParams);
-
-    await logRoutingDecision(supabaseAdmin, {
+    await logDirectCharge(supabaseAdmin, {
       context: "sponsor",
       tournamentId: tournament_id,
       organizationId: tournament.organization_id,
-      routing: {
-        useDestinationCharge,
-        organizerStripeAccountId,
-        override: override as any,
-        organizerChargesReady,
-      },
-      organizerChargesReady,
+      stripeAccountId: organizerStripeAccountId,
       grossCents: tier.price_cents,
-      platformFeeCents,
-      stripeFeeCents,
+      platformFeeCents, stripeFeeCents,
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants: true,
       stripeSessionId: session.id,
@@ -266,7 +173,6 @@ Deno.serve(async (req) => {
       notes: `tier=${tier.name} company=${company_name.trim()}`,
     });
 
-    // Store session ID on the registration
     await supabaseAdmin
       .from("sponsor_registrations")
       .update({ stripe_session_id: session.id })
@@ -277,7 +183,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

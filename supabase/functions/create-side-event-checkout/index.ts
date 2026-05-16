@@ -1,11 +1,10 @@
-// Side Event ticket checkout. Anonymous attendees can buy tickets; uses
-// destination charge to organizer when their Connect account is ready.
+// Side Event ticket checkout — Direct Charge to the organizer's Connect account.
+// Anonymous attendees can buy tickets. TeeVents takes a 5% application fee.
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { logRoutingDecision } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
 
-const PLATFORM_FEE_RATE = 0.05;
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
 
@@ -19,13 +18,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
     const body = await req.json();
-    const {
-      side_event_id,
-      attendee_name,
-      attendee_email,
-      attendee_phone,
-      quantity,
-    } = body;
+    const { side_event_id, attendee_name, attendee_email, attendee_phone, quantity } = body;
     const qty = Math.max(1, parseInt(quantity ?? "1", 10) || 1);
 
     if (!side_event_id || !attendee_name?.trim() || !attendee_email?.trim()) {
@@ -51,44 +44,22 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, payment_method_override")
+      .select("id, title, slug, organization_id")
       .eq("id", ev.tournament_id)
       .single();
     if (!tournament) throw new Error("Tournament not found");
-
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("stripe_account_id")
-      .eq("id", tournament.organization_id)
-      .single();
-    const organizerStripeAccountId = org?.stripe_account_id || null;
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    let organizerChargesReady = false;
-    if (organizerStripeAccountId) {
-      try {
-        const acct = await stripe.accounts.retrieve(organizerStripeAccountId);
-        organizerChargesReady = !!acct.charges_enabled;
-      } catch (e) {
-        console.error(`[side-event-checkout] retrieve account failed:`, e);
-      }
-    }
-
-    const override = (tournament as any).payment_method_override || "default";
-    let useDestinationCharge = false;
-    if (override === "force_stripe") {
-      if (!organizerStripeAccountId || !organizerChargesReady) {
-        throw new Error("Organizer's payment account isn't ready.");
-      }
-      useDestinationCharge = true;
-    } else if (override === "force_platform") {
-      useDestinationCharge = false;
-    } else {
-      useDestinationCharge = !!organizerStripeAccountId && organizerChargesReady;
-    }
+    const connected = await requireConnectedAccount(
+      supabaseAdmin,
+      stripe,
+      tournament.organization_id,
+      "side_event",
+    );
+    const organizerStripeAccountId = connected.stripeAccountId;
 
     const grossCents = ev.price_cents * qty;
 
@@ -111,11 +82,7 @@ Deno.serve(async (req) => {
     const platformFeeCents = Math.round(grossCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = calculateGrossedUpStripeFee(grossCents + platformFeeCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
-    const applicationFeeAmount = combinedFeesCents;
-
-    let customerId: string | undefined;
-    const customers = await stripe.customers.list({ email: attendee_email.trim(), limit: 1 });
-    if (customers.data.length > 0) customerId = customers.data[0].id;
+    const applicationFeeAmount = platformFeeCents;
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const lineItems: any[] = [
@@ -139,12 +106,12 @@ Deno.serve(async (req) => {
     }
 
     const checkoutParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : attendee_email.trim(),
+      customer_email: attendee_email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?side_event_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/t/${tournament.slug}?side_event_success=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
       cancel_url: `${origin}/t/${tournament.slug}?side_event_cancel=true`,
+      payment_intent_data: { application_fee_amount: applicationFeeAmount },
       metadata: {
         type: "side_event_ticket",
         tournament_id: ev.tournament_id,
@@ -157,27 +124,20 @@ Deno.serve(async (req) => {
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
         charge_total_cents: String(grossCents + combinedFeesCents),
-        routing: useDestinationCharge ? "destination" : "platform_escrow",
-        payment_method_override: override,
+        routing: "direct",
       },
     };
 
-    if (useDestinationCharge) {
-      checkoutParams.payment_intent_data = {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: { destination: organizerStripeAccountId },
-        on_behalf_of: organizerStripeAccountId,
-      };
-    }
+    const session = await stripe.checkout.sessions.create(
+      checkoutParams,
+      { stripeAccount: organizerStripeAccountId },
+    );
 
-    const session = await stripe.checkout.sessions.create(checkoutParams);
-
-    await logRoutingDecision(supabaseAdmin, {
+    await logDirectCharge(supabaseAdmin, {
       context: "side_event",
       tournamentId: ev.tournament_id,
       organizationId: tournament.organization_id,
-      routing: { useDestinationCharge, organizerStripeAccountId, override: override as any, organizerChargesReady },
-      organizerChargesReady,
+      stripeAccountId: organizerStripeAccountId,
       grossCents,
       platformFeeCents,
       stripeFeeCents,

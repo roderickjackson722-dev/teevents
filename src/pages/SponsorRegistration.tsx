@@ -55,11 +55,12 @@ const SponsorRegistrationPage = () => {
   // Check for success redirect
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
+    const acct = searchParams.get("acct");
     const sponsorSuccess = searchParams.get("sponsor_success");
     if (sponsorSuccess === "true" && sessionId) {
       setVerifying(true);
       supabase.functions.invoke("verify-sponsor-payment", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       }).then(({ data, error }) => {
         if (data?.verified) {
           setVerified(true);

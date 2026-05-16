@@ -3747,6 +3747,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           amount_cents: number
+          claim_token: string
           created_at: string
           id: string
           reason: string
@@ -3760,6 +3761,7 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           amount_cents: number
+          claim_token?: string
           created_at?: string
           id?: string
           reason: string
@@ -3773,6 +3775,7 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           amount_cents?: number
+          claim_token?: string
           created_at?: string
           id?: string
           reason?: string
@@ -5592,6 +5595,29 @@ export type Database = {
           tournament_title: string
         }[]
       }
+      get_refund_request_by_token: {
+        Args: { _token: string }
+        Returns: {
+          admin_notes: string | null
+          amount_cents: number
+          claim_token: string
+          created_at: string
+          id: string
+          reason: string
+          registration_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          stripe_refund_id: string | null
+          tournament_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "tournament_refund_requests"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5617,6 +5643,17 @@ export type Database = {
       }
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }
+        Returns: undefined
+      }
+      record_site_visit: {
+        Args: {
+          _city?: string
+          _country?: string
+          _ip?: string
+          _path: string
+          _referrer?: string
+          _user_agent?: string
+        }
         Returns: undefined
       }
       regenerate_player_qr_token: {

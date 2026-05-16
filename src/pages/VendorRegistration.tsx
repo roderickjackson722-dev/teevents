@@ -53,11 +53,12 @@ export default function VendorRegistration() {
   // Verify on Stripe success redirect
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
+    const acct = searchParams.get("acct");
     const success = searchParams.get("vendor_success");
     if (success === "true" && sessionId) {
       setVerifying(true);
       supabase.functions.invoke("verify-vendor-payment", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       }).then(({ data }) => {
         if ((data as any)?.verified) setVerified(true);
         else toast({ title: "Payment processing", description: "We're still confirming your payment.", variant: "destructive" });

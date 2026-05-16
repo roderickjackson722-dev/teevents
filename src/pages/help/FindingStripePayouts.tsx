@@ -27,7 +27,7 @@ const FindingStripePayouts = () => (
   <Layout>
     <SEO
       title="Where to Find Your Payouts in Stripe | TeeVents Help"
-      description="Step-by-step guide to locating your TeeVents payouts inside the Stripe Dashboard — Balances → Transfers."
+      description="Step-by-step guide to locating your TeeVents payouts inside the Stripe Dashboard — Balances → Overview → Payments."
       path="/help/finding-stripe-payouts"
     />
     <div className="max-w-3xl mx-auto px-4 py-16">

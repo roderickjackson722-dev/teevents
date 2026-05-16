@@ -39,9 +39,10 @@ const FindingStripePayouts = () => (
         Where to Find Your Payouts in Stripe
       </h1>
       <p className="text-lg text-muted-foreground mb-10">
-        TeeVents sends every registration payment directly to your connected Stripe
-        account using <strong>destination charges</strong>. Here's exactly where
-        to look in your Stripe Dashboard to see those funds arrive.
+        TeeVents uses <strong>Stripe Direct Charges</strong>. Every registration is paid
+        straight into your Stripe account — TeeVents never holds the money. Only the 5%
+        platform fee is taken off the top as an application fee. Here's exactly where to
+        look in your Stripe Dashboard to see those payments.
       </p>
 
       <section className="mb-10">
@@ -69,20 +70,20 @@ const FindingStripePayouts = () => (
           <ScreenshotPlaceholder label="Stripe sidebar with 'Balances' highlighted" />
         </Step>
 
-        <Step n={3} title="Switch to the 'Transfers' tab">
+        <Step n={3} title="Open the 'Overview' tab and find 'Payments'">
           <p>
-            Across the top of the Balances page you'll see tabs. Click{" "}
-            <strong>Transfers</strong> — <em>not</em> "Transactions" or
-            "Payments". Transfers is where TeeVents-routed payouts appear.
+            On the Balances page, the <strong>Overview</strong> tab lists every charge.
+            Because TeeVents now uses Direct Charges, registration payments appear as
+            standard <strong>Payments</strong> on your account — not as Transfers.
           </p>
-          <ScreenshotPlaceholder label="Balances page with 'Transfers' tab selected" />
+          <ScreenshotPlaceholder label="Balances → Overview with Payments list" />
         </Step>
 
-        <Step n={4} title="Review your payouts">
+        <Step n={4} title="Review your payments">
           <p>
-            You'll see every payout from TeeVents listed with the date and amount.
-            Each row is a registration (or sponsorship/store) payment routed to
-            your account.
+            Each row is a registration, sponsorship, side event ticket, store order, or
+            donation paid through TeeVents. The 5% TeeVents platform fee on each row is
+            recorded as the <em>application fee</em>.
           </p>
         </Step>
 

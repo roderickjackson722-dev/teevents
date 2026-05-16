@@ -95,56 +95,64 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Search for the checkout session with this registration
+    // Search for the checkout session with this registration.
+    // Under Direct Charges, the session lives on the organizer's connected account.
     let refundId: string | null = null;
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 100,
-    });
-
     let targetSession: any = null;
-    for (const session of sessions.data) {
-      if (
-        session.metadata?.type === "registration" &&
-        session.metadata?.registration_ids?.includes(targetRegistrationId) &&
-        session.payment_status === "paid"
-      ) {
-        targetSession = session;
-        break;
+    const stripeAccount = org?.stripe_account_id || undefined;
+
+    if (stripeAccount) {
+      const sessions = await stripe.checkout.sessions.list({ limit: 100 }, { stripeAccount });
+      for (const session of sessions.data) {
+        if (
+          session.metadata?.type === "registration" &&
+          session.metadata?.registration_ids?.includes(targetRegistrationId) &&
+          session.payment_status === "paid"
+        ) {
+          targetSession = session;
+          break;
+        }
+      }
+    }
+
+    // Legacy fallback: pre-Direct-Charges sessions live on the platform account.
+    if (!targetSession) {
+      const sessions = await stripe.checkout.sessions.list({ limit: 100 });
+      for (const session of sessions.data) {
+        if (
+          session.metadata?.type === "registration" &&
+          session.metadata?.registration_ids?.includes(targetRegistrationId) &&
+          session.payment_status === "paid"
+        ) {
+          targetSession = session;
+          break;
+        }
       }
     }
 
     if (targetSession && targetSession.payment_intent) {
-      // Process the Stripe refund
       const refundParams: any = {
         payment_intent: targetSession.payment_intent as string,
+        refund_application_fee: true,
       };
 
-      // If connected account, try reverse transfer first, then fall back for legacy/non-transfer payments
-      if (org?.stripe_account_id) {
+      if (stripeAccount) {
+        const refund = await stripe.refunds.create(refundParams, { stripeAccount });
+        refundId = refund.id;
+      } else {
+        // Legacy destination-charge or platform-only payment
+        const legacyParams: any = { payment_intent: targetSession.payment_intent as string };
         try {
-          const refund = await stripe.refunds.create({
-            ...refundParams,
-            reverse_transfer: true,
-            refund_application_fee: false,
-          });
+          const refund = await stripe.refunds.create({ ...legacyParams, reverse_transfer: true, refund_application_fee: false });
           refundId = refund.id;
         } catch (transferErr: any) {
           if (shouldRetryWithoutReverseTransfer(transferErr)) {
-            const retryReason = transferErr instanceof Error ? transferErr.message : "reverse transfer unavailable";
-            console.log(`[Refund] ${retryReason}. Refunding without reverse transfer`);
-            const refund = await stripe.refunds.create({
-              ...refundParams,
-              reverse_transfer: false,
-              refund_application_fee: false,
-            });
+            const refund = await stripe.refunds.create({ ...legacyParams, reverse_transfer: false, refund_application_fee: false });
             refundId = refund.id;
           } else {
             throw transferErr;
           }
         }
-      } else {
-        const refund = await stripe.refunds.create(refundParams);
-        refundId = refund.id;
       }
 
       console.log(`[Refund] Processed refund ${refundId} for registration ${targetRegistrationId}`);

@@ -77,14 +77,27 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { session_id } = await req.json();
+    const { session_id, acct } = await req.json();
     if (!session_id) throw new Error("Missing session_id");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    // With Direct Charges the session lives on the organizer's connected account.
+    // Legacy sessions (pre-migration) live on the platform — try connected first, then fall back.
+    let session: any;
+    try {
+      session = acct
+        ? await stripe.checkout.sessions.retrieve(session_id, undefined, { stripeAccount: acct })
+        : await stripe.checkout.sessions.retrieve(session_id);
+    } catch (e) {
+      if (acct) {
+        session = await stripe.checkout.sessions.retrieve(session_id);
+      } else {
+        throw e;
+      }
+    }
 
     if (session.payment_status === "paid") {
       const registrationIds = session.metadata?.registration_ids

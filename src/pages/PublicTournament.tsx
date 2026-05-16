@@ -216,6 +216,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const registered = searchParams.get("registered") === "true";
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
+  const acct = searchParams.get("acct");
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
    const [products, setProducts] = useState<PublicProduct[]>([]);
@@ -460,19 +461,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   useEffect(() => {
     if (donated && sessionId) {
       supabase.functions.invoke("verify-donation", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       });
     }
-  }, [donated, sessionId]);
+  }, [donated, sessionId, acct]);
 
   // Verify registration payment on return from Stripe
   useEffect(() => {
     if (registered && sessionId) {
       supabase.functions.invoke("verify-registration", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       });
     }
-  }, [registered, sessionId]);
+  }, [registered, sessionId, acct]);
 
   // Verify sponsor payment on return from Stripe
   useEffect(() => {
@@ -480,7 +481,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (sponsorSuccessParam === "true" && sessionId) {
       setSponsorVerifying(true);
       supabase.functions.invoke("verify-sponsor-payment", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       }).then(({ data }) => {
         if (data?.verified) {
           setSponsorSuccess(true);
@@ -488,7 +489,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setSponsorVerifying(false);
       }).catch(() => setSponsorVerifying(false));
     }
-  }, [searchParams, sessionId]);
+  }, [searchParams, sessionId, acct]);
 
   // Verify vendor payment on return from Stripe
   useEffect(() => {
@@ -496,13 +497,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (vendorSuccessParam === "true" && sessionId) {
       setVendorVerifying(true);
       supabase.functions.invoke("verify-vendor-payment", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       }).then(({ data }) => {
         if ((data as any)?.verified) setVendorSuccess(true);
         setVendorVerifying(false);
       }).catch(() => setVendorVerifying(false));
     }
-  }, [searchParams, sessionId]);
+  }, [searchParams, sessionId, acct]);
 
   // Verify side event ticket payment on return from Stripe
   useEffect(() => {
@@ -510,13 +511,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (seParam === "true" && sessionId) {
       setSideEventVerifying(true);
       supabase.functions.invoke("verify-side-event-payment", {
-        body: { session_id: sessionId },
+        body: { session_id: sessionId, acct },
       }).then(({ data }) => {
         if ((data as any)?.verified) setSideEventSuccess(true);
         setSideEventVerifying(false);
       }).catch(() => setSideEventVerifying(false));
     }
-  }, [searchParams, sessionId]);
+  }, [searchParams, sessionId, acct]);
 
   useEffect(() => {
     if (!tournament?.date) return;

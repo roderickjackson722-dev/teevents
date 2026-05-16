@@ -246,37 +246,71 @@ const Settings = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Control how the 5% platform fee and Stripe processing fees are handled for each tournament.
           </p>
-          <div className="space-y-4">
-            {tournaments.map((t) => (
-              <div key={t.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-border">
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground text-sm truncate">{t.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t.pass_fees_to_participants
-                      ? "Fees passed to participants (5% platform + ~2.9%+$0.30 Stripe) — your organization receives the full advertised price."
-                      : "Fees absorbed by organization — participants pay exactly the advertised price. Fees deducted from bi-weekly payout."}
-                  </p>
+          <div className="space-y-6">
+            {tournaments.map((t) => {
+              // Example on a $100 registration:
+              // Pass fees: golfer pays 100 + 5 (platform) + grossed-up Stripe fee = ~$108.20
+              // Absorb: golfer pays $100; organizer keeps 100 - 5 - (2.9% of 100 + 0.30) = ~$91.80
+              const base = 100;
+              const passTotal = 108.20;
+              const absorbNet = 91.80;
+              return (
+                <div key={t.id} className="rounded-lg border border-border p-4">
+                  <p className="font-semibold text-foreground text-sm mb-3">{t.title}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => !t.pass_fees_to_participants || handleToggleFees(t.id, false)}
+                      disabled={savingFeeToggle === t.id}
+                      className={`text-left rounded-lg border-2 p-4 transition ${
+                        t.pass_fees_to_participants
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-muted-foreground/40"
+                      }`}
+                    >
+                      <p className="font-semibold text-sm text-foreground">
+                        Pass fees to golfers <span className="text-xs text-primary">(Recommended)</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Golfers cover the 5% TeeVents fee and Stripe processing. You receive the full ${base.toFixed(2)} of every ${base.toFixed(2)} ticket.
+                      </p>
+                      <p className="text-xs font-mono mt-2 text-foreground">
+                        ${base.toFixed(2)} ticket → golfer pays ${passTotal.toFixed(2)} → you keep ${base.toFixed(2)}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        Best for: charity events, registrations where the published price is the “net to the cause”.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => t.pass_fees_to_participants && handleToggleFees(t.id, true)}
+                      disabled={savingFeeToggle === t.id}
+                      className={`text-left rounded-lg border-2 p-4 transition ${
+                        !t.pass_fees_to_participants
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-muted-foreground/40"
+                      }`}
+                    >
+                      <p className="font-semibold text-sm text-foreground">Absorb fees</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Golfers pay exactly the advertised price. The 5% platform fee and Stripe processing come out of your payout.
+                      </p>
+                      <p className="text-xs font-mono mt-2 text-foreground">
+                        ${base.toFixed(2)} ticket → golfer pays ${base.toFixed(2)} → you keep ~${absorbNet.toFixed(2)}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        Best for: corporate outings, member events, anywhere a clean round-number price matters.
+                      </p>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Label htmlFor={`fee-toggle-${t.id}`} className="text-xs text-muted-foreground whitespace-nowrap">
-                    Pass fees to participants
-                  </Label>
-                  <Switch
-                    id={`fee-toggle-${t.id}`}
-                    checked={t.pass_fees_to_participants}
-                    onCheckedChange={() => handleToggleFees(t.id, t.pass_fees_to_participants)}
-                    disabled={savingFeeToggle === t.id}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="bg-muted/50 rounded-lg p-3 mt-4">
             <p className="text-xs text-muted-foreground">
-              <strong>When ON (recommended):</strong> Registrants pay the base price + 5% TeeVents fee + ~2.9%+$0.30 Stripe fee. Total ~7.9% + $0.30.
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              <strong>When OFF:</strong> Participants pay exactly the advertised price. All fees are deducted from your bi-weekly payout.
+              Payments now settle directly into your Stripe account. TeeVents automatically deducts its 5% platform fee at the time of each charge — no waiting on transfers, and Stripe processing fees are handled the way you choose above.
             </p>
           </div>
         </motion.div>

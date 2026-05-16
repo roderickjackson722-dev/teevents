@@ -75,10 +75,9 @@ const UnderstandingPayoutTiming = () => (
           <Building className="h-5 w-5 text-primary" /> Where to Check Your Payout Status in Stripe
         </h2>
         <p className="text-muted-foreground mb-4">
-          New organizers often check Stripe's <strong>Payments</strong> tab and see
-          $0 — that tab only shows charges processed by their own account, not
-          destination charges from a platform like TeeVents. Look in these places
-          instead:
+          TeeVents uses <strong>Stripe Direct Charges</strong>: every registration is
+          charged directly on your connected Stripe account, and the 5% TeeVents fee is
+          taken as an application fee at the time of the charge. Look here:
         </p>
         <ol className="space-y-3 ml-6 list-decimal text-sm text-muted-foreground">
           <li>
@@ -86,8 +85,10 @@ const UnderstandingPayoutTiming = () => (
             and <em>Pending</em> balance. New-account funds appear here as Pending.
           </li>
           <li>
-            <strong>Balances → Transfers</strong> — shows every destination charge
-            TeeVents has routed to you (one row per registration).
+            <strong>Balances → Overview → Payments</strong> — each registration,
+            sponsorship, ticket, store order, or donation appears as a standard payment.
+            (The old <em>Transfers</em> tab is no longer used — Direct Charges don't
+            create transfers.)
           </li>
           <li>
             <strong>Payouts</strong> — shows scheduled and completed bank deposits.

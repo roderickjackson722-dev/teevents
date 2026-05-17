@@ -556,7 +556,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm font-semibold text-foreground">Optional Add-ons</p>
+              <p className="text-sm font-semibold text-foreground">{addonsSectionTitle}</p>
               {playerCount > 1 && (
                 <span className="text-xs text-muted-foreground">(quantity is per player × {playerCount} players)</span>
               )}

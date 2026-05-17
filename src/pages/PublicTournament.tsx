@@ -1991,6 +1991,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {/* ===== NEW AUCTIONS & RAFFLES (separate tables, countdown, Stripe checkout) ===== */}
+      {isTabVisible("auction") && tournament && (
+        <PublicAuctionsRaffles
+          tournamentId={tournament.id}
+          tournamentSlug={tournament.slug || ""}
+          primary={primary}
+          secondary={secondary}
+          auctionTitle={(tournament as any).auction_tab_title || "Auction"}
+          raffleTitle={(tournament as any).raffle_tab_title || "Raffle"}
+        />
+      )}
+
       {/* ===== STORE ===== */}
       {products.length > 0 && (
         <section className="py-16" style={{ backgroundColor: "#fafafa" }}>

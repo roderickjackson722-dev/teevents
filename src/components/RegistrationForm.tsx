@@ -51,6 +51,7 @@ interface RegistrationFormProps {
   allowCoverFees?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
   fields?: RegFieldConfig[];
+  addonsSectionTitle?: string;
 }
 
 const emptyPlayer = () => ({

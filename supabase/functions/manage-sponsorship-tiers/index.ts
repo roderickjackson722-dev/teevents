@@ -44,6 +44,9 @@ const sanitizeTierPayload = (payload: any, tournamentId: string, fallbackOrder =
   const packageType = typeof payload.package_type === "string" && payload.package_type.trim()
     ? payload.package_type.trim().slice(0, 50)
     : null;
+  const customPackageLabel = packageType === "custom" && typeof payload.custom_package_label === "string"
+    ? (payload.custom_package_label.trim().slice(0, 60) || null)
+    : null;
 
   return {
     tournament_id: tournamentId,
@@ -55,6 +58,7 @@ const sanitizeTierPayload = (payload: any, tournamentId: string, fallbackOrder =
     is_active: payload.is_active ?? true,
     total_spots: Number.isFinite(totalSpots as number) ? totalSpots : null,
     package_type: packageType,
+    custom_package_label: customPackageLabel,
   };
 };
 

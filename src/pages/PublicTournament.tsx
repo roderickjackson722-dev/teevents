@@ -2002,11 +2002,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{p.name}</h3>
                       <p className="text-lg font-semibold mt-1" style={{ color: primary }}>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(p.price)}</p>
                       {p.description && <p className="text-sm mt-2 line-clamp-2" style={{ color: "#666" }}>{p.description}</p>}
-                      {p.purchase_url ? (
-                        <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: primary, color: "white" }}>
-                          Buy Now <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      ) : p.price > 0 && (
+                      {p.price > 0 ? (
                         <button
                           onClick={() => handleStoreBuy(p.id)}
                           disabled={storeBuyLoading === p.id}
@@ -2016,7 +2012,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                           {storeBuyLoading === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingBag className="h-3.5 w-3.5" />}
                           Buy Now
                         </button>
-                      )}
+                      ) : p.purchase_url && /^https?:\/\//i.test(p.purchase_url) ? (
+                        <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: primary, color: "white" }}>
+                          Learn More <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      ) : null}
                     </div>
                   </motion.div>
                 ))}

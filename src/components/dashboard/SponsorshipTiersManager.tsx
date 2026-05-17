@@ -517,7 +517,13 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-display font-bold text-foreground">{tier.name}</h4>
                       <span className="text-primary font-mono font-semibold text-sm">{fmt(tier.price_cents)}</span>
-                      {tier.package_type && <Badge variant="outline" className="text-xs capitalize">{tier.package_type}</Badge>}
+                      {tier.package_type && (
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {tier.package_type === "custom" && (tier as any).custom_package_label
+                            ? (tier as any).custom_package_label
+                            : tier.package_type}
+                        </Badge>
+                      )}
                       {tier.total_spots != null && (() => {
                         const remaining = Math.max(0, tier.total_spots - (tier.spots_used || 0));
                         return (

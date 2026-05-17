@@ -172,6 +172,27 @@ const Store = () => {
         </motion.div>
       </div>
 
+      {/* Public Section Title */}
+      <div className="bg-card rounded-lg border border-border p-5 mb-6">
+        <Label className="text-sm font-semibold text-foreground">Section title on public page</Label>
+        <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+          Controls the heading shown on the public tournament page and the add-on label in the registration form (e.g. "Merchandise", "Extras", "Upgrades").
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            value={sectionTitle}
+            onChange={(e) => setSectionTitle(e.target.value)}
+            placeholder="Add-Ons"
+            maxLength={60}
+            className="flex-1"
+          />
+          <Button onClick={handleSaveSectionTitle} disabled={savingTitle}>
+            {savingTitle ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+            Save title
+          </Button>
+        </div>
+      </div>
+
       {/* Template Library */}
       <TemplateLibrary selectedTournament={selectedTournament} onQuickAdd={fetchProducts} />
 

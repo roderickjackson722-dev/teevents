@@ -46,6 +46,7 @@ interface SponsorshipTier {
   total_spots: number | null;
   spots_used: number;
   package_type: string | null;
+  custom_package_label?: string | null;
 }
 
 interface SponsorRegistration {

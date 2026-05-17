@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -30,6 +32,8 @@ const Store = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [sectionTitle, setSectionTitle] = useState("Add-Ons");
+  const [savingTitle, setSavingTitle] = useState(false);
 
   useEffect(() => {
     if (!org) return;
@@ -49,16 +53,41 @@ const Store = () => {
   const fetchProducts = async () => {
     if (!selectedTournament) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("tournament_store_products")
-      .select("*")
-      .eq("tournament_id", selectedTournament)
-      .order("sort_order", { ascending: true });
-    setProducts((data as Product[]) || []);
+    const [{ data: prodData }, { data: tData }] = await Promise.all([
+      supabase
+        .from("tournament_store_products")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("tournaments")
+        .select("store_section_title")
+        .eq("id", selectedTournament)
+        .single(),
+    ]);
+    setProducts((prodData as Product[]) || []);
+    setSectionTitle(((tData as any)?.store_section_title ?? "Add-Ons") || "Add-Ons");
     setLoading(false);
   };
 
   useEffect(() => { fetchProducts(); }, [selectedTournament]);
+
+  const handleSaveSectionTitle = async () => {
+    if (!selectedTournament || demoGuard()) return;
+    setSavingTitle(true);
+    const value = sectionTitle.trim() || "Add-Ons";
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ store_section_title: value } as any)
+      .eq("id", selectedTournament);
+    setSavingTitle(false);
+    if (error) {
+      toast({ title: "Could not save title", description: error.message, variant: "destructive" });
+    } else {
+      setSectionTitle(value);
+      toast({ title: "Public title updated" });
+    }
+  };
 
   const handleOpenEdit = (product: Product) => {
     setEditProduct(product);
@@ -141,6 +170,27 @@ const Store = () => {
             {new Set(products.map((p) => p.category)).size}
           </p>
         </motion.div>
+      </div>
+
+      {/* Public Section Title */}
+      <div className="bg-card rounded-lg border border-border p-5 mb-6">
+        <Label className="text-sm font-semibold text-foreground">Section title on public page</Label>
+        <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+          Controls the heading shown on the public tournament page and the add-on label in the registration form (e.g. "Merchandise", "Extras", "Upgrades").
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            value={sectionTitle}
+            onChange={(e) => setSectionTitle(e.target.value)}
+            placeholder="Add-Ons"
+            maxLength={60}
+            className="flex-1"
+          />
+          <Button onClick={handleSaveSectionTitle} disabled={savingTitle}>
+            {savingTitle ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+            Save title
+          </Button>
+        </div>
       </div>
 
       {/* Template Library */}

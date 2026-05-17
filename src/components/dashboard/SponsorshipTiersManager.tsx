@@ -46,6 +46,7 @@ interface SponsorshipTier {
   total_spots: number | null;
   spots_used: number;
   package_type: string | null;
+  custom_package_label?: string | null;
 }
 
 interface SponsorRegistration {
@@ -148,6 +149,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     display_order: "0",
     total_spots: "",
     package_type: "",
+    custom_package_label: "",
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
@@ -202,7 +204,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "" });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "" });
     setEditTier(null);
   };
 
@@ -224,6 +226,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       is_active: true,
       total_spots: Number.isFinite(totalSpotsParsed as number) ? totalSpotsParsed : null,
       package_type: form.package_type || null,
+      custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
@@ -256,6 +259,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       display_order: String(tier.display_order),
       total_spots: tier.total_spots == null ? "" : String(tier.total_spots),
       package_type: tier.package_type || "",
+      custom_package_label: (tier as any).custom_package_label || "",
     });
     setDialogOpen(true);
   };
@@ -467,6 +471,18 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                       </Select>
                     </div>
                   </div>
+                  {form.package_type === "custom" && (
+                    <div>
+                      <Label>Custom Package Label</Label>
+                      <Input
+                        value={form.custom_package_label}
+                        onChange={e => setForm({ ...form, custom_package_label: e.target.value })}
+                        placeholder='e.g. "Hole Sponsor", "Lunch Sponsor"'
+                        maxLength={60}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Shown as the package badge on the public sponsorship page.</p>
+                    </div>
+                  )}
                   <div>
                     <Label>Display Order</Label>
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />
@@ -501,7 +517,13 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-display font-bold text-foreground">{tier.name}</h4>
                       <span className="text-primary font-mono font-semibold text-sm">{fmt(tier.price_cents)}</span>
-                      {tier.package_type && <Badge variant="outline" className="text-xs capitalize">{tier.package_type}</Badge>}
+                      {tier.package_type && (
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {tier.package_type === "custom" && (tier as any).custom_package_label
+                            ? (tier as any).custom_package_label
+                            : tier.package_type}
+                        </Badge>
+                      )}
                       {tier.total_spots != null && (() => {
                         const remaining = Math.max(0, tier.total_spots - (tier.spots_used || 0));
                         return (

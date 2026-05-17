@@ -3027,6 +3027,7 @@ export type Database = {
         Row: {
           benefits: string | null
           created_at: string
+          custom_package_label: string | null
           description: string | null
           display_order: number | null
           id: string
@@ -3041,6 +3042,7 @@ export type Database = {
         Insert: {
           benefits?: string | null
           created_at?: string
+          custom_package_label?: string | null
           description?: string | null
           display_order?: number | null
           id?: string
@@ -3055,6 +3057,7 @@ export type Database = {
         Update: {
           benefits?: string | null
           created_at?: string
+          custom_package_label?: string | null
           description?: string | null
           display_order?: number | null
           id?: string
@@ -4692,6 +4695,7 @@ export type Database = {
           slug: string | null
           state: string | null
           status: string
+          store_section_title: string | null
           template: string | null
           test_mode_enabled: boolean | null
           title: string
@@ -4815,6 +4819,7 @@ export type Database = {
           slug?: string | null
           state?: string | null
           status?: string
+          store_section_title?: string | null
           template?: string | null
           test_mode_enabled?: boolean | null
           title: string
@@ -4938,6 +4943,7 @@ export type Database = {
           slug?: string | null
           state?: string | null
           status?: string
+          store_section_title?: string | null
           template?: string | null
           test_mode_enabled?: boolean | null
           title?: string

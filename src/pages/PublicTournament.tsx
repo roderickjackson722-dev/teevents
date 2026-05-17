@@ -586,9 +586,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         body: { product_id: productId, tournament_slug: tournament.slug },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err: any) {
-      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
+      toast({
+        title: "Unable to process purchase",
+        description: "Please try again or contact the tournament organizer.",
+        variant: "destructive",
+      });
+      console.error("Store checkout error:", err);
     } finally {
       setStoreBuyLoading(null);
     }
@@ -1885,6 +1895,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     allowCoverFees={tournament.allow_cover_fees !== false}
                     tiers={regTiers}
                     fields={regFields}
+                    addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
                   />
                 </div>
               )}
@@ -1984,7 +1995,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>TOURNAMENT STORE</h2>
+              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{(((tournament as any).store_section_title || "Tournament Store").toString()).toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
               <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Support the tournament with merchandise and gear</p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2001,11 +2012,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{p.name}</h3>
                       <p className="text-lg font-semibold mt-1" style={{ color: primary }}>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(p.price)}</p>
                       {p.description && <p className="text-sm mt-2 line-clamp-2" style={{ color: "#666" }}>{p.description}</p>}
-                      {p.purchase_url ? (
-                        <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: primary, color: "white" }}>
-                          Buy Now <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      ) : p.price > 0 && (
+                      {p.price > 0 ? (
                         <button
                           onClick={() => handleStoreBuy(p.id)}
                           disabled={storeBuyLoading === p.id}
@@ -2015,7 +2022,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                           {storeBuyLoading === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingBag className="h-3.5 w-3.5" />}
                           Buy Now
                         </button>
-                      )}
+                      ) : p.purchase_url && /^https?:\/\//i.test(p.purchase_url) ? (
+                        <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: primary, color: "white" }}>
+                          Learn More <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      ) : null}
                     </div>
                   </motion.div>
                 ))}

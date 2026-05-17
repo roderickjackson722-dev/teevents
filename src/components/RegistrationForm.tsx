@@ -51,6 +51,7 @@ interface RegistrationFormProps {
   allowCoverFees?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
   fields?: RegFieldConfig[];
+  addonsSectionTitle?: string;
 }
 
 const emptyPlayer = () => ({
@@ -222,7 +223,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [] }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons" }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -555,7 +556,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm font-semibold text-foreground">Optional Add-ons</p>
+              <p className="text-sm font-semibold text-foreground">{addonsSectionTitle}</p>
               {playerCount > 1 && (
                 <span className="text-xs text-muted-foreground">(quantity is per player × {playerCount} players)</span>
               )}

@@ -16,6 +16,7 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -1988,6 +1989,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             </motion.div>
           </div>
         </section>
+      )}
+
+      {/* ===== NEW AUCTIONS & RAFFLES (separate tables, countdown, Stripe checkout) ===== */}
+      {isTabVisible("auction") && tournament && (
+        <PublicAuctionsRaffles
+          tournamentId={tournament.id}
+          tournamentSlug={tournament.slug || ""}
+          primary={primary}
+          secondary={secondary}
+          auctionTitle={(tournament as any).auction_tab_title || "Auction"}
+          raffleTitle={(tournament as any).raffle_tab_title || "Raffle"}
+        />
       )}
 
       {/* ===== STORE ===== */}

@@ -32,6 +32,8 @@ const Store = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [sectionTitle, setSectionTitle] = useState("Add-Ons");
+  const [savingTitle, setSavingTitle] = useState(false);
 
   useEffect(() => {
     if (!org) return;

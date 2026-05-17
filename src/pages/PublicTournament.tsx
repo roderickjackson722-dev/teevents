@@ -586,9 +586,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         body: { product_id: productId, tournament_slug: tournament.slug },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err: any) {
-      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
+      toast({
+        title: "Unable to process purchase",
+        description: "Please try again or contact the tournament organizer.",
+        variant: "destructive",
+      });
+      console.error("Store checkout error:", err);
     } finally {
       setStoreBuyLoading(null);
     }

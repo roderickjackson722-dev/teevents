@@ -37,6 +37,8 @@ import CourseDetails from "./pages/dashboard/CourseDetails";
 import WaitlistPage from "./pages/dashboard/Waitlist";
 import CheckIn from "./pages/dashboard/CheckIn";
 import Auction from "./pages/dashboard/Auction";
+import Auctions from "./pages/dashboard/Auctions";
+import Raffles from "./pages/dashboard/Raffles";
 import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
@@ -167,6 +169,8 @@ const App = () => (
           <Route path="/dashboard/waitlist" element={<DashboardLayout><WaitlistPage /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
           <Route path="/dashboard/auction" element={<DashboardLayout><PlanGate feature="auction"><Auction /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/auctions" element={<DashboardLayout><PlanGate feature="auction"><Auctions /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/raffles" element={<DashboardLayout><PlanGate feature="auction"><Raffles /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/gallery" element={<DashboardLayout><PlanGate feature="gallery"><Gallery /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/volunteers" element={<DashboardLayout><PlanGate feature="volunteers"><Volunteers /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />

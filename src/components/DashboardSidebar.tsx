@@ -121,7 +121,8 @@ const categories: SidebarCategory[] = [
       { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys" },
       { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations" },
-      { title: "Auction", url: "/dashboard/auction", icon: Gavel, feature: "auction" },
+      { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction" },
+      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction" },
     ],
   },
 ];

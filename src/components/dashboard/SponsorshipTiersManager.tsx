@@ -471,6 +471,18 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                       </Select>
                     </div>
                   </div>
+                  {form.package_type === "custom" && (
+                    <div>
+                      <Label>Custom Package Label</Label>
+                      <Input
+                        value={form.custom_package_label}
+                        onChange={e => setForm({ ...form, custom_package_label: e.target.value })}
+                        placeholder='e.g. "Hole Sponsor", "Lunch Sponsor"'
+                        maxLength={60}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Shown as the package badge on the public sponsorship page.</p>
+                    </div>
+                  )}
                   <div>
                     <Label>Display Order</Label>
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />

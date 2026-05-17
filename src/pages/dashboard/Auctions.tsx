@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Eye, Gavel, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
 
 interface AuctionRow {
   id: string;

@@ -226,6 +226,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       is_active: true,
       total_spots: Number.isFinite(totalSpotsParsed as number) ? totalSpotsParsed : null,
       package_type: form.package_type || null,
+      custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {

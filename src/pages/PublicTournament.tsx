@@ -1885,6 +1885,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     allowCoverFees={tournament.allow_cover_fees !== false}
                     tiers={regTiers}
                     fields={regFields}
+                    addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
                   />
                 </div>
               )}

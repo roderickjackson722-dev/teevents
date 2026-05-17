@@ -103,8 +103,21 @@
   }
 
   /* Tables in the organizer dashboard auto-scroll on small screens */
+  .dashboard-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
   .dashboard-scroll table {
     min-width: 640px;
+  }
+  /* Any element with this class gets momentum horizontal scroll on mobile */
+  .table-scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  .table-scroll-container > table,
+  .table-scroll-container > .table-min {
+    min-width: 600px;
   }
 
   h1, h2, h3, h4, h5, h6 {

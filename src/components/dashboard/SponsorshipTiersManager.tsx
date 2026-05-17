@@ -259,6 +259,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       display_order: String(tier.display_order),
       total_spots: tier.total_spots == null ? "" : String(tier.total_spots),
       package_type: tier.package_type || "",
+      custom_package_label: (tier as any).custom_package_label || "",
     });
     setDialogOpen(true);
   };

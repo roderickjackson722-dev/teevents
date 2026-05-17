@@ -53,16 +53,41 @@ const Store = () => {
   const fetchProducts = async () => {
     if (!selectedTournament) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("tournament_store_products")
-      .select("*")
-      .eq("tournament_id", selectedTournament)
-      .order("sort_order", { ascending: true });
-    setProducts((data as Product[]) || []);
+    const [{ data: prodData }, { data: tData }] = await Promise.all([
+      supabase
+        .from("tournament_store_products")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("tournaments")
+        .select("store_section_title")
+        .eq("id", selectedTournament)
+        .single(),
+    ]);
+    setProducts((prodData as Product[]) || []);
+    setSectionTitle(((tData as any)?.store_section_title ?? "Add-Ons") || "Add-Ons");
     setLoading(false);
   };
 
   useEffect(() => { fetchProducts(); }, [selectedTournament]);
+
+  const handleSaveSectionTitle = async () => {
+    if (!selectedTournament || demoGuard()) return;
+    setSavingTitle(true);
+    const value = sectionTitle.trim() || "Add-Ons";
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ store_section_title: value } as any)
+      .eq("id", selectedTournament);
+    setSavingTitle(false);
+    if (error) {
+      toast({ title: "Could not save title", description: error.message, variant: "destructive" });
+    } else {
+      setSectionTitle(value);
+      toast({ title: "Public title updated" });
+    }
+  };
 
   const handleOpenEdit = (product: Product) => {
     setEditProduct(product);

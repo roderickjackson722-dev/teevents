@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Plus, Trash2, Eye, Ticket, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
 
 interface RaffleRow {
   id: string;

@@ -213,10 +213,18 @@ export default function Raffles() {
         )}
       </div>
 
-      <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-        <SelectTrigger className="w-[300px]"><SelectValue placeholder="Select a tournament" /></SelectTrigger>
-        <SelectContent>{tournaments?.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}</SelectContent>
-      </Select>
+      <div className="flex flex-wrap items-end gap-3">
+        <div>
+          <Label className="text-xs">Tournament</Label>
+          <Select value={selectedTournament} onValueChange={setSelectedTournament}>
+            <SelectTrigger className="w-[300px]"><SelectValue placeholder="Select a tournament" /></SelectTrigger>
+            <SelectContent>{tournaments?.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        {selectedTournament && (
+          <TabTitleInput tournamentId={selectedTournament} field="raffle_tab_title" defaultValue="Raffle" label="Raffle section title (public page)" />
+        )}
+      </div>
 
       {selectedTournament && (
         <div className="grid gap-4 lg:grid-cols-2">

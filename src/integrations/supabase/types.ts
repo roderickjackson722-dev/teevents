@@ -311,6 +311,127 @@ export type Database = {
           },
         ]
       }
+      auction_bids: {
+        Row: {
+          auction_id: string
+          bid_amount_cents: number
+          bidder_email: string
+          bidder_name: string
+          bidder_phone: string | null
+          created_at: string
+          id: string
+          verified: boolean
+          verified_at: string | null
+          verify_token: string
+        }
+        Insert: {
+          auction_id: string
+          bid_amount_cents: number
+          bidder_email: string
+          bidder_name: string
+          bidder_phone?: string | null
+          created_at?: string
+          id?: string
+          verified?: boolean
+          verified_at?: string | null
+          verify_token?: string
+        }
+        Update: {
+          auction_id?: string
+          bid_amount_cents?: number
+          bidder_email?: string
+          bidder_name?: string
+          bidder_phone?: string | null
+          created_at?: string
+          id?: string
+          verified?: boolean
+          verified_at?: string | null
+          verify_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auctions: {
+        Row: {
+          auto_extend_minutes: number
+          buy_now_cents: number | null
+          created_at: string
+          current_bid_cents: number | null
+          description: string | null
+          end_time: string | null
+          id: string
+          images: string[]
+          item_name: string
+          minimum_increment_cents: number
+          start_time: string | null
+          starting_bid_cents: number
+          status: string
+          tournament_id: string
+          updated_at: string
+          winner_notified_at: string | null
+          winning_bid_amount_cents: number | null
+          winning_bidder_email: string | null
+          winning_bidder_name: string | null
+        }
+        Insert: {
+          auto_extend_minutes?: number
+          buy_now_cents?: number | null
+          created_at?: string
+          current_bid_cents?: number | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          images?: string[]
+          item_name: string
+          minimum_increment_cents?: number
+          start_time?: string | null
+          starting_bid_cents?: number
+          status?: string
+          tournament_id: string
+          updated_at?: string
+          winner_notified_at?: string | null
+          winning_bid_amount_cents?: number | null
+          winning_bidder_email?: string | null
+          winning_bidder_name?: string | null
+        }
+        Update: {
+          auto_extend_minutes?: number
+          buy_now_cents?: number | null
+          created_at?: string
+          current_bid_cents?: number | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          images?: string[]
+          item_name?: string
+          minimum_increment_cents?: number
+          start_time?: string | null
+          starting_bid_cents?: number
+          status?: string
+          tournament_id?: string
+          updated_at?: string
+          winner_notified_at?: string | null
+          winning_bid_amount_cents?: number | null
+          winning_bidder_email?: string | null
+          winning_bidder_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       college_tournament_invitations: {
         Row: {
           coach_email: string
@@ -2483,6 +2604,112 @@ export type Database = {
           },
         ]
       }
+      raffle_tickets: {
+        Row: {
+          buyer_email: string
+          buyer_name: string
+          buyer_phone: string | null
+          created_at: string
+          id: string
+          raffle_id: string
+          stripe_session_id: string | null
+          ticket_number: number
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name: string
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          raffle_id: string
+          stripe_session_id?: string | null
+          ticket_number: number
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          raffle_id?: string
+          stripe_session_id?: string | null
+          ticket_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_tickets_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffles: {
+        Row: {
+          created_at: string
+          description: string | null
+          draw_time: string | null
+          id: string
+          images: string[]
+          item_name: string
+          max_tickets: number | null
+          status: string
+          ticket_price_cents: number
+          tickets_sold: number
+          tournament_id: string
+          updated_at: string
+          winner_email: string | null
+          winner_name: string | null
+          winner_notified_at: string | null
+          winner_ticket_number: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          draw_time?: string | null
+          id?: string
+          images?: string[]
+          item_name: string
+          max_tickets?: number | null
+          status?: string
+          ticket_price_cents: number
+          tickets_sold?: number
+          tournament_id: string
+          updated_at?: string
+          winner_email?: string | null
+          winner_name?: string | null
+          winner_notified_at?: string | null
+          winner_ticket_number?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          draw_time?: string | null
+          id?: string
+          images?: string[]
+          item_name?: string
+          max_tickets?: number | null
+          status?: string
+          ticket_price_cents?: number
+          tickets_sold?: number
+          tournament_id?: string
+          updated_at?: string
+          winner_email?: string | null
+          winner_name?: string | null
+          winner_notified_at?: string | null
+          winner_ticket_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffles_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_clicks: {
         Row: {
           clicked_at: string
@@ -4586,6 +4813,7 @@ export type Database = {
         Row: {
           about_us: string | null
           allow_cover_fees: boolean
+          auction_tab_title: string | null
           confirmation_email_config: Json | null
           contact_email: string | null
           contact_phone: string | null
@@ -4648,6 +4876,7 @@ export type Database = {
           pro_payment_intent_id: string | null
           public_tabs: Json | null
           public_tabs_order: string[] | null
+          raffle_tab_title: string | null
           rain_date_policy: string | null
           rain_date_policy_type: string | null
           refund_deadline_days: number | null
@@ -4710,6 +4939,7 @@ export type Database = {
         Insert: {
           about_us?: string | null
           allow_cover_fees?: boolean
+          auction_tab_title?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -4772,6 +5002,7 @@ export type Database = {
           pro_payment_intent_id?: string | null
           public_tabs?: Json | null
           public_tabs_order?: string[] | null
+          raffle_tab_title?: string | null
           rain_date_policy?: string | null
           rain_date_policy_type?: string | null
           refund_deadline_days?: number | null
@@ -4834,6 +5065,7 @@ export type Database = {
         Update: {
           about_us?: string | null
           allow_cover_fees?: boolean
+          auction_tab_title?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -4896,6 +5128,7 @@ export type Database = {
           pro_payment_intent_id?: string | null
           public_tabs?: Json | null
           public_tabs_order?: string[] | null
+          raffle_tab_title?: string | null
           rain_date_policy?: string | null
           rain_date_policy_type?: string | null
           refund_deadline_days?: number | null

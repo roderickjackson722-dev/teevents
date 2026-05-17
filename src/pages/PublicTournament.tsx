@@ -1985,7 +1985,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>TOURNAMENT STORE</h2>
+              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{(((tournament as any).store_section_title || "Tournament Store").toString()).toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
               <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Support the tournament with merchandise and gear</p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -40,9 +40,9 @@ export default function Gallery() {
   });
 
   const uploadFile = async (file: File) => {
-    if (!selectedTournament) return;
+    if (!selectedTournament || !org?.orgId) return;
     const ext = file.name.split(".").pop();
-    const path = `gallery/${selectedTournament}/${crypto.randomUUID()}.${ext}`;
+    const path = `${org.orgId}/${selectedTournament}/gallery/${crypto.randomUUID()}.${ext}`;
     const { error: uploadError } = await supabase.storage.from("tournament-assets").upload(path, file);
     if (uploadError) {
       toast({ title: "Upload error", description: uploadError.message, variant: "destructive" });

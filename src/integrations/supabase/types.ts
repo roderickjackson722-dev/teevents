@@ -2240,6 +2240,53 @@ export type Database = {
           },
         ]
       }
+      pin_placements: {
+        Row: {
+          created_at: string
+          depth_position: string | null
+          distance_from_front: number | null
+          distance_from_left: number | null
+          hole_number: number
+          id: string
+          notes: string | null
+          side_position: string | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          depth_position?: string | null
+          distance_from_front?: number | null
+          distance_from_left?: number | null
+          hole_number: number
+          id?: string
+          notes?: string | null
+          side_position?: string | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          depth_position?: string | null
+          distance_from_front?: number | null
+          distance_from_left?: number | null
+          hole_number?: number
+          id?: string
+          notes?: string | null
+          side_position?: string | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pin_placements_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_settings: {
         Row: {
           description: string | null
@@ -4921,6 +4968,8 @@ export type Database = {
           pass_fees_to_registrants: boolean
           payment_method_override: string
           payout_method: string | null
+          pin_sheets_enabled: boolean
+          pin_sheets_notes: string | null
           post_event_email_config: Json | null
           post_event_survey_delay_days: number
           post_event_survey_enabled: boolean
@@ -5053,6 +5102,8 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
           payout_method?: string | null
+          pin_sheets_enabled?: boolean
+          pin_sheets_notes?: string | null
           post_event_email_config?: Json | null
           post_event_survey_delay_days?: number
           post_event_survey_enabled?: boolean
@@ -5185,6 +5236,8 @@ export type Database = {
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
           payout_method?: string | null
+          pin_sheets_enabled?: boolean
+          pin_sheets_notes?: string | null
           post_event_email_config?: Json | null
           post_event_survey_delay_days?: number
           post_event_survey_enabled?: boolean

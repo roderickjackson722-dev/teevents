@@ -105,6 +105,8 @@ import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
 import FindingStripePayouts from "./pages/help/FindingStripePayouts";
 import UploadingImages from "./pages/help/UploadingImages";
 import CompareEventbrite from "./pages/CompareEventbrite";
+import CompareGolfGenius from "./pages/CompareGolfGenius";
+import PinSheets from "./pages/dashboard/PinSheets";
 import Compare from "./pages/Compare";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
@@ -169,6 +171,7 @@ const App = () => (
           <Route path="/dashboard/test-simulator" element={<DashboardLayout><TestScoringSimulator /></DashboardLayout>} />
           <Route path="/dashboard/tee-sheet" element={<DashboardLayout><TeeSheet /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
+          <Route path="/dashboard/pin-sheets" element={<DashboardLayout><PinSheets /></DashboardLayout>} />
           <Route path="/dashboard/waitlist" element={<DashboardLayout><WaitlistPage /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
           <Route path="/dashboard/auction" element={<DashboardLayout><PlanGate feature="auction"><Auction /></PlanGate></DashboardLayout>} />
@@ -246,6 +249,8 @@ const App = () => (
           <Route path="/help/uploading-images" element={<UploadingImages />} />
            <Route path="/compare" element={<Compare />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
+           <Route path="/compare/golf-genius-vs-teevents" element={<CompareGolfGenius />} />
+           <Route path="/admin/sales-hub/compare-golf-genius" element={<CompareGolfGenius />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />

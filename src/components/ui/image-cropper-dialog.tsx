@@ -80,18 +80,18 @@ export function ImageCropperDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <div className="relative w-full h-[360px] bg-muted rounded-md overflow-hidden">
+        <div className="relative w-full h-[55vh] sm:h-[60vh] min-h-[320px] bg-muted rounded-md overflow-hidden">
           {imageSrc && (
             <Cropper
               image={imageSrc}
               crop={crop}
               zoom={zoom}
-              minZoom={0.3}
+              minZoom={0.1}
               maxZoom={4}
               aspect={RATIO_VALUES[aspect]}
               objectFit="contain"
@@ -103,7 +103,7 @@ export function ImageCropperDialog({
           )}
         </div>
         <p className="text-xs text-muted-foreground pt-1">
-          Tip: zoom out (slide left) to fit the entire logo inside the crop area.
+          Tip: drag the slider all the way left to fit the entire image, or hit Reset to start over.
         </p>
 
         <div className="space-y-3 pt-2">
@@ -112,7 +112,7 @@ export function ImageCropperDialog({
               <Label className="text-xs">Zoom</Label>
               <Slider
                 value={[zoom]}
-                min={0.3}
+                min={0.1}
                 max={4}
                 step={0.05}
                 onValueChange={(v) => setZoom(v[0])}
@@ -133,6 +133,14 @@ export function ImageCropperDialog({
                 </Select>
               </div>
             )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => { setCrop({ x: 0, y: 0 }); setZoom(1); setAspect(defaultAspect); }}
+            >
+              Reset
+            </Button>
           </div>
         </div>
 

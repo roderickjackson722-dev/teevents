@@ -214,71 +214,73 @@ export function DashboardSidebar() {
   const showSettings = isOwner || permissions.includes("manage_settings");
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarContent className="bg-primary text-primary-foreground">
-        <div className="flex items-center gap-3 p-4 border-b border-primary-foreground/10">
-          <img src={logoWhite} alt="TeeVents" className="h-8 w-8 object-contain flex-shrink-0" />
-          {!collapsed && (
-            <span className="font-display text-lg font-semibold tracking-wide">TeeVents</span>
-          )}
-        </div>
+    <TooltipProvider delayDuration={300}>
+      <Sidebar collapsible="icon" className="border-r border-border">
+        <SidebarContent className="bg-primary text-primary-foreground">
+          <div className="flex items-center gap-3 p-4 border-b border-primary-foreground/10">
+            <img src={logoWhite} alt="TeeVents" className="h-8 w-8 object-contain flex-shrink-0" />
+            {!collapsed && (
+              <span className="font-display text-lg font-semibold tracking-wide">TeeVents</span>
+            )}
+          </div>
 
-        {categories.map((cat) => {
-          const visibleItems = cat.items.filter(isVisible);
-          if (visibleItems.length === 0) return null;
+          {categories.map((cat) => {
+            const visibleItems = cat.items.filter(isVisible);
+            if (visibleItems.length === 0) return null;
 
-          return (
-            <SidebarGroup key={cat.label} className={`${cat.color.split(" ").find(c => c.startsWith("bg-")) ?? ""} rounded-md mx-1`}>
-              <div className={`border-l-2 ${cat.color.split(" ").find(c => c.startsWith("border-l-")) ?? ""} ml-1 pl-2`}>
-                <SidebarGroupLabel className="text-primary-foreground/60 text-[10px] tracking-widest uppercase font-semibold">
-                  {collapsed ? "" : cat.label}
+            return (
+              <SidebarGroup key={cat.label} className={`${cat.color.split(" ").find(c => c.startsWith("bg-")) ?? ""} rounded-md mx-1`}>
+                <div className={`border-l-2 ${cat.color.split(" ").find(c => c.startsWith("border-l-")) ?? ""} ml-1 pl-2`}>
+                  <SidebarGroupLabel className="text-primary-foreground/60 text-[10px] tracking-widest uppercase font-semibold">
+                    {collapsed ? "" : cat.label}
+                  </SidebarGroupLabel>
+                </div>
+                <SidebarGroupContent>
+                  <SidebarMenu>{visibleItems.map(renderItem)}</SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
+
+          {showSettings && (
+            <SidebarGroup>
+              <div className="border-l-2 border-l-gray-400 ml-2 pl-2">
+                <SidebarGroupLabel className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold">
+                  {collapsed ? "" : "Settings"}
                 </SidebarGroupLabel>
               </div>
               <SidebarGroupContent>
-                <SidebarMenu>{visibleItems.map(renderItem)}</SidebarMenu>
+                <SidebarMenu>
+                  {settingsItems.map(renderItem)}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a
+                        href="/help"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"
+                      >
+                        <HelpCircle className="mr-2 h-4 w-4" />
+                        {!collapsed && <span>Help Center</span>}
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-          );
-        })}
+          )}
+        </SidebarContent>
 
-        {showSettings && (
-          <SidebarGroup>
-            <div className="border-l-2 border-l-gray-400 ml-2 pl-2">
-              <SidebarGroupLabel className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold">
-                {collapsed ? "" : "Settings"}
-              </SidebarGroupLabel>
-            </div>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {settingsItems.map(renderItem)}
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a
-                      href="/help"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"
-                    >
-                      <HelpCircle className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Help Center</span>}
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-      </SidebarContent>
-
-      <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors w-full"
-        >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
-      </SidebarFooter>
-    </Sidebar>
+        <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors w-full"
+          >
+            <LogOut className="h-4 w-4" />
+            {!collapsed && <span>Sign Out</span>}
+          </button>
+        </SidebarFooter>
+      </Sidebar>
+    </TooltipProvider>
   );
 }

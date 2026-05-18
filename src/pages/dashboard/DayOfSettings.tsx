@@ -201,6 +201,52 @@ export default function DayOfSettings() {
             </details>
           </div>
 
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base">Sponsor Spotlight</Label>
+            <div>
+              <Label className="text-xs">Section title</Label>
+              <Input value={t.day_of_sponsor_title || ""} onChange={(e) => setT({ ...t, day_of_sponsor_title: e.target.value })} placeholder="Our Generous Sponsors" />
+            </div>
+            <div>
+              <Label className="text-xs">Thank-you message</Label>
+              <Input value={t.day_of_sponsor_thanks || ""} onChange={(e) => setT({ ...t, day_of_sponsor_thanks: e.target.value })} placeholder="Thank you to our sponsors for making this event possible!" />
+            </div>
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base">Quick Links (optional)</Label>
+            <div>
+              <Label className="text-xs">Pairings page URL</Label>
+              <Input value={t.day_of_pairings_url || ""} onChange={(e) => setT({ ...t, day_of_pairings_url: e.target.value })} placeholder="https://… (defaults to your tournament page)" />
+            </div>
+            <div>
+              <Label className="text-xs">Rules & scoring URL</Label>
+              <Input value={t.day_of_rules_url || ""} onChange={(e) => setT({ ...t, day_of_rules_url: e.target.value })} placeholder="https://…" />
+            </div>
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base">Tournament Contact</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Director name</Label>
+                <Input value={t.day_of_director_name || ""} onChange={(e) => setT({ ...t, day_of_director_name: e.target.value })} placeholder="Jane Smith" />
+              </div>
+              <div>
+                <Label className="text-xs">Director phone</Label>
+                <Input value={t.day_of_director_phone || ""} onChange={(e) => setT({ ...t, day_of_director_phone: e.target.value })} placeholder="(555) 123-4567" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Director email</Label>
+                <Input type="email" value={t.day_of_director_email || ""} onChange={(e) => setT({ ...t, day_of_director_email: e.target.value })} placeholder="director@example.com" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Emergency contact</Label>
+                <Input value={t.day_of_emergency_contact || ""} onChange={(e) => setT({ ...t, day_of_emergency_contact: e.target.value })} placeholder="Pro Shop: (555) 987-6543" />
+              </div>
+            </div>
+          </div>
+
           <Card className="p-4 bg-muted/40 border-dashed">
             <div className="flex items-start gap-3">
               <MapPin className="w-5 h-5 mt-0.5 text-primary" />

@@ -99,7 +99,7 @@ const DashboardHome = () => {
 
       {/* Setup Checklist - shown until dismissed. Full view with phase grouping. */}
       {latestTournament && !latestTournament.setup_checklist_dismissed && (
-        <div className="mb-8">
+        <div className="mb-4">
           <SetupChecklist
             tournamentId={latestTournament.id}
             autoRecompute
@@ -119,6 +119,27 @@ const DashboardHome = () => {
             }}
           />
         </div>
+      )}
+
+      {/* View Tournament shortcut below Setup Checklist */}
+      {latestTournament?.slug && (
+        <TooltipProvider delayDuration={200}>
+          <div className="mb-8">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant="outline">
+                  <Link to={`/t/${latestTournament.slug}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Tournament
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-xs">View your live tournament webpage</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       )}
 
       {/* Per-tournament Pro upgrade banner */}

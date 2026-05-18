@@ -240,7 +240,14 @@ export function DashboardSidebar() {
           </div>
 
           {categories.map((cat) => {
-            const visibleItems = cat.items.filter(isVisible);
+            let items = cat.items;
+            if (cat.label === "Organizer Setup" && tournamentSlug) {
+              items = [
+                ...cat.items,
+                { title: "View Tournament", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
+              ];
+            }
+            const visibleItems = items.filter(isVisible);
             if (visibleItems.length === 0) return null;
 
             return (

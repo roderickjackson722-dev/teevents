@@ -1325,15 +1325,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                             </span>
                           )}
                           <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
-                          <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
-                            {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
-                          </p>
+                          {soldOut && (tier as any).hide_price_when_sold_out !== false ? (
+                            <p className="text-2xl font-bold mt-1 uppercase tracking-wider" style={{ color: "#999" }}>Sold Out</p>
+                          ) : (
+                            <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
+                            </p>
+                          )}
                           {tier.description && (
                             <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
                           )}
-                          {remaining != null && (
-                            <p className={`text-xs mt-2 font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
-                              {soldOut ? "Sold Out" : `${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
+                          {remaining != null && !soldOut && (
+                            <p className="text-xs mt-2 font-semibold text-emerald-700">
+                              {`${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
                             </p>
                           )}
                         </div>

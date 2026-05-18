@@ -248,6 +248,8 @@ const App = () => (
           <Route path="/help/uploading-images" element={<UploadingImages />} />
            <Route path="/compare" element={<Compare />} />
            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
+           <Route path="/compare/golf-genius-vs-teevents" element={<CompareGolfGenius />} />
+           <Route path="/admin/sales-hub/compare-golf-genius" element={<CompareGolfGenius />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />
              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />

@@ -6,6 +6,7 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { useAdminLink } from "@/hooks/useAdminLink";
 import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChart3, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
 import SetupChecklist from "@/components/SetupChecklist";

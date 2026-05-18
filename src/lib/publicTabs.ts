@@ -5,6 +5,7 @@ export type PublicTabKey =
   | "leaderboard"
   | "sponsors"
   | "gallery"
+  | "media"
   | "volunteers"
   | "auction"
   | "donations"
@@ -32,6 +33,7 @@ export const PUBLIC_TABS: PublicTabMeta[] = [
   { key: "course_details", label: "Course Details", href: "#course-details",    helper: "Course map, par, slope, rating" },
   { key: "schedule",       label: "Schedule",       href: "#schedule",          helper: "Event day schedule" },
   { key: "gallery",        label: "Gallery",        href: "#photos",            helper: "Photo gallery" },
+  { key: "media",          label: "Media",          href: "#media",             helper: "Video clips & highlights" },
   { key: "volunteers",     label: "Volunteers",     href: "#volunteers",        helper: "Volunteer sign-up & info" },
   { key: "contests",       label: "Contests",       href: "#contests",          helper: "Closest-to-pin, long drive, etc." },
   { key: "travel",         label: "Location / Travel", href: "#location",       helper: "Accommodations & travel info" },
@@ -43,6 +45,7 @@ export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
   leaderboard: true,
   sponsors: true,
   gallery: false,
+  media: false,
   volunteers: false,
   auction: true,
   donations: true,
@@ -56,7 +59,7 @@ export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
 
 export const PUBLIC_TABS_DEFAULT_ORDER: PublicTabKey[] = [
   "about_organizer", "leaderboard", "sponsors", "auction", "donations",
-  "course_details", "schedule", "lodging", "gallery", "volunteers",
+  "course_details", "schedule", "lodging", "gallery", "media", "volunteers",
   "contests", "travel",
 ];
 

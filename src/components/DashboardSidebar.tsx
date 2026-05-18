@@ -123,6 +123,8 @@ const categories: SidebarCategory[] = [
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations" },
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction" },
       { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction" },
+      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null },
+      { title: "Day-Of Page", url: "/dashboard/day-of", icon: ScanLine, feature: null },
     ],
   },
 ];

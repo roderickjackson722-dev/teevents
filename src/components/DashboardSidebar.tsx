@@ -152,6 +152,20 @@ export function DashboardSidebar() {
   const navigate = useNavigate();
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
+  const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!org) { setTournamentSlug(null); return; }
+    supabase
+      .from("tournaments")
+      .select("slug")
+      .eq("organization_id", org.orgId)
+      .not("slug", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+  }, [org]);
 
   const isOwner = !org || org.role === "owner";
   const permissions = org?.permissions || [];

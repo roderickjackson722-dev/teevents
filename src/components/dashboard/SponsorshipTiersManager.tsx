@@ -47,6 +47,7 @@ interface SponsorshipTier {
   spots_used: number;
   package_type: string | null;
   custom_package_label?: string | null;
+  hide_price_when_sold_out?: boolean;
 }
 
 interface SponsorRegistration {

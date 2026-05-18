@@ -42,6 +42,7 @@ interface NavItem {
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   feature: string | null;
+  description?: string;
 }
 
 interface SidebarCategory {

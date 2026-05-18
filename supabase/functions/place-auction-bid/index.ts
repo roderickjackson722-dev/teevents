@@ -63,11 +63,14 @@ Deno.serve(async (req) => {
     const verifyUrl = `https://${projectRef}.supabase.co/functions/v1/verify-auction-bid?token=${bid.verify_token}`;
 
     if (RESEND_API_KEY) {
+      const escHtml = (s: string) => String(s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a">
           <h2 style="color:#1a5c38">Confirm your bid</h2>
-          <p>Hi ${bidder_name},</p>
-          <p>You placed a bid of <strong>$${(bidCents / 100).toFixed(2)}</strong> on <strong>${auction.item_name}</strong>.</p>
+          <p>Hi ${escHtml(bidder_name)},</p>
+          <p>You placed a bid of <strong>$${(bidCents / 100).toFixed(2)}</strong> on <strong>${escHtml(auction.item_name)}</strong>.</p>
           <p>To confirm your bid, click the button below:</p>
           <p style="text-align:center;margin:32px 0">
             <a href="${verifyUrl}" style="background:#F5A623;color:#1a5c38;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block">Confirm My Bid</a>

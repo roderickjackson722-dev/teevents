@@ -118,7 +118,7 @@ const SponsorRegistrationPage = () => {
     if (!logoFile || !tournament) return null;
     setUploading(true);
     const ext = logoFile.name.split(".").pop();
-    const path = `sponsor-logos/${tournament.id}/${Date.now()}.${ext}`;
+    const path = `${tournament.organization_id}/${tournament.id}/sponsor-logos/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("tournament-assets").upload(path, logoFile, { upsert: true });
     if (error) {
       toast({ title: "Logo upload failed", description: error.message, variant: "destructive" });

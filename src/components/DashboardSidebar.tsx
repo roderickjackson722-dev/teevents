@@ -176,15 +176,15 @@ export function DashboardSidebar() {
       <NavLink
         to={item.url}
         end={item.url === "/dashboard"}
-        className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+        className="flex items-center w-full text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
         activeClassName="bg-primary-foreground/15 text-secondary font-medium"
       >
-        <item.icon className="mr-2 h-4 w-4" />
+        <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
         {!collapsed && (
           <>
-            <span className="flex-1">{item.title}</span>
+            <span className="flex-1 truncate">{item.title}</span>
             {locked && tierLabel && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-secondary/20 text-secondary ml-1">
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-secondary/20 text-secondary ml-1 flex-shrink-0">
                 {tierLabel}
               </span>
             )}

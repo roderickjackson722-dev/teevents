@@ -492,6 +492,17 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />
                     <p className="text-xs text-muted-foreground mt-1">Lower numbers appear first.</p>
                   </div>
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="hide-price-sold-out"
+                      checked={form.hide_price_when_sold_out}
+                      onCheckedChange={(v) => setForm({ ...form, hide_price_when_sold_out: v })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="hide-price-sold-out" className="text-sm">Hide price on public page when sold out</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Shows "Sold Out" instead of the price once all spots are taken.</p>
+                    </div>
+                  </div>
                   <Button type="submit" className="w-full" disabled={saving}>
                     {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
                     {editTier ? "Update Tier" : "Save Tier"}

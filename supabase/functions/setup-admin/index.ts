@@ -12,7 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password } = await req.json();
+    const { email, password, setup_secret } = await req.json();
+
+    const SETUP_SECRET = Deno.env.get("SETUP_SECRET");
+    if (!SETUP_SECRET || !setup_secret || setup_secret !== SETUP_SECRET) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,

@@ -1,9 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const ALLOWED_HOST_SUFFIXES = [
+  "eventbrite.com", "eventbrite.ca", "eventbrite.co.uk",
+  "facebook.com", "fb.com", "fb.me",
+  "meetup.com",
+];
+
+function isUrlAllowed(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+    const host = u.hostname.toLowerCase();
+    // Block private/loopback/link-local/metadata
+    if (
+      host === "localhost" ||
+      host.endsWith(".local") ||
+      /^127\./.test(host) ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^169\.254\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+      host === "0.0.0.0" ||
+      /^::1$/.test(host) ||
+      /^fe80:/i.test(host) ||
+      /^fc00:/i.test(host)
+    ) return false;
+    return ALLOWED_HOST_SUFFIXES.some((s) => host === s || host.endsWith("." + s));
+  } catch {
+    return false;
+  }
+}
+
 
 const MANUAL_KEYWORDS = ["venmo", "cash app", "cashapp", "zelle", "paypal", "check", "cash only", "mail a check", "money order"];
 
@@ -121,13 +154,21 @@ async function scrape(url: string) {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    try { await requireAdmin(req); }
+    catch (r) { if (r instanceof Response) { const body = await r.text(); return new Response(body, { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }); } throw r; }
+
     const { urls } = await req.json();
     if (!Array.isArray(urls)) {
       return new Response(JSON.stringify({ error: "urls must be array" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const results = [];
     for (const u of urls.slice(0, 30)) {
-      results.push(await scrape(String(u).trim()));
+      const raw = String(u).trim();
+      if (!isUrlAllowed(raw)) {
+        results.push({ source_url: raw, source: "manual", detected_setup: "unknown", extracted_data: {}, error: "URL host not allowed" });
+        continue;
+      }
+      results.push(await scrape(raw));
     }
     return new Response(JSON.stringify({ results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {

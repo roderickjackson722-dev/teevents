@@ -63,6 +63,7 @@ const categories: SidebarCategory[] = [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null },
       { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null },
+      { title: "Pin Sheets", url: "/dashboard/pin-sheets", icon: MapPin, feature: null },
       { title: "Handicap Settings", url: "/dashboard/scoring?tab=handicap", icon: Sliders, feature: "leaderboard" },
       { title: "Registration Form", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
       { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: null },

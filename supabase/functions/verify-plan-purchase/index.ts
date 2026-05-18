@@ -1,4 +1,5 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildNotificationHtml } from "../_shared/notify.ts";
 
 const corsHeaders = {
@@ -34,6 +35,30 @@ Deno.serve(async (req) => {
     const customerEmail = session.customer_details?.email || session.customer_email || "unknown";
     const customerName = session.customer_details?.name || customerEmail;
     const amountPaid = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "N/A";
+
+    // Atomically count the promo code usage now that payment is verified.
+    const promoCode = session.metadata?.promo_code;
+    if (promoCode) {
+      try {
+        const admin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const { data: promo } = await admin
+          .from("promo_codes")
+          .select("id, current_uses")
+          .eq("code", promoCode)
+          .maybeSingle();
+        if (promo) {
+          await admin
+            .from("promo_codes")
+            .update({ current_uses: (promo.current_uses ?? 0) + 1 })
+            .eq("id", promo.id);
+        }
+      } catch (e) {
+        console.error("[verify-plan-purchase] promo increment failed:", e);
+      }
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (RESEND_API_KEY) {

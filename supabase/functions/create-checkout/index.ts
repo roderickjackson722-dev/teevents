@@ -60,11 +60,9 @@ Deno.serve(async (req) => {
       );
       couponId = coupon.id;
 
-      // Increment usage
-      await adminClient
-        .from("promo_codes")
-        .update({ current_uses: promo.current_uses + 1 })
-        .eq("id", promo.id);
+      // NOTE: current_uses is incremented in verify-plan-purchase after payment
+      // succeeds, not here — otherwise unauthenticated callers could deplete
+      // limited-use promo codes without ever paying.
     }
 
     // Check for existing customer

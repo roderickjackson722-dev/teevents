@@ -406,9 +406,29 @@ CLOSING (30 seconds)
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea value={script} readOnly rows={30} className="font-mono text-xs" />
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={handleCopy} className="gap-2">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Copied!" : "Copy Script"}</Button>
-            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> View Comparison Page</Button>
+            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> vs Eventbrite Page</Button>
+            <Button variant="outline" onClick={() => window.open("/admin/sales-hub/compare-golf-genius", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> vs Golf Genius Page</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" /> vs Golf Genius — Quick Talking Points</CardTitle>
+          <CardDescription>For prospects evaluating Golf Genius</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-foreground/90">
+          <p>• <strong>Pricing:</strong> $399 per tournament + 5% fee vs. annual subscription + per-golfer fees.</p>
+          <p>• <strong>No contract:</strong> Pay per tournament — no long-term commitment.</p>
+          <p>• <strong>Pin Sheets:</strong> Built-in PDF generator (Golf Genius requires a third-party tool).</p>
+          <p>• <strong>Player Gifts &amp; Live Scoring:</strong> Included in Pro — Golf Genius gates these behind premium upgrades.</p>
+          <p>• <strong>Onboarding:</strong> Live in under 60 seconds vs. days with a rep walkthrough.</p>
+          <div className="pt-2">
+            <Button variant="outline" onClick={() => window.open("/admin/sales-hub/compare-golf-genius", "_blank")} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Open Full Comparison
+            </Button>
           </div>
         </CardContent>
       </Card>

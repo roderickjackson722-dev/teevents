@@ -171,6 +171,7 @@ const App = () => (
           <Route path="/dashboard/test-simulator" element={<DashboardLayout><TestScoringSimulator /></DashboardLayout>} />
           <Route path="/dashboard/tee-sheet" element={<DashboardLayout><TeeSheet /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
+          <Route path="/dashboard/pin-sheets" element={<DashboardLayout><PinSheets /></DashboardLayout>} />
           <Route path="/dashboard/waitlist" element={<DashboardLayout><WaitlistPage /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
           <Route path="/dashboard/auction" element={<DashboardLayout><PlanGate feature="auction"><Auction /></PlanGate></DashboardLayout>} />

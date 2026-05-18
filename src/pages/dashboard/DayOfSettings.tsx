@@ -19,6 +19,14 @@ interface T {
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
   day_of_course_map_url: string | null;
+  day_of_sponsor_title: string | null;
+  day_of_sponsor_thanks: string | null;
+  day_of_pairings_url: string | null;
+  day_of_rules_url: string | null;
+  day_of_director_name: string | null;
+  day_of_director_phone: string | null;
+  day_of_director_email: string | null;
+  day_of_emergency_contact: string | null;
   pin_sheets_enabled?: boolean;
 }
 
@@ -50,7 +58,7 @@ export default function DayOfSettings() {
     (async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_course_map_url, pin_sheets_enabled")
+        .select("id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, pin_sheets_enabled")
         .eq("id", tournamentId)
         .maybeSingle();
       setT(data as any);
@@ -66,6 +74,14 @@ export default function DayOfSettings() {
       day_of_welcome_message: t.day_of_welcome_message,
       day_of_announcements: t.day_of_announcements,
       day_of_course_map_url: t.day_of_course_map_url,
+      day_of_sponsor_title: t.day_of_sponsor_title,
+      day_of_sponsor_thanks: t.day_of_sponsor_thanks,
+      day_of_pairings_url: t.day_of_pairings_url,
+      day_of_rules_url: t.day_of_rules_url,
+      day_of_director_name: t.day_of_director_name,
+      day_of_director_phone: t.day_of_director_phone,
+      day_of_director_email: t.day_of_director_email,
+      day_of_emergency_contact: t.day_of_emergency_contact,
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });

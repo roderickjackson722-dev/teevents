@@ -106,7 +106,7 @@ const categories: SidebarCategory[] = [
       { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Admin view, edit scores" },
       { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups, test mode" },
       { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard", description: "Practice scoring before live event" },
-      { title: "Sponsor Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Approve logos, asset delivery, ROI" },
+      
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
       { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },

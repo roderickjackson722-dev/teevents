@@ -224,6 +224,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
    const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
    const [photos, setPhotos] = useState<Photo[]>([]);
+   const [mediaClips, setMediaClips] = useState<Array<{ id: string; title: string; description: string | null; video_url: string; thumbnail_url: string | null }>>([]);
+   const [mediaClipOpen, setMediaClipOpen] = useState<string | null>(null);
    const [volunteerRoles, setVolunteerRoles] = useState<VolunteerRole[]>([]);
    const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([]);
    const [regFields, setRegFields] = useState<RegFieldPublic[]>([]);

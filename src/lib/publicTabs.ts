@@ -5,6 +5,7 @@ export type PublicTabKey =
   | "leaderboard"
   | "sponsors"
   | "gallery"
+  | "media"
   | "volunteers"
   | "auction"
   | "donations"

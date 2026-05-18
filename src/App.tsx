@@ -105,6 +105,8 @@ import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
 import FindingStripePayouts from "./pages/help/FindingStripePayouts";
 import UploadingImages from "./pages/help/UploadingImages";
 import CompareEventbrite from "./pages/CompareEventbrite";
+import CompareGolfGenius from "./pages/CompareGolfGenius";
+import PinSheets from "./pages/dashboard/PinSheets";
 import Compare from "./pages/Compare";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";

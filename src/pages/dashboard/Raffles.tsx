@@ -146,8 +146,9 @@ export default function Raffles() {
   });
 
   const handleImageUpload = async (file: File) => {
-    if (!file || form.images.length >= 5) return;
-    const path = `raffles/${selectedTournament}/${Date.now()}-${file.name}`;
+    if (!file || form.images.length >= 5 || !org?.orgId) return;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${org.orgId}/${selectedTournament}/raffles/${Date.now()}-${safeName}`;
     const { error } = await supabase.storage.from("tournament-assets").upload(path, file);
     if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); return; }
     const { data: pub } = supabase.storage.from("tournament-assets").getPublicUrl(path);

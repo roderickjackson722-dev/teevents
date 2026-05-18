@@ -242,7 +242,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [sponsorIndex, setSponsorIndex] = useState(0);
 
   // Sponsorship tiers for public display
-  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number; package_type: string | null }[]>([]);
+  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number; package_type: string | null; hide_price_when_sold_out?: boolean }[]>([]);
   const [paidSponsors, setPaidSponsors] = useState<Array<{ id: string; company_name: string; logo_url: string | null; website_url: string | null; tier_id: string | null }>>([]);
   const [sponsorSuccess, setSponsorSuccess] = useState(false);
   const [sponsorVerifying, setSponsorVerifying] = useState(false);
@@ -361,7 +361,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_registration_tiers").select("id, name, description, eligibility_description, price_cents, max_registrants").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_registration_fields").select("id, label, field_type, options, is_required, is_enabled, is_default, sort_order").eq("tournament_id", t.id).eq("is_enabled", true).order("sort_order"),
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
-          supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
+          supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type, hide_price_when_sold_out").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           (supabase as any).from("tournament_accommodations").select("id, hotel_name, address, phone, website_url, group_code, booking_deadline, notes, display_order, accommodation_room_types(id, room_type, rate_cents, rate_note, max_occupancy, display_order, is_active), accommodation_custom_fields(id, field_name, field_value, display_order)").eq("tournament_id", t.id).eq("is_active", true).order("display_order"),
           supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
           supabase.from("vendor_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
@@ -1325,15 +1325,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                             </span>
                           )}
                           <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
-                          <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
-                            {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
-                          </p>
+                          {soldOut && (tier as any).hide_price_when_sold_out !== false ? (
+                            <p className="text-2xl font-bold mt-1 uppercase tracking-wider" style={{ color: "#999" }}>Sold Out</p>
+                          ) : (
+                            <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
+                            </p>
+                          )}
                           {tier.description && (
                             <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
                           )}
-                          {remaining != null && (
-                            <p className={`text-xs mt-2 font-semibold ${soldOut ? "text-red-600" : "text-emerald-700"}`}>
-                              {soldOut ? "Sold Out" : `${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
+                          {remaining != null && !soldOut && (
+                            <p className="text-xs mt-2 font-semibold text-emerald-700">
+                              {`${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
                             </p>
                           )}
                         </div>

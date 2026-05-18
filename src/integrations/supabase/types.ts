@@ -1401,6 +1401,53 @@ export type Database = {
           },
         ]
       }
+      media_clips: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          thumbnail_url: string | null
+          title: string
+          tournament_id: string
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          thumbnail_url?: string | null
+          title: string
+          tournament_id: string
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          thumbnail_url?: string | null
+          title?: string
+          tournament_id?: string
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_clips_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_emails: {
         Row: {
           created_at: string
@@ -3257,6 +3304,7 @@ export type Database = {
           custom_package_label: string | null
           description: string | null
           display_order: number | null
+          hide_price_when_sold_out: boolean
           id: string
           is_active: boolean | null
           name: string
@@ -3272,6 +3320,7 @@ export type Database = {
           custom_package_label?: string | null
           description?: string | null
           display_order?: number | null
+          hide_price_when_sold_out?: boolean
           id?: string
           is_active?: boolean | null
           name: string
@@ -3287,6 +3336,7 @@ export type Database = {
           custom_package_label?: string | null
           description?: string | null
           display_order?: number | null
+          hide_price_when_sold_out?: boolean
           id?: string
           is_active?: boolean | null
           name?: string
@@ -4825,6 +4875,11 @@ export type Database = {
           custom_org_sections: Json
           custom_slug: string | null
           date: string | null
+          day_of_announcements: string | null
+          day_of_course_map_url: string | null
+          day_of_page_enabled: boolean
+          day_of_page_mode: string
+          day_of_welcome_message: string | null
           demo_admin_id: string | null
           demo_flyer_url: string | null
           description: string | null
@@ -4856,6 +4911,7 @@ export type Database = {
           max_group_size: number
           max_handicap: number | null
           max_players: number | null
+          media_tab_title: string | null
           mission_statement: string | null
           org_address: string | null
           org_contact_email: string | null
@@ -4951,6 +5007,11 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_of_announcements?: string | null
+          day_of_course_map_url?: string | null
+          day_of_page_enabled?: boolean
+          day_of_page_mode?: string
+          day_of_welcome_message?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
           description?: string | null
@@ -4982,6 +5043,7 @@ export type Database = {
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
+          media_tab_title?: string | null
           mission_statement?: string | null
           org_address?: string | null
           org_contact_email?: string | null
@@ -5077,6 +5139,11 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_of_announcements?: string | null
+          day_of_course_map_url?: string | null
+          day_of_page_enabled?: boolean
+          day_of_page_mode?: string
+          day_of_welcome_message?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
           description?: string | null
@@ -5108,6 +5175,7 @@ export type Database = {
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
+          media_tab_title?: string | null
           mission_statement?: string | null
           org_address?: string | null
           org_contact_email?: string | null

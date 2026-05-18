@@ -47,6 +47,7 @@ interface SponsorshipTier {
   spots_used: number;
   package_type: string | null;
   custom_package_label?: string | null;
+  hide_price_when_sold_out?: boolean;
 }
 
 interface SponsorRegistration {
@@ -150,6 +151,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     total_spots: "",
     package_type: "",
     custom_package_label: "",
+    hide_price_when_sold_out: true,
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
@@ -204,7 +206,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "" });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true });
     setEditTier(null);
   };
 
@@ -227,6 +229,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       total_spots: Number.isFinite(totalSpotsParsed as number) ? totalSpotsParsed : null,
       package_type: form.package_type || null,
       custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
+      hide_price_when_sold_out: form.hide_price_when_sold_out,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
@@ -260,6 +263,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       total_spots: tier.total_spots == null ? "" : String(tier.total_spots),
       package_type: tier.package_type || "",
       custom_package_label: (tier as any).custom_package_label || "",
+      hide_price_when_sold_out: (tier as any).hide_price_when_sold_out !== false,
     });
     setDialogOpen(true);
   };
@@ -487,6 +491,17 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <Label>Display Order</Label>
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />
                     <p className="text-xs text-muted-foreground mt-1">Lower numbers appear first.</p>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="hide-price-sold-out"
+                      checked={form.hide_price_when_sold_out}
+                      onCheckedChange={(v) => setForm({ ...form, hide_price_when_sold_out: v })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="hide-price-sold-out" className="text-sm">Hide price on public page when sold out</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Shows "Sold Out" instead of the price once all spots are taken.</p>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={saving}>
                     {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}

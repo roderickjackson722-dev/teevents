@@ -59,6 +59,7 @@ const sanitizeTierPayload = (payload: any, tournamentId: string, fallbackOrder =
     total_spots: Number.isFinite(totalSpots as number) ? totalSpots : null,
     package_type: packageType,
     custom_package_label: customPackageLabel,
+    hide_price_when_sold_out: payload.hide_price_when_sold_out !== false,
   };
 };
 

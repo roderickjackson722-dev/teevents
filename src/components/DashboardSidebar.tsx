@@ -211,9 +211,9 @@ export function DashboardSidebar() {
           if (visibleItems.length === 0) return null;
 
           return (
-            <SidebarGroup key={cat.label}>
-              <div className={`border-l-2 ${cat.color} ml-2 pl-2`}>
-                <SidebarGroupLabel className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold">
+            <SidebarGroup key={cat.label} className={`${cat.color.split(" ").find(c => c.startsWith("bg-")) ?? ""} rounded-md mx-1`}>
+              <div className={`border-l-2 ${cat.color.split(" ").find(c => c.startsWith("border-l-")) ?? ""} ml-1 pl-2`}>
+                <SidebarGroupLabel className="text-primary-foreground/60 text-[10px] tracking-widest uppercase font-semibold">
                   {collapsed ? "" : cat.label}
                 </SidebarGroupLabel>
               </div>

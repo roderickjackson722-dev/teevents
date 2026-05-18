@@ -242,7 +242,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [sponsorIndex, setSponsorIndex] = useState(0);
 
   // Sponsorship tiers for public display
-  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number; package_type: string | null }[]>([]);
+  const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number; package_type: string | null; hide_price_when_sold_out?: boolean }[]>([]);
   const [paidSponsors, setPaidSponsors] = useState<Array<{ id: string; company_name: string; logo_url: string | null; website_url: string | null; tier_id: string | null }>>([]);
   const [sponsorSuccess, setSponsorSuccess] = useState(false);
   const [sponsorVerifying, setSponsorVerifying] = useState(false);

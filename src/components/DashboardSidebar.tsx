@@ -47,46 +47,53 @@ interface SidebarCategory {
   items: NavItem[];
 }
 
-// Phase-based navigation: Organizer Setup → Setup → Promotion → Operations → Finance → Post-Event → Settings
+// Phase-based navigation, ordered from planning → setup → promotion → day-of → finance → post-event → settings.
+// Each category has a distinct subtle background tint and a colored left border for visual scanning.
 const categories: SidebarCategory[] = [
   {
     label: "Organizer Setup",
-    color: "border-l-secondary",
+    color: "border-l-secondary bg-secondary/5",
     items: [
+      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
+      { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
       { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null },
     ],
   },
   {
-    label: "Setup",
-    color: "border-l-blue-400",
+    label: "Course Setup",
+    color: "border-l-sky-400 bg-sky-400/5",
     items: [
-      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
-      { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null },
       { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null },
       { title: "Pin Sheets", url: "/dashboard/pin-sheets", icon: MapPin, feature: null },
       { title: "Handicap Settings", url: "/dashboard/scoring?tab=handicap", icon: Sliders, feature: "leaderboard" },
-      { title: "Registration Form", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
-      { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: null },
-      { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null },
-      { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null },
-      { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null },
-      { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null },
     ],
   },
   {
-    label: "Promotion",
-    color: "border-l-green-400",
+    label: "Tournament Setup",
+    color: "border-l-blue-400 bg-blue-400/5",
+    items: [
+      { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null },
+      { title: "Registration Form", url: "/dashboard/registration", icon: FileEdit, feature: "registration" },
+      { title: "Sponsorship Tiers", url: "/dashboard/sponsors", icon: Award, feature: null },
+      { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null },
+      { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null },
+      { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null },
+    ],
+  },
+  {
+    label: "Promotion & Marketing",
+    color: "border-l-green-400 bg-green-400/5",
     items: [
       { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null },
       { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio" },
-      { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null },
       { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null },
+      { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null },
     ],
   },
   {
     label: "Operations",
-    color: "border-l-purple-400",
+    color: "border-l-purple-400 bg-purple-400/5",
     items: [
       { title: "Players", url: "/dashboard/players", icon: Users, feature: "players" },
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null },
@@ -106,7 +113,7 @@ const categories: SidebarCategory[] = [
   },
   {
     label: "Finance",
-    color: "border-l-yellow-400",
+    color: "border-l-yellow-400 bg-yellow-400/5",
     items: [
       { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null },
       { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null },
@@ -117,7 +124,7 @@ const categories: SidebarCategory[] = [
   },
   {
     label: "Post-Event",
-    color: "border-l-teal-400",
+    color: "border-l-teal-400 bg-teal-400/5",
     items: [
       { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys" },
       { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery" },

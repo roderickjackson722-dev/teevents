@@ -19,6 +19,14 @@ interface T {
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
   day_of_course_map_url: string | null;
+  day_of_sponsor_title: string | null;
+  day_of_sponsor_thanks: string | null;
+  day_of_pairings_url: string | null;
+  day_of_rules_url: string | null;
+  day_of_director_name: string | null;
+  day_of_director_phone: string | null;
+  day_of_director_email: string | null;
+  day_of_emergency_contact: string | null;
   pin_sheets_enabled?: boolean;
 }
 
@@ -50,7 +58,7 @@ export default function DayOfSettings() {
     (async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_course_map_url, pin_sheets_enabled")
+        .select("id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, pin_sheets_enabled")
         .eq("id", tournamentId)
         .maybeSingle();
       setT(data as any);
@@ -66,6 +74,14 @@ export default function DayOfSettings() {
       day_of_welcome_message: t.day_of_welcome_message,
       day_of_announcements: t.day_of_announcements,
       day_of_course_map_url: t.day_of_course_map_url,
+      day_of_sponsor_title: t.day_of_sponsor_title,
+      day_of_sponsor_thanks: t.day_of_sponsor_thanks,
+      day_of_pairings_url: t.day_of_pairings_url,
+      day_of_rules_url: t.day_of_rules_url,
+      day_of_director_name: t.day_of_director_name,
+      day_of_director_phone: t.day_of_director_phone,
+      day_of_director_email: t.day_of_director_email,
+      day_of_emergency_contact: t.day_of_emergency_contact,
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
@@ -183,6 +199,52 @@ export default function DayOfSettings() {
               <summary className="text-xs text-muted-foreground cursor-pointer">Or paste an image URL</summary>
               <Input className="mt-1" value={t.day_of_course_map_url || ""} onChange={(e) => setT({ ...t, day_of_course_map_url: e.target.value })} placeholder="https://..." />
             </details>
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base">Sponsor Spotlight</Label>
+            <div>
+              <Label className="text-xs">Section title</Label>
+              <Input value={t.day_of_sponsor_title || ""} onChange={(e) => setT({ ...t, day_of_sponsor_title: e.target.value })} placeholder="Our Generous Sponsors" />
+            </div>
+            <div>
+              <Label className="text-xs">Thank-you message</Label>
+              <Input value={t.day_of_sponsor_thanks || ""} onChange={(e) => setT({ ...t, day_of_sponsor_thanks: e.target.value })} placeholder="Thank you to our sponsors for making this event possible!" />
+            </div>
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base">Quick Links (optional)</Label>
+            <div>
+              <Label className="text-xs">Pairings page URL</Label>
+              <Input value={t.day_of_pairings_url || ""} onChange={(e) => setT({ ...t, day_of_pairings_url: e.target.value })} placeholder="https://… (defaults to your tournament page)" />
+            </div>
+            <div>
+              <Label className="text-xs">Rules & scoring URL</Label>
+              <Input value={t.day_of_rules_url || ""} onChange={(e) => setT({ ...t, day_of_rules_url: e.target.value })} placeholder="https://…" />
+            </div>
+          </div>
+
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-base">Tournament Contact</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Director name</Label>
+                <Input value={t.day_of_director_name || ""} onChange={(e) => setT({ ...t, day_of_director_name: e.target.value })} placeholder="Jane Smith" />
+              </div>
+              <div>
+                <Label className="text-xs">Director phone</Label>
+                <Input value={t.day_of_director_phone || ""} onChange={(e) => setT({ ...t, day_of_director_phone: e.target.value })} placeholder="(555) 123-4567" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Director email</Label>
+                <Input type="email" value={t.day_of_director_email || ""} onChange={(e) => setT({ ...t, day_of_director_email: e.target.value })} placeholder="director@example.com" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Emergency contact</Label>
+                <Input value={t.day_of_emergency_contact || ""} onChange={(e) => setT({ ...t, day_of_emergency_contact: e.target.value })} placeholder="Pro Shop: (555) 987-6543" />
+              </div>
+            </div>
           </div>
 
           <Card className="p-4 bg-muted/40 border-dashed">

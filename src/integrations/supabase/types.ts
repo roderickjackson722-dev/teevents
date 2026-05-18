@@ -4924,8 +4924,16 @@ export type Database = {
           date: string | null
           day_of_announcements: string | null
           day_of_course_map_url: string | null
+          day_of_director_email: string | null
+          day_of_director_name: string | null
+          day_of_director_phone: string | null
+          day_of_emergency_contact: string | null
           day_of_page_enabled: boolean
           day_of_page_mode: string
+          day_of_pairings_url: string | null
+          day_of_rules_url: string | null
+          day_of_sponsor_thanks: string | null
+          day_of_sponsor_title: string | null
           day_of_welcome_message: string | null
           demo_admin_id: string | null
           demo_flyer_url: string | null
@@ -5058,8 +5066,16 @@ export type Database = {
           date?: string | null
           day_of_announcements?: string | null
           day_of_course_map_url?: string | null
+          day_of_director_email?: string | null
+          day_of_director_name?: string | null
+          day_of_director_phone?: string | null
+          day_of_emergency_contact?: string | null
           day_of_page_enabled?: boolean
           day_of_page_mode?: string
+          day_of_pairings_url?: string | null
+          day_of_rules_url?: string | null
+          day_of_sponsor_thanks?: string | null
+          day_of_sponsor_title?: string | null
           day_of_welcome_message?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
@@ -5192,8 +5208,16 @@ export type Database = {
           date?: string | null
           day_of_announcements?: string | null
           day_of_course_map_url?: string | null
+          day_of_director_email?: string | null
+          day_of_director_name?: string | null
+          day_of_director_phone?: string | null
+          day_of_emergency_contact?: string | null
           day_of_page_enabled?: boolean
           day_of_page_mode?: string
+          day_of_pairings_url?: string | null
+          day_of_rules_url?: string | null
+          day_of_sponsor_thanks?: string | null
+          day_of_sponsor_title?: string | null
           day_of_welcome_message?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null

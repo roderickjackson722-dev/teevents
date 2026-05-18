@@ -385,6 +385,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setPaidVendors((paidVendorsRes.data as any[]) || []);
         setSideEvents(((sideEventsRes as any)?.data as any[]) || []);
 
+        (supabase as any).from("media_clips").select("id, title, description, video_url, thumbnail_url").eq("tournament_id", t.id).eq("is_active", true).order("display_order")
+          .then(({ data }: any) => setMediaClips((data as any[]) || []));
+
         if (scoresRes.data && scoresRes.data.length > 0) {
           setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
         }

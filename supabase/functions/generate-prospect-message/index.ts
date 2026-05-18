@@ -161,12 +161,26 @@ ${SIGNOFF_TEXT}`;
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    try { await requireAdmin(req); }
+    catch (r) { if (r instanceof Response) { const body = await r.text(); return new Response(body, { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }); } throw r; }
+
     const body = await req.json();
-    const tournament_name = (body.tournament_name || "your event").toString();
-    const organizer_name = (body.organizer_name && String(body.organizer_name).trim()) || "there";
+    const tournament_name_raw = (body.tournament_name || "your event").toString();
+    const organizer_name_raw = (body.organizer_name && String(body.organizer_name).trim()) || "there";
     const detected_setup = (body.detected_setup || "").toString().toLowerCase();
     const kind = (body.kind || "").toString().toLowerCase();
-    const calendly = (body.calendly_link && String(body.calendly_link).trim()) || DEFAULT_CALENDLY;
+    const calendly_raw = (body.calendly_link && String(body.calendly_link).trim()) || DEFAULT_CALENDLY;
+
+    // Validate calendly link: must be https URL, otherwise fall back to default
+    let calendly = DEFAULT_CALENDLY;
+    try {
+      const cu = new URL(calendly_raw);
+      if (cu.protocol === "https:") calendly = cu.toString();
+    } catch { /* keep default */ }
+
+    // HTML-escape user-controlled values used in html templates
+    const tournament_name = esc(tournament_name_raw);
+    const organizer_name = esc(organizer_name_raw);
 
     let out: Out;
     if (kind === "followup") out = followupTemplate(organizer_name, tournament_name, calendly);
@@ -174,6 +188,11 @@ serve(async (req) => {
     else if (detected_setup === "manual") out = manualTemplate(organizer_name, tournament_name, calendly);
     else if (detected_setup === "facebook") out = shortFacebookTemplate(organizer_name, tournament_name, calendly);
     else out = manualTemplate(organizer_name, tournament_name, calendly);
+
+    // Use raw (unescaped) values for the plain-text version
+    out.text = out.text
+      .replaceAll(tournament_name, tournament_name_raw)
+      .replaceAll(organizer_name, organizer_name_raw);
 
     return new Response(JSON.stringify({ message: out.text, message_html: out.html }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

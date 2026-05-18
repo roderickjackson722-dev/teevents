@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    try { await requireAdmin(req); }
+    catch (r) { if (r instanceof Response) { const body = await r.text(); return new Response(body, { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }); } throw r; }
+
     const { image_base64, image_url } = await req.json();
     if (!image_base64 && !image_url) {
       return new Response(JSON.stringify({ error: "image_base64 or image_url required" }), {

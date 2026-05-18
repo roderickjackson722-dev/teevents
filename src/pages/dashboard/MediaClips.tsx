@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Pencil, Plus, Play } from "lucide-react";
+import { Trash2, Pencil, Plus, Play, Upload, Image as ImageIcon, Wand2 } from "lucide-react";
 import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
 
 interface Clip {
@@ -23,14 +23,61 @@ interface Clip {
   is_active: boolean;
 }
 
-interface Tournament { id: string; title: string }
+interface Tournament { id: string; title: string; organization_id?: string }
+
+const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+const MAX_BYTES = 10 * 1024 * 1024;
+
+// Try to derive a thumbnail from a YouTube or Vimeo URL
+function deriveThumbFromUrl(url: string): string | null {
+  if (!url) return null;
+  // YouTube watch?v= or youtu.be
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
+  return null;
+}
+
+// Capture a frame from an .mp4 / direct video URL
+async function captureFrameFromVideo(videoUrl: string): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const v = document.createElement("video");
+    v.crossOrigin = "anonymous";
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    v.src = videoUrl;
+    v.addEventListener("loadeddata", () => {
+      try { v.currentTime = Math.min(1, (v.duration || 1) / 2); } catch { /* ignore */ }
+    });
+    v.addEventListener("seeked", () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = v.videoWidth || 640;
+        canvas.height = v.videoHeight || 360;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(null);
+        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
+      } catch {
+        resolve(null);
+      }
+    });
+    v.addEventListener("error", () => resolve(null));
+    // Safety timeout
+    setTimeout(() => resolve(null), 8000);
+  });
+}
 
 export default function MediaClipsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Partial<Clip> | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -38,14 +85,19 @@ export default function MediaClipsPage() {
       if (!user) return;
       const { data: orgs } = await supabase.from("org_members").select("organization_id").eq("user_id", user.id);
       const orgIds = (orgs || []).map((o: any) => o.organization_id);
-      const { data: ts } = await supabase.from("tournaments").select("id, title").in("organization_id", orgIds).order("date", { ascending: false });
+      const { data: ts } = await supabase.from("tournaments").select("id, title, organization_id").in("organization_id", orgIds).order("date", { ascending: false });
       setTournaments((ts as any) || []);
-      if (ts && ts.length) setTournamentId(ts[0].id);
+      if (ts && ts.length) {
+        setTournamentId(ts[0].id);
+        setOrgId((ts[0] as any).organization_id);
+      }
     })();
   }, []);
 
   useEffect(() => {
     if (!tournamentId) return;
+    const t = tournaments.find((x) => x.id === tournamentId);
+    if (t?.organization_id) setOrgId(t.organization_id);
     refresh();
   }, [tournamentId]);
 
@@ -55,6 +107,63 @@ export default function MediaClipsPage() {
     const { data } = await (supabase as any).from("media_clips").select("*").eq("tournament_id", tournamentId).order("display_order");
     setClips((data as Clip[]) || []);
     setLoading(false);
+  };
+
+  const uploadThumbnail = async (file: File) => {
+    if (!orgId || !tournamentId) {
+      toast({ title: "Select a tournament first", variant: "destructive" });
+      return;
+    }
+    if (!ALLOWED.includes(file.type)) {
+      toast({ title: "Use JPG, PNG, or WEBP", variant: "destructive" });
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast({ title: "File too large (max 10MB)", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${orgId}/${tournamentId}/media-thumbs/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: false, contentType: file.type });
+    setUploading(false);
+    if (upErr) {
+      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    setEditing((prev) => prev ? { ...prev, thumbnail_url: urlData.publicUrl } : prev);
+    toast({ title: "Thumbnail uploaded" });
+  };
+
+  const autoCaptureThumbnail = async () => {
+    if (!editing?.video_url) {
+      toast({ title: "Enter a video URL first", variant: "destructive" });
+      return;
+    }
+    setCapturing(true);
+    // 1) Try YouTube/Vimeo derived thumbnail first
+    const derived = deriveThumbFromUrl(editing.video_url);
+    if (derived) {
+      setEditing({ ...editing, thumbnail_url: derived });
+      setCapturing(false);
+      toast({ title: "Thumbnail set from video" });
+      return;
+    }
+    // 2) Try capturing a frame from a direct video URL
+    try {
+      const blob = await captureFrameFromVideo(editing.video_url);
+      if (!blob) {
+        toast({ title: "Couldn't auto-capture", description: "Upload a thumbnail image instead.", variant: "destructive" });
+        setCapturing(false);
+        return;
+      }
+      const file = new File([blob], `frame-${Date.now()}.jpg`, { type: "image/jpeg" });
+      await uploadThumbnail(file);
+    } catch (e: any) {
+      toast({ title: "Capture failed", description: e?.message, variant: "destructive" });
+    }
+    setCapturing(false);
   };
 
   const save = async () => {
@@ -68,7 +177,7 @@ export default function MediaClipsPage() {
       title: editing.title,
       description: editing.description ?? null,
       video_url: editing.video_url,
-      thumbnail_url: editing.thumbnail_url ?? null,
+      thumbnail_url: editing.thumbnail_url ?? deriveThumbFromUrl(editing.video_url),
       display_order: editing.display_order ?? clips.length,
       is_active: editing.is_active ?? true,
     };
@@ -154,7 +263,7 @@ export default function MediaClipsPage() {
       )}
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Clip" : "Add Clip"}</DialogTitle></DialogHeader>
           {editing && (
             <div className="space-y-3">
@@ -166,10 +275,45 @@ export default function MediaClipsPage() {
                 <Label>Video URL (YouTube, Vimeo, or .mp4)</Label>
                 <Input value={editing.video_url || ""} onChange={(e) => setEditing({ ...editing, video_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
               </div>
-              <div>
-                <Label>Thumbnail URL (optional)</Label>
-                <Input value={editing.thumbnail_url || ""} onChange={(e) => setEditing({ ...editing, thumbnail_url: e.target.value })} placeholder="https://..." />
+
+              <div className="space-y-2 border rounded-md p-3 bg-muted/30">
+                <Label>Display thumbnail</Label>
+                <p className="text-xs text-muted-foreground">
+                  Shown on your public page before the visitor clicks play. Use the auto button for YouTube/Vimeo links or for direct video files, or upload your own image.
+                </p>
+                {editing.thumbnail_url ? (
+                  <div className="relative aspect-video w-full bg-background rounded overflow-hidden border">
+                    <img src={editing.thumbnail_url} alt="thumbnail preview" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="aspect-video w-full bg-background rounded border flex items-center justify-center text-muted-foreground">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="outline" onClick={autoCaptureThumbnail} disabled={capturing || !editing.video_url}>
+                    <Wand2 className="w-4 h-4 mr-1" /> {capturing ? "Capturing…" : "Auto from video"}
+                  </Button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadThumbnail(f); e.currentTarget.value = ""; }}
+                  />
+                  <Button type="button" size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                    <Upload className="w-4 h-4 mr-1" /> {uploading ? "Uploading…" : "Upload image"}
+                  </Button>
+                  {editing.thumbnail_url && (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setEditing({ ...editing, thumbnail_url: null })}>Remove</Button>
+                  )}
+                </div>
+                <details>
+                  <summary className="text-xs text-muted-foreground cursor-pointer">Or paste an image URL</summary>
+                  <Input className="mt-1" value={editing.thumbnail_url || ""} onChange={(e) => setEditing({ ...editing, thumbnail_url: e.target.value })} placeholder="https://..." />
+                </details>
               </div>
+
               <div>
                 <Label>Description (optional)</Label>
                 <Textarea value={editing.description || ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} rows={3} />

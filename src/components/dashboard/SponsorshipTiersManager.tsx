@@ -151,6 +151,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     total_spots: "",
     package_type: "",
     custom_package_label: "",
+    hide_price_when_sold_out: true,
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);

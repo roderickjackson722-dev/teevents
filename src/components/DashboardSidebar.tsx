@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Trophy, ClipboardCheck, Users, MessageSquare,
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  PartyPopper, Building2, Store, Target, BedDouble, Ticket,
+  PartyPopper, Building2, Store, Target, BedDouble, Ticket, Eye,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -151,6 +152,20 @@ export function DashboardSidebar() {
   const navigate = useNavigate();
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
+  const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!org) { setTournamentSlug(null); return; }
+    supabase
+      .from("tournaments")
+      .select("slug")
+      .eq("organization_id", org.orgId)
+      .not("slug", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+  }, [org]);
 
   const isOwner = !org || org.role === "owner";
   const permissions = org?.permissions || [];
@@ -225,7 +240,14 @@ export function DashboardSidebar() {
           </div>
 
           {categories.map((cat) => {
-            const visibleItems = cat.items.filter(isVisible);
+            let items = cat.items;
+            if (cat.label === "Organizer Setup" && tournamentSlug) {
+              items = [
+                ...cat.items,
+                { title: "View Tournament", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
+              ];
+            }
+            const visibleItems = items.filter(isVisible);
             if (visibleItems.length === 0) return null;
 
             return (

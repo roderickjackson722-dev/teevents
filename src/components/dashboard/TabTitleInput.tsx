@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface Props {
   tournamentId: string;
-  field: "auction_tab_title" | "raffle_tab_title";
+  field: "auction_tab_title" | "raffle_tab_title" | "media_tab_title";
   defaultValue: string;
   label: string;
 }

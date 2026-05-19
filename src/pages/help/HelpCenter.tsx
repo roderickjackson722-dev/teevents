@@ -23,6 +23,24 @@ const HelpCenter = () => (
     <div className="max-w-4xl mx-auto px-4 py-16">
       <h1 className="text-4xl font-display font-bold text-foreground mb-2">Help Center</h1>
       <p className="text-lg text-muted-foreground mb-10">Everything you need to know about managing payments and finances on TeeVents.</p>
+
+      <Link
+        to="/help/step-by-step"
+        className="group flex items-center gap-4 p-6 mb-8 rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all"
+      >
+        <div className="p-3 rounded-lg bg-primary text-primary-foreground h-fit">
+          <ListChecks className="h-6 w-6" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+            Step-by-Step Instructions
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Detailed walkthroughs for every menu item in your organizer dashboard — Course Setup, Registration, Scoring, Finances, and more.
+          </p>
+        </div>
+      </Link>
+
       <div className="grid sm:grid-cols-2 gap-5">
         {helpPages.map((page) => (
           <Link key={page.path} to={page.path} className="group flex gap-4 p-5 bg-card rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all">

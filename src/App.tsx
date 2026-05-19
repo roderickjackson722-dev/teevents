@@ -237,7 +237,7 @@ const App = () => (
            <Route path="/admin/sales/prospecting" element={<SalesProspecting />} />
            <Route path="/admin/demo-leads" element={<DemoLeads />} />
            <Route path="/help" element={<HelpCenter />} />
-           <Route path="/help/connect-stripe" element={<ConnectStripe />} />
+           <Route path="/help/step-by-step" element={<StepByStep />} />
            <Route path="/help/fees-and-hold" element={<FeesAndHold />} />
            <Route path="/help/payout-schedule" element={<PayoutSchedule />} />
            <Route path="/help/tax-information" element={<TaxInformation />} />

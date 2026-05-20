@@ -89,15 +89,34 @@ export default function AdminOutreach() {
   };
 
   const addLead = async () => {
-    if (!newLead.email.trim()) return;
-    const { error } = await supabase.from("outreach_leads").insert({
-      email: newLead.email.trim(),
+    const email = newLead.email.trim().toLowerCase();
+    if (!email) return;
+    const payload = {
+      email,
       first_name: newLead.first_name.trim() || null,
       tournament_name: newLead.tournament_name.trim() || null,
-      source: newLead.source,
-    });
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Lead added" });
+      source: (newLead.source || "manual").trim() || "manual",
+    };
+    // Check for existing (case-insensitive)
+    const { data: existing } = await supabase
+      .from("outreach_leads")
+      .select("id, status")
+      .ilike("email", email)
+      .maybeSingle();
+    if (existing) {
+      const ok = window.confirm("A lead with this email already exists. Update it with the new info?");
+      if (!ok) return;
+      const { error: updErr } = await supabase
+        .from("outreach_leads")
+        .update({ ...payload, status: "active", unsubscribed_at: null })
+        .eq("id", (existing as any).id);
+      if (updErr) { toast({ title: "Update failed", description: updErr.message, variant: "destructive" }); return; }
+      toast({ title: "Lead updated" });
+    } else {
+      const { error } = await supabase.from("outreach_leads").insert(payload);
+      if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Lead added" });
+    }
     setShowAddLead(false);
     setNewLead({ email: "", first_name: "", tournament_name: "", source: "manual" });
     refreshAll();

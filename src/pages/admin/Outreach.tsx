@@ -382,6 +382,58 @@ export default function AdminOutreach() {
                 Conversions (leads marked converted): <b>{conversions}</b>
                 {leads.length > 0 && <> · Conversion rate: <b>{Math.round((conversions / leads.length) * 100)}%</b></>}
               </div>
+
+              <div>
+                <div className="font-semibold text-sm mb-2">Per-recipient activity</div>
+                <div className="overflow-x-auto border rounded">
+                  <table className="w-full text-sm">
+                    <thead className="text-left text-muted-foreground border-b bg-muted/30">
+                      <tr>
+                        <th className="py-2 px-3">Email</th>
+                        <th className="py-2 px-3">First name</th>
+                        <th className="py-2 px-3 text-center">#</th>
+                        <th className="py-2 px-3">Scheduled</th>
+                        <th className="py-2 px-3">Sent</th>
+                        <th className="py-2 px-3">Opened</th>
+                        <th className="py-2 px-3">Clicked</th>
+                        <th className="py-2 px-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {queue
+                        .filter((q) => q.campaign_id === analyticsCampaignId)
+                        .sort((a, b) => (b.scheduled_for || "").localeCompare(a.scheduled_for || ""))
+                        .map((q) => {
+                          const lead = leads.find((l) => l.id === q.lead_id);
+                          const fmt = (d: string | null) => d ? new Date(d).toLocaleString() : "—";
+                          let status = "Pending"; let cls = "text-yellow-700";
+                          if (q.error) { status = "Failed"; cls = "text-destructive"; }
+                          else if (q.clicked_at) { status = "Clicked"; cls = "text-emerald-700"; }
+                          else if (q.opened_at) { status = "Opened"; cls = "text-emerald-700"; }
+                          else if (q.sent_at) { status = "Delivered"; cls = "text-foreground"; }
+                          return (
+                            <tr key={q.id} className="border-b last:border-0">
+                              <td className="py-2 px-3 font-medium">{lead?.email || q.lead_id.slice(0, 8)}</td>
+                              <td className="py-2 px-3">{lead?.first_name || "—"}</td>
+                              <td className="py-2 px-3 text-center">{q.email_number}</td>
+                              <td className="py-2 px-3 text-xs">{fmt(q.scheduled_for)}</td>
+                              <td className="py-2 px-3 text-xs">{fmt(q.sent_at)}</td>
+                              <td className="py-2 px-3 text-xs">{fmt(q.opened_at)}</td>
+                              <td className="py-2 px-3 text-xs">{fmt(q.clicked_at)}</td>
+                              <td className={`py-2 px-3 text-xs font-medium ${cls}`}>
+                                {status}
+                                {q.error && <div className="text-[10px] text-destructive">{q.error}</div>}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      {queue.filter((q) => q.campaign_id === analyticsCampaignId).length === 0 && (
+                        <tr><td colSpan={8} className="py-6 text-center text-muted-foreground">No sends yet for this campaign.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </Card>
           </TabsContent>
         </Tabs>

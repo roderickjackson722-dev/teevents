@@ -65,11 +65,11 @@ const faqSections = [
       },
       {
         q: "How are refunds and chargebacks handled?",
-        a: "You set your own refund policy in tournament settings (recommended default: full refunds up to 30 days before the event; tiered options like 50% between 15-30 days are available). TeeVents processes approved refunds (full or partial) from the held funds. A 15% reserve is held until 15 days after the event to protect against chargebacks and refunds. You are never personally liable — any chargeback or refund is deducted from your reserve or held funds first. You also set a separate rain date policy for weather-related postponements (e.g., automatic transfer to new date or full refund if no rain date is possible). In cases of full event cancellation or major postponement, refunds or transfers are typically required per your stated policy.",
+        a: "You set your own refund policy in tournament settings (recommended default: full refunds up to 30 days before the event; tiered options like 50% between 15-30 days are available). Because payments are made directly to your connected Stripe account via Stripe Connect Direct Charges, refunds and chargebacks are processed from your Stripe balance. TeeVents never holds your funds — you are the merchant of record and manage refunds with one click from your dashboard. You also set a separate rain date policy for weather-related postponements.",
       },
       {
         q: "Can I get my money faster?",
-        a: "Bi-weekly is standard for security and fraud protection. Contact support for large events if you need a custom schedule.",
+        a: "Funds settle directly in your Stripe account at the moment of checkout — there is no payout schedule to wait on. Stripe transfers to your bank on its standard 2 business-day rolling schedule (or daily/weekly/instant if you configure it in Stripe). Brand-new Stripe accounts go through a standard 2–7 business-day initial review.",
       },
       {
         q: "Are there any hidden fees?",
@@ -86,7 +86,7 @@ const faqSections = [
       },
       {
         q: "Can I track my event budget and sponsor money?",
-        a: "Yes — the full Budget & Finances dashboard shows real-time income, expenses, held funds, reserve balance, and next payout.",
+        a: "Yes — the full Budget & Finances dashboard shows real-time income, expenses, and a transaction-level view of every Stripe charge, the 5% platform fee, processing fees, and net to your account.",
       },
     ],
   },

@@ -54,11 +54,16 @@ const Navbar = () => {
             </Link>
           ))}
           <Link
+            to="/book"
+            className="hidden lg:inline-flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-3 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-primary-foreground/10 transition-colors"
+          >
+            Reserve a Demo
+          </Link>
+          <Link
             to="/get-started"
             className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-secondary/90 transition-colors"
           >
-            <LogIn className="h-4 w-4" />
-            Sign In
+            Start for Free
           </Link>
         </div>
 
@@ -96,12 +101,18 @@ const Navbar = () => {
                 </Link>
               ))}
               <Link
+                to="/book"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase mt-2 w-fit"
+              >
+                Reserve a Demo
+              </Link>
+              <Link
                 to="/get-started"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase mt-2 w-fit"
+                className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase w-fit"
               >
-                <LogIn className="h-4 w-4" />
-                Sign In
+                Start a Tournament for Free
               </Link>
             </div>
           </motion.div>

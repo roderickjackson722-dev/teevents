@@ -515,7 +515,7 @@ const EMAIL_TEMPLATES = [
     id: "feature-gap",
     name: "Feature Gap Email",
     subject: "3 features Eventbrite doesn't have for golf tournaments",
-    body: `Hi [Name],\n\nRunning a golf tournament on Eventbrite? Here are 3 things you're missing:\n\n1. Live Leaderboard — Players scan a QR code to enter scores. Leaderboard updates in real-time.\n\n2. Sponsor Portal — Upload logos, assign hole sponsorships, track deliverables. Your sponsors get professional treatment.\n\n3. Automatic Payouts — Get paid every two weeks. No waiting until after the event.\n\nThese aren't add-ons or integrations — they're built into TeeVents from day one.\n\nCurious? Take a look: https://teevents.golf/compare/eventbrite-vs-teevents\n\nOr book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+    body: `Hi [Name],\n\nRunning a golf tournament on Eventbrite? Here are 3 things you're missing:\n\n1. Live Leaderboard — Players scan a QR code to enter scores. Leaderboard updates in real-time.\n\n2. Sponsor Portal — Upload logos, assign hole sponsorships, track deliverables. Your sponsors get professional treatment.\n\n3. Direct-to-Stripe Payments — Registration funds settle in your own Stripe account at the moment of checkout. TeeVents never holds your money — only the 5% application fee is taken. Stripe pays out to your bank on its normal schedule (typically 2 business days, 2–7 days for brand-new Stripe accounts).\n\nThese aren't add-ons or integrations — they're built into TeeVents from day one.\n\nCurious? Take a look: https://teevents.golf/compare/eventbrite-vs-teevents\n\nOr book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
   },
   {
     id: "onboarding-welcome",

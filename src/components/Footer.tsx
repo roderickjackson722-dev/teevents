@@ -30,6 +30,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
+          <p className="text-primary-foreground/60 italic">Built by golf tournament managers, for golf tournament managers.</p>
           <div className="flex gap-4">
             <Link to="/privacy-policy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
             <Link to="/terms-of-service" className="hover:text-secondary transition-colors">Terms of Service</Link>

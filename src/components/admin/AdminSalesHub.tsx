@@ -28,23 +28,23 @@ const STEPS = [
   { num: 5, title: "Registration, Payments & Fees", minutes: 5, icon: CreditCard, hero: "5% TeeVents platform fee + Stripe fee shown clearly • Default = passed to players so you keep 100% of advertised price • Toggle to absorb fees if you want.", keyMessage: "$150 registration example → Golfer pays $162.15 (fees passed) or Organizer nets $142.50 (fees absorbed).", bullets: ["Show Registration page with tiers, group sizes, and checkout breakdown.", "Walk through the fee breakdown: Base Price → 5% TeeVents Fee → Stripe Fee → Total.", '"You keep 100% of your advertised price by default."', "Show the toggle in Settings to absorb fees instead.", "Mention promo codes, group registration (up to 4 players), and waitlist."], route: "/dashboard/registration" },
   { num: 6, title: "Live Scoring, Pairings & Check-In", minutes: 5, icon: Trophy, hero: "Real-time mobile scoring, drag-and-drop pairings, instant leaderboards.", keyMessage: null, bullets: ["Show the admin leaderboard — real-time scores, group-by-group.", "Navigate to Printables → Scorecards tab — show QR codes.", '"Players scan this code with their phone — no app download, no login."', "Explain: Scan → phone opens scoring page → enter scores → leaderboard updates live.", "Show Tee Sheet with shotgun/sequential start options.", "Show QR Check-In: print badges, open Scan Station on any tablet."], route: "/dashboard/leaderboard" },
   { num: 7, title: "Budget, Sponsors, Auctions & Payouts", minutes: 5, icon: DollarSign, hero: "Real-time budget tracking • Payments split automatically at checkout • TeeVents never holds your money • Funds go directly to your Stripe account.", keyMessage: null, bullets: ["Show sponsor tiers: Title, Gold, Silver, Bronze — logos auto-display on tournament site.", "Show budget tracking: income vs. expenses by category, paid/unpaid status.", "Show Finances page — emphasize automatic payment splitting.", "Show Auction page — silent auction, raffle, buy-now items.", '"Your money goes directly to your Stripe account. We never touch it."'], route: "/dashboard/budget" },
-  { num: 8, title: "Pricing & Upgrade Options", minutes: 2, icon: Tag, hero: "Start for $0 • Upgrade only when you need unlimited players or white-glove service.", keyMessage: "Base ($0, 72 players) → Starter ($299, unlimited) → Premium ($999, white-glove + reduced reserve)", bullets: ["Show the 3-tier comparison: Base $0 / Starter $299 / Premium $999.", 'Base highlight: 1 tournament, 72 players max, all core features.', '"Unlimited tournaments and players + custom domain."', '"White-glove consulting, 10% reserve, faster payouts."', "All plans: 5% platform fee per transaction."], route: "/dashboard/upgrade" },
+  { num: 8, title: "Pricing & Upgrade Options", minutes: 2, icon: Tag, hero: "Start for $0 • Upgrade to Pro per-tournament only when you need premium features.", keyMessage: "Base ($0) → Pro ($399 per tournament one-time unlock) → Enterprise (custom)", bullets: ["Show the tier comparison: Base $0 / Pro $399 per tournament / Enterprise custom.", 'Base highlight: Core features, full registration & checkout, branded site.', '"Pro unlocks live scoring, custom domain, advanced printables, and premium support — per tournament, no subscription."', '"Enterprise is for multi-event organizers and clubs needing white-glove and custom integrations."', "All plans: 5% platform fee per transaction. Funds settle directly in your Stripe — TeeVents never holds your money."], route: "/dashboard/upgrade" },
   { num: 9, title: "Q&A & Next Steps", minutes: 3, icon: HelpCircle, hero: "What questions do you have? Let's get your tournament set up today.", keyMessage: null, bullets: ['"What stood out to you? Which features would make the biggest difference?"', "Address any questions or concerns.", '"I can set up your tournament right now — takes just a few minutes."', "Share the sign-up link: teevents.golf/get-started", "If nonprofit: mention tax-deductible donation receipts and EIN verification.", "Follow up within 24 hours with a recap email."], route: null },
 ];
 
 
 // ── Flyer Templates ──
 const FLYER_TEMPLATES = [
-  { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ No automatic payout holds"], cta: "Start free trial →" },
+  { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ Holds your funds until after the event"], cta: "Start free trial →" },
   { id: "cash-app", title: "Still collecting fees via Cash App?", headline: "Still collecting fees via Cash App?", items: ["✖️ No receipts for players", "✖️ No financial dashboard", "✖️ No automatic tax reporting", "✖️ No chargeback protection"], cta: "Switch to TeeVents →" },
-  { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Automated payouts"], cta: "Try it free →" },
+  { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Funds go straight to your Stripe"], cta: "Try it free →" },
   { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Learn more →" },
-  { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Automated payouts"], cta: "Start fundraising →" },
+  { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Funds direct to your nonprofit's Stripe"], cta: "Start fundraising →" },
   { id: "fees", title: "5% platform fee per transaction", headline: "5% platform fee per transaction", items: ["✅ Simple percentage", "✅ No setup fees", "✅ No hidden costs", "✅ 2.9% + $0.30 Stripe fee separate"], cta: "See pricing →" },
   { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "See it in action →" },
   { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Try TeeVents →" },
-  { id: "payout", title: "TeeVents never holds your money", headline: "TeeVents never holds your money.", items: ["💰 Funds settle directly in your Stripe at checkout", "💰 You are the merchant of record", "💰 Complete financial dashboard", "💰 1099-K issued by Stripe"], cta: "Connect your bank →" },
-  { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Manual payouts → New: Automatic"], cta: "Upgrade your game →" },
+  { id: "payout", title: "TeeVents never holds your money", headline: "TeeVents never holds your money.", items: ["💰 Funds settle directly in your Stripe at checkout", "💰 You are the merchant of record", "💰 Stripe payouts to your bank in 2–7 business days", "💰 1099-K issued by Stripe"], cta: "Connect your Stripe →" },
+  { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Waiting for funds → New: Direct to your Stripe"], cta: "Upgrade your game →" },
 ];
 
 // ── Study Sheet Sections ──
@@ -75,7 +75,7 @@ const SimpleTable = ({ headers, rows }: { headers: string[]; rows: string[][] })
 function EmailTemplate() {
   const [copied, setCopied] = useState(false);
   const [meetingLink, setMeetingLink] = useState("https://calendly.com/teevents-golf/demo");
-  const template = `Subject: Your TeeVents Demo Agenda – [Date]\n\nHi [Name],\n\nThanks for scheduling your TeeVents demo! I'm excited to show you how we help tournament organizers streamline registration, payments, and payouts.\n\nHere's our agenda for the 30-minute call:\n\n✅ Platform Overview (5 min)\n✅ Tournament Setup (10 min)\n✅ Payment Flow & Fees (10 min)\n✅ Organizer Payouts (10 min)\n✅ Q&A (5-10 min)\n\nView the full agenda with screenshots here:\n${window.location.origin}/sales/demo-agenda\n\nBook your demo: ${meetingLink}\n\nTo make the most of our time, please:\n• Come with your tournament details (name, date, expected players)\n• Think about your current pain points with registration/payments\n\nSee you soon!\n\nBest,\n[Your Name]\nTeeVents Golf\ninfo@teevents.golf`;
+  const template = `Subject: Your TeeVents Demo Agenda – [Date]\n\nHi [Name],\n\nThanks for scheduling your TeeVents demo! I'm excited to show you how we help tournament organizers streamline registration, payments, and getting paid.\n\nHere's our agenda for the 30-minute call:\n\n✅ Platform Overview (5 min)\n✅ Tournament Setup (10 min)\n✅ Payment Flow & Fees — funds go straight to your Stripe account (10 min)\n✅ Connecting your Stripe & how payouts work (5 min)\n✅ Q&A (5-10 min)\n\nView the full agenda with screenshots here:\n${window.location.origin}/sales/demo-agenda\n\nBook your demo: ${meetingLink}\n\nTo make the most of our time, please:\n• Come with your tournament details (name, date, expected players)\n• Think about your current pain points with registration/payments\n\nSee you soon!\n\nBest,\n[Your Name]\nTeeVents Golf\ninfo@teevents.golf`;
   const handleCopy = () => { navigator.clipboard.writeText(template); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
     <Card>
@@ -157,7 +157,7 @@ function DemoTab() {
         <Accordion type="multiple">
           <AccordionItem value="fee"><AccordionTrigger>What is the 5% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a 5% platform fee on every transaction. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
           <AccordionItem value="reserve"><AccordionTrigger>Does TeeVents hold any of my funds?</AccordionTrigger><AccordionContent>No. TeeVents uses Stripe Connect Direct Charges — funds settle directly in the organizer's Stripe account at checkout. Only the 5% application fee is sent to TeeVents. There is no platform reserve.</AccordionContent></AccordionItem>
-          <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Payouts are processed automatically every two weeks. The net amount is deposited directly into the organizer's connected bank account.</AccordionContent></AccordionItem>
+          <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Every charge settles into the organizer's connected Stripe account at the moment of checkout. Stripe then transfers the available balance to the organizer's bank on its standard rolling schedule — typically 2 business days for established accounts and 2–7 business days for brand-new Stripe accounts during Stripe's initial risk review. TeeVents never holds the funds and does not control the payout timing.</AccordionContent></AccordionItem>
         </Accordion>
       </div>
 
@@ -188,8 +188,8 @@ function StudySheetTab() {
       <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect (Direct Charges) + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>
-      <h2>8. Limits</h2><p>5% platform fee, no hold, Base ($0) / Pro ($399 per tournament) / Enterprise (custom)</p>
-      <h2>9. Glossary</h2><p>Chargeback, Hold, Platform Fee, Stripe Connect, Express Account, RLS, Edge Function, Cron Job</p>
+      <h2>8. Limits</h2><p>5% platform fee, no reserve hold, Base ($0) / Pro ($399 per tournament) / Enterprise (custom). Funds settle in the organizer's Stripe at checkout; Stripe pays out to bank in ~2 business days (2–7 days for new Connect accounts).</p>
+      <h2>9. Glossary</h2><p>Chargeback, Application Fee, Platform Fee, Stripe Connect (Direct Charges), Payout (Stripe rolling schedule), RLS, Edge Function, Cron Job</p>
       <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential.</p>
     `);
   };
@@ -240,8 +240,8 @@ function StudySheetTab() {
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
             <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe Connect Direct Charge on organizer's account → 5% application fee to TeeVents + Stripe processing → Net to organizer's Stripe balance instantly</div>
-            <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (minus hold)", "Nonprofits"]]} />
-            <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
+            <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (direct to Stripe)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (direct to Stripe)", "Nonprofits"]]} />
+            <FeatureBlock title="Funds & Chargebacks" items={["Funds settle in the organizer's Stripe account at the moment of checkout (Stripe Connect Direct Charges)", "TeeVents only receives the 5% application fee — no reserve, no hold", "Stripe transfers to the organizer's bank on its standard rolling schedule: ~2 business days for established accounts, 2–7 business days during Stripe's initial review on new Connect accounts", "Organizer is the merchant of record and handles refunds/chargebacks from their Stripe balance"]} />
           </div>
         </section>
 
@@ -266,12 +266,12 @@ function StudySheetTab() {
 
         <section id="study-metrics">
           <SectionHeader num={8} title="Key Metrics & Limits" />
-          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5%"], ["Reserve hold", "None — funds direct to organizer"], ["Charge type", "Stripe Connect Direct Charge"], ["Bank transfer", "Stripe's 2-day rolling schedule"], ["Base plan", "$0, 1 tournament, 72 players"], ["Pro upgrade", "$399 per tournament"], ["Enterprise", "Custom"]]} />
+          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5% application fee on every transaction"], ["Reserve hold", "None — TeeVents never holds organizer funds"], ["Charge type", "Stripe Connect Direct Charge on organizer's account"], ["Bank transfer", "Stripe's rolling schedule: ~2 business days (2–7 days for new Connect accounts)"], ["Base plan", "$0 — core features"], ["Pro upgrade", "$399 per tournament (one-time unlock)"], ["Enterprise", "Custom"]]} />
         </section>
 
         <section id="study-glossary">
           <SectionHeader num={9} title="Glossary" />
-          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "5% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
+          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge — handled by the organizer as merchant of record"], ["Application Fee", "TeeVents' 5% fee taken on each Stripe Direct Charge"], ["Platform Fee", "5% on all transactions"], ["Stripe Connect", "Marketplace payment platform — TeeVents uses Direct Charges so funds settle on the organizer's account"], ["Payout", "Stripe's automatic transfer of the organizer's available balance to their bank (~2 business days, 2–7 for new accounts)"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
         </section>
       </div>
     </div>
@@ -503,7 +503,7 @@ const EMAIL_TEMPLATES = [
     id: "comparison-cold",
     name: "Eventbrite Comparison Cold Email",
     subject: "Eventbrite vs. TeeVents – Which one saves you money?",
-    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.69 | TeeVents $8.20\n• Payouts: Eventbrite waits until after event | TeeVents bi-weekly\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.69 | TeeVents $8.20\n• Funds access: Eventbrite holds funds until after the event | TeeVents settles funds in your own Stripe account at checkout (Stripe pays out to your bank in 2–7 business days)\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
   },
   {
     id: "fee-breakdown",
@@ -515,7 +515,7 @@ const EMAIL_TEMPLATES = [
     id: "feature-gap",
     name: "Feature Gap Email",
     subject: "3 features Eventbrite doesn't have for golf tournaments",
-    body: `Hi [Name],\n\nRunning a golf tournament on Eventbrite? Here are 3 things you're missing:\n\n1. Live Leaderboard — Players scan a QR code to enter scores. Leaderboard updates in real-time.\n\n2. Sponsor Portal — Upload logos, assign hole sponsorships, track deliverables. Your sponsors get professional treatment.\n\n3. Automatic Payouts — Get paid every two weeks. No waiting until after the event.\n\nThese aren't add-ons or integrations — they're built into TeeVents from day one.\n\nCurious? Take a look: https://teevents.golf/compare/eventbrite-vs-teevents\n\nOr book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+    body: `Hi [Name],\n\nRunning a golf tournament on Eventbrite? Here are 3 things you're missing:\n\n1. Live Leaderboard — Players scan a QR code to enter scores. Leaderboard updates in real-time.\n\n2. Sponsor Portal — Upload logos, assign hole sponsorships, track deliverables. Your sponsors get professional treatment.\n\n3. Direct-to-Stripe Payments — Registration funds settle in your own Stripe account at the moment of checkout. TeeVents never holds your money — only the 5% application fee is taken. Stripe pays out to your bank on its normal schedule (typically 2 business days, 2–7 days for brand-new Stripe accounts).\n\nThese aren't add-ons or integrations — they're built into TeeVents from day one.\n\nCurious? Take a look: https://teevents.golf/compare/eventbrite-vs-teevents\n\nOr book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
   },
   {
     id: "onboarding-welcome",
@@ -527,7 +527,7 @@ const EMAIL_TEMPLATES = [
     id: "demo-followup",
     name: "Demo Follow-up",
     subject: "Thanks for your demo – Here's what's next",
-    body: `Hi [Name],\n\nThanks for taking the time to see TeeVents in action today! I hope you can see how it would simplify your tournament management.\n\nHere's a recap of what we covered:\n• Tournament setup and branding\n• Registration and payment flow\n• Live leaderboard and scoring\n• Sponsor and volunteer management\n• Fee structure and payouts\n\nReady to get started? Sign up here: teevents.golf/get-started\n\nWant to compare with Eventbrite? teevents.golf/compare/eventbrite-vs-teevents\n\nI'm here to help with setup — just reply to this email.\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+    body: `Hi [Name],\n\nThanks for taking the time to see TeeVents in action today! I hope you can see how it would simplify your tournament management.\n\nHere's a recap of what we covered:\n• Tournament setup and branding\n• Registration and payment flow\n• Live leaderboard and scoring\n• Sponsor and volunteer management\n• 5% platform fee + Stripe processing — funds settle directly in your Stripe account at checkout (Stripe pays out to your bank in 2–7 business days)\n\nReady to get started? Sign up here: teevents.golf/get-started\n\nWant to compare with Eventbrite? teevents.golf/compare/eventbrite-vs-teevents\n\nI'm here to help with setup — just reply to this email.\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
   },
 ];
 
@@ -700,10 +700,8 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
           <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /> Live Demo</TabsTrigger>
           <TabsTrigger value="prospects" className="gap-2"><Users className="h-4 w-4" /> Prospects</TabsTrigger>
           <TabsTrigger value="stats" className="gap-2"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
-          <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Outreach Scripts</TabsTrigger>
           <TabsTrigger value="email-templates" className="gap-2"><Mail className="h-4 w-4" /> Email Templates</TabsTrigger>
           <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
-          <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite</TabsTrigger>
           <TabsTrigger value="study" className="gap-2"><BookOpen className="h-4 w-4" /> Study Sheet</TabsTrigger>
           <TabsTrigger value="flyers" className="gap-2"><Image className="h-4 w-4" /> Flyer Studio</TabsTrigger>
           <TabsTrigger value="pdfs" className="gap-2"><FolderOpen className="h-4 w-4" /> PDF Library</TabsTrigger>
@@ -716,12 +714,29 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
         <TabsContent value="stats">
           <StatsComponent prospects={prospects} activities={activities} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
-        <TabsContent value="email-scripts">
-          <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
+        <TabsContent value="email-templates">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-foreground">Email Templates</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                All sales emails in one place — your editable outreach library, quick-send templates, and the Eventbrite comparison script.
+              </p>
+            </div>
+            <Tabs defaultValue="outreach" className="w-full">
+              <TabsList className="mb-4 flex-wrap h-auto gap-1">
+                <TabsTrigger value="outreach" className="gap-2"><Mail className="h-4 w-4" /> Outreach Library</TabsTrigger>
+                <TabsTrigger value="quick" className="gap-2"><Mail className="h-4 w-4" /> Quick-Send Templates</TabsTrigger>
+                <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite Script</TabsTrigger>
+              </TabsList>
+              <TabsContent value="outreach">
+                <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
+              </TabsContent>
+              <TabsContent value="quick"><EmailTemplatesTab /></TabsContent>
+              <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
+            </Tabs>
+          </div>
         </TabsContent>
-        <TabsContent value="email-templates"><EmailTemplatesTab /></TabsContent>
         <TabsContent value="demo-script"><DemoScriptComponent /></TabsContent>
-        <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
         <TabsContent value="study"><StudySheetTab /></TabsContent>
         <TabsContent value="flyers"><FlyerStudioTab /></TabsContent>
         <TabsContent value="pdfs"><PdfLibraryTab /></TabsContent>

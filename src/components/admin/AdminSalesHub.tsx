@@ -700,10 +700,8 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
           <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /> Live Demo</TabsTrigger>
           <TabsTrigger value="prospects" className="gap-2"><Users className="h-4 w-4" /> Prospects</TabsTrigger>
           <TabsTrigger value="stats" className="gap-2"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
-          <TabsTrigger value="email-scripts" className="gap-2"><Mail className="h-4 w-4" /> Outreach Scripts</TabsTrigger>
           <TabsTrigger value="email-templates" className="gap-2"><Mail className="h-4 w-4" /> Email Templates</TabsTrigger>
           <TabsTrigger value="demo-script" className="gap-2"><FileText className="h-4 w-4" /> Demo Script</TabsTrigger>
-          <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite</TabsTrigger>
           <TabsTrigger value="study" className="gap-2"><BookOpen className="h-4 w-4" /> Study Sheet</TabsTrigger>
           <TabsTrigger value="flyers" className="gap-2"><Image className="h-4 w-4" /> Flyer Studio</TabsTrigger>
           <TabsTrigger value="pdfs" className="gap-2"><FolderOpen className="h-4 w-4" /> PDF Library</TabsTrigger>
@@ -716,12 +714,29 @@ export default function AdminSalesHub({ prospects, activities, outreachTemplates
         <TabsContent value="stats">
           <StatsComponent prospects={prospects} activities={activities} callAdminApi={callAdminApi} onRefresh={onRefresh} />
         </TabsContent>
-        <TabsContent value="email-scripts">
-          <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
+        <TabsContent value="email-templates">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-foreground">Email Templates</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                All sales emails in one place — your editable outreach library, quick-send templates, and the Eventbrite comparison script.
+              </p>
+            </div>
+            <Tabs defaultValue="outreach" className="w-full">
+              <TabsList className="mb-4 flex-wrap h-auto gap-1">
+                <TabsTrigger value="outreach" className="gap-2"><Mail className="h-4 w-4" /> Outreach Library</TabsTrigger>
+                <TabsTrigger value="quick" className="gap-2"><Mail className="h-4 w-4" /> Quick-Send Templates</TabsTrigger>
+                <TabsTrigger value="eventbrite" className="gap-2"><Shield className="h-4 w-4" /> vs Eventbrite Script</TabsTrigger>
+              </TabsList>
+              <TabsContent value="outreach">
+                <EmailScriptsComponent templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={onRefresh} />
+              </TabsContent>
+              <TabsContent value="quick"><EmailTemplatesTab /></TabsContent>
+              <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
+            </Tabs>
+          </div>
         </TabsContent>
-        <TabsContent value="email-templates"><EmailTemplatesTab /></TabsContent>
         <TabsContent value="demo-script"><DemoScriptComponent /></TabsContent>
-        <TabsContent value="eventbrite"><EventbriteScriptTab /></TabsContent>
         <TabsContent value="study"><StudySheetTab /></TabsContent>
         <TabsContent value="flyers"><FlyerStudioTab /></TabsContent>
         <TabsContent value="pdfs"><PdfLibraryTab /></TabsContent>

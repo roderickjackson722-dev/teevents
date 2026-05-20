@@ -147,6 +147,10 @@ export default function InteractiveDemo() {
       recordEvent(leadId, "tour_started");
     }
 
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      console.warn("[InteractiveDemo] target not found for step", index, steps[index]?.target);
+    }
+
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       const next = action === ACTIONS.PREV ? Math.max(0, index - 1) : index + 1;
       setStepIndex(next);

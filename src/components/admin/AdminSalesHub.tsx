@@ -188,8 +188,8 @@ function StudySheetTab() {
       <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect (Direct Charges) + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>
-      <h2>8. Limits</h2><p>5% platform fee, no hold, Base ($0) / Pro ($399 per tournament) / Enterprise (custom)</p>
-      <h2>9. Glossary</h2><p>Chargeback, Hold, Platform Fee, Stripe Connect, Express Account, RLS, Edge Function, Cron Job</p>
+      <h2>8. Limits</h2><p>5% platform fee, no reserve hold, Base ($0) / Pro ($399 per tournament) / Enterprise (custom). Funds settle in the organizer's Stripe at checkout; Stripe pays out to bank in ~2 business days (2–7 days for new Connect accounts).</p>
+      <h2>9. Glossary</h2><p>Chargeback, Application Fee, Platform Fee, Stripe Connect (Direct Charges), Payout (Stripe rolling schedule), RLS, Edge Function, Cron Job</p>
       <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential.</p>
     `);
   };

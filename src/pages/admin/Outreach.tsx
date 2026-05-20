@@ -467,15 +467,25 @@ export default function AdminOutreach() {
             <div><Label>First name</Label><Input value={newLead.first_name} onChange={(e) => setNewLead({ ...newLead, first_name: e.target.value })} /></div>
             <div><Label>Tournament name</Label><Input value={newLead.tournament_name} onChange={(e) => setNewLead({ ...newLead, tournament_name: e.target.value })} /></div>
             <div><Label>Source</Label>
-              <Select value={newLead.source} onValueChange={(v) => setNewLead({ ...newLead, source: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manual">Manual</SelectItem>
-                  <SelectItem value="eventbrite">Eventbrite</SelectItem>
-                  <SelectItem value="facebook">Facebook</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                list="outreach-source-options"
+                value={newLead.source}
+                onChange={(e) => setNewLead({ ...newLead, source: e.target.value })}
+                placeholder="e.g. Eventbrite, Google Forms, GiveButter, Facebook, no website"
+              />
+              <datalist id="outreach-source-options">
+                <option value="manual" />
+                <option value="eventbrite" />
+                <option value="google forms" />
+                <option value="givebutter" />
+                <option value="facebook" />
+                <option value="instagram" />
+                <option value="linkedin" />
+                <option value="no website" />
+                <option value="referral" />
+                <option value="other" />
+              </datalist>
+              <p className="text-[11px] text-muted-foreground mt-1">Used in templates as <code>{`{{source}}`}</code>.</p>
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowAddLead(false)}>Cancel</Button><Button onClick={addLead}>Add</Button></DialogFooter>

@@ -152,6 +152,20 @@ export default function DemoLeadCaptureModal({ open, onComplete }: Props) {
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start the tour →"}
           </Button>
+          <button
+            type="button"
+            onClick={() => {
+              const fallbackId =
+                (typeof crypto !== "undefined" && "randomUUID" in crypto
+                  ? crypto.randomUUID()
+                  : `local-${Date.now()}`);
+              try { localStorage.setItem("teevents_demo_lead_id", fallbackId); } catch { /* noop */ }
+              onComplete(fallbackId);
+            }}
+            className="block w-full text-center text-xs text-muted-foreground underline hover:text-foreground"
+          >
+            Skip and start the tour
+          </button>
           <p className="text-xs text-muted-foreground text-center">
             No spam. Unsubscribe anytime.
           </p>

@@ -106,6 +106,9 @@ const Plans = () => {
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               No credit card required. No time limit on the free tier.
             </p>
+            <p className="mt-3 text-secondary font-semibold">
+              Built by golf tournament managers, for golf tournament managers.
+            </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/get-started"

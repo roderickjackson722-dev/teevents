@@ -180,10 +180,17 @@ const CollegeTournament = () => {
       .join("\n");
     const combinedNotes = [regForm.notes, customAnswers].filter(Boolean).join("\n---\n");
 
-    // Create registration
-    const { data: reg, error: regErr } = await supabase
+    // Create registration (generate id client-side; anon role can INSERT but
+    // has no SELECT policy, so we avoid reading the row back which would
+    // surface as a misleading "row-level security policy" error).
+    const newRegistrationId = (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    const { error: regErr } = await supabase
       .from("college_tournament_registrations")
       .insert({
+        id: newRegistrationId,
         tournament_id: tournament.id,
         invitation_id: invitation?.id || null,
         coach_name: regForm.coach_name,
@@ -191,15 +198,15 @@ const CollegeTournament = () => {
         school_name: regForm.school_name,
         notes: combinedNotes || null,
         payment_status: "registered",
-      } as any)
-      .select()
-      .single() as any;
+      } as any);
 
     if (regErr) {
       toast({ title: "Registration failed", description: regErr.message, variant: "destructive" });
       setRegistering(false);
       return;
     }
+
+    const reg = { id: newRegistrationId };
 
     // Add players
     const validPlayers = players.filter(p => p.first_name && p.last_name);

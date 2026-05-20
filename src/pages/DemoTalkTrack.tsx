@@ -8,75 +8,71 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Copy, FileDown, ArrowRight, Shield, CreditCard, Clock, Building2,
-  AlertTriangle, CheckCircle2, DollarSign, Users, Banknote, ChevronRight
+  CheckCircle2, DollarSign, Users, Banknote, ChevronRight, Zap
 } from "lucide-react";
 import Layout from "@/components/Layout";
 
-/* ────── flow diagram data ────── */
+/* ────── flow diagram data (Direct Charges) ────── */
 const FLOW_STEPS = [
   { icon: Users, label: "Golfer Pays", detail: "$100 registration", color: "bg-primary" },
-  { icon: CreditCard, label: "TeeVents Collects", detail: "Secure Stripe checkout", color: "bg-primary/80" },
-  { icon: DollarSign, label: "5% Fee", detail: "5% platform fee", color: "bg-destructive/80" },
-  { icon: Shield, label: "15% Hold", detail: "$14.25 reserve", color: "bg-destructive/80" },
-  { icon: Banknote, label: "Net Available", detail: "$80.75 tracked", color: "bg-emerald-600" },
-  { icon: Clock, label: "Event +15 Days", detail: "Hold released", color: "bg-primary/60" },
-  { icon: Building2, label: "Payout", detail: "Bi-weekly or manual", color: "bg-emerald-700" },
+  { icon: CreditCard, label: "Stripe Connect Direct Charge", detail: "Lives on organizer's Stripe account", color: "bg-primary/80" },
+  { icon: DollarSign, label: "5% Application Fee", detail: "Routed to TeeVents", color: "bg-secondary" },
+  { icon: Zap, label: "Stripe Processing", detail: "~2.9% + $0.30", color: "bg-primary/60" },
+  { icon: Banknote, label: "Net to Organizer", detail: "Lands in YOUR Stripe balance instantly", color: "bg-emerald-600" },
+  { icon: Building2, label: "Bank Transfer", detail: "Stripe's 2-day rolling schedule", color: "bg-emerald-700" },
 ];
 
 /* ────── $100 breakdown ────── */
 const SAMPLE_BREAKDOWN = [
-  { label: "Registration Price", amount: "$100.00" },
+  { label: "Registration Price (fees absorbed)", amount: "$100.00" },
   { label: "TeeVents Platform Fee (5%)", amount: "−$5.00" },
-  { label: "Net After Fee", amount: "$95.00" },
-  { label: "15% Reserve Hold", amount: "−$14.25" },
-  { label: "Net Available for Payout", amount: "$80.75", bold: true },
-  { label: "Hold Released (Event +15 days)", amount: "+$14.25" },
-  { label: "Total Received by Organizer", amount: "$95.00", bold: true },
+  { label: "Stripe Processing (~2.9% + $0.30)", amount: "−$3.20" },
+  { label: "Net in Your Stripe Account", amount: "$91.80", bold: true },
 ];
 
 /* ────── objections ────── */
 const OBJECTIONS = [
   {
-    q: '"15% hold is too high"',
-    a: "We understand it feels like a lot. The average chargeback rate for events is around 1–2%, but the 15% protects you from even multiple disputes. Most importantly, you get it all back 15 days after your event. No other platform gives you this protection without charging more.",
+    q: '"How do I know TeeVents won\'t hold my money?"',
+    a: "Every payment uses Stripe Connect Direct Charges. The charge is created on YOUR connected Stripe account — TeeVents only takes a 5% application fee. The funds never touch a TeeVents balance. You can verify it in your own Stripe dashboard.",
   },
   {
-    q: '"Why can\'t I get paid immediately?"',
-    a: "We hold funds to ensure we can cover any chargebacks or refunds. Once your event is complete and the risk period passes, funds are released. This protects both you and the golfers who register.",
+    q: '"What about chargebacks and refunds?"',
+    a: "Since the charge lives on your Stripe account, you are the merchant of record. Refunds are one-click from your TeeVents dashboard and pull from your own Stripe balance. Chargebacks are handled between your Stripe account and the cardholder's bank — Stripe's dispute tools work the same as if you were processing payments yourself.",
   },
   {
     q: '"I already have a Stripe account"',
-    a: "Great — you'll be able to connect your existing Stripe account through our Express onboarding. It takes 2–3 minutes, and you'll receive payouts directly to your bank account.",
+    a: "Great — you can connect your existing Stripe account during onboarding. It takes 2–3 minutes, and registrations start flowing into the account you already use.",
   },
   {
     q: '"What if I need money before my event?"',
-    a: "Your available balance (the 80% net) is tracked in your dashboard. If you have enough available, you can request a manual withdrawal anytime ($25 minimum). However, the 15% hold will only release after the event ends.",
+    a: "Funds settle in your Stripe balance at the moment of checkout. You don't wait for a TeeVents payout. Stripe transfers to your bank on its 2-day rolling schedule (configurable to daily, weekly, or instant for a small fee).",
   },
 ];
 
-/* ────── chargeback FAQ ────── */
-const CHARGEBACK_FAQ = [
+/* ────── faq ────── */
+const FAQ_ITEMS = [
   {
-    q: "What is a chargeback?",
-    a: "A chargeback is when a golfer's bank reverses a payment. Common reasons include: the golfer didn't recognize the charge, the event was canceled or rescheduled, the golfer claims they didn't receive what they paid for, or fraudulent use of a credit card.",
+    q: "Why direct to the organizer's Stripe account?",
+    a: "Two reasons: (1) Compliance — the organizer is legally the merchant of record for the tournament, which is cleaner for taxes and chargebacks. (2) Speed — funds are available the moment the charge clears, instead of waiting for a platform payout.",
   },
   {
-    q: "Who pays for a chargeback?",
-    a: "If a chargeback occurs: 1) The disputed amount is taken from the 15% hold first. 2) If the hold is insufficient, TeeVents covers the remainder. 3) You are never charged extra — the hold is there to protect you.",
+    q: "Does TeeVents see my money?",
+    a: "No. Only the 5% application fee is routed to TeeVents. The other 95% (minus Stripe processing) settles directly in your Stripe account. We have read-only access via Stripe Connect to show transactions in your TeeVents dashboard.",
   },
   {
-    q: "How often do chargebacks happen?",
-    a: "For golf tournaments, chargebacks are rare — typically less than 0.5% of transactions. Most happen due to unrecognized charges, which is why we recommend you brand your statement descriptor clearly.",
+    q: "What about new Stripe accounts?",
+    a: "Brand-new Stripe accounts go through a standard 2–7 business-day initial review on first payouts to bank. This is a Stripe risk policy, not a TeeVents hold — it lifts automatically once Stripe verifies the account.",
   },
 ];
 
 /* ────── comparison table ────── */
 const COMPARISON = [
   { feature: "Setup", stripe: "2–3 minute onboarding", paypal: "Enter email address" },
-  { feature: "Additional Fees", stripe: "None", paypal: "1% or $0.50 per payout (whichever is greater)" },
-  { feature: "Payout Speed", stripe: "3-7 business days", paypal: "1–5 business days" },
-  { feature: "Auto Payouts", stripe: "Yes (bi-weekly)", paypal: "Manual only" },
-  { feature: "Dashboard", stripe: "Embedded in TeeVents", paypal: "PayPal website" },
+  { feature: "Funds settlement", stripe: "Instant, in your Stripe balance", paypal: "Per payout request" },
+  { feature: "Bank transfer", stripe: "Stripe's 2-day rolling schedule", paypal: "1–5 business days" },
+  { feature: "Additional fees", stripe: "None (Stripe processing only)", paypal: "1% or $0.50 per payout" },
+  { feature: "Dashboard", stripe: "Embedded in TeeVents + your Stripe", paypal: "PayPal website" },
 ];
 
 /* ────── full script text for copy ────── */
@@ -85,46 +81,36 @@ function buildFullScript(): string {
 ========================================
 
 INTRODUCTION
-"Let me walk you through how payments work on TeeVents. Our system is designed to be completely transparent — you'll always know where your money is and when you'll receive it."
+"Let me walk you through how payments work on TeeVents. The big thing to understand is that TeeVents never holds your money. Every payment goes directly into YOUR Stripe account at checkout."
 
 HOW FUNDS FLOW
-1. Golfer registers for your tournament and pays by credit card, Apple Pay, or Google Pay.
-2. Payment is collected by TeeVents (we use Stripe, the same platform that powers millions of online businesses).
-3. 5% platform fee is automatically deducted — this covers hosting, support, software updates, and payment processing infrastructure.
-4. 15% hold is placed on the remaining balance — this protects you from chargebacks and refunds.
-5. Net available is immediately tracked in your dashboard but held for payout timing.
-6. 15 days after your event ends, the 15% hold is released to your available balance.
-7. You receive payouts every other Monday (bi-weekly) OR you can request manual withdrawals anytime.
+1. Golfer registers and pays by credit card, Apple Pay, or Google Pay.
+2. The charge is created using Stripe Connect Direct Charges — meaning the payment is processed on YOUR connected Stripe account, not on a TeeVents balance.
+3. TeeVents takes a 5% application fee directly from the charge.
+4. Stripe takes its standard processing fee (~2.9% + $0.30).
+5. The net amount lands instantly in YOUR Stripe balance.
+6. Stripe transfers funds to your bank on its 2-day rolling schedule (or daily/weekly/instant if you configure it in Stripe).
 
-SAMPLE $100 REGISTRATION BREAKDOWN
+SAMPLE $100 REGISTRATION (FEES ABSORBED)
 • Registration Price: $100.00
-• Platform Fee (5%): −$5.00
-• Net After Fee: $95.00
-• 15% Reserve Hold: −$14.25
-• Net Available for Payout: $80.75
-• Hold Released (Event +15 days): +$14.25
-• Total Received by Organizer: $95.00
+• TeeVents Platform Fee (5%): −$5.00
+• Stripe Processing (~2.9% + $0.30): −$3.20
+• Net in Your Stripe Account: $91.80
 
-EXPLAINING THE 15% HOLD
-"We place a 15% hold on each transaction to protect you from chargebacks. A chargeback happens when a golfer disputes a charge with their bank — maybe they didn't recognize the charge, or there was an issue with the event. The bank can reverse the payment, and that money would come out of your account.
+KEY MESSAGE
+"TeeVents is just the software. Your money is yours, in your Stripe account, from the moment a golfer pays. We never hold, escrow, or release funds — there's no payout schedule on our end to wait on."
 
-By holding 15%, we ensure that if a chargeback occurs, it's covered from that hold — not from your available balance. If no chargeback happens, the full 15% is released 15 days after your event ends. This is standard practice across event platforms like Eventbrite and golf platforms like Event Caddy."
-
-AUTOMATIC PAYMENT SPLITTING
-"Here's the best part about our payment flow:
-
-Every payment is split automatically at checkout using Stripe Connect destination charges. When a golfer registers, Stripe instantly sends us our 5% fee, deducts their processing fee, and deposits the rest directly into your Stripe account. TeeVents never holds, touches, or controls your money.
-
-You withdraw from your own Stripe account on your schedule — daily, weekly, or whenever you want. No waiting for us to release anything."
-
-TRANSPARENCY & REPORTING
-"You can see every transaction in your dashboard — down to the individual golfer. Who paid, when, how much, the 5% platform fee, Stripe processing, and your net proceeds. You can also download CSV reports anytime."
+REFUNDS & CHARGEBACKS
+"Because the charge lives on your Stripe account, you are the merchant of record. That means:
+• Refunds are one-click from your TeeVents dashboard and pull from your own Stripe balance.
+• Chargebacks are handled directly between your Stripe account and the cardholder's bank.
+• You get Stripe's full dispute toolkit, the same as any direct Stripe merchant."
 
 COMMON OBJECTIONS
-• "15% hold is too high" → You get it all back 15 days after your event. No other platform gives you this protection.
-• "Why can't I get paid immediately?" → We hold funds to cover chargebacks. Once the risk period passes, funds are released.
-• "I already have a Stripe account" → Connect it through our Express onboarding in 2–3 minutes.
-• "What if I need money before my event?" → Your 80% net is available for manual withdrawal anytime ($25 min).
+• "How do I know you won't hold my money?" → Verify it yourself in your Stripe dashboard. Every charge will show on YOUR account with our 5% application fee broken out.
+• "What about refunds?" → One-click from your TeeVents dashboard, pulled from your Stripe balance.
+• "I already have a Stripe account." → Perfect — connect it during onboarding in 2–3 minutes.
+• "What if I need money before my event?" → It's already in your Stripe account. Configure Stripe to transfer to your bank daily, weekly, or instantly.
 `;
 }
 
@@ -175,27 +161,26 @@ export default function DemoTalkTrack() {
             <CardContent className="p-6">
               <Badge variant="outline" className="mb-3 text-xs">SAY THIS</Badge>
               <p className="text-base md:text-lg italic text-foreground/90 leading-relaxed">
-                "Let me walk you through how payments work on TeeVents. Our system is designed to be
-                completely transparent — you'll always know where your money is and when you'll receive it."
+                "TeeVents never holds your money. Every payment lands directly in your Stripe
+                account the moment a golfer pays — we only take a 5% platform fee. Let me walk
+                you through exactly how it works."
               </p>
             </CardContent>
           </Card>
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
               <TabsTrigger value="flow" className="text-xs">Fund Flow</TabsTrigger>
-              <TabsTrigger value="hold" className="text-xs">15% Hold</TabsTrigger>
-              <TabsTrigger value="payouts" className="text-xs">Payouts</TabsTrigger>
+              <TabsTrigger value="settlement" className="text-xs">Settlement</TabsTrigger>
               <TabsTrigger value="compare" className="text-xs">Stripe vs PayPal</TabsTrigger>
               <TabsTrigger value="objections" className="text-xs">Objections</TabsTrigger>
             </TabsList>
 
             {/* ── Fund Flow ── */}
             <TabsContent value="flow" className="space-y-6 mt-6">
-              <h2 className="text-lg font-semibold text-foreground">How Funds Flow</h2>
+              <h2 className="text-lg font-semibold text-foreground">How Funds Flow (Direct Charges)</h2>
 
-              {/* Visual Flow */}
               <div className="flex flex-col gap-2">
                 {FLOW_STEPS.map((s, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -215,10 +200,9 @@ export default function DemoTalkTrack() {
 
               <Separator />
 
-              {/* Sample Breakdown Card */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Sample $100 Registration Breakdown</CardTitle>
+                  <CardTitle className="text-base">Sample $100 Registration (fees absorbed)</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {SAMPLE_BREAKDOWN.map((row, i) => (
@@ -229,164 +213,127 @@ export default function DemoTalkTrack() {
                   ))}
                 </CardContent>
               </Card>
-
-              {/* Timeline */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Payout Timeline</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-4 text-sm">
-                    {[
-                      { label: "Golfer Pays", sub: "Day 0" },
-                      { label: "Event Day", sub: "e.g. June 15" },
-                      { label: "Hold Released", sub: "June 30 (+15 days)" },
-                      { label: "Payout Sent", sub: "Next bi-weekly Monday" },
-                    ].map((t, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{i + 1}</div>
-                        <div>
-                          <p className="font-medium text-foreground">{t.label}</p>
-                          <p className="text-xs text-muted-foreground">{t.sub}</p>
-                        </div>
-                        {i < 3 && <ArrowRight className="h-4 w-4 text-muted-foreground/40 hidden md:block ml-2" />}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
-            {/* ── 15% Hold ── */}
-            <TabsContent value="hold" className="space-y-6 mt-6">
-              <h2 className="text-lg font-semibold text-foreground">Explaining the 15% Hold</h2>
+            {/* ── Settlement ── */}
+            <TabsContent value="settlement" className="space-y-6 mt-6">
+              <h2 className="text-lg font-semibold text-foreground">Settlement & Bank Transfers</h2>
 
               <Card className="border-primary/30 bg-primary/5">
                 <CardContent className="p-6">
                   <Badge variant="outline" className="mb-3 text-xs">SAY THIS</Badge>
                   <div className="space-y-4 text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    <p>"We place a 15% hold on each transaction to protect you from chargebacks. Here's what that means:</p>
-                    <p>A chargeback happens when a golfer disputes a charge with their bank — maybe they didn't recognize the charge, or there was an issue with the event. The bank can reverse the payment, and that money would come out of your account.</p>
-                    <p>By holding 15%, we ensure that if a chargeback occurs, it's covered from that hold — not from your available balance. If no chargeback happens, <strong>the full 15% is released 15 days after your event ends</strong>. This is standard practice across event platforms like Eventbrite and golf platforms like Event Caddy."</p>
+                    <p>"Because we use Stripe Connect Direct Charges, the money is already in YOUR Stripe account the instant a golfer pays. There's no TeeVents payout schedule to wait on.</p>
+                    <p>From there, Stripe transfers to your bank on its standard 2-business-day rolling schedule. You can change that to daily, weekly, monthly, or even instant payouts inside your Stripe dashboard."</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Separator />
 
-              <h3 className="text-base font-semibold text-foreground">Chargeback FAQ</h3>
+              <h3 className="text-base font-semibold text-foreground">FAQ</h3>
               <Accordion type="multiple" className="w-full">
-                {CHARGEBACK_FAQ.map((item, i) => (
-                  <AccordionItem key={i} value={`cb-${i}`}>
+                {FAQ_ITEMS.map((item, i) => (
+                  <AccordionItem key={i} value={`faq-${i}`}>
                     <AccordionTrigger className="text-sm">{item.q}</AccordionTrigger>
                     <AccordionContent className="text-sm text-muted-foreground">{item.a}</AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>
-            </TabsContent>
-
-            {/* ── Payouts ── */}
-            <TabsContent value="payouts" className="space-y-6 mt-6">
-              <h2 className="text-lg font-semibold text-foreground">Payout Timing & Methods</h2>
-
-              <Card className="border-primary/30 bg-primary/5">
-                <CardContent className="p-6">
-                  <Badge variant="outline" className="mb-3 text-xs">SAY THIS</Badge>
-                   <div className="space-y-4 text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    <p>"Here's the best part about our payment flow:</p>
-                    <p>Every payment is split <strong>automatically at checkout</strong> using Stripe Connect. When a golfer registers, Stripe instantly sends us our $5 fee, deducts their processing fee, and deposits the rest directly into <strong>your</strong> Stripe account.</p>
-                    <p><strong>TeeVents never holds, touches, or controls your money.</strong> You withdraw from your own Stripe account on your schedule."</p>
-                  </div>
-                </CardContent>
-              </Card>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary" /> Bi-Weekly Auto Payouts
+                      <CheckCircle2 className="h-4 w-4 text-primary" /> Standard
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-1">
-                    <p>• Runs every other Monday at 9 AM</p>
-                    <p>• Minimum balance: $25</p>
-                    <p>• Funds arrive in 3-7 business days</p>
-                    <p>• No action required from organizer</p>
+                    <p>• Funds settle in your Stripe balance instantly</p>
+                    <p>• Stripe transfers to bank on 2-day rolling schedule</p>
+                    <p>• No TeeVents action needed</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <Banknote className="h-4 w-4 text-primary" /> Manual Withdrawals
+                      <Banknote className="h-4 w-4 text-primary" /> Configurable
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-1">
-                    <p>• Click "Withdraw Funds" anytime</p>
-                    <p>• Minimum: $25</p>
-                    <p>• No recent disputes in last 7 days</p>
-                    <p>• Processed within 1 business day</p>
+                    <p>• Daily / weekly / monthly payout cadence</p>
+                    <p>• Instant payouts available (Stripe fee applies)</p>
+                    <p>• Manual transfers anytime from Stripe</p>
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
 
-              <Separator />
-
-              <Card className="border-primary/30 bg-primary/5">
-                <CardContent className="p-6">
-                  <Badge variant="outline" className="mb-3 text-xs">SAY THIS — TRANSPARENCY</Badge>
-                  <p className="text-sm md:text-base text-foreground/90 leading-relaxed italic">
-                    "You can see every transaction in your dashboard — down to the individual golfer. You'll see who paid, when, how much, the 5% platform fee, the 15% hold amount, when the hold releases, your available balance, and full payout history. You can also download CSV reports of all transactions, payouts, and tax summaries anytime."
-                  </p>
+            {/* ── Compare ── */}
+            <TabsContent value="compare" className="space-y-6 mt-6">
+              <h2 className="text-lg font-semibold text-foreground">Stripe Connect vs PayPal</h2>
+              <Card>
+                <CardContent className="p-0">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-3 font-medium">Feature</th>
+                        <th className="text-left p-3 font-medium">Stripe Connect ⭐</th>
+                        <th className="text-left p-3 font-medium">PayPal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {COMPARISON.map((r, i) => (
+                        <tr key={i} className="border-t border-border">
+                          <td className="p-3 font-medium text-foreground">{r.feature}</td>
+                          <td className="p-3 text-muted-foreground">{r.stripe}</td>
+                          <td className="p-3 text-muted-foreground">{r.paypal}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* ── Stripe vs PayPal ── */}
-            <TabsContent value="compare" className="space-y-6 mt-6">
-              <h2 className="text-lg font-semibold text-foreground">Stripe Connect vs PayPal</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
-                  <thead>
-                    <tr className="bg-muted">
-                      <th className="text-left p-3 font-medium text-foreground">Feature</th>
-                      <th className="text-left p-3 font-medium text-foreground">Stripe Connect ⭐</th>
-                      <th className="text-left p-3 font-medium text-foreground">PayPal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {COMPARISON.map((row, i) => (
-                      <tr key={i} className="border-t border-border">
-                        <td className="p-3 font-medium text-foreground">{row.feature}</td>
-                        <td className="p-3 text-muted-foreground">{row.stripe}</td>
-                        <td className="p-3 text-muted-foreground">{row.paypal}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </TabsContent>
-
             {/* ── Objections ── */}
             <TabsContent value="objections" className="space-y-6 mt-6">
-              <h2 className="text-lg font-semibold text-foreground">Common Objections & Responses</h2>
-              <div className="space-y-4">
-                {OBJECTIONS.map((obj, i) => (
-                  <Card key={i}>
-                    <CardContent className="p-5 space-y-3">
-                      <div className="flex items-start gap-2">
-                        <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                        <p className="font-semibold text-foreground text-sm">Objection: {obj.q}</p>
-                      </div>
-                      <div className="flex items-start gap-2 pl-7">
-                        <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-muted-foreground">{obj.a}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <h2 className="text-lg font-semibold text-foreground">Handling Objections</h2>
+              <Accordion type="multiple" className="w-full">
+                {OBJECTIONS.map((o, i) => (
+                  <AccordionItem key={i} value={`obj-${i}`}>
+                    <AccordionTrigger className="text-sm">{o.q}</AccordionTrigger>
+                    <AccordionContent className="text-sm text-muted-foreground">{o.a}</AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
+
+              <Card className="bg-secondary/10 border-secondary/30">
+                <CardContent className="p-6 text-sm">
+                  <p className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <Shield className="h-4 w-4" /> Closer
+                  </p>
+                  <p className="italic text-foreground/90">
+                    "The bottom line: TeeVents is software you rent for 5% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
+                  </p>
+                  <div className="mt-4 flex gap-2">
+                    <a href="/get-started" className="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline">
+                      Start a Tournament for Free <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                    <span className="text-muted-foreground">·</span>
+                    <a href="/book" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                      Reserve a Demo <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
+
+          <div className="text-center text-xs text-muted-foreground pt-4">
+            Pricing model: Stripe Connect Direct Charges • 5% TeeVents application fee • No TeeVents hold or escrow
+            <span className="hidden">{Clock.name}</span>
+          </div>
         </div>
       </div>
     </Layout>

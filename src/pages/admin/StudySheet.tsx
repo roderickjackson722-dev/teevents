@@ -184,12 +184,12 @@ const StudySheet = () => {
           <Section id="payouts" num={5} title="Payout Methods">
             <SimpleTable headers={["Feature", "Stripe Connect", "PayPal", "Check"]} rows={[
               ["Setup Time", "2-3 min", "1 min", "Enter address"],
-              ["Payout Speed", "3-7 business days", "5-7 days", "Upon request"],
-              ["Automatic", "✅ Bi-weekly", "❌ Manual", "❌ Manual"],
+              ["Funds settle", "Instant in your Stripe", "Manual request", "Upon request"],
+              ["Bank transfer", "Stripe's 2-day rolling", "5-7 days", "Mailed check"],
               ["Additional Fee", "None", "1% (min $0.50)", "None"],
-              ["Default Method", "Recommended", "Backup", "Default (escrow)"],
+              ["TeeVents hold", "None — Direct Charges", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
             ]} />
-            <p className="mt-3">New organizers default to <strong>Check</strong> until they configure a payout method. Funds are held in TeeVents escrow until payout is configured or manually requested.</p>
+            <p className="mt-3">TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only a 5% application fee. There is no platform reserve. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
           </Section>
 
           <Section id="handicap" num={6} title="Handicap System">
@@ -604,12 +604,12 @@ function buildPdfHtml(): string {
     <section><h2>5. Payout Methods</h2>
       ${t(["Feature", "Stripe Connect", "PayPal", "Check"], [
         ["Setup Time", "2-3 min", "1 min", "Enter address"],
-        ["Payout Speed", "3-7 business days", "5-7 days", "Upon request"],
-        ["Automatic", "✅ Bi-weekly", "❌ Manual", "❌ Manual"],
+        ["Funds settle", "Instant in your Stripe", "Manual request", "Upon request"],
+        ["Bank transfer", "Stripe's 2-day rolling", "5-7 days", "Mailed check"],
         ["Additional Fee", "None", "1% (min $0.50)", "None"],
-        ["Default Method", "Recommended", "Backup", "Default (escrow)"],
+        ["TeeVents hold", "None — Direct Charges", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
       ])}
-      <p>New organizers default to <strong>Check</strong> until they configure a payout method. Funds are held in TeeVents escrow until payout is configured or manually requested.</p>
+      <p>TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only a 5% application fee. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
     </section>
 
     <section><h2>6. Handicap System</h2>

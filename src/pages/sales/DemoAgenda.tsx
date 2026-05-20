@@ -349,9 +349,9 @@ export default function DemoAgenda() {
                 <TableBody>
                   {[
                     ["Setup Time", "2-3 minutes", "1 minute"],
-                    ["Payout Speed", "3-7 business days", "5-7 business days"],
+                    ["Funds settle", "Instant in your Stripe balance", "Manual request"],
                     ["Extra Fees", "None", "1% or $0.50"],
-                    ["Automatic", "✅ Bi-weekly", "Manual only"],
+                    ["TeeVents hold", "❌ None — direct to you", "❌ None — direct to you"],
                   ].map(([feat, stripe, pp], i) => (
                     <TableRow key={i}>
                       <TableCell className="font-medium">{feat}</TableCell>
@@ -378,10 +378,10 @@ export default function DemoAgenda() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 {[
-                  { q: "How do I know I'll get paid?", a: "Stripe handles all payments — the same platform used by Amazon and Shopify. Your money is held in your own Stripe account and you can withdraw anytime." },
-                  { q: "What if a golfer asks for a refund?", a: "Refunds come from the 15% hold first. You're never charged extra. One-click refund from your dashboard." },
-                  { q: "What about chargebacks?", a: "The 15% hold protects you. After 15 days post-event, the remaining balance is released automatically." },
-                  { q: "Can I try it before committing?", a: "Yes! Create a free account, set up a test tournament with $1 registration, and process a real payment. Refund immediately to see the full flow." },
+                  { q: "How do I know I'll get paid?", a: "Stripe handles all payments via Stripe Connect Direct Charges. The charge is created on YOUR Stripe account — TeeVents only takes a 5% application fee. Funds settle in your Stripe balance instantly." },
+                  { q: "What if a golfer asks for a refund?", a: "One-click refund from your dashboard, pulled from your own Stripe balance. You're the merchant of record." },
+                  { q: "What about chargebacks?", a: "Chargebacks are handled directly between your Stripe account and the cardholder's bank — the same as any direct Stripe merchant. TeeVents never holds funds." },
+                  { q: "Can I try it before committing?", a: "Yes! Start a tournament for free, set up a $1 test registration, and process a real payment. Refund immediately to see the full flow." },
                 ].map((item, i) => (
                   <div key={i} className="border rounded-lg p-4">
                     <h4 className="font-semibold text-sm mb-1">"{item.q}"</h4>
@@ -394,8 +394,8 @@ export default function DemoAgenda() {
               <h3 className="font-semibold">Next Steps</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { title: "Self-Service", desc: "Create your account and set up your first tournament today.", cta: "Get Started", href: "/get-started" },
-                  { title: "Guided Setup", desc: "Schedule a 15-minute setup call. We'll configure your tournament together.", cta: "Book Setup Call", href: "https://calendly.com/teevents-golf/demo" },
+                  { title: "Self-Service", desc: "Create your account and set up your first tournament today.", cta: "Start a Tournament for Free", href: "/get-started" },
+                  { title: "Guided Setup", desc: "Reserve a 15-minute setup call. We'll configure your tournament together.", cta: "Reserve a Demo", href: "https://calendly.com/teevents-golf/demo" },
                   { title: "Full-Service", desc: "We manage everything — sponsor acquisition, coordination, and day-of.", cta: "Coming Soon", href: null },
                 ].map((opt, i) => (
                   <div key={i} className="border rounded-lg p-4 flex flex-col">

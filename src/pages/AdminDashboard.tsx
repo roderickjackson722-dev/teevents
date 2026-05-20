@@ -1669,7 +1669,7 @@ const AdminDashboard = () => {
                                 {usingDefault && (
                                   <div
                                     className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded inline-flex items-center gap-1"
-                                    title="Funds held by TeeVents until organizer connects Stripe"
+                                    title="Charges fall back to TeeVents until organizer connects Stripe (check payout flow)"
                                   >
                                     ⚠️ Default → TeeVents
                                   </div>

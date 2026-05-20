@@ -271,7 +271,7 @@ function StudySheetTab() {
 
         <section id="study-glossary">
           <SectionHeader num={9} title="Glossary" />
-          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "5% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
+          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge — handled by the organizer as merchant of record"], ["Application Fee", "TeeVents' 5% fee taken on each Stripe Direct Charge"], ["Platform Fee", "5% on all transactions"], ["Stripe Connect", "Marketplace payment platform — TeeVents uses Direct Charges so funds settle on the organizer's account"], ["Payout", "Stripe's automatic transfer of the organizer's available balance to their bank (~2 business days, 2–7 for new accounts)"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
         </section>
       </div>
     </div>

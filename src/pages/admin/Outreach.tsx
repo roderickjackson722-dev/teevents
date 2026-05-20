@@ -89,15 +89,34 @@ export default function AdminOutreach() {
   };
 
   const addLead = async () => {
-    if (!newLead.email.trim()) return;
-    const { error } = await supabase.from("outreach_leads").insert({
-      email: newLead.email.trim(),
+    const email = newLead.email.trim().toLowerCase();
+    if (!email) return;
+    const payload = {
+      email,
       first_name: newLead.first_name.trim() || null,
       tournament_name: newLead.tournament_name.trim() || null,
-      source: newLead.source,
-    });
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Lead added" });
+      source: (newLead.source || "manual").trim() || "manual",
+    };
+    // Check for existing (case-insensitive)
+    const { data: existing } = await supabase
+      .from("outreach_leads")
+      .select("id, status")
+      .ilike("email", email)
+      .maybeSingle();
+    if (existing) {
+      const ok = window.confirm("A lead with this email already exists. Update it with the new info?");
+      if (!ok) return;
+      const { error: updErr } = await supabase
+        .from("outreach_leads")
+        .update({ ...payload, status: "active", unsubscribed_at: null })
+        .eq("id", (existing as any).id);
+      if (updErr) { toast({ title: "Update failed", description: updErr.message, variant: "destructive" }); return; }
+      toast({ title: "Lead updated" });
+    } else {
+      const { error } = await supabase.from("outreach_leads").insert(payload);
+      if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Lead added" });
+    }
     setShowAddLead(false);
     setNewLead({ email: "", first_name: "", tournament_name: "", source: "manual" });
     refreshAll();
@@ -448,15 +467,25 @@ export default function AdminOutreach() {
             <div><Label>First name</Label><Input value={newLead.first_name} onChange={(e) => setNewLead({ ...newLead, first_name: e.target.value })} /></div>
             <div><Label>Tournament name</Label><Input value={newLead.tournament_name} onChange={(e) => setNewLead({ ...newLead, tournament_name: e.target.value })} /></div>
             <div><Label>Source</Label>
-              <Select value={newLead.source} onValueChange={(v) => setNewLead({ ...newLead, source: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manual">Manual</SelectItem>
-                  <SelectItem value="eventbrite">Eventbrite</SelectItem>
-                  <SelectItem value="facebook">Facebook</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                list="outreach-source-options"
+                value={newLead.source}
+                onChange={(e) => setNewLead({ ...newLead, source: e.target.value })}
+                placeholder="e.g. Eventbrite, Google Forms, GiveButter, Facebook, no website"
+              />
+              <datalist id="outreach-source-options">
+                <option value="manual" />
+                <option value="eventbrite" />
+                <option value="google forms" />
+                <option value="givebutter" />
+                <option value="facebook" />
+                <option value="instagram" />
+                <option value="linkedin" />
+                <option value="no website" />
+                <option value="referral" />
+                <option value="other" />
+              </datalist>
+              <p className="text-[11px] text-muted-foreground mt-1">Used in templates as <code>{`{{source}}`}</code>.</p>
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowAddLead(false)}>Cancel</Button><Button onClick={addLead}>Add</Button></DialogFooter>

@@ -266,7 +266,7 @@ function StudySheetTab() {
 
         <section id="study-metrics">
           <SectionHeader num={8} title="Key Metrics & Limits" />
-          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5%"], ["Reserve hold", "None — funds direct to organizer"], ["Charge type", "Stripe Connect Direct Charge"], ["Bank transfer", "Stripe's 2-day rolling schedule"], ["Base plan", "$0, 1 tournament, 72 players"], ["Pro upgrade", "$399 per tournament"], ["Enterprise", "Custom"]]} />
+          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5% application fee on every transaction"], ["Reserve hold", "None — TeeVents never holds organizer funds"], ["Charge type", "Stripe Connect Direct Charge on organizer's account"], ["Bank transfer", "Stripe's rolling schedule: ~2 business days (2–7 days for new Connect accounts)"], ["Base plan", "$0 — core features"], ["Pro upgrade", "$399 per tournament (one-time unlock)"], ["Enterprise", "Custom"]]} />
         </section>
 
         <section id="study-glossary">

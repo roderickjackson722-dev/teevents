@@ -23,9 +23,8 @@ const proHighlights = [
   "Volunteer management with QR check-in",
   "Email + SMS broadcasts",
   "Custom domain & Flyer Studio",
-  "Advanced auto-pairings + budget tracking",
+  "Budget tracking",
   "Up to 5 team members",
-  "Automatic Stripe Connect payouts",
   "Priority support",
 ];
 

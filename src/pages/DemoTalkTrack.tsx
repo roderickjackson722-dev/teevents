@@ -143,6 +143,7 @@ export default function DemoTalkTrack() {
             <div>
               <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Sales Tools</p>
               <h1 className="text-xl md:text-2xl font-bold text-foreground">Demo Call Talk Track — Payments</h1>
+              <p className="text-xs text-secondary italic mt-1">Built by golf tournament managers, for golf tournament managers.</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               <Button size="sm" variant="outline" onClick={copyScript}>

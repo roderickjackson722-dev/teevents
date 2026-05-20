@@ -466,10 +466,10 @@ const Features = () => {
             </div>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                <Link to="/get-started">Get Started</Link>
+                <Link to="/get-started">Start a Tournament for Free</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/plans">View Pricing</Link>
+                <Link to="/book">Reserve a Demo</Link>
               </Button>
             </div>
           </header>
@@ -529,10 +529,10 @@ const Features = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                <Link to="/get-started">Get Started</Link>
+                <Link to="/get-started">Start a Tournament for Free</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/book">Book a Demo</Link>
+                <Link to="/book">Reserve a Demo</Link>
               </Button>
             </div>
           </div>

@@ -82,12 +82,18 @@ export default function DemoLeadCaptureModal({ open, onComplete }: Props) {
 
       onComplete(leadId!);
     } catch (err) {
-      console.error(err);
+      console.error("[DemoLeadCaptureModal] capture failed, starting tour anyway:", err);
       toast({
-        title: "Could not start",
-        description: "Please try again in a moment.",
-        variant: "destructive",
+        title: "Starting your demo",
+        description: "We couldn't save your email, but the tour is opening now.",
       });
+      // Fail-open: never block the tour on a lead-capture issue.
+      const fallbackId =
+        (typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `local-${Date.now()}`);
+      try { localStorage.setItem("teevents_demo_lead_id", fallbackId); } catch { /* noop */ }
+      onComplete(fallbackId);
     } finally {
       setSubmitting(false);
     }

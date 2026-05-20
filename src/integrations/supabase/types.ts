@@ -6084,6 +6084,10 @@ export type Database = {
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
+      college_tournament_accepts_registration: {
+        Args: { _tournament_id: string }
+        Returns: boolean
+      }
       delete_old_demo_tournaments: { Args: never; Returns: number }
       get_college_invitation_by_token: {
         Args: { _token: string; _tournament_id: string }

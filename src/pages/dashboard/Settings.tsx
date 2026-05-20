@@ -330,8 +330,7 @@ const Settings = () => {
           </div>
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
             <p className="text-xs text-muted-foreground">
-              You fully control both the refund policy and rain date policy. TeeVents will process approved refunds (full or partial) from held funds.
-              A <strong>15% reserve</strong> is held until 15 days post-event to cover refunds and chargebacks. You are never personally liable.
+              You fully control both the refund policy and rain date policy. Because payments use Stripe Connect <strong>Direct Charges</strong>, you are the merchant of record — refunds are one-click from your dashboard and pull from your own Stripe balance. <strong>TeeVents never holds your funds.</strong>
             </p>
           </div>
 

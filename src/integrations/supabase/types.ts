@@ -1842,6 +1842,150 @@ export type Database = {
           },
         ]
       }
+      outreach_campaigns: {
+        Row: {
+          created_at: string
+          delay_days: number
+          email1_body: string | null
+          email1_subject: string | null
+          email2_body: string | null
+          email2_subject: string | null
+          email3_body: string | null
+          email3_subject: string | null
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delay_days?: number
+          email1_body?: string | null
+          email1_subject?: string | null
+          email2_body?: string | null
+          email2_subject?: string | null
+          email3_body?: string | null
+          email3_subject?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delay_days?: number
+          email1_body?: string | null
+          email1_subject?: string | null
+          email2_body?: string | null
+          email2_subject?: string | null
+          email3_body?: string | null
+          email3_subject?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      outreach_leads: {
+        Row: {
+          converted_at: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          notes: string | null
+          source: string | null
+          status: string
+          tournament_name: string | null
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          converted_at?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          notes?: string | null
+          source?: string | null
+          status?: string
+          tournament_name?: string | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          converted_at?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          notes?: string | null
+          source?: string | null
+          status?: string
+          tournament_name?: string | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      outreach_queue: {
+        Row: {
+          campaign_id: string
+          click_url: string | null
+          clicked_at: string | null
+          created_at: string
+          email_number: number
+          error: string | null
+          id: string
+          lead_id: string
+          opened_at: string | null
+          scheduled_for: string
+          sent_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          click_url?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          email_number: number
+          error?: string | null
+          id?: string
+          lead_id: string
+          opened_at?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          click_url?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          email_number?: number
+          error?: string | null
+          id?: string
+          lead_id?: string
+          opened_at?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_queue_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_templates: {
         Row: {
           body: string

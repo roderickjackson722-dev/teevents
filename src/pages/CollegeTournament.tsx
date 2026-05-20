@@ -394,19 +394,20 @@ const CollegeTournament = () => {
               {/* Player Roster */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-sm">Player Roster</h3>
+                  <h3 className="font-semibold text-sm">Player Roster <span className="text-xs font-normal text-muted-foreground">(optional)</span></h3>
                   <Button type="button" size="sm" variant="outline" onClick={addPlayer}>+ Add Player</Button>
                 </div>
+                <p className="text-xs text-muted-foreground mb-3">You can add players now or update your roster later.</p>
                 <div className="space-y-3">
                   {players.map((p, i) => (
                     <div key={i} className="grid grid-cols-[1fr_1fr_120px_120px_auto] gap-2 items-end">
                       <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">First Name *</label>}
-                        <Input placeholder="First" value={p.first_name} onChange={e => updatePlayer(i, "first_name", e.target.value)} required />
+                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">First Name</label>}
+                        <Input placeholder="First" value={p.first_name} onChange={e => updatePlayer(i, "first_name", e.target.value)} />
                       </div>
                       <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Last Name *</label>}
-                        <Input placeholder="Last" value={p.last_name} onChange={e => updatePlayer(i, "last_name", e.target.value)} required />
+                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Last Name</label>}
+                        <Input placeholder="Last" value={p.last_name} onChange={e => updatePlayer(i, "last_name", e.target.value)} />
                       </div>
                       <div>
                         {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Year</label>}

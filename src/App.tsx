@@ -89,6 +89,8 @@ import DemoTalkTrack from "./pages/DemoTalkTrack";
 import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
 import AdminPayouts from "./pages/admin/Payouts";
+import AdminOutreach from "./pages/admin/Outreach";
+import Unsubscribe from "./pages/Unsubscribe";
 import FlyerToDemo from "./pages/admin/FlyerToDemo";
 import SalesProspecting from "./pages/admin/SalesProspecting";
 import DemoLeads from "./pages/admin/DemoLeads";

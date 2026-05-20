@@ -157,7 +157,7 @@ function DemoTab() {
         <Accordion type="multiple">
           <AccordionItem value="fee"><AccordionTrigger>What is the 5% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a 5% platform fee on every transaction. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
           <AccordionItem value="reserve"><AccordionTrigger>Does TeeVents hold any of my funds?</AccordionTrigger><AccordionContent>No. TeeVents uses Stripe Connect Direct Charges — funds settle directly in the organizer's Stripe account at checkout. Only the 5% application fee is sent to TeeVents. There is no platform reserve.</AccordionContent></AccordionItem>
-          <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Payouts are processed automatically every two weeks. The net amount is deposited directly into the organizer's connected bank account.</AccordionContent></AccordionItem>
+          <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Every charge settles into the organizer's connected Stripe account at the moment of checkout. Stripe then transfers the available balance to the organizer's bank on its standard rolling schedule — typically 2 business days for established accounts and 2–7 business days for brand-new Stripe accounts during Stripe's initial risk review. TeeVents never holds the funds and does not control the payout timing.</AccordionContent></AccordionItem>
         </Accordion>
       </div>
 

@@ -527,7 +527,7 @@ const EMAIL_TEMPLATES = [
     id: "demo-followup",
     name: "Demo Follow-up",
     subject: "Thanks for your demo – Here's what's next",
-    body: `Hi [Name],\n\nThanks for taking the time to see TeeVents in action today! I hope you can see how it would simplify your tournament management.\n\nHere's a recap of what we covered:\n• Tournament setup and branding\n• Registration and payment flow\n• Live leaderboard and scoring\n• Sponsor and volunteer management\n• Fee structure and payouts\n\nReady to get started? Sign up here: teevents.golf/get-started\n\nWant to compare with Eventbrite? teevents.golf/compare/eventbrite-vs-teevents\n\nI'm here to help with setup — just reply to this email.\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+    body: `Hi [Name],\n\nThanks for taking the time to see TeeVents in action today! I hope you can see how it would simplify your tournament management.\n\nHere's a recap of what we covered:\n• Tournament setup and branding\n• Registration and payment flow\n• Live leaderboard and scoring\n• Sponsor and volunteer management\n• 5% platform fee + Stripe processing — funds settle directly in your Stripe account at checkout (Stripe pays out to your bank in 2–7 business days)\n\nReady to get started? Sign up here: teevents.golf/get-started\n\nWant to compare with Eventbrite? teevents.golf/compare/eventbrite-vs-teevents\n\nI'm here to help with setup — just reply to this email.\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
   },
 ];
 

@@ -31,6 +31,8 @@ const FREE_FEATURES = [
   "refunds",
   "basic-finances",
   "sponsors",
+  "advanced-pairings",
+  "auto-payouts",
 ];
 
 const PRO_FEATURES = [
@@ -46,11 +48,9 @@ const PRO_FEATURES = [
   "flyer-studio",
   "surveys",
   "gallery",
-  "advanced-pairings",
   "budget",
   "featured-search",
   "team-management-5",
-  "auto-payouts",
   "priority-support",
   "all-templates",
   "hole-in-one-insurance",

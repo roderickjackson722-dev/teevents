@@ -41,6 +41,8 @@ const baseFeatures = [
   "Branded tournament website (tournament/your-slug)",
   "Online registration — individuals & teams",
   "Stripe payments (cards, Apple Pay, Google Pay)",
+  "Automatic Stripe Connect payouts (T+2 days standard; new accounts may have a 2–7 day Stripe review on first payouts)",
+  "Advanced auto-pairings (handicap, team, sponsor)",
   "QR check-in from any phone or tablet",
   "Player roster, CSV import/export, handicap entry",
   "Manual drag-and-drop tee sheet",
@@ -51,7 +53,6 @@ const baseFeatures = [
   "30-step interactive planning checklist",
   "Refund management with organizer approval",
   "Basic finances dashboard + CSV export",
-  "Manual payouts by check on request",
 ];
 
 const proFeatures = [
@@ -68,11 +69,9 @@ const proFeatures = [
   "Flyer Studio — Canva-integrated templates",
   "Post-event surveys with aggregated results",
   "Photo gallery for players & sponsors",
-  "Advanced auto-pairings (handicap, team, sponsor)",
   "Budget tracking — planned vs. actual",
   "Featured placement in public search",
   "Up to 5 team members",
-  "Automatic Stripe Connect payouts (T+2 days standard; new accounts may have a 2–7 day Stripe review on first payouts)",
   "Priority email + chat support (2-hr response)",
 ];
 

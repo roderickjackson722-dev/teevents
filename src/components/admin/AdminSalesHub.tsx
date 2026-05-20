@@ -240,8 +240,8 @@ function StudySheetTab() {
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
             <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe Connect Direct Charge on organizer's account → 5% application fee to TeeVents + Stripe processing → Net to organizer's Stripe balance instantly</div>
-            <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (minus hold)", "Nonprofits"]]} />
-            <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
+            <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (direct to Stripe)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (direct to Stripe)", "Nonprofits"]]} />
+            <FeatureBlock title="Funds & Chargebacks" items={["Funds settle in the organizer's Stripe account at the moment of checkout (Stripe Connect Direct Charges)", "TeeVents only receives the 5% application fee — no reserve, no hold", "Stripe transfers to the organizer's bank on its standard rolling schedule: ~2 business days for established accounts, 2–7 business days during Stripe's initial review on new Connect accounts", "Organizer is the merchant of record and handles refunds/chargebacks from their Stripe balance"]} />
           </div>
         </section>
 

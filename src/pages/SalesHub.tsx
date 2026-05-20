@@ -27,25 +27,25 @@ const STEPS = [
   { num: 4, title: "Build Your Custom Tournament Website", minutes: 4, icon: Globe, hero: "Drag-and-drop your branded site in minutes – fully mobile responsive.", keyMessage: null, bullets: ["Show the 3 templates: Classic Green, Modern Navy, Charity Warmth.", '"Pick a template, upload your logo, set your colors — publish with one click."', "Preview the public site — show mobile-responsive design.", "Mention 8 built-in pages: Home, Contests, Registration, Photos, Location, Agenda, Donation, Contact.", "Call out custom domain support for Starter+ plans."], route: "/dashboard/tournaments" },
   { num: 5, title: "Registration, Payments & Fees", minutes: 5, icon: CreditCard, hero: "5% TeeVents platform fee + Stripe fee shown clearly • Default = passed to players so you keep 100% of advertised price • Toggle to absorb fees if you want.", keyMessage: "$150 registration example → Golfer pays ~$162.38 (fees passed) or Organizer nets ~$138.01 (fees absorbed).", bullets: ["Show Registration page with tiers, group sizes, and checkout breakdown.", "Walk through the fee breakdown: Base Price → 5% Platform Fee → Stripe Fee → Total.", '"You keep 100% of your advertised price by default."', "Show the toggle in Settings to absorb fees instead.", "Mention promo codes, group registration (up to 4 players), and waitlist."], route: "/dashboard/registration" },
   { num: 6, title: "Live Scoring, Pairings & Check-In", minutes: 5, icon: Trophy, hero: "Real-time mobile scoring, drag-and-drop pairings, instant leaderboards.", keyMessage: null, bullets: ["Show the admin leaderboard — real-time scores, group-by-group.", "Navigate to Printables → Scorecards tab — show QR codes.", '"Players scan this code with their phone — no app download, no login."', "Explain: Scan → phone opens scoring page → enter scores → leaderboard updates live.", "Show Tee Sheet with shotgun/sequential start options.", "Show QR Check-In: print badges, open Scan Station on any tablet."], route: "/dashboard/leaderboard" },
-  { num: 7, title: "Budget, Sponsors, Auctions & Payouts", minutes: 5, icon: DollarSign, hero: "Real-time budget tracking • Automatic bi-weekly payouts • 15% reserve released 15 days after event • You are never personally liable for chargebacks.", keyMessage: null, bullets: ["Show sponsor tiers: Title, Gold, Silver, Bronze — logos auto-display on tournament site.", "Show budget tracking: income vs. expenses by category, paid/unpaid status.", "Show Finances page with payout timeline and reserve breakdown.", "Show Auction page — silent auction, raffle, buy-now items.", '"Know exactly where your money is at all times."'], route: "/dashboard/budget" },
-  { num: 8, title: "Pricing & Upgrade Options", minutes: 2, icon: Tag, hero: "Start for $0 • Upgrade only when you need unlimited players or white-glove service.", keyMessage: "Base ($0, 72 players) → Starter ($299, unlimited) → Premium ($999, white-glove + reduced reserve)", bullets: ["Show the 3-tier comparison: Base $0 / Starter $299 / Premium $999.", 'Base highlight: 1 tournament, 72 players max, all core features.', '"Unlimited tournaments and players + custom domain."', '"White-glove consulting, 10% reserve, faster payouts."', "All plans: 5% platform fee passed to participants by default."], route: "/dashboard/upgrade" },
+  { num: 7, title: "Budget, Sponsors, Auctions & Payouts", minutes: 5, icon: DollarSign, hero: "Real-time budget tracking • Funds settle directly in YOUR Stripe account at checkout — TeeVents never holds your money • You are the merchant of record, with full chargeback and refund control.", keyMessage: null, bullets: ["Show sponsor tiers: Title, Gold, Silver, Bronze — logos auto-display on tournament site.", "Show budget tracking: income vs. expenses by category, paid/unpaid status.", "Show Finances page — every transaction with the 5% fee and net to your Stripe account.", "Show Auction page — silent auction, raffle, buy-now items.", '"Know exactly where your money is at all times — and it is always in YOUR account."'], route: "/dashboard/budget" },
+  { num: 8, title: "Pricing & Upgrade Options", minutes: 2, icon: Tag, hero: "Start for $0 • Upgrade individual tournaments to Pro ($399 one-time) when you need more.", keyMessage: "Base ($0, 72 players, 1 tournament) → Pro ($399 per tournament: unlimited players, live leaderboard, sponsor portal, auction) → Enterprise (custom)", bullets: ["Show the Base vs Pro comparison.", 'Base highlight: 1 tournament, 72 players max, all core features.', '"Upgrade only the tournaments that need more — pay per tournament, not per month."', '"Enterprise is custom for multi-event organizations and white-glove service."', "All plans: 5% platform fee, passed to participants by default."], route: "/dashboard/upgrade" },
   { num: 9, title: "Q&A & Next Steps", minutes: 3, icon: HelpCircle, hero: "What questions do you have? Let's get your tournament set up today.", keyMessage: null, bullets: ['"What stood out to you? Which features would make the biggest difference?"', "Address any questions or concerns.", '"I can set up your tournament right now — takes just a few minutes."', "Share the sign-up link: teevents.golf/get-started", "If nonprofit: mention tax-deductible donation receipts and EIN verification.", "Follow up within 24 hours with a recap email."], route: null },
 ];
 const TOTAL_MINUTES = STEPS.reduce((sum, s) => sum + s.minutes, 0);
 
 // ── Flyer Templates ──
 const FLYER_TEMPLATES = [
-  { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ No automatic payout holds"], cta: "Start free trial →" },
+  { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ Holds your funds for weeks"], cta: "Start a Tournament for Free →" },
   { id: "cash-app", title: "Still collecting fees via Cash App?", headline: "Still collecting fees via Cash App?", items: ["✖️ No receipts for players", "✖️ No financial dashboard", "✖️ No automatic tax reporting", "✖️ No chargeback protection"], cta: "Switch to TeeVents →" },
-  { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Automated payouts"], cta: "Try it free →" },
-  { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Learn more →" },
-  { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Automated payouts"], cta: "Start fundraising →" },
+  { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Funds direct to your Stripe"], cta: "Start a Tournament for Free →" },
+  { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Reserve a Demo →" },
+  { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Funds direct to your Stripe"], cta: "Start a Tournament for Free →" },
   { id: "fees", title: "5% platform fee + Stripe processing", headline: "5% platform fee + Stripe processing", items: ["✅ No monthly subscription", "✅ No setup fees", "✅ No hidden costs", "✅ 2.9% + $0.30 Stripe fee separate"], cta: "See pricing →" },
-  { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "See it in action →" },
-  { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Try TeeVents →" },
-  { id: "payout", title: "Get paid automatically", headline: "Get paid automatically. Every 2 weeks.", items: ["💰 Bi-weekly direct deposits", "💰 15% reserve for chargebacks", "💰 Complete financial dashboard", "💰 1099-K tax reporting"], cta: "Connect your bank →" },
-  { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Manual payouts → New: Automatic"], cta: "Upgrade your game →" },
-  { id: "planning-promo", title: "Are you planning a golf tournament?", headline: "ARE YOU PLANNING A\nGOLF TOURNAMENT?", items: ["🌐 Professional Website — Branded tournament site in minutes", "💳 Automated Payments — Stripe, Apple Pay, Google Pay", "📊 Live Dashboard — Track registrations & pairings in real-time", "🏆 Sponsor Management — Showcase sponsors and track ROI", "👥 Volunteer Check-in — QR code check-in & shift scheduling", "💰 Automatic Payouts — Get paid every other Monday"], cta: "Start For Free →" },
+  { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "Reserve a Demo →" },
+  { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Start a Tournament for Free →" },
+  { id: "payout", title: "TeeVents never holds your money", headline: "TeeVents never holds your money.", items: ["💰 Funds settle directly in your Stripe account at checkout", "💰 You are the merchant of record", "💰 Complete financial dashboard", "💰 1099-K issued by Stripe"], cta: "Connect your bank →" },
+  { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Funds held → New: Direct to you"], cta: "Upgrade your game →" },
+  { id: "planning-promo", title: "Are you planning a golf tournament?", headline: "ARE YOU PLANNING A\nGOLF TOURNAMENT?", items: ["🌐 Professional Website — Branded tournament site in minutes", "💳 Automated Payments — Stripe, Apple Pay, Google Pay", "📊 Live Dashboard — Track registrations & pairings in real-time", "🏆 Sponsor Management — Showcase sponsors and track ROI", "👥 Volunteer Check-in — QR code check-in & shift scheduling", "💰 Funds Direct to You — TeeVents never holds your money"], cta: "Start a Tournament for Free →" },
 ];
 
 // ── Study Sheet Sections ──
@@ -177,9 +177,9 @@ function DemoTab() {
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-4">Quick Reference — Fee & Reserve FAQ</h3>
         <Accordion type="multiple">
-          <AccordionItem value="fee"><AccordionTrigger>What is the 4% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a flat 5% platform fee on every transaction. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
-          <AccordionItem value="reserve"><AccordionTrigger>What is the 15% reserve?</AccordionTrigger><AccordionContent>TeeVents holds 15% of net proceeds as a reserve for refunds and chargebacks. This reserve is automatically released 15 days after your event ends. Premium plan customers receive a reduced 10% reserve rate.</AccordionContent></AccordionItem>
-          <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Payouts are processed automatically every two weeks. The net amount is deposited directly into the organizer's connected bank account.</AccordionContent></AccordionItem>
+          <AccordionItem value="fee"><AccordionTrigger>What is the 5% TeeVents platform fee?</AccordionTrigger><AccordionContent>TeeVents charges a flat 5% platform fee on every transaction via Stripe Connect Direct Charges. This is separate from Stripe's processing fee (~2.9% + $0.30). By default, fees are passed to participants so organizers keep 100% of their advertised price.</AccordionContent></AccordionItem>
+          <AccordionItem value="reserve"><AccordionTrigger>Does TeeVents hold any of my funds?</AccordionTrigger><AccordionContent>No. TeeVents uses Stripe Connect Direct Charges — funds settle directly in the organizer's connected Stripe account at the moment of checkout. Only the 5% application fee is sent to TeeVents. There is no reserve hold and no payout schedule on our end.</AccordionContent></AccordionItem>
+          <AccordionItem value="payouts"><AccordionTrigger>When do organizers get paid?</AccordionTrigger><AccordionContent>Immediately. Net proceeds land in the organizer's own Stripe account at checkout. Stripe then transfers to their bank on its standard 2-business-day rolling schedule (configurable to daily, weekly, or instant).</AccordionContent></AccordionItem>
         </Accordion>
       </div>
 
@@ -206,11 +206,11 @@ function StudySheetTab() {
       <h2>1. Platform Overview</h2><p>TeeVents is an all-in-one golf tournament management platform.</p>
       <h2>2. Organizer Features</h2><p>Tournament creation, registration, payments, volunteers, sponsors, leaderboard, auction, and more.</p>
       <h2>3. Golfer Experience</h2><p>Registration → QR check-in → Mobile scoring → Leaderboard</p>
-      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe processes → 5% fee → 15% hold → Available balance → Bi-weekly payout</p>
-      <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect + Resend + Twilio</p>
+      <h2>4. Payment Flow</h2><p>Golfer pays → Stripe Connect Direct Charge on organizer's account → 5% application fee to TeeVents → Stripe processing fee → Net deposited in organizer's Stripe balance instantly. TeeVents never holds funds.</p>
+      <h2>5. Technical Stack</h2><p>React + TypeScript + Supabase + Stripe Connect (Direct Charges) + Resend + Twilio</p>
       <h2>6. Security</h2><p>PCI via Stripe, RLS policies, JWT auth, audit logging, 1099-K reporting</p>
       <h2>7. Support</h2><p>Help Center at /help, Email: info@teevents.golf</p>
-      <h2>8. Limits</h2><p>5% fee, 15% hold, $25 min payout, bi-weekly payouts, Base/Starter/Premium plans</p>
+      <h2>8. Limits</h2><p>5% platform fee, no hold, Base ($0) / Pro ($399 per tournament) / Enterprise (custom)</p>
       <h2>9. Glossary</h2><p>Chargeback, Hold, Platform Fee, Stripe Connect, Express Account, RLS, Edge Function, Cron Job</p>
       <p style="text-align:center;margin-top:40px;color:#999;font-size:11px;">© ${new Date().getFullYear()} TeeVents Golf. Confidential.</p>
     `);
@@ -246,7 +246,7 @@ function StudySheetTab() {
             <FeatureBlock title="2.1 Tournament Creation" items={["Set registration fee ($1–$10,000)", "Choose fee model: Pass to Golfer or Absorb Fees", "Set event date, location, max players", "Publish/unpublish, customize site"]} />
             <FeatureBlock title="2.2 Registration" items={["Real-time registrations", "Edit player details, manual registration", "CSV export, bulk emails, promo codes, waitlist"]} />
             <FeatureBlock title="2.3 Finances" items={["Balance cards, transaction history, payout history", "CSV exports: transactions, payouts, summary, tax"]} />
-            <div><h3 className="font-semibold text-foreground mb-2">2.4 Payout Methods</h3><SimpleTable headers={["Feature", "Stripe Connect", "PayPal"]} rows={[["Setup", "2-3 min", "1 min"], ["Speed", "3-7 business days", "5-7 days"], ["Auto payouts", "✅ Bi-weekly", "❌ Manual"], ["Min withdrawal", "$25", "$25"]]} /></div>
+            <div><h3 className="font-semibold text-foreground mb-2">2.4 Payout Methods</h3><SimpleTable headers={["Feature", "Stripe Connect", "PayPal"]} rows={[["Setup", "2-3 min", "1 min"], ["Funds settle", "At checkout (in your Stripe)", "Manual request"], ["Bank transfer", "Stripe's 2-day rolling schedule", "5-7 days"], ["Min withdrawal", "Stripe default", "$25"]]} /></div>
             <FeatureBlock title="2.5 More Features" items={["Volunteers, Sponsors, Leaderboard, Auction/Raffle", "Printables, Photo Gallery, Surveys, Budget, Donations", "Planning Checklist, Site Builder, Custom Domains"]} />
           </div>
         </section>
@@ -262,9 +262,9 @@ function StudySheetTab() {
         <section id="study-payments">
           <SectionHeader num={4} title="Payment & Money Flow" />
           <div className="space-y-4 text-sm text-muted-foreground">
-            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe → 5% fee → 15% hold → Available balance → Bi-weekly payout</div>
-            <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 (minus hold)", "Premium events"], ["Absorb Fees", "$100", "~$91.80 (minus hold)", "Nonprofits"]]} />
-            <FeatureBlock title="Hold & Chargeback Protection" items={["15% held for 15 days post-event", "Organizer never pays out of pocket", "Chargebacks are rare (<0.5%)"]} />
+            <div className="bg-muted/50 rounded-lg p-4 text-xs font-mono">Golfer pays → Stripe Connect Direct Charge on organizer's account → 5% application fee to TeeVents + Stripe processing fee → Net lands in organizer's Stripe balance instantly</div>
+            <SimpleTable headers={["Model", "Golfer Pays", "Organizer Gets", "Best For"]} rows={[["Pass to Golfer", "$100 + ~$8.20", "$100 to your Stripe", "Premium events"], ["Absorb Fees", "$100", "~$91.80 to your Stripe", "Nonprofits"]]} />
+            <FeatureBlock title="Refunds & Chargebacks" items={["Organizer is merchant of record on every charge", "Refunds processed from organizer's Stripe balance with one click", "Chargebacks handled directly between organizer's Stripe account and the cardholder's bank", "TeeVents never holds funds"]} />
           </div>
         </section>
 
@@ -289,12 +289,12 @@ function StudySheetTab() {
 
         <section id="study-metrics">
           <SectionHeader num={8} title="Key Metrics & Limits" />
-          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "4%"], ["Hold", "15%"], ["Hold release", "15 days post-event"], ["Min payout", "$25"], ["Payout freq", "Bi-weekly"], ["Base plan", "$0, 1 tournament, 72 players"], ["Starter", "$299, unlimited"], ["Premium", "$999, white-glove"]]} />
+          <SimpleTable headers={["Metric", "Value"]} rows={[["Platform fee", "5%"], ["Reserve hold", "None — funds direct to organizer"], ["Charge type", "Stripe Connect Direct Charge"], ["Bank transfer", "Stripe's 2-day rolling schedule"], ["Base plan", "$0, 1 tournament, 72 players"], ["Pro upgrade", "$399 per tournament"], ["Enterprise", "Custom"]]} />
         </section>
 
         <section id="study-glossary">
           <SectionHeader num={9} title="Glossary" />
-          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge"], ["Hold", "15% set aside for 15 days"], ["Platform Fee", "4% on all registrations"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"], ["Cron Job", "Scheduled automated task"]]} />
+          <SimpleTable headers={["Term", "Definition"]} rows={[["Chargeback", "Cardholder disputes a charge with their bank"], ["Direct Charge", "Stripe Connect mode where charge lives on the organizer's connected account"], ["Application Fee", "TeeVents' 5% taken from each Direct Charge"], ["Platform Fee", "5% on all paid transactions"], ["Stripe Connect", "Marketplace payment platform"], ["RLS", "Row Level Security"], ["Edge Function", "Serverless backend function"]]} />
         </section>
       </div>
     </div>
@@ -420,7 +420,7 @@ export default function SalesHub() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center py-8 mt-8 border-t border-border">
             <Button size="lg" onClick={() => navigate("/get-started")}>Get Started Free</Button>
-            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com/teevents-golf/demo", "_blank")}>Book a Live Demo</Button>
+            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com/teevents-golf/demo", "_blank")}>Reserve a Demo</Button>
           </div>
         </div>
       </div>

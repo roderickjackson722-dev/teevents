@@ -1077,10 +1077,10 @@ const PayoutSettingsTab = () => (
         </div>
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           {[
-            { label: "Payout Schedule", value: "Bi-weekly (every other Monday)" },
-            { label: "Minimum Withdrawal", value: "$25.00" },
+            { label: "Settlement", value: "Direct Charges (instant)" },
+            { label: "Stripe Bank Transfer", value: "2-day rolling schedule" },
             { label: "Bank Account", value: "••••4567 (Chase)" },
-            { label: "Next Payout Date", value: "April 14, 2026" },
+            { label: "TeeVents Hold", value: "None" },
           ].map((s) => (
             <div key={s.label} className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">{s.label}</span>

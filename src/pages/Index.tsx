@@ -130,23 +130,17 @@ const Index = () => {
           </p>
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
-              to="/plans#pricing"
+              to="/get-started"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              View Plans & Pricing
+              Start a Tournament for Free
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/plans"
+              to="/book"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              See How It Works
-            </Link>
-            <Link
-              to="/book"
-              className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
-            >
-              Book a Live Demo
+              Reserve a Demo
             </Link>
           </div>
         </motion.div>
@@ -453,17 +447,17 @@ const Index = () => {
             </p>
            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/plans"
+                to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                View Pricing
+                Start a Tournament for Free
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/book"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
-                Book a Demo
+                Reserve a Demo
               </Link>
             </div>
           </motion.div>

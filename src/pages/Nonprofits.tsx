@@ -105,11 +105,11 @@ const Nonprofits = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">
             <Link to="/get-started">
-              Get Started <ArrowRight className="ml-2 h-5 w-5" />
+              Start a Tournament for Free <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
           <Button size="lg" variant="secondary" asChild className="text-base px-8 font-bold">
-            <Link to="/demo">See a Live Demo</Link>
+            <Link to="/book">Reserve a Demo</Link>
           </Button>
         </div>
       </HeroSection>
@@ -313,7 +313,7 @@ const Nonprofits = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild className="text-base px-8">
                 <Link to="/get-started">
-                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                  Start a Tournament for Free <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-base px-8 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10">

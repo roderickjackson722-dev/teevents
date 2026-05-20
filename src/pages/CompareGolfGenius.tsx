@@ -110,7 +110,7 @@ export default function CompareGolfGenius() {
             to="/book"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90"
           >
-            Book a Demo <ArrowRight className="h-4 w-4" />
+            Reserve a Demo <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

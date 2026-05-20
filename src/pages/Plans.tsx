@@ -111,7 +111,7 @@ const Plans = () => {
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                Get Started <ArrowRight className="h-4 w-4" />
+                Start a Tournament for Free <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href="#pricing"
@@ -244,7 +244,7 @@ const Plans = () => {
               period="forever"
               fee="5% platform fee per transaction"
               features={baseFeatures}
-              ctaLabel="Get Started"
+              ctaLabel="Start a Tournament for Free"
               ctaTo="/get-started?plan=free"
               variant="default"
               footnote="1 active tournament • Up to 72 players"
@@ -350,20 +350,20 @@ const Plans = () => {
               Not sure which plan is right?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
-              Start with Base and upgrade individual tournaments to Pro any time. Or book a quick call and we'll help you decide.
+              Start with Base and upgrade individual tournaments to Pro any time. Or reserve a quick call and we'll help you decide.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                Get Started <ArrowRight className="h-4 w-4" />
+                Start a Tournament for Free <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/book"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
               >
-                Book a Demo
+                Reserve a Demo
               </Link>
             </div>
           </motion.div>

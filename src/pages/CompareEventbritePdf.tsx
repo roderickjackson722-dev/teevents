@@ -104,7 +104,7 @@ const CompareEventbritePdf = () => {
           <ol>
             <li><strong>5% platform fee</strong> — simple, transparent pricing</li>
             <li><strong>Golf-specific features</strong> — Leaderboards, pairings, hole sponsors</li>
-            <li><strong>Faster payouts</strong> — Bi-weekly automatic deposits</li>
+            <li><strong>Funds direct to you</strong> — Stripe Connect Direct Charges; we never hold your money</li>
             <li><strong>Real support</strong> — Talk to a human, not a chatbot</li>
             <li><strong>Built for golf</strong> — By tournament organizers, for tournament organizers</li>
           </ol>
@@ -115,7 +115,7 @@ const CompareEventbritePdf = () => {
           <p>Start free or book a live demo to see TeeVents in action.</p>
           <div class="links">
             <a href="https://teevents.golf/get-started">teevents.golf/get-started</a> · 
-            <a href="https://www.teevents.golf/book">Book a Demo</a> · 
+            <a href="https://www.teevents.golf/book">Reserve a Demo</a> · 
             info@teevents.golf · (602) 413-1338
           </div>
         </div>

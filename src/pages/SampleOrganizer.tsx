@@ -35,7 +35,7 @@ const SampleOrganizer = () => {
           to="/book"
           className="inline-flex items-center gap-1.5 bg-secondary-foreground/20 hover:bg-secondary-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
         >
-          <Calendar className="h-3 w-3" /> Book a Live Demo
+          <Calendar className="h-3 w-3" /> Reserve a Demo
         </Link>
       </div>
 
@@ -120,7 +120,7 @@ const SampleOrganizer = () => {
             </Button>
             <Link to="/book">
               <Button variant="outline">
-                <Calendar className="h-4 w-4 mr-1" /> Book a Live Demo
+                <Calendar className="h-4 w-4 mr-1" /> Reserve a Demo
               </Button>
             </Link>
           </div>

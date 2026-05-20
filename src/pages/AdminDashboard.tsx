@@ -793,6 +793,12 @@ const AdminDashboard = () => {
                 >
                   <Users className="h-4 w-4" /> Demo Leads
                 </button>
+                <button
+                  onClick={() => navigate("/admin/outreach")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" /> Outreach
+                </button>
               </div>
             </div>
 

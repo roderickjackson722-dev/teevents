@@ -85,4 +85,17 @@ verify_jwt = false
 [functions.process-demo-followups]
 verify_jwt = false
 
+[functions.send-outreach-emails]
+verify_jwt = false
+
+[functions.track-outreach-open]
+verify_jwt = false
+
+[functions.track-outreach-click]
+verify_jwt = false
+
+[functions.outreach-unsubscribe]
+verify_jwt = false
+
+
 

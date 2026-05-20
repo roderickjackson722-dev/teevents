@@ -125,6 +125,9 @@ const Index = () => {
             The all-in-one platform for nonprofits and corporations to plan,
             manage, and execute world-class golf tournaments.
             <span className="block mt-2 text-secondary font-semibold text-sm sm:text-base">
+              Built by golf tournament managers, for golf tournament managers.
+            </span>
+            <span className="block mt-1 text-primary-foreground/70 text-sm">
               Payments split automatically at checkout — we never hold your money.
             </span>
           </p>

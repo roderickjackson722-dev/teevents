@@ -89,6 +89,8 @@ import DemoTalkTrack from "./pages/DemoTalkTrack";
 import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
 import AdminPayouts from "./pages/admin/Payouts";
+import AdminOutreach from "./pages/admin/Outreach";
+import Unsubscribe from "./pages/Unsubscribe";
 import FlyerToDemo from "./pages/admin/FlyerToDemo";
 import SalesProspecting from "./pages/admin/SalesProspecting";
 import DemoLeads from "./pages/admin/DemoLeads";
@@ -233,6 +235,8 @@ const App = () => (
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
+           <Route path="/admin/outreach" element={<AdminOutreach />} />
+           <Route path="/unsubscribe" element={<Unsubscribe />} />
            <Route path="/admin/sales/flyer-to-demo" element={<FlyerToDemo />} />
            <Route path="/admin/sales/prospecting" element={<SalesProspecting />} />
            <Route path="/admin/demo-leads" element={<DemoLeads />} />

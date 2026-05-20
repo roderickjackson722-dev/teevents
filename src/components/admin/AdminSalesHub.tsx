@@ -503,7 +503,7 @@ const EMAIL_TEMPLATES = [
     id: "comparison-cold",
     name: "Eventbrite Comparison Cold Email",
     subject: "Eventbrite vs. TeeVents – Which one saves you money?",
-    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.69 | TeeVents $8.20\n• Payouts: Eventbrite waits until after event | TeeVents bi-weekly\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
+    body: `Hi [Name],\n\nI noticed you're using Eventbrite for your upcoming golf tournament. While Eventbrite is great for general events, golf tournaments have unique needs that Eventbrite simply doesn't address.\n\nHere's a quick comparison:\n\n• Live Leaderboard: Eventbrite ❌ | TeeVents ✅\n• Hole Sponsor Management: Eventbrite ❌ | TeeVents ✅\n• Fees on $100 registration: Eventbrite ~$8.69 | TeeVents $8.20\n• Funds access: Eventbrite holds funds until after the event | TeeVents settles funds in your own Stripe account at checkout (Stripe pays out to your bank in 2–7 business days)\n\nWould you be open to a quick 15-minute call to see if TeeVents could save you time and money?\n\nBook a time here: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf\ninfo@teevents.golf`,
   },
   {
     id: "fee-breakdown",

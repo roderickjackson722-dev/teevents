@@ -21,7 +21,8 @@ function personalize(body: string, lead: any) {
   return body
     .replace(/\{\{first_name\}\}/g, lead.first_name || "there")
     .replace(/\[First Name\]/g, lead.first_name || "there")
-    .replace(/\{\{tournament_name\}\}/g, lead.tournament_name || "your tournament");
+    .replace(/\{\{tournament_name\}\}/g, lead.tournament_name || "your tournament")
+    .replace(/\{\{source\}\}/g, lead.source || "your current tool");
 }
 
 function wrapLinksForTracking(html: string, queueId: string, supabaseUrl: string) {

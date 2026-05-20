@@ -35,16 +35,16 @@ const STEPS = [
 
 // ── Flyer Templates ──
 const FLYER_TEMPLATES = [
-  { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ No automatic payout holds"], cta: "Start free trial →" },
+  { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ Holds your funds until after the event"], cta: "Start free trial →" },
   { id: "cash-app", title: "Still collecting fees via Cash App?", headline: "Still collecting fees via Cash App?", items: ["✖️ No receipts for players", "✖️ No financial dashboard", "✖️ No automatic tax reporting", "✖️ No chargeback protection"], cta: "Switch to TeeVents →" },
-  { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Automated payouts"], cta: "Try it free →" },
+  { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Funds go straight to your Stripe"], cta: "Try it free →" },
   { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Learn more →" },
-  { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Automated payouts"], cta: "Start fundraising →" },
+  { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Funds direct to your nonprofit's Stripe"], cta: "Start fundraising →" },
   { id: "fees", title: "5% platform fee per transaction", headline: "5% platform fee per transaction", items: ["✅ Simple percentage", "✅ No setup fees", "✅ No hidden costs", "✅ 2.9% + $0.30 Stripe fee separate"], cta: "See pricing →" },
   { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "See it in action →" },
   { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Try TeeVents →" },
-  { id: "payout", title: "TeeVents never holds your money", headline: "TeeVents never holds your money.", items: ["💰 Funds settle directly in your Stripe at checkout", "💰 You are the merchant of record", "💰 Complete financial dashboard", "💰 1099-K issued by Stripe"], cta: "Connect your bank →" },
-  { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Manual payouts → New: Automatic"], cta: "Upgrade your game →" },
+  { id: "payout", title: "TeeVents never holds your money", headline: "TeeVents never holds your money.", items: ["💰 Funds settle directly in your Stripe at checkout", "💰 You are the merchant of record", "💰 Stripe payouts to your bank in 2–7 business days", "💰 1099-K issued by Stripe"], cta: "Connect your Stripe →" },
+  { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Waiting for funds → New: Direct to your Stripe"], cta: "Upgrade your game →" },
 ];
 
 // ── Study Sheet Sections ──

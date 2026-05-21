@@ -424,9 +424,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full">
       {/* Sponsorship Tiers */}
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
@@ -517,7 +517,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
             </Dialog>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           {tiers.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-sm text-muted-foreground mb-4">No sponsorship tiers yet. Use a template to get started:</p>
@@ -600,7 +600,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       </Card>
 
       {/* Sponsor Registrations */}
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <CardTitle className="text-base">Sponsor Registrations</CardTitle>
@@ -734,11 +734,12 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           {registrations.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">No sponsor registrations yet.</p>
           ) : (
-            <Table>
+            <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
+            <Table className="min-w-[1120px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Company</TableHead>
@@ -959,6 +960,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

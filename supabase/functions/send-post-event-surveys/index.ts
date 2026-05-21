@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SENDER_EMAIL = "notifications@notifications.teevents.golf";
+const SENDER_EMAIL = "info@teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 const PUBLIC_BASE = "https://teevents.golf";
 

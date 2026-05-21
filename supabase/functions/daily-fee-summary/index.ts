@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${resendKey}`,
       },
       body: JSON.stringify({
-        from: "TeeVents <info@notifications.teevents.golf>",
+        from: "TeeVents <info@teevents.golf>",
         to: [RECIPIENT],
         subject: `TeeVents fees — ${dateLabel} · ${fmt(platformFee)} (${dest.length} charges)`,
         html,

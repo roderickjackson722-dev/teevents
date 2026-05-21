@@ -253,7 +253,7 @@ async function sendInvitationEmail(
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
-        from: "TeeVents Golf Management <notifications@notifications.teevents.golf>",
+        from: "TeeVents Golf Management <info@teevents.golf>",
         to: [recipientEmail], subject, html,
       }),
     });

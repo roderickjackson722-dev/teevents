@@ -280,19 +280,6 @@ export default function BudgetPage() {
     setEstimates((p) => p.filter((e) => e.id !== id));
   }
 
-  async function resetToTemplate() {
-    if (!budget || demoGuard()) return;
-    if (!confirm("Reset this budget to the default template? Your existing line items will be deleted.")) return;
-    await Promise.all([
-      supabase.from("budget_expenses").delete().eq("budget_id", budget.id),
-      supabase.from("budget_income").delete().eq("budget_id", budget.id),
-      supabase.from("budget_estimates").delete().eq("budget_id", budget.id),
-    ]);
-    setExpenses([]); setIncome([]); setEstimates([]);
-    await loadBudgetData(budget.id);
-    toast.success("Reset to template");
-  }
-
   // Move an estimate's best (lowest) vendor price to an expense line.
   async function moveEstimateToExpense(est: Estimate) {
     if (!budget || demoGuard()) return;
@@ -393,7 +380,6 @@ export default function BudgetPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={resetToTemplate}>Reset to Template</Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm"><Download className="h-4 w-4 mr-1.5" />Export</Button>

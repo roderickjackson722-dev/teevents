@@ -1,7 +1,55 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendAndLog } from "./emailLogger.ts";
 
 const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
+const PLATFORM_ADMIN_EMAIL = "info@teevents.golf";
+
+function getAdminClient() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+}
+
+/**
+ * Send a platform-admin notification email (always goes to info@teevents.golf)
+ * for every transaction type. Logs to email_send_log so deliverability is traceable.
+ */
+export async function notifyPlatformAdmin(opts: {
+  supabaseAdmin?: any;
+  type: "registration" | "donation" | "sponsorship" | "vendor" | "side_event" | "store" | "auction" | "refund" | "other";
+  subject: string;
+  htmlBody: string;
+  organizationId?: string | null;
+  tournamentId?: string | null;
+}) {
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  if (!RESEND_API_KEY) {
+    console.warn("[PlatformAdmin] RESEND_API_KEY missing — skipping admin notification");
+    return;
+  }
+  const client = opts.supabaseAdmin || getAdminClient();
+  const res = await sendAndLog(
+    client,
+    RESEND_API_KEY,
+    {
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: PLATFORM_ADMIN_EMAIL,
+      subject: opts.subject,
+      html: opts.htmlBody,
+    },
+    {
+      templateName: `platform-admin-${opts.type}`,
+      source: "notifyPlatformAdmin",
+      organizationId: opts.organizationId || null,
+      tournamentId: opts.tournamentId || null,
+    },
+  );
+  if (!res.ok) {
+    console.error(`[PlatformAdmin] Failed to email admin for ${opts.type}:`, res.error);
+  }
+}
 
 // Send notification emails via Resend to configured recipients PLUS the tournament's
 // contact_email entered at tournament setup (always included as a guaranteed fallback so
@@ -52,30 +100,28 @@ export async function sendNotificationEmails(
     }
 
     const recipients = Array.from(recipientsSet);
+    // Always copy the platform admin so TeeVents receives an email for EVERY transaction.
+    if (!recipients.includes(PLATFORM_ADMIN_EMAIL)) recipients.push(PLATFORM_ADMIN_EMAIL);
 
-    console.log(`[Notification] Attempting to send ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
+    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const result = await sendAndLog(
+      supabaseAdmin,
+      RESEND_API_KEY,
+      {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: recipients,
         subject,
         html: htmlBody,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error(`[Notification] Resend API error (${res.status}) for ${eventType}:`, err);
-      console.error(`[Notification] Sender domain: ${SENDER_EMAIL} — Ensure this domain is verified in Resend.`);
-    } else {
-      console.log(`[Notification] ${eventType} successfully sent to ${recipients.join(", ")}`);
-    }
+      },
+      {
+        templateName: `notification-${eventType}`,
+        source: "sendNotificationEmails",
+        organizationId,
+        tournamentId: tournamentId || null,
+      },
+    );
+    if (!result.ok) console.error(`[Notification] ${eventType} failed:`, result.error);
   } catch (err) {
     console.error("Failed to send notification emails:", err);
   }
@@ -137,28 +183,28 @@ export async function sendRegistrantConfirmationEmail(
 
     const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg);
 
-    console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
+    console.log(`[Confirmation] Sending registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const client = getAdminClient();
+    const result = await sendAndLog(
+      client,
+      RESEND_API_KEY,
+      {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: [recipientEmail],
         subject: `You're Registered — ${tournamentTitle}`,
         html,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error(`[Confirmation] Resend API error (${res.status}):`, err);
-      console.error(`[Confirmation] Sender domain: ${SENDER_EMAIL} — Ensure this domain is verified in Resend.`);
+      },
+      {
+        templateName: "registration-confirmation",
+        source: "sendRegistrantConfirmationEmail",
+        tournamentId: tournamentId || null,
+      },
+    );
+    if (!result.ok) {
+      console.error(`[Confirmation] Failed:`, result.error);
     } else {
-      console.log(`[Confirmation] Registration confirmation successfully sent to ${recipientEmail}`);
+      console.log(`[Confirmation] Sent to ${recipientEmail} (resend_id=${result.resendId})`);
     }
   } catch (err) {
     console.error("Failed to send registrant confirmation email:", err);

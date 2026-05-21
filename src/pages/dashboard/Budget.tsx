@@ -435,7 +435,7 @@ export default function BudgetPage() {
             />
           </div>
 
-          <Tabs defaultValue="estimates" className="no-print">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="no-print">
             <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
               <TabsTrigger value="estimates" className="gap-1.5 py-2">
                 <Lightbulb className="h-4 w-4" /> Estimates
@@ -454,7 +454,9 @@ export default function BudgetPage() {
             <TabsContent value="estimates" className="mt-4">
               <SectionCard
                 icon={<Lightbulb className="h-5 w-5 text-secondary" />}
-                title="Vendor Estimates"
+                title={budget?.estimate_section_title || "Vendor Estimates"}
+                editableTitle
+                onTitleChange={(title) => updateBudget({ estimate_section_title: title || "Vendor Estimates" })}
                 description="Compare quotes from up to three vendors per item. Move the winning quote into your Expense plan."
                 action={
                   <Button size="sm" variant="outline" onClick={addEstimate}>
@@ -509,6 +511,8 @@ export default function BudgetPage() {
                   <ExpenseSection
                     key={cat}
                     category={cat}
+                    title={getExpenseTitle(cat)}
+                    onTitleChange={(title) => updateExpenseSectionTitle(cat, title)}
                     items={expenses.filter((e) => e.category === cat)}
                     onChange={updateExpense}
                     onDelete={delExpense}
@@ -534,6 +538,8 @@ export default function BudgetPage() {
                   <IncomeSection
                     key={cat}
                     category={cat}
+                    title={getIncomeTitle(cat)}
+                    onTitleChange={(title) => updateIncomeSectionTitle(cat, title)}
                     items={income.filter((i) => i.category === cat)}
                     onChange={updateIncome}
                     onDelete={delIncome}
@@ -547,6 +553,10 @@ export default function BudgetPage() {
               <ProfitLossSummary
                 expenses={expenses}
                 income={income}
+                title={budget?.pnl_section_title || "Profit / Loss Summary"}
+                onTitleChange={(title) => updateBudget({ pnl_section_title: title || "Profit / Loss Summary" })}
+                expenseTitleFor={getExpenseTitle}
+                incomeTitleFor={getIncomeTitle}
                 totalEstIncome={totalEstIncome}
                 totalActIncome={totalActIncome}
                 totalEstExpenses={totalEstExpenses}

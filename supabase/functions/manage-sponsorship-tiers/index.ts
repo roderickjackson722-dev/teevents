@@ -184,6 +184,7 @@ Deno.serve(async (req) => {
         paid_at: status === "paid" ? new Date().toISOString() : null,
         show_on_public: p.show_on_public !== false,
         manually_approved: p.manually_approved === true,
+        is_title_sponsor: p.is_title_sponsor === true,
       };
 
       if (action === "create_registration") {

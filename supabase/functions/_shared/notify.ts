@@ -1,7 +1,55 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendAndLog } from "./emailLogger.ts";
 
 const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
+const PLATFORM_ADMIN_EMAIL = "info@teevents.golf";
+
+function getAdminClient() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+}
+
+/**
+ * Send a platform-admin notification email (always goes to info@teevents.golf)
+ * for every transaction type. Logs to email_send_log so deliverability is traceable.
+ */
+export async function notifyPlatformAdmin(opts: {
+  supabaseAdmin?: any;
+  type: "registration" | "donation" | "sponsorship" | "vendor" | "side_event" | "store" | "auction" | "refund" | "other";
+  subject: string;
+  htmlBody: string;
+  organizationId?: string | null;
+  tournamentId?: string | null;
+}) {
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  if (!RESEND_API_KEY) {
+    console.warn("[PlatformAdmin] RESEND_API_KEY missing — skipping admin notification");
+    return;
+  }
+  const client = opts.supabaseAdmin || getAdminClient();
+  const res = await sendAndLog(
+    client,
+    RESEND_API_KEY,
+    {
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+      to: PLATFORM_ADMIN_EMAIL,
+      subject: opts.subject,
+      html: opts.htmlBody,
+    },
+    {
+      templateName: `platform-admin-${opts.type}`,
+      source: "notifyPlatformAdmin",
+      organizationId: opts.organizationId || null,
+      tournamentId: opts.tournamentId || null,
+    },
+  );
+  if (!res.ok) {
+    console.error(`[PlatformAdmin] Failed to email admin for ${opts.type}:`, res.error);
+  }
+}
 
 // Send notification emails via Resend to configured recipients PLUS the tournament's
 // contact_email entered at tournament setup (always included as a guaranteed fallback so

@@ -799,6 +799,12 @@ const AdminDashboard = () => {
                 >
                   <Mail className="h-4 w-4" /> Outreach
                 </button>
+                <button
+                  onClick={() => navigate("/admin/stripe-connections")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <CreditCard className="h-4 w-4" /> Stripe Connections
+                </button>
               </div>
             </div>
 

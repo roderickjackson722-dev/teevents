@@ -68,6 +68,24 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Notify the platform admin of every donation transaction.
+      try {
+        await notifyPlatformAdmin({
+          supabaseAdmin,
+          type: "donation",
+          subject: `💚 New Donation — $${(amountCents / 100).toFixed(2)}`,
+          htmlBody: buildNotificationHtml("New Donation Received", [
+            `A donation of <strong>$${(amountCents / 100).toFixed(2)}</strong> was just received.`,
+            `🏢 <strong>Organization:</strong> ${organizationId || "n/a"}`,
+            `🏆 <strong>Tournament:</strong> ${tournamentId || "n/a"}`,
+            `💳 <strong>Stripe Session:</strong> ${session_id}`,
+          ]),
+          organizationId: organizationId || null,
+          tournamentId: tournamentId || null,
+        });
+      } catch (e) { console.error("[verify-donation] admin notify failed:", e); }
+
+
       return new Response(
         JSON.stringify({ verified: true, status: "completed" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

@@ -104,7 +104,7 @@ export default function Budget() {
         .eq("tournament_id", selectedId)
         .maybeSingle();
       let bId = existing?.id as string | undefined;
-      if (!bId && !demoGuard(true)) {
+      if (!bId) {
         const { data: created } = await supabase
           .from("tournament_budgets")
           .insert({ tournament_id: selectedId })

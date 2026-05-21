@@ -4141,24 +4141,36 @@ export type Database = {
         Row: {
           actual_golfers: number
           created_at: string
+          estimate_section_title: string
           estimated_golfers: number
+          expense_section_titles: Json
           id: string
+          income_section_titles: Json
+          pnl_section_title: string
           tournament_id: string
           updated_at: string
         }
         Insert: {
           actual_golfers?: number
           created_at?: string
+          estimate_section_title?: string
           estimated_golfers?: number
+          expense_section_titles?: Json
           id?: string
+          income_section_titles?: Json
+          pnl_section_title?: string
           tournament_id: string
           updated_at?: string
         }
         Update: {
           actual_golfers?: number
           created_at?: string
+          estimate_section_title?: string
           estimated_golfers?: number
+          expense_section_titles?: Json
           id?: string
+          income_section_titles?: Json
+          pnl_section_title?: string
           tournament_id?: string
           updated_at?: string
         }

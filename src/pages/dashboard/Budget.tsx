@@ -724,9 +724,11 @@ function EstimatesTable({
 
 /* -------- Expense Section -------- */
 function ExpenseSection({
-  category, items, onChange, onDelete, onAdd,
+  category, title, onTitleChange, items, onChange, onDelete, onAdd,
 }: {
   category: ExpenseCategory;
+  title: string;
+  onTitleChange: (title: string) => void;
   items: Expense[];
   onChange: (id: string, patch: Partial<Expense>) => void;
   onDelete: (id: string) => void;
@@ -737,7 +739,7 @@ function ExpenseSection({
   return (
     <div>
       <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between">
-        <h3 className="font-semibold uppercase tracking-wide text-sm">{category}</h3>
+        <EditableSectionTitle value={title} onCommit={onTitleChange} className="text-sm uppercase tracking-wide text-primary-foreground" />
         <Button size="sm" variant="ghost" onClick={onAdd}
           className="h-7 text-primary-foreground hover:bg-primary-foreground/15">
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
@@ -805,9 +807,11 @@ function ExpenseSection({
 
 /* -------- Income Section -------- */
 function IncomeSection({
-  category, items, onChange, onDelete, onAdd,
+  category, title, onTitleChange, items, onChange, onDelete, onAdd,
 }: {
   category: IncomeCategory;
+  title: string;
+  onTitleChange: (title: string) => void;
   items: Income[];
   onChange: (id: string, patch: Partial<Income>) => void;
   onDelete: (id: string) => void;
@@ -818,7 +822,7 @@ function IncomeSection({
   return (
     <div>
       <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between">
-        <h3 className="font-semibold uppercase tracking-wide text-sm">{category}</h3>
+        <EditableSectionTitle value={title} onCommit={onTitleChange} className="text-sm uppercase tracking-wide text-primary-foreground" />
         <Button size="sm" variant="ghost" onClick={onAdd}
           className="h-7 text-primary-foreground hover:bg-primary-foreground/15">
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line

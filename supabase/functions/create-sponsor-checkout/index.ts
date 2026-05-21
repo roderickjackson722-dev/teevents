@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
       passFeesToParticipants: true,
       stripeSessionId: session.id,
       buyerEmail: contact_email?.trim() || null,
-      notes: `tier=${tier.name} company=${company_name.trim()}`,,
+      notes: `tier=${tier.name} company=${company_name.trim()}`,
       isPlatformFallback: connected.isPlatformFallback
     });
 

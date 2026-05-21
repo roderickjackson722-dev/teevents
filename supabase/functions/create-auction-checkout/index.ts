@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants,
       stripeSessionId: session.id,
-      buyerEmail: buyer_email || null,,
+      buyerEmail: buyer_email || null,
       isPlatformFallback: connected.isPlatformFallback
     });
 

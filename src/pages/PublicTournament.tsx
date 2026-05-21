@@ -821,6 +821,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   })();
 
   // Sponsor carousel — merge organizer-added sponsors with publicly-approved sponsor_registrations
+  const _sponsorTierWeight = (tier: string) => {
+    const order: Record<string, number> = { title: 0, presenting: 1, platinum: 2, gold: 3, silver: 4, bronze: 5, hole: 6, supporter: 7, inkind: 8 };
+    return order[tier] ?? 99;
+  };
   const allSponsors: PublicSponsor[] = [
     ...sponsors,
     ...paidSponsors
@@ -828,12 +832,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       .map((p) => ({
         id: `reg-${p.id}`,
         name: p.company_name,
-        tier: "supporter",
+        tier: p.is_title_sponsor ? "title" : "supporter",
         logo_url: p.logo_url,
         website_url: p.website_url,
         show_on_leaderboard: false,
       })),
-  ];
+  ].sort((a, b) => _sponsorTierWeight(a.tier) - _sponsorTierWeight(b.tier));
   const sponsorsPerPage = 3;
   const sponsorPages = Math.ceil(allSponsors.length / sponsorsPerPage);
   const visibleSponsors = allSponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);

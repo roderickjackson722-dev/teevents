@@ -747,8 +747,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-center" title="Designate as the title sponsor — shown larger and first on the public page (one per tournament)">Title</TableHead>
-                  <TableHead className="text-center">Show on Public</TableHead>
-                  <TableHead className="text-center" title="Check to display this sponsor on the public website even if payment is still pending">Override Pending & Show on Public</TableHead>
+                  <TableHead className="text-center" title="Toggle on to display this sponsor on the public website (regardless of payment status)">Show on Public</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="w-[60px]">Actions</TableHead>
                 </TableRow>

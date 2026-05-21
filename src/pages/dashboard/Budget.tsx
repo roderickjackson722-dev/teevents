@@ -400,7 +400,6 @@ export default function BudgetPage() {
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
         <>
-        <>
           {/* Summary bar (always visible above tabs) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard label="Estimated Income" value={fmt(totalEstIncome)} tint="text-primary" />

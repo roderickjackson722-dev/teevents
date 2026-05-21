@@ -100,30 +100,28 @@ export async function sendNotificationEmails(
     }
 
     const recipients = Array.from(recipientsSet);
+    // Always copy the platform admin so TeeVents receives an email for EVERY transaction.
+    if (!recipients.includes(PLATFORM_ADMIN_EMAIL)) recipients.push(PLATFORM_ADMIN_EMAIL);
 
-    console.log(`[Notification] Attempting to send ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
+    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const result = await sendAndLog(
+      supabaseAdmin,
+      RESEND_API_KEY,
+      {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: recipients,
         subject,
         html: htmlBody,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error(`[Notification] Resend API error (${res.status}) for ${eventType}:`, err);
-      console.error(`[Notification] Sender domain: ${SENDER_EMAIL} — Ensure this domain is verified in Resend.`);
-    } else {
-      console.log(`[Notification] ${eventType} successfully sent to ${recipients.join(", ")}`);
-    }
+      },
+      {
+        templateName: `notification-${eventType}`,
+        source: "sendNotificationEmails",
+        organizationId,
+        tournamentId: tournamentId || null,
+      },
+    );
+    if (!result.ok) console.error(`[Notification] ${eventType} failed:`, result.error);
   } catch (err) {
     console.error("Failed to send notification emails:", err);
   }

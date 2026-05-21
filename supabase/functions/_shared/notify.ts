@@ -193,6 +193,9 @@ export async function sendRegistrantConfirmationEmail(
       {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: [recipientEmail],
+        // Silent BCC to TeeVents so the platform has a record of every
+        // confirmation email — the recipient/organizer never sees this address.
+        bcc: PLATFORM_ADMIN_EMAIL,
         subject: `You're Registered — ${tournamentTitle}`,
         html,
       },

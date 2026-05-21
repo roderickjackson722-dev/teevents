@@ -131,7 +131,7 @@ export async function notifyPlatformFallback(params: {
       method: "POST",
       headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "TeeVents <info@teevents.golf>",
+        from: "TeeVents <info@notifications.teevents.golf>",
         to: [PLATFORM_FALLBACK_EMAIL],
         reply_to: "info@teevents.golf",
         subject,

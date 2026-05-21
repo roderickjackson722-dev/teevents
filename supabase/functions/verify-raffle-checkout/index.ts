@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: "TeeVents Raffle <info@teevents.golf>",
+          from: "TeeVents Raffle <info@notifications.teevents.golf>",
           to: [m.buyer_email],
           subject: `Your raffle tickets: ${ticketNumbers.join(", ")}`,
           html,

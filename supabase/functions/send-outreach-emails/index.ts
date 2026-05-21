@@ -10,7 +10,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM = "TeeVents <info@teevents.golf>";
+const FROM = "TeeVents <info@notifications.teevents.golf>";
 const APP_URL = "https://teevents.golf";
 
 function escapeHtml(s: string) {

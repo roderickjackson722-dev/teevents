@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAIL = "info@teevents.golf";
-const SENDER = "TeeVents Sales <info@teevents.golf>";
+const SENDER = "TeeVents Sales <info@notifications.teevents.golf>";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

@@ -164,3 +164,21 @@
     max-width: 92%;
   }
 }
+
+/* Print styles — used by Budget export and any printable dashboard page */
+.print-only { display: none; }
+@media print {
+  body { background: white !important; }
+  .no-print,
+  [data-sidebar],
+  header,
+  nav,
+  aside { display: none !important; }
+  .print-only { display: block !important; }
+  .budget-page .sticky { position: static !important; }
+  .budget-page * { color: black !important; box-shadow: none !important; }
+  .budget-page input,
+  .budget-page textarea,
+  .budget-page button { border: none !important; background: transparent !important; padding: 0 !important; }
+  .budget-page textarea { height: auto !important; min-height: auto !important; }
+}

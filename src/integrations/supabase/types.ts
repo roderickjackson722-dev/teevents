@@ -1595,6 +1595,7 @@ export type Database = {
           bank_name: string | null
           change_request_status: string | null
           change_requested_at: string | null
+          connection_notified_at: string | null
           created_at: string
           id: string
           is_verified: boolean
@@ -1618,6 +1619,7 @@ export type Database = {
           bank_name?: string | null
           change_request_status?: string | null
           change_requested_at?: string | null
+          connection_notified_at?: string | null
           created_at?: string
           id?: string
           is_verified?: boolean
@@ -1641,6 +1643,7 @@ export type Database = {
           bank_name?: string | null
           change_request_status?: string | null
           change_requested_at?: string | null
+          connection_notified_at?: string | null
           created_at?: string
           id?: string
           is_verified?: boolean
@@ -5064,6 +5067,7 @@ export type Database = {
           about_us: string | null
           allow_cover_fees: boolean
           auction_tab_title: string | null
+          captain_label: string | null
           confirmation_email_config: Json | null
           contact_email: string | null
           contact_phone: string | null
@@ -5119,6 +5123,7 @@ export type Database = {
           max_group_size: number
           max_handicap: number | null
           max_players: number | null
+          max_waitlist_slots: number | null
           media_tab_title: string | null
           mission_statement: string | null
           org_address: string | null
@@ -5206,6 +5211,7 @@ export type Database = {
           about_us?: string | null
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
+          captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -5261,6 +5267,7 @@ export type Database = {
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
+          max_waitlist_slots?: number | null
           media_tab_title?: string | null
           mission_statement?: string | null
           org_address?: string | null
@@ -5348,6 +5355,7 @@ export type Database = {
           about_us?: string | null
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
+          captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -5403,6 +5411,7 @@ export type Database = {
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
+          max_waitlist_slots?: number | null
           media_tab_title?: string | null
           mission_statement?: string | null
           org_address?: string | null

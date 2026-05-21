@@ -192,6 +192,15 @@ export default function BudgetPage() {
   const actGolfers = budget?.actual_golfers || 0;
   const estCostPerPerson = estGolfers > 0 ? totalEstExpenses / estGolfers : 0;
   const actCostPerPerson = actGolfers > 0 ? totalActExpenses / actGolfers : 0;
+  const expenseSectionTitles = budget?.expense_section_titles || {};
+  const incomeSectionTitles = budget?.income_section_titles || {};
+
+  function getExpenseTitle(category: ExpenseCategory) {
+    return expenseSectionTitles[category] || category;
+  }
+  function getIncomeTitle(category: IncomeCategory) {
+    return incomeSectionTitles[category] || category;
+  }
 
   // ---- Mutations ----
   async function updateBudget(patch: Partial<Budget>) {
@@ -199,6 +208,12 @@ export default function BudgetPage() {
     setBudget({ ...budget, ...patch } as Budget);
     const { error } = await supabase.from("tournament_budgets").update(patch as any).eq("id", budget.id);
     if (error) toast.error("Save failed"); else flashSaved();
+  }
+  function updateExpenseSectionTitle(category: ExpenseCategory, title: string) {
+    updateBudget({ expense_section_titles: { ...expenseSectionTitles, [category]: title || category } });
+  }
+  function updateIncomeSectionTitle(category: IncomeCategory, title: string) {
+    updateBudget({ income_section_titles: { ...incomeSectionTitles, [category]: title || category } });
   }
   async function updateExpense(id: string, patch: Partial<Expense>) {
     if (demoGuard()) return;

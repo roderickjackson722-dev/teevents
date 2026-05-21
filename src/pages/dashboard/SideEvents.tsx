@@ -362,7 +362,7 @@ export default function SideEvents() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit Side Event" : "New Side Event"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>

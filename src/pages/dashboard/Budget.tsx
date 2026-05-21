@@ -11,10 +11,12 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   DollarSign, Trophy, Plus, Loader2, TrendingUp, TrendingDown, Trash2,
   Download, Check, Printer, FileSpreadsheet, Lightbulb, ArrowRight,
+  ClipboardList, PieChart,
 } from "lucide-react";
 import {
   DEFAULT_EXPENSES, DEFAULT_INCOME, DEFAULT_ESTIMATES,

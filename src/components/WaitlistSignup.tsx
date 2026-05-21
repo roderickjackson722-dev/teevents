@@ -20,6 +20,7 @@ interface WaitlistSignupProps {
   secondaryColor: string;
   depositCents?: number;
   maxGroupSize?: number;
+  maxWaitlistSlots?: number | null;
 }
 
 export default function WaitlistSignup({
@@ -28,6 +29,7 @@ export default function WaitlistSignup({
   secondaryColor,
   depositCents = 0,
   maxGroupSize = 4,
+  maxWaitlistSlots = null,
 }: WaitlistSignupProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,6 +39,22 @@ export default function WaitlistSignup({
   const [submitted, setSubmitted] = useState(false);
   const [position, setPosition] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [currentCount, setCurrentCount] = useState<number>(0);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { count } = await supabase
+        .from("tournament_waitlist")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId)
+        .in("status", ["waiting", "offered"]);
+      if (active) setCurrentCount(count || 0);
+    })();
+    return () => { active = false; };
+  }, [tournamentId, submitted]);
+
+  const isFull = maxWaitlistSlots != null && currentCount >= maxWaitlistSlots;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

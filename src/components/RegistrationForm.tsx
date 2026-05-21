@@ -64,11 +64,11 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove, fields,
+  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
-  fields?: RegFieldConfig[];
+  fields?: RegFieldConfig[]; captainLabel?: string | null;
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
 

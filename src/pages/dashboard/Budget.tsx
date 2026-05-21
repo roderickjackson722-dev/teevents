@@ -11,10 +11,12 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   DollarSign, Trophy, Plus, Loader2, TrendingUp, TrendingDown, Trash2,
   Download, Check, Printer, FileSpreadsheet, Lightbulb, ArrowRight,
+  ClipboardList, PieChart,
 } from "lucide-react";
 import {
   DEFAULT_EXPENSES, DEFAULT_INCOME, DEFAULT_ESTIMATES,
@@ -398,8 +400,8 @@ export default function BudgetPage() {
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
         <>
-          {/* Summary bar */}
-          <div className="sticky top-0 z-20 grid grid-cols-2 lg:grid-cols-4 gap-3 bg-background/95 backdrop-blur py-3">
+          {/* Summary bar (always visible above tabs) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard label="Estimated Income" value={fmt(totalEstIncome)} tint="text-primary" />
             <SummaryCard label="Estimated Expenses" value={fmt(totalEstExpenses)} tint="text-destructive" />
             <SummaryCard
@@ -413,108 +415,148 @@ export default function BudgetPage() {
             />
           </div>
 
-          {/* Vendor Estimates */}
-          <SectionCard
-            icon={<Lightbulb className="h-5 w-5 text-secondary" />}
-            title="Vendor Estimates"
-            description="Compare quotes from up to three vendors per item. Move the winning quote into your Expense plan."
-            action={
-              <Button size="sm" variant="outline" onClick={addEstimate}>
-                <Plus className="h-4 w-4 mr-1" /> Add Estimate Line
-              </Button>
-            }
-          >
-            <EstimatesTable
-              items={estimates}
-              onChange={updateEstimate}
-              onMove={moveEstimateToExpense}
-              onDelete={delEstimate}
-            />
-          </SectionCard>
+          <Tabs defaultValue="estimates" className="no-print">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
+              <TabsTrigger value="estimates" className="gap-1.5 py-2">
+                <Lightbulb className="h-4 w-4" /> Estimates
+              </TabsTrigger>
+              <TabsTrigger value="expenses" className="gap-1.5 py-2">
+                <TrendingDown className="h-4 w-4" /> Expenses
+              </TabsTrigger>
+              <TabsTrigger value="income" className="gap-1.5 py-2">
+                <TrendingUp className="h-4 w-4" /> Income
+              </TabsTrigger>
+              <TabsTrigger value="pnl" className="gap-1.5 py-2">
+                <PieChart className="h-4 w-4" /> Profit / Loss
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Expenses */}
-          <SectionCard
-            icon={<TrendingDown className="h-5 w-5 text-destructive" />}
-            title="Expenses"
-            description="Pre-filled by section. Add or rename rows as needed."
-            kpis={
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <KpiPill label="Estimated" value={fmt(totalEstExpenses)} />
-                <KpiPill label="Actual" value={fmt(totalActExpenses)} />
-                <KpiPill
+            <TabsContent value="estimates" className="mt-4">
+              <SectionCard
+                icon={<Lightbulb className="h-5 w-5 text-secondary" />}
+                title="Vendor Estimates"
+                description="Compare quotes from up to three vendors per item. Move the winning quote into your Expense plan."
+                action={
+                  <Button size="sm" variant="outline" onClick={addEstimate}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Estimate Line
+                  </Button>
+                }
+              >
+                <EstimatesTable
+                  items={estimates}
+                  onChange={updateEstimate}
+                  onMove={moveEstimateToExpense}
+                  onDelete={delEstimate}
+                />
+              </SectionCard>
+            </TabsContent>
+
+            <TabsContent value="expenses" className="mt-4 space-y-4">
+              {/* Golfer inputs — dedicated card for reliable typing */}
+              <div className="bg-card border border-border rounded-lg p-4 grid sm:grid-cols-4 gap-3">
+                <GolferInput
                   label="Est. # of Golfers"
-                  input={
-                    <Input
-                      type="number" min={0} className="h-7 w-20"
-                      value={estGolfers || ""}
-                      onChange={(e) => setBudget((b) => b ? { ...b, estimated_golfers: parseInt(e.target.value) || 0 } : b)}
-                      onBlur={() => updateBudget({ estimated_golfers: estGolfers })}
-                    />
-                  }
+                  value={estGolfers}
+                  onCommit={(v) => updateBudget({ estimated_golfers: v })}
                 />
-                <KpiPill label="Est. cost / person" value={fmt(estCostPerPerson)} />
-                <KpiPill
+                <div className="bg-muted/40 rounded-md px-3 py-2 flex flex-col">
+                  <span className="text-xs text-muted-foreground">Est. cost / person</span>
+                  <span className="font-mono font-semibold text-lg">{fmt(estCostPerPerson)}</span>
+                </div>
+                <GolferInput
                   label="Actual # of Golfers"
-                  input={
-                    <Input
-                      type="number" min={0} className="h-7 w-20"
-                      value={actGolfers || ""}
-                      onChange={(e) => setBudget((b) => b ? { ...b, actual_golfers: parseInt(e.target.value) || 0 } : b)}
-                      onBlur={() => updateBudget({ actual_golfers: actGolfers })}
-                    />
-                  }
+                  value={actGolfers}
+                  onCommit={(v) => updateBudget({ actual_golfers: v })}
                 />
-                <KpiPill label="Actual cost / person" value={fmt(actCostPerPerson)} />
+                <div className="bg-muted/40 rounded-md px-3 py-2 flex flex-col">
+                  <span className="text-xs text-muted-foreground">Actual cost / person</span>
+                  <span className="font-mono font-semibold text-lg">{fmt(actCostPerPerson)}</span>
+                </div>
               </div>
-            }
-          >
+
+              <SectionCard
+                icon={<TrendingDown className="h-5 w-5 text-destructive" />}
+                title="Expenses"
+                description="Pre-filled by section. Add or rename rows as needed."
+                kpis={
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <KpiPill label="Estimated" value={fmt(totalEstExpenses)} />
+                    <KpiPill label="Actual" value={fmt(totalActExpenses)} />
+                  </div>
+                }
+              >
+                {EXPENSE_CATEGORIES.map((cat) => (
+                  <ExpenseSection
+                    key={cat}
+                    category={cat}
+                    items={expenses.filter((e) => e.category === cat)}
+                    onChange={updateExpense}
+                    onDelete={delExpense}
+                    onAdd={() => addExpenseInSection(cat)}
+                  />
+                ))}
+              </SectionCard>
+            </TabsContent>
+
+            <TabsContent value="income" className="mt-4">
+              <SectionCard
+                icon={<TrendingUp className="h-5 w-5 text-primary" />}
+                title="Income"
+                description="Enter quantity and price — totals fill in automatically. Rows without a price use the raw amount."
+                kpis={
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <KpiPill label="Estimated Income" value={fmt(totalEstIncome)} />
+                    <KpiPill label="Actual Income" value={fmt(totalActIncome)} />
+                  </div>
+                }
+              >
+                {INCOME_CATEGORIES.map((cat) => (
+                  <IncomeSection
+                    key={cat}
+                    category={cat}
+                    items={income.filter((i) => i.category === cat)}
+                    onChange={updateIncome}
+                    onDelete={delIncome}
+                    onAdd={() => addIncomeInSection(cat)}
+                  />
+                ))}
+              </SectionCard>
+            </TabsContent>
+
+            <TabsContent value="pnl" className="mt-4">
+              <ProfitLossSummary
+                expenses={expenses}
+                income={income}
+                totalEstIncome={totalEstIncome}
+                totalActIncome={totalActIncome}
+                totalEstExpenses={totalEstExpenses}
+                totalActExpenses={totalActExpenses}
+                netEst={netEst}
+                netAct={netAct}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* Print view shows everything in order */}
+          <div className="hidden print:block space-y-6">
+            <EstimatesTable items={estimates} onChange={() => {}} onMove={() => {}} onDelete={() => {}} />
             {EXPENSE_CATEGORIES.map((cat) => (
-              <ExpenseSection
-                key={cat}
-                category={cat}
+              <ExpenseSection key={cat} category={cat}
                 items={expenses.filter((e) => e.category === cat)}
-                onChange={updateExpense}
-                onDelete={delExpense}
-                onAdd={() => addExpenseInSection(cat)}
-              />
+                onChange={() => {}} onDelete={() => {}} onAdd={() => {}} />
             ))}
-          </SectionCard>
-
-          {/* Income */}
-          <SectionCard
-            icon={<TrendingUp className="h-5 w-5 text-primary" />}
-            title="Income"
-            description="Enter quantity and price — totals fill in automatically. Rows without a price use the raw amount."
-            kpis={
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <KpiPill label="Estimated Income" value={fmt(totalEstIncome)} />
-                <KpiPill label="Actual Income" value={fmt(totalActIncome)} />
-              </div>
-            }
-          >
             {INCOME_CATEGORIES.map((cat) => (
-              <IncomeSection
-                key={cat}
-                category={cat}
+              <IncomeSection key={cat} category={cat}
                 items={income.filter((i) => i.category === cat)}
-                onChange={updateIncome}
-                onDelete={delIncome}
-                onAdd={() => addIncomeInSection(cat)}
-              />
+                onChange={() => {}} onDelete={() => {}} onAdd={() => {}} />
             ))}
-          </SectionCard>
-
-          {/* P&L */}
-          <ProfitLossSummary
-            expenses={expenses}
-            income={income}
-            totalEstIncome={totalEstIncome}
-            totalActIncome={totalActIncome}
-            totalEstExpenses={totalEstExpenses}
-            totalActExpenses={totalActExpenses}
-            netEst={netEst}
-            netAct={netAct}
-          />
+            <ProfitLossSummary
+              expenses={expenses} income={income}
+              totalEstIncome={totalEstIncome} totalActIncome={totalActIncome}
+              totalEstExpenses={totalEstExpenses} totalActExpenses={totalActExpenses}
+              netEst={netEst} netAct={netAct}
+            />
+          </div>
         </>
       )}
     </div>
@@ -932,5 +974,28 @@ function BareNumber({
         if (n !== Number(value)) onCommit(n);
       }}
     />
+  );
+}
+
+function GolferInput({
+  label, value, onCommit,
+}: { label: string; value: number; onCommit: (v: number) => void }) {
+  const [local, setLocal] = useState<string>(value ? String(value) : "");
+  useEffect(() => setLocal(value ? String(value) : ""), [value]);
+  return (
+    <div className="bg-muted/40 rounded-md px-3 py-2 flex flex-col">
+      <label className="text-xs text-muted-foreground">{label}</label>
+      <input
+        type="number" inputMode="numeric" min={0}
+        className="h-9 bg-background border border-input rounded px-2 mt-1 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-ring"
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={() => {
+          const n = parseInt(local) || 0;
+          if (n !== Number(value)) onCommit(n);
+        }}
+        placeholder="0"
+      />
+    </div>
   );
 }

@@ -145,6 +145,17 @@ export default function WaitlistSignup({
       <p className="text-sm" style={{ color: "#666" }}>
         This tournament is full, but spots may open up. Join the waitlist and we'll notify you automatically.
       </p>
+      {maxWaitlistSlots != null && (
+        <p className="text-xs" style={{ color: "#999" }}>
+          {currentCount} / {maxWaitlistSlots} waitlist spots filled
+        </p>
+      )}
+
+      {isFull && (
+        <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">
+          The waitlist is currently full. Please check back later.
+        </p>
+      )}
 
       {errors.form && (
         <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>

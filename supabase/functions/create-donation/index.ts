@@ -100,8 +100,22 @@ Deno.serve(async (req) => {
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants,
       stripeSessionId: session.id,
-      buyerEmail: donor_email || null,
+      buyerEmail: donor_email || null,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "donation",
+        organizationId: null,
+        organizationName: connected.organizationName,
+        tournamentId: tournament_id,
+        tournamentTitle: null,
+        grossCents: amount_cents,
+        buyerEmail: donor_email || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     await supabaseAdmin.from("tournament_donations").insert({
       tournament_id,

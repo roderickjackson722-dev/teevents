@@ -326,8 +326,22 @@ Deno.serve(async (req) => {
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants: golferPaysFees,
       stripeSessionId: session.id,
-      buyerEmail: email?.trim() || null,
+      buyerEmail: email?.trim() || null,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "registration",
+        organizationId: tournament.organization_id,
+        organizationName: connected.organizationName,
+        tournamentId: (tournament as any).id,
+        tournamentTitle: null,
+        grossCents: baseTotalCents,
+        buyerEmail: email?.trim() || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),

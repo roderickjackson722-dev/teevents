@@ -170,8 +170,22 @@ Deno.serve(async (req) => {
       passFeesToParticipants: true,
       stripeSessionId: session.id,
       buyerEmail: contact_email?.trim() || null,
-      notes: `tier=${tier.name} company=${company_name.trim()}`,
+      notes: `tier=${tier.name} company=${company_name.trim()}`,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "sponsor",
+        organizationId: tournament.organization_id,
+        organizationName: connected.organizationName,
+        tournamentId: tournament_id,
+        tournamentTitle: null,
+        grossCents: tier.price_cents,
+        buyerEmail: contact_email?.trim() || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     await supabaseAdmin
       .from("sponsor_registrations")

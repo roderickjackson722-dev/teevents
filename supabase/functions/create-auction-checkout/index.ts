@@ -114,8 +114,22 @@ Deno.serve(async (req) => {
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants,
       stripeSessionId: session.id,
-      buyerEmail: buyer_email || null,
+      buyerEmail: buyer_email || null,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "auction",
+        organizationId: tournament?.organization_id || null,
+        organizationName: connected.organizationName,
+        tournamentId: item.tournament_id,
+        tournamentTitle: null,
+        grossCents: priceCents,
+        buyerEmail: buyer_email || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     // Mark item as sold
     await supabaseAdmin

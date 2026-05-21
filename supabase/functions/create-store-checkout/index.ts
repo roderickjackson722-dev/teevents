@@ -110,8 +110,22 @@ Deno.serve(async (req) => {
       applicationFeeCents: applicationFeeAmount,
       passFeesToParticipants,
       stripeSessionId: session.id,
-      buyerEmail: buyer_email || null,
+      buyerEmail: buyer_email || null,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "store",
+        organizationId: tournament?.organization_id || null,
+        organizationName: connected.organizationName,
+        tournamentId: product.tournament_id,
+        tournamentTitle: null,
+        grossCents: priceCents,
+        buyerEmail: buyer_email || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     try {
       if (tournament) {

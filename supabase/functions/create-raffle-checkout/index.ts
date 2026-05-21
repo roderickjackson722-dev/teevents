@@ -92,8 +92,22 @@ Deno.serve(async (req) => {
       applicationFeeCents: platformFeeCents,
       passFeesToParticipants: passFees,
       stripeSessionId: session.id,
-      buyerEmail: buyer_email,
+      buyerEmail: buyer_email,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "raffle",
+        organizationId: t?.organization_id || null,
+        organizationName: connected.organizationName,
+        tournamentId: raffle.tournament_id,
+        tournamentTitle: null,
+        grossCents: subtotal,
+        buyerEmail: buyer_email,
+        stripeSessionId: session.id,
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -93,8 +93,22 @@ Deno.serve(async (req) => {
       applicationFeeCents: platformFeeCents,
       passFeesToParticipants: passFees,
       stripeSessionId: session.id,
-      buyerEmail: buyer_email,
+      buyerEmail: buyer_email,,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "auction-buy-now",
+        organizationId: t?.organization_id || null,
+        organizationName: connected.organizationName,
+        tournamentId: auction.tournament_id,
+        tournamentTitle: null,
+        grossCents: priceCents,
+        buyerEmail: buyer_email,
+        stripeSessionId: session.id,
+      });
+    }
 
     // Optimistically mark winner; verify-auction-buy-now will finalize on success
     await supabaseAdmin

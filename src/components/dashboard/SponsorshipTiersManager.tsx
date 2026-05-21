@@ -807,6 +807,34 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                       {reg._source === "legacy" ? (
                         <span className="text-xs text-muted-foreground">—</span>
                       ) : (
+                        <button
+                          type="button"
+                          title={reg.is_title_sponsor ? "Title sponsor — click to remove" : "Mark as Title Sponsor (larger logo, top placement)"}
+                          onClick={async () => {
+                            if (demoGuard()) return;
+                            const next = !reg.is_title_sponsor;
+                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_visibility", registration_id: reg.id, tournament_id: selectedTournament, is_title_sponsor: next },
+                            });
+                            if (error || data?.error) {
+                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                            } else {
+                              toast({ title: next ? "Marked as Title Sponsor" : "Title Sponsor removed" });
+                              fetchData();
+                            }
+                          }}
+                          className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                            reg.is_title_sponsor ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"
+                          }`}
+                        >
+                          <Crown className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reg._source === "legacy" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
                         <Switch
                           checked={reg.show_on_public !== false}
                           onCheckedChange={async (checked) => {

@@ -440,7 +440,15 @@ export type Database = {
           id: string
           item_name: string
           notes: string
+          sort_order: number
+          sponsorable: boolean
           type: string
+          vendor_a_name: string
+          vendor_a_price: number
+          vendor_b_name: string
+          vendor_b_price: number
+          vendor_c_name: string
+          vendor_c_price: number
           vendor_contact: string
         }
         Insert: {
@@ -450,7 +458,15 @@ export type Database = {
           id?: string
           item_name?: string
           notes?: string
+          sort_order?: number
+          sponsorable?: boolean
           type?: string
+          vendor_a_name?: string
+          vendor_a_price?: number
+          vendor_b_name?: string
+          vendor_b_price?: number
+          vendor_c_name?: string
+          vendor_c_price?: number
           vendor_contact?: string
         }
         Update: {
@@ -460,7 +476,15 @@ export type Database = {
           id?: string
           item_name?: string
           notes?: string
+          sort_order?: number
+          sponsorable?: boolean
           type?: string
+          vendor_a_name?: string
+          vendor_a_price?: number
+          vendor_b_name?: string
+          vendor_b_price?: number
+          vendor_c_name?: string
+          vendor_c_price?: number
           vendor_contact?: string
         }
         Relationships: [
@@ -539,7 +563,10 @@ export type Database = {
           notes: string
           payer_source: string
           projected_amount: number
+          quantity_actual: number
+          quantity_estimated: number
           sort_order: number
+          unit_price: number
           updated_at: string
         }
         Insert: {
@@ -554,7 +581,10 @@ export type Database = {
           notes?: string
           payer_source?: string
           projected_amount?: number
+          quantity_actual?: number
+          quantity_estimated?: number
           sort_order?: number
+          unit_price?: number
           updated_at?: string
         }
         Update: {
@@ -569,7 +599,10 @@ export type Database = {
           notes?: string
           payer_source?: string
           projected_amount?: number
+          quantity_actual?: number
+          quantity_estimated?: number
           sort_order?: number
+          unit_price?: number
           updated_at?: string
         }
         Relationships: [
@@ -4106,19 +4139,25 @@ export type Database = {
       }
       tournament_budgets: {
         Row: {
+          actual_golfers: number
           created_at: string
+          estimated_golfers: number
           id: string
           tournament_id: string
           updated_at: string
         }
         Insert: {
+          actual_golfers?: number
           created_at?: string
+          estimated_golfers?: number
           id?: string
           tournament_id: string
           updated_at?: string
         }
         Update: {
+          actual_golfers?: number
           created_at?: string
+          estimated_golfers?: number
           id?: string
           tournament_id?: string
           updated_at?: string

@@ -686,6 +686,20 @@ const Registration = () => {
                 <Switch checked={allowCoverFees} onCheckedChange={setAllowCoverFees} />
               </div>
 
+              <div className="p-4 rounded-lg border border-border bg-muted/20">
+                <Label className="text-sm font-semibold">Captain Label (group registrations)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                  Shown next to the first player on the public registration form (e.g. "Player 1 (Captain)"). Leave blank to hide.
+                </p>
+                <Input
+                  value={captainLabel}
+                  onChange={(e) => setCaptainLabel(e.target.value)}
+                  placeholder="Captain"
+                  maxLength={40}
+                  className="max-w-xs"
+                />
+              </div>
+
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings

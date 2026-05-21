@@ -110,7 +110,7 @@ export default function SideEvents() {
         .order("display_order")
         .order("created_at");
       if (error) throw error;
-      return data as SideEvent[];
+      return (data as any[]) as SideEvent[];
     },
     enabled: !!tournamentId,
   });

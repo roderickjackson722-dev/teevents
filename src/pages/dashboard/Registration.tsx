@@ -104,6 +104,13 @@ const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [
 /* ── main component ── */
 const Registration = () => {
   const { org } = useOrgContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "settings";
+  const setActiveTab = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", v);
+    setSearchParams(next, { replace: true });
+  };
   const { demoGuard } = useDemoMode();
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);

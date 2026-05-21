@@ -976,3 +976,26 @@ function BareNumber({
     />
   );
 }
+
+function GolferInput({
+  label, value, onCommit,
+}: { label: string; value: number; onCommit: (v: number) => void }) {
+  const [local, setLocal] = useState<string>(value ? String(value) : "");
+  useEffect(() => setLocal(value ? String(value) : ""), [value]);
+  return (
+    <div className="bg-muted/40 rounded-md px-3 py-2 flex flex-col">
+      <label className="text-xs text-muted-foreground">{label}</label>
+      <input
+        type="number" inputMode="numeric" min={0}
+        className="h-9 bg-background border border-input rounded px-2 mt-1 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-ring"
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={() => {
+          const n = parseInt(local) || 0;
+          if (n !== Number(value)) onCommit(n);
+        }}
+        placeholder="0"
+      />
+    </div>
+  );
+}

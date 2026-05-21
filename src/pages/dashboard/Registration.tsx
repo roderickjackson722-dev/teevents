@@ -168,6 +168,7 @@ const Registration = () => {
       setFoursomeReg(tournament.foursome_registration || false);
       setMaxGroupSize(tournament.max_group_size || 1);
       setAllowCoverFees(tournament.allow_cover_fees !== false);
+      setCaptainLabel(((tournament as any).captain_label as string) || "");
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([

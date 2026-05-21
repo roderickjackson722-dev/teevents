@@ -256,11 +256,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [vendorVerifying, setVendorVerifying] = useState(false);
 
   // Side events for public ticket sales
-  const [sideEvents, setSideEvents] = useState<Array<{ id: string; name: string; description: string | null; event_date: string | null; location: string | null; price_cents: number; max_tickets: number | null; tickets_sold: number }>>([]);
+  const [sideEvents, setSideEvents] = useState<Array<{ id: string; name: string; description: string | null; event_date: string | null; location: string | null; price_cents: number; max_tickets: number | null; tickets_sold: number; custom_questions?: any[] | null }>>([]);
   const [sideEventSuccess, setSideEventSuccess] = useState(false);
   const [sideEventVerifying, setSideEventVerifying] = useState(false);
-  const [sideEventDialog, setSideEventDialog] = useState<{ id: string; name: string; price_cents: number } | null>(null);
+  const [sideEventDialog, setSideEventDialog] = useState<{ id: string; name: string; price_cents: number; custom_questions: Array<{ id: string; label: string; type: "checkbox" | "text" | "select"; required: boolean; options?: string[] }> } | null>(null);
   const [seForm, setSeForm] = useState({ name: "", email: "", phone: "", quantity: "1" });
+  const [seAnswers, setSeAnswers] = useState<Record<string, string | boolean>>({});
   const [seSubmitting, setSeSubmitting] = useState(false);
 
    // Forms

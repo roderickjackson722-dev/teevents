@@ -211,6 +211,7 @@ const Registration = () => {
         foursome_registration: foursomeReg,
         max_group_size: maxGroupSize,
         allow_cover_fees: allowCoverFees,
+        captain_label: captainLabel.trim() || null,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);

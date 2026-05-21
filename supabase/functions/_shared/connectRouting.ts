@@ -159,7 +159,7 @@ export async function logDirectCharge(
     context: string;
     tournamentId: string | null;
     organizationId: string | null;
-    stripeAccountId: string;
+    stripeAccountId: string | null;
     grossCents: number;
     platformFeeCents: number;
     stripeFeeCents: number;
@@ -169,6 +169,7 @@ export async function logDirectCharge(
     stripePaymentIntentId?: string | null;
     buyerEmail?: string | null;
     notes?: string | null;
+    isPlatformFallback?: boolean;
   },
 ) {
   try {
@@ -177,9 +178,9 @@ export async function logDirectCharge(
       tournament_id: params.tournamentId,
       organization_id: params.organizationId,
       organizer_stripe_account_id: params.stripeAccountId,
-      organizer_charges_ready: true,
+      organizer_charges_ready: !params.isPlatformFallback,
       payment_method_override: "default",
-      routing_decision: "direct",
+      routing_decision: params.isPlatformFallback ? "platform_fallback" : "direct",
       gross_cents: params.grossCents,
       platform_fee_cents: params.platformFeeCents,
       stripe_fee_cents: params.stripeFeeCents,

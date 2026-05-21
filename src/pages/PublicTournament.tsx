@@ -1701,7 +1701,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                             </button>
                           ) : (
                             <a
-                              href={`/t/${slug}/vendor?tier=${tier.id}`}
+                              href={`/t/${slug}/vendors?tier=${tier.id}`}
                               className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
                               style={{ backgroundColor: secondary, color: primary }}
                             >

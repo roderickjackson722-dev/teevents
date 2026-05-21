@@ -822,134 +822,145 @@ const Finances = () => {
 
         {/* Transactions Tab */}
         <TabsContent value="transactions" className="space-y-4">
-          <div className="relative max-w-sm">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or email..."
-              className="pl-9 bg-card"
-            />
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative max-w-sm flex-1 min-w-[220px]">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search name, email, type, or description..."
+                className="pl-9 bg-card"
+              />
+            </div>
+            {selectedTournamentData && (
+              <p className="text-xs text-muted-foreground">
+                Showing transactions for <strong>{selectedTournamentData.title}</strong>
+              </p>
+            )}
           </div>
 
-          {loading ? (
-            <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-          ) : filteredRegistrations.length === 0 ? (
-            <div className="text-center py-12 bg-muted/20 rounded-lg border border-border">
-              <CreditCard className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No transactions found.</p>
-            </div>
-          ) : (
-            <div className="bg-card rounded-lg border border-border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30">
-                      <th className="w-8 p-3"></th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Participant</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Customer Paid</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Platform Fee</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Stripe Fee</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net to Organizer</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground p-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRegistrations.map((reg) => {
-                      const matchingTx: any = platformTransactions.find(
-                        (tx: any) => tx.metadata?.registration_ids?.includes?.(reg.id) || (tx as any).registration_id === reg.id
-                      );
-                      // Prefer the actual Stripe-recorded values from platform_transactions when present.
-                      // Fall back to base-price math only for unpaid/pending rows that have no transaction yet.
-                      const baseAmount = getRegistrationAmount(reg);
-                      const customerPaid = matchingTx?.amount_cents ?? baseAmount;
-                      const platformFee = matchingTx?.platform_fee_cents ?? Math.round(baseAmount * 0.05);
-                      const stripeFee = matchingTx?.stripe_fee_cents ?? 0;
-                      const netToOrganizer = matchingTx?.net_amount_cents ?? Math.max(baseAmount - platformFee, 0);
-                      const expanded = expandedTxRows.has(reg.id);
-                      return (
-                        <Fragment key={reg.id}>
-                        <tr className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggleTxRow(reg.id)}>
-                          <td className="p-3">
-                            {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-                          </td>
-                          <td className="p-3">
-                            <p className="font-medium text-sm text-foreground">{reg.first_name} {reg.last_name}</p>
-                            <p className="text-xs text-muted-foreground">{reg.email}</p>
-                          </td>
-                          <td className="p-3 font-semibold text-sm text-foreground">${(customerPaid / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(platformFee / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(stripeFee / 100).toFixed(2)}</td>
-                          <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(netToOrganizer / 100).toFixed(2)}</td>
-                          <td className="p-3">{statusBadge(reg.payment_status)}</td>
-                          <td className="p-3 text-sm text-muted-foreground">{new Date(reg.created_at).toLocaleDateString()}</td>
-                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-1">
-                              {reg.payment_status === "paid" && (
-                                <>
-                                  <Button variant="ghost" size="sm" className="h-8 text-xs gap-1" onClick={() => handleResendConfirmation(reg.id)} disabled={resendingId === reg.id} title="Resend confirmation email">
-                                    {resendingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
-                                    <span className="hidden sm:inline">Resend</span>
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button variant="ghost" size="sm" className="h-8 text-xs text-destructive hover:text-destructive gap-1" disabled={processingId === reg.id} title="Issue a refund">
-                                        {processingId === reg.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-                                        <span className="hidden sm:inline">Refund</span>
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Initiate Refund</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Are you sure you want to refund <span className="font-semibold">{reg.first_name} {reg.last_name}</span>
-                                          {" "}(${(customerPaid / 100).toFixed(2)})? The refund will be processed through Stripe and cannot be undone.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDirectRefund(reg.id)} className="bg-destructive hover:bg-destructive/90">
-                                          Yes, Process Refund
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                        {expanded && (
-                          <tr className="bg-muted/20 border-b border-border">
-                            <td colSpan={8} className="p-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                                <div className="space-y-1">
-                                  <div><span className="text-muted-foreground">Stripe Payment Intent:</span> <code className="text-xs">{matchingTx?.stripe_payment_intent_id || "—"}</code></div>
-                                  <div><span className="text-muted-foreground">Stripe Session:</span> <code className="text-xs">{matchingTx?.stripe_session_id || "—"}</code></div>
-                                  <div><span className="text-muted-foreground">Registration ID:</span> <code className="text-xs">{reg.id}</code></div>
-                                </div>
-                                <div className="space-y-1">
-                                  <div><span className="text-muted-foreground">Payout Method:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{matchingTx?.payout_method || "—"}</Badge></div>
-                                  <div><span className="text-muted-foreground">Payout Status:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{matchingTx?.status || "—"}</Badge></div>
-                                  <div><span className="text-muted-foreground">Stripe Fee:</span> ${((matchingTx?.stripe_fee_cents || 0) / 100).toFixed(2)}</div>
-                                  {matchingTx?.failure_reason && (
-                                    <div className="text-destructive"><span className="text-muted-foreground">Failure:</span> {matchingTx.failure_reason}</div>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          {(() => {
+            const TYPE_META: Record<string, { label: string; cls: string }> = {
+              registration: { label: "Registration", cls: "bg-blue-100 text-blue-700 border-blue-200" },
+              sponsorship: { label: "Sponsorship", cls: "bg-purple-100 text-purple-700 border-purple-200" },
+              sponsor: { label: "Sponsorship", cls: "bg-purple-100 text-purple-700 border-purple-200" },
+              vendor: { label: "Vendor", cls: "bg-orange-100 text-orange-700 border-orange-200" },
+              vendor_booth_fee: { label: "Vendor", cls: "bg-orange-100 text-orange-700 border-orange-200" },
+              side_event: { label: "Side Event", cls: "bg-teal-100 text-teal-700 border-teal-200" },
+              side_event_ticket: { label: "Side Event", cls: "bg-teal-100 text-teal-700 border-teal-200" },
+              donation: { label: "Donation", cls: "bg-pink-100 text-pink-700 border-pink-200" },
+              auction: { label: "Auction", cls: "bg-indigo-100 text-indigo-700 border-indigo-200" },
+              raffle: { label: "Raffle", cls: "bg-indigo-100 text-indigo-700 border-indigo-200" },
+              store: { label: "Store", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+            };
+            const typeBadge = (t: string) => {
+              const m = TYPE_META[t] || { label: (t || "Other").replace(/_/g, " "), cls: "bg-muted text-foreground border-border" };
+              return <Badge variant="outline" className={m.cls + " capitalize"}>{m.label}</Badge>;
+            };
+
+            const txForTournament = platformTransactions.filter(
+              (t) => !selectedTournament || t.tournament_id === selectedTournament
+            );
+            const q = search.toLowerCase();
+            const filteredTx = txForTournament.filter((t) => {
+              if (!q) return true;
+              return (
+                (t.golfer_name || "").toLowerCase().includes(q) ||
+                (t.golfer_email || "").toLowerCase().includes(q) ||
+                (t.description || "").toLowerCase().includes(q) ||
+                (t.type || "").toLowerCase().includes(q)
+              );
+            });
+
+            if (loading) {
+              return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+            }
+            if (filteredTx.length === 0) {
+              return (
+                <div className="text-center py-12 bg-muted/20 rounded-lg border border-border">
+                  <CreditCard className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No transactions found for this event.</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="w-8 p-3"></th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3">Type</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3">Customer / Item</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3">Customer Paid</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Platform Fee</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden md:table-cell">Stripe Fee</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3 hidden lg:table-cell">Net to Organizer</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3">Status</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground p-3">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTx.map((tx) => {
+                        const expanded = expandedTxRows.has(tx.id);
+                        return (
+                          <Fragment key={tx.id}>
+                            <tr className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggleTxRow(tx.id)}>
+                              <td className="p-3">
+                                {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                              </td>
+                              <td className="p-3">{typeBadge(tx.type)}</td>
+                              <td className="p-3">
+                                <p className="font-medium text-sm text-foreground">{tx.golfer_name || tx.description || "—"}</p>
+                                {tx.golfer_email && <p className="text-xs text-muted-foreground">{tx.golfer_email}</p>}
+                                {tx.description && tx.golfer_name && (
+                                  <p className="text-xs text-muted-foreground">{tx.description}</p>
+                                )}
+                              </td>
+                              <td className="p-3 font-semibold text-sm text-foreground">${(tx.amount_cents / 100).toFixed(2)}</td>
+                              <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(tx.platform_fee_cents / 100).toFixed(2)}</td>
+                              <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${((tx.stripe_fee_cents || 0) / 100).toFixed(2)}</td>
+                              <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(tx.net_amount_cents / 100).toFixed(2)}</td>
+                              <td className="p-3">{statusBadge(tx.status === "succeeded" ? "paid" : tx.status)}</td>
+                              <td className="p-3 text-sm text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</td>
+                            </tr>
+                            {expanded && (
+                              <tr className="bg-muted/20 border-b border-border">
+                                <td colSpan={9} className="p-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                    <div className="space-y-1">
+                                      <div><span className="text-muted-foreground">Transaction Type:</span> <span className="capitalize">{(tx.type || "").replace(/_/g, " ")}</span></div>
+                                      <div><span className="text-muted-foreground">Description:</span> {tx.description || "—"}</div>
+                                      <div><span className="text-muted-foreground">Stripe Payment Intent:</span> <code className="text-xs">{tx.stripe_payment_intent_id || "—"}</code></div>
+                                      <div><span className="text-muted-foreground">Stripe Session:</span> <code className="text-xs">{tx.stripe_session_id || "—"}</code></div>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <div><span className="text-muted-foreground">Payout Method:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{tx.payout_method || "—"}</Badge></div>
+                                      <div><span className="text-muted-foreground">Payout Status:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{tx.status}</Badge></div>
+                                      <div>
+                                        <span className="text-muted-foreground">Gross:</span> ${(tx.amount_cents / 100).toFixed(2)} ·{" "}
+                                        <span className="text-muted-foreground">Platform:</span> ${(tx.platform_fee_cents / 100).toFixed(2)} ·{" "}
+                                        <span className="text-muted-foreground">Stripe:</span> ${((tx.stripe_fee_cents || 0) / 100).toFixed(2)} ·{" "}
+                                        <span className="text-muted-foreground">Net:</span> <span className="font-medium text-primary">${(tx.net_amount_cents / 100).toFixed(2)}</span>
+                                      </div>
+                                      {tx.failure_reason && (
+                                        <div className="text-destructive"><span className="text-muted-foreground">Failure:</span> {tx.failure_reason}</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </TabsContent>
 
         {/* Refunds Tab */}

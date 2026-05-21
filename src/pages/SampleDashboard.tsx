@@ -1128,7 +1128,7 @@ const HelpTab = () => (
         { title: "Connect Stripe", desc: "Set up your Stripe account to receive payouts" },
         { title: "Refunds & Chargebacks", desc: "How refunds and disputes are handled" },
         { title: "Custom Domains", desc: "Point your own domain to your tournament site" },
-        { title: "Contact Support", desc: "Reach our team at support@teevents.golf" },
+        { title: "Contact Support", desc: "Reach our team at info@teevents.golf" },
       ].map((h) => (
         <Card key={h.title}>
           <CardContent className="pt-5 space-y-1">

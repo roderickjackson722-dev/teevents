@@ -1471,7 +1471,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => { setSideEventDialog({ id: ev.id, name: ev.name, price_cents: ev.price_cents }); setSeForm({ name: "", email: "", phone: "", quantity: "1" }); }}
+                            onClick={() => { setSideEventDialog({ id: ev.id, name: ev.name, price_cents: ev.price_cents, custom_questions: Array.isArray((ev as any).custom_questions) ? (ev as any).custom_questions : [] }); setSeForm({ name: "", email: "", phone: "", quantity: "1" }); setSeAnswers({}); }}
                             className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
                             style={{ backgroundColor: secondary, color: primary }}
                           >

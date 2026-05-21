@@ -369,7 +369,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
           supabase.from("vendor_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           supabase.from("vendor_registrations").select("id, vendor_name, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
-          (supabase as any).from("side_events").select("id, name, description, event_date, location, price_cents, max_tickets, tickets_sold").eq("tournament_id", t.id).eq("is_active", true).eq("show_on_public", true).order("display_order"),
+          (supabase as any).from("side_events").select("id, name, description, event_date, location, price_cents, max_tickets, tickets_sold, custom_questions").eq("tournament_id", t.id).eq("is_active", true).eq("show_on_public", true).order("display_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);

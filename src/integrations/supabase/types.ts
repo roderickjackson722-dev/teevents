@@ -432,6 +432,186 @@ export type Database = {
           },
         ]
       }
+      budget_estimates: {
+        Row: {
+          budget_id: string
+          created_at: string
+          estimated_amount: number
+          id: string
+          item_name: string
+          notes: string
+          type: string
+          vendor_contact: string
+        }
+        Insert: {
+          budget_id: string
+          created_at?: string
+          estimated_amount?: number
+          id?: string
+          item_name?: string
+          notes?: string
+          type?: string
+          vendor_contact?: string
+        }
+        Update: {
+          budget_id?: string
+          created_at?: string
+          estimated_amount?: number
+          id?: string
+          item_name?: string
+          notes?: string
+          type?: string
+          vendor_contact?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_estimates_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_expenses: {
+        Row: {
+          actual_cost: number
+          budget_id: string
+          category: string
+          created_at: string
+          estimated_cost: number
+          id: string
+          is_paid: boolean
+          item_name: string
+          notes: string
+          payment_due_date: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number
+          budget_id: string
+          category?: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          is_paid?: boolean
+          item_name?: string
+          notes?: string
+          payment_due_date?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number
+          budget_id?: string
+          category?: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          is_paid?: boolean
+          item_name?: string
+          notes?: string
+          payment_due_date?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_expenses_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_income: {
+        Row: {
+          actual_amount: number
+          budget_id: string
+          category: string
+          created_at: string
+          date_received: string | null
+          id: string
+          is_received: boolean
+          item_name: string
+          notes: string
+          payer_source: string
+          projected_amount: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          actual_amount?: number
+          budget_id: string
+          category?: string
+          created_at?: string
+          date_received?: string | null
+          id?: string
+          is_received?: boolean
+          item_name?: string
+          notes?: string
+          payer_source?: string
+          projected_amount?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_amount?: number
+          budget_id?: string
+          category?: string
+          created_at?: string
+          date_received?: string | null
+          id?: string
+          is_received?: boolean
+          item_name?: string
+          notes?: string
+          payer_source?: string
+          projected_amount?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_income_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_templates: {
+        Row: {
+          created_at: string
+          expense_items: Json
+          id: string
+          income_items: Json
+          template_name: string
+          tournament_format: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expense_items?: Json
+          id?: string
+          income_items?: Json
+          template_name: string
+          tournament_format?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expense_items?: Json
+          id?: string
+          income_items?: Json
+          template_name?: string
+          tournament_format?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       college_tournament_invitations: {
         Row: {
           coach_email: string
@@ -3919,6 +4099,35 @@ export type Database = {
             foreignKeyName: "tournament_budget_items_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_budgets: {
+        Row: {
+          created_at: string
+          id: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_budgets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },

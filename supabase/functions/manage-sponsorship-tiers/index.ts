@@ -187,6 +187,19 @@ Deno.serve(async (req) => {
         is_title_sponsor: p.is_title_sponsor === true,
       };
 
+      // Enforce only one title sponsor per tournament
+      if (record.is_title_sponsor === true) {
+        const clear = supabaseAdmin
+          .from("sponsor_registrations")
+          .update({ is_title_sponsor: false })
+          .eq("tournament_id", tournamentId);
+        if (action !== "create_registration" && registrationId) {
+          await clear.neq("id", registrationId);
+        } else {
+          await clear;
+        }
+      }
+
       if (action === "create_registration") {
         const { data, error } = await supabaseAdmin
           .from("sponsor_registrations")

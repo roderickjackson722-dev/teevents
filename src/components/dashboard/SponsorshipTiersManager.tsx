@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Loader2, Eye, DollarSign, Copy, ExternalLink, Upload, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Eye, DollarSign, Copy, ExternalLink, Upload, Image as ImageIcon, Crown } from "lucide-react";
 
 interface SponsorshipTier {
   id: string;

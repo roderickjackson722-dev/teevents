@@ -3364,6 +3364,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_title_sponsor: boolean
           logo_url: string | null
           manually_approved: boolean
           paid_at: string | null
@@ -3384,6 +3385,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_title_sponsor?: boolean
           logo_url?: string | null
           manually_approved?: boolean
           paid_at?: string | null
@@ -3404,6 +3406,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_title_sponsor?: boolean
           logo_url?: string | null
           manually_approved?: boolean
           paid_at?: string | null

@@ -245,7 +245,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   // Sponsorship tiers for public display
   const [sponsorshipTiers, setSponsorshipTiers] = useState<{ id: string; name: string; description: string | null; price_cents: number; benefits: string | null; display_order: number; total_spots: number | null; spots_used: number; package_type: string | null; hide_price_when_sold_out?: boolean }[]>([]);
-  const [paidSponsors, setPaidSponsors] = useState<Array<{ id: string; company_name: string; logo_url: string | null; website_url: string | null; tier_id: string | null }>>([]);
+  const [paidSponsors, setPaidSponsors] = useState<Array<{ id: string; company_name: string; logo_url: string | null; website_url: string | null; tier_id: string | null; is_title_sponsor?: boolean }>>([]);
   const [sponsorSuccess, setSponsorSuccess] = useState(false);
   const [sponsorVerifying, setSponsorVerifying] = useState(false);
 
@@ -366,7 +366,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("tournament_contests").select("id, name, description, icon, fee_cents").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("sponsorship_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type, hide_price_when_sold_out").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           (supabase as any).from("tournament_accommodations").select("id, hotel_name, address, phone, website_url, group_code, booking_deadline, notes, display_order, accommodation_room_types(id, room_type, rate_cents, rate_note, max_occupancy, display_order, is_active), accommodation_custom_fields(id, field_name, field_value, display_order)").eq("tournament_id", t.id).eq("is_active", true).order("display_order"),
-          supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
+          supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id, is_title_sponsor").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
           supabase.from("vendor_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           supabase.from("vendor_registrations").select("id, vendor_name, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
           (supabase as any).from("side_events").select("id, name, description, event_date, location, price_cents, max_tickets, tickets_sold, custom_questions").eq("tournament_id", t.id).eq("is_active", true).eq("show_on_public", true).order("display_order"),
@@ -821,6 +821,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   })();
 
   // Sponsor carousel — merge organizer-added sponsors with publicly-approved sponsor_registrations
+  const _sponsorTierWeight = (tier: string) => {
+    const order: Record<string, number> = { title: 0, presenting: 1, platinum: 2, gold: 3, silver: 4, bronze: 5, hole: 6, supporter: 7, inkind: 8 };
+    return order[tier] ?? 99;
+  };
   const allSponsors: PublicSponsor[] = [
     ...sponsors,
     ...paidSponsors
@@ -828,12 +832,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       .map((p) => ({
         id: `reg-${p.id}`,
         name: p.company_name,
-        tier: "supporter",
+        tier: p.is_title_sponsor ? "title" : "supporter",
         logo_url: p.logo_url,
         website_url: p.website_url,
         show_on_leaderboard: false,
       })),
-  ];
+  ].sort((a, b) => _sponsorTierWeight(a.tier) - _sponsorTierWeight(b.tier));
   const sponsorsPerPage = 3;
   const sponsorPages = Math.ceil(allSponsors.length / sponsorsPerPage);
   const visibleSponsors = allSponsors.slice(sponsorIndex * sponsorsPerPage, (sponsorIndex + 1) * sponsorsPerPage);

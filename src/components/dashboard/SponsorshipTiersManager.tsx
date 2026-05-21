@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Loader2, Eye, DollarSign, Copy, ExternalLink, Upload, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Eye, DollarSign, Copy, ExternalLink, Upload, Image as ImageIcon, Crown } from "lucide-react";
 
 interface SponsorshipTier {
   id: string;
@@ -67,6 +67,7 @@ interface SponsorRegistration {
   created_at: string;
   show_on_public?: boolean;
   manually_approved?: boolean;
+  is_title_sponsor?: boolean;
   _source?: "registration" | "legacy";
   _legacyTier?: string | null;
 }
@@ -141,6 +142,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     payment_status: "pending",
     show_on_public: true,
     manually_approved: false,
+    is_title_sponsor: false,
   });
   const [form, setForm] = useState({
     name: "",
@@ -330,6 +332,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       company_name: "", contact_name: "", contact_email: "", contact_phone: "",
       website_url: "", description: "", logo_url: "", tier_id: "", amount: "",
       payment_status: "pending", show_on_public: true, manually_approved: false,
+      is_title_sponsor: false,
     });
   };
 
@@ -348,6 +351,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       payment_status: reg.payment_status || "pending",
       show_on_public: reg.show_on_public !== false,
       manually_approved: !!reg.manually_approved,
+      is_title_sponsor: !!reg.is_title_sponsor,
     });
     setRegDialogOpen(true);
   };
@@ -388,6 +392,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       payment_status: regForm.payment_status,
       show_on_public: regForm.show_on_public,
       manually_approved: regForm.manually_approved,
+      is_title_sponsor: regForm.is_title_sponsor,
     };
 
     // If editing a legacy tournament_sponsors row, migrate it: delete legacy + create new registration
@@ -702,6 +707,19 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                         )}
                       </div>
                     </div>
+                    <div className="flex items-start gap-3 rounded-md border border-secondary/40 bg-secondary/5 p-3">
+                      <Switch
+                        id="is-title-sponsor"
+                        checked={regForm.is_title_sponsor}
+                        onCheckedChange={(v) => setRegForm({ ...regForm, is_title_sponsor: v })}
+                      />
+                      <div className="flex-1 -mt-0.5">
+                        <Label htmlFor="is-title-sponsor" className="text-sm">Title Sponsor</Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Highlights this sponsor on the public site with a larger logo, "Title Sponsor" label, and top-of-list placement. Only one sponsor can hold this designation per tournament.
+                        </p>
+                      </div>
+                    </div>
                     <div>
                       <Label>Description</Label>
                       <Textarea value={regForm.description} onChange={e => setRegForm({ ...regForm, description: e.target.value })} rows={2} maxLength={2000} />
@@ -727,6 +745,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                   <TableHead>Tier</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-center" title="Designate as the title sponsor — shown larger and first on the public page (one per tournament)">Title</TableHead>
                   <TableHead className="text-center">Show on Public</TableHead>
                   <TableHead className="text-center" title="Check to display this sponsor on the public website even if payment is still pending">Override Pending & Show on Public</TableHead>
                   <TableHead>Date</TableHead>
@@ -783,6 +802,34 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                           <SelectItem value="failed">Failed</SelectItem>
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reg._source === "legacy" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        <button
+                          type="button"
+                          title={reg.is_title_sponsor ? "Title sponsor — click to remove" : "Mark as Title Sponsor (larger logo, top placement)"}
+                          onClick={async () => {
+                            if (demoGuard()) return;
+                            const next = !reg.is_title_sponsor;
+                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
+                              body: { action: "update_registration_visibility", registration_id: reg.id, tournament_id: selectedTournament, is_title_sponsor: next },
+                            });
+                            if (error || data?.error) {
+                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
+                            } else {
+                              toast({ title: next ? "Marked as Title Sponsor" : "Title Sponsor removed" });
+                              fetchData();
+                            }
+                          }}
+                          className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                            reg.is_title_sponsor ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"
+                          }`}
+                        >
+                          <Crown className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       {reg._source === "legacy" ? (

@@ -184,7 +184,21 @@ Deno.serve(async (req) => {
         paid_at: status === "paid" ? new Date().toISOString() : null,
         show_on_public: p.show_on_public !== false,
         manually_approved: p.manually_approved === true,
+        is_title_sponsor: p.is_title_sponsor === true,
       };
+
+      // Enforce only one title sponsor per tournament
+      if (record.is_title_sponsor === true) {
+        const clear = supabaseAdmin
+          .from("sponsor_registrations")
+          .update({ is_title_sponsor: false })
+          .eq("tournament_id", tournamentId);
+        if (action !== "create_registration" && registrationId) {
+          await clear.neq("id", registrationId);
+        } else {
+          await clear;
+        }
+      }
 
       if (action === "create_registration") {
         const { data, error } = await supabaseAdmin
@@ -236,7 +250,16 @@ Deno.serve(async (req) => {
       const update: Record<string, unknown> = {};
       if (typeof body?.show_on_public === "boolean") update.show_on_public = body.show_on_public;
       if (typeof body?.manually_approved === "boolean") update.manually_approved = body.manually_approved;
+      if (typeof body?.is_title_sponsor === "boolean") update.is_title_sponsor = body.is_title_sponsor;
       if (Object.keys(update).length === 0) throw new Error("Nothing to update");
+      // Enforce single title sponsor per tournament
+      if (update.is_title_sponsor === true) {
+        await supabaseAdmin
+          .from("sponsor_registrations")
+          .update({ is_title_sponsor: false })
+          .eq("tournament_id", tournamentId)
+          .neq("id", registrationId);
+      }
       const { error } = await supabaseAdmin
         .from("sponsor_registrations")
         .update(update)

@@ -205,7 +205,7 @@ export default function WaitlistSignup({
 
         <Button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || isFull}
           className="w-full"
           style={{ backgroundColor: secondaryColor, color: primaryColor }}
         >

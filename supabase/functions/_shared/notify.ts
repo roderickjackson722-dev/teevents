@@ -183,28 +183,28 @@ export async function sendRegistrantConfirmationEmail(
 
     const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg);
 
-    console.log(`[Confirmation] Attempting to send registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
+    console.log(`[Confirmation] Sending registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const client = getAdminClient();
+    const result = await sendAndLog(
+      client,
+      RESEND_API_KEY,
+      {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: [recipientEmail],
         subject: `You're Registered — ${tournamentTitle}`,
         html,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error(`[Confirmation] Resend API error (${res.status}):`, err);
-      console.error(`[Confirmation] Sender domain: ${SENDER_EMAIL} — Ensure this domain is verified in Resend.`);
+      },
+      {
+        templateName: "registration-confirmation",
+        source: "sendRegistrantConfirmationEmail",
+        tournamentId: tournamentId || null,
+      },
+    );
+    if (!result.ok) {
+      console.error(`[Confirmation] Failed:`, result.error);
     } else {
-      console.log(`[Confirmation] Registration confirmation successfully sent to ${recipientEmail}`);
+      console.log(`[Confirmation] Sent to ${recipientEmail} (resend_id=${result.resendId})`);
     }
   } catch (err) {
     console.error("Failed to send registrant confirmation email:", err);

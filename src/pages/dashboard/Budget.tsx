@@ -29,6 +29,10 @@ type Budget = {
   id: string;
   estimated_golfers: number;
   actual_golfers: number;
+  estimate_section_title: string;
+  expense_section_titles: Record<string, string>;
+  income_section_titles: Record<string, string>;
+  pnl_section_title: string;
 };
 type Estimate = {
   id: string; budget_id: string; item_name: string;
@@ -67,6 +71,7 @@ export default function BudgetPage() {
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"estimates" | "expenses" | "income" | "pnl">("estimates");
   const [budget, setBudget] = useState<Budget | null>(null);
   const [loading, setLoading] = useState(true);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
@@ -101,7 +106,7 @@ export default function BudgetPage() {
       setLoading(true);
       const { data: existing, error: exErr } = await supabase
         .from("tournament_budgets")
-        .select("id, estimated_golfers, actual_golfers")
+        .select("id, estimated_golfers, actual_golfers, estimate_section_title, expense_section_titles, income_section_titles, pnl_section_title")
         .eq("tournament_id", selectedId)
         .maybeSingle();
       if (exErr) console.error("budget lookup", exErr);
@@ -110,7 +115,7 @@ export default function BudgetPage() {
         const { data: created, error: cErr } = await supabase
           .from("tournament_budgets")
           .insert({ tournament_id: selectedId })
-          .select("id, estimated_golfers, actual_golfers")
+          .select("id, estimated_golfers, actual_golfers, estimate_section_title, expense_section_titles, income_section_titles, pnl_section_title")
           .single();
         if (cErr) {
           console.error("budget create", cErr);
@@ -187,6 +192,15 @@ export default function BudgetPage() {
   const actGolfers = budget?.actual_golfers || 0;
   const estCostPerPerson = estGolfers > 0 ? totalEstExpenses / estGolfers : 0;
   const actCostPerPerson = actGolfers > 0 ? totalActExpenses / actGolfers : 0;
+  const expenseSectionTitles = budget?.expense_section_titles || {};
+  const incomeSectionTitles = budget?.income_section_titles || {};
+
+  function getExpenseTitle(category: ExpenseCategory) {
+    return expenseSectionTitles[category] || category;
+  }
+  function getIncomeTitle(category: IncomeCategory) {
+    return incomeSectionTitles[category] || category;
+  }
 
   // ---- Mutations ----
   async function updateBudget(patch: Partial<Budget>) {
@@ -194,6 +208,12 @@ export default function BudgetPage() {
     setBudget({ ...budget, ...patch } as Budget);
     const { error } = await supabase.from("tournament_budgets").update(patch as any).eq("id", budget.id);
     if (error) toast.error("Save failed"); else flashSaved();
+  }
+  function updateExpenseSectionTitle(category: ExpenseCategory, title: string) {
+    updateBudget({ expense_section_titles: { ...expenseSectionTitles, [category]: title || category } });
+  }
+  function updateIncomeSectionTitle(category: IncomeCategory, title: string) {
+    updateBudget({ income_section_titles: { ...incomeSectionTitles, [category]: title || category } });
   }
   async function updateExpense(id: string, patch: Partial<Expense>) {
     if (demoGuard()) return;
@@ -415,7 +435,7 @@ export default function BudgetPage() {
             />
           </div>
 
-          <Tabs defaultValue="estimates" className="no-print">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="no-print">
             <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
               <TabsTrigger value="estimates" className="gap-1.5 py-2">
                 <Lightbulb className="h-4 w-4" /> Estimates
@@ -434,7 +454,9 @@ export default function BudgetPage() {
             <TabsContent value="estimates" className="mt-4">
               <SectionCard
                 icon={<Lightbulb className="h-5 w-5 text-secondary" />}
-                title="Vendor Estimates"
+                title={budget?.estimate_section_title || "Vendor Estimates"}
+                editableTitle
+                onTitleChange={(title) => updateBudget({ estimate_section_title: title || "Vendor Estimates" })}
                 description="Compare quotes from up to three vendors per item. Move the winning quote into your Expense plan."
                 action={
                   <Button size="sm" variant="outline" onClick={addEstimate}>
@@ -489,6 +511,8 @@ export default function BudgetPage() {
                   <ExpenseSection
                     key={cat}
                     category={cat}
+                    title={getExpenseTitle(cat)}
+                    onTitleChange={(title) => updateExpenseSectionTitle(cat, title)}
                     items={expenses.filter((e) => e.category === cat)}
                     onChange={updateExpense}
                     onDelete={delExpense}
@@ -514,6 +538,8 @@ export default function BudgetPage() {
                   <IncomeSection
                     key={cat}
                     category={cat}
+                    title={getIncomeTitle(cat)}
+                    onTitleChange={(title) => updateIncomeSectionTitle(cat, title)}
                     items={income.filter((i) => i.category === cat)}
                     onChange={updateIncome}
                     onDelete={delIncome}
@@ -527,6 +553,10 @@ export default function BudgetPage() {
               <ProfitLossSummary
                 expenses={expenses}
                 income={income}
+                title={budget?.pnl_section_title || "Profit / Loss Summary"}
+                onTitleChange={(title) => updateBudget({ pnl_section_title: title || "Profit / Loss Summary" })}
+                expenseTitleFor={getExpenseTitle}
+                incomeTitleFor={getIncomeTitle}
                 totalEstIncome={totalEstIncome}
                 totalActIncome={totalActIncome}
                 totalEstExpenses={totalEstExpenses}
@@ -542,11 +572,13 @@ export default function BudgetPage() {
             <EstimatesTable items={estimates} onChange={() => {}} onMove={() => {}} onDelete={() => {}} />
             {EXPENSE_CATEGORIES.map((cat) => (
               <ExpenseSection key={cat} category={cat}
+                title={getExpenseTitle(cat)} onTitleChange={() => {}}
                 items={expenses.filter((e) => e.category === cat)}
                 onChange={() => {}} onDelete={() => {}} onAdd={() => {}} />
             ))}
             {INCOME_CATEGORIES.map((cat) => (
               <IncomeSection key={cat} category={cat}
+                title={getIncomeTitle(cat)} onTitleChange={() => {}}
                 items={income.filter((i) => i.category === cat)}
                 onChange={() => {}} onDelete={() => {}} onAdd={() => {}} />
             ))}
@@ -583,10 +615,26 @@ function KpiPill({ label, value, input }: { label: string; value?: string; input
   );
 }
 
+function EditableSectionTitle({
+  value, onCommit, className = "text-sm",
+}: { value: string; onCommit: (v: string) => void; className?: string }) {
+  const [local, setLocal] = useState(value || "");
+  useEffect(() => setLocal(value || ""), [value]);
+  return (
+    <input
+      className={`${className} font-display font-bold leading-tight bg-transparent border border-transparent hover:border-input focus:border-input rounded px-1 -mx-1 focus:outline-none focus:ring-1 focus:ring-ring`}
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => { if (local !== value) onCommit(local.trim()); }}
+    />
+  );
+}
+
 function SectionCard({
-  icon, title, description, action, kpis, children,
+  icon, title, editableTitle, onTitleChange, description, action, kpis, children,
 }: {
   icon: React.ReactNode; title: string; description?: string;
+  editableTitle?: boolean; onTitleChange?: (title: string) => void;
   action?: React.ReactNode; kpis?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
@@ -596,7 +644,11 @@ function SectionCard({
           <div className="flex items-start gap-2">
             {icon}
             <div>
-              <h2 className="text-xl font-display font-bold leading-tight">{title}</h2>
+              {editableTitle && onTitleChange ? (
+                <EditableSectionTitle value={title} onCommit={onTitleChange} className="text-xl" />
+              ) : (
+                <h2 className="text-xl font-display font-bold leading-tight">{title}</h2>
+              )}
               {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
             </div>
           </div>
@@ -674,9 +726,11 @@ function EstimatesTable({
 
 /* -------- Expense Section -------- */
 function ExpenseSection({
-  category, items, onChange, onDelete, onAdd,
+  category, title, onTitleChange, items, onChange, onDelete, onAdd,
 }: {
   category: ExpenseCategory;
+  title: string;
+  onTitleChange: (title: string) => void;
   items: Expense[];
   onChange: (id: string, patch: Partial<Expense>) => void;
   onDelete: (id: string) => void;
@@ -687,7 +741,7 @@ function ExpenseSection({
   return (
     <div>
       <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between">
-        <h3 className="font-semibold uppercase tracking-wide text-sm">{category}</h3>
+        <EditableSectionTitle value={title} onCommit={onTitleChange} className="text-sm uppercase tracking-wide text-primary-foreground" />
         <Button size="sm" variant="ghost" onClick={onAdd}
           className="h-7 text-primary-foreground hover:bg-primary-foreground/15">
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
@@ -755,9 +809,11 @@ function ExpenseSection({
 
 /* -------- Income Section -------- */
 function IncomeSection({
-  category, items, onChange, onDelete, onAdd,
+  category, title, onTitleChange, items, onChange, onDelete, onAdd,
 }: {
   category: IncomeCategory;
+  title: string;
+  onTitleChange: (title: string) => void;
   items: Income[];
   onChange: (id: string, patch: Partial<Income>) => void;
   onDelete: (id: string) => void;
@@ -768,7 +824,7 @@ function IncomeSection({
   return (
     <div>
       <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between">
-        <h3 className="font-semibold uppercase tracking-wide text-sm">{category}</h3>
+        <EditableSectionTitle value={title} onCommit={onTitleChange} className="text-sm uppercase tracking-wide text-primary-foreground" />
         <Button size="sm" variant="ghost" onClick={onAdd}
           className="h-7 text-primary-foreground hover:bg-primary-foreground/15">
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
@@ -832,10 +888,14 @@ function IncomeSection({
 
 /* -------- Profit / Loss Summary -------- */
 function ProfitLossSummary({
-  expenses, income, totalEstIncome, totalActIncome,
+  expenses, income, title, onTitleChange, expenseTitleFor, incomeTitleFor, totalEstIncome, totalActIncome,
   totalEstExpenses, totalActExpenses, netEst, netAct,
 }: {
   expenses: Expense[]; income: Income[];
+  title?: string;
+  onTitleChange?: (title: string) => void;
+  expenseTitleFor?: (category: ExpenseCategory) => string;
+  incomeTitleFor?: (category: IncomeCategory) => string;
   totalEstIncome: number; totalActIncome: number;
   totalEstExpenses: number; totalActExpenses: number;
   netEst: number; netAct: number;
@@ -844,6 +904,7 @@ function ProfitLossSummary({
     const rows = income.filter((i) => i.category === c);
     return {
       category: c,
+      title: incomeTitleFor ? incomeTitleFor(c) : c,
       est: rows.reduce((s, i) => s + incomeProjected(i), 0),
       act: rows.reduce((s, i) => s + incomeActual(i), 0),
     };
@@ -852,6 +913,7 @@ function ProfitLossSummary({
     const rows = expenses.filter((e) => e.category === c);
     return {
       category: c,
+      title: expenseTitleFor ? expenseTitleFor(c) : c,
       est: rows.reduce((s, e) => s + Number(e.estimated_cost), 0),
       act: rows.reduce((s, e) => s + Number(e.actual_cost), 0),
     };
@@ -860,7 +922,7 @@ function ProfitLossSummary({
   return (
     <section className="bg-card border border-border rounded-lg overflow-hidden">
       <header className="p-4 border-b border-border">
-        <h2 className="text-xl font-display font-bold">Profit / Loss Summary</h2>
+        {onTitleChange ? <EditableSectionTitle value={title || "Profit / Loss Summary"} onCommit={onTitleChange} className="text-xl" /> : <h2 className="text-xl font-display font-bold">{title || "Profit / Loss Summary"}</h2>}
         <p className="text-sm text-muted-foreground mt-0.5">A breakdown of your event's totals by section.</p>
       </header>
       <div className="grid lg:grid-cols-2 gap-px bg-border">
@@ -888,7 +950,7 @@ function PLTable({
   title, rows, totalEst, totalAct, positiveIsGood,
 }: {
   title: string;
-  rows: { category: string; est: number; act: number }[];
+  rows: { category: string; title?: string; est: number; act: number }[];
   totalEst: number; totalAct: number;
   positiveIsGood: boolean;
 }) {
@@ -906,7 +968,7 @@ function PLTable({
         <tbody>
           {rows.map((r) => (
             <tr key={r.category} className="border-b border-border/50">
-              <td className="py-1.5">{r.category}</td>
+              <td className="py-1.5">{r.title || r.category}</td>
               <td className="py-1.5 text-right font-mono">{fmt(r.est)}</td>
               <td className="py-1.5 text-right font-mono">{fmt(r.act)}</td>
             </tr>

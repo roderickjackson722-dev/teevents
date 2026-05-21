@@ -233,10 +233,10 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
         ) : (
           <div className="space-y-2">
             {members.map((m) => (
-              <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                <div className="flex items-center gap-3 min-w-0">
+              <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg border border-border">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="text-sm font-medium text-foreground block truncate">
                       {m.user_id === userId ? "You" : m.name || "Team Member"}
                     </span>
@@ -246,23 +246,25 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                       </span>
                     )}
                   </div>
-                  <Badge variant={getRoleBadgeVariant(m.role)} className="text-[10px] capitalize shrink-0">
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Badge variant={getRoleBadgeVariant(m.role)} className="text-[10px] capitalize">
                     {m.role}
                   </Badge>
+                  {m.role !== "owner" && m.user_id !== userId && (
+                    <>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditDialog(m)}>
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRemoveMember(m.id, m.user_id)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </>
+                  )}
+                  {m.role === "owner" && (
+                    <Badge variant="outline" className="text-[10px]">Owner</Badge>
+                  )}
                 </div>
-                {m.role !== "owner" && m.user_id !== userId && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="ghost" size="sm" onClick={() => openEditDialog(m)}>
-                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleRemoveMember(m.id, m.user_id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </div>
-                )}
-                {m.role === "owner" && (
-                  <Badge variant="outline" className="text-[10px] shrink-0">Owner</Badge>
-                )}
               </div>
             ))}
           </div>
@@ -275,10 +277,10 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
           <h3 className="text-sm font-semibold text-foreground mb-3">Pending Invitations</h3>
           <div className="space-y-2">
             {invitations.map((inv) => (
-              <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-                <div className="flex items-center gap-3 min-w-0">
+              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg border border-border bg-muted/30">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="text-sm font-medium text-foreground block truncate">
                       {inv.name || inv.email}
                     </span>
@@ -286,13 +288,15 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                       <span className="text-[10px] text-muted-foreground block truncate">{inv.email}</span>
                     )}
                   </div>
-                  <Badge variant={getRoleBadgeVariant(inv.role)} className="text-[10px] capitalize shrink-0">
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Badge variant={getRoleBadgeVariant(inv.role)} className="text-[10px] capitalize">
                     {inv.role}
                   </Badge>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleRevokeInvite(inv.id)}>
-                  <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                </Button>
               </div>
             ))}
           </div>

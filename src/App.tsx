@@ -236,6 +236,7 @@ const App = () => (
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
+           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
            <Route path="/admin/outreach" element={<AdminOutreach />} />
            <Route path="/unsubscribe" element={<Unsubscribe />} />
            <Route path="/admin/sales/flyer-to-demo" element={<FlyerToDemo />} />

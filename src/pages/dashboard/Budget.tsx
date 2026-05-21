@@ -950,7 +950,7 @@ function PLTable({
   title, rows, totalEst, totalAct, positiveIsGood,
 }: {
   title: string;
-  rows: { category: string; est: number; act: number }[];
+  rows: { category: string; title?: string; est: number; act: number }[];
   totalEst: number; totalAct: number;
   positiveIsGood: boolean;
 }) {
@@ -968,7 +968,7 @@ function PLTable({
         <tbody>
           {rows.map((r) => (
             <tr key={r.category} className="border-b border-border/50">
-              <td className="py-1.5">{r.category}</td>
+              <td className="py-1.5">{r.title || r.category}</td>
               <td className="py-1.5 text-right font-mono">{fmt(r.est)}</td>
               <td className="py-1.5 text-right font-mono">{fmt(r.act)}</td>
             </tr>

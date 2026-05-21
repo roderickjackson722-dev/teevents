@@ -30,6 +30,7 @@ const FREE_FEATURES = [
   "printables",
   "refunds",
   "basic-finances",
+  "budget",
   "sponsors",
   "advanced-pairings",
   "auto-payouts",

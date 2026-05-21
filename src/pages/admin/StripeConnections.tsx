@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, Loader2, Mail, RefreshCw, Search, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { SEO } from "@/components/SEO";
+import SEO from "@/components/SEO";
 
 interface Row {
   organization_id: string;

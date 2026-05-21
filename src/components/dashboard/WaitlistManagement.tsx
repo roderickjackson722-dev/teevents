@@ -269,6 +269,27 @@ export default function WaitlistManagement() {
                   onCheckedChange={toggleWaitlist}
                 />
               </div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <Label className="text-sm font-medium">Max Waitlist Slots</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Maximum number of people allowed to join the waitlist. Leave blank for unlimited.
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min={1}
+                  className="w-32"
+                  placeholder="Unlimited"
+                  value={selectedT.max_waitlist_slots ?? ""}
+                  onChange={async (e) => {
+                    if (demoGuard()) return;
+                    const val = e.target.value === "" ? null : Math.max(1, parseInt(e.target.value));
+                    setTournaments((prev) => prev.map((t) => t.id === selectedTournament ? { ...t, max_waitlist_slots: val } : t));
+                    await supabase.from("tournaments").update({ max_waitlist_slots: val }).eq("id", selectedTournament);
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
 

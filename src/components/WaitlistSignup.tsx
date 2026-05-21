@@ -20,6 +20,7 @@ interface WaitlistSignupProps {
   secondaryColor: string;
   depositCents?: number;
   maxGroupSize?: number;
+  maxWaitlistSlots?: number | null;
 }
 
 export default function WaitlistSignup({
@@ -28,6 +29,7 @@ export default function WaitlistSignup({
   secondaryColor,
   depositCents = 0,
   maxGroupSize = 4,
+  maxWaitlistSlots = null,
 }: WaitlistSignupProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,6 +39,22 @@ export default function WaitlistSignup({
   const [submitted, setSubmitted] = useState(false);
   const [position, setPosition] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [currentCount, setCurrentCount] = useState<number>(0);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { count } = await supabase
+        .from("tournament_waitlist")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId)
+        .in("status", ["waiting", "offered"]);
+      if (active) setCurrentCount(count || 0);
+    })();
+    return () => { active = false; };
+  }, [tournamentId, submitted]);
+
+  const isFull = maxWaitlistSlots != null && currentCount >= maxWaitlistSlots;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +76,27 @@ export default function WaitlistSignup({
       return;
     }
 
+    if (isFull) {
+      setErrors({ form: "The waitlist is currently full. Please check back later." });
+      return;
+    }
+
     setSubmitting(true);
+
+    // Re-check capacity right before insert to avoid race conditions
+    if (maxWaitlistSlots != null) {
+      const { count } = await supabase
+        .from("tournament_waitlist")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId)
+        .in("status", ["waiting", "offered"]);
+      if ((count || 0) >= maxWaitlistSlots) {
+        setSubmitting(false);
+        setCurrentCount(count || 0);
+        setErrors({ form: "The waitlist just filled up. Please check back later." });
+        return;
+      }
+    }
 
     const { data, error } = await supabase
       .from("tournament_waitlist")
@@ -107,6 +145,17 @@ export default function WaitlistSignup({
       <p className="text-sm" style={{ color: "#666" }}>
         This tournament is full, but spots may open up. Join the waitlist and we'll notify you automatically.
       </p>
+      {maxWaitlistSlots != null && (
+        <p className="text-xs" style={{ color: "#999" }}>
+          {currentCount} / {maxWaitlistSlots} waitlist spots filled
+        </p>
+      )}
+
+      {isFull && (
+        <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">
+          The waitlist is currently full. Please check back later.
+        </p>
+      )}
 
       {errors.form && (
         <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-md">{errors.form}</p>
@@ -156,7 +205,7 @@ export default function WaitlistSignup({
 
         <Button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || isFull}
           className="w-full"
           style={{ backgroundColor: secondaryColor, color: primaryColor }}
         >

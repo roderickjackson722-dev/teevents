@@ -42,6 +42,7 @@ interface Tournament {
   waitlist_enabled: boolean;
   waitlist_deposit_cents: number;
   max_players: number | null;
+  max_waitlist_slots: number | null;
 }
 
 export default function WaitlistManagement() {
@@ -100,7 +101,7 @@ export default function WaitlistManagement() {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, waitlist_enabled, waitlist_deposit_cents, max_players")
+      .select("id, title, waitlist_enabled, waitlist_deposit_cents, max_players, max_waitlist_slots")
       .eq("organization_id", org.orgId)
       .order("date", { ascending: false })
       .then(({ data }) => {
@@ -266,6 +267,27 @@ export default function WaitlistManagement() {
                 <Switch
                   checked={selectedT.waitlist_enabled}
                   onCheckedChange={toggleWaitlist}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <Label className="text-sm font-medium">Max Waitlist Slots</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Maximum number of people allowed to join the waitlist. Leave blank for unlimited.
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min={1}
+                  className="w-32"
+                  placeholder="Unlimited"
+                  value={selectedT.max_waitlist_slots ?? ""}
+                  onChange={async (e) => {
+                    if (demoGuard()) return;
+                    const val = e.target.value === "" ? null : Math.max(1, parseInt(e.target.value));
+                    setTournaments((prev) => prev.map((t) => t.id === selectedTournament ? { ...t, max_waitlist_slots: val } : t));
+                    await supabase.from("tournaments").update({ max_waitlist_slots: val }).eq("id", selectedTournament);
+                  }}
                 />
               </div>
             </CardContent>

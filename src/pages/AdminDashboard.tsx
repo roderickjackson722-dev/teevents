@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
@@ -798,6 +798,12 @@ const AdminDashboard = () => {
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <Mail className="h-4 w-4" /> Outreach
+                </button>
+                <button
+                  onClick={() => navigate("/admin/stripe-connections")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <CreditCard className="h-4 w-4" /> Stripe Connections
                 </button>
               </div>
             </div>

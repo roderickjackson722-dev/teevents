@@ -34,7 +34,7 @@ interface TournamentSite {
   site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; schedule_info_html?: string | null; registration_url: string | null;
   registration_open: boolean | null; course_par: number | null; template: string | null;
-  waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null;
+  waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null; max_waitlist_slots?: number | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
   scoring_format: string; countdown_style: string | null;
@@ -1942,6 +1942,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     primaryColor={primary}
                     secondaryColor={secondary}
                     depositCents={tournament.waitlist_deposit_cents || 0}
+                    maxWaitlistSlots={tournament.max_waitlist_slots ?? null}
                     maxGroupSize={4}
                   />
                 </div>

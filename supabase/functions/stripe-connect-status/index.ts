@@ -138,9 +138,79 @@ Deno.serve(async (req) => {
     if (last4) payoutMethodUpdate.stripe_account_last4 = last4;
     if (brand) payoutMethodUpdate.stripe_account_brand = brand;
 
+    // Check if this is the first time we've seen a "connected" state for this org
+    const { data: existing } = await supabaseAdmin
+      .from("organization_payout_methods")
+      .select("connection_notified_at")
+      .eq("organization_id", membership.organization_id)
+      .maybeSingle();
+
+    const shouldNotify =
+      !!account.details_submitted &&
+      !!account.charges_enabled &&
+      !existing?.connection_notified_at;
+
+    if (shouldNotify) {
+      payoutMethodUpdate.connection_notified_at = new Date().toISOString();
+    }
+
     await supabaseAdmin
       .from("organization_payout_methods")
       .upsert(payoutMethodUpdate, { onConflict: "organization_id" });
+
+    if (shouldNotify) {
+      try {
+        const { data: org } = await supabaseAdmin
+          .from("organizations")
+          .select("name")
+          .eq("id", membership.organization_id)
+          .maybeSingle();
+
+        const { data: tournaments } = await supabaseAdmin
+          .from("tournaments")
+          .select("title, slug, site_published")
+          .eq("organization_id", membership.organization_id);
+
+        const tournamentList = (tournaments || [])
+          .map((t: any) => `• ${t.title}${t.site_published ? " (published)" : ""}`)
+          .join("<br/>") || "<em>No tournaments yet</em>";
+
+        const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+        if (RESEND_API_KEY) {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+              from: "TeeVents Golf Management <info@notifications.teevents.golf>",
+              to: ["info@teevents.golf"],
+              reply_to: "info@teevents.golf",
+              subject: `✅ New Stripe Account Connected — ${org?.name || "Organization"}`,
+              html: `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;">
+                  <h2 style="color:#1a5c38;">New Stripe Account Connected</h2>
+                  <p>An organizer has successfully connected their Stripe account to TeeVents.</p>
+                  <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+                    <tr><td style="padding:6px 0;color:#666;">Organization:</td><td style="padding:6px 0;"><strong>${org?.name || "Unknown"}</strong></td></tr>
+                    <tr><td style="padding:6px 0;color:#666;">Stripe Account ID:</td><td style="padding:6px 0;font-family:monospace;">${stripeAccountId}</td></tr>
+                    <tr><td style="padding:6px 0;color:#666;">Charges enabled:</td><td style="padding:6px 0;">${account.charges_enabled ? "Yes" : "No"}</td></tr>
+                    <tr><td style="padding:6px 0;color:#666;">Payouts enabled:</td><td style="padding:6px 0;">${account.payouts_enabled ? "Yes" : "No"}</td></tr>
+                    ${last4 ? `<tr><td style="padding:6px 0;color:#666;">Bank account:</td><td style="padding:6px 0;">${brand || "Bank"} ••••${last4}</td></tr>` : ""}
+                  </table>
+                  <h3 style="color:#1a5c38;margin-top:24px;">Tournaments</h3>
+                  <p style="line-height:1.8;">${tournamentList}</p>
+                  <p style="margin-top:24px;"><a href="https://teevents.golf/admin/stripe-connections" style="background:#F5A623;color:#1a5c38;padding:10px 20px;text-decoration:none;border-radius:6px;font-weight:bold;">View All Connections</a></p>
+                </div>
+              `,
+            }),
+          });
+        }
+      } catch (notifyError) {
+        console.error("stripe-connect-status notification error:", notifyError);
+      }
+    }
 
     return new Response(
       JSON.stringify({

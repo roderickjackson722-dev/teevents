@@ -122,9 +122,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Link>
           </div>
         )}
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-w-0 w-full overflow-hidden">
           <DashboardSidebar />
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0 w-full">
              <header className="h-16 flex items-center justify-between border-b-2 border-secondary bg-secondary/15 px-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger />
@@ -147,7 +147,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </Link>
               )}
             </header>
-            <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto dashboard-scroll min-w-0">
+            <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
               {children}
             </main>
           </div>

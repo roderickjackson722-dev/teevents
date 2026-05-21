@@ -237,6 +237,7 @@ Deno.serve(async (req) => {
       const update: Record<string, unknown> = {};
       if (typeof body?.show_on_public === "boolean") update.show_on_public = body.show_on_public;
       if (typeof body?.manually_approved === "boolean") update.manually_approved = body.manually_approved;
+      if (typeof body?.is_title_sponsor === "boolean") update.is_title_sponsor = body.is_title_sponsor;
       if (Object.keys(update).length === 0) throw new Error("Nothing to update");
       const { error } = await supabaseAdmin
         .from("sponsor_registrations")

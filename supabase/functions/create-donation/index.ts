@@ -125,21 +125,10 @@ Deno.serve(async (req) => {
       status: "pending",
     });
 
-    try {
-      await sendNotificationEmails(
-        supabaseAdmin,
-        organizationId!,
-        "notify_donation",
-        `New Donation — ${tournament?.title}`,
-        buildNotificationHtml("New Donation Received", [
-          `A donation of <strong>$${(amount_cents / 100).toFixed(2)}</strong> was made for <strong>${tournament?.title}</strong>.`,
-          donor_email ? `📧 Donor: ${donor_email}` : "👤 Anonymous donor",
-        ]),
-        tournament_id,
-      );
-    } catch (e) {
-      console.error("Notification error:", e);
-    }
+    // NOTE: Notification emails are sent ONLY after Stripe confirms payment
+    // (see verify-donation). We no longer send a "pending" notification at
+    // checkout creation — those produced confusing emails for transactions
+    // that may never complete.
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

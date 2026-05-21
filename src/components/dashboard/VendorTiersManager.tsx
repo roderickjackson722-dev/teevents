@@ -197,7 +197,7 @@ const VendorTiersManager = ({ tournament }: Props) => {
             <DialogTrigger asChild>
               <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-2" /> New Package</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingTier ? "Edit Vendor Package" : "New Vendor Package"}</DialogTitle>
                 <DialogDescription>

@@ -239,6 +239,14 @@ Deno.serve(async (req) => {
       if (typeof body?.manually_approved === "boolean") update.manually_approved = body.manually_approved;
       if (typeof body?.is_title_sponsor === "boolean") update.is_title_sponsor = body.is_title_sponsor;
       if (Object.keys(update).length === 0) throw new Error("Nothing to update");
+      // Enforce single title sponsor per tournament
+      if (update.is_title_sponsor === true) {
+        await supabaseAdmin
+          .from("sponsor_registrations")
+          .update({ is_title_sponsor: false })
+          .eq("tournament_id", tournamentId)
+          .neq("id", registrationId);
+      }
       const { error } = await supabaseAdmin
         .from("sponsor_registrations")
         .update(update)

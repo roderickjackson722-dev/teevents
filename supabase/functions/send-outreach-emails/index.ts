@@ -10,7 +10,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM = "TeeVents <hello@notifications.teevents.golf>";
+const FROM = "TeeVents <info@notifications.teevents.golf>";
 const APP_URL = "https://teevents.golf";
 
 function escapeHtml(s: string) {
@@ -95,7 +95,7 @@ serve(async (req) => {
           subject,
           html,
           text: bodyText,
-          reply_to: "hello@teevents.golf",
+          reply_to: "info@teevents.golf",
           headers: {
             "List-Unsubscribe": `<${unsubUrl}>, <mailto:unsubscribe@teevents.golf?subject=unsubscribe>`,
             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

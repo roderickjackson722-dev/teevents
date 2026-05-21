@@ -217,7 +217,7 @@ const AdminProspects = ({ prospects, activities, outreachTemplates, onRefresh, c
       "{{contact_name}}": prospect.contact_name || "there",
       "{{organizer_name}}": prospect.organizer_name || "",
       "{{sender_name}}": "TeeVents Team",
-      "{{sender_email}}": "hello@teevents.com",
+      "{{sender_email}}": "info@teevents.golf",
     };
     let subject = template.subject;
     let body = template.body;

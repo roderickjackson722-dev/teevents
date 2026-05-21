@@ -85,10 +85,22 @@ serve(async (req) => {
       if (!subject || !bodyText) continue;
 
       const html = buildHtml(bodyText, item.id, lead.email, SUPABASE_URL);
+      const unsubUrl = `${SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(lead.email)}`;
       const result = await sendAndLog(
         sb,
         RESEND_API_KEY,
-        { from: FROM, to: [lead.email], subject, html, text: bodyText },
+        {
+          from: FROM,
+          to: [lead.email],
+          subject,
+          html,
+          text: bodyText,
+          reply_to: "hello@teevents.golf",
+          headers: {
+            "List-Unsubscribe": `<${unsubUrl}>, <mailto:unsubscribe@teevents.golf?subject=unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+        },
         { templateName: `outreach-email-${n}`, source: "send-outreach-emails", metadata: { queue_id: item.id, lead_id: lead.id, campaign_id: campaign.id } },
       );
 

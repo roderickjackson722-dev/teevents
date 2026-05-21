@@ -128,10 +128,84 @@ export default function BudgetPage() {
       if (cancelled) return;
       setBudget(b as Budget);
       await loadBudgetData(b.id);
+      await syncActualsFromTransactions(b.id, selectedId);
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [selectedId]);
+
+  // ---- Auto-sync platform transactions into Income "Actual" column ----
+  // Creates/updates one "Auto:" income row per transaction type so organizers
+  // always see real revenue in the budget. They can still edit any other row
+  // freely; only these auto-managed rows are overwritten on each sync.
+  const TX_TO_INCOME: Record<string, { category: IncomeCategory; item: string }> = {
+    registration:      { category: "Registrations",     item: "Auto: Online Registrations" },
+    sponsorship:       { category: "Sponsorships",      item: "Auto: Online Sponsorships" },
+    donation:          { category: "Donations",         item: "Auto: Online Donations" },
+    side_event_ticket: { category: "Add-ons & Extras",  item: "Auto: Side Event Tickets" },
+    vendor:            { category: "Misc Income",       item: "Auto: Vendor Payments" },
+  };
+  async function syncActualsFromTransactions(bId: string, tournamentId: string) {
+    try {
+      const { data: txs, error } = await supabase
+        .from("platform_transactions")
+        .select("type, amount_cents, status")
+        .eq("tournament_id", tournamentId)
+        .in("status", ["succeeded", "paid", "released", "held"]);
+      if (error) { console.error("tx sync", error); return; }
+      const sums: Record<string, { count: number; total: number }> = {};
+      for (const t of (txs || []) as any[]) {
+        const map = TX_TO_INCOME[t.type];
+        if (!map) continue;
+        if (!sums[t.type]) sums[t.type] = { count: 0, total: 0 };
+        sums[t.type].count += 1;
+        sums[t.type].total += Number(t.amount_cents || 0);
+      }
+
+      const { data: existingRows } = await supabase
+        .from("budget_income")
+        .select("*")
+        .eq("budget_id", bId);
+      const existing = (existingRows as any[]) || [];
+      const updated: any[] = [...existing];
+
+      for (const [type, sum] of Object.entries(sums)) {
+        const map = TX_TO_INCOME[type];
+        const dollars = sum.total / 100;
+        const found = existing.find(
+          (r: any) => r.item_name === map.item && r.category === map.category,
+        );
+        if (found) {
+          if (Number(found.actual_amount) !== dollars || Number(found.quantity_actual) !== sum.count) {
+            const patch = { actual_amount: dollars, quantity_actual: sum.count, unit_price: 0, is_received: true };
+            await supabase.from("budget_income").update(patch).eq("id", found.id);
+            const idx = updated.findIndex((r) => r.id === found.id);
+            if (idx >= 0) updated[idx] = { ...updated[idx], ...patch };
+          }
+        } else {
+          const { data: ins } = await supabase
+            .from("budget_income")
+            .insert({
+              budget_id: bId,
+              item_name: map.item,
+              category: map.category,
+              actual_amount: dollars,
+              quantity_actual: sum.count,
+              unit_price: 0,
+              is_received: true,
+              notes: "Auto-synced from platform transactions. This row updates automatically — edit other rows freely.",
+              sort_order: updated.length,
+            })
+            .select()
+            .single();
+          if (ins) updated.push(ins);
+        }
+      }
+      setIncome(updated as any);
+    } catch (e) {
+      console.error("syncActualsFromTransactions", e);
+    }
+  }
 
   async function loadBudgetData(bId: string) {
     const [eRes, xRes, iRes] = await Promise.all([

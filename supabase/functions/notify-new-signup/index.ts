@@ -42,7 +42,7 @@ serve(async (req) => {
       supabaseAdmin,
       RESEND_API_KEY,
       {
-        from: "TeeVents Golf Management <info@teevents.golf>",
+        from: "TeeVents Golf Management <info@notifications.teevents.golf>",
         to: ["info@teevents.golf"],
         subject,
         html,

@@ -73,7 +73,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "TeeVents Golf Management <info@teevents.golf>",
+        from: "TeeVents Golf Management <info@notifications.teevents.golf>",
         to: [email],
         bcc: ["info@teevents.golf"],
         subject: `🎉 A spot opened up for ${tournament_title}!`,

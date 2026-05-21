@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 const SENDER_NAME = "Rod Jackson";
-const FROM = "TeeVents <info@teevents.golf>";
+const FROM = "TeeVents <info@notifications.teevents.golf>";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

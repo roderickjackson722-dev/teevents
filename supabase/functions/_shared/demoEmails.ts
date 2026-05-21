@@ -1,5 +1,5 @@
 // Shared HTML helper for TeeVents demo nurture emails.
-const FROM = "TeeVents <info@teevents.golf>";
+const FROM = "TeeVents <info@notifications.teevents.golf>";
 
 export function demoEmailFrom() {
   return FROM;

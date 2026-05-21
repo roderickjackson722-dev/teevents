@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "TeeVents Golf Management <info@teevents.golf>",
+              from: "TeeVents Golf Management <info@notifications.teevents.golf>",
               to: ownerEmails,
               subject: `Your payout method was changed by an administrator`,
               html: `

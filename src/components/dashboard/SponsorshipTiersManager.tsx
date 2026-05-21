@@ -332,6 +332,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       company_name: "", contact_name: "", contact_email: "", contact_phone: "",
       website_url: "", description: "", logo_url: "", tier_id: "", amount: "",
       payment_status: "pending", show_on_public: true, manually_approved: false,
+      is_title_sponsor: false,
     });
   };
 
@@ -350,6 +351,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       payment_status: reg.payment_status || "pending",
       show_on_public: reg.show_on_public !== false,
       manually_approved: !!reg.manually_approved,
+      is_title_sponsor: !!reg.is_title_sponsor,
     });
     setRegDialogOpen(true);
   };

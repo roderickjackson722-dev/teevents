@@ -888,10 +888,14 @@ function IncomeSection({
 
 /* -------- Profit / Loss Summary -------- */
 function ProfitLossSummary({
-  expenses, income, totalEstIncome, totalActIncome,
+  expenses, income, title, onTitleChange, expenseTitleFor, incomeTitleFor, totalEstIncome, totalActIncome,
   totalEstExpenses, totalActExpenses, netEst, netAct,
 }: {
   expenses: Expense[]; income: Income[];
+  title?: string;
+  onTitleChange?: (title: string) => void;
+  expenseTitleFor?: (category: ExpenseCategory) => string;
+  incomeTitleFor?: (category: IncomeCategory) => string;
   totalEstIncome: number; totalActIncome: number;
   totalEstExpenses: number; totalActExpenses: number;
   netEst: number; netAct: number;
@@ -900,6 +904,7 @@ function ProfitLossSummary({
     const rows = income.filter((i) => i.category === c);
     return {
       category: c,
+      title: incomeTitleFor ? incomeTitleFor(c) : c,
       est: rows.reduce((s, i) => s + incomeProjected(i), 0),
       act: rows.reduce((s, i) => s + incomeActual(i), 0),
     };
@@ -908,6 +913,7 @@ function ProfitLossSummary({
     const rows = expenses.filter((e) => e.category === c);
     return {
       category: c,
+      title: expenseTitleFor ? expenseTitleFor(c) : c,
       est: rows.reduce((s, e) => s + Number(e.estimated_cost), 0),
       act: rows.reduce((s, e) => s + Number(e.actual_cost), 0),
     };
@@ -916,7 +922,7 @@ function ProfitLossSummary({
   return (
     <section className="bg-card border border-border rounded-lg overflow-hidden">
       <header className="p-4 border-b border-border">
-        <h2 className="text-xl font-display font-bold">Profit / Loss Summary</h2>
+        {onTitleChange ? <EditableSectionTitle value={title || "Profit / Loss Summary"} onCommit={onTitleChange} className="text-xl" /> : <h2 className="text-xl font-display font-bold">{title || "Profit / Loss Summary"}</h2>}
         <p className="text-sm text-muted-foreground mt-0.5">A breakdown of your event's totals by section.</p>
       </header>
       <div className="grid lg:grid-cols-2 gap-px bg-border">

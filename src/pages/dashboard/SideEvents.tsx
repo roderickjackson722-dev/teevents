@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -12,8 +13,16 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Ticket } from "lucide-react";
+import { Plus, Pencil, Trash2, Ticket, Tag, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+
+type CustomQuestion = {
+  id: string;
+  label: string;
+  type: "checkbox" | "text" | "select";
+  required: boolean;
+  options?: string[]; // for type "select"
+};
 
 type SideEvent = {
   id: string;

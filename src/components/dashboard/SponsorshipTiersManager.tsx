@@ -707,6 +707,19 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                         )}
                       </div>
                     </div>
+                    <div className="flex items-start gap-3 rounded-md border border-secondary/40 bg-secondary/5 p-3">
+                      <Switch
+                        id="is-title-sponsor"
+                        checked={regForm.is_title_sponsor}
+                        onCheckedChange={(v) => setRegForm({ ...regForm, is_title_sponsor: v })}
+                      />
+                      <div className="flex-1 -mt-0.5">
+                        <Label htmlFor="is-title-sponsor" className="text-sm">Title Sponsor</Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Highlights this sponsor on the public site with a larger logo, "Title Sponsor" label, and top-of-list placement. Only one sponsor can hold this designation per tournament.
+                        </p>
+                      </div>
+                    </div>
                     <div>
                       <Label>Description</Label>
                       <Textarea value={regForm.description} onChange={e => setRegForm({ ...regForm, description: e.target.value })} rows={2} maxLength={2000} />

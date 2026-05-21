@@ -76,7 +76,27 @@ export default function WaitlistSignup({
       return;
     }
 
+    if (isFull) {
+      setErrors({ form: "The waitlist is currently full. Please check back later." });
+      return;
+    }
+
     setSubmitting(true);
+
+    // Re-check capacity right before insert to avoid race conditions
+    if (maxWaitlistSlots != null) {
+      const { count } = await supabase
+        .from("tournament_waitlist")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId)
+        .in("status", ["waiting", "offered"]);
+      if ((count || 0) >= maxWaitlistSlots) {
+        setSubmitting(false);
+        setCurrentCount(count || 0);
+        setErrors({ form: "The waitlist just filled up. Please check back later." });
+        return;
+      }
+    }
 
     const { data, error } = await supabase
       .from("tournament_waitlist")

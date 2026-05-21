@@ -1573,6 +1573,24 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   toast({ title: "Name and email required", variant: "destructive" });
                   return;
                 }
+                // Validate required custom questions
+                const missing = (sideEventDialog.custom_questions || []).find((q) => {
+                  if (!q.required) return false;
+                  const v = seAnswers[q.id];
+                  if (q.type === "checkbox") return !v;
+                  return !v || (typeof v === "string" && !v.trim());
+                });
+                if (missing) {
+                  toast({ title: "Please answer: " + missing.label, variant: "destructive" });
+                  return;
+                }
+                // Build labelled answers for storage
+                const answersForStorage = (sideEventDialog.custom_questions || []).map((q) => ({
+                  id: q.id,
+                  label: q.label,
+                  type: q.type,
+                  answer: seAnswers[q.id] ?? (q.type === "checkbox" ? false : ""),
+                }));
                 setSeSubmitting(true);
                 try {
                   const { data, error } = await supabase.functions.invoke("create-side-event-checkout", {
@@ -1582,6 +1600,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       attendee_email: seForm.email.trim(),
                       attendee_phone: seForm.phone.trim() || null,
                       quantity: parseInt(seForm.quantity || "1", 10) || 1,
+                      custom_answers: answersForStorage,
                     },
                   });
                   if (error || !(data as any)?.checkout_url) throw new Error((data as any)?.error || error?.message || "Checkout failed");

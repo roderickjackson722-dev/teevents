@@ -1,88 +1,131 @@
-// Default budget line items by tournament scoring format.
+// Default budget line items organized into spreadsheet-style sections.
 // Used to seed a brand-new budget the first time it's opened.
 
-export type DefaultExpense = {
-  item_name: string;
-  category: "Venue" | "Staff" | "Equipment" | "Marketing" | "Travel" | "Food" | "Insurance" | "Prizes" | "Other";
-};
-
-export type DefaultIncome = {
-  item_name: string;
-  category: "Registration" | "Sponsorship" | "Merchandise" | "Food & Beverage" | "Donation" | "Other";
-};
-
-const BASE_EXPENSES: DefaultExpense[] = [
-  { item_name: "Greens Fees", category: "Venue" },
-  { item_name: "Cart Rentals", category: "Equipment" },
-  { item_name: "Range Balls (practice)", category: "Equipment" },
-  { item_name: "Course Maintenance Fee", category: "Venue" },
-  { item_name: "Insurance", category: "Insurance" },
-  { item_name: "Marketing & Advertising", category: "Marketing" },
-  { item_name: "Printed Materials (scorecards, signs)", category: "Marketing" },
-  { item_name: "Photography / Videography", category: "Marketing" },
-  { item_name: "Staff Stipends / Payroll", category: "Staff" },
-  { item_name: "First Aid / Medical Supplies", category: "Other" },
-  { item_name: "Hole Sponsor Signs", category: "Marketing" },
-  { item_name: "Prize Fund / Trophies", category: "Prizes" },
-];
-
-const SCRAMBLE_EXTRA_EXPENSES: DefaultExpense[] = [
-  { item_name: "Team Gift Bags", category: "Prizes" },
-  { item_name: "On-Course Refreshments", category: "Food" },
-  { item_name: "Closest-to-Pin Prizes", category: "Prizes" },
-  { item_name: "Long Drive Prizes", category: "Prizes" },
-];
-
-const STROKE_EXTRA_EXPENSES: DefaultExpense[] = [
-  { item_name: "Individual Scorecards (printed)", category: "Marketing" },
-  { item_name: "Rules Officials", category: "Staff" },
-  { item_name: "Leaderboard Display", category: "Equipment" },
-];
-
-const BASE_INCOME: DefaultIncome[] = [
-  { item_name: "Individual Registration Fees", category: "Registration" },
-  { item_name: "Team Registration (Foursomes)", category: "Registration" },
-  { item_name: "Sponsorships", category: "Sponsorship" },
-  { item_name: "Donations", category: "Donation" },
-];
-
-const SCRAMBLE_EXTRA_INCOME: DefaultIncome[] = [
-  { item_name: "Mulligan Sales", category: "Other" },
-  { item_name: "Skins Game Entry", category: "Other" },
-  { item_name: "Team Gift Bag Sales", category: "Merchandise" },
-];
-
-const STROKE_EXTRA_INCOME: DefaultIncome[] = [
-  { item_name: "Practice Round Fees", category: "Registration" },
-  { item_name: "Pro Shop Sales", category: "Merchandise" },
-  { item_name: "Leaderboard Sponsorship", category: "Sponsorship" },
-];
-
-function normalize(format?: string | null): "scramble" | "stroke" | "other" {
-  const f = (format || "").toLowerCase();
-  if (f.includes("scramble") || f.includes("best ball") || f.includes("bestball")) return "scramble";
-  if (f.includes("stroke") || f.includes("match")) return "stroke";
-  return "other";
-}
-
-export function getDefaultExpenses(format?: string | null): DefaultExpense[] {
-  const kind = normalize(format);
-  if (kind === "scramble") return [...BASE_EXPENSES, ...SCRAMBLE_EXTRA_EXPENSES];
-  if (kind === "stroke") return [...BASE_EXPENSES, ...STROKE_EXTRA_EXPENSES];
-  return BASE_EXPENSES;
-}
-
-export function getDefaultIncome(format?: string | null): DefaultIncome[] {
-  const kind = normalize(format);
-  if (kind === "scramble") return [...BASE_INCOME, ...SCRAMBLE_EXTRA_INCOME];
-  if (kind === "stroke") return [...BASE_INCOME, ...STROKE_EXTRA_INCOME];
-  return BASE_INCOME;
-}
-
 export const EXPENSE_CATEGORIES = [
-  "Venue", "Staff", "Equipment", "Marketing", "Travel", "Food", "Insurance", "Prizes", "Other",
+  "Facility",
+  "Signage",
+  "Food & Beverage",
+  "Publicity",
+  "Player Gifts & Prizes",
+  "Misc",
 ] as const;
 
 export const INCOME_CATEGORIES = [
-  "Registration", "Sponsorship", "Merchandise", "Food & Beverage", "Donation", "Other",
+  "Registrations",
+  "Sponsorships",
+  "Add-ons & Extras",
+  "Donations",
+  "Misc Income",
 ] as const;
+
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
+export type IncomeCategory = (typeof INCOME_CATEGORIES)[number];
+
+export type DefaultExpense = { item_name: string; category: ExpenseCategory };
+export type DefaultIncome = { item_name: string; category: IncomeCategory };
+export type DefaultEstimate = { item_name: string; sponsorable?: boolean };
+
+// ---- Expenses (matches the "Expense Details" screenshots) ----
+export const DEFAULT_EXPENSES: DefaultExpense[] = [
+  // Facility
+  { item_name: "Greens fees", category: "Facility" },
+  { item_name: "Cart fees", category: "Facility" },
+  { item_name: "Driving range", category: "Facility" },
+  { item_name: "Tables / chairs", category: "Facility" },
+  { item_name: "AV equipment", category: "Facility" },
+  { item_name: "Other fees", category: "Facility" },
+  // Signage
+  { item_name: "Hole sponsor signage", category: "Signage" },
+  { item_name: "Hole-in-one signage", category: "Signage" },
+  { item_name: "Contest signage", category: "Signage" },
+  { item_name: "Informational signage", category: "Signage" },
+  { item_name: "Sponsor banner", category: "Signage" },
+  { item_name: "Welcome banner / signage", category: "Signage" },
+  { item_name: "Navigational signage", category: "Signage" },
+  { item_name: "Branded tablecloth", category: "Signage" },
+  // Food & Beverage
+  { item_name: "Food", category: "Food & Beverage" },
+  { item_name: "Drinks / drink tickets", category: "Food & Beverage" },
+  { item_name: "Gratuity", category: "Food & Beverage" },
+  // Publicity
+  { item_name: "Tournament event website", category: "Publicity" },
+  { item_name: "Email campaigns", category: "Publicity" },
+  { item_name: "Social media ads", category: "Publicity" },
+  { item_name: "Radio ads", category: "Publicity" },
+  { item_name: "TV ads", category: "Publicity" },
+  { item_name: "Printing", category: "Publicity" },
+  { item_name: "Postage", category: "Publicity" },
+  // Player gifts & prizes
+  { item_name: "Trophies / plaques", category: "Player Gifts & Prizes" },
+  { item_name: "Swag bags", category: "Player Gifts & Prizes" },
+  { item_name: "Volunteer thank yous", category: "Player Gifts & Prizes" },
+  { item_name: "Pin prizes", category: "Player Gifts & Prizes" },
+  // Misc
+  { item_name: "Hole-in-one insurance", category: "Misc" },
+  { item_name: "Pin flags", category: "Misc" },
+  { item_name: "On-course contest", category: "Misc" },
+  { item_name: "Technology / platform fees", category: "Misc" },
+];
+
+// ---- Income (matches the "Income Details" screenshots) ----
+export const DEFAULT_INCOME: DefaultIncome[] = [
+  // Registrations
+  { item_name: "Team", category: "Registrations" },
+  { item_name: "Sponsor teams", category: "Registrations" },
+  // Sponsorships
+  { item_name: "Title sponsor", category: "Sponsorships" },
+  { item_name: "Technology sponsor", category: "Sponsorships" },
+  { item_name: "Hole sponsor", category: "Sponsorships" },
+  { item_name: "Hole-in-one contest sponsor", category: "Sponsorships" },
+  { item_name: "Other contest sponsor", category: "Sponsorships" },
+  { item_name: "Beverage cart sponsor", category: "Sponsorships" },
+  { item_name: "Lunch sponsor", category: "Sponsorships" },
+  { item_name: "Pin prize sponsor", category: "Sponsorships" },
+  { item_name: "Pin flag sponsor", category: "Sponsorships" },
+  { item_name: "Player gift sponsor", category: "Sponsorships" },
+  { item_name: "Drink sponsor", category: "Sponsorships" },
+  // Add-ons & extras
+  { item_name: "Mulligans", category: "Add-ons & Extras" },
+  { item_name: "Raffle tickets", category: "Add-ons & Extras" },
+  { item_name: "All-in games package", category: "Add-ons & Extras" },
+  { item_name: "Individual games", category: "Add-ons & Extras" },
+  { item_name: "Silent auction", category: "Add-ons & Extras" },
+  { item_name: "Live auction", category: "Add-ons & Extras" },
+  // Donations
+  { item_name: "Event website donations", category: "Donations" },
+  { item_name: "Donation station", category: "Donations" },
+];
+
+// ---- Vendor estimates scratchpad ----
+export const DEFAULT_ESTIMATES: DefaultEstimate[] = [
+  { item_name: "Golf facility" },
+  { item_name: "Signage", sponsorable: true },
+  { item_name: "Banners", sponsorable: true },
+  { item_name: "Tablecloth", sponsorable: true },
+  { item_name: "Food and beverage", sponsorable: true },
+  { item_name: "Email services" },
+  { item_name: "Social media ads", sponsorable: true },
+  { item_name: "TV ads", sponsorable: true },
+  { item_name: "Radio ads", sponsorable: true },
+  { item_name: "Printing", sponsorable: true },
+  { item_name: "Trophies / plaques", sponsorable: true },
+  { item_name: "Swag bag item 1", sponsorable: true },
+  { item_name: "Swag bag item 2", sponsorable: true },
+  { item_name: "Swag bag item 3", sponsorable: true },
+  { item_name: "Swag bag item 4", sponsorable: true },
+  { item_name: "Volunteer thank yous" },
+  { item_name: "Pin prize 1", sponsorable: true },
+  { item_name: "Pin prize 2", sponsorable: true },
+  { item_name: "Pin prize 3", sponsorable: true },
+  { item_name: "Pin prize 4", sponsorable: true },
+  { item_name: "On-course entertainment", sponsorable: true },
+  { item_name: "Hole-in-one insurance", sponsorable: true },
+];
+
+// Back-compat (Budget.tsx old API)
+export function getDefaultExpenses(_format?: string | null): DefaultExpense[] {
+  return DEFAULT_EXPENSES;
+}
+export function getDefaultIncome(_format?: string | null): DefaultIncome[] {
+  return DEFAULT_INCOME;
+}

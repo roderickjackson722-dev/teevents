@@ -572,11 +572,13 @@ export default function BudgetPage() {
             <EstimatesTable items={estimates} onChange={() => {}} onMove={() => {}} onDelete={() => {}} />
             {EXPENSE_CATEGORIES.map((cat) => (
               <ExpenseSection key={cat} category={cat}
+                title={getExpenseTitle(cat)} onTitleChange={() => {}}
                 items={expenses.filter((e) => e.category === cat)}
                 onChange={() => {}} onDelete={() => {}} onAdd={() => {}} />
             ))}
             {INCOME_CATEGORIES.map((cat) => (
               <IncomeSection key={cat} category={cat}
+                title={getIncomeTitle(cat)} onTitleChange={() => {}}
                 items={income.filter((i) => i.category === cat)}
                 onChange={() => {}} onDelete={() => {}} onAdd={() => {}} />
             ))}

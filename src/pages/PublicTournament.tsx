@@ -1942,6 +1942,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     primaryColor={primary}
                     secondaryColor={secondary}
                     depositCents={tournament.waitlist_deposit_cents || 0}
+                    maxWaitlistSlots={tournament.max_waitlist_slots ?? null}
                     maxGroupSize={4}
                   />
                 </div>

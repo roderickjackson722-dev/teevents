@@ -237,9 +237,16 @@ export default function SideEvents() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={openCreate} disabled={!tournamentId} className="ml-auto">
-            <Plus className="h-4 w-4 mr-2" /> New Side Event
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button asChild variant="outline" disabled={!tournamentId}>
+              <Link to="/dashboard/registration?tab=promos">
+                <Tag className="h-4 w-4 mr-2" /> Promo Codes
+              </Link>
+            </Button>
+            <Button onClick={openCreate} disabled={!tournamentId}>
+              <Plus className="h-4 w-4 mr-2" /> New Side Event
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

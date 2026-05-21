@@ -563,7 +563,10 @@ export type Database = {
           notes: string
           payer_source: string
           projected_amount: number
+          quantity_actual: number
+          quantity_estimated: number
           sort_order: number
+          unit_price: number
           updated_at: string
         }
         Insert: {
@@ -578,7 +581,10 @@ export type Database = {
           notes?: string
           payer_source?: string
           projected_amount?: number
+          quantity_actual?: number
+          quantity_estimated?: number
           sort_order?: number
+          unit_price?: number
           updated_at?: string
         }
         Update: {
@@ -593,7 +599,10 @@ export type Database = {
           notes?: string
           payer_source?: string
           projected_amount?: number
+          quantity_actual?: number
+          quantity_estimated?: number
           sort_order?: number
+          unit_price?: number
           updated_at?: string
         }
         Relationships: [

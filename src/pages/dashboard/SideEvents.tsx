@@ -147,6 +147,7 @@ export default function SideEvents() {
       is_active: e.is_active,
       show_on_public: e.show_on_public,
       hide_ticket_count: e.hide_ticket_count ?? false,
+      custom_questions: Array.isArray(e.custom_questions) ? e.custom_questions : [],
     });
     setOpen(true);
   };

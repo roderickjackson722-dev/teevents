@@ -407,6 +407,114 @@ export default function SideEvents() {
                 Hide ticket count
               </label>
             </div>
+
+            {/* Custom Questions Builder */}
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-base">Registration Questions</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Ask attendees to confirm waivers, dietary needs, shirt size, etc. during checkout.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      custom_questions: [
+                        ...(form.custom_questions || []),
+                        {
+                          id: crypto.randomUUID(),
+                          label: "",
+                          type: "checkbox",
+                          required: true,
+                        },
+                      ],
+                    })
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Question
+                </Button>
+              </div>
+
+              {(form.custom_questions || []).length === 0 && (
+                <p className="text-xs text-muted-foreground italic">No questions yet.</p>
+              )}
+
+              <div className="space-y-3">
+                {(form.custom_questions || []).map((q, idx) => {
+                  const update = (patch: Partial<CustomQuestion>) => {
+                    const next = [...(form.custom_questions || [])];
+                    next[idx] = { ...next[idx], ...patch };
+                    setForm({ ...form, custom_questions: next });
+                  };
+                  const remove = () => {
+                    const next = [...(form.custom_questions || [])];
+                    next.splice(idx, 1);
+                    setForm({ ...form, custom_questions: next });
+                  };
+                  return (
+                    <div key={q.id} className="border rounded-md p-3 space-y-2 bg-muted/30">
+                      <div className="flex items-start gap-2">
+                        <GripVertical className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <Input
+                            placeholder={
+                              q.type === "checkbox"
+                                ? "e.g. I agree to the event waiver"
+                                : "e.g. What is your shirt size?"
+                            }
+                            value={q.label}
+                            onChange={(e) => update({ label: e.target.value })}
+                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Select value={q.type} onValueChange={(v: any) => update({ type: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="checkbox">Acknowledgment checkbox</SelectItem>
+                                <SelectItem value="text">Short text answer</SelectItem>
+                                <SelectItem value="select">Multiple choice</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <label className="flex items-center gap-2 text-sm">
+                              <Switch
+                                checked={q.required}
+                                onCheckedChange={(v) => update({ required: v })}
+                              />
+                              Required
+                            </label>
+                          </div>
+                          {q.type === "select" && (
+                            <div>
+                              <Label className="text-xs">Options (one per line)</Label>
+                              <Textarea
+                                rows={3}
+                                placeholder={"S\nM\nL\nXL"}
+                                value={(q.options || []).join("\n")}
+                                onChange={(e) =>
+                                  update({
+                                    options: e.target.value
+                                      .split("\n")
+                                      .map((s) => s.trim())
+                                      .filter(Boolean),
+                                  })
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <Button type="button" size="sm" variant="ghost" onClick={remove}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

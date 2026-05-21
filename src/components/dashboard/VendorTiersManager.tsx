@@ -161,7 +161,7 @@ const VendorTiersManager = ({ tournament }: Props) => {
     else load();
   };
 
-  const publicUrl = tournament?.slug ? `${window.location.origin}/t/${tournament.slug}/vendor` : null;
+  const publicUrl = tournament?.slug ? `${window.location.origin}/t/${tournament.slug}/vendors` : null;
 
   if (!tournament) {
     return (

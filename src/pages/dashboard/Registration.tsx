@@ -553,8 +553,8 @@ const Registration = () => {
     <div>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Registration</h1>
-          <p className="text-muted-foreground mt-1">Configure fields, fees, add-ons, and promo codes.</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Registration Management</h1>
+          <p className="text-muted-foreground mt-1">Configure fields, fees, captain label, add-ons, and promo codes.</p>
         </div>
         {tournaments.length > 1 && (
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>

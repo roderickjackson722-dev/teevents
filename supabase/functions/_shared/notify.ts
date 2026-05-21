@@ -100,10 +100,8 @@ export async function sendNotificationEmails(
     }
 
     const recipients = Array.from(recipientsSet);
-    // Always copy the platform admin so TeeVents receives an email for EVERY transaction.
-    if (!recipients.includes(PLATFORM_ADMIN_EMAIL)) recipients.push(PLATFORM_ADMIN_EMAIL);
 
-    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
+    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} (bcc=${PLATFORM_ADMIN_EMAIL}) from ${SENDER_EMAIL}`);
 
     const result = await sendAndLog(
       supabaseAdmin,
@@ -111,6 +109,9 @@ export async function sendNotificationEmails(
       {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: recipients,
+        // BCC platform admin on every organizer notification so TeeVents receives
+        // a copy of every transaction without exposing our address to the organizer.
+        bcc: PLATFORM_ADMIN_EMAIL,
         subject,
         html: htmlBody,
       },

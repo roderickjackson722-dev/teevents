@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
         quantity: qty,
         amount_cents: grossCents,
         payment_status: "pending",
+        custom_answers: Array.isArray(custom_answers) ? custom_answers : null,
       })
       .select("id")
       .single();

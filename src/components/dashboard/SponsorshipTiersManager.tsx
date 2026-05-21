@@ -840,28 +840,15 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                           onCheckedChange={async (checked) => {
                             if (demoGuard()) return;
                             const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                              body: { action: "update_registration_visibility", registration_id: reg.id, show_on_public: checked },
-                            });
-                            if (error || data?.error) {
-                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
-                            } else {
-                              fetchData();
-                            }
-                          }}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {reg._source === "legacy" ? (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      ) : (
-                        <Checkbox
-                          checked={reg.manually_approved === true}
-                          disabled={reg.payment_status === "paid"}
-                          onCheckedChange={async (checked) => {
-                            if (demoGuard()) return;
-                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                              body: { action: "update_registration_visibility", registration_id: reg.id, manually_approved: checked === true },
+                              body: {
+                                action: "update_registration_visibility",
+                                registration_id: reg.id,
+                                show_on_public: checked,
+                                // Show on Public is the final determination — when enabled,
+                                // mark as manually approved so the sponsor appears publicly
+                                // even if payment is still pending.
+                                manually_approved: checked,
+                              },
                             });
                             if (error || data?.error) {
                               toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });

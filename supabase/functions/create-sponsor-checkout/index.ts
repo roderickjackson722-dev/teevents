@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
@@ -136,9 +136,9 @@ Deno.serve(async (req) => {
       customer_email: contact_email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?sponsor_success=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
+      success_url: `${origin}/t/${tournament.slug}?sponsor_success=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}?sponsor_cancel=true`,
-      payment_intent_data: { application_fee_amount: applicationFeeAmount },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "sponsor_registration",
         tournament_id,
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
     };
 
     const session = await stripe.checkout.sessions.create(
-      checkoutParams, { stripeAccount: organizerStripeAccountId },
+      checkoutParams, stripeAccountOpts(connected),
     );
 
     await logDirectCharge(supabaseAdmin, {

@@ -67,6 +67,7 @@ interface SponsorRegistration {
   created_at: string;
   show_on_public?: boolean;
   manually_approved?: boolean;
+  is_title_sponsor?: boolean;
   _source?: "registration" | "legacy";
   _legacyTier?: string | null;
 }

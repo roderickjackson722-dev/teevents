@@ -38,6 +38,7 @@ type SideEvent = {
   show_on_public: boolean;
   hide_ticket_count: boolean;
   display_order: number;
+  custom_questions: CustomQuestion[] | null;
 };
 
 const empty = {
@@ -50,6 +51,7 @@ const empty = {
   is_active: true,
   show_on_public: true,
   hide_ticket_count: false,
+  custom_questions: [] as CustomQuestion[],
 };
 
 function exportTicketsCsv(tickets: any[], events: { id: string; name: string }[]) {

@@ -110,9 +110,9 @@ Deno.serve(async (req) => {
       customer_email: attendee_email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?side_event_success=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
+      success_url: `${origin}/t/${tournament.slug}?side_event_success=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}?side_event_cancel=true`,
-      payment_intent_data: { application_fee_amount: applicationFeeAmount },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "side_event_ticket",
         tournament_id: ev.tournament_id,
@@ -125,13 +125,13 @@ Deno.serve(async (req) => {
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
         charge_total_cents: String(grossCents + combinedFeesCents),
-        routing: "direct",
+        routing: connected.isPlatformFallback ? "platform_fallback" : "direct",
       },
     };
 
     const session = await stripe.checkout.sessions.create(
       checkoutParams,
-      { stripeAccount: organizerStripeAccountId },
+      stripeAccountOpts(connected),
     );
 
     await logDirectCharge(supabaseAdmin, {

@@ -613,6 +613,21 @@ function KpiPill({ label, value, input }: { label: string; value?: string; input
   );
 }
 
+function EditableSectionTitle({
+  value, onCommit, className = "text-sm",
+}: { value: string; onCommit: (v: string) => void; className?: string }) {
+  const [local, setLocal] = useState(value || "");
+  useEffect(() => setLocal(value || ""), [value]);
+  return (
+    <input
+      className={`${className} font-display font-bold leading-tight bg-transparent border border-transparent hover:border-input focus:border-input rounded px-1 -mx-1 focus:outline-none focus:ring-1 focus:ring-ring`}
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => { if (local !== value) onCommit(local.trim()); }}
+    />
+  );
+}
+
 function SectionCard({
   icon, title, editableTitle, onTitleChange, description, action, kpis, children,
 }: {

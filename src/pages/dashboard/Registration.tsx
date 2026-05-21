@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import { motion } from "framer-motion";

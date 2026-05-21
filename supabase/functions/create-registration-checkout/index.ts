@@ -285,9 +285,7 @@ Deno.serve(async (req) => {
       mode: "payment",
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-      },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "registration",
         tournament_id,

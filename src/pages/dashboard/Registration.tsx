@@ -575,7 +575,7 @@ const Registration = () => {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <Tabs defaultValue="settings" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-6 w-full max-w-3xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="tiers">Tiers</TabsTrigger>

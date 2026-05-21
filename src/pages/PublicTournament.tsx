@@ -1517,6 +1517,51 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 )} (plus fees)
               </p>
             )}
+            {sideEventDialog?.custom_questions && sideEventDialog.custom_questions.length > 0 && (
+              <div className="border-t pt-3 space-y-3">
+                {sideEventDialog.custom_questions.map((q) => {
+                  if (q.type === "checkbox") {
+                    return (
+                      <label key={q.id} className="flex items-start gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={!!seAnswers[q.id]}
+                          onChange={(e) => setSeAnswers({ ...seAnswers, [q.id]: e.target.checked })}
+                        />
+                        <span>{q.label}{q.required && <span className="text-destructive"> *</span>}</span>
+                      </label>
+                    );
+                  }
+                  if (q.type === "select") {
+                    return (
+                      <div key={q.id}>
+                        <Label>{q.label}{q.required && <span className="text-destructive"> *</span>}</Label>
+                        <select
+                          className="w-full mt-1 border rounded-md h-10 px-3 bg-background"
+                          value={(seAnswers[q.id] as string) || ""}
+                          onChange={(e) => setSeAnswers({ ...seAnswers, [q.id]: e.target.value })}
+                        >
+                          <option value="">Select…</option>
+                          {(q.options || []).map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={q.id}>
+                      <Label>{q.label}{q.required && <span className="text-destructive"> *</span>}</Label>
+                      <Input
+                        value={(seAnswers[q.id] as string) || ""}
+                        onChange={(e) => setSeAnswers({ ...seAnswers, [q.id]: e.target.value })}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSideEventDialog(null)}>Cancel</Button>

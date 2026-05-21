@@ -436,7 +436,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
               <DialogTrigger asChild>
                 <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1" /> Add Tier</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg">
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="font-display">{editTier ? "Edit Tier" : "Add Sponsorship Tier"}</DialogTitle>
                 </DialogHeader>

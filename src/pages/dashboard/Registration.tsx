@@ -140,7 +140,7 @@ const Registration = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {

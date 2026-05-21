@@ -142,6 +142,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     payment_status: "pending",
     show_on_public: true,
     manually_approved: false,
+    is_title_sponsor: false,
   });
   const [form, setForm] = useState({
     name: "",

@@ -614,9 +614,10 @@ function KpiPill({ label, value, input }: { label: string; value?: string; input
 }
 
 function SectionCard({
-  icon, title, description, action, kpis, children,
+  icon, title, editableTitle, onTitleChange, description, action, kpis, children,
 }: {
   icon: React.ReactNode; title: string; description?: string;
+  editableTitle?: boolean; onTitleChange?: (title: string) => void;
   action?: React.ReactNode; kpis?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
@@ -626,7 +627,11 @@ function SectionCard({
           <div className="flex items-start gap-2">
             {icon}
             <div>
-              <h2 className="text-xl font-display font-bold leading-tight">{title}</h2>
+              {editableTitle && onTitleChange ? (
+                <EditableSectionTitle value={title} onCommit={onTitleChange} className="text-xl" />
+              ) : (
+                <h2 className="text-xl font-display font-bold leading-tight">{title}</h2>
+              )}
               {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
             </div>
           </div>

@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAIL = "info@teevents.golf";
-const SENDER = "TeeVents Sales <notifications@notifications.teevents.golf>";
+const SENDER = "TeeVents Sales <info@teevents.golf>";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -51,7 +51,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: SENDER,
         to: [ADMIN_EMAIL],
-        reply_to: email,
+        reply_to: "info@teevents.golf",
         subject: `Enterprise inquiry — ${organization}`,
         html,
       }),

@@ -256,11 +256,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [vendorVerifying, setVendorVerifying] = useState(false);
 
   // Side events for public ticket sales
-  const [sideEvents, setSideEvents] = useState<Array<{ id: string; name: string; description: string | null; event_date: string | null; location: string | null; price_cents: number; max_tickets: number | null; tickets_sold: number }>>([]);
+  const [sideEvents, setSideEvents] = useState<Array<{ id: string; name: string; description: string | null; event_date: string | null; location: string | null; price_cents: number; max_tickets: number | null; tickets_sold: number; custom_questions?: any[] | null }>>([]);
   const [sideEventSuccess, setSideEventSuccess] = useState(false);
   const [sideEventVerifying, setSideEventVerifying] = useState(false);
-  const [sideEventDialog, setSideEventDialog] = useState<{ id: string; name: string; price_cents: number } | null>(null);
+  const [sideEventDialog, setSideEventDialog] = useState<{ id: string; name: string; price_cents: number; custom_questions: Array<{ id: string; label: string; type: "checkbox" | "text" | "select"; required: boolean; options?: string[] }> } | null>(null);
   const [seForm, setSeForm] = useState({ name: "", email: "", phone: "", quantity: "1" });
+  const [seAnswers, setSeAnswers] = useState<Record<string, string | boolean>>({});
   const [seSubmitting, setSeSubmitting] = useState(false);
 
    // Forms
@@ -368,7 +369,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           supabase.from("sponsor_registrations").select("id, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
           supabase.from("vendor_tiers").select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used").eq("tournament_id", t.id).eq("is_active", true).order("display_order", { ascending: true }),
           supabase.from("vendor_registrations").select("id, vendor_name, company_name, logo_url, website_url, tier_id").eq("tournament_id", t.id).eq("show_on_public", true).or("payment_status.eq.paid,manually_approved.eq.true"),
-          (supabase as any).from("side_events").select("id, name, description, event_date, location, price_cents, max_tickets, tickets_sold").eq("tournament_id", t.id).eq("is_active", true).eq("show_on_public", true).order("display_order"),
+          (supabase as any).from("side_events").select("id, name, description, event_date, location, price_cents, max_tickets, tickets_sold, custom_questions").eq("tournament_id", t.id).eq("is_active", true).eq("show_on_public", true).order("display_order"),
         ]);
 
         setSponsors((sponsorRes.data as PublicSponsor[]) || []);
@@ -1470,7 +1471,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => { setSideEventDialog({ id: ev.id, name: ev.name, price_cents: ev.price_cents }); setSeForm({ name: "", email: "", phone: "", quantity: "1" }); }}
+                            onClick={() => { setSideEventDialog({ id: ev.id, name: ev.name, price_cents: ev.price_cents, custom_questions: Array.isArray((ev as any).custom_questions) ? (ev as any).custom_questions : [] }); setSeForm({ name: "", email: "", phone: "", quantity: "1" }); setSeAnswers({}); }}
                             className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
                             style={{ backgroundColor: secondary, color: primary }}
                           >
@@ -1516,6 +1517,51 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 )} (plus fees)
               </p>
             )}
+            {sideEventDialog?.custom_questions && sideEventDialog.custom_questions.length > 0 && (
+              <div className="border-t pt-3 space-y-3">
+                {sideEventDialog.custom_questions.map((q) => {
+                  if (q.type === "checkbox") {
+                    return (
+                      <label key={q.id} className="flex items-start gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={!!seAnswers[q.id]}
+                          onChange={(e) => setSeAnswers({ ...seAnswers, [q.id]: e.target.checked })}
+                        />
+                        <span>{q.label}{q.required && <span className="text-destructive"> *</span>}</span>
+                      </label>
+                    );
+                  }
+                  if (q.type === "select") {
+                    return (
+                      <div key={q.id}>
+                        <Label>{q.label}{q.required && <span className="text-destructive"> *</span>}</Label>
+                        <select
+                          className="w-full mt-1 border rounded-md h-10 px-3 bg-background"
+                          value={(seAnswers[q.id] as string) || ""}
+                          onChange={(e) => setSeAnswers({ ...seAnswers, [q.id]: e.target.value })}
+                        >
+                          <option value="">Select…</option>
+                          {(q.options || []).map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={q.id}>
+                      <Label>{q.label}{q.required && <span className="text-destructive"> *</span>}</Label>
+                      <Input
+                        value={(seAnswers[q.id] as string) || ""}
+                        onChange={(e) => setSeAnswers({ ...seAnswers, [q.id]: e.target.value })}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSideEventDialog(null)}>Cancel</Button>
@@ -1527,6 +1573,24 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   toast({ title: "Name and email required", variant: "destructive" });
                   return;
                 }
+                // Validate required custom questions
+                const missing = (sideEventDialog.custom_questions || []).find((q) => {
+                  if (!q.required) return false;
+                  const v = seAnswers[q.id];
+                  if (q.type === "checkbox") return !v;
+                  return !v || (typeof v === "string" && !v.trim());
+                });
+                if (missing) {
+                  toast({ title: "Please answer: " + missing.label, variant: "destructive" });
+                  return;
+                }
+                // Build labelled answers for storage
+                const answersForStorage = (sideEventDialog.custom_questions || []).map((q) => ({
+                  id: q.id,
+                  label: q.label,
+                  type: q.type,
+                  answer: seAnswers[q.id] ?? (q.type === "checkbox" ? false : ""),
+                }));
                 setSeSubmitting(true);
                 try {
                   const { data, error } = await supabase.functions.invoke("create-side-event-checkout", {
@@ -1536,6 +1600,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       attendee_email: seForm.email.trim(),
                       attendee_phone: seForm.phone.trim() || null,
                       quantity: parseInt(seForm.quantity || "1", 10) || 1,
+                      custom_answers: answersForStorage,
                     },
                   });
                   if (error || !(data as any)?.checkout_url) throw new Error((data as any)?.error || error?.message || "Checkout failed");

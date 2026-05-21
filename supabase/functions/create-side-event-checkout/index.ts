@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
     const body = await req.json();
-    const { side_event_id, attendee_name, attendee_email, attendee_phone, quantity } = body;
+    const { side_event_id, attendee_name, attendee_email, attendee_phone, quantity, custom_answers } = body;
     const qty = Math.max(1, parseInt(quantity ?? "1", 10) || 1);
 
     if (!side_event_id || !attendee_name?.trim() || !attendee_email?.trim()) {
@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
         quantity: qty,
         amount_cents: grossCents,
         payment_status: "pending",
+        custom_answers: Array.isArray(custom_answers) ? custom_answers : null,
       })
       .select("id")
       .single();

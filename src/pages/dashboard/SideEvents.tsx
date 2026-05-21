@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -12,8 +13,16 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Ticket } from "lucide-react";
+import { Plus, Pencil, Trash2, Ticket, Tag, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+
+type CustomQuestion = {
+  id: string;
+  label: string;
+  type: "checkbox" | "text" | "select";
+  required: boolean;
+  options?: string[]; // for type "select"
+};
 
 type SideEvent = {
   id: string;
@@ -29,6 +38,7 @@ type SideEvent = {
   show_on_public: boolean;
   hide_ticket_count: boolean;
   display_order: number;
+  custom_questions: CustomQuestion[] | null;
 };
 
 const empty = {
@@ -41,6 +51,7 @@ const empty = {
   is_active: true,
   show_on_public: true,
   hide_ticket_count: false,
+  custom_questions: [] as CustomQuestion[],
 };
 
 function exportTicketsCsv(tickets: any[], events: { id: string; name: string }[]) {
@@ -99,7 +110,7 @@ export default function SideEvents() {
         .order("display_order")
         .order("created_at");
       if (error) throw error;
-      return data as SideEvent[];
+      return (data as any[]) as SideEvent[];
     },
     enabled: !!tournamentId,
   });
@@ -136,6 +147,7 @@ export default function SideEvents() {
       is_active: e.is_active,
       show_on_public: e.show_on_public,
       hide_ticket_count: e.hide_ticket_count ?? false,
+      custom_questions: Array.isArray(e.custom_questions) ? e.custom_questions : [],
     });
     setOpen(true);
   };
@@ -157,6 +169,7 @@ export default function SideEvents() {
       is_active: form.is_active,
       show_on_public: form.show_on_public,
       hide_ticket_count: form.hide_ticket_count,
+      custom_questions: (form.custom_questions || []).filter((q) => q.label.trim()),
     };
     const { error } = editing
       ? await supabase.from("side_events").update(payload).eq("id", editing.id)
@@ -224,9 +237,16 @@ export default function SideEvents() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={openCreate} disabled={!tournamentId} className="ml-auto">
-            <Plus className="h-4 w-4 mr-2" /> New Side Event
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button asChild variant="outline" disabled={!tournamentId}>
+              <Link to="/dashboard/registration?tab=promos">
+                <Tag className="h-4 w-4 mr-2" /> Promo Codes
+              </Link>
+            </Button>
+            <Button onClick={openCreate} disabled={!tournamentId}>
+              <Plus className="h-4 w-4 mr-2" /> New Side Event
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -342,7 +362,7 @@ export default function SideEvents() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit Side Event" : "New Side Event"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
@@ -386,6 +406,114 @@ export default function SideEvents() {
                 <Switch checked={form.hide_ticket_count} onCheckedChange={(v) => setForm({ ...form, hide_ticket_count: v })} />
                 Hide ticket count
               </label>
+            </div>
+
+            {/* Custom Questions Builder */}
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-base">Registration Questions</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Ask attendees to confirm waivers, dietary needs, shirt size, etc. during checkout.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      custom_questions: [
+                        ...(form.custom_questions || []),
+                        {
+                          id: crypto.randomUUID(),
+                          label: "",
+                          type: "checkbox",
+                          required: true,
+                        },
+                      ],
+                    })
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Question
+                </Button>
+              </div>
+
+              {(form.custom_questions || []).length === 0 && (
+                <p className="text-xs text-muted-foreground italic">No questions yet.</p>
+              )}
+
+              <div className="space-y-3">
+                {(form.custom_questions || []).map((q, idx) => {
+                  const update = (patch: Partial<CustomQuestion>) => {
+                    const next = [...(form.custom_questions || [])];
+                    next[idx] = { ...next[idx], ...patch };
+                    setForm({ ...form, custom_questions: next });
+                  };
+                  const remove = () => {
+                    const next = [...(form.custom_questions || [])];
+                    next.splice(idx, 1);
+                    setForm({ ...form, custom_questions: next });
+                  };
+                  return (
+                    <div key={q.id} className="border rounded-md p-3 space-y-2 bg-muted/30">
+                      <div className="flex items-start gap-2">
+                        <GripVertical className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <Input
+                            placeholder={
+                              q.type === "checkbox"
+                                ? "e.g. I agree to the event waiver"
+                                : "e.g. What is your shirt size?"
+                            }
+                            value={q.label}
+                            onChange={(e) => update({ label: e.target.value })}
+                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Select value={q.type} onValueChange={(v: any) => update({ type: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="checkbox">Acknowledgment checkbox</SelectItem>
+                                <SelectItem value="text">Short text answer</SelectItem>
+                                <SelectItem value="select">Multiple choice</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <label className="flex items-center gap-2 text-sm">
+                              <Switch
+                                checked={q.required}
+                                onCheckedChange={(v) => update({ required: v })}
+                              />
+                              Required
+                            </label>
+                          </div>
+                          {q.type === "select" && (
+                            <div>
+                              <Label className="text-xs">Options (one per line)</Label>
+                              <Textarea
+                                rows={3}
+                                placeholder={"S\nM\nL\nXL"}
+                                value={(q.options || []).join("\n")}
+                                onChange={(e) =>
+                                  update({
+                                    options: e.target.value
+                                      .split("\n")
+                                      .map((s) => s.trim())
+                                      .filter(Boolean),
+                                  })
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <Button type="button" size="sm" variant="ghost" onClick={remove}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
           <DialogFooter>

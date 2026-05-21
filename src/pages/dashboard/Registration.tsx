@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import { motion } from "framer-motion";
@@ -103,6 +104,13 @@ const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [
 /* ── main component ── */
 const Registration = () => {
   const { org } = useOrgContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "settings";
+  const setActiveTab = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", v);
+    setSearchParams(next, { replace: true });
+  };
   const { demoGuard } = useDemoMode();
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -567,7 +575,7 @@ const Registration = () => {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <Tabs defaultValue="settings" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-6 w-full max-w-3xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="tiers">Tiers</TabsTrigger>

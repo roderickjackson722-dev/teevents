@@ -3138,6 +3138,7 @@ export type Database = {
           attendee_phone: string | null
           checked_in_at: string | null
           created_at: string
+          custom_answers: Json | null
           id: string
           paid_at: string | null
           payment_status: string
@@ -3155,6 +3156,7 @@ export type Database = {
           attendee_phone?: string | null
           checked_in_at?: string | null
           created_at?: string
+          custom_answers?: Json | null
           id?: string
           paid_at?: string | null
           payment_status?: string
@@ -3172,6 +3174,7 @@ export type Database = {
           attendee_phone?: string | null
           checked_in_at?: string | null
           created_at?: string
+          custom_answers?: Json | null
           id?: string
           paid_at?: string | null
           payment_status?: string
@@ -3202,6 +3205,7 @@ export type Database = {
       side_events: {
         Row: {
           created_at: string
+          custom_questions: Json
           description: string | null
           display_order: number
           event_date: string | null
@@ -3219,6 +3223,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_questions?: Json
           description?: string | null
           display_order?: number
           event_date?: string | null
@@ -3236,6 +3241,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_questions?: Json
           description?: string | null
           display_order?: number
           event_date?: string | null

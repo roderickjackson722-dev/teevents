@@ -392,6 +392,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       payment_status: regForm.payment_status,
       show_on_public: regForm.show_on_public,
       manually_approved: regForm.manually_approved,
+      is_title_sponsor: regForm.is_title_sponsor,
     };
 
     // If editing a legacy tournament_sponsors row, migrate it: delete legacy + create new registration

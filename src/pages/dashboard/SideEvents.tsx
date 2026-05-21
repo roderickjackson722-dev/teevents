@@ -169,6 +169,7 @@ export default function SideEvents() {
       is_active: form.is_active,
       show_on_public: form.show_on_public,
       hide_ticket_count: form.hide_ticket_count,
+      custom_questions: (form.custom_questions || []).filter((q) => q.label.trim()),
     };
     const { error } = editing
       ? await supabase.from("side_events").update(payload).eq("id", editing.id)

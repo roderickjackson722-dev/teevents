@@ -154,24 +154,30 @@ Deno.serve(async (req) => {
     if (regErr) throw new Error(regErr.message);
     const registrationIds = (registrations || []).map((r: any) => r.id);
 
-    // Send notification emails
-    try {
-      const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
-      await sendNotificationEmails(
-        supabaseAdmin,
-        tournament.organization_id,
-        "notify_registration",
-        `New Registration — ${tournament.title}`,
-        buildNotificationHtml("New Player Registration", [
-          `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
-          `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
-          isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
-          hasAnyCharge ? `💳 Order total: $${(baseTotalCents / 100).toFixed(2)} (payment pending)` : "✅ No fee — confirmed.",
-        ].filter(Boolean)),
-        tournament.id,
-      );
-    } catch (e) {
-      console.error("Notification error:", e);
+    // NOTE: Notification emails to the organizer + admin are intentionally NOT
+    // sent here. They are sent ONLY after Stripe confirms payment in
+    // verify-registration, so organizers never receive "pending" emails for
+    // transactions that may never complete. (Free / $0 registrations are
+    // confirmed immediately in the !hasAnyCharge branch below.)
+    if (!hasAnyCharge) {
+      try {
+        const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
+        await sendNotificationEmails(
+          supabaseAdmin,
+          tournament.organization_id,
+          "notify_registration",
+          `✅ New Registration Confirmed — ${tournament.title}`,
+          buildNotificationHtml("New Registration Confirmed 🎉", [
+            `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
+            `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
+            isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
+            `✅ No fee — confirmed.`,
+          ].filter(Boolean)),
+          tournament.id,
+        );
+      } catch (e) {
+        console.error("Notification error:", e);
+      }
     }
 
     // If no charges at all (no fee, no addons), registration is complete

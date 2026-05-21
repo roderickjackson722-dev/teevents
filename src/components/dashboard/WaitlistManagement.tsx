@@ -101,7 +101,7 @@ export default function WaitlistManagement() {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, waitlist_enabled, waitlist_deposit_cents, max_players")
+      .select("id, title, waitlist_enabled, waitlist_deposit_cents, max_players, max_waitlist_slots")
       .eq("organization_id", org.orgId)
       .order("date", { ascending: false })
       .then(({ data }) => {

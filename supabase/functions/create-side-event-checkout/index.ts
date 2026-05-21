@@ -147,7 +147,21 @@ Deno.serve(async (req) => {
       stripeSessionId: session.id,
       buyerEmail: attendee_email?.trim() || null,
       notes: `side_event=${ev.name} qty=${qty}`,
+      isPlatformFallback: connected.isPlatformFallback,
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "side_event",
+        organizationId: tournament.organization_id,
+        organizationName: connected.organizationName,
+        tournamentId: ev.tournament_id,
+        tournamentTitle: tournament.title,
+        grossCents,
+        buyerEmail: attendee_email?.trim() || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     await supabaseAdmin
       .from("side_event_tickets")

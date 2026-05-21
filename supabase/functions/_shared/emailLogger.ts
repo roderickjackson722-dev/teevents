@@ -41,7 +41,7 @@ export async function logEmailSend(supabaseAdmin: any, params: LogEmailParams): 
 export async function sendAndLog(
   supabaseAdmin: any,
   resendApiKey: string,
-  payload: { from: string; to: string | string[]; subject: string; html?: string; text?: string; reply_to?: string },
+  payload: { from: string; to: string | string[]; subject: string; html?: string; text?: string; reply_to?: string; headers?: Record<string, string> },
   logMeta: Omit<LogEmailParams, "status" | "recipientEmail" | "subject" | "resendId" | "errorMessage">,
 ): Promise<{ ok: boolean; resendId?: string; error?: string }> {
   const recipients = Array.isArray(payload.to) ? payload.to : [payload.to];

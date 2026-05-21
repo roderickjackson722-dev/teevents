@@ -29,6 +29,10 @@ type Budget = {
   id: string;
   estimated_golfers: number;
   actual_golfers: number;
+  estimate_section_title: string;
+  expense_section_titles: Record<string, string>;
+  income_section_titles: Record<string, string>;
+  pnl_section_title: string;
 };
 type Estimate = {
   id: string; budget_id: string; item_name: string;
@@ -67,6 +71,7 @@ export default function BudgetPage() {
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"estimates" | "expenses" | "income" | "pnl">("estimates");
   const [budget, setBudget] = useState<Budget | null>(null);
   const [loading, setLoading] = useState(true);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
@@ -101,7 +106,7 @@ export default function BudgetPage() {
       setLoading(true);
       const { data: existing, error: exErr } = await supabase
         .from("tournament_budgets")
-        .select("id, estimated_golfers, actual_golfers")
+        .select("id, estimated_golfers, actual_golfers, estimate_section_title, expense_section_titles, income_section_titles, pnl_section_title")
         .eq("tournament_id", selectedId)
         .maybeSingle();
       if (exErr) console.error("budget lookup", exErr);
@@ -110,7 +115,7 @@ export default function BudgetPage() {
         const { data: created, error: cErr } = await supabase
           .from("tournament_budgets")
           .insert({ tournament_id: selectedId })
-          .select("id, estimated_golfers, actual_golfers")
+          .select("id, estimated_golfers, actual_golfers, estimate_section_title, expense_section_titles, income_section_titles, pnl_section_title")
           .single();
         if (cErr) {
           console.error("budget create", cErr);

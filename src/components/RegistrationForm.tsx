@@ -102,7 +102,9 @@ const PlayerFields = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">
-          {index === 0 ? "Player 1 (Captain)" : `Player ${index + 1}`}
+          {index === 0
+            ? (captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
+            : `Player ${index + 1}`}
         </h4>
         {showRemove && onRemove && (
           <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-destructive h-7 px-2">

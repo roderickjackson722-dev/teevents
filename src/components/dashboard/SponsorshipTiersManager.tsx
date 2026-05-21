@@ -747,8 +747,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-center" title="Designate as the title sponsor — shown larger and first on the public page (one per tournament)">Title</TableHead>
-                  <TableHead className="text-center">Show on Public</TableHead>
-                  <TableHead className="text-center" title="Check to display this sponsor on the public website even if payment is still pending">Override Pending & Show on Public</TableHead>
+                  <TableHead className="text-center" title="Toggle on to display this sponsor on the public website (regardless of payment status)">Show on Public</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="w-[60px]">Actions</TableHead>
                 </TableRow>
@@ -841,28 +840,15 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                           onCheckedChange={async (checked) => {
                             if (demoGuard()) return;
                             const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                              body: { action: "update_registration_visibility", registration_id: reg.id, show_on_public: checked },
-                            });
-                            if (error || data?.error) {
-                              toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });
-                            } else {
-                              fetchData();
-                            }
-                          }}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {reg._source === "legacy" ? (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      ) : (
-                        <Checkbox
-                          checked={reg.manually_approved === true}
-                          disabled={reg.payment_status === "paid"}
-                          onCheckedChange={async (checked) => {
-                            if (demoGuard()) return;
-                            const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
-                              body: { action: "update_registration_visibility", registration_id: reg.id, manually_approved: checked === true },
+                              body: {
+                                action: "update_registration_visibility",
+                                registration_id: reg.id,
+                                show_on_public: checked,
+                                // Show on Public is the final determination — when enabled,
+                                // mark as manually approved so the sponsor appears publicly
+                                // even if payment is still pending.
+                                manually_approved: checked,
+                              },
                             });
                             if (error || data?.error) {
                               toast({ title: "Error", description: data?.error || error?.message, variant: "destructive" });

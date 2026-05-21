@@ -42,6 +42,7 @@ interface Tournament {
   waitlist_enabled: boolean;
   waitlist_deposit_cents: number;
   max_players: number | null;
+  max_waitlist_slots: number | null;
 }
 
 export default function WaitlistManagement() {

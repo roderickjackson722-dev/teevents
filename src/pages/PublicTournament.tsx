@@ -1978,6 +1978,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     tiers={regTiers}
                     fields={regFields}
                     addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
+                    captainLabel={(tournament as any).captain_label || null}
                   />
                 </div>
               )}

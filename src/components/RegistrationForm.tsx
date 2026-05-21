@@ -52,6 +52,7 @@ interface RegistrationFormProps {
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
+  captainLabel?: string | null;
 }
 
 const emptyPlayer = () => ({
@@ -63,11 +64,11 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove, fields,
+  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
-  fields?: RegFieldConfig[];
+  fields?: RegFieldConfig[]; captainLabel?: string | null;
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
 
@@ -101,7 +102,9 @@ const PlayerFields = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">
-          {index === 0 ? "Player 1 (Captain)" : `Player ${index + 1}`}
+          {index === 0
+            ? (captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
+            : `Player ${index + 1}`}
         </h4>
         {showRemove && onRemove && (
           <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-destructive h-7 px-2">
@@ -223,7 +226,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons" }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -616,6 +619,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               showRemove={allowGroup && i > 0}
               onRemove={() => removePlayer(i)}
               fields={fields}
+              captainLabel={captainLabel}
             />
           </div>
         ))}

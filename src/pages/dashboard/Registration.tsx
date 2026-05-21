@@ -133,13 +133,14 @@ const Registration = () => {
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
   const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
   const [allowCoverFees, setAllowCoverFees] = useState<boolean>(true);
+  const [captainLabel, setCaptainLabel] = useState<string>("");
 
   /* fetch tournaments */
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -167,6 +168,7 @@ const Registration = () => {
       setFoursomeReg(tournament.foursome_registration || false);
       setMaxGroupSize(tournament.max_group_size || 1);
       setAllowCoverFees(tournament.allow_cover_fees !== false);
+      setCaptainLabel(((tournament as any).captain_label as string) || "");
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([
@@ -209,6 +211,7 @@ const Registration = () => {
         foursome_registration: foursomeReg,
         max_group_size: maxGroupSize,
         allow_cover_fees: allowCoverFees,
+        captain_label: captainLabel.trim() || null,
       } as any)
       .eq("id", selectedTournament);
     if (error) toast.error(error.message);
@@ -553,8 +556,8 @@ const Registration = () => {
     <div>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Registration</h1>
-          <p className="text-muted-foreground mt-1">Configure fields, fees, add-ons, and promo codes.</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Registration Management</h1>
+          <p className="text-muted-foreground mt-1">Configure fields, fees, captain label, add-ons, and promo codes.</p>
         </div>
         {tournaments.length > 1 && (
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
@@ -681,6 +684,20 @@ const Registration = () => {
                   </p>
                 </div>
                 <Switch checked={allowCoverFees} onCheckedChange={setAllowCoverFees} />
+              </div>
+
+              <div className="p-4 rounded-lg border border-border bg-muted/20">
+                <Label className="text-sm font-semibold">Captain Label (group registrations)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                  Shown next to the first player on the public registration form (e.g. "Player 1 (Captain)"). Leave blank to hide.
+                </p>
+                <Input
+                  value={captainLabel}
+                  onChange={(e) => setCaptainLabel(e.target.value)}
+                  placeholder="Captain"
+                  maxLength={40}
+                  className="max-w-xs"
+                />
               </div>
 
               <Button onClick={saveSettings} disabled={saving}>

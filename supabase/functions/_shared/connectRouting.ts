@@ -1,22 +1,28 @@
-// Shared helper for Stripe Connect DIRECT CHARGES.
+// Shared helper for Stripe Connect DIRECT CHARGES with PLATFORM FALLBACK.
 //
-// As of the Direct Charges migration, every paid checkout MUST run on the
-// organizer's connected Stripe account. The organizer is the merchant of
-// record; TeeVents only takes its 5% application fee. There is no longer a
-// "platform escrow" fallback — if the organizer's account isn't ready,
-// checkout is refused with a clear error.
+// Default: charge runs on the organizer's connected Stripe account; TeeVents
+// takes a 5% application fee.
+//
+// Fallback: if the organizer has not connected Stripe (or their account
+// can't accept charges yet), the charge runs on the PLATFORM TeeVents
+// account so attendees can still check out. An admin email is sent to
+// info@teevents.golf so the team can perform a manual payout to the
+// organizer.
 
 export const PLATFORM_FEE_RATE = 0.05;
+export const PLATFORM_FALLBACK_EMAIL = "info@teevents.golf";
 
 export type ConnectedAccount = {
-  stripeAccountId: string;
+  stripeAccountId: string | null;
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
+  isPlatformFallback: boolean;
+  organizationName?: string | null;
 };
 
 /**
- * Look up the organization's connected Stripe account and verify it can
- * accept charges. Throws a user-friendly error otherwise.
+ * Resolve which Stripe account should receive the charge. Never throws for
+ * "organizer not connected" — returns a platform-fallback result instead.
  */
 export async function requireConnectedAccount(
   supabaseAdmin: any,
@@ -24,8 +30,17 @@ export async function requireConnectedAccount(
   organizationId: string | null,
   context: string,
 ): Promise<ConnectedAccount> {
+  const fallback = (orgName?: string | null): ConnectedAccount => ({
+    stripeAccountId: null,
+    chargesEnabled: false,
+    payoutsEnabled: false,
+    isPlatformFallback: true,
+    organizationName: orgName ?? null,
+  });
+
   if (!organizationId) {
-    throw new Error("Tournament is not linked to an organization.");
+    console.warn(`[Direct/${context}] No organization on tournament — platform fallback.`);
+    return fallback(null);
   }
 
   const { data: org } = await supabaseAdmin
@@ -36,32 +51,95 @@ export async function requireConnectedAccount(
 
   const stripeAccountId = org?.stripe_account_id || null;
   if (!stripeAccountId) {
-    throw new Error(
-      "This organizer hasn't connected a Stripe payout account yet, so payments can't be accepted. Please check back soon.",
-    );
+    console.warn(`[Direct/${context}] Org ${organizationId} has no Stripe account — platform fallback.`);
+    return fallback(org?.name);
   }
 
   try {
     const acct = await stripe.accounts.retrieve(stripeAccountId);
     console.log(
-      `[Direct/${context}] acct ${stripeAccountId}: charges_enabled=${acct.charges_enabled}, payouts_enabled=${acct.payouts_enabled}, details_submitted=${acct.details_submitted}`,
+      `[Direct/${context}] acct ${stripeAccountId}: charges_enabled=${acct.charges_enabled}, payouts_enabled=${acct.payouts_enabled}`,
     );
     if (!acct.charges_enabled) {
-      throw new Error(
-        "This organizer's Stripe account isn't enabled to accept charges yet. They may still be finishing onboarding — please check back soon.",
-      );
+      console.warn(`[Direct/${context}] Acct ${stripeAccountId} cannot accept charges — platform fallback.`);
+      return fallback(org?.name);
     }
     return {
       stripeAccountId,
-      chargesEnabled: !!acct.charges_enabled,
+      chargesEnabled: true,
       payoutsEnabled: !!acct.payouts_enabled,
+      isPlatformFallback: false,
+      organizationName: org?.name ?? null,
     };
   } catch (e: any) {
-    if (e?.message && e.message.startsWith("This organizer's Stripe")) throw e;
-    console.error(`[Direct/${context}] Failed to retrieve connected account ${stripeAccountId}:`, e);
-    throw new Error(
-      "We couldn't verify the organizer's payment account with Stripe right now. Please try again in a few minutes.",
-    );
+    console.error(`[Direct/${context}] Failed to retrieve acct ${stripeAccountId}, falling back:`, e?.message || e);
+    return fallback(org?.name);
+  }
+}
+
+/** Stripe SDK second-arg options. Empty when platform fallback. */
+export function stripeAccountOpts(account: ConnectedAccount): Record<string, string> {
+  return account.isPlatformFallback || !account.stripeAccountId
+    ? {}
+    : { stripeAccount: account.stripeAccountId };
+}
+
+/** "&acct=xxx" suffix to append to success URLs, or "" for fallback. */
+export function acctQuerySuffix(account: ConnectedAccount): string {
+  return account.isPlatformFallback || !account.stripeAccountId
+    ? ""
+    : `&acct=${account.stripeAccountId}`;
+}
+
+/** payment_intent_data fragment with application_fee — empty for fallback. */
+export function applicationFeeBlock(account: ConnectedAccount, applicationFeeAmount: number) {
+  if (account.isPlatformFallback || !account.stripeAccountId) return {};
+  return { payment_intent_data: { application_fee_amount: applicationFeeAmount } };
+}
+
+/** Fire-and-forget admin email when checkout was routed to the platform. */
+export async function notifyPlatformFallback(params: {
+  context: string;
+  organizationId: string | null;
+  organizationName?: string | null;
+  tournamentId: string | null;
+  tournamentTitle?: string | null;
+  grossCents: number;
+  buyerEmail?: string | null;
+  stripeSessionId?: string | null;
+}) {
+  try {
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendKey) return;
+    const dollars = (params.grossCents / 100).toFixed(2);
+    const subject = `[Manual payout required] ${params.context} charged on platform account — $${dollars}`;
+    const html = `
+      <h2>Platform fallback charge — manual payout required</h2>
+      <p>A <b>${params.context}</b> checkout just ran on the TeeVents platform Stripe account
+      because the organizer has not connected (or completed) Stripe onboarding.</p>
+      <ul>
+        <li><b>Amount:</b> $${dollars}</li>
+        <li><b>Organizer:</b> ${params.organizationName || "—"} (${params.organizationId || "no org"})</li>
+        <li><b>Tournament:</b> ${params.tournamentTitle || "—"} (${params.tournamentId || "—"})</li>
+        <li><b>Buyer:</b> ${params.buyerEmail || "—"}</li>
+        <li><b>Stripe session:</b> ${params.stripeSessionId || "—"}</li>
+      </ul>
+      <p>Please contact the organizer to collect payout details and issue a manual payout
+      (less the 5% TeeVents platform fee).</p>
+    `;
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "TeeVents <info@teevents.golf>",
+        to: [PLATFORM_FALLBACK_EMAIL],
+        reply_to: "info@teevents.golf",
+        subject,
+        html,
+      }),
+    });
+  } catch (e) {
+    console.error("[notifyPlatformFallback] failed:", e);
   }
 }
 
@@ -81,7 +159,7 @@ export async function logDirectCharge(
     context: string;
     tournamentId: string | null;
     organizationId: string | null;
-    stripeAccountId: string;
+    stripeAccountId: string | null;
     grossCents: number;
     platformFeeCents: number;
     stripeFeeCents: number;
@@ -91,6 +169,7 @@ export async function logDirectCharge(
     stripePaymentIntentId?: string | null;
     buyerEmail?: string | null;
     notes?: string | null;
+    isPlatformFallback?: boolean;
   },
 ) {
   try {
@@ -99,9 +178,9 @@ export async function logDirectCharge(
       tournament_id: params.tournamentId,
       organization_id: params.organizationId,
       organizer_stripe_account_id: params.stripeAccountId,
-      organizer_charges_ready: true,
+      organizer_charges_ready: !params.isPlatformFallback,
       payment_method_override: "default",
-      routing_decision: "direct",
+      routing_decision: params.isPlatformFallback ? "platform_fallback" : "direct",
       gross_cents: params.grossCents,
       platform_fee_cents: params.platformFeeCents,
       stripe_fee_cents: params.stripeFeeCents,

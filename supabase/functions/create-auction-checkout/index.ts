@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { requireConnectedAccount, computeFees, logDirectCharge } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
       customer_email: buyer_email || undefined,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${slug}?auction_purchased=true&item_id=${item_id}&acct=${organizerStripeAccountId}`,
+      success_url: `${origin}/t/${slug}?auction_purchased=true&item_id=${item_id}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${slug}#auction`,
-      payment_intent_data: { application_fee_amount: applicationFeeAmount },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "auction_buy_now",
         item_id,
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     };
 
     const session = await stripe.checkout.sessions.create(
-      checkoutParams, { stripeAccount: organizerStripeAccountId },
+      checkoutParams, stripeAccountOpts(connected),
     );
 
     await logDirectCharge(supabaseAdmin, {
@@ -115,7 +115,21 @@ Deno.serve(async (req) => {
       passFeesToParticipants,
       stripeSessionId: session.id,
       buyerEmail: buyer_email || null,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "auction",
+        organizationId: tournament?.organization_id || null,
+        organizationName: connected.organizationName,
+        tournamentId: item.tournament_id,
+        tournamentTitle: null,
+        grossCents: priceCents,
+        buyerEmail: buyer_email || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     // Mark item as sold
     await supabaseAdmin

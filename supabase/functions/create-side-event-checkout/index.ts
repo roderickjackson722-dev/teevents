@@ -3,7 +3,7 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
@@ -110,9 +110,9 @@ Deno.serve(async (req) => {
       customer_email: attendee_email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?side_event_success=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
+      success_url: `${origin}/t/${tournament.slug}?side_event_success=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}?side_event_cancel=true`,
-      payment_intent_data: { application_fee_amount: applicationFeeAmount },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "side_event_ticket",
         tournament_id: ev.tournament_id,
@@ -125,13 +125,13 @@ Deno.serve(async (req) => {
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),
         charge_total_cents: String(grossCents + combinedFeesCents),
-        routing: "direct",
+        routing: connected.isPlatformFallback ? "platform_fallback" : "direct",
       },
     };
 
     const session = await stripe.checkout.sessions.create(
       checkoutParams,
-      { stripeAccount: organizerStripeAccountId },
+      stripeAccountOpts(connected),
     );
 
     await logDirectCharge(supabaseAdmin, {
@@ -147,7 +147,21 @@ Deno.serve(async (req) => {
       stripeSessionId: session.id,
       buyerEmail: attendee_email?.trim() || null,
       notes: `side_event=${ev.name} qty=${qty}`,
+      isPlatformFallback: connected.isPlatformFallback,
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "side_event",
+        organizationId: tournament.organization_id,
+        organizationName: connected.organizationName,
+        tournamentId: ev.tournament_id,
+        tournamentTitle: tournament.title,
+        grossCents,
+        buyerEmail: attendee_email?.trim() || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     await supabaseAdmin
       .from("side_event_tickets")

@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
@@ -283,11 +283,9 @@ Deno.serve(async (req) => {
       customer_email: email.trim(),
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
+      success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-      },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "registration",
         tournament_id,
@@ -312,7 +310,7 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(
       checkoutParams,
-      { stripeAccount: organizerStripeAccountId },
+      stripeAccountOpts(connected),
     );
 
     await logDirectCharge(supabaseAdmin, {
@@ -327,7 +325,21 @@ Deno.serve(async (req) => {
       passFeesToParticipants: golferPaysFees,
       stripeSessionId: session.id,
       buyerEmail: email?.trim() || null,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "registration",
+        organizationId: tournament.organization_id,
+        organizationName: connected.organizationName,
+        tournamentId: (tournament as any).id,
+        tournamentTitle: null,
+        grossCents: baseTotalCents,
+        buyerEmail: email?.trim() || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, paid: false, checkout_url: session.url }),

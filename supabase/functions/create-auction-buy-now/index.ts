@@ -1,7 +1,7 @@
 // Direct-charge Stripe Checkout for "Buy Now" on a new-table auction.
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireConnectedAccount, computeFees, logDirectCharge } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,9 +69,9 @@ Deno.serve(async (req) => {
       customer_email: buyer_email,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${slug}?auction_buy_now=success&auction_id=${auction_id}&acct=${connected.stripeAccountId}`,
+      success_url: `${origin}/t/${slug}?auction_buy_now=success&auction_id=${auction_id}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${slug}#auctions`,
-      payment_intent_data: { application_fee_amount: platformFeeCents },
+      ...applicationFeeBlock(connected, platformFeeCents),
       metadata: {
         type: "auction_buy_now_v2",
         auction_id,
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
         buyer_email,
         buyer_phone: buyer_phone || "",
       },
-    }, { stripeAccount: connected.stripeAccountId });
+    }, stripeAccountOpts(connected));
 
     await logDirectCharge(supabaseAdmin, {
       context: "auction-buy-now",
@@ -94,7 +94,21 @@ Deno.serve(async (req) => {
       passFeesToParticipants: passFees,
       stripeSessionId: session.id,
       buyerEmail: buyer_email,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "auction-buy-now",
+        organizationId: t?.organization_id || null,
+        organizationName: connected.organizationName,
+        tournamentId: auction.tournament_id,
+        tournamentTitle: null,
+        grossCents: priceCents,
+        buyerEmail: buyer_email,
+        stripeSessionId: session.id,
+      });
+    }
 
     // Optimistically mark winner; verify-auction-buy-now will finalize on success
     await supabaseAdmin

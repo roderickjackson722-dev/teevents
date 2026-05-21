@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { requireConnectedAccount, computeFees, logDirectCharge } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,9 +71,9 @@ Deno.serve(async (req) => {
       customer_email: donor_email || undefined,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${tournament_slug}?donated=true&session_id={CHECKOUT_SESSION_ID}&acct=${organizerStripeAccountId}`,
+      success_url: `${origin}/t/${tournament_slug}?donated=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament_slug}#donation`,
-      payment_intent_data: { application_fee_amount: applicationFeeAmount },
+      ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
         type: "donation",
         tournament_slug: tournament_slug || "",
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     };
 
     const session = await stripe.checkout.sessions.create(
-      checkoutParams, { stripeAccount: organizerStripeAccountId },
+      checkoutParams, stripeAccountOpts(connected),
     );
 
     await logDirectCharge(supabaseAdmin, {
@@ -101,7 +101,21 @@ Deno.serve(async (req) => {
       passFeesToParticipants,
       stripeSessionId: session.id,
       buyerEmail: donor_email || null,
+      isPlatformFallback: connected.isPlatformFallback
     });
+
+    if (connected.isPlatformFallback) {
+      await notifyPlatformFallback({
+        context: "donation",
+        organizationId: null,
+        organizationName: connected.organizationName,
+        tournamentId: tournament_id,
+        tournamentTitle: null,
+        grossCents: amount_cents,
+        buyerEmail: donor_email || null,
+        stripeSessionId: session.id,
+      });
+    }
 
     await supabaseAdmin.from("tournament_donations").insert({
       tournament_id,

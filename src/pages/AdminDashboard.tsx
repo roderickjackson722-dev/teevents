@@ -766,6 +766,7 @@ const AdminDashboard = () => {
                   ["college", "College Hub", School],
                   ["sponsorship-pages", "Sponsorship Pages", Target],
                   ["sales-hub", "Outreach / Sales Hub", Target],
+                  ["mockup-outreach", "Mockup Outreach", Trophy],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}

@@ -26,6 +26,7 @@ import AdminTournamentEditModal, { type PaymentOverride } from "@/components/adm
 import AdminFeatureFlags from "@/components/admin/AdminFeatureFlags";
 import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import AdminSetupChecklist from "@/components/admin/AdminSetupChecklist";
+import SampleGenerator from "@/components/admin/SampleGenerator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";

@@ -132,6 +132,9 @@ import PlayerHub from "./pages/PlayerHub";
 import GolfTournamentSoftware from "./pages/seo/GolfTournamentSoftware";
 import CharityGolfTournamentPlanning from "./pages/seo/CharityGolfTournamentPlanning";
 import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
+import SampleTournament from "./pages/sample/SampleTournament";
+import SampleDashboardPreview from "./pages/sample/SampleDashboardPreview";
+import SampleLive from "./pages/sample/SampleLive";
 
 const queryClient = new QueryClient();
 

@@ -1970,6 +1970,7 @@ const AdminDashboard = () => {
           {/* Group Trips Tab */}
           {activeTab === "group-trips" && <AdminGroupTrips />}
           {activeTab === "setup-checklist" && <AdminSetupChecklist />}
+          {activeTab === "mockup-outreach" && <SampleGenerator />}
         </div>
       </section>
 

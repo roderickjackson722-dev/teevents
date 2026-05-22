@@ -132,6 +132,9 @@ import PlayerHub from "./pages/PlayerHub";
 import GolfTournamentSoftware from "./pages/seo/GolfTournamentSoftware";
 import CharityGolfTournamentPlanning from "./pages/seo/CharityGolfTournamentPlanning";
 import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
+import SampleTournament from "./pages/sample/SampleTournament";
+import SampleDashboardPreview from "./pages/sample/SampleDashboardPreview";
+import SampleLive from "./pages/sample/SampleLive";
 
 const queryClient = new QueryClient();
 
@@ -211,6 +214,9 @@ const App = () => (
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
+          <Route path="/sample/:slug" element={<SampleTournament />} />
+          <Route path="/sample/:slug/dashboard" element={<SampleDashboardPreview />} />
+          <Route path="/sample/:slug/live" element={<SampleLive />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
            <Route path="/survey/:token" element={<Survey />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

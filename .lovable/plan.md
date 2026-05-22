@@ -1,56 +1,84 @@
-## Budget Management Tool — Implementation Plan
+# Mockup Outreach — Custom Sample Tournament Generator
 
-This is a large build. Here's what I'll ship, in order, so you can stop me if anything's off before I touch the database.
+A new admin section that lets you spin up a fully branded sample tournament site + dashboard for any prospect (Eventbrite, Facebook flyer, Zeffy, etc.), share a unique link, and email it with a pre-filled outreach template.
 
-### Scope decisions (please confirm)
+## 1. Database (one migration)
 
-1. **Existing Budget page** (`/dashboard/budget`) uses the old `tournament_budget_items` table. I'll **replace it** with the new tool (same route — keeps the sidebar link working). The new spec's route `/dashboard/tournaments/:id/budget` would require duplicating tournament selector logic; the current page already has a tournament dropdown which fits your dashboard pattern better. **Old data will not be migrated** (different schema, no estimates/actual/variance concept).
-2. **Templates** stored per-user (as spec'd), reusable across tournaments in their org.
-3. **PDF export** = browser print-to-PDF via print stylesheet (no extra deps). CSV export = single file with section headers (not multi-tab; true multi-tab requires .xlsx + a heavy lib).
-4. **Auto-save** on blur with 500ms debounce + toast-free inline "Saved ✓" indicator.
+Four new tables in `public`:
 
-### Phase 1 — Database (one migration)
+- **sample_tournaments** — `id`, `admin_id`, `unique_slug` (unique), `tournament_name`, `event_date`, `location`, `description`, `logo_url`, `hero_image_url`, `scoring_format` (default 'Scramble'), `registration_fee_cents` (default 10000), `team_fee_cents` (default 40000), `view_count`, `last_accessed_at`, timestamps
+- **sample_participants** — `sample_tournament_id` (FK cascade), `name`, `handicap`, `email`
+- **sample_sponsors** — `sample_tournament_id` (FK cascade), `name`, `level` ('Title'|'Gold'|'Silver'|'Bronze'), `logo_color`, `website_url`
+- **sample_leaderboard** — `sample_tournament_id` (FK cascade), `player_name`, `gross_score`, `net_score`, `thru`, `position`
 
-New tables with RLS scoped to org members of the tournament:
-- `tournament_budgets` (1:1 with tournament)
-- `budget_estimates`
-- `budget_expenses` (adds `category`, `actual_cost`, `payment_due_date`, `sort_order` vs old table)
-- `budget_income` (adds `projected` vs `actual`, `payer_source`, `date_received`)
-- `budget_templates` (user-owned, JSONB line items)
+RLS:
+- All four tables: public `SELECT` (so prospects can view without auth)
+- `INSERT/UPDATE/DELETE` restricted to admins via `has_role(auth.uid(), 'admin')`
 
-Helper: trigger to auto-create `tournament_budgets` row on first access (or lazy-create in code).
+## 2. Admin section — "Mockup Outreach"
 
-Defaults seeding (per-format expense/income lists from §3.1/§4.1) happens **client-side on first load** when the budget is empty, so format changes don't wipe edits.
+Add a new tab/section in `AdminDashboard.tsx` called **Mockup Outreach** with two sub-views:
 
-### Phase 2 — UI components
+### a) Generator form (`/admin/sample-generator` route, also embedded in the tab)
+- Inputs: Tournament Name, Date, Location, Description, Player Fee, Team Fee, Scoring Format dropdown
+- Branding: Logo URL + Hero Image URL (paste URL; optional file upload to `tournament-assets` bucket)
+- Toggles: generate participants / sponsors / leaderboard (all default on)
+- **Generate Sample Tournament** button:
+  - Auto-slugifies the tournament name (collision-safe)
+  - Inserts the `sample_tournaments` row
+  - Seeds 12 mock participants, 6 mock sponsors, 10 leaderboard entries (the exact lists from the spec)
+- After generation: shows public link, **Copy Link**, **View Sample**, **Send to Prospect** (opens email modal), QR code
 
-New folder `src/components/dashboard/budget/`:
-- `BudgetSummaryBar.tsx` — 4 metric cards (sticky on scroll)
-- `EstimatesSection.tsx` — card grid, add/move-to/delete
-- `ExpensesTable.tsx` — editable rows, variance, paid checkbox, sort
-- `IncomeTable.tsx` — same pattern, received checkbox
-- `ProfitLossCard.tsx` — colored border, progress bar, status badge
-- `BudgetExportMenu.tsx` — print + CSV
-- `TemplateDialog.tsx` — save/load templates
-- `useBudgetAutosave.ts` — debounced upsert hook with "Saved" indicator
-- `budgetDefaults.ts` — format-based default line items
+### b) Saved mockups list
+- Table of all generated samples with: name, slug, created date, view count, last accessed
+- Per-row actions: View, Copy Link, Edit, Regenerate Mock Data, Send to Prospect, Delete
 
-### Phase 3 — Page rewrite
+### c) Send-to-Prospect modal
+- Pre-filled Subject + Body using the new email template (with `[Tournament Name]` and sample link substituted)
+- Editable name + email fields
+- Sends via the existing transactional email pipeline (or `mailto:` fallback)
 
-Rewrite `src/pages/dashboard/Budget.tsx` to orchestrate the above. Keep tournament selector at top. Mobile: tables collapse to cards below `md`.
+## 3. Public sample pages
 
-### Phase 4 — Print styles
+Three new public routes (no auth):
 
-Add `@media print` block in `src/index.css` to hide sidebar/nav/buttons, expand notes, add header.
+- **`/sample/:slug`** — Public tournament site styled like a real PublicTournament page: hero image, name/date/location, description, Registration button (shows "This is a demo" toast), Leaderboard tab, Sponsors tab, Schedule, Course details placeholder
+- **`/sample/:slug/dashboard`** — Read-only organizer dashboard preview: Overview stats, Players list, Leaderboard, Sponsors, Finances (mock $5 fee + Stripe payout), Payout Settings, Share & Promote
+- **`/sample/:slug/live`** — TV-optimized dark live leaderboard with auto-refresh animation
 
-### Out of scope (not building unless you ask)
+Each public route page increments `view_count` and updates `last_accessed_at` on load (anon-allowed RPC).
 
-- True multi-sheet .xlsx export (would need `xlsx` npm dep)
-- Migrating old `tournament_budget_items` data into new tables
-- Real-time multi-user collaboration on the same budget
+## 4. Email template (outreach)
 
-### Estimated changes
+Updated transactional template `mockup-outreach`:
 
-~10 new files, 1 migration, 1 page rewrite, ~1500 LOC. After your approval I'll run the migration first, then implement in one pass.
+> Subject: Your [Tournament Name] — custom mockup
+>
+> Hey [Name], I hope your planning for [Tournament Name] is on track. We built TeeVents to handle registration, payments, live leaderboards, hole sponsors, volunteer check-in, and automatic payouts. Here's a custom mockup of what your event would look like on TeeVents: 👉 [link]. No pressure — just wanted to share. Best, Rod
 
-**Confirm and I'll start with the migration, or tell me which scope decisions to flip.**
+Sent through the existing `send-transactional-email` infrastructure, BCC `info@teevents.golf`.
+
+## 5. Files
+
+**New:**
+- `supabase/migrations/<ts>_sample_tournaments.sql`
+- `src/pages/admin/SampleGenerator.tsx` (form + list, used by both the route and tab)
+- `src/pages/sample/SampleTournament.tsx` (`/sample/:slug`)
+- `src/pages/sample/SampleDashboardPreview.tsx` (`/sample/:slug/dashboard`)
+- `src/pages/sample/SampleLive.tsx` (`/sample/:slug/live`)
+- `src/components/admin/SendProspectModal.tsx`
+- `src/lib/sampleMockData.ts` (the 12 participants, 6 sponsors, 10 leaderboard rows)
+- `supabase/functions/_shared/transactional-email-templates/mockup-outreach.tsx`
+
+**Edited:**
+- `src/App.tsx` — add 4 new routes
+- `src/pages/AdminDashboard.tsx` — add "Mockup Outreach" tab
+- `supabase/functions/_shared/transactional-email-templates/registry.ts` — register new template
+
+## 6. Success criteria
+- Admin can create a custom sample from any flyer in under 60 seconds
+- `/sample/{slug}` renders a branded, realistic public site
+- `/sample/{slug}/dashboard` shows all organizer features filled with mock data
+- Prospect link is shareable without login
+- Outreach email is editable and sends through existing email pipeline
+- Samples can be edited, regenerated, and deleted from the admin tab

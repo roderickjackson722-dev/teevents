@@ -3307,6 +3307,180 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_leaderboard: {
+        Row: {
+          created_at: string
+          gross_score: number | null
+          id: string
+          net_score: number | null
+          player_name: string
+          position: number | null
+          sample_tournament_id: string
+          thru: number | null
+        }
+        Insert: {
+          created_at?: string
+          gross_score?: number | null
+          id?: string
+          net_score?: number | null
+          player_name: string
+          position?: number | null
+          sample_tournament_id: string
+          thru?: number | null
+        }
+        Update: {
+          created_at?: string
+          gross_score?: number | null
+          id?: string
+          net_score?: number | null
+          player_name?: string
+          position?: number | null
+          sample_tournament_id?: string
+          thru?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_leaderboard_sample_tournament_id_fkey"
+            columns: ["sample_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_participants: {
+        Row: {
+          created_at: string
+          email: string | null
+          handicap: number | null
+          id: string
+          name: string
+          sample_tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          handicap?: number | null
+          id?: string
+          name: string
+          sample_tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          handicap?: number | null
+          id?: string
+          name?: string
+          sample_tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_participants_sample_tournament_id_fkey"
+            columns: ["sample_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_sponsors: {
+        Row: {
+          created_at: string
+          id: string
+          level: string | null
+          logo_color: string | null
+          logo_url: string | null
+          name: string
+          sample_tournament_id: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string | null
+          logo_color?: string | null
+          logo_url?: string | null
+          name: string
+          sample_tournament_id: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string | null
+          logo_color?: string | null
+          logo_url?: string | null
+          name?: string
+          sample_tournament_id?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_sponsors_sample_tournament_id_fkey"
+            columns: ["sample_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_tournaments: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          description: string | null
+          event_date: string | null
+          hero_image_url: string | null
+          id: string
+          last_accessed_at: string | null
+          location: string | null
+          logo_url: string | null
+          registration_fee_cents: number | null
+          scoring_format: string | null
+          team_fee_cents: number | null
+          tournament_name: string
+          unique_slug: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          hero_image_url?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          location?: string | null
+          logo_url?: string | null
+          registration_fee_cents?: number | null
+          scoring_format?: string | null
+          team_fee_cents?: number | null
+          tournament_name: string
+          unique_slug: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          hero_image_url?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          location?: string | null
+          logo_url?: string | null
+          registration_fee_cents?: number | null
+          scoring_format?: string | null
+          team_fee_cents?: number | null
+          tournament_name?: string
+          unique_slug?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       setup_checklist_tasks: {
         Row: {
           auto_complete: boolean
@@ -6436,6 +6610,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_sample_view: { Args: { _slug: string }; Returns: undefined }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean

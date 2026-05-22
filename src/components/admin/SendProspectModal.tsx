@@ -43,13 +43,8 @@ export function SendProspectModal({ open, onClose, tournamentName, sampleLink }:
     if (!email.trim()) { toast.error("Recipient email is required"); return; }
     setSending(true);
     try {
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "mockup-outreach",
-          recipientEmail: email,
-          idempotencyKey: `mockup-outreach-${sampleLink}-${Date.now()}`,
-          templateData: { name, tournamentName, sampleLink, subject, body },
-        },
+      const { error } = await supabase.functions.invoke("send-mockup-outreach", {
+        body: { recipientEmail: email, subject, body },
       });
       if (error) throw error;
       toast.success("Email sent");

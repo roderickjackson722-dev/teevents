@@ -214,6 +214,9 @@ const App = () => (
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
+          <Route path="/sample/:slug" element={<SampleTournament />} />
+          <Route path="/sample/:slug/dashboard" element={<SampleDashboardPreview />} />
+          <Route path="/sample/:slug/live" element={<SampleLive />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
            <Route path="/survey/:token" element={<Survey />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />

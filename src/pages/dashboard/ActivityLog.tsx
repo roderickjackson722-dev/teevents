@@ -40,8 +40,8 @@ const friendlyTable = (t: string) =>
   t.replace(/^tournament_/, "").replace(/_/g, " ");
 
 export default function ActivityLog() {
-  const orgContext = useOrgContext();
-  const orgId = orgContext?.orgId;
+  const { org } = useOrgContext();
+  const orgId = org?.orgId;
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

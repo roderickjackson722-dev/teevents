@@ -738,7 +738,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     course_details: "Course",
     contests: "Event Day Contests",
     travel: "Location",
-    schedule: "Event Agenda",
+    schedule: "Schedule",
     about_organizer: "About the Organizer",
     lodging: "Lodging",
   };
@@ -1775,7 +1775,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="schedule" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>EVENT AGENDA</h2>
+              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>SCHEDULE</h2>
               <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
               <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#e5e5e5" }}>
                 {(tournament as any).schedule_info_html && (tournament as any).schedule_info_html.replace(/<[^>]*>/g, "").trim() ? (

@@ -941,6 +941,48 @@ export type Database = {
           },
         ]
       }
+      dashboard_audit_log: {
+        Row: {
+          action: string
+          changed_fields: Json | null
+          id: string
+          new_values: Json | null
+          occurred_at: string
+          old_values: Json | null
+          organization_id: string | null
+          row_id: string | null
+          table_name: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_fields?: Json | null
+          id?: string
+          new_values?: Json | null
+          occurred_at?: string
+          old_values?: Json | null
+          organization_id?: string | null
+          row_id?: string | null
+          table_name: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_fields?: Json | null
+          id?: string
+          new_values?: Json | null
+          occurred_at?: string
+          old_values?: Json | null
+          organization_id?: string | null
+          row_id?: string | null
+          table_name?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       demo_events: {
         Row: {
           created_at: string

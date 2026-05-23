@@ -19,6 +19,7 @@ import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
+import AdminAuditLog from "@/components/admin/AdminAuditLog";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
@@ -45,7 +46,7 @@ const AdminDashboard = () => {
   const [requests, setRequests] = useState<Tables<"event_access_requests">[]>([]);
   const [approvedEmails, setApprovedEmails] = useState<Tables<"approved_emails">[]>([]);
   const [resources, setResources] = useState<Tables<"event_resources">[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "feature-guide" | "setup-checklist" | "mockup-outreach">("all-tournaments");
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach">("all-tournaments");
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -822,6 +823,7 @@ const AdminDashboard = () => {
                   ["flyer-templates", "Flyer Templates", FileText],
                   ["notifications", "Notifications", Bell],
                   ["email-log", "Email Activity Log", Mail],
+                  ["audit-log", "Dashboard Audit Log", ClipboardList],
                   ["transactions", "Transactions", DollarSign],
                   ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["accounting", "Accounting", DollarSign],
@@ -1960,6 +1962,7 @@ const AdminDashboard = () => {
           {activeTab === "transactions" && <AdminTransactions />}
           {activeTab === "routing-monitor" && <AdminRoutingMonitor />}
           {activeTab === "email-log" && <AdminEmailLog />}
+          {activeTab === "audit-log" && <AdminAuditLog />}
 
           {/* Accounting Tab */}
           {activeTab === "accounting" && <AdminAccounting />}

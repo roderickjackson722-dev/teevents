@@ -307,16 +307,24 @@ Deno.serve(async (req) => {
       .join("|")
       .slice(0, 480);
 
+    // Create a one-time Stripe coupon on the connected account if a promo is applied.
+    let stripeCouponId: string | undefined;
+    if (promoRecord && discountCents > 0) {
+      const couponParams: any = promoRecord.discount_type === "percent"
+        ? { percent_off: Number(promoRecord.discount_value), duration: "once", name: `Promo ${promoRecord.code}` }
+        : { amount_off: Math.round(Number(promoRecord.discount_value) * 100), currency: "usd", duration: "once", name: `Promo ${promoRecord.code}` };
+      const coupon = await stripe.coupons.create(couponParams, stripeAccountOpts(connected));
+      stripeCouponId = coupon.id;
+    }
+
     const checkoutParams: any = {
-      // Customer lookups happen on the connected account in Direct Charges mode.
-      // Skipping the lookup keeps things simple — Stripe Checkout creates a new
-      // Customer on the connected account from customer_email if needed.
       customer_email: email.trim(),
       line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
       ...applicationFeeBlock(connected, applicationFeeAmount),
+      ...(stripeCouponId ? { discounts: [{ coupon: stripeCouponId }] } : {}),
       metadata: {
         type: "registration",
         tournament_id,
@@ -328,6 +336,9 @@ Deno.serve(async (req) => {
         gross_registration_cents: String(registrationFeeCents),
         addons_total_cents: String(addonsTotalCents),
         base_total_cents: String(baseTotalCents),
+        discount_cents: String(discountCents),
+        promo_code: promoRecord?.code || "",
+        promo_code_id: promoRecord?.id || "",
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),

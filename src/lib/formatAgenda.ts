@@ -26,7 +26,7 @@ export function autoFormatAgenda(plain: string): string {
     // between the previous activity and the next weekday.
     working = working.replace(DAY_HEADER_RE, (m) => `\n\n__DAYSTART__${m}__DAYEND__\n`);
     // Repair common flyer/OCR text where a price and the next time touch: "+$207:00pm".
-    working = working.replace(/(\+\$\d+?)(\d{1,2}:\d{2}\s?(?:am|pm))/gi, "$1\n$2");
+    working = working.replace(/(\+\$\d+)(\d{1,2}:\d{2}\s?(?:am|pm))/gi, "$1\n$2");
     // Insert breaks before event start times, but not before the second time in a range.
     working = working.replace(TIME_RE, (m, offset, full) => {
       const before = full.slice(0, offset).replace(/\s+$/g, "");

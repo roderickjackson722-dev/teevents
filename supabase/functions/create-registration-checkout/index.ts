@@ -260,34 +260,57 @@ Deno.serve(async (req) => {
       ? baseTotalCents + combinedFeesCents
       : baseTotalCents;
 
-    if (registrationFeeCents > 0) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `Registration — ${tournament.title}`,
-            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+    // When a promo discount is applied, collapse registration + add-on lines into
+    // a single subtotal line at the discounted amount. Otherwise list them
+    // separately as before. The Fees line is always a separate item so the
+    // coupon math never touches it.
+    if (discountCents > 0) {
+      const subtotalCents = baseTotalCents; // already discounted
+      if (subtotalCents > 0) {
+        const addonNames = resolvedAddons.length > 0
+          ? ` + ${resolvedAddons.map(a => a.name).join(", ")}`
+          : "";
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Registration${addonNames} — ${tournament.title}`,
+              description: `${isFoursome ? `Foursome: ${playerNames}` : playerNames} • Promo ${promoRecord.code} applied (-$${(discountCents / 100).toFixed(2)})`,
+            },
+            unit_amount: subtotalCents,
           },
-          unit_amount: feePerPlayer,
-        },
-        quantity: players.length,
-      });
-    }
+          quantity: 1,
+        });
+      }
+    } else {
+      if (registrationFeeCents > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Registration — ${tournament.title}`,
+              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+            },
+            unit_amount: feePerPlayer,
+          },
+          quantity: players.length,
+        });
+      }
 
-    // Add-on line items (one line per add-on, quantity = qty_per_player × players)
-    for (const a of resolvedAddons) {
-      const totalQty = a.qty_per_player * players.length;
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: a.name,
-            description: players.length > 1 ? `${a.qty_per_player} × ${players.length} players` : undefined,
+      for (const a of resolvedAddons) {
+        const totalQty = a.qty_per_player * players.length;
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: a.name,
+              description: players.length > 1 ? `${a.qty_per_player} × ${players.length} players` : undefined,
+            },
+            unit_amount: a.price_cents,
           },
-          unit_amount: a.price_cents,
-        },
-        quantity: totalQty,
-      });
+          quantity: totalQty,
+        });
+      }
     }
 
     if (golferPaysFees && combinedFeesCents > 0) {

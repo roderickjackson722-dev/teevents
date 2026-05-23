@@ -432,9 +432,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           }
         } catch {}
 
+        const promoCodeToSend = appliedPromo?.code || null;
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;

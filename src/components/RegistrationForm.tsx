@@ -586,7 +586,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           ) : null;
         })()}
 
-        {hasFee && (
+        {(hasFee || subtotalBeforeDiscount > 0) && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
             {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
             {addonTotalCents > 0 && (
@@ -594,11 +594,53 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                 Add-ons: ${(addonTotalCents / 100).toFixed(2)}
               </span>
             )}
+            {discountCents > 0 && (
+              <span className="block text-xs mt-1 opacity-80 text-green-700">
+                Promo {appliedPromo?.code}: −${(discountCents / 100).toFixed(2)}
+              </span>
+            )}
             {totalDisplay && (
               <span className="block text-xs mt-1 opacity-80 font-semibold">
                 Total: {totalDisplay}
               </span>
             )}
+          </div>
+        )}
+
+        {/* Promo Code */}
+        {subtotalBeforeDiscount > 0 && (
+          <div className="space-y-1.5">
+            <Label htmlFor="promo_code">Promo Code</Label>
+            {appliedPromo ? (
+              <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2">
+                <span className="text-sm">
+                  <span className="font-mono font-bold">{appliedPromo.code}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {appliedPromo.discount_type === "percent"
+                      ? `${appliedPromo.discount_value}% off`
+                      : `$${appliedPromo.discount_value} off`}
+                  </span>
+                </span>
+                <Button type="button" variant="ghost" size="sm" onClick={clearPromo} className="h-7 px-2 text-xs">
+                  Remove
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  id="promo_code"
+                  value={promoInput}
+                  onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                  placeholder="Enter code"
+                  maxLength={40}
+                  className="font-mono uppercase"
+                />
+                <Button type="button" variant="outline" onClick={applyPromo} disabled={!promoInput.trim() || validatingPromo}>
+                  {validatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                </Button>
+              </div>
+            )}
+            {promoError && <p className="text-xs text-destructive">{promoError}</p>}
           </div>
         )}
 

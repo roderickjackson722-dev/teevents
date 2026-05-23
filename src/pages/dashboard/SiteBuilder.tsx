@@ -44,6 +44,7 @@ import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
+import { autoFormatAgenda } from "@/lib/formatAgenda";
 
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
@@ -1893,9 +1894,10 @@ const SiteBuilder = () => {
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml((settings as any).schedule_info_html) }}
                     />
                   ) : (
-                    <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">
-                      {settings.schedule_info}
-                    </pre>
+                    <div
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(autoFormatAgenda(settings.schedule_info || "")) }}
+                    />
                   )}
                 </div>
               )}

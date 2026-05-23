@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
+import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight, Heart, DollarSign, CheckCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1784,9 +1785,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).schedule_info_html) }}
                   />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-body text-base leading-relaxed" style={{ color: "#444" }}>
-                    {tournament.schedule_info}
-                  </pre>
+                  <div
+                    className="prose max-w-none font-body text-base leading-relaxed"
+                    style={{ color: "#444" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(autoFormatAgenda(tournament.schedule_info || "")) }}
+                  />
                 )}
               </div>
             </motion.div>

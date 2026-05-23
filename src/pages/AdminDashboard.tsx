@@ -19,6 +19,7 @@ import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
+import AdminAuditLog from "@/components/admin/AdminAuditLog";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";

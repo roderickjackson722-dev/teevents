@@ -291,9 +291,8 @@ export function DashboardSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to="/dashboard/activity-log"
-                        className={({ isActive }) =>
-                          `${isActive ? "bg-primary-foreground/15 text-primary-foreground" : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"} flex items-center`
-                        }
+                        className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"
+                        activeClassName="bg-primary-foreground/15 text-primary-foreground"
                       >
                         <Activity className="mr-2 h-4 w-4" />
                         {!collapsed && <span>Activity Log</span>}

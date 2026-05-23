@@ -116,12 +116,12 @@ export default function ActivityLog() {
 
       <div className="flex flex-wrap gap-2 items-end">
         <div className="flex-1 min-w-[200px]">
-          <label className="text-xs text-muted-foreground">Search by email or item</label>
+          <label className="text-xs text-muted-foreground">Search (optional)</label>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchRows()}
-              placeholder="user@example.com" className="pl-8" />
+              placeholder="Filter by email, item, or row id" className="pl-8" />
           </div>
         </div>
         <div>

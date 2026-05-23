@@ -195,6 +195,7 @@ const App = () => (
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />
           <Route path="/dashboard/organization-info" element={<DashboardLayout><OrganizationInfo /></DashboardLayout>} />
           <Route path="/dashboard/lodging" element={<DashboardLayout><Lodging /></DashboardLayout>} />

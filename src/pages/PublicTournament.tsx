@@ -1780,13 +1780,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#e5e5e5" }}>
                 {(tournament as any).schedule_info_html && (tournament as any).schedule_info_html.replace(/<[^>]*>/g, "").trim() ? (
                   <div
-                    className="prose max-w-none font-body text-base leading-relaxed"
+                    className="prose prose-sm max-w-none font-body text-sm leading-relaxed [&_p]:my-0 [&_p+p]:mt-5 [&_strong]:font-bold [&_strong]:text-foreground [&_strong]:block"
                     style={{ color: "#444" }}
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).schedule_info_html) }}
                   />
                 ) : (
                   <div
-                    className="prose max-w-none font-body text-base leading-relaxed"
+                    className="prose prose-sm max-w-none font-body text-sm leading-relaxed [&_p]:my-0 [&_p+p]:mt-5 [&_strong]:font-bold [&_strong]:text-foreground [&_strong]:block"
                     style={{ color: "#444" }}
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(autoFormatAgenda(tournament.schedule_info || "")) }}
                   />

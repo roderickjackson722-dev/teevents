@@ -50,6 +50,7 @@ import Finances from "./pages/dashboard/Finances";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
+import ActivityLog from "./pages/dashboard/ActivityLog";
 import OrganizationInfo from "./pages/dashboard/OrganizationInfo";
 import Lodging from "./pages/dashboard/Lodging";
 import DirectorShop from "./pages/dashboard/DirectorShop";

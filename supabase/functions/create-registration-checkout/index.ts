@@ -109,7 +109,32 @@ Deno.serve(async (req) => {
       }
     }
 
-    const baseTotalCents = registrationFeeCents + addonsTotalCents;
+    let baseTotalCents = registrationFeeCents + addonsTotalCents;
+
+    // ── Promo code validation & discount ─────────────────────────────
+    const rawPromo = typeof body.promo_code === "string" ? body.promo_code.trim().toUpperCase() : "";
+    let promoRecord: any = null;
+    let discountCents = 0;
+    if (rawPromo && baseTotalCents > 0) {
+      const { data: promo } = await supabaseAdmin
+        .from("tournament_promo_codes")
+        .select("*")
+        .eq("tournament_id", tournament_id)
+        .eq("code", rawPromo)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!promo) throw new Error("Invalid or inactive promo code");
+      if (promo.expires_at && new Date(promo.expires_at) < new Date()) throw new Error("Promo code has expired");
+      if (promo.max_uses && promo.current_uses >= promo.max_uses) throw new Error("Promo code has reached its usage limit");
+      promoRecord = promo;
+      if (promo.discount_type === "percent") {
+        discountCents = Math.min(baseTotalCents, Math.round(baseTotalCents * (Number(promo.discount_value) / 100)));
+      } else {
+        discountCents = Math.min(baseTotalCents, Math.round(Number(promo.discount_value) * 100));
+      }
+      baseTotalCents = Math.max(0, baseTotalCents - discountCents);
+    }
+
     const hasAnyCharge = baseTotalCents > 0;
 
     // Resolve promoter from referral code (if any)
@@ -235,34 +260,57 @@ Deno.serve(async (req) => {
       ? baseTotalCents + combinedFeesCents
       : baseTotalCents;
 
-    if (registrationFeeCents > 0) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `Registration — ${tournament.title}`,
-            description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+    // When a promo discount is applied, collapse registration + add-on lines into
+    // a single subtotal line at the discounted amount. Otherwise list them
+    // separately as before. The Fees line is always a separate item so the
+    // coupon math never touches it.
+    if (discountCents > 0) {
+      const subtotalCents = baseTotalCents; // already discounted
+      if (subtotalCents > 0) {
+        const addonNames = resolvedAddons.length > 0
+          ? ` + ${resolvedAddons.map(a => a.name).join(", ")}`
+          : "";
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Registration${addonNames} — ${tournament.title}`,
+              description: `${isFoursome ? `Foursome: ${playerNames}` : playerNames} • Promo ${promoRecord.code} applied (-$${(discountCents / 100).toFixed(2)})`,
+            },
+            unit_amount: subtotalCents,
           },
-          unit_amount: feePerPlayer,
-        },
-        quantity: players.length,
-      });
-    }
+          quantity: 1,
+        });
+      }
+    } else {
+      if (registrationFeeCents > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Registration — ${tournament.title}`,
+              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+            },
+            unit_amount: feePerPlayer,
+          },
+          quantity: players.length,
+        });
+      }
 
-    // Add-on line items (one line per add-on, quantity = qty_per_player × players)
-    for (const a of resolvedAddons) {
-      const totalQty = a.qty_per_player * players.length;
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: a.name,
-            description: players.length > 1 ? `${a.qty_per_player} × ${players.length} players` : undefined,
+      for (const a of resolvedAddons) {
+        const totalQty = a.qty_per_player * players.length;
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: a.name,
+              description: players.length > 1 ? `${a.qty_per_player} × ${players.length} players` : undefined,
+            },
+            unit_amount: a.price_cents,
           },
-          unit_amount: a.price_cents,
-        },
-        quantity: totalQty,
-      });
+          quantity: totalQty,
+        });
+      }
     }
 
     if (golferPaysFees && combinedFeesCents > 0) {
@@ -282,16 +330,18 @@ Deno.serve(async (req) => {
       .join("|")
       .slice(0, 480);
 
+    // Discount is baked into the line items above — no Stripe coupon needed.
+
+
+
     const checkoutParams: any = {
-      // Customer lookups happen on the connected account in Direct Charges mode.
-      // Skipping the lookup keeps things simple — Stripe Checkout creates a new
-      // Customer on the connected account from customer_email if needed.
       customer_email: email.trim(),
       line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
       ...applicationFeeBlock(connected, applicationFeeAmount),
+      
       metadata: {
         type: "registration",
         tournament_id,
@@ -303,6 +353,9 @@ Deno.serve(async (req) => {
         gross_registration_cents: String(registrationFeeCents),
         addons_total_cents: String(addonsTotalCents),
         base_total_cents: String(baseTotalCents),
+        discount_cents: String(discountCents),
+        promo_code: promoRecord?.code || "",
+        promo_code_id: promoRecord?.id || "",
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeAmount),

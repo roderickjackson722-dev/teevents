@@ -137,6 +137,26 @@ Deno.serve(async (req) => {
         .update({ payment_status: "paid" })
         .in("id", registrationIds);
 
+      // Increment promo code usage (idempotent guard above prevents double-count)
+      try {
+        const promoId = session.metadata?.promo_code_id;
+        if (promoId) {
+          const { data: promo } = await supabaseAdmin
+            .from("tournament_promo_codes")
+            .select("id, current_uses")
+            .eq("id", promoId)
+            .maybeSingle();
+          if (promo) {
+            await supabaseAdmin
+              .from("tournament_promo_codes")
+              .update({ current_uses: (promo.current_uses ?? 0) + 1 })
+              .eq("id", promo.id);
+          }
+        }
+      } catch (e) {
+        console.error("Promo increment failed:", e);
+      }
+
       // Persist add-on purchases (one row per registration × add-on)
       try {
         const addonMeta = session.metadata?.addon_selections || "";

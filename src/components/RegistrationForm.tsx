@@ -237,6 +237,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [showEligibility, setShowEligibility] = useState<string | null>(null);
   const [addons, setAddons] = useState<AddonRow[]>([]);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
 
   // Load active add-ons for this tournament
   useEffect(() => {
@@ -265,7 +269,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     const qty = addonQty[a.id] || 0;
     return sum + qty * playerCount * a.price_cents;
   }, 0);
-  const baseTotalCents = baseRegistrationCents + addonTotalCents;
+  const subtotalBeforeDiscount = baseRegistrationCents + addonTotalCents;
+  // Apply promo discount to subtotal
+  const discountCents = appliedPromo && subtotalBeforeDiscount > 0
+    ? Math.min(
+        subtotalBeforeDiscount,
+        appliedPromo.discount_type === "percent"
+          ? Math.round(subtotalBeforeDiscount * (Number(appliedPromo.discount_value) / 100))
+          : Math.round(Number(appliedPromo.discount_value) * 100),
+      )
+    : 0;
+  const baseTotalCents = Math.max(0, subtotalBeforeDiscount - discountCents);
   const hasFee = baseTotalCents > 0;
   const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
@@ -274,6 +288,46 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
   const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
+
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoError(null);
+    setValidatingPromo(true);
+    try {
+      const { data: promo } = await supabase
+        .from("tournament_promo_codes")
+        .select("code, discount_type, discount_value, is_active, expires_at, max_uses, current_uses")
+        .eq("tournament_id", tournamentId)
+        .eq("code", code)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!promo) {
+        setPromoError("Invalid or inactive promo code");
+        setAppliedPromo(null);
+        return;
+      }
+      if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+        setPromoError("This promo code has expired");
+        setAppliedPromo(null);
+        return;
+      }
+      if (promo.max_uses && (promo.current_uses ?? 0) >= promo.max_uses) {
+        setPromoError("This promo code has reached its usage limit");
+        setAppliedPromo(null);
+        return;
+      }
+      setAppliedPromo({ code: promo.code, discount_type: promo.discount_type, discount_value: Number(promo.discount_value) });
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const clearPromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError(null);
+  };
 
   const setQty = (id: string, value: number, max: number) => {
     const clamped = Math.max(0, Math.min(max, value));
@@ -378,9 +432,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           }
         } catch {}
 
+        const promoCodeToSend = appliedPromo?.code || null;
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
@@ -531,7 +586,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           ) : null;
         })()}
 
-        {hasFee && (
+        {(hasFee || subtotalBeforeDiscount > 0) && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
             {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
             {addonTotalCents > 0 && (
@@ -539,11 +594,53 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                 Add-ons: ${(addonTotalCents / 100).toFixed(2)}
               </span>
             )}
+            {discountCents > 0 && (
+              <span className="block text-xs mt-1 opacity-80 text-green-700">
+                Promo {appliedPromo?.code}: −${(discountCents / 100).toFixed(2)}
+              </span>
+            )}
             {totalDisplay && (
               <span className="block text-xs mt-1 opacity-80 font-semibold">
                 Total: {totalDisplay}
               </span>
             )}
+          </div>
+        )}
+
+        {/* Promo Code */}
+        {subtotalBeforeDiscount > 0 && (
+          <div className="space-y-1.5">
+            <Label htmlFor="promo_code">Promo Code</Label>
+            {appliedPromo ? (
+              <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2">
+                <span className="text-sm">
+                  <span className="font-mono font-bold">{appliedPromo.code}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {appliedPromo.discount_type === "percent"
+                      ? `${appliedPromo.discount_value}% off`
+                      : `$${appliedPromo.discount_value} off`}
+                  </span>
+                </span>
+                <Button type="button" variant="ghost" size="sm" onClick={clearPromo} className="h-7 px-2 text-xs">
+                  Remove
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  id="promo_code"
+                  value={promoInput}
+                  onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                  placeholder="Enter code"
+                  maxLength={40}
+                  className="font-mono uppercase"
+                />
+                <Button type="button" variant="outline" onClick={applyPromo} disabled={!promoInput.trim() || validatingPromo}>
+                  {validatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                </Button>
+              </div>
+            )}
+            {promoError && <p className="text-xs text-destructive">{promoError}</p>}
           </div>
         )}
 

@@ -328,6 +328,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     setPromoInput("");
     setPromoError(null);
   };
+
+  const setQty = (id: string, value: number, max: number) => {
     const clamped = Math.max(0, Math.min(max, value));
     setAddonQty((prev) => ({ ...prev, [id]: clamped }));
   };

@@ -109,7 +109,32 @@ Deno.serve(async (req) => {
       }
     }
 
-    const baseTotalCents = registrationFeeCents + addonsTotalCents;
+    let baseTotalCents = registrationFeeCents + addonsTotalCents;
+
+    // ── Promo code validation & discount ─────────────────────────────
+    const rawPromo = typeof body.promo_code === "string" ? body.promo_code.trim().toUpperCase() : "";
+    let promoRecord: any = null;
+    let discountCents = 0;
+    if (rawPromo && baseTotalCents > 0) {
+      const { data: promo } = await supabaseAdmin
+        .from("tournament_promo_codes")
+        .select("*")
+        .eq("tournament_id", tournament_id)
+        .eq("code", rawPromo)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!promo) throw new Error("Invalid or inactive promo code");
+      if (promo.expires_at && new Date(promo.expires_at) < new Date()) throw new Error("Promo code has expired");
+      if (promo.max_uses && promo.current_uses >= promo.max_uses) throw new Error("Promo code has reached its usage limit");
+      promoRecord = promo;
+      if (promo.discount_type === "percent") {
+        discountCents = Math.min(baseTotalCents, Math.round(baseTotalCents * (Number(promo.discount_value) / 100)));
+      } else {
+        discountCents = Math.min(baseTotalCents, Math.round(Number(promo.discount_value) * 100));
+      }
+      baseTotalCents = Math.max(0, baseTotalCents - discountCents);
+    }
+
     const hasAnyCharge = baseTotalCents > 0;
 
     // Resolve promoter from referral code (if any)

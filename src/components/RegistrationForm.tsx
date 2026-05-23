@@ -269,7 +269,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     const qty = addonQty[a.id] || 0;
     return sum + qty * playerCount * a.price_cents;
   }, 0);
-  const baseTotalCents = baseRegistrationCents + addonTotalCents;
+  const subtotalBeforeDiscount = baseRegistrationCents + addonTotalCents;
+  // Apply promo discount to subtotal
+  const discountCents = appliedPromo && subtotalBeforeDiscount > 0
+    ? Math.min(
+        subtotalBeforeDiscount,
+        appliedPromo.discount_type === "percent"
+          ? Math.round(subtotalBeforeDiscount * (Number(appliedPromo.discount_value) / 100))
+          : Math.round(Number(appliedPromo.discount_value) * 100),
+      )
+    : 0;
+  const baseTotalCents = Math.max(0, subtotalBeforeDiscount - discountCents);
   const hasFee = baseTotalCents > 0;
   const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
@@ -279,7 +289,45 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
-  const setQty = (id: string, value: number, max: number) => {
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoError(null);
+    setValidatingPromo(true);
+    try {
+      const { data: promo } = await supabase
+        .from("tournament_promo_codes")
+        .select("code, discount_type, discount_value, is_active, expires_at, max_uses, current_uses")
+        .eq("tournament_id", tournamentId)
+        .eq("code", code)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!promo) {
+        setPromoError("Invalid or inactive promo code");
+        setAppliedPromo(null);
+        return;
+      }
+      if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+        setPromoError("This promo code has expired");
+        setAppliedPromo(null);
+        return;
+      }
+      if (promo.max_uses && (promo.current_uses ?? 0) >= promo.max_uses) {
+        setPromoError("This promo code has reached its usage limit");
+        setAppliedPromo(null);
+        return;
+      }
+      setAppliedPromo({ code: promo.code, discount_type: promo.discount_type, discount_value: Number(promo.discount_value) });
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const clearPromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError(null);
+  };
     const clamped = Math.max(0, Math.min(max, value));
     setAddonQty((prev) => ({ ...prev, [id]: clamped }));
   };

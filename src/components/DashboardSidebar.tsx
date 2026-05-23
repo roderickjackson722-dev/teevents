@@ -287,6 +287,19 @@ export function DashboardSidebar() {
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/dashboard/activity-log"
+                        className={({ isActive }) =>
+                          `${isActive ? "bg-primary-foreground/15 text-primary-foreground" : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"} flex items-center`
+                        }
+                      >
+                        <Activity className="mr-2 h-4 w-4" />
+                        {!collapsed && <span>Activity Log</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

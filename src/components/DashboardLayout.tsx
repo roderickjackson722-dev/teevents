@@ -78,6 +78,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       if (org) {
         setOrgContext({ orgId: org.id, orgName: (org as any).dashboard_name || org.name });
+        // Record login (RPC throttles to once per 10 min)
+        supabase.rpc("record_org_login" as any, { _organization_id: org.id, _user_agent: navigator.userAgent });
       }
 
       setLoading(false);

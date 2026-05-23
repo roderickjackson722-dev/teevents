@@ -50,6 +50,7 @@ import Finances from "./pages/dashboard/Finances";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
+import ActivityLog from "./pages/dashboard/ActivityLog";
 import OrganizationInfo from "./pages/dashboard/OrganizationInfo";
 import Lodging from "./pages/dashboard/Lodging";
 import DirectorShop from "./pages/dashboard/DirectorShop";
@@ -195,6 +196,7 @@ const App = () => (
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />
           <Route path="/dashboard/organization-info" element={<DashboardLayout><OrganizationInfo /></DashboardLayout>} />
           <Route path="/dashboard/lodging" element={<DashboardLayout><Lodging /></DashboardLayout>} />

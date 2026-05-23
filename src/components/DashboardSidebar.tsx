@@ -5,7 +5,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  PartyPopper, Building2, Store, Target, BedDouble, Ticket, Eye,
+  PartyPopper, Building2, Store, Target, BedDouble, Ticket, Eye, Activity,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -285,6 +285,18 @@ export function DashboardSidebar() {
                         <HelpCircle className="mr-2 h-4 w-4" />
                         {!collapsed && <span>Help Center</span>}
                       </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/dashboard/activity-log"
+                        className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground flex items-center"
+                        activeClassName="bg-primary-foreground/15 text-primary-foreground"
+                      >
+                        <Activity className="mr-2 h-4 w-4" />
+                        {!collapsed && <span>Activity Log</span>}
+                      </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

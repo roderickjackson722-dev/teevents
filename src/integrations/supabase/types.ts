@@ -1806,6 +1806,33 @@ export type Database = {
           },
         ]
       }
+      org_login_events: {
+        Row: {
+          id: string
+          occurred_at: string
+          organization_id: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          occurred_at?: string
+          organization_id: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          occurred_at?: string
+          organization_id?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string
@@ -6671,6 +6698,10 @@ export type Database = {
       }
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }
+        Returns: undefined
+      }
+      record_org_login: {
+        Args: { _organization_id: string; _user_agent?: string }
         Returns: undefined
       }
       record_site_visit: {

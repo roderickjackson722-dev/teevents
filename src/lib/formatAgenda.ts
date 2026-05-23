@@ -3,8 +3,8 @@
 // wraps weekday/date headers (e.g. "Friday, 8/21") in bold on their own line.
 
 const DAY_HEADER_RE =
-  /\b(Sun|Mon|Tue|Tues|Wed|Thu|Thur|Thurs|Fri|Sat)[a-z]*,?\s*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)?/g;
-const TIME_RE = /\b(\d{1,2}(?::\d{2})?\s?(?:am|pm|AM|PM))/g;
+  /(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sun|Mon|Tue|Tues|Wed|Thu|Thur|Thurs|Fri|Sat),?\s*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)?/gi;
+const TIME_RE = /\d{1,2}:\d{2}\s?(?:am|pm)/gi;
 
 function escapeHtml(s: string): string {
   return s
@@ -22,10 +22,18 @@ export function autoFormatAgenda(plain: string): string {
   let working = escapeHtml(text);
 
   if (!hasNewlines) {
-    // Insert breaks BEFORE day headers
-    working = working.replace(DAY_HEADER_RE, (m) => `\n\n__DAYSTART__${m}__DAYEND__`);
-    // Insert breaks BEFORE time tokens
-    working = working.replace(TIME_RE, (m) => `\n${m}`);
+    // Insert clean breaks around day headers, even when pasted text has no spaces
+    // between the previous activity and the next weekday.
+    working = working.replace(DAY_HEADER_RE, (m) => `\n\n__DAYSTART__${m}__DAYEND__\n`);
+    // Repair common flyer/OCR text where a price and the next time touch: "+$207:00pm".
+    working = working.replace(/(\+\$\d+)(\d{1,2}:\d{2}\s?(?:am|pm))/gi, "$1\n$2");
+    // Insert breaks before event start times, but not before the second time in a range.
+    working = working.replace(TIME_RE, (m, offset, full) => {
+      const before = full.slice(0, offset).replace(/\s+$/g, "");
+      const prev = before.slice(-1);
+      if (!prev || prev === "\n" || prev === "-" || prev === "–" || prev === "—") return m;
+      return `\n${m}`;
+    });
   } else {
     working = working.replace(DAY_HEADER_RE, (m) => `__DAYSTART__${m}__DAYEND__`);
   }

@@ -330,15 +330,9 @@ Deno.serve(async (req) => {
       .join("|")
       .slice(0, 480);
 
-    // Create a one-time Stripe coupon on the connected account if a promo is applied.
-    let stripeCouponId: string | undefined;
-    if (promoRecord && discountCents > 0) {
-      const couponParams: any = promoRecord.discount_type === "percent"
-        ? { percent_off: Number(promoRecord.discount_value), duration: "once", name: `Promo ${promoRecord.code}` }
-        : { amount_off: Math.round(Number(promoRecord.discount_value) * 100), currency: "usd", duration: "once", name: `Promo ${promoRecord.code}` };
-      const coupon = await stripe.coupons.create(couponParams, stripeAccountOpts(connected));
-      stripeCouponId = coupon.id;
-    }
+    // Discount is baked into the line items above — no Stripe coupon needed.
+
+
 
     const checkoutParams: any = {
       customer_email: email.trim(),

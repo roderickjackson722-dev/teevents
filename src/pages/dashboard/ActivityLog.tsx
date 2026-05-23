@@ -83,12 +83,7 @@ export default function ActivityLog() {
     }
 
     out.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
-    const filtered = search.trim()
-      ? out.filter((r) => (r.user_email || "").toLowerCase().includes(search.trim().toLowerCase())
-          || (r.kind === "change" && (r.table_name.includes(search.trim().toLowerCase()) || (r.row_id || "").includes(search.trim()))))
-      : out;
-
-    setRows(filtered);
+    setRows(out);
     setLoading(false);
   };
 
@@ -100,8 +95,16 @@ export default function ActivityLog() {
     setExpanded(n);
   };
 
-  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const filteredRows = search.trim()
+    ? rows.filter((r) => {
+        const s = search.trim().toLowerCase();
+        return (r.user_email || "").toLowerCase().includes(s)
+          || (r.kind === "change" && (r.table_name.toLowerCase().includes(s) || (r.row_id || "").toLowerCase().includes(s)));
+      })
+    : rows;
+
+  const pageRows = filteredRows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
   return (
     <div className="space-y-4 max-w-7xl">

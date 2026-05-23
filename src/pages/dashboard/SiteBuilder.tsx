@@ -1893,9 +1893,10 @@ const SiteBuilder = () => {
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml((settings as any).schedule_info_html) }}
                     />
                   ) : (
-                    <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">
-                      {settings.schedule_info}
-                    </pre>
+                    <div
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(autoFormatAgenda(settings.schedule_info || "")) }}
+                    />
                   )}
                 </div>
               )}

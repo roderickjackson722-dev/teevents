@@ -341,7 +341,7 @@ Deno.serve(async (req) => {
       success_url: `${origin}/t/${tournament.slug}?registered=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${tournament.slug}#register`,
       ...applicationFeeBlock(connected, applicationFeeAmount),
-      ...(stripeCouponId ? { discounts: [{ coupon: stripeCouponId }] } : {}),
+      
       metadata: {
         type: "registration",
         tournament_id,

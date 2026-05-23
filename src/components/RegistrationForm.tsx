@@ -702,8 +702,43 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                 );
               })}
             </div>
+
+            {/* Promo Code (Add-ons) — applies the same discount to your order */}
+            <div className="pt-2">
+              <Label htmlFor="promo_code_addons" className="text-xs text-muted-foreground">Promo Code</Label>
+              {appliedPromo ? (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/30 mt-1">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  <span className="font-mono font-bold text-sm">{appliedPromo.code}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {appliedPromo.discount_type === "percent"
+                      ? `${appliedPromo.discount_value}% off`
+                      : `$${appliedPromo.discount_value} off`}
+                  </span>
+                  <Button type="button" variant="ghost" size="sm" onClick={clearPromo} className="h-7 px-2 text-xs ml-auto">
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="promo_code_addons"
+                    value={promoInput}
+                    onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                    placeholder="Enter code"
+                    maxLength={50}
+                    className="font-mono text-sm"
+                  />
+                  <Button type="button" variant="outline" onClick={applyPromo} disabled={!promoInput.trim() || validatingPromo}>
+                    {validatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                  </Button>
+                </div>
+              )}
+              {promoError && <p className="text-xs text-destructive mt-1">{promoError}</p>}
+            </div>
           </div>
         )}
+
 
         {players.map((player, i) => (
           <div key={i}>

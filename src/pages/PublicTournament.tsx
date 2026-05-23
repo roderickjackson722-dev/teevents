@@ -1784,9 +1784,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).schedule_info_html) }}
                   />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-body text-base leading-relaxed" style={{ color: "#444" }}>
-                    {tournament.schedule_info}
-                  </pre>
+                  <div
+                    className="prose max-w-none font-body text-base leading-relaxed"
+                    style={{ color: "#444" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(autoFormatAgenda(tournament.schedule_info || "")) }}
+                  />
                 )}
               </div>
             </motion.div>

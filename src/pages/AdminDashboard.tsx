@@ -823,6 +823,7 @@ const AdminDashboard = () => {
                   ["flyer-templates", "Flyer Templates", FileText],
                   ["notifications", "Notifications", Bell],
                   ["email-log", "Email Activity Log", Mail],
+                  ["audit-log", "Dashboard Audit Log", ClipboardList],
                   ["transactions", "Transactions", DollarSign],
                   ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["accounting", "Accounting", DollarSign],

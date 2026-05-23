@@ -83,12 +83,7 @@ export default function ActivityLog() {
     }
 
     out.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
-    const filtered = search.trim()
-      ? out.filter((r) => (r.user_email || "").toLowerCase().includes(search.trim().toLowerCase())
-          || (r.kind === "change" && (r.table_name.includes(search.trim().toLowerCase()) || (r.row_id || "").includes(search.trim()))))
-      : out;
-
-    setRows(filtered);
+    setRows(out);
     setLoading(false);
   };
 
@@ -100,8 +95,16 @@ export default function ActivityLog() {
     setExpanded(n);
   };
 
-  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const filteredRows = search.trim()
+    ? rows.filter((r) => {
+        const s = search.trim().toLowerCase();
+        return (r.user_email || "").toLowerCase().includes(s)
+          || (r.kind === "change" && (r.table_name.toLowerCase().includes(s) || (r.row_id || "").toLowerCase().includes(s)));
+      })
+    : rows;
+
+  const pageRows = filteredRows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
   return (
     <div className="space-y-4 max-w-7xl">
@@ -116,12 +119,12 @@ export default function ActivityLog() {
 
       <div className="flex flex-wrap gap-2 items-end">
         <div className="flex-1 min-w-[200px]">
-          <label className="text-xs text-muted-foreground">Search by email or item</label>
+          <label className="text-xs text-muted-foreground">Search (optional)</label>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchRows()}
-              placeholder="user@example.com" className="pl-8" />
+              placeholder="Filter by email, item, or row id" className="pl-8" />
           </div>
         </div>
         <div>
@@ -166,7 +169,7 @@ export default function ActivityLog() {
       </div>
 
       <div className="text-sm text-muted-foreground">
-        {rows.length.toLocaleString()} {rows.length === 1 ? "entry" : "entries"}
+        {filteredRows.length.toLocaleString()} {filteredRows.length === 1 ? "entry" : "entries"}
       </div>
 
       <Card className="overflow-hidden">

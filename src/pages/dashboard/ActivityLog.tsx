@@ -169,7 +169,7 @@ export default function ActivityLog() {
       </div>
 
       <div className="text-sm text-muted-foreground">
-        {rows.length.toLocaleString()} {rows.length === 1 ? "entry" : "entries"}
+        {filteredRows.length.toLocaleString()} {filteredRows.length === 1 ? "entry" : "entries"}
       </div>
 
       <Card className="overflow-hidden">

@@ -125,33 +125,44 @@ serve(async (req) => {
       );
     }
 
-    // New user — generate a magic link so they can authenticate without a password
+    // New user — create the auth account with a temporary password.
+    // The user signs in with this temp password, then is forced to change it.
+    const tempPassword = generateTempPassword();
     const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
-    const redirectTo = `${baseUrl}/accept-invitation?token=${invite.token}`;
 
-    let magicLinkUrl: string | null = null;
-    try {
-      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-        type: "magiclink",
-        email: email.toLowerCase(),
-        options: {
-          redirectTo,
-        },
-      });
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: email.toLowerCase(),
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        full_name: memberName,
+        force_password_change: true,
+        invited_org_id: organization_id,
+      },
+    });
 
-      if (!linkError && linkData?.properties?.action_link) {
-        magicLinkUrl = linkData.properties.action_link;
-      } else {
-        console.warn("Could not generate magic link:", linkError?.message);
-      }
-    } catch (err) {
-      console.warn("Magic link generation failed, falling back to standard invite:", err);
+    if (createErr || !created?.user) {
+      throw new Error(createErr?.message || "Failed to create user account");
     }
 
-    await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, false, memberRole, magicLinkUrl);
+    // Add to org_members immediately so permissions take effect on first login
+    await supabaseAdmin.from("org_members").insert({
+      organization_id,
+      user_id: created.user.id,
+      role: memberRole,
+      permissions: permissions || [],
+      name: memberName,
+    });
+
+    await supabaseAdmin
+      .from("org_invitations")
+      .update({ status: "accepted" })
+      .eq("id", invite.id);
+
+    await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPassword, memberRole, baseUrl);
 
     return new Response(
-      JSON.stringify({ success: true, invitation_id: invite.id }),
+      JSON.stringify({ success: true, temp_password_sent: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {

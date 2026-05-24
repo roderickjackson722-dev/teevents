@@ -82,6 +82,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   const [selectedPerms, setSelectedPerms] = useState<string[]>(ROLE_PRESETS.editor);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [canManage, setCanManage] = useState(false);
 
   // Edit state
   const [editingMember, setEditingMember] = useState<MemberRow | null>(null);
@@ -92,7 +93,21 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
 
   useEffect(() => {
     fetchData();
+    checkPermissions();
   }, [orgId]);
+
+  const checkPermissions = async () => {
+    const [{ data: membership }, { data: isPlatformAdmin }] = await Promise.all([
+      supabase
+        .from("org_members")
+        .select("role")
+        .eq("organization_id", orgId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
+    ]);
+    setCanManage(isPlatformAdmin === true || (membership as any)?.role === "owner");
+  };
 
   const fetchData = async () => {
     setLoading(true);

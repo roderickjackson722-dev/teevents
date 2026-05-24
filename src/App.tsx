@@ -227,6 +227,7 @@ const App = () => (
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/force-password-change" element={<ForcePasswordChange />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
            <Route path="/plans" element={<Plans />} />
            <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />

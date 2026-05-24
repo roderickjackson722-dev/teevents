@@ -490,6 +490,28 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Remove Member Confirmation Dialog */}
+      <Dialog open={!!deletingMember} onOpenChange={(open) => !open && setDeletingMember(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Remove Team Member?
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove <strong>{deletingMember?.name || "this team member"}</strong> from team management?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setDeletingMember(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmRemoveMember}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Yes, Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

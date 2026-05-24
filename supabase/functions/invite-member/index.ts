@@ -125,33 +125,44 @@ serve(async (req) => {
       );
     }
 
-    // New user — generate a magic link so they can authenticate without a password
+    // New user — create the auth account with a temporary password.
+    // The user signs in with this temp password, then is forced to change it.
+    const tempPassword = generateTempPassword();
     const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
-    const redirectTo = `${baseUrl}/accept-invitation?token=${invite.token}`;
 
-    let magicLinkUrl: string | null = null;
-    try {
-      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-        type: "magiclink",
-        email: email.toLowerCase(),
-        options: {
-          redirectTo,
-        },
-      });
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: email.toLowerCase(),
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        full_name: memberName,
+        force_password_change: true,
+        invited_org_id: organization_id,
+      },
+    });
 
-      if (!linkError && linkData?.properties?.action_link) {
-        magicLinkUrl = linkData.properties.action_link;
-      } else {
-        console.warn("Could not generate magic link:", linkError?.message);
-      }
-    } catch (err) {
-      console.warn("Magic link generation failed, falling back to standard invite:", err);
+    if (createErr || !created?.user) {
+      throw new Error(createErr?.message || "Failed to create user account");
     }
 
-    await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, false, memberRole, magicLinkUrl);
+    // Add to org_members immediately so permissions take effect on first login
+    await supabaseAdmin.from("org_members").insert({
+      organization_id,
+      user_id: created.user.id,
+      role: memberRole,
+      permissions: permissions || [],
+      name: memberName,
+    });
+
+    await supabaseAdmin
+      .from("org_invitations")
+      .update({ status: "accepted" })
+      .eq("id", invite.id);
+
+    await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPassword, memberRole, baseUrl);
 
     return new Response(
-      JSON.stringify({ success: true, invitation_id: invite.id }),
+      JSON.stringify({ success: true, temp_password_sent: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {
@@ -277,5 +288,105 @@ async function sendInvitationEmail(
       status: "failed", source: "invite-member", errorMessage: err.message,
     });
     console.error(`Error sending invitation email to ${recipientEmail}:`, err);
+  }
+}
+
+function generateTempPassword(): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghjkmnpqrstuvwxyz";
+  const nums = "23456789";
+  const syms = "!@#$%&*";
+  const all = upper + lower + nums + syms;
+  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  let pw = pick(upper) + pick(lower) + pick(nums) + pick(syms);
+  for (let i = 0; i < 8; i++) pw += pick(all);
+  return pw.split("").sort(() => Math.random() - 0.5).join("");
+}
+
+async function sendTempPasswordEmail(
+  recipientEmail: string,
+  recipientName: string | null,
+  orgName: string,
+  tempPassword: string,
+  role: string,
+  baseUrl: string,
+) {
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not set — skipping temp password email to", recipientEmail);
+    return;
+  }
+  const greeting = recipientName ? `Hi ${recipientName},` : "Hi,";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+  const signInUrl = `${baseUrl}/get-started`;
+  const subject = `Your TeeVents login for ${orgName}`;
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f5; padding: 40px 20px; margin: 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+      <tr><td style="background:#1a5c38; padding:24px 32px;">
+        <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:600;">Welcome to ${orgName}</h1>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="margin:0 0 16px; color:#374151; font-size:15px; line-height:1.6;">${greeting}<br><br>
+          You've been added as a <strong>${roleLabel}</strong> to <strong>${orgName}</strong> on TeeVents.
+          Use the credentials below to sign in. You'll be prompted to set your own password right after your first login.
+        </p>
+        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:16px; margin:20px 0;">
+          <p style="margin:0 0 8px; color:#6b7280; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Email</p>
+          <p style="margin:0 0 16px; color:#111827; font-size:15px; font-weight:600;">${recipientEmail}</p>
+          <p style="margin:0 0 8px; color:#6b7280; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Temporary Password</p>
+          <p style="margin:0; color:#111827; font-size:18px; font-weight:700; font-family:'Courier New', monospace; letter-spacing:1px;">${tempPassword}</p>
+        </div>
+        <div style="text-align:center; margin:28px 0;">
+          <a href="${signInUrl}" style="display:inline-block; background:#F5A623; color:#1a5c38; padding:12px 28px; border-radius:6px; text-decoration:none; font-weight:700; font-size:14px;">Sign In Now</a>
+        </div>
+        <p style="margin:16px 0 0; color:#9ca3af; font-size:12px; text-align:center;">For security, this temporary password should be changed on first login.</p>
+      </td></tr>
+      <tr><td style="padding:16px 32px; background:#f9fafb; border-top:1px solid #e5e7eb;">
+        <p style="margin:0; color:#9ca3af; font-size:12px;">Sent by <a href="https://www.teevents.golf" style="color:#1a5c38; text-decoration:none; font-weight:bold;">TeeVents</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+
+  const supabaseLog = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+  const messageId = crypto.randomUUID();
+  await logEmailSend(supabaseLog, {
+    messageId, templateName: "team-temp-password", recipientEmail, subject,
+    status: "pending", source: "invite-member",
+  });
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+      body: JSON.stringify({
+        from: "TeeVents Golf Management <info@notifications.teevents.golf>",
+        to: [recipientEmail], subject, html,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      await logEmailSend(supabaseLog, {
+        messageId, templateName: "team-temp-password", recipientEmail, subject,
+        status: "failed", source: "invite-member",
+        errorMessage: data?.message || `HTTP ${res.status}`,
+      });
+    } else {
+      await logEmailSend(supabaseLog, {
+        messageId, templateName: "team-temp-password", recipientEmail, subject,
+        status: "sent", source: "invite-member", resendId: data?.id,
+      });
+    }
+  } catch (err: any) {
+    await logEmailSend(supabaseLog, {
+      messageId, templateName: "team-temp-password", recipientEmail, subject,
+      status: "failed", source: "invite-member", errorMessage: err.message,
+    });
   }
 }

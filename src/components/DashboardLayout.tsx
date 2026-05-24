@@ -38,6 +38,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         return;
       }
 
+      // Force temporary password change before allowing dashboard access
+      if (session.user.user_metadata?.force_password_change) {
+        navigate("/force-password-change");
+        return;
+      }
+
       // Check for admin org override
       const adminOrgId = searchParams.get("admin_org");
       if (adminOrgId) {

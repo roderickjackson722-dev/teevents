@@ -96,6 +96,7 @@ const Finances = () => {
   const [platformTransactions, setPlatformTransactions] = useState<PlatformTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);
@@ -832,6 +833,22 @@ const Finances = () => {
                 className="pl-9 bg-card"
               />
             </div>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[200px] bg-card">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="registration">Registration</SelectItem>
+                <SelectItem value="sponsorship">Sponsorship</SelectItem>
+                <SelectItem value="vendor">Vendor</SelectItem>
+                <SelectItem value="side_event">Side Event</SelectItem>
+                <SelectItem value="donation">Donation</SelectItem>
+                <SelectItem value="auction">Auction</SelectItem>
+                <SelectItem value="raffle">Raffle</SelectItem>
+                <SelectItem value="store">Store</SelectItem>
+              </SelectContent>
+            </Select>
             {selectedTournamentData && (
               <p className="text-xs text-muted-foreground">
                 Showing transactions for <strong>{selectedTournamentData.title}</strong>
@@ -861,8 +878,16 @@ const Finances = () => {
             const txForTournament = platformTransactions.filter(
               (t) => !selectedTournament || t.tournament_id === selectedTournament
             );
+            // Group raw types into the dropdown categories
+            const typeGroup = (t: string): string => {
+              if (t === "sponsor") return "sponsorship";
+              if (t === "vendor_booth_fee") return "vendor";
+              if (t === "side_event_ticket") return "side_event";
+              return t;
+            };
             const q = search.toLowerCase();
             const filteredTx = txForTournament.filter((t) => {
+              if (typeFilter !== "all" && typeGroup(t.type || "") !== typeFilter) return false;
               if (!q) return true;
               return (
                 (t.golfer_name || "").toLowerCase().includes(q) ||

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check } from "lucide-react";
+import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 const ALL_PERMISSIONS = [
@@ -90,6 +91,9 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   const [editPerms, setEditPerms] = useState<string[]>([]);
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Delete confirmation state
+  const [deletingMember, setDeletingMember] = useState<MemberRow | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -186,11 +190,27 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     else { toast.success("Invitation revoked"); fetchData(); }
   };
 
-  const handleRemoveMember = async (memberId: string, memberUserId: string) => {
-    if (memberUserId === userId) { toast.error("You cannot remove yourself"); return; }
-    const { error } = await supabase.from("org_members").delete().eq("id", memberId);
-    if (error) toast.error(error.message);
-    else { toast.success("Team member removed"); fetchData(); }
+  const handleRemoveMember = (member: MemberRow) => {
+    if (member.user_id === userId) {
+      toast.error("You cannot remove yourself");
+      return;
+    }
+    setDeletingMember(member);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!deletingMember) return;
+    const { error } = await supabase
+      .from("org_members")
+      .delete()
+      .eq("id", deletingMember.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Team member removed");
+      setDeletingMember(null);
+      fetchData();
+    }
   };
 
   const openEditDialog = (member: MemberRow) => {
@@ -271,7 +291,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditDialog(m)}>
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRemoveMember(m.id, m.user_id)}>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRemoveMember(m)}>
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
                     </>
@@ -467,6 +487,28 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                 Save Changes
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Remove Member Confirmation Dialog */}
+      <Dialog open={!!deletingMember} onOpenChange={(open) => !open && setDeletingMember(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Remove Team Member?
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove <strong>{deletingMember?.name || "this team member"}</strong> from team management?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setDeletingMember(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmRemoveMember}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Yes, Remove
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

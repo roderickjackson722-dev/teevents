@@ -320,7 +320,8 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
         </div>
       )}
 
-      {/* Invite Form */}
+      {/* Invite Form — only visible to organization owner or platform admin */}
+      {canManage ? (
       <div className="border-t border-border pt-4">
         <h3 className="text-sm font-semibold text-foreground mb-3">Invite New Member</h3>
         <div className="space-y-4">

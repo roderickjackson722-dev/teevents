@@ -97,48 +97,72 @@ serve(async (req) => {
       (u: any) => u.email?.toLowerCase() === email.toLowerCase()
     );
 
+    const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
+
     if (invitedUser) {
-      // Existing user — check if already a member
+      // Existing user — check if already a member of THIS org
       const { data: alreadyMember } = await supabaseAdmin
         .from("org_members")
         .select("id")
         .eq("organization_id", organization_id)
         .eq("user_id", invitedUser.id)
-        .single();
+        .maybeSingle();
 
-      if (!alreadyMember) {
-        await supabaseAdmin.from("org_members").insert({
-          organization_id,
-          user_id: invitedUser.id,
-          role: memberRole,
-          permissions: permissions || [],
-          name: memberName,
-        });
-
-        await supabaseAdmin
-          .from("org_invitations")
-          .update({ status: "accepted" })
-          .eq("id", invite.id);
-
-        await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, true, memberRole, null);
-
+      if (alreadyMember) {
         return new Response(
-          JSON.stringify({ success: true, auto_accepted: true }),
+          JSON.stringify({ success: true, already_member: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      // Already a member
+      await supabaseAdmin.from("org_members").insert({
+        organization_id,
+        user_id: invitedUser.id,
+        role: memberRole,
+        permissions: permissions || [],
+        name: memberName,
+      });
+
+      await supabaseAdmin
+        .from("org_invitations")
+        .update({ status: "accepted" })
+        .eq("id", invite.id);
+
+      // Check if they belong to any OTHER org — if so, they already have a working password.
+      const { data: otherMemberships } = await supabaseAdmin
+        .from("org_members")
+        .select("id")
+        .eq("user_id", invitedUser.id)
+        .neq("organization_id", organization_id)
+        .limit(1);
+
+      const hasOtherOrgs = (otherMemberships?.length || 0) > 0;
+
+      if (hasOtherOrgs) {
+        await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, true, memberRole, null);
+      } else {
+        // Dormant account — reset to a temp password and force change on first login
+        const tempPasswordExisting = generateTempPassword();
+        await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
+          password: tempPasswordExisting,
+          user_metadata: {
+            ...(invitedUser.user_metadata || {}),
+            full_name: memberName || invitedUser.user_metadata?.full_name,
+            force_password_change: true,
+            invited_org_id: organization_id,
+          },
+        });
+        await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
+      }
+
       return new Response(
-        JSON.stringify({ success: true, already_member: true }),
+        JSON.stringify({ success: true, auto_accepted: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // New user — create the auth account with a temporary password.
-    // The user signs in with this temp password, then is forced to change it.
     const tempPassword = generateTempPassword();
-    const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
 
     const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
       email: email.toLowerCase(),

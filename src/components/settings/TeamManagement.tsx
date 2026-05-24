@@ -92,6 +92,9 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Delete confirmation state
+  const [deletingMember, setDeletingMember] = useState<MemberRow | null>(null);
+
   useEffect(() => {
     fetchData();
     checkPermissions();

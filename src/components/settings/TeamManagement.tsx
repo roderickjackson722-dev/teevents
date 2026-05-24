@@ -308,9 +308,11 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   <Badge variant={getRoleBadgeVariant(inv.role)} className="text-[10px] capitalize">
                     {inv.role}
                   </Badge>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                  </Button>
+                  {canManage && (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

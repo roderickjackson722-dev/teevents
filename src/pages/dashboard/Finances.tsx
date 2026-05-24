@@ -833,6 +833,22 @@ const Finances = () => {
                 className="pl-9 bg-card"
               />
             </div>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[200px] bg-card">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="registration">Registration</SelectItem>
+                <SelectItem value="sponsorship">Sponsorship</SelectItem>
+                <SelectItem value="vendor">Vendor</SelectItem>
+                <SelectItem value="side_event">Side Event</SelectItem>
+                <SelectItem value="donation">Donation</SelectItem>
+                <SelectItem value="auction">Auction</SelectItem>
+                <SelectItem value="raffle">Raffle</SelectItem>
+                <SelectItem value="store">Store</SelectItem>
+              </SelectContent>
+            </Select>
             {selectedTournamentData && (
               <p className="text-xs text-muted-foreground">
                 Showing transactions for <strong>{selectedTournamentData.title}</strong>

@@ -47,10 +47,20 @@ serve(async (req) => {
       .select("role")
       .eq("organization_id", organization_id)
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!membership || membership.role !== "owner") {
-      throw new Error("Only organization owners can invite members");
+    // Platform admins can always invite (impersonation/support)
+    const { data: isPlatformAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: user.id,
+      _role: "admin",
+    });
+
+    const allowed =
+      isPlatformAdmin === true ||
+      (membership && (membership.role === "owner" || membership.role === "admin"));
+
+    if (!allowed) {
+      throw new Error("Only organization owners or admins can invite members");
     }
 
     const { data: orgData } = await supabaseAdmin

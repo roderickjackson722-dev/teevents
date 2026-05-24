@@ -96,6 +96,7 @@ const Finances = () => {
   const [platformTransactions, setPlatformTransactions] = useState<PlatformTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);

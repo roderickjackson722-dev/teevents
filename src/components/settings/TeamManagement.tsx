@@ -82,6 +82,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   const [selectedPerms, setSelectedPerms] = useState<string[]>(ROLE_PRESETS.editor);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [canManage, setCanManage] = useState(false);
 
   // Edit state
   const [editingMember, setEditingMember] = useState<MemberRow | null>(null);
@@ -92,7 +93,21 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
 
   useEffect(() => {
     fetchData();
+    checkPermissions();
   }, [orgId]);
+
+  const checkPermissions = async () => {
+    const [{ data: membership }, { data: isPlatformAdmin }] = await Promise.all([
+      supabase
+        .from("org_members")
+        .select("role")
+        .eq("organization_id", orgId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
+    ]);
+    setCanManage(isPlatformAdmin === true || (membership as any)?.role === "owner");
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -251,7 +266,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   <Badge variant={getRoleBadgeVariant(m.role)} className="text-[10px] capitalize">
                     {m.role}
                   </Badge>
-                  {m.role !== "owner" && m.user_id !== userId && (
+                  {canManage && m.role !== "owner" && m.user_id !== userId && (
                     <>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditDialog(m)}>
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
@@ -293,9 +308,11 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   <Badge variant={getRoleBadgeVariant(inv.role)} className="text-[10px] capitalize">
                     {inv.role}
                   </Badge>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                  </Button>
+                  {canManage && (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -303,7 +320,8 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
         </div>
       )}
 
-      {/* Invite Form */}
+      {/* Invite Form — only visible to organization owner or platform admin */}
+      {canManage ? (
       <div className="border-t border-border pt-4">
         <h3 className="text-sm font-semibold text-foreground mb-3">Invite New Member</h3>
         <div className="space-y-4">
@@ -378,6 +396,15 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
           </Button>
         </div>
       </div>
+      ) : (
+        <div className="border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
+            Only the organization owner can invite, edit, or remove team members.
+          </p>
+        </div>
+      )}
+
+
 
       {/* Edit Member Dialog */}
       <Dialog open={!!editingMember} onOpenChange={(open) => !open && setEditingMember(null)}>

@@ -57,10 +57,10 @@ serve(async (req) => {
 
     const allowed =
       isPlatformAdmin === true ||
-      (membership && (membership.role === "owner" || membership.role === "admin"));
+      (membership && membership.role === "owner");
 
     if (!allowed) {
-      throw new Error("Only organization owners or admins can invite members");
+      throw new Error("Only the organization owner can manage team members");
     }
 
     const { data: orgData } = await supabaseAdmin

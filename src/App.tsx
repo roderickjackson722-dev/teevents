@@ -74,6 +74,7 @@ import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import ForcePasswordChange from "./pages/ForcePasswordChange";
 import Nonprofits from "./pages/Nonprofits";
 import Plans from "./pages/Plans";
 import EnterprisePricing from "./pages/EnterprisePricing";

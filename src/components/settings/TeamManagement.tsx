@@ -266,7 +266,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   <Badge variant={getRoleBadgeVariant(m.role)} className="text-[10px] capitalize">
                     {m.role}
                   </Badge>
-                  {m.role !== "owner" && m.user_id !== userId && (
+                  {canManage && m.role !== "owner" && m.user_id !== userId && (
                     <>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditDialog(m)}>
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />

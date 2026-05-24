@@ -190,11 +190,27 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     else { toast.success("Invitation revoked"); fetchData(); }
   };
 
-  const handleRemoveMember = async (memberId: string, memberUserId: string) => {
-    if (memberUserId === userId) { toast.error("You cannot remove yourself"); return; }
-    const { error } = await supabase.from("org_members").delete().eq("id", memberId);
-    if (error) toast.error(error.message);
-    else { toast.success("Team member removed"); fetchData(); }
+  const handleRemoveMember = (member: MemberRow) => {
+    if (member.user_id === userId) {
+      toast.error("You cannot remove yourself");
+      return;
+    }
+    setDeletingMember(member);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!deletingMember) return;
+    const { error } = await supabase
+      .from("org_members")
+      .delete()
+      .eq("id", deletingMember.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Team member removed");
+      setDeletingMember(null);
+      fetchData();
+    }
   };
 
   const openEditDialog = (member: MemberRow) => {

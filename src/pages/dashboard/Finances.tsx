@@ -878,8 +878,16 @@ const Finances = () => {
             const txForTournament = platformTransactions.filter(
               (t) => !selectedTournament || t.tournament_id === selectedTournament
             );
+            // Group raw types into the dropdown categories
+            const typeGroup = (t: string): string => {
+              if (t === "sponsor") return "sponsorship";
+              if (t === "vendor_booth_fee") return "vendor";
+              if (t === "side_event_ticket") return "side_event";
+              return t;
+            };
             const q = search.toLowerCase();
             const filteredTx = txForTournament.filter((t) => {
+              if (typeFilter !== "all" && typeGroup(t.type || "") !== typeFilter) return false;
               if (!q) return true;
               return (
                 (t.golfer_name || "").toLowerCase().includes(q) ||

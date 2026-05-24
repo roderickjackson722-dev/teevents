@@ -396,6 +396,15 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
           </Button>
         </div>
       </div>
+      ) : (
+        <div className="border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
+            Only the organization owner can invite, edit, or remove team members.
+          </p>
+        </div>
+      )}
+
+
 
       {/* Edit Member Dialog */}
       <Dialog open={!!editingMember} onOpenChange={(open) => !open && setEditingMember(null)}>

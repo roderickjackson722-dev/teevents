@@ -34,6 +34,11 @@ interface PayoutMethod {
   verification_notes: string | null;
   change_request_status: string | null;
   created_at: string;
+  pending_bank_last4?: string | null;
+  pending_bank_brand?: string | null;
+  bank_change_status?: string | null;
+  bank_change_requested_at?: string | null;
+  bank_change_expires_at?: string | null;
 }
 
 interface ActivityLog {

@@ -593,10 +593,28 @@ export default function PayoutSettings() {
 
             {stripeConnected ? (
               <>
-                <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                {payoutMethod?.bank_change_status === "pending" && payoutMethod?.pending_bank_last4 && (
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="text-sm font-semibold">Bank account change awaiting verification</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>
+                        We detected a new bank account (<strong className="text-foreground">{payoutMethod.pending_bank_brand || "Bank"} ••••{payoutMethod.pending_bank_last4}</strong>) on your Stripe Connect account.
+                      </p>
+                      <p>
+                        <strong className="text-foreground">Payouts are paused</strong> until the organizer owner email on file confirms this change via the verification email we sent (with <strong>info@teevents.golf</strong> bcc'd). If you didn't make this change, contact us immediately.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className={`${payoutMethod?.bank_change_status === "pending" ? "bg-muted/40 border-border" : "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800"} border rounded-lg p-4 space-y-2`}>
+                  <div className={`flex items-center gap-2 ${payoutMethod?.bank_change_status === "pending" ? "text-muted-foreground" : "text-emerald-700 dark:text-emerald-400"}`}>
                     <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-sm font-medium">Stripe connected and verified</span>
+                    <span className="text-sm font-medium">
+                      {payoutMethod?.bank_change_status === "pending" ? "Stripe connected (payouts paused pending verification)" : "Stripe connected and verified"}
+                    </span>
                   </div>
                   <div className="text-sm text-muted-foreground space-y-1">
                     {payoutMethod?.stripe_account_brand && (

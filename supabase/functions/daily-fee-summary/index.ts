@@ -29,7 +29,10 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    const dest = (logs || []).filter((l: any) => l.routing_decision === "destination");
+    // Count both new Direct Charges ("direct") and legacy Destination Charges ("destination").
+    const dest = (logs || []).filter((l: any) =>
+      l.routing_decision === "direct" || l.routing_decision === "destination"
+    );
     const platformFee = dest.reduce((s: number, l: any) => s + (l.platform_fee_cents || 0), 0);
     const appFee = dest.reduce((s: number, l: any) => s + (l.application_fee_cents || 0), 0);
     const gross = dest.reduce((s: number, l: any) => s + (l.gross_cents || 0), 0);

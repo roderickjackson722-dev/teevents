@@ -1874,6 +1874,11 @@ export type Database = {
       organization_payout_methods: {
         Row: {
           account_last_four: string | null
+          bank_change_confirmed_at: string | null
+          bank_change_expires_at: string | null
+          bank_change_requested_at: string | null
+          bank_change_status: string
+          bank_change_token: string | null
           bank_name: string | null
           change_request_status: string | null
           change_requested_at: string | null
@@ -1884,6 +1889,8 @@ export type Database = {
           method_type: string
           organization_id: string
           paypal_email: string | null
+          pending_bank_brand: string | null
+          pending_bank_last4: string | null
           pending_change_email: string | null
           preferred_method: string | null
           routing_last_four: string | null
@@ -1898,6 +1905,11 @@ export type Database = {
         }
         Insert: {
           account_last_four?: string | null
+          bank_change_confirmed_at?: string | null
+          bank_change_expires_at?: string | null
+          bank_change_requested_at?: string | null
+          bank_change_status?: string
+          bank_change_token?: string | null
           bank_name?: string | null
           change_request_status?: string | null
           change_requested_at?: string | null
@@ -1908,6 +1920,8 @@ export type Database = {
           method_type?: string
           organization_id: string
           paypal_email?: string | null
+          pending_bank_brand?: string | null
+          pending_bank_last4?: string | null
           pending_change_email?: string | null
           preferred_method?: string | null
           routing_last_four?: string | null
@@ -1922,6 +1936,11 @@ export type Database = {
         }
         Update: {
           account_last_four?: string | null
+          bank_change_confirmed_at?: string | null
+          bank_change_expires_at?: string | null
+          bank_change_requested_at?: string | null
+          bank_change_status?: string
+          bank_change_token?: string | null
           bank_name?: string | null
           change_request_status?: string | null
           change_requested_at?: string | null
@@ -1932,6 +1951,8 @@ export type Database = {
           method_type?: string
           organization_id?: string
           paypal_email?: string | null
+          pending_bank_brand?: string | null
+          pending_bank_last4?: string | null
           pending_change_email?: string | null
           preferred_method?: string | null
           routing_last_four?: string | null

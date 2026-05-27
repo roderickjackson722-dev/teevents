@@ -126,6 +126,7 @@ import LiveLeaderboard from "./pages/LiveLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
+import ConfirmBankChange from "./pages/ConfirmBankChange";
 import TripsList from "./pages/trips/TripsList";
 import TripNew from "./pages/trips/TripNew";
 import TripDetail from "./pages/trips/TripDetail";
@@ -277,7 +278,8 @@ const App = () => (
             <Route path="/dashboard/side-events" element={<DashboardLayout><SideEvents /></DashboardLayout>} />
             <Route path="/dashboard/team-performance" element={<DashboardLayout><TeamPerformance /></DashboardLayout>} />
              <Route path="/sponsor/:slug" element={<SponsorLandingPage />} />
-             <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />
+            <Route path="/confirm-payout-change" element={<ConfirmPayoutChange />} />
+            <Route path="/confirm-bank-change" element={<ConfirmBankChange />} />
              <Route path="/trips" element={<TripsList />} />
              <Route path="/trips/new" element={<TripNew />} />
              <Route path="/trips/public/:token" element={<PublicTrip />} />

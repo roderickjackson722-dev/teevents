@@ -34,6 +34,43 @@ const DEFAULT_FORM = {
   team_fee_cents: 100000,
 };
 
+function ImageUploadField({ value, onChange, label }: { value: string; onChange: (url: string) => void; label: string }) {
+  const [uploading, setUploading] = useState(false);
+  async function handleFile(file: File) {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `sample-mockups/${label}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (error) throw error;
+      const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image uploaded");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+  return (
+    <div className="space-y-2">
+      {value && (
+        <div className="relative inline-block">
+          <img src={value} alt="" className="h-20 rounded border object-contain bg-muted" />
+          <button type="button" onClick={() => onChange("")} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+      <label className="flex items-center gap-2 cursor-pointer border border-dashed rounded-md px-3 py-2 text-sm hover:bg-muted/50">
+        <Upload className="h-4 w-4" />
+        <span>{uploading ? "Uploading..." : value ? "Replace image" : "Upload image"}</span>
+        <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+      </label>
+    </div>
+  );
+}
+
 export default function SampleGenerator() {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);

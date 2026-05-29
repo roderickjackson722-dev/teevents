@@ -130,6 +130,7 @@ export default function SampleDashboardPreview() {
   const [sponsors, setSponsors] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [activeNav, setActiveNav] = useState("Dashboard");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

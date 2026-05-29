@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Tv } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Tv, ArrowRight, Sparkles } from "lucide-react";
 import { formatScore } from "@/lib/sampleMockData";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
@@ -31,6 +32,7 @@ export default function SampleTournament() {
   const [sponsors, setSponsors] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDashIntro, setShowDashIntro] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -48,6 +50,7 @@ export default function SampleTournament() {
       setSponsors(sp || []);
       setLeaderboard(lb || []);
       setLoading(false);
+      setTimeout(() => setShowDashIntro(true), 1200);
     })();
   }, [slug]);
 
@@ -80,11 +83,68 @@ export default function SampleTournament() {
         </div>
       </div>
 
-      {/* Preview Links */}
-      <div className="container mx-auto px-4 py-4 flex flex-wrap gap-2 justify-center">
-        <Link to={`/sample/${slug}/dashboard`}><Button variant="outline" size="sm"><LayoutDashboard className="h-4 w-4 mr-1" />Organizer Dashboard Preview</Button></Link>
-        <Link to={`/sample/${slug}/live`}><Button variant="outline" size="sm"><Tv className="h-4 w-4 mr-1" />Live TV Leaderboard</Button></Link>
+      {/* BIG Dashboard Preview CTA */}
+      <div className="container mx-auto px-4 py-6 max-w-5xl">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-[#F5A623] bg-gradient-to-r from-[#1a5c38] via-[#1a5c38] to-[#0f3d24] p-6 md:p-8 shadow-2xl">
+          <div className="absolute -top-10 -right-10 opacity-10">
+            <LayoutDashboard className="h-48 w-48 text-[#F5A623]" />
+          </div>
+          <div className="relative flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-1.5 bg-[#F5A623] text-[#1a5c38] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+                <Sparkles className="h-3.5 w-3.5" /> See It In Action
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                See What Your Organizer Dashboard Looks Like
+              </h2>
+              <p className="text-white/80 text-sm md:text-base">
+                Step inside the back-end of {sample.tournament_name} and see every feature you'll use to run your tournament — players, sponsors, leaderboard, finances and more.
+              </p>
+            </div>
+            <Link to={`/sample/${slug}/dashboard`} className="w-full md:w-auto flex-shrink-0">
+              <Button size="lg" className="w-full md:w-auto bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-bold text-base md:text-lg px-6 md:px-8 py-6 shadow-lg">
+                <LayoutDashboard className="h-5 w-5 mr-2" />
+                Open Organizer Dashboard
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <div className="mt-3 flex justify-center">
+          <Link to={`/sample/${slug}/live`}>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Tv className="h-4 w-4 mr-1" /> Or preview the Live TV Leaderboard
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Auto-popup encouraging dashboard preview */}
+      <Dialog open={showDashIntro} onOpenChange={setShowDashIntro}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-2 h-14 w-14 rounded-full bg-[#F5A623]/20 flex items-center justify-center">
+              <LayoutDashboard className="h-7 w-7 text-[#1a5c38]" />
+            </div>
+            <DialogTitle className="text-center text-2xl">Want to see the organizer side?</DialogTitle>
+            <DialogDescription className="text-center text-base pt-1">
+              We built a full mockup of the dashboard <strong>you</strong> would use to run {sample.tournament_name}. See exactly how easy TeeVents makes managing your tournament.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-2">
+            <Link to={`/sample/${slug}/dashboard`} onClick={() => setShowDashIntro(false)}>
+              <Button size="lg" className="w-full bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-bold text-base">
+                <LayoutDashboard className="h-5 w-5 mr-2" /> Open Organizer Dashboard
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+            <Button variant="ghost" onClick={() => setShowDashIntro(false)} className="w-full">
+              Keep exploring the public page
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <Tabs defaultValue="overview" className="w-full">

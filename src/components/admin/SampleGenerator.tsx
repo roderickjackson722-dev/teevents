@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Copy, Mail, Trash2, RefreshCw, Eye } from "lucide-react";
+import { Copy, Mail, Trash2, RefreshCw, Eye, Upload, X } from "lucide-react";
 import { MOCK_LEADERBOARD, MOCK_PARTICIPANTS, MOCK_SPONSORS, slugify } from "@/lib/sampleMockData";
 import { SendProspectModal } from "@/components/admin/SendProspectModal";
 
@@ -33,6 +33,43 @@ const DEFAULT_FORM = {
   registration_fee_cents: 25000,
   team_fee_cents: 100000,
 };
+
+function ImageUploadField({ value, onChange, label }: { value: string; onChange: (url: string) => void; label: string }) {
+  const [uploading, setUploading] = useState(false);
+  async function handleFile(file: File) {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `sample-mockups/${label}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (error) throw error;
+      const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image uploaded");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+  return (
+    <div className="space-y-2">
+      {value && (
+        <div className="relative inline-block">
+          <img src={value} alt="" className="h-20 rounded border object-contain bg-muted" />
+          <button type="button" onClick={() => onChange("")} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+      <label className="flex items-center gap-2 cursor-pointer border border-dashed rounded-md px-3 py-2 text-sm hover:bg-muted/50">
+        <Upload className="h-4 w-4" />
+        <span>{uploading ? "Uploading..." : value ? "Replace image" : "Upload image"}</span>
+        <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+      </label>
+    </div>
+  );
+}
 
 export default function SampleGenerator() {
   const [form, setForm] = useState(DEFAULT_FORM);
@@ -196,12 +233,20 @@ export default function SampleGenerator() {
               <Textarea rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Living for a cause..." />
             </div>
             <div>
-              <Label>Logo URL</Label>
-              <Input value={form.logo_url} onChange={e => setForm({ ...form, logo_url: e.target.value })} placeholder="https://..." />
+              <Label>Logo Image</Label>
+              <ImageUploadField
+                value={form.logo_url}
+                onChange={(url) => setForm({ ...form, logo_url: url })}
+                label="logo"
+              />
             </div>
             <div>
-              <Label>Hero Image URL</Label>
-              <Input value={form.hero_image_url} onChange={e => setForm({ ...form, hero_image_url: e.target.value })} placeholder="https://..." />
+              <Label>Hero Image</Label>
+              <ImageUploadField
+                value={form.hero_image_url}
+                onChange={(url) => setForm({ ...form, hero_image_url: url })}
+                label="hero"
+              />
             </div>
           </div>
           <div className="flex gap-2">

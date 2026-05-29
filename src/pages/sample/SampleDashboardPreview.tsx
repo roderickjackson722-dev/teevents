@@ -443,3 +443,118 @@ export default function SampleDashboardPreview() {
     </div>
   );
 }
+
+// ---------- Generic feature mock panel ----------
+function GenericFeaturePanel({
+  title, tournamentName, participants, sponsors, leaderboard, fmt, totalRevenue, slug,
+}: {
+  title: string; tournamentName: string; participants: any[]; sponsors: any[]; leaderboard: any[];
+  fmt: (c: number) => string; totalRevenue: number; slug: string;
+}) {
+  // Tailored mock content per feature
+  const content: Record<string, { description: string; rows?: { label: string; value: string }[]; list?: string[] }> = {
+    "Planning Guide": {
+      description: "Step-by-step 30-task checklist to plan your tournament from idea to event day.",
+      list: ["✓ Set tournament date & venue","✓ Define entry fees and sponsorship tiers","◯ Open registration","◯ Confirm catering","◯ Print scorecards & cart signs","◯ Brief volunteers"],
+    },
+    "Setup Checklist": {
+      description: "Quick visual checklist of essentials before you go live.",
+      list: ["✓ Tournament details complete","✓ Course details added","✓ Payout method connected","◯ Custom domain set","◯ Sponsors uploaded"],
+    },
+    "View Tournament": { description: `Opens the public page for ${tournamentName}.` },
+    "Course Details": {
+      description: "Manage course information, par, yardage, and tee boxes.",
+      rows: [
+        { label: "Course", value: "Running Deer Golf Club" },
+        { label: "Par", value: "72" },
+        { label: "Yardage (Blue)", value: "6,824 yds" },
+        { label: "Slope / Rating", value: "131 / 72.4" },
+      ],
+    },
+    "Pin Sheets": { description: "Auto-generate printable pin sheet PDFs for each round." },
+    "Handicap Settings": {
+      description: "Configure handicap rules used to compute net scores.",
+      rows: [{label:"System",value:"USGA"},{label:"Course Handicap",value:"100% allowance"},{label:"Max Handicap",value:"36.0"}],
+    },
+    "Tournament Details": {
+      description: "Edit name, date, format and fees.",
+      rows: [{label:"Name",value:tournamentName},{label:"Format",value:"Scramble"},{label:"Player Entry",value:fmt(25000)},{label:"Team Entry",value:fmt(100000)}],
+    },
+    "Registration Management": {
+      description: `${participants.length} registrations received. Manage payments, refunds and team groupings.`,
+      rows: [{label:"Paid",value:`${participants.length}`},{label:"Waitlist",value:"3"},{label:"Comped",value:"2"}],
+    },
+    "Lodging": { description: "Block hotel rooms and let players self-book at your group rate." },
+    "Team Management": { description: "Invite assistants with granular permissions (registration, finances, scoring, etc.)." },
+    "Organization Info": { description: "Logo, mission, 501(c)(3) info — used on receipts and public site." },
+    "Flyer Studio": { description: "Generate a print-ready flyer in Canva with your branding pre-filled." },
+    "Printables": { description: "Scorecards, cart signs, hole assignments, name badges, sponsor signs — all auto-populated and PDF-ready." },
+    "Email Templates": { description: "Customize confirmation, reminder and thank-you emails sent to participants." },
+    "Public Search": { description: "Toggle whether your tournament appears in the public TeeVents search." },
+    "Waitlist": {
+      description: "Automated waitlist with 24-hour claim window when a spot opens.",
+      list: ["1. Casey Morgan — added 2 days ago","2. Pat Lee — added 1 day ago","3. Drew Kim — added 3 hours ago"],
+    },
+    "Check-In": { description: "Scan QR codes on event day to check players in and assign carts." },
+    "Tee Sheet": { description: "Drag-and-drop pairings and shotgun-start hole assignments." },
+    "Test Simulator": { description: "Simulate scores to verify your leaderboard and scoring rules before event day." },
+    "Volunteers": { description: "Recruit and schedule volunteers by station and shift." },
+    "Vendors": { description: "Sell vendor/exhibitor booth space with custom tiers." },
+    "Side Events": { description: "Sell add-ons: skins, mulligans, raffle tickets, beat-the-pro, etc." },
+    "Team Performance": { description: "Post-round team stats and trophy graphics." },
+    "Event Day Contests": { description: "Closest-to-the-pin, long drive, hole-in-one — track on-course contests." },
+    "Messages": {
+      description: "Send announcements and updates to all participants.",
+      list: ["📣 Tee times posted","☀️ Weather update: clear skies","🏆 Awards ceremony 3:30pm in the clubhouse"],
+    },
+    "Budget": {
+      description: "Track planned vs actual revenue and expenses.",
+      rows: [{label:"Projected Revenue",value:fmt(totalRevenue)},{label:"Projected Expenses",value:fmt(Math.round(totalRevenue*0.45))},{label:"Projected Net",value:fmt(Math.round(totalRevenue*0.55))}],
+    },
+    "Add On Store": { description: "Optional add-ons (mulligans, range balls, raffle bundles) sold during registration." },
+    "Director Shop": { description: "Order branded TeeVents merch — banners, polo shirts, signage — for your event." },
+    "Surveys & Feedback": { description: "Post-event survey automation. Average rating: ⭐ 4.8 / 5.0" },
+    "Photo Gallery": { description: "Share event photos with players — auto-tagged by team." },
+    "Donations": { description: "Accept additional donations on top of registration. To date: " + fmt(125000) },
+    "Auctions": { description: "Live & silent auctions with bidder paddles and online bidding." },
+    "Raffles": { description: "Sell raffle tickets digitally with random winner draw." },
+    "Media Clips": { description: "Upload short event recap videos for social sharing." },
+    "Day-Of Page": { description: "Mobile landing page for players on event day — schedule, pairings, leaderboard." },
+    "General Settings": { description: "Tournament settings, branding, custom domain, notifications." },
+    "Help Center": { description: "Step-by-step guides, video walkthroughs, and chat support." },
+    "Activity Log": {
+      description: "Full audit trail of every change made to your tournament.",
+      list: ["2h ago — Sponsor 'Albany Auto' added","5h ago — Registration opened","1d ago — Tournament details updated"],
+    },
+  };
+
+  const c = content[title] || { description: `Preview of the ${title} section. With TeeVents this is a full-featured tool — this is a quick mockup of what you'll see.` };
+
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h3 className="text-lg font-display font-bold">{title}</h3>
+        <span className="text-xs bg-secondary/15 text-secondary px-2 py-1 rounded-full font-semibold">Sample preview</span>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">{c.description}</p>
+      {c.rows && (
+        <div className="grid sm:grid-cols-2 gap-3">
+          {c.rows.map((r) => (
+            <div key={r.label} className="border rounded-md p-3 flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">{r.label}</span>
+              <span className="font-semibold text-sm">{r.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {c.list && (
+        <ul className="space-y-2">
+          {c.list.map((item, i) => (
+            <li key={i} className="text-sm border-b pb-2 last:border-0">{item}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+

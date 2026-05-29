@@ -1001,3 +1001,69 @@ function WaitlistPanel() {
   );
 }
 
+
+function SidebarNavContent({ activeNav, onSelect }: { activeNav: string; onSelect: (title: string) => void }) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-3 p-4 border-b border-primary-foreground/10">
+        <img src={logoWhite} alt="TeeVents" className="h-8 w-8 object-contain flex-shrink-0" />
+        <span className="font-display text-lg font-semibold tracking-wide">TeeVents</span>
+      </div>
+
+      {categories.map((cat) => (
+        <div key={cat.label} className={`${cat.color.split(" ").find(c => c.startsWith("bg-")) ?? ""} rounded-md mx-1 my-1`}>
+          <div className={`border-l-2 ${cat.color.split(" ").find(c => c.startsWith("border-l-")) ?? ""} ml-1 pl-2`}>
+            <div className="text-primary-foreground/60 text-[10px] tracking-widest uppercase font-semibold py-1.5">
+              {cat.label}
+            </div>
+          </div>
+          <div className="space-y-0.5 pb-1">
+            {cat.items.map((it) => {
+              const isActive = activeNav === it.title;
+              return (
+                <button
+                  key={it.title}
+                  onClick={() => onSelect(it.title)}
+                  className={`flex items-center w-full px-3 py-1.5 text-sm rounded transition-colors text-left ${
+                    isActive
+                      ? "bg-primary-foreground/15 text-secondary font-medium"
+                      : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                  }`}
+                >
+                  <it.icon className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="flex-1 truncate">{it.title}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <div className="mx-1 my-1">
+        <div className="border-l-2 border-l-gray-400 ml-2 pl-2">
+          <div className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold py-1.5">
+            Settings
+          </div>
+        </div>
+        <div className="space-y-0.5 pb-1">
+          {settingsItems.map((it) => (
+            <button
+              key={it.title}
+              onClick={() => onSelect(it.title)}
+              className="flex items-center w-full px-3 py-1.5 text-sm rounded text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground text-left"
+            >
+              <it.icon className="mr-2 h-4 w-4" />
+              <span>{it.title}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-auto border-t border-primary-foreground/10 p-3">
+        <button className="flex items-center gap-2 text-primary-foreground/60 hover:text-primary-foreground text-sm w-full">
+          <LogOut className="h-4 w-4" /> Sign Out
+        </button>
+      </div>
+    </div>
+  );
+}

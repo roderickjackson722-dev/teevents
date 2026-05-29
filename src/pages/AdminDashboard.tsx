@@ -773,8 +773,6 @@ const AdminDashboard = () => {
                   ["emails", "Auto-Approve Emails", Mail],
                   ["college", "College Hub", School],
                   ["sponsorship-pages", "Sponsorship Pages", Target],
-                  ["sales-hub", "Outreach / Sales Hub", Target],
-                  ["mockup-outreach", "Mockup Outreach", Trophy],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -804,17 +802,32 @@ const AdminDashboard = () => {
                   <Users className="h-4 w-4" /> Demo Leads
                 </button>
                 <button
-                  onClick={() => navigate("/admin/outreach")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Mail className="h-4 w-4" /> Outreach
-                </button>
-                <button
                   onClick={() => navigate("/admin/stripe-connections")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <CreditCard className="h-4 w-4" /> Stripe Connections
                 </button>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Sales</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["sales-demo", "Demo", FileText],
+                  ["sales-outreach", "Outreach", Mail],
+                  ["mockup-outreach", "Mockup Outreach", Trophy],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
               </div>
             </div>
 

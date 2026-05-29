@@ -196,12 +196,20 @@ export default function SampleGenerator() {
               <Textarea rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Living for a cause..." />
             </div>
             <div>
-              <Label>Logo URL</Label>
-              <Input value={form.logo_url} onChange={e => setForm({ ...form, logo_url: e.target.value })} placeholder="https://..." />
+              <Label>Logo Image</Label>
+              <ImageUploadField
+                value={form.logo_url}
+                onChange={(url) => setForm({ ...form, logo_url: url })}
+                label="logo"
+              />
             </div>
             <div>
-              <Label>Hero Image URL</Label>
-              <Input value={form.hero_image_url} onChange={e => setForm({ ...form, hero_image_url: e.target.value })} placeholder="https://..." />
+              <Label>Hero Image</Label>
+              <ImageUploadField
+                value={form.hero_image_url}
+                onChange={(url) => setForm({ ...form, hero_image_url: url })}
+                label="hero"
+              />
             </div>
           </div>
           <div className="flex gap-2">

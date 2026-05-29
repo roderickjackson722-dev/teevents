@@ -340,112 +340,27 @@ export default function SampleDashboardPreview() {
             )}
 
             {/* Contextual sample panels — change with sidebar selection */}
-            {activeNav === "Players" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Users className="h-5 w-5" />Registered Players</h3>
-                <table className="w-full text-sm">
-                  <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Name</th><th>Handicap</th><th>Status</th></tr></thead>
-                  <tbody>
-                    {participants.slice(0, 12).map((p) => (
-                      <tr key={p.id} className="border-b">
-                        <td className="py-2">{p.name}</td>
-                        <td>{p.handicap}</td>
-                        <td><Badge variant="outline" className="text-xs">Paid</Badge></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><BarChart3 className="h-5 w-5" />Live Leaderboard</h3>
-                <table className="w-full text-sm">
-                  <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Pos</th><th>Team</th><th>Gross</th><th>Net</th><th>Thru</th></tr></thead>
-                  <tbody>
-                    {leaderboard.map((l) => (
-                      <tr key={l.id} className="border-b">
-                        <td className="py-2 font-semibold">{l.position}</td>
-                        <td>{l.player_name}</td>
-                        <td>{formatScore(l.gross_score)}</td>
-                        <td>{formatScore(l.net_score)}</td>
-                        <td>{l.thru}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {activeNav === "Sponsorship Management" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Award className="h-5 w-5" />Sponsors</h3>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {sponsors.map((s) => (
-                    <div key={s.id} className="border rounded-md p-3 flex items-center gap-3">
-                      <div className="h-12 w-12 rounded flex items-center justify-center text-white font-bold" style={{ backgroundColor: s.logo_color }}>{s.name[0]}</div>
-                      <div className="flex-1">
-                        <div className="font-medium">{s.name}</div>
-                        <Badge variant="outline" className="text-xs">{s.level}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {activeNav === "Finances" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Wallet className="h-5 w-5" />Finances</h3>
-                <div className="grid sm:grid-cols-3 gap-3 mb-4">
-                  <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Gross Revenue</div><div className="text-xl font-bold">{fmt(totalRevenue)}</div></div>
-                  <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Platform Fee (5%)</div><div className="text-xl font-bold text-orange-600">{fmt(platformFee)}</div></div>
-                  <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Net to Organizer</div><div className="text-xl font-bold text-green-600">{fmt(netPayout)}</div></div>
-                </div>
-                <table className="w-full text-sm">
-                  <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Customer</th><th>Type</th><th>Gross</th><th>Fee</th><th>Net</th></tr></thead>
-                  <tbody>
-                    {participants.slice(0, 8).map((p) => {
-                      const g = sample.registration_fee_cents;
-                      const f = Math.round(g * 0.05);
-                      return (
-                        <tr key={p.id} className="border-b">
-                          <td className="py-2">{p.name}</td>
-                          <td><Badge variant="outline">Registration</Badge></td>
-                          <td>{fmt(g)}</td>
-                          <td className="text-orange-600">{fmt(f)}</td>
-                          <td className="text-green-600">{fmt(g - f)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {activeNav === "Payout Settings" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><CreditCard className="h-5 w-5" />Payout Settings</h3>
-                <div className="border rounded-md p-4 bg-green-50">
-                  <div className="flex justify-between"><span className="font-medium">Stripe Connect</span><Badge className="bg-green-600">Connected</Badge></div>
-                  <div className="text-xs text-muted-foreground mt-1">Account ending •••• 4242 — Payouts arrive within 2 business days</div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeNav === "Share & Promote" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Share2 className="h-5 w-5" />Share & Promote</h3>
-                <p className="text-sm mb-2">Your tournament URL:</p>
-                <code className="block bg-muted p-3 rounded font-mono text-sm">{window.location.origin}/sample/{slug}</code>
-              </div>
-            ) : null}
+            {activeNav === "Players" ? <PlayersPanel /> : null}
+            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? <LeaderboardPanel tournamentName={orgName} /> : null}
+            {activeNav === "Sponsorship Management" ? <SponsorsPanel /> : null}
+            {activeNav === "Finances" ? <FinancesPanel /> : null}
+            {activeNav === "Payout Settings" ? <PayoutPanel /> : null}
+            {activeNav === "Share & Promote" ? <SharePanel slug={slug || ""} tournamentName={orgName} /> : null}
+            {activeNav === "Check-In" ? <CheckInPanel /> : null}
+            {activeNav === "Volunteers" ? <VolunteersPanel /> : null}
+            {activeNav === "Email Templates" || activeNav === "Messages" ? <EmailTemplatesPanel /> : null}
+            {activeNav === "Auctions" ? <AuctionsPanel /> : null}
+            {activeNav === "Raffles" ? <RafflesPanel /> : null}
+            {activeNav === "Media Clips" || activeNav === "Photo Gallery" ? <MediaClipsPanel /> : null}
+            {activeNav === "Tournament Details" || activeNav === "View Tournament" ? <SiteBuilderPanel tournamentName={orgName} slug={slug || ""} eventDate={sample.event_date} /> : null}
+            {activeNav === "Waitlist" ? <WaitlistPanel /> : null}
 
             {/* Generic feature preview — any other sidebar item shows a realistic mock panel */}
             {![
               "Dashboard","Players","Live Leaderboard","Scoring","Sponsorship Management",
-              "Finances","Payout Settings","Share & Promote"
+              "Finances","Payout Settings","Share & Promote","Check-In","Volunteers",
+              "Email Templates","Messages","Auctions","Raffles","Media Clips","Photo Gallery",
+              "Tournament Details","View Tournament","Waitlist",
             ].includes(activeNav) ? (
               <GenericFeaturePanel
                 title={activeNav}

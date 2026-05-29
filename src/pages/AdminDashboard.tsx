@@ -1946,19 +1946,35 @@ const AdminDashboard = () => {
           )}
 
 
-          {/* Sales Hub Tab — All sales tools consolidated */}
-          {activeTab === "sales-hub" && (
-            <AdminSalesHub
-              prospects={adminProspects}
-              activities={prospectActivities}
-              outreachTemplates={outreachTemplates}
-              onRefresh={fetchAll}
-              callAdminApi={callAdminApi}
-              ProspectsComponent={AdminProspects}
-              StatsComponent={AdminProspectStats}
-              EmailScriptsComponent={AdminEmailScripts}
-              DemoScriptComponent={AdminDemoScript}
-            />
+          {/* Sales: Demo — admin 15-min script + downloadable PDF agenda for prospects */}
+          {activeTab === "sales-demo" && (
+            <div className="space-y-6">
+              <div className="bg-card border border-border rounded-lg p-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-display font-bold text-foreground">Prospect Demo Agenda</h3>
+                  <p className="text-sm text-muted-foreground">Open the agenda and use your browser's Print &rarr; Save as PDF to share with prospects.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button asChild variant="outline">
+                    <a href="/sales/demo-agenda" target="_blank" rel="noopener noreferrer">
+                      <Eye className="h-4 w-4 mr-1" /> Preview Agenda
+                    </a>
+                  </Button>
+                  <Button
+                    className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90"
+                    onClick={() => window.open("/sales/demo-agenda?print=1", "_blank", "noopener")}
+                  >
+                    <FileText className="h-4 w-4 mr-1" /> Download PDF Agenda
+                  </Button>
+                </div>
+              </div>
+              <AdminDemoScript />
+            </div>
+          )}
+
+          {/* Sales: Outreach — email script library with Send-to-Prospect */}
+          {activeTab === "sales-outreach" && (
+            <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
           )}
 
           {/* Store Tab */}

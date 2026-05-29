@@ -420,6 +420,23 @@ export default function SampleDashboardPreview() {
                 <code className="block bg-muted p-3 rounded font-mono text-sm">{window.location.origin}/sample/{slug}</code>
               </div>
             ) : null}
+
+            {/* Generic feature preview — any other sidebar item shows a realistic mock panel */}
+            {![
+              "Dashboard","Players","Live Leaderboard","Scoring","Sponsorship Management",
+              "Finances","Payout Settings","Share & Promote"
+            ].includes(activeNav) ? (
+              <GenericFeaturePanel
+                title={activeNav}
+                tournamentName={orgName}
+                participants={participants}
+                sponsors={sponsors}
+                leaderboard={leaderboard}
+                fmt={fmt}
+                totalRevenue={totalRevenue}
+                slug={slug || ""}
+              />
+            ) : null}
           </main>
         </div>
       </div>

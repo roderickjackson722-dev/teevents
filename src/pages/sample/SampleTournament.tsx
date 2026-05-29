@@ -32,6 +32,7 @@ export default function SampleTournament() {
   const [sponsors, setSponsors] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDashIntro, setShowDashIntro] = useState(false);
 
   useEffect(() => {
     if (!slug) return;

@@ -29,6 +29,7 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
   const [recipientEmail, setRecipientEmail] = useState("");
   const [contactName, setContactName] = useState("");
   const [tournamentName, setTournamentName] = useState("");
+  const [prospectModalTemplate, setProspectModalTemplate] = useState<any | null>(null);
 
   const coldTemplates = templates.filter(t => t.category === "cold_outreach");
   const otherTemplates = templates.filter(t => t.category !== "cold_outreach");

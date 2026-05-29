@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SendProspectModal } from "@/components/admin/SendProspectModal";
 
 interface Props {
   templates: any[];
@@ -28,6 +29,7 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
   const [recipientEmail, setRecipientEmail] = useState("");
   const [contactName, setContactName] = useState("");
   const [tournamentName, setTournamentName] = useState("");
+  const [prospectModalTemplate, setProspectModalTemplate] = useState<any | null>(null);
 
   const coldTemplates = templates.filter(t => t.category === "cold_outreach");
   const otherTemplates = templates.filter(t => t.category !== "cold_outreach");
@@ -110,8 +112,15 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
           <div className="flex items-center gap-2">
             {!isEditing && !isSending && (
               <>
-                <Button size="sm" variant="default" onClick={() => openSendForm(template)}>
-                  <Send className="h-3.5 w-3.5 mr-1" /> Send
+                <Button
+                  size="sm"
+                  className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90"
+                  onClick={() => setProspectModalTemplate(template)}
+                >
+                  <Send className="h-3.5 w-3.5 mr-1" /> Send to Prospect
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => openSendForm(template)}>
+                  <Mail className="h-3.5 w-3.5 mr-1" /> Gmail
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => startEditing(template)}>
                   <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
@@ -267,6 +276,15 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
       {templates.length === 0 && (
         <p className="text-muted-foreground text-center py-12">No email templates yet.</p>
       )}
+
+      <SendProspectModal
+        open={!!prospectModalTemplate}
+        onClose={() => setProspectModalTemplate(null)}
+        emailType="custom"
+        templateKey={prospectModalTemplate?.id}
+        presetSubject={prospectModalTemplate?.subject || ""}
+        presetBody={prospectModalTemplate?.body || ""}
+      />
     </div>
   );
 }

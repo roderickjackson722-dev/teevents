@@ -53,7 +53,7 @@ const AdminDashboard = () => {
     if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -773,8 +773,6 @@ const AdminDashboard = () => {
                   ["emails", "Auto-Approve Emails", Mail],
                   ["college", "College Hub", School],
                   ["sponsorship-pages", "Sponsorship Pages", Target],
-                  ["sales-hub", "Outreach / Sales Hub", Target],
-                  ["mockup-outreach", "Mockup Outreach", Trophy],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -804,17 +802,32 @@ const AdminDashboard = () => {
                   <Users className="h-4 w-4" /> Demo Leads
                 </button>
                 <button
-                  onClick={() => navigate("/admin/outreach")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Mail className="h-4 w-4" /> Outreach
-                </button>
-                <button
                   onClick={() => navigate("/admin/stripe-connections")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <CreditCard className="h-4 w-4" /> Stripe Connections
                 </button>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Sales</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["sales-demo", "Demo", FileText],
+                  ["sales-outreach", "Outreach", Mail],
+                  ["mockup-outreach", "Mockup Outreach", Trophy],
+                ] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors ${
+                      activeTab === key ? "bg-card border border-b-0 border-border text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -1933,19 +1946,35 @@ const AdminDashboard = () => {
           )}
 
 
-          {/* Sales Hub Tab — All sales tools consolidated */}
-          {activeTab === "sales-hub" && (
-            <AdminSalesHub
-              prospects={adminProspects}
-              activities={prospectActivities}
-              outreachTemplates={outreachTemplates}
-              onRefresh={fetchAll}
-              callAdminApi={callAdminApi}
-              ProspectsComponent={AdminProspects}
-              StatsComponent={AdminProspectStats}
-              EmailScriptsComponent={AdminEmailScripts}
-              DemoScriptComponent={AdminDemoScript}
-            />
+          {/* Sales: Demo — admin 15-min script + downloadable PDF agenda for prospects */}
+          {activeTab === "sales-demo" && (
+            <div className="space-y-6">
+              <div className="bg-card border border-border rounded-lg p-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-display font-bold text-foreground">Prospect Demo Agenda</h3>
+                  <p className="text-sm text-muted-foreground">Open the agenda and use your browser's Print &rarr; Save as PDF to share with prospects.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button asChild variant="outline">
+                    <a href="/sales/demo-agenda" target="_blank" rel="noopener noreferrer">
+                      <Eye className="h-4 w-4 mr-1" /> Preview Agenda
+                    </a>
+                  </Button>
+                  <Button
+                    className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90"
+                    onClick={() => window.open("/sales/demo-agenda?print=1", "_blank", "noopener")}
+                  >
+                    <FileText className="h-4 w-4 mr-1" /> Download PDF Agenda
+                  </Button>
+                </div>
+              </div>
+              <AdminDemoScript />
+            </div>
+          )}
+
+          {/* Sales: Outreach — email script library with Send-to-Prospect */}
+          {activeTab === "sales-outreach" && (
+            <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
           )}
 
           {/* Store Tab */}

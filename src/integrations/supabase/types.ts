@@ -2235,6 +2235,50 @@ export type Database = {
         }
         Relationships: []
       }
+      outreach_logs: {
+        Row: {
+          email_type: string
+          id: string
+          prospect_email: string
+          prospect_name: string | null
+          sample_id: string | null
+          sent_at: string
+          sent_by: string | null
+          subject: string | null
+          template_key: string | null
+        }
+        Insert: {
+          email_type: string
+          id?: string
+          prospect_email: string
+          prospect_name?: string | null
+          sample_id?: string | null
+          sent_at?: string
+          sent_by?: string | null
+          subject?: string | null
+          template_key?: string | null
+        }
+        Update: {
+          email_type?: string
+          id?: string
+          prospect_email?: string
+          prospect_name?: string | null
+          sample_id?: string | null
+          sent_at?: string
+          sent_by?: string | null
+          subject?: string | null
+          template_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_logs_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_queue: {
         Row: {
           campaign_id: string

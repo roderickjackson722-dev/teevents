@@ -242,8 +242,8 @@ export default function SampleTournament() {
           <CardContent className="py-6 text-center">
             <h3 className="text-xl font-bold mb-2">Like what you see?</h3>
             <p className="mb-4">This is a custom mockup. Let's build your real tournament site on TeeVents.</p>
-            <a href="https://teevents.golf/book" target="_blank" rel="noreferrer">
-              <Button className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">Book a Demo <ExternalLink className="h-4 w-4 ml-1" /></Button>
+            <a href="https://teevents.golf/get-started" target="_blank" rel="noreferrer">
+              <Button className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">Get Started <ExternalLink className="h-4 w-4 ml-1" /></Button>
             </a>
           </CardContent>
         </Card>

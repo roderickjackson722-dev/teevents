@@ -250,82 +250,99 @@ export default function SampleDashboardPreview() {
           </header>
 
           <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto">
-            {/* Welcome card — mirrors DashboardHome */}
-            <div className="mb-6 bg-secondary/15 border border-secondary/30 rounded-xl p-6">
-              <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-                Welcome back, {orgName}
-              </h1>
-              <p className="text-muted-foreground mt-1 text-base">
-                Manage your golf tournaments from one place.
-              </p>
-            </div>
-
-            {/* Stats grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {[
-                { label: "Tournaments", value: 1, icon: Trophy, color: "text-primary" },
-                { label: "Players", value: participants.length, icon: Users, color: "text-primary" },
-                { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-secondary" },
-                { label: "Sponsors", value: sponsors.length, icon: Award, color: "text-primary" },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-card rounded-lg border border-border p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">{stat.label}</span>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                  </div>
-                  <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
+            {activeNav === "Dashboard" && (
+              <>
+                {/* Welcome card — mirrors DashboardHome */}
+                <div className="mb-6 bg-secondary/15 border border-secondary/30 rounded-xl p-6">
+                  <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+                    Welcome back, {orgName}
+                  </h1>
+                  <p className="text-muted-foreground mt-1 text-base">
+                    Manage your golf tournaments from one place.
+                  </p>
                 </div>
-              ))}
-            </div>
 
-            {/* Countdown */}
-            {countdown && (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="h-5 w-5 text-secondary" />
-                  <h2 className="text-lg font-display font-bold text-foreground">Event Countdown</h2>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">{sample.tournament_name}</p>
-                {countdown.passed ? (
-                  <p className="text-sm font-semibold text-secondary">🎉 Event day has arrived!</p>
-                ) : (
-                  <div className="flex gap-4">
-                    {[
-                      { value: countdown.days, label: "Days" },
-                      { value: countdown.hours, label: "Hours" },
-                      { value: countdown.minutes, label: "Minutes" },
-                    ].map((u) => (
-                      <div key={u.label} className="text-center">
-                        <p className="text-3xl font-display font-bold text-primary">{u.value}</p>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">{u.label}</p>
+                {/* Stats grid */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {[
+                    { label: "Tournaments", value: 1, icon: Trophy, color: "text-primary" },
+                    { label: "Players", value: participants.length, icon: Users, color: "text-primary" },
+                    { label: "Revenue", value: fmt(totalRevenue), icon: DollarSign, color: "text-secondary" },
+                    { label: "Sponsors", value: sponsors.length, icon: Award, color: "text-primary" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-card rounded-lg border border-border p-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">{stat.label}</span>
+                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
                       </div>
-                    ))}
+                      <p className="text-2xl font-display font-bold text-foreground">{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Countdown */}
+                {countdown && (
+                  <div className="bg-card rounded-lg border border-border p-6 mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Clock className="h-5 w-5 text-secondary" />
+                      <h2 className="text-lg font-display font-bold text-foreground">Event Countdown</h2>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">{sample.tournament_name}</p>
+                    {countdown.passed ? (
+                      <p className="text-sm font-semibold text-secondary">🎉 Event day has arrived!</p>
+                    ) : (
+                      <div className="flex gap-4">
+                        {[
+                          { value: countdown.days, label: "Days" },
+                          { value: countdown.hours, label: "Hours" },
+                          { value: countdown.minutes, label: "Minutes" },
+                        ].map((u) => (
+                          <div key={u.label} className="text-center">
+                            <p className="text-3xl font-display font-bold text-primary">{u.value}</p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">{u.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
+
+                {/* Quick Actions */}
+                <div className="bg-card rounded-lg border border-border p-6 mb-6">
+                  <h2 className="text-lg font-display font-bold text-foreground mb-4">Quick Actions</h2>
+                  <div className="flex flex-wrap gap-3">
+                    <Button onClick={() => setActiveNav("Players")}><Users className="h-4 w-4 mr-2" />Players & Pairings</Button>
+                    <Button variant="outline" onClick={() => setActiveNav("Registration Management")}><ClipboardList className="h-4 w-4 mr-2" />Registration</Button>
+                    <Button variant="outline" onClick={() => setActiveNav("Check-In")}><ScanLine className="h-4 w-4 mr-2" />Check-In</Button>
+                    <Button variant="outline" onClick={() => setActiveNav("Messages")}><MessageSquare className="h-4 w-4 mr-2" />Messages</Button>
+                    <Button variant="outline" onClick={() => setActiveNav("Live Leaderboard")}><BarChart3 className="h-4 w-4 mr-2" />Leaderboard</Button>
+                    <Button variant="outline" asChild><Link to={`/sample/${slug}`}><Eye className="h-4 w-4 mr-2" />View Tournament</Link></Button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Page header for non-Dashboard views */}
+            {activeNav !== "Dashboard" && (
+              <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">{activeNav}</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Sample preview of the {activeNav} workspace.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setActiveNav("Dashboard")}>
+                  ← Back to Dashboard
+                </Button>
               </div>
             )}
 
-            {/* Quick Actions */}
-            <div className="bg-card rounded-lg border border-border p-6 mb-6">
-              <h2 className="text-lg font-display font-bold text-foreground mb-4">Quick Actions</h2>
-              <div className="flex flex-wrap gap-3">
-                <Button onClick={() => setActiveNav("Players")}><Users className="h-4 w-4 mr-2" />Players & Pairings</Button>
-                <Button variant="outline" onClick={() => setActiveNav("Registration Management")}><ClipboardList className="h-4 w-4 mr-2" />Registration</Button>
-                <Button variant="outline" onClick={() => setActiveNav("Check-In")}><ScanLine className="h-4 w-4 mr-2" />Check-In</Button>
-                <Button variant="outline" onClick={() => setActiveNav("Messages")}><MessageSquare className="h-4 w-4 mr-2" />Messages</Button>
-                <Button variant="outline" onClick={() => setActiveNav("Live Leaderboard")}><BarChart3 className="h-4 w-4 mr-2" />Leaderboard</Button>
-                <Button variant="outline" asChild><Link to={`/sample/${slug}`}><Eye className="h-4 w-4 mr-2" />View Tournament</Link></Button>
-              </div>
-            </div>
-
             {/* Contextual sample panels — change with sidebar selection */}
-            {activeNav === "Players" || activeNav === "Dashboard" ? (
+            {activeNav === "Players" ? (
               <div className="bg-card rounded-lg border border-border p-6 mb-6">
                 <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Users className="h-5 w-5" />Registered Players</h3>
                 <table className="w-full text-sm">
                   <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Name</th><th>Handicap</th><th>Status</th></tr></thead>
                   <tbody>
-                    {participants.slice(0, 10).map((p) => (
+                    {participants.slice(0, 12).map((p) => (
                       <tr key={p.id} className="border-b">
                         <td className="py-2">{p.name}</td>
                         <td>{p.handicap}</td>
@@ -337,7 +354,7 @@ export default function SampleDashboardPreview() {
               </div>
             ) : null}
 
-            {activeNav === "Live Leaderboard" || activeNav === "Scoring" || activeNav === "Dashboard" ? (
+            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? (
               <div className="bg-card rounded-lg border border-border p-6 mb-6">
                 <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><BarChart3 className="h-5 w-5" />Live Leaderboard</h3>
                 <table className="w-full text-sm">
@@ -357,7 +374,7 @@ export default function SampleDashboardPreview() {
               </div>
             ) : null}
 
-            {activeNav === "Sponsorship Management" || activeNav === "Dashboard" ? (
+            {activeNav === "Sponsorship Management" ? (
               <div className="bg-card rounded-lg border border-border p-6 mb-6">
                 <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Award className="h-5 w-5" />Sponsors</h3>
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -374,7 +391,7 @@ export default function SampleDashboardPreview() {
               </div>
             ) : null}
 
-            {activeNav === "Finances" || activeNav === "Dashboard" ? (
+            {activeNav === "Finances" ? (
               <div className="bg-card rounded-lg border border-border p-6 mb-6">
                 <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Wallet className="h-5 w-5" />Finances</h3>
                 <div className="grid sm:grid-cols-3 gap-3 mb-4">

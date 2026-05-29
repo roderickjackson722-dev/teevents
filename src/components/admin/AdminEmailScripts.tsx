@@ -276,6 +276,15 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
       {templates.length === 0 && (
         <p className="text-muted-foreground text-center py-12">No email templates yet.</p>
       )}
+
+      <SendProspectModal
+        open={!!prospectModalTemplate}
+        onClose={() => setProspectModalTemplate(null)}
+        emailType="custom"
+        templateKey={prospectModalTemplate?.id}
+        presetSubject={prospectModalTemplate?.subject || ""}
+        presetBody={prospectModalTemplate?.body || ""}
+      />
     </div>
   );
 }

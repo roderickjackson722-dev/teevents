@@ -50,6 +50,7 @@ export default function SampleTournament() {
       setSponsors(sp || []);
       setLeaderboard(lb || []);
       setLoading(false);
+      setTimeout(() => setShowDashIntro(true), 1200);
     })();
   }, [slug]);
 

@@ -108,20 +108,38 @@ function FeeCalculator() {
 
 
 export default function DemoAgenda() {
+  // Auto-trigger the print dialog when arriving via ?print=1
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("print") === "1") {
+      const t = setTimeout(() => window.print(), 600);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   return (
     <>
       <SEO title="TeeVents Demo Agenda | Golf Tournament Platform" description="Review the TeeVents demo agenda covering platform overview, tournament setup, payment flow, organizer payouts, and Q&A." />
 
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          body { background: white !important; }
+          .print-break-avoid { break-inside: avoid; page-break-inside: avoid; }
+        }
+      `}</style>
+
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <section className="bg-[hsl(var(--primary))] text-primary-foreground py-16 px-4">
+        <section className="bg-[hsl(var(--primary))] text-primary-foreground py-16 px-4 print-break-avoid">
           <div className="max-w-4xl mx-auto text-center space-y-4">
             <Badge variant="secondary" className="text-sm">30-Minute Demo</Badge>
             <h1 className="text-3xl md:text-5xl font-bold font-playfair">TeeVents Platform Demo</h1>
             <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
               See how TeeVents simplifies golf tournament management — from registration to payouts.
             </p>
-            <div className="flex flex-wrap justify-center gap-3 pt-4">
+            <div className="flex flex-wrap justify-center gap-3 pt-4 no-print">
               <Button size="lg" variant="secondary" asChild>
                 <a href="https://calendly.com/teevents-golf/demo" target="_blank" rel="noopener noreferrer">
                   <Calendar className="h-5 w-5 mr-2" /> Schedule Your Demo
@@ -131,6 +149,14 @@ export default function DemoAgenda() {
                 <a href="mailto:info@teevents.golf">
                   <Mail className="h-5 w-5 mr-2" /> info@teevents.golf
                 </a>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                onClick={() => window.print()}
+              >
+                <Download className="h-5 w-5 mr-2" /> Save as PDF
               </Button>
             </div>
           </div>

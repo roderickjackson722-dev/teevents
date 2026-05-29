@@ -112,8 +112,15 @@ export default function AdminEmailScripts({ templates, callAdminApi, onRefresh }
           <div className="flex items-center gap-2">
             {!isEditing && !isSending && (
               <>
-                <Button size="sm" variant="default" onClick={() => openSendForm(template)}>
-                  <Send className="h-3.5 w-3.5 mr-1" /> Send
+                <Button
+                  size="sm"
+                  className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90"
+                  onClick={() => setProspectModalTemplate(template)}
+                >
+                  <Send className="h-3.5 w-3.5 mr-1" /> Send to Prospect
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => openSendForm(template)}>
+                  <Mail className="h-3.5 w-3.5 mr-1" /> Gmail
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => startEditing(template)}>
                   <Pencil className="h-3.5 w-3.5 mr-1" /> Edit

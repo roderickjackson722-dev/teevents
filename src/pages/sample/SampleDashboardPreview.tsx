@@ -340,112 +340,27 @@ export default function SampleDashboardPreview() {
             )}
 
             {/* Contextual sample panels — change with sidebar selection */}
-            {activeNav === "Players" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Users className="h-5 w-5" />Registered Players</h3>
-                <table className="w-full text-sm">
-                  <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Name</th><th>Handicap</th><th>Status</th></tr></thead>
-                  <tbody>
-                    {participants.slice(0, 12).map((p) => (
-                      <tr key={p.id} className="border-b">
-                        <td className="py-2">{p.name}</td>
-                        <td>{p.handicap}</td>
-                        <td><Badge variant="outline" className="text-xs">Paid</Badge></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><BarChart3 className="h-5 w-5" />Live Leaderboard</h3>
-                <table className="w-full text-sm">
-                  <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Pos</th><th>Team</th><th>Gross</th><th>Net</th><th>Thru</th></tr></thead>
-                  <tbody>
-                    {leaderboard.map((l) => (
-                      <tr key={l.id} className="border-b">
-                        <td className="py-2 font-semibold">{l.position}</td>
-                        <td>{l.player_name}</td>
-                        <td>{formatScore(l.gross_score)}</td>
-                        <td>{formatScore(l.net_score)}</td>
-                        <td>{l.thru}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {activeNav === "Sponsorship Management" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Award className="h-5 w-5" />Sponsors</h3>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {sponsors.map((s) => (
-                    <div key={s.id} className="border rounded-md p-3 flex items-center gap-3">
-                      <div className="h-12 w-12 rounded flex items-center justify-center text-white font-bold" style={{ backgroundColor: s.logo_color }}>{s.name[0]}</div>
-                      <div className="flex-1">
-                        <div className="font-medium">{s.name}</div>
-                        <Badge variant="outline" className="text-xs">{s.level}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {activeNav === "Finances" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Wallet className="h-5 w-5" />Finances</h3>
-                <div className="grid sm:grid-cols-3 gap-3 mb-4">
-                  <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Gross Revenue</div><div className="text-xl font-bold">{fmt(totalRevenue)}</div></div>
-                  <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Platform Fee (5%)</div><div className="text-xl font-bold text-orange-600">{fmt(platformFee)}</div></div>
-                  <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Net to Organizer</div><div className="text-xl font-bold text-green-600">{fmt(netPayout)}</div></div>
-                </div>
-                <table className="w-full text-sm">
-                  <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Customer</th><th>Type</th><th>Gross</th><th>Fee</th><th>Net</th></tr></thead>
-                  <tbody>
-                    {participants.slice(0, 8).map((p) => {
-                      const g = sample.registration_fee_cents;
-                      const f = Math.round(g * 0.05);
-                      return (
-                        <tr key={p.id} className="border-b">
-                          <td className="py-2">{p.name}</td>
-                          <td><Badge variant="outline">Registration</Badge></td>
-                          <td>{fmt(g)}</td>
-                          <td className="text-orange-600">{fmt(f)}</td>
-                          <td className="text-green-600">{fmt(g - f)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-
-            {activeNav === "Payout Settings" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><CreditCard className="h-5 w-5" />Payout Settings</h3>
-                <div className="border rounded-md p-4 bg-green-50">
-                  <div className="flex justify-between"><span className="font-medium">Stripe Connect</span><Badge className="bg-green-600">Connected</Badge></div>
-                  <div className="text-xs text-muted-foreground mt-1">Account ending •••• 4242 — Payouts arrive within 2 business days</div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeNav === "Share & Promote" ? (
-              <div className="bg-card rounded-lg border border-border p-6 mb-6">
-                <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Share2 className="h-5 w-5" />Share & Promote</h3>
-                <p className="text-sm mb-2">Your tournament URL:</p>
-                <code className="block bg-muted p-3 rounded font-mono text-sm">{window.location.origin}/sample/{slug}</code>
-              </div>
-            ) : null}
+            {activeNav === "Players" ? <PlayersPanel /> : null}
+            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? <LeaderboardPanel tournamentName={orgName} /> : null}
+            {activeNav === "Sponsorship Management" ? <SponsorsPanel /> : null}
+            {activeNav === "Finances" ? <FinancesPanel /> : null}
+            {activeNav === "Payout Settings" ? <PayoutPanel /> : null}
+            {activeNav === "Share & Promote" ? <SharePanel slug={slug || ""} tournamentName={orgName} /> : null}
+            {activeNav === "Check-In" ? <CheckInPanel /> : null}
+            {activeNav === "Volunteers" ? <VolunteersPanel /> : null}
+            {activeNav === "Email Templates" || activeNav === "Messages" ? <EmailTemplatesPanel /> : null}
+            {activeNav === "Auctions" ? <AuctionsPanel /> : null}
+            {activeNav === "Raffles" ? <RafflesPanel /> : null}
+            {activeNav === "Media Clips" || activeNav === "Photo Gallery" ? <MediaClipsPanel /> : null}
+            {activeNav === "Tournament Details" || activeNav === "View Tournament" ? <SiteBuilderPanel tournamentName={orgName} slug={slug || ""} eventDate={sample.event_date} /> : null}
+            {activeNav === "Waitlist" ? <WaitlistPanel /> : null}
 
             {/* Generic feature preview — any other sidebar item shows a realistic mock panel */}
             {![
               "Dashboard","Players","Live Leaderboard","Scoring","Sponsorship Management",
-              "Finances","Payout Settings","Share & Promote"
+              "Finances","Payout Settings","Share & Promote","Check-In","Volunteers",
+              "Email Templates","Messages","Auctions","Raffles","Media Clips","Photo Gallery",
+              "Tournament Details","View Tournament","Waitlist",
             ].includes(activeNav) ? (
               <GenericFeaturePanel
                 title={activeNav}
@@ -575,6 +490,537 @@ function GenericFeaturePanel({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+// ---------- Helpers ----------
+const MOCK_PLAYERS = [
+  { name: "John Smith", handicap: 12.4, shirt: "Large", status: "Registered" },
+  { name: "Sarah Jones", handicap: 8.2, shirt: "Medium", status: "Checked In" },
+  { name: "Michael Brown", handicap: 18.0, shirt: "XL", status: "Registered" },
+  { name: "Emily Davis", handicap: 14.5, shirt: "Small", status: "Registered" },
+  { name: "David Wilson", handicap: 5.1, shirt: "Large", status: "Pending" },
+  { name: "Lisa Taylor", handicap: 10.3, shirt: "Medium", status: "Checked In" },
+  { name: "Robert Anderson", handicap: 16.2, shirt: "XL", status: "Registered" },
+  { name: "Jennifer Martinez", handicap: 9.7, shirt: "Small", status: "Registered" },
+  { name: "Thomas Garcia", handicap: 11.8, shirt: "Large", status: "Registered" },
+  { name: "Patricia Rodriguez", handicap: 7.4, shirt: "Medium", status: "Checked In" },
+  { name: "Charles Miller", handicap: 19.2, shirt: "XL", status: "Pending" },
+  { name: "Barbara Williams", handicap: 13.6, shirt: "Medium", status: "Registered" },
+];
+
+const AVATAR_COLORS = ["1a5c38", "F5A623", "3B82F6", "8B5CF6", "EF4444", "10B981", "F97316", "0EA5E9", "EC4899", "6366F1"];
+function avatarUrl(name: string, i: number) {
+  const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2);
+  const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${color}&color=fff&size=80&bold=true`;
+}
+
+function DemoBtn({ children, tip = "Active in the live version", ...rest }: any) {
+  return (
+    <button
+      {...rest}
+      title={tip}
+      className="inline-flex items-center gap-1.5 text-sm font-medium border border-input bg-background hover:bg-accent px-3 py-1.5 rounded-md transition-colors"
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const styles =
+    status === "Checked In" ? "bg-green-100 text-green-800 border-green-300"
+    : status === "Pending" ? "bg-amber-100 text-amber-800 border-amber-300"
+    : "bg-blue-100 text-blue-800 border-blue-300";
+  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${styles}`}>{status}</span>;
+}
+
+// ---------- Panels ----------
+function PlayersPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <h3 className="text-lg font-display font-bold flex items-center gap-2"><Users className="h-5 w-5" />Registered Players (12)</h3>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <SearchIcon className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <input disabled placeholder="Search players..." className="pl-8 pr-3 py-1.5 text-sm border border-input rounded-md bg-background w-48" />
+          </div>
+          <DemoBtn tip="CSV export available in the live version">Export CSV</DemoBtn>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Player</th><th>Handicap</th><th>Shirt</th><th>Status</th></tr></thead>
+          <tbody>
+            {MOCK_PLAYERS.map((p, i) => (
+              <tr key={p.name} className="border-b hover:bg-muted/30">
+                <td className="py-2.5 flex items-center gap-3">
+                  <img src={avatarUrl(p.name, i)} alt="" className="h-8 w-8 rounded-full" />
+                  <span className="font-medium">{p.name}</span>
+                </td>
+                <td>{p.handicap.toFixed(1)}</td>
+                <td>{p.shirt}</td>
+                <td><StatusBadge status={p.status} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+const MOCK_SPONSORS_FULL = [
+  { name: "Title Sponsor", level: "Title", color: "3B82F6" },
+  { name: "Premier Partner", level: "Gold", color: "F5A623" },
+  { name: "Supporting Sponsor", level: "Silver", color: "9CA3AF" },
+  { name: "Beverage Sponsor", level: "Bronze", color: "F97316" },
+  { name: "Prize Sponsor", level: "Bronze", color: "8B5CF6" },
+  { name: "Media Partner", level: "Bronze", color: "10B981" },
+];
+function SponsorsPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <h3 className="text-lg font-display font-bold flex items-center gap-2"><Award className="h-5 w-5" />Sponsors (6)</h3>
+        <DemoBtn>Asset Delivery</DemoBtn>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {MOCK_SPONSORS_FULL.map((s) => (
+          <div key={s.name} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+            <img src={`https://placehold.co/300x140/${s.color}/ffffff?text=${encodeURIComponent(s.name)}`} alt={s.name} className="w-full h-28 object-cover" />
+            <div className="p-3">
+              <div className="font-semibold">{s.name}</div>
+              <div className="flex items-center justify-between mt-1">
+                <Badge variant="outline" className="text-xs">{s.level}</Badge>
+                <a href="#" onClick={(e) => e.preventDefault()} className="text-xs text-primary hover:underline">Visit website →</a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const MOCK_LB = [
+  { pos: 1, name: "Team Mulligan", gross: -8, net: -10 },
+  { pos: 2, name: "Albany Auto Group", gross: -6, net: -8 },
+  { pos: 3, name: "First Tee Foundation", gross: -5, net: -7 },
+  { pos: 4, name: "Coastal Realty", gross: -4, net: -5 },
+  { pos: 5, name: "Title Sponsor Team", gross: -3, net: -4 },
+  { pos: 6, name: "Youth Golf Academy", gross: -2, net: -3 },
+  { pos: 7, name: "Smith & Associates", gross: -1, net: -2 },
+  { pos: 8, name: "Johnson Family", gross: 0, net: -1 },
+  { pos: 9, name: "Team Charity", gross: 2, net: 0 },
+  { pos: 10, name: "Birdie Club", gross: 3, net: 1 },
+];
+function LeaderboardPanel({ tournamentName }: { tournamentName: string }) {
+  const [view, setView] = useState<"gross" | "net">("gross");
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      {/* Rotating sponsor banner */}
+      <div className="flex items-center gap-3 overflow-hidden bg-muted/40 rounded-md p-2 mb-4">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex-shrink-0">Presented by</span>
+        {MOCK_SPONSORS_FULL.slice(0, 4).map((s) => (
+          <img key={s.name} src={`https://placehold.co/100x32/${s.color}/ffffff?text=${encodeURIComponent(s.name.split(" ")[0])}`} alt={s.name} className="h-7 rounded" />
+        ))}
+      </div>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <h3 className="text-lg font-display font-bold flex items-center gap-2"><BarChart3 className="h-5 w-5" />Live Leaderboard — {tournamentName}</h3>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex rounded-md border overflow-hidden">
+            <button onClick={() => setView("gross")} className={`px-3 py-1 text-xs font-semibold ${view === "gross" ? "bg-primary text-primary-foreground" : "bg-background"}`}>Gross</button>
+            <button onClick={() => setView("net")} className={`px-3 py-1 text-xs font-semibold ${view === "net" ? "bg-primary text-primary-foreground" : "bg-background"}`}>Net</button>
+          </div>
+          <DemoBtn tip="Auto-refreshes live during tournaments">Refresh</DemoBtn>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2 w-12">Pos</th><th>Player / Team</th><th className="text-right">Gross</th><th className="text-right">Net</th><th className="text-right">Thru</th></tr></thead>
+          <tbody>
+            {MOCK_LB.map((l) => (
+              <tr key={l.pos} className={`border-b ${l.pos <= 3 ? "bg-secondary/5" : ""}`}>
+                <td className="py-2 font-bold">{l.pos}</td>
+                <td className="font-medium">{l.name}</td>
+                <td className={`text-right ${view === "gross" ? "font-bold text-primary" : ""}`}>{formatScore(l.gross)}</td>
+                <td className={`text-right ${view === "net" ? "font-bold text-primary" : ""}`}>{formatScore(l.net)}</td>
+                <td className="text-right">18</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+const MOCK_TX = [
+  { date: "May 15", golfer: "John Smith" },
+  { date: "May 14", golfer: "Sarah Jones" },
+  { date: "May 13", golfer: "Michael Brown" },
+  { date: "May 12", golfer: "Emily Davis" },
+  { date: "May 11", golfer: "David Wilson" },
+];
+function FinancesPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Wallet className="h-5 w-5" />Finances</h3>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="border rounded-md p-3 bg-primary/5"><div className="text-xs text-muted-foreground">Total Collected</div><div className="text-xl font-bold text-primary">$8,100.00</div></div>
+        <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Platform Fees (5%)</div><div className="text-xl font-bold text-orange-600">$405.00</div></div>
+        <div className="border rounded-md p-3"><div className="text-xs text-muted-foreground">Stripe Fees</div><div className="text-xl font-bold text-orange-600">$243.00</div></div>
+        <div className="border rounded-md p-3 bg-green-50"><div className="text-xs text-muted-foreground">Net to You</div><div className="text-xl font-bold text-green-700">$7,452.00</div></div>
+      </div>
+      <div className="border rounded-md p-3 mb-4 bg-green-50 flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2 text-sm"><CreditCard className="h-4 w-4 text-green-700" /><span className="font-semibold">Connected to Stripe</span><span className="text-muted-foreground">Bank •••• 4242</span></div>
+        <Badge className="bg-green-600">Active</Badge>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="border-b text-left text-muted-foreground"><tr><th className="py-2">Date</th><th>Golfer</th><th className="text-right">Gross</th><th className="text-right">Platform</th><th className="text-right">Stripe</th><th className="text-right">Net</th></tr></thead>
+          <tbody>
+            {MOCK_TX.map((t) => (
+              <tr key={t.golfer} className="border-b">
+                <td className="py-2">{t.date}</td>
+                <td>{t.golfer}</td>
+                <td className="text-right">$150.00</td>
+                <td className="text-right text-orange-600">$7.50</td>
+                <td className="text-right text-orange-600">$4.65</td>
+                <td className="text-right text-green-700 font-semibold">$137.85</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function PayoutPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><CreditCard className="h-5 w-5" />Payout Settings</h3>
+      <div className="border-2 border-green-500 rounded-lg p-5 bg-green-50">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <img src="https://placehold.co/60x30/635BFF/ffffff?text=stripe" alt="Stripe" className="h-7 rounded" />
+            <span className="font-bold text-lg">Stripe Connected</span>
+          </div>
+          <Badge className="bg-green-600">Active</Badge>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3 text-sm">
+          <div><div className="text-xs text-muted-foreground">Connected Account</div><div className="font-semibold">Bank •••• 4242</div></div>
+          <div><div className="text-xs text-muted-foreground">Payout Schedule</div><div className="font-semibold">Automatic (2–3 business days)</div></div>
+        </div>
+        <div className="mt-4 flex gap-2">
+          <DemoBtn>Change Bank Account</DemoBtn>
+          <DemoBtn>View Payout History</DemoBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SharePanel({ slug, tournamentName }: { slug: string; tournamentName: string }) {
+  const url = `${window.location.origin}/sample/${slug}`;
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}`;
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Share2 className="h-5 w-5" />Share & Promote</h3>
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="text-center border rounded-lg p-4 bg-muted/20">
+          <img src={qr} alt="QR" className="mx-auto rounded-md border bg-white p-2" />
+          <p className="text-xs text-muted-foreground mt-2">Players scan to register</p>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Tournament URL</label>
+            <code className="block bg-muted p-2.5 rounded font-mono text-xs break-all">{url}</code>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Short link</label>
+            <code className="block bg-muted p-2.5 rounded font-mono text-sm">teev.vent/{slug}</code>
+          </div>
+          <DemoBtn>Copy Link</DemoBtn>
+          <div className="pt-2">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">SHARE TO</p>
+            <div className="flex gap-2">
+              <DemoBtn tip="Share to Facebook in live version">📘 Facebook</DemoBtn>
+              <DemoBtn tip="Share to LinkedIn in live version">💼 LinkedIn</DemoBtn>
+              <DemoBtn tip="Share to X in live version">🐦 X</DemoBtn>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CheckInPanel() {
+  const checked = MOCK_PLAYERS.filter((p) => p.status === "Checked In").slice(0, 5);
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><ScanLine className="h-5 w-5" />Check-In</h3>
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="border-2 border-dashed border-secondary rounded-lg p-6 text-center bg-secondary/5">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=checkin-demo" alt="QR scanner" className="mx-auto rounded border bg-white p-2" />
+          <p className="text-sm font-semibold mt-3">QR Code Scanner</p>
+          <p className="text-xs text-muted-foreground">Point camera at player's QR badge</p>
+        </div>
+        <div>
+          <div className="bg-primary text-primary-foreground rounded-lg p-4 mb-3 text-center">
+            <div className="text-3xl font-bold">12 / 54</div>
+            <div className="text-xs uppercase tracking-wider opacity-80">Checked In</div>
+          </div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">RECENT CHECK-INS</p>
+          <ul className="space-y-2">
+            {checked.map((p, i) => (
+              <li key={p.name} className="flex items-center gap-2 text-sm border-b pb-2">
+                <img src={avatarUrl(p.name, i)} alt="" className="h-7 w-7 rounded-full" />
+                <span className="flex-1">{p.name}</span>
+                <span className="text-green-600 font-bold">✓</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const MOCK_SHIFTS = [
+  { role: "Check-in Desk", time: "7:00 AM – 10:00 AM", filled: 2, slots: 3 },
+  { role: "Beverage Cart", time: "9:00 AM – 2:00 PM", filled: 1, slots: 2 },
+  { role: "Scoring Tent", time: "11:00 AM – 3:00 PM", filled: 3, slots: 4 },
+];
+function VolunteersPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><UserCheck className="h-5 w-5" />Volunteer Shifts</h3>
+      <div className="space-y-3">
+        {MOCK_SHIFTS.map((s) => {
+          const pct = (s.filled / s.slots) * 100;
+          return (
+            <div key={s.role} className="border rounded-lg p-4">
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                <div>
+                  <div className="font-semibold">{s.role}</div>
+                  <div className="text-xs text-muted-foreground">{s.time}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold">{s.filled} / {s.slots} filled</span>
+                  <DemoBtn>Sign Up</DemoBtn>
+                </div>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-secondary" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const MOCK_EMAILS = [
+  { name: "Registration Confirmation", subject: "You're registered! 🏌️", preview: "Thanks for registering for our tournament. Here are your details and what to expect on tournament day..." },
+  { name: "Tee Time Reminder", subject: "Your tee time is tomorrow", preview: "Just a friendly reminder — your tee time is tomorrow at 8:12 AM. Please arrive 30 minutes early..." },
+  { name: "Post-Event Thank You", subject: "Thanks for playing!", preview: "What a day! Thank you for joining us. View photos, final leaderboard, and donation totals here..." },
+];
+function EmailTemplatesPanel() {
+  const [selected, setSelected] = useState(0);
+  const e = MOCK_EMAILS[selected];
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Mail className="h-5 w-5" />Email Templates</h3>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-1 space-y-2">
+          {MOCK_EMAILS.map((m, i) => (
+            <button key={m.name} onClick={() => setSelected(i)} className={`w-full text-left p-3 rounded-md border transition ${i === selected ? "border-secondary bg-secondary/10" : "hover:bg-muted/40"}`}>
+              <div className="font-semibold text-sm">{m.name}</div>
+              <div className="text-xs text-muted-foreground truncate">{m.subject}</div>
+            </button>
+          ))}
+        </div>
+        <div className="md:col-span-2 border rounded-lg overflow-hidden">
+          <div className="bg-muted/50 px-4 py-2 border-b text-xs">
+            <div><span className="text-muted-foreground">Subject:</span> <span className="font-semibold">{e.subject}</span></div>
+          </div>
+          <div className="p-4 bg-white">
+            <div className="h-16 bg-gradient-to-r from-primary to-primary/80 rounded mb-3 flex items-center justify-center text-primary-foreground font-display font-bold">Your Tournament</div>
+            <p className="text-sm text-foreground/80 leading-relaxed">{e.preview}</p>
+            <button className="mt-3 bg-secondary text-secondary-foreground px-4 py-2 rounded text-sm font-semibold">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuctionsPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Gavel className="h-5 w-5" />Live Auctions</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="border rounded-lg overflow-hidden">
+          <img src="https://placehold.co/400x200/1a5c38/ffffff?text=Signed+Golf+Memorabilia" alt="Auction item" className="w-full h-40 object-cover" />
+          <div className="p-4">
+            <div className="font-semibold">Signed Golf Memorabilia</div>
+            <p className="text-xs text-muted-foreground mb-3">Authenticated PGA Tour signed flag and ball set.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs text-muted-foreground">Current bid</div>
+                <div className="text-xl font-bold text-primary">$250</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">Time left</div>
+                <div className="text-sm font-semibold">2d 4h</div>
+              </div>
+            </div>
+            <DemoBtn tip="Bids placed live during your event">Place Bid</DemoBtn>
+          </div>
+        </div>
+        <div className="border rounded-lg overflow-hidden">
+          <img src="https://placehold.co/400x200/F5A623/ffffff?text=Weekend+Getaway" alt="Auction item" className="w-full h-40 object-cover" />
+          <div className="p-4">
+            <div className="font-semibold">Weekend Golf Getaway</div>
+            <p className="text-xs text-muted-foreground mb-3">2-night stay + round of golf for 4 at a premier resort.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs text-muted-foreground">Current bid</div>
+                <div className="text-xl font-bold text-primary">$675</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">Time left</div>
+                <div className="text-sm font-semibold">1d 18h</div>
+              </div>
+            </div>
+            <DemoBtn>Place Bid</DemoBtn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RafflesPanel() {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><Ticket className="h-5 w-5" />Raffles</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="border rounded-lg overflow-hidden">
+          <img src="https://placehold.co/400x180/10B981/ffffff?text=50%2F50+Cash+Raffle" alt="Raffle" className="w-full h-36 object-cover" />
+          <div className="p-4">
+            <div className="font-semibold mb-1">50/50 Cash Raffle</div>
+            <div className="text-xs text-muted-foreground mb-2">Draw: Tournament awards dinner</div>
+            <div className="h-2 bg-muted rounded-full mb-1"><div className="h-full bg-secondary rounded-full" style={{ width: "45%" }} /></div>
+            <div className="text-xs text-muted-foreground mb-3">45 / 100 tickets sold</div>
+            <DemoBtn>Buy Tickets</DemoBtn>
+          </div>
+        </div>
+        <div className="border rounded-lg overflow-hidden">
+          <img src="https://placehold.co/400x180/8B5CF6/ffffff?text=Pro+Shop+Bundle" alt="Raffle" className="w-full h-36 object-cover" />
+          <div className="p-4">
+            <div className="font-semibold mb-1">Pro Shop Bundle ($500)</div>
+            <div className="text-xs text-muted-foreground mb-2">Draw: Tournament awards dinner</div>
+            <div className="h-2 bg-muted rounded-full mb-1"><div className="h-full bg-secondary rounded-full" style={{ width: "72%" }} /></div>
+            <div className="text-xs text-muted-foreground mb-3">72 / 100 tickets sold</div>
+            <DemoBtn>Buy Tickets</DemoBtn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MediaClipsPanel() {
+  const clips = [
+    { title: "2024 Tournament Highlights", color: "1a5c38" },
+    { title: "Sponsor Interview", color: "F5A623" },
+    { title: "Course Tour", color: "3B82F6" },
+  ];
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><ImageIcon className="h-5 w-5" />Media Clips</h3>
+      <div className="grid sm:grid-cols-3 gap-4">
+        {clips.map((c) => (
+          <div key={c.title} className="border rounded-lg overflow-hidden group cursor-pointer">
+            <div className="relative">
+              <img src={`https://placehold.co/320x180/${c.color}/ffffff?text=${encodeURIComponent(c.title)}`} alt={c.title} className="w-full h-32 object-cover" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition">
+                <div className="h-12 w-12 rounded-full bg-white/90 flex items-center justify-center text-primary text-xl">▶</div>
+              </div>
+            </div>
+            <div className="p-3"><div className="font-semibold text-sm">{c.title}</div><div className="text-xs text-muted-foreground">2:14</div></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SiteBuilderPanel({ tournamentName, slug, eventDate }: { tournamentName: string; slug: string; eventDate: string | null }) {
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <h3 className="text-lg font-display font-bold flex items-center gap-2"><FileEdit className="h-5 w-5" />Site Builder</h3>
+        <DemoBtn tip="In the live version, this publishes your site">Publish Site</DemoBtn>
+      </div>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 border rounded-lg overflow-hidden">
+          <div className="bg-muted/30 px-3 py-2 text-xs text-muted-foreground border-b">Live preview</div>
+          <div className="relative h-56 bg-gradient-to-br from-primary to-primary/70 flex flex-col items-center justify-center text-primary-foreground p-6 text-center">
+            <h2 className="text-2xl font-display font-bold">{tournamentName}</h2>
+            <p className="text-sm opacity-90 mt-1">{eventDate || "Coming Soon"}</p>
+            <button className="mt-4 bg-secondary text-secondary-foreground px-5 py-2 rounded font-semibold text-sm">Register Now</button>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">BRAND COLORS</p>
+            <div className="flex gap-2">
+              {["#1a5c38", "#F5A623", "#3B82F6", "#8B5CF6", "#EF4444"].map((c) => (
+                <button key={c} className="h-8 w-8 rounded-full border-2 border-white shadow" style={{ backgroundColor: c }} title="Click to change in live version" />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">URL</p>
+            <code className="block bg-muted p-2 rounded text-xs">teevents.golf/{slug}</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WaitlistPanel() {
+  const list = [
+    { name: "Casey Morgan", added: "2 days ago" },
+    { name: "Pat Lee", added: "1 day ago" },
+    { name: "Drew Kim", added: "3 hours ago" },
+  ];
+  return (
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
+      <h3 className="text-lg font-display font-bold mb-4 flex items-center gap-2"><ClipboardList className="h-5 w-5" />Waitlist</h3>
+      <p className="text-sm text-muted-foreground mb-3">Automated 24-hour claim window when a spot opens.</p>
+      <ul className="space-y-2">
+        {list.map((p, i) => (
+          <li key={p.name} className="flex items-center gap-3 border-b pb-2">
+            <span className="font-bold text-muted-foreground w-6">{i + 1}.</span>
+            <img src={avatarUrl(p.name, i)} alt="" className="h-8 w-8 rounded-full" />
+            <span className="flex-1 font-medium">{p.name}</span>
+            <span className="text-xs text-muted-foreground">added {p.added}</span>
+            <DemoBtn>Offer Spot</DemoBtn>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

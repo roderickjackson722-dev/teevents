@@ -8,7 +8,9 @@ import {
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   FlaskConical, MapPin, Sliders, Search as SearchIcon, Megaphone,
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ArrowRight,
+  Menu,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import logoWhite from "@/assets/logo-white.png";

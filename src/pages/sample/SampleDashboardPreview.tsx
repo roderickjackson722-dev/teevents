@@ -148,6 +148,10 @@ export default function SampleDashboardPreview() {
     })();
   }, [slug]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeNav]);
+
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!sample) return <div className="min-h-screen flex items-center justify-center">Mockup not found</div>;
 

@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
+import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
 
 interface PlayerScore {
   registration_id: string;
@@ -650,6 +651,13 @@ export default function Leaderboard() {
 
       {selectedTournament && (
         <LiveDisplayShareCard
+          tournamentId={selectedTournament}
+          tournamentSlug={selectedTournamentData?.slug || null}
+        />
+      )}
+
+      {selectedTournament && (
+        <LeaderboardDesignCard
           tournamentId={selectedTournament}
           tournamentSlug={selectedTournamentData?.slug || null}
         />

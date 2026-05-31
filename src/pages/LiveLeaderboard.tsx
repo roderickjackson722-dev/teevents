@@ -205,7 +205,7 @@ export default function LiveLeaderboard() {
   // Auto-refresh fallback
   useEffect(() => {
     if (!tournament) return;
-    const seconds = Math.max(5, tournament.live_display_refresh_seconds || 10);
+    const seconds = Math.max(5, design.auto_refresh_seconds || tournament.live_display_refresh_seconds || 10);
     const interval = setInterval(() => {
       supabase
         .from("tournament_scores")

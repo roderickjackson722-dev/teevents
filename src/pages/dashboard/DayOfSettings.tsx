@@ -110,6 +110,8 @@ export default function DayOfSettings() {
     const { error } = await supabase.from("tournaments").update({
       day_of_page_enabled: t.day_of_page_enabled,
       day_of_page_mode: t.day_of_page_mode,
+      day_of_show_welcome: t.day_of_show_welcome,
+      day_of_welcome_title: t.day_of_welcome_title,
       day_of_welcome_message: t.day_of_welcome_message,
       day_of_announcements: t.day_of_announcements,
       day_of_announcements_list: t.day_of_announcements_list,
@@ -141,6 +143,20 @@ export default function DayOfSettings() {
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
     else toast({ title: "Saved" });
+  };
+
+  const uploadPinSheetPdf = async (file: File) => {
+    if (!t?.organization_id || !t?.id) return;
+    if (file.type !== "application/pdf") { toast({ title: "Please upload a PDF file", variant: "destructive" }); return; }
+    if (file.size > PDF_MAX_BYTES) { toast({ title: "File too large (max 20MB)", variant: "destructive" }); return; }
+    setUploadingPdf(true);
+    const path = `${t.organization_id}/${t.id}/pin-sheets/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.pdf`;
+    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: false, contentType: "application/pdf" });
+    setUploadingPdf(false);
+    if (upErr) { toast({ title: "Upload failed", description: upErr.message, variant: "destructive" }); return; }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    setT({ ...t, day_of_pin_sheet_pdf_url: urlData.publicUrl });
+    toast({ title: "Pin sheet uploaded" });
   };
 
   const uploadImage = async (file: File, kind: "map" | "header") => {

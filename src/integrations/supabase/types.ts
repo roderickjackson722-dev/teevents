@@ -5647,18 +5647,34 @@ export type Database = {
           custom_org_sections: Json
           custom_slug: string | null
           date: string | null
+          day_of_accent_color: string | null
           day_of_announcements: string | null
+          day_of_announcements_list: Json
+          day_of_bg_color: string | null
           day_of_course_map_url: string | null
           day_of_director_email: string | null
           day_of_director_name: string | null
           day_of_director_phone: string | null
           day_of_emergency_contact: string | null
+          day_of_font_color: string | null
+          day_of_header_image_url: string | null
           day_of_page_enabled: boolean
           day_of_page_mode: string
           day_of_pairings_url: string | null
+          day_of_pin_sheet_pdf_url: string | null
           day_of_rules_url: string | null
+          day_of_show_announcements_card: boolean
+          day_of_show_coursemap_card: boolean
+          day_of_show_leaderboard: boolean
+          day_of_show_leaderboard_card: boolean
+          day_of_show_pin_sheets: boolean
+          day_of_show_scores_card: boolean
+          day_of_show_sponsors: boolean
+          day_of_sponsor_layout: string
           day_of_sponsor_thanks: string | null
           day_of_sponsor_title: string | null
+          day_of_weather_enabled: boolean
+          day_of_weather_location: string | null
           day_of_welcome_message: string | null
           demo_admin_id: string | null
           demo_flyer_url: string | null
@@ -5791,18 +5807,34 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_of_accent_color?: string | null
           day_of_announcements?: string | null
+          day_of_announcements_list?: Json
+          day_of_bg_color?: string | null
           day_of_course_map_url?: string | null
           day_of_director_email?: string | null
           day_of_director_name?: string | null
           day_of_director_phone?: string | null
           day_of_emergency_contact?: string | null
+          day_of_font_color?: string | null
+          day_of_header_image_url?: string | null
           day_of_page_enabled?: boolean
           day_of_page_mode?: string
           day_of_pairings_url?: string | null
+          day_of_pin_sheet_pdf_url?: string | null
           day_of_rules_url?: string | null
+          day_of_show_announcements_card?: boolean
+          day_of_show_coursemap_card?: boolean
+          day_of_show_leaderboard?: boolean
+          day_of_show_leaderboard_card?: boolean
+          day_of_show_pin_sheets?: boolean
+          day_of_show_scores_card?: boolean
+          day_of_show_sponsors?: boolean
+          day_of_sponsor_layout?: string
           day_of_sponsor_thanks?: string | null
           day_of_sponsor_title?: string | null
+          day_of_weather_enabled?: boolean
+          day_of_weather_location?: string | null
           day_of_welcome_message?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
@@ -5935,18 +5967,34 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_of_accent_color?: string | null
           day_of_announcements?: string | null
+          day_of_announcements_list?: Json
+          day_of_bg_color?: string | null
           day_of_course_map_url?: string | null
           day_of_director_email?: string | null
           day_of_director_name?: string | null
           day_of_director_phone?: string | null
           day_of_emergency_contact?: string | null
+          day_of_font_color?: string | null
+          day_of_header_image_url?: string | null
           day_of_page_enabled?: boolean
           day_of_page_mode?: string
           day_of_pairings_url?: string | null
+          day_of_pin_sheet_pdf_url?: string | null
           day_of_rules_url?: string | null
+          day_of_show_announcements_card?: boolean
+          day_of_show_coursemap_card?: boolean
+          day_of_show_leaderboard?: boolean
+          day_of_show_leaderboard_card?: boolean
+          day_of_show_pin_sheets?: boolean
+          day_of_show_scores_card?: boolean
+          day_of_show_sponsors?: boolean
+          day_of_sponsor_layout?: string
           day_of_sponsor_thanks?: string | null
           day_of_sponsor_title?: string | null
+          day_of_weather_enabled?: boolean
+          day_of_weather_location?: string | null
           day_of_welcome_message?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null

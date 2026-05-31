@@ -10,12 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Upload, ExternalLink, MapPin, Plus, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Upload, ExternalLink, MapPin, Plus, X, RotateCcw } from "lucide-react";
+
+export const DEFAULT_WELCOME_TITLE = "Welcome to [Tournament Name]!";
+export const DEFAULT_WELCOME_MESSAGE = `Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.
+
+Please review your tee time and starting hole below. Use the buttons on this page to enter your scores, follow the live leaderboard, and view important announcements.
+
+If you need anything, find a tournament staff member or use the contact information at the bottom of this page.
+
+Best of luck today!`;
 
 interface T {
   id: string; title: string; slug: string; organization_id?: string;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
+  day_of_show_welcome: boolean;
+  day_of_welcome_title: string | null;
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
   day_of_announcements_list: string[];
@@ -48,8 +60,9 @@ interface T {
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 10 * 1024 * 1024;
+const PDF_MAX_BYTES = 20 * 1024 * 1024;
 
-const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
+const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
 
 export default function DayOfSettings() {
   const [tournaments, setTournaments] = useState<Array<{ id: string; title: string; organization_id: string }>>([]);

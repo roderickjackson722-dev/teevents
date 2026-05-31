@@ -138,7 +138,6 @@ const categories: SidebarCategory[] = [
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
       { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
       { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
-      { title: "Day-Of Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
     ],
   },
 ];

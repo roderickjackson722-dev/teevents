@@ -27,6 +27,7 @@ interface T {
   course_name: string | null;
   
   state?: string | null;
+  location?: string | null;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
   day_of_welcome_message: string | null;

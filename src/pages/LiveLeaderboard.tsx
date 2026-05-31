@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { Trophy, Loader2, Award } from "lucide-react";
+import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 
 interface Sponsor {
   id: string;

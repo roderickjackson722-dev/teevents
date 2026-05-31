@@ -10,12 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Upload, ExternalLink, MapPin, Plus, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Upload, ExternalLink, MapPin, Plus, X, RotateCcw } from "lucide-react";
+
+export const DEFAULT_WELCOME_TITLE = "Welcome to [Tournament Name]!";
+export const DEFAULT_WELCOME_MESSAGE = `Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.
+
+Please review your tee time and starting hole below. Use the buttons on this page to enter your scores, follow the live leaderboard, and view important announcements.
+
+If you need anything, find a tournament staff member or use the contact information at the bottom of this page.
+
+Best of luck today!`;
 
 interface T {
   id: string; title: string; slug: string; organization_id?: string;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
+  day_of_show_welcome: boolean;
+  day_of_welcome_title: string | null;
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
   day_of_announcements_list: string[];
@@ -48,8 +60,9 @@ interface T {
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 10 * 1024 * 1024;
+const PDF_MAX_BYTES = 20 * 1024 * 1024;
 
-const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
+const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
 
 export default function DayOfSettings() {
   const [tournaments, setTournaments] = useState<Array<{ id: string; title: string; organization_id: string }>>([]);
@@ -57,8 +70,10 @@ export default function DayOfSettings() {
   const [t, setT] = useState<T | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"map" | "header" | null>(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const mapFileRef = useRef<HTMLInputElement | null>(null);
   const headerFileRef = useRef<HTMLInputElement | null>(null);
+  const pinPdfFileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -83,6 +98,9 @@ export default function DayOfSettings() {
       if (data) {
         const d: any = data;
         d.day_of_announcements_list = Array.isArray(d.day_of_announcements_list) ? d.day_of_announcements_list : [];
+        if (d.day_of_show_welcome === null || d.day_of_show_welcome === undefined) d.day_of_show_welcome = true;
+        if (!d.day_of_welcome_title) d.day_of_welcome_title = DEFAULT_WELCOME_TITLE;
+        if (!d.day_of_welcome_message) d.day_of_welcome_message = DEFAULT_WELCOME_MESSAGE;
         setT(d as T);
       }
     })();
@@ -94,6 +112,8 @@ export default function DayOfSettings() {
     const { error } = await supabase.from("tournaments").update({
       day_of_page_enabled: t.day_of_page_enabled,
       day_of_page_mode: t.day_of_page_mode,
+      day_of_show_welcome: t.day_of_show_welcome,
+      day_of_welcome_title: t.day_of_welcome_title,
       day_of_welcome_message: t.day_of_welcome_message,
       day_of_announcements: t.day_of_announcements,
       day_of_announcements_list: t.day_of_announcements_list,
@@ -125,6 +145,20 @@ export default function DayOfSettings() {
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
     else toast({ title: "Saved" });
+  };
+
+  const uploadPinSheetPdf = async (file: File) => {
+    if (!t?.organization_id || !t?.id) return;
+    if (file.type !== "application/pdf") { toast({ title: "Please upload a PDF file", variant: "destructive" }); return; }
+    if (file.size > PDF_MAX_BYTES) { toast({ title: "File too large (max 20MB)", variant: "destructive" }); return; }
+    setUploadingPdf(true);
+    const path = `${t.organization_id}/${t.id}/pin-sheets/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.pdf`;
+    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: false, contentType: "application/pdf" });
+    setUploadingPdf(false);
+    if (upErr) { toast({ title: "Upload failed", description: upErr.message, variant: "destructive" }); return; }
+    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    setT({ ...t, day_of_pin_sheet_pdf_url: urlData.publicUrl });
+    toast({ title: "Pin sheet uploaded" });
   };
 
   const uploadImage = async (file: File, kind: "map" | "header") => {
@@ -267,14 +301,45 @@ export default function DayOfSettings() {
           </section>
 
           {/* WELCOME MESSAGE */}
-          <section className="space-y-2 border-t pt-5">
-            <Label className="text-base">Welcome Message</Label>
-            <RichTextEditor
-              value={t.day_of_welcome_message || ""}
-              onChange={(html) => setT({ ...t, day_of_welcome_message: html })}
-              placeholder="Welcome to the 2026 Charity Classic! Check in at the registration tent…"
+          <section className="space-y-3 border-t pt-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <Label className="text-base">Welcome Message</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setT({ ...t, day_of_welcome_title: DEFAULT_WELCOME_TITLE, day_of_welcome_message: DEFAULT_WELCOME_MESSAGE })}
+              >
+                <RotateCcw className="w-4 h-4 mr-1" /> Reset to Default Template
+              </Button>
+            </div>
+            <Toggle
+              label="Show welcome message on day-of page"
+              checked={t.day_of_show_welcome}
+              onChange={(v) => setT({ ...t, day_of_show_welcome: v })}
             />
+            <div>
+              <Label className="text-xs">Title</Label>
+              <Input
+                value={t.day_of_welcome_title || ""}
+                onChange={(e) => setT({ ...t, day_of_welcome_title: e.target.value })}
+                placeholder={DEFAULT_WELCOME_TITLE}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Message</Label>
+              <Textarea
+                value={t.day_of_welcome_message || ""}
+                onChange={(e) => setT({ ...t, day_of_welcome_message: e.target.value })}
+                rows={10}
+                placeholder={DEFAULT_WELCOME_MESSAGE}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Available placeholders: <code>[Tournament Name]</code>, <code>[Player Name]</code>, <code>[Tee Time]</code>, <code>[Starting Hole]</code>. They are replaced automatically on each player's page.
+              </p>
+            </div>
           </section>
+
 
           {/* QUICK ACTION CARDS */}
           <section className="space-y-2 border-t pt-5">
@@ -316,14 +381,40 @@ export default function DayOfSettings() {
           <section className="space-y-3 border-t pt-5">
             <Label className="text-base">Pin Sheets</Label>
             <Toggle label="Show pin sheets section" checked={t.day_of_show_pin_sheets} onChange={(v) => setT({ ...t, day_of_show_pin_sheets: v })} />
-            <div>
-              <Label className="text-xs">Pin Sheet PDF URL</Label>
-              <Input
-                value={t.day_of_pin_sheet_pdf_url || ""}
-                onChange={(e) => setT({ ...t, day_of_pin_sheet_pdf_url: e.target.value })}
-                placeholder="https://..."
-              />
-              <p className="text-xs text-muted-foreground mt-1">Or manage hole-by-hole pin placements in the Pin Sheets tool.</p>
+            <div className="space-y-2">
+              <Label className="text-xs">Pin Sheet PDF</Label>
+              {t.day_of_pin_sheet_pdf_url && (
+                <div className="text-xs">
+                  <a href={t.day_of_pin_sheet_pdf_url} target="_blank" rel="noreferrer" className="text-primary underline break-all">
+                    Current file
+                  </a>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={pinPdfFileRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPinSheetPdf(f); e.currentTarget.value = ""; }}
+                />
+                <Button type="button" size="sm" variant="outline" onClick={() => pinPdfFileRef.current?.click()} disabled={uploadingPdf}>
+                  <Upload className="w-4 h-4 mr-1" /> {uploadingPdf ? "Uploading…" : (t.day_of_pin_sheet_pdf_url ? "Replace PDF" : "Upload PDF")}
+                </Button>
+                {t.day_of_pin_sheet_pdf_url && (
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setT({ ...t, day_of_pin_sheet_pdf_url: null })}>Remove</Button>
+                )}
+              </div>
+              <details>
+                <summary className="text-xs text-muted-foreground cursor-pointer">Or paste a PDF URL</summary>
+                <Input
+                  className="mt-1"
+                  value={t.day_of_pin_sheet_pdf_url || ""}
+                  onChange={(e) => setT({ ...t, day_of_pin_sheet_pdf_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </details>
+              <p className="text-xs text-muted-foreground">PDF, max 20MB. Or manage hole-by-hole pin placements in the Pin Sheets tool.</p>
             </div>
             <Link to="/dashboard/pin-sheets">
               <Button size="sm" variant="outline">Open Pin Sheets</Button>

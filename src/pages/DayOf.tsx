@@ -30,6 +30,8 @@ interface T {
   location?: string | null;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
+  day_of_show_welcome: boolean;
+  day_of_welcome_title: string | null;
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
   day_of_announcements_list: string[];
@@ -65,7 +67,7 @@ interface Sponsor {
   id: string; name: string; tier: string | null; logo_url: string | null; website_url: string | null;
 }
 
-const FIELDS = "id, slug, title, date, course_name, location, state, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, primary_color, logo_url";
+const FIELDS = "id, slug, title, date, course_name, location, state, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, primary_color, logo_url";
 
 const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6 };
 
@@ -78,7 +80,9 @@ const MOCK_TOURNAMENT: T = {
   location: "Pebble Beach", state: "CA",
   day_of_page_enabled: true,
   day_of_page_mode: "preview",
-  day_of_welcome_message: "<p>Welcome to the tournament! We're thrilled to have you here.</p>",
+  day_of_show_welcome: true,
+  day_of_welcome_title: "Welcome to [Tournament Name]!",
+  day_of_welcome_message: "Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.\n\nPlease review your tee time and starting hole below.\n\nBest of luck today!",
   day_of_announcements: null,
   day_of_announcements_list: [
     "Lunch served at 12:00 PM in the clubhouse",
@@ -158,6 +162,7 @@ function normalizeTournament(d: any): T {
   return {
     ...d,
     day_of_announcements_list: Array.isArray(d.day_of_announcements_list) ? d.day_of_announcements_list : [],
+    day_of_show_welcome: d.day_of_show_welcome !== false,
     day_of_weather_enabled: d.day_of_weather_enabled !== false,
     day_of_show_scores_card: d.day_of_show_scores_card !== false,
     day_of_show_leaderboard_card: d.day_of_show_leaderboard_card !== false,
@@ -353,29 +358,46 @@ function DayOfInner() {
         )}
 
         {/* Welcome */}
-        <Card className="shadow-md overflow-hidden">
-          <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
-            <CardTitle className="text-2xl">Welcome, {reg.first_name}! 👋</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <p className="text-sm text-muted-foreground">You are checked in and ready to play.</p>
-            {tournament.day_of_welcome_message && (
-              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.day_of_welcome_message) }} />
-            )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Stat label="Tee Time" value={reg.tee_time || "—"} icon={<Clock className="w-4 h-4" />} />
-              <Stat label="Hole" value={reg.hole_assignment ?? "—"} icon={<MapPin className="w-4 h-4" />} />
-              <Stat label="Group" value={reg.group_number ?? "—"} icon={<Users className="w-4 h-4" />} />
-              <Stat label="Position" value={reg.group_position ?? "—"} />
-            </div>
-            {reg.scoring_code && (
-              <div className="rounded-md bg-muted px-3 py-2">
-                <p className="text-xs uppercase text-muted-foreground">Your scoring code</p>
-                <p className="text-lg font-mono font-semibold">{reg.scoring_code}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {tournament.day_of_show_welcome && (() => {
+          const playerName = `${reg.first_name} ${reg.last_name}`.trim() || reg.first_name;
+          const teeTime = reg.tee_time || "";
+          const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : "";
+          const fill = (s: string) => s
+            .split("[Tournament Name]").join(tournament.title || "")
+            .split("[Player Name]").join(playerName)
+            .split("[Tee Time]").join(teeTime)
+            .split("[Starting Hole]").join(startingHole);
+          const rawTitle = tournament.day_of_welcome_title || `Welcome, ${reg.first_name}! 👋`;
+          const title = fill(rawTitle);
+          const rawMsg = tournament.day_of_welcome_message || "";
+          const filledMsg = fill(rawMsg);
+          const isHtml = /<[a-z][\s\S]*>/i.test(filledMsg);
+          const html = isHtml ? filledMsg : filledMsg.replace(/\n/g, "<br/>");
+          return (
+            <Card className="shadow-md overflow-hidden">
+              <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
+                <CardTitle className="text-2xl">{title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                {filledMsg && (
+                  <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <Stat label="Tee Time" value={reg.tee_time || "—"} icon={<Clock className="w-4 h-4" />} />
+                  <Stat label="Hole" value={reg.hole_assignment ?? "—"} icon={<MapPin className="w-4 h-4" />} />
+                  <Stat label="Group" value={reg.group_number ?? "—"} icon={<Users className="w-4 h-4" />} />
+                  <Stat label="Position" value={reg.group_position ?? "—"} />
+                </div>
+                {reg.scoring_code && (
+                  <div className="rounded-md bg-muted px-3 py-2">
+                    <p className="text-xs uppercase text-muted-foreground">Your scoring code</p>
+                    <p className="text-lg font-mono font-semibold">{reg.scoring_code}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">

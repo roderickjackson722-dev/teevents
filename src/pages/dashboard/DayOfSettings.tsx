@@ -96,6 +96,9 @@ export default function DayOfSettings() {
       if (data) {
         const d: any = data;
         d.day_of_announcements_list = Array.isArray(d.day_of_announcements_list) ? d.day_of_announcements_list : [];
+        if (d.day_of_show_welcome === null || d.day_of_show_welcome === undefined) d.day_of_show_welcome = true;
+        if (!d.day_of_welcome_title) d.day_of_welcome_title = DEFAULT_WELCOME_TITLE;
+        if (!d.day_of_welcome_message) d.day_of_welcome_message = DEFAULT_WELCOME_MESSAGE;
         setT(d as T);
       }
     })();

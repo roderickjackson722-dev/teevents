@@ -162,6 +162,7 @@ function normalizeTournament(d: any): T {
   return {
     ...d,
     day_of_announcements_list: Array.isArray(d.day_of_announcements_list) ? d.day_of_announcements_list : [],
+    day_of_show_welcome: d.day_of_show_welcome !== false,
     day_of_weather_enabled: d.day_of_weather_enabled !== false,
     day_of_show_scores_card: d.day_of_show_scores_card !== false,
     day_of_show_leaderboard_card: d.day_of_show_leaderboard_card !== false,

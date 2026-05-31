@@ -301,14 +301,45 @@ export default function DayOfSettings() {
           </section>
 
           {/* WELCOME MESSAGE */}
-          <section className="space-y-2 border-t pt-5">
-            <Label className="text-base">Welcome Message</Label>
-            <RichTextEditor
-              value={t.day_of_welcome_message || ""}
-              onChange={(html) => setT({ ...t, day_of_welcome_message: html })}
-              placeholder="Welcome to the 2026 Charity Classic! Check in at the registration tent…"
+          <section className="space-y-3 border-t pt-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <Label className="text-base">Welcome Message</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setT({ ...t, day_of_welcome_title: DEFAULT_WELCOME_TITLE, day_of_welcome_message: DEFAULT_WELCOME_MESSAGE })}
+              >
+                <RotateCcw className="w-4 h-4 mr-1" /> Reset to Default Template
+              </Button>
+            </div>
+            <Toggle
+              label="Show welcome message on day-of page"
+              checked={t.day_of_show_welcome}
+              onChange={(v) => setT({ ...t, day_of_show_welcome: v })}
             />
+            <div>
+              <Label className="text-xs">Title</Label>
+              <Input
+                value={t.day_of_welcome_title || ""}
+                onChange={(e) => setT({ ...t, day_of_welcome_title: e.target.value })}
+                placeholder={DEFAULT_WELCOME_TITLE}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Message</Label>
+              <Textarea
+                value={t.day_of_welcome_message || ""}
+                onChange={(e) => setT({ ...t, day_of_welcome_message: e.target.value })}
+                rows={10}
+                placeholder={DEFAULT_WELCOME_MESSAGE}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Available placeholders: <code>[Tournament Name]</code>, <code>[Player Name]</code>, <code>[Tee Time]</code>, <code>[Starting Hole]</code>. They are replaced automatically on each player's page.
+              </p>
+            </div>
           </section>
+
 
           {/* QUICK ACTION CARDS */}
           <section className="space-y-2 border-t pt-5">

@@ -182,3 +182,74 @@
   .budget-page button { border: none !important; background: transparent !important; padding: 0 !important; }
   .budget-page textarea { height: auto !important; min-height: auto !important; }
 }
+
+/* ============================================
+   MOBILE SCROLLING FIXES
+   Additive only – does not break existing layouts
+   ============================================ */
+
+/* 1. Ensure all pages can scroll vertically */
+html, body, #root {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  min-height: 100%;
+}
+
+/* 2. Allow horizontal scrolling on any container that needs it */
+.dashboard-container,
+.page-container,
+.main-content,
+.finances-table-container,
+.leaderboard-table-container,
+.players-table-container,
+.transactions-table-container {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  width: 100%;
+}
+
+/* 3. Prevent content from being clipped */
+.container,
+.row,
+.col {
+  max-width: 100%;
+  overflow-x: visible;
+}
+
+/* 4. Ensure tables are scrollable horizontally on mobile */
+@media (max-width: 768px) {
+  table,
+  .data-table,
+  .budget-table,
+  .expenses-table,
+  .income-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  td, th {
+    white-space: nowrap;
+  }
+}
+
+/* 5. Fix any hidden overflow on common containers */
+div[class*="container"],
+div[class*="wrapper"],
+div[class*="content"] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 6. Ensure modals/dialogs are scrollable on mobile */
+@media (max-width: 768px) {
+  .modal-content,
+  .dialog-content,
+  [role="dialog"] {
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

@@ -358,29 +358,46 @@ function DayOfInner() {
         )}
 
         {/* Welcome */}
-        <Card className="shadow-md overflow-hidden">
-          <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
-            <CardTitle className="text-2xl">Welcome, {reg.first_name}! 👋</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <p className="text-sm text-muted-foreground">You are checked in and ready to play.</p>
-            {tournament.day_of_welcome_message && (
-              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.day_of_welcome_message) }} />
-            )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Stat label="Tee Time" value={reg.tee_time || "—"} icon={<Clock className="w-4 h-4" />} />
-              <Stat label="Hole" value={reg.hole_assignment ?? "—"} icon={<MapPin className="w-4 h-4" />} />
-              <Stat label="Group" value={reg.group_number ?? "—"} icon={<Users className="w-4 h-4" />} />
-              <Stat label="Position" value={reg.group_position ?? "—"} />
-            </div>
-            {reg.scoring_code && (
-              <div className="rounded-md bg-muted px-3 py-2">
-                <p className="text-xs uppercase text-muted-foreground">Your scoring code</p>
-                <p className="text-lg font-mono font-semibold">{reg.scoring_code}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {tournament.day_of_show_welcome && (() => {
+          const playerName = `${reg.first_name} ${reg.last_name}`.trim() || reg.first_name;
+          const teeTime = reg.tee_time || "";
+          const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : "";
+          const fill = (s: string) => s
+            .replaceAll("[Tournament Name]", tournament.title || "")
+            .replaceAll("[Player Name]", playerName)
+            .replaceAll("[Tee Time]", teeTime)
+            .replaceAll("[Starting Hole]", startingHole);
+          const rawTitle = tournament.day_of_welcome_title || `Welcome, ${reg.first_name}! 👋`;
+          const title = fill(rawTitle);
+          const rawMsg = tournament.day_of_welcome_message || "";
+          const filledMsg = fill(rawMsg);
+          const isHtml = /<[a-z][\s\S]*>/i.test(filledMsg);
+          const html = isHtml ? filledMsg : filledMsg.replace(/\n/g, "<br/>");
+          return (
+            <Card className="shadow-md overflow-hidden">
+              <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
+                <CardTitle className="text-2xl">{title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                {filledMsg && (
+                  <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <Stat label="Tee Time" value={reg.tee_time || "—"} icon={<Clock className="w-4 h-4" />} />
+                  <Stat label="Hole" value={reg.hole_assignment ?? "—"} icon={<MapPin className="w-4 h-4" />} />
+                  <Stat label="Group" value={reg.group_number ?? "—"} icon={<Users className="w-4 h-4" />} />
+                  <Stat label="Position" value={reg.group_position ?? "—"} />
+                </div>
+                {reg.scoring_code && (
+                  <div className="rounded-md bg-muted px-3 py-2">
+                    <p className="text-xs uppercase text-muted-foreground">Your scoring code</p>
+                    <p className="text-lg font-mono font-semibold">{reg.scoring_code}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">

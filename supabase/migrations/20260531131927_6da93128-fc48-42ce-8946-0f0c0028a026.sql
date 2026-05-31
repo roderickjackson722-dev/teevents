@@ -1,0 +1,17 @@
+ALTER TABLE public.tournaments
+  ADD COLUMN IF NOT EXISTS day_of_bg_color text,
+  ADD COLUMN IF NOT EXISTS day_of_accent_color text,
+  ADD COLUMN IF NOT EXISTS day_of_font_color text,
+  ADD COLUMN IF NOT EXISTS day_of_header_image_url text,
+  ADD COLUMN IF NOT EXISTS day_of_weather_enabled boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_weather_location text,
+  ADD COLUMN IF NOT EXISTS day_of_show_scores_card boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_show_leaderboard_card boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_show_coursemap_card boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_show_announcements_card boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_show_sponsors boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_sponsor_layout text NOT NULL DEFAULT 'grid',
+  ADD COLUMN IF NOT EXISTS day_of_show_pin_sheets boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_pin_sheet_pdf_url text,
+  ADD COLUMN IF NOT EXISTS day_of_show_leaderboard boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS day_of_announcements_list jsonb NOT NULL DEFAULT '[]'::jsonb;

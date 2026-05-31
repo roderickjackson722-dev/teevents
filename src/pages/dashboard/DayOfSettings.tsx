@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Upload, ExternalLink, MapPin } from "lucide-react";
+import { Upload, ExternalLink, MapPin, Plus, X } from "lucide-react";
 
 interface T {
   id: string; title: string; slug: string; organization_id?: string;
@@ -18,28 +18,47 @@ interface T {
   day_of_page_mode: string;
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
+  day_of_announcements_list: string[];
   day_of_course_map_url: string | null;
   day_of_sponsor_title: string | null;
   day_of_sponsor_thanks: string | null;
+  day_of_sponsor_layout: string;
   day_of_pairings_url: string | null;
   day_of_rules_url: string | null;
   day_of_director_name: string | null;
   day_of_director_phone: string | null;
   day_of_director_email: string | null;
   day_of_emergency_contact: string | null;
+  day_of_bg_color: string | null;
+  day_of_accent_color: string | null;
+  day_of_font_color: string | null;
+  day_of_header_image_url: string | null;
+  day_of_weather_enabled: boolean;
+  day_of_weather_location: string | null;
+  day_of_show_scores_card: boolean;
+  day_of_show_leaderboard_card: boolean;
+  day_of_show_coursemap_card: boolean;
+  day_of_show_announcements_card: boolean;
+  day_of_show_sponsors: boolean;
+  day_of_show_pin_sheets: boolean;
+  day_of_pin_sheet_pdf_url: string | null;
+  day_of_show_leaderboard: boolean;
   pin_sheets_enabled?: boolean;
 }
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 10 * 1024 * 1024;
 
+const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
+
 export default function DayOfSettings() {
   const [tournaments, setTournaments] = useState<Array<{ id: string; title: string; organization_id: string }>>([]);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
   const [t, setT] = useState<T | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState<"map" | "header" | null>(null);
+  const mapFileRef = useRef<HTMLInputElement | null>(null);
+  const headerFileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -58,10 +77,14 @@ export default function DayOfSettings() {
     (async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, pin_sheets_enabled")
+        .select(FIELDS)
         .eq("id", tournamentId)
         .maybeSingle();
-      setT(data as any);
+      if (data) {
+        const d: any = data;
+        d.day_of_announcements_list = Array.isArray(d.day_of_announcements_list) ? d.day_of_announcements_list : [];
+        setT(d as T);
+      }
     })();
   }, [tournamentId]);
 
@@ -73,42 +96,81 @@ export default function DayOfSettings() {
       day_of_page_mode: t.day_of_page_mode,
       day_of_welcome_message: t.day_of_welcome_message,
       day_of_announcements: t.day_of_announcements,
+      day_of_announcements_list: t.day_of_announcements_list,
       day_of_course_map_url: t.day_of_course_map_url,
       day_of_sponsor_title: t.day_of_sponsor_title,
       day_of_sponsor_thanks: t.day_of_sponsor_thanks,
+      day_of_sponsor_layout: t.day_of_sponsor_layout,
       day_of_pairings_url: t.day_of_pairings_url,
       day_of_rules_url: t.day_of_rules_url,
       day_of_director_name: t.day_of_director_name,
       day_of_director_phone: t.day_of_director_phone,
       day_of_director_email: t.day_of_director_email,
       day_of_emergency_contact: t.day_of_emergency_contact,
+      day_of_bg_color: t.day_of_bg_color,
+      day_of_accent_color: t.day_of_accent_color,
+      day_of_font_color: t.day_of_font_color,
+      day_of_header_image_url: t.day_of_header_image_url,
+      day_of_weather_enabled: t.day_of_weather_enabled,
+      day_of_weather_location: t.day_of_weather_location,
+      day_of_show_scores_card: t.day_of_show_scores_card,
+      day_of_show_leaderboard_card: t.day_of_show_leaderboard_card,
+      day_of_show_coursemap_card: t.day_of_show_coursemap_card,
+      day_of_show_announcements_card: t.day_of_show_announcements_card,
+      day_of_show_sponsors: t.day_of_show_sponsors,
+      day_of_show_pin_sheets: t.day_of_show_pin_sheets,
+      day_of_pin_sheet_pdf_url: t.day_of_pin_sheet_pdf_url,
+      day_of_show_leaderboard: t.day_of_show_leaderboard,
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
     else toast({ title: "Saved" });
   };
 
-  const uploadMap = async (file: File) => {
+  const uploadImage = async (file: File, kind: "map" | "header") => {
     if (!t?.organization_id || !t?.id) return;
     if (!ALLOWED.includes(file.type)) { toast({ title: "Use JPG, PNG, or WEBP", variant: "destructive" }); return; }
     if (file.size > MAX_BYTES) { toast({ title: "File too large (max 10MB)", variant: "destructive" }); return; }
-    setUploading(true);
+    setUploading(kind);
     const ext = file.name.split(".").pop() || "jpg";
-    const path = `${t.organization_id}/${t.id}/course-map/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const folder = kind === "map" ? "course-map" : "day-of-header";
+    const path = `${t.organization_id}/${t.id}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: false, contentType: file.type });
-    setUploading(false);
+    setUploading(null);
     if (upErr) { toast({ title: "Upload failed", description: upErr.message, variant: "destructive" }); return; }
     const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-    setT({ ...t, day_of_course_map_url: urlData.publicUrl });
-    toast({ title: "Course map uploaded" });
+    if (kind === "map") setT({ ...t, day_of_course_map_url: urlData.publicUrl });
+    else setT({ ...t, day_of_header_image_url: urlData.publicUrl });
+    toast({ title: "Image uploaded" });
+  };
+
+  const addAnnouncement = () => {
+    if (!t) return;
+    setT({ ...t, day_of_announcements_list: [...t.day_of_announcements_list, ""] });
+  };
+  const updateAnnouncement = (i: number, v: string) => {
+    if (!t) return;
+    const list = [...t.day_of_announcements_list];
+    list[i] = v;
+    setT({ ...t, day_of_announcements_list: list });
+  };
+  const removeAnnouncement = (i: number) => {
+    if (!t) return;
+    const list = t.day_of_announcements_list.filter((_, idx) => idx !== i);
+    setT({ ...t, day_of_announcements_list: list });
+  };
+
+  const resetDesign = () => {
+    if (!t) return;
+    if (!confirm("Reset design colors and header image to defaults?")) return;
+    setT({ ...t, day_of_bg_color: null, day_of_accent_color: null, day_of_font_color: null, day_of_header_image_url: null });
   };
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  // Organizer preview: bypass live gating via ?preview=1
   const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1` : "";
 
   return (
-    <div className="p-6 space-y-6 max-w-3xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold">Day of Event Page</h1>
         <p className="text-muted-foreground text-sm">A mobile-friendly page each player can open on event day showing their group, tee time, hole assignment, live leaderboard, announcements, and sponsors.</p>
@@ -117,7 +179,7 @@ export default function DayOfSettings() {
       <div>
         <Label className="text-xs">Tournament</Label>
         <Select value={tournamentId ?? undefined} onValueChange={setTournamentId}>
-          <SelectTrigger className="w-[280px]"><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[280px]"><SelectValue placeholder="Select" /></SelectTrigger>
           <SelectContent>
             {tournaments.map((x) => <SelectItem key={x.id} value={x.id}>{x.title}</SelectItem>)}
           </SelectContent>
@@ -125,7 +187,7 @@ export default function DayOfSettings() {
       </div>
 
       {t && (
-        <Card className="p-5 space-y-5">
+        <Card className="p-4 sm:p-5 space-y-6">
           <div className="flex items-center gap-3">
             <Switch checked={t.day_of_page_enabled} onCheckedChange={(v) => setT({ ...t, day_of_page_enabled: v })} />
             <Label>Enable day of event page</Label>
@@ -147,62 +209,87 @@ export default function DayOfSettings() {
                 <Label htmlFor="mode-preview" className="font-normal cursor-pointer">Preview mode (only visible to organizer)</Label>
               </div>
             </RadioGroup>
-            <p className="text-xs text-muted-foreground">Stay in Preview while you build your page. Switch to Live when players should see it.</p>
           </div>
 
-          <div>
-            <Label>Welcome message</Label>
-            <p className="text-xs text-muted-foreground mb-1">Greet your players. Bold, headings, colors, and links are supported.</p>
+          {/* DESIGN & BRANDING */}
+          <section className="space-y-3 border-t pt-5">
+            <Label className="text-base">Design &amp; Branding</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <ColorField label="Background color" value={t.day_of_bg_color} onChange={(v) => setT({ ...t, day_of_bg_color: v })} placeholder="#1a5c38" />
+              <ColorField label="Accent color" value={t.day_of_accent_color} onChange={(v) => setT({ ...t, day_of_accent_color: v })} placeholder="#F5A623" />
+              <ColorField label="Font color" value={t.day_of_font_color} onChange={(v) => setT({ ...t, day_of_font_color: v })} placeholder="#FFFFFF" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Header image (optional)</Label>
+              {t.day_of_header_image_url && (
+                <div className="border rounded overflow-hidden max-w-md">
+                  <img src={t.day_of_header_image_url} alt="Header preview" className="w-full" />
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={headerFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f, "header"); e.currentTarget.value = ""; }}
+                />
+                <Button type="button" size="sm" variant="outline" onClick={() => headerFileRef.current?.click()} disabled={uploading === "header"}>
+                  <Upload className="w-4 h-4 mr-1" /> {uploading === "header" ? "Uploading…" : "Upload header image"}
+                </Button>
+                {t.day_of_header_image_url && (
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setT({ ...t, day_of_header_image_url: null })}>Remove</Button>
+                )}
+              </div>
+              <details>
+                <summary className="text-xs text-muted-foreground cursor-pointer">Or paste an image URL</summary>
+                <Input className="mt-1" value={t.day_of_header_image_url || ""} onChange={(e) => setT({ ...t, day_of_header_image_url: e.target.value })} placeholder="https://..." />
+              </details>
+            </div>
+          </section>
+
+          {/* HEADER CONTENT */}
+          <section className="space-y-3 border-t pt-5">
+            <Label className="text-base">Header Content</Label>
+            <div className="flex items-center gap-3">
+              <Switch checked={t.day_of_weather_enabled} onCheckedChange={(v) => setT({ ...t, day_of_weather_enabled: v })} />
+              <Label>Show weather widget</Label>
+            </div>
+            <div>
+              <Label className="text-xs">Weather location (city, state)</Label>
+              <Input
+                value={t.day_of_weather_location || ""}
+                onChange={(e) => setT({ ...t, day_of_weather_location: e.target.value })}
+                placeholder="Pebble Beach, CA"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Leave blank to use the course location. Powered by Open-Meteo (free, no API key).</p>
+            </div>
+          </section>
+
+          {/* WELCOME MESSAGE */}
+          <section className="space-y-2 border-t pt-5">
+            <Label className="text-base">Welcome Message</Label>
             <RichTextEditor
               value={t.day_of_welcome_message || ""}
               onChange={(html) => setT({ ...t, day_of_welcome_message: html })}
               placeholder="Welcome to the 2026 Charity Classic! Check in at the registration tent…"
             />
-          </div>
+          </section>
 
-          <div>
-            <Label>Announcements</Label>
-            <p className="text-xs text-muted-foreground mb-1">Schedule, shotgun start info, beverage cart times, weather updates, etc.</p>
-            <RichTextEditor
-              value={t.day_of_announcements || ""}
-              onChange={(html) => setT({ ...t, day_of_announcements: html })}
-              placeholder="9:00am shotgun start. Lunch served at the turn. Awards in the clubhouse at 3pm."
-            />
-          </div>
+          {/* QUICK ACTION CARDS */}
+          <section className="space-y-2 border-t pt-5">
+            <Label className="text-base">Quick Action Cards</Label>
+            <p className="text-xs text-muted-foreground">Toggle which 2x2 cards appear at the top of the player page.</p>
+            <Toggle label='Show "Enter Your Scores" card' checked={t.day_of_show_scores_card} onChange={(v) => setT({ ...t, day_of_show_scores_card: v })} />
+            <Toggle label='Show "Live Leaderboard" card' checked={t.day_of_show_leaderboard_card} onChange={(v) => setT({ ...t, day_of_show_leaderboard_card: v })} />
+            <Toggle label='Show "Course Map" card' checked={t.day_of_show_coursemap_card} onChange={(v) => setT({ ...t, day_of_show_coursemap_card: v })} />
+            <Toggle label='Show "Announcements" card' checked={t.day_of_show_announcements_card} onChange={(v) => setT({ ...t, day_of_show_announcements_card: v })} />
+          </section>
 
-          <div className="space-y-2">
-            <Label>Course map (optional)</Label>
-            <p className="text-xs text-muted-foreground">
-              Upload an image of your course layout so players can see hole locations, the practice area, and parking from their phone. Most golf courses have a downloadable course map (often a JPG or PNG) on their website, or you can request one from the course pro shop.
-            </p>
-            {t.day_of_course_map_url && (
-              <div className="border rounded overflow-hidden max-w-sm">
-                <img src={t.day_of_course_map_url} alt="Course map preview" className="w-full" />
-              </div>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadMap(f); e.currentTarget.value = ""; }}
-              />
-              <Button type="button" size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                <Upload className="w-4 h-4 mr-1" /> {uploading ? "Uploading…" : "Upload course map"}
-              </Button>
-              {t.day_of_course_map_url && (
-                <Button type="button" size="sm" variant="ghost" onClick={() => setT({ ...t, day_of_course_map_url: null })}>Remove</Button>
-              )}
-            </div>
-            <details>
-              <summary className="text-xs text-muted-foreground cursor-pointer">Or paste an image URL</summary>
-              <Input className="mt-1" value={t.day_of_course_map_url || ""} onChange={(e) => setT({ ...t, day_of_course_map_url: e.target.value })} placeholder="https://..." />
-            </details>
-          </div>
-
-          <div className="space-y-3 border-t pt-4">
+          {/* SPONSOR SPOTLIGHT */}
+          <section className="space-y-3 border-t pt-5">
             <Label className="text-base">Sponsor Spotlight</Label>
+            <Toggle label="Show sponsor spotlight section" checked={t.day_of_show_sponsors} onChange={(v) => setT({ ...t, day_of_show_sponsors: v })} />
             <div>
               <Label className="text-xs">Section title</Label>
               <Input value={t.day_of_sponsor_title || ""} onChange={(e) => setT({ ...t, day_of_sponsor_title: e.target.value })} placeholder="Our Generous Sponsors" />
@@ -211,22 +298,103 @@ export default function DayOfSettings() {
               <Label className="text-xs">Thank-you message</Label>
               <Input value={t.day_of_sponsor_thanks || ""} onChange={(e) => setT({ ...t, day_of_sponsor_thanks: e.target.value })} placeholder="Thank you to our sponsors for making this event possible!" />
             </div>
-          </div>
-
-          <div className="space-y-3 border-t pt-4">
-            <Label className="text-base">Quick Links (optional)</Label>
-            <div>
-              <Label className="text-xs">Pairings page URL</Label>
-              <Input value={t.day_of_pairings_url || ""} onChange={(e) => setT({ ...t, day_of_pairings_url: e.target.value })} placeholder="https://… (defaults to your tournament page)" />
+            <div className="space-y-1">
+              <Label className="text-xs">Layout</Label>
+              <RadioGroup
+                value={t.day_of_sponsor_layout || "grid"}
+                onValueChange={(v) => setT({ ...t, day_of_sponsor_layout: v })}
+                className="flex flex-wrap gap-4"
+              >
+                <div className="flex items-center gap-2"><RadioGroupItem value="grid" id="layout-grid" /><Label htmlFor="layout-grid" className="font-normal cursor-pointer">Grid</Label></div>
+                <div className="flex items-center gap-2"><RadioGroupItem value="carousel" id="layout-carousel" /><Label htmlFor="layout-carousel" className="font-normal cursor-pointer">Carousel</Label></div>
+                <div className="flex items-center gap-2"><RadioGroupItem value="list" id="layout-list" /><Label htmlFor="layout-list" className="font-normal cursor-pointer">List</Label></div>
+              </RadioGroup>
             </div>
-            <div>
-              <Label className="text-xs">Rules & scoring URL</Label>
-              <Input value={t.day_of_rules_url || ""} onChange={(e) => setT({ ...t, day_of_rules_url: e.target.value })} placeholder="https://…" />
-            </div>
-          </div>
+          </section>
 
-          <div className="space-y-3 border-t pt-4">
-            <Label className="text-base">Tournament Contact</Label>
+          {/* PIN SHEETS */}
+          <section className="space-y-3 border-t pt-5">
+            <Label className="text-base">Pin Sheets</Label>
+            <Toggle label="Show pin sheets section" checked={t.day_of_show_pin_sheets} onChange={(v) => setT({ ...t, day_of_show_pin_sheets: v })} />
+            <div>
+              <Label className="text-xs">Pin Sheet PDF URL</Label>
+              <Input
+                value={t.day_of_pin_sheet_pdf_url || ""}
+                onChange={(e) => setT({ ...t, day_of_pin_sheet_pdf_url: e.target.value })}
+                placeholder="https://..."
+              />
+              <p className="text-xs text-muted-foreground mt-1">Or manage hole-by-hole pin placements in the Pin Sheets tool.</p>
+            </div>
+            <Link to="/dashboard/pin-sheets">
+              <Button size="sm" variant="outline">Open Pin Sheets</Button>
+            </Link>
+          </section>
+
+          {/* ANNOUNCEMENTS */}
+          <section className="space-y-2 border-t pt-5">
+            <Label className="text-base">Announcements</Label>
+            <p className="text-xs text-muted-foreground">Short bulletin-style updates shown to players (e.g. "Lunch served at 12 PM").</p>
+            <div className="space-y-2">
+              {t.day_of_announcements_list.map((a, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input value={a} onChange={(e) => updateAnnouncement(i, e.target.value)} placeholder="Lunch served at 12:00 PM in the clubhouse" />
+                  <Button type="button" size="icon" variant="ghost" onClick={() => removeAnnouncement(i)} aria-label="Remove">
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button type="button" size="sm" variant="outline" onClick={addAnnouncement}>
+              <Plus className="w-4 h-4 mr-1" /> Add announcement
+            </Button>
+            <details className="pt-2">
+              <summary className="text-xs text-muted-foreground cursor-pointer">Or use rich text (advanced)</summary>
+              <div className="mt-2">
+                <RichTextEditor
+                  value={t.day_of_announcements || ""}
+                  onChange={(html) => setT({ ...t, day_of_announcements: html })}
+                  placeholder="9:00am shotgun start. Lunch served at the turn."
+                />
+              </div>
+            </details>
+          </section>
+
+          {/* COURSE MAP */}
+          <section className="space-y-2 border-t pt-5">
+            <Label className="text-base">Course Map</Label>
+            <p className="text-xs text-muted-foreground">Image of your course layout so players can see hole locations from their phone.</p>
+            {t.day_of_course_map_url && (
+              <div className="border rounded overflow-hidden max-w-sm">
+                <img src={t.day_of_course_map_url} alt="Course map preview" className="w-full" />
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <input
+                ref={mapFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f, "map"); e.currentTarget.value = ""; }}
+              />
+              <Button type="button" size="sm" variant="outline" onClick={() => mapFileRef.current?.click()} disabled={uploading === "map"}>
+                <Upload className="w-4 h-4 mr-1" /> {uploading === "map" ? "Uploading…" : "Upload course map"}
+              </Button>
+              {t.day_of_course_map_url && (
+                <Button type="button" size="sm" variant="ghost" onClick={() => setT({ ...t, day_of_course_map_url: null })}>Remove</Button>
+              )}
+            </div>
+          </section>
+
+          {/* LEADERBOARD */}
+          <section className="space-y-2 border-t pt-5">
+            <Label className="text-base">Leaderboard</Label>
+            <Toggle label="Show leaderboard section" checked={t.day_of_show_leaderboard} onChange={(v) => setT({ ...t, day_of_show_leaderboard: v })} />
+            <p className="text-xs text-muted-foreground">Leaderboard pulls from <code>/live/{t.slug}</code> automatically.</p>
+          </section>
+
+          {/* CONTACT */}
+          <section className="space-y-3 border-t pt-5">
+            <Label className="text-base">Contact Information</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Director name</Label>
@@ -245,14 +413,14 @@ export default function DayOfSettings() {
                 <Input value={t.day_of_emergency_contact || ""} onChange={(e) => setT({ ...t, day_of_emergency_contact: e.target.value })} placeholder="Pro Shop: (555) 987-6543" />
               </div>
             </div>
-          </div>
+          </section>
 
           <Card className="p-4 bg-muted/40 border-dashed">
             <div className="flex items-start gap-3">
               <MapPin className="w-5 h-5 mt-0.5 text-primary" />
               <div className="flex-1">
-                <p className="font-medium">Add pin sheets</p>
-                <p className="text-sm text-muted-foreground">Pin sheets show players today's pin placement on each green. They appear on the day-of page automatically once enabled.</p>
+                <p className="font-medium">Pin sheet placements</p>
+                <p className="text-sm text-muted-foreground">Manage hole-by-hole pin positions; they appear on the day-of page automatically.</p>
                 <div className="mt-2 flex items-center gap-3">
                   <Link to="/dashboard/pin-sheets">
                     <Button size="sm" variant="outline">Open Pin Sheets</Button>
@@ -263,20 +431,52 @@ export default function DayOfSettings() {
             </div>
           </Card>
 
-          <div className="pt-2 flex items-center gap-3 border-t">
-            <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
+          <div className="pt-2 flex flex-wrap items-center gap-3 border-t">
+            <Button onClick={save} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">{saving ? "Saving…" : "Save Changes"}</Button>
             <a href={previewUrl} target="_blank" rel="noreferrer">
-              <Button type="button" variant="outline"><ExternalLink className="w-4 h-4 mr-1" /> Preview</Button>
+              <Button type="button" variant="outline"><ExternalLink className="w-4 h-4 mr-1" /> Preview Page</Button>
             </a>
+            <Button type="button" variant="ghost" onClick={resetDesign}>Reset Design</Button>
           </div>
 
           <div className="border-t pt-4 text-sm text-muted-foreground">
             <p className="font-medium text-foreground mb-1">Player access</p>
             <p>When a player checks in (QR scan), they are sent to their personalized day-of page. You can also share this link template:</p>
-            <code className="block bg-muted px-2 py-1 rounded mt-1 text-xs">{baseUrl}/day-of/{t.slug}/[scoring-code]</code>
+            <code className="block bg-muted px-2 py-1 rounded mt-1 text-xs break-all">{baseUrl}/day-of/{t.slug}/[scoring-code]</code>
           </div>
         </Card>
       )}
+    </div>
+  );
+}
+
+function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <Switch checked={checked} onCheckedChange={onChange} />
+      <Label className="font-normal cursor-pointer" onClick={() => onChange(!checked)}>{label}</Label>
+    </div>
+  );
+}
+
+function ColorField({ label, value, onChange, placeholder }: { label: string; value: string | null; onChange: (v: string | null) => void; placeholder: string }) {
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value || placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-12 rounded border cursor-pointer bg-transparent"
+        />
+        <Input
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value || null)}
+          placeholder={placeholder}
+          className="flex-1"
+        />
+      </div>
     </div>
   );
 }

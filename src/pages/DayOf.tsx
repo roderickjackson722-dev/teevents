@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
-import { Trophy, MapPin, Megaphone, Users, Clock, Eye, Phone, Mail, FileText, ListOrdered, AlertCircle } from "lucide-react";
+import { Trophy, MapPin, Megaphone, Users, Clock, Eye, Phone, Mail, FileText, ListOrdered, AlertCircle, PenLine, BarChart3, Download } from "lucide-react";
+import WeatherWidget from "@/components/day-of/WeatherWidget";
 
 interface Reg {
   id: string;
@@ -24,19 +25,38 @@ interface T {
   title: string;
   date: string | null;
   course_name: string | null;
+  
+  state?: string | null;
+  location?: string | null;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
+  day_of_announcements_list: string[];
   day_of_course_map_url: string | null;
   day_of_sponsor_title: string | null;
   day_of_sponsor_thanks: string | null;
+  day_of_sponsor_layout: string;
   day_of_pairings_url: string | null;
   day_of_rules_url: string | null;
   day_of_director_name: string | null;
   day_of_director_phone: string | null;
   day_of_director_email: string | null;
   day_of_emergency_contact: string | null;
+  day_of_bg_color: string | null;
+  day_of_accent_color: string | null;
+  day_of_font_color: string | null;
+  day_of_header_image_url: string | null;
+  day_of_weather_enabled: boolean;
+  day_of_weather_location: string | null;
+  day_of_show_scores_card: boolean;
+  day_of_show_leaderboard_card: boolean;
+  day_of_show_coursemap_card: boolean;
+  day_of_show_announcements_card: boolean;
+  day_of_show_sponsors: boolean;
+  day_of_show_pin_sheets: boolean;
+  day_of_pin_sheet_pdf_url: string | null;
+  day_of_show_leaderboard: boolean;
   primary_color?: string | null;
   logo_url?: string | null;
 }
@@ -44,6 +64,8 @@ interface T {
 interface Sponsor {
   id: string; name: string; tier: string | null; logo_url: string | null; website_url: string | null;
 }
+
+const FIELDS = "id, slug, title, date, course_name, location, state, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, primary_color, logo_url";
 
 const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6 };
 
@@ -53,19 +75,40 @@ const MOCK_TOURNAMENT: T = {
   title: "Your Tournament Name",
   date: new Date().toISOString().slice(0, 10),
   course_name: "Your Golf Course",
+  location: "Pebble Beach", state: "CA",
   day_of_page_enabled: true,
   day_of_page_mode: "preview",
-  day_of_welcome_message: "<p>Welcome to the tournament! We're thrilled to have you here. Check in at the registration tent for your gift bag and cart assignment.</p>",
-  day_of_announcements: "<ul><li>Lunch served at 12:00 PM in the clubhouse</li><li>Beverage carts on holes 5, 12, and 17</li><li>Scoring tent closes at 4:00 PM</li></ul>",
+  day_of_welcome_message: "<p>Welcome to the tournament! We're thrilled to have you here.</p>",
+  day_of_announcements: null,
+  day_of_announcements_list: [
+    "Lunch served at 12:00 PM in the clubhouse",
+    "Beverage carts on holes 5, 12, and 17",
+    "Scoring tent closes at 4:00 PM",
+  ],
   day_of_course_map_url: null,
   day_of_sponsor_title: "Our Generous Sponsors",
   day_of_sponsor_thanks: "Thank you to our sponsors for making this event possible!",
+  day_of_sponsor_layout: "grid",
   day_of_pairings_url: null,
   day_of_rules_url: null,
   day_of_director_name: "Jane Director",
   day_of_director_phone: "(555) 123-4567",
   day_of_director_email: "director@example.com",
   day_of_emergency_contact: "Pro Shop: (555) 987-6543",
+  day_of_bg_color: null,
+  day_of_accent_color: null,
+  day_of_font_color: null,
+  day_of_header_image_url: null,
+  day_of_weather_enabled: true,
+  day_of_weather_location: "Pebble Beach, CA",
+  day_of_show_scores_card: true,
+  day_of_show_leaderboard_card: true,
+  day_of_show_coursemap_card: true,
+  day_of_show_announcements_card: true,
+  day_of_show_sponsors: true,
+  day_of_show_pin_sheets: true,
+  day_of_pin_sheet_pdf_url: null,
+  day_of_show_leaderboard: true,
   primary_color: null,
   logo_url: null,
 };
@@ -111,6 +154,22 @@ export default function DayOfWrapper() {
   return <ErrorBoundary slug={slug}><DayOfInner /></ErrorBoundary>;
 }
 
+function normalizeTournament(d: any): T {
+  return {
+    ...d,
+    day_of_announcements_list: Array.isArray(d.day_of_announcements_list) ? d.day_of_announcements_list : [],
+    day_of_weather_enabled: d.day_of_weather_enabled !== false,
+    day_of_show_scores_card: d.day_of_show_scores_card !== false,
+    day_of_show_leaderboard_card: d.day_of_show_leaderboard_card !== false,
+    day_of_show_coursemap_card: d.day_of_show_coursemap_card !== false,
+    day_of_show_announcements_card: d.day_of_show_announcements_card !== false,
+    day_of_show_sponsors: d.day_of_show_sponsors !== false,
+    day_of_show_pin_sheets: d.day_of_show_pin_sheets !== false,
+    day_of_show_leaderboard: d.day_of_show_leaderboard !== false,
+    day_of_sponsor_layout: d.day_of_sponsor_layout || "grid",
+  };
+}
+
 function DayOfInner() {
   const { slug, code } = useParams<{ slug: string; code: string }>();
   const [search] = useSearchParams();
@@ -130,14 +189,12 @@ function DayOfInner() {
       setLoading(true);
       setError(null);
 
-      // Try to load real tournament
       const { data: t } = await supabase
         .from("tournaments")
-        .select("id, slug, title, date, course_name, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, primary_color, logo_url")
+        .select(FIELDS)
         .eq("slug", slug!)
         .maybeSingle();
 
-      // Preview with no tournament -> use full mock data
       if (!t && isOrganizerPreview) {
         setTournament({ ...MOCK_TOURNAMENT, slug: slug || "preview" });
         setReg(MOCK_REG);
@@ -147,7 +204,6 @@ function DayOfInner() {
           { name: "Sarah Lee", total: -2 },
           { name: "Sample Player", total: 0 },
           { name: "John Smith", total: 2 },
-          { name: "Jane Doe", total: 3 },
         ]);
         setSponsors([]);
         setLoading(false);
@@ -155,9 +211,8 @@ function DayOfInner() {
       }
 
       if (!t) { setError("Tournament not found"); setLoading(false); return; }
-      const tt = t as any as T;
+      const tt = normalizeTournament(t);
 
-      // Access gating (preview bypasses)
       if (!isOrganizerPreview && !tt.day_of_page_enabled) {
         setError("Day of event page is not enabled yet.");
         setLoading(false);
@@ -170,7 +225,6 @@ function DayOfInner() {
       }
       setTournament(tt);
 
-      // Sponsors
       const { data: sp } = await supabase
         .from("tournament_sponsors")
         .select("id, name, tier, logo_url, website_url")
@@ -178,7 +232,6 @@ function DayOfInner() {
         .order("sort_order");
       setSponsors((sp as any) || []);
 
-      // Preview with placeholder code -> use mock player but real tournament
       if (isOrganizerPreview && isPreviewCode) {
         setReg(MOCK_REG);
         setGroup(MOCK_GROUP);
@@ -235,38 +288,59 @@ function DayOfInner() {
   );
   if (!tournament || !reg) return null;
 
-  const primary = tournament.primary_color || "hsl(var(--primary))";
-  const headerStyle: React.CSSProperties = {
-    background: `linear-gradient(135deg, ${primary} 0%, ${primary} 60%, hsl(var(--primary)) 100%)`,
-  };
+  const bg = tournament.day_of_bg_color || tournament.primary_color || "#1a5c38";
+  const accent = tournament.day_of_accent_color || "#F5A623";
+  const fontColor = tournament.day_of_font_color || "#FFFFFF";
+
+  const headerStyle: React.CSSProperties = tournament.day_of_header_image_url
+    ? {
+        backgroundImage: `linear-gradient(135deg, ${bg}cc, ${bg}99), url(${tournament.day_of_header_image_url})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        color: fontColor,
+      }
+    : {
+        background: `linear-gradient(135deg, ${bg} 0%, ${bg} 60%, ${bg}dd 100%)`,
+        color: fontColor,
+      };
 
   const sortedSponsors = [...sponsors].sort((a, b) => (tierOrder[a.tier || ""] ?? 99) - (tierOrder[b.tier || ""] ?? 99));
   const titleSponsors = sortedSponsors.filter((s) => s.tier === "title" || s.tier === "platinum");
   const otherSponsors = sortedSponsors.filter((s) => !["title", "platinum"].includes(s.tier || ""));
 
+  const weatherLoc = tournament.day_of_weather_location
+    || [tournament.location, tournament.state].filter(Boolean).join(", ")
+    || tournament.course_name
+    || "";
+
+  const announcementsList = tournament.day_of_announcements_list || [];
+  const hasAnnouncements = announcementsList.length > 0 || !!tournament.day_of_announcements;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-muted/40 to-background pb-10">
-      <header className="text-primary-foreground p-5 shadow" style={headerStyle}>
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-gradient-to-b from-muted/40 to-background pb-10 overflow-x-hidden">
+      <header className="p-5 shadow" style={headerStyle}>
+        <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {tournament.logo_url && (
-              <img src={tournament.logo_url} alt="" className="w-12 h-12 rounded bg-white/10 object-contain p-1" />
+              <img src={tournament.logo_url} alt="" className="w-12 h-12 rounded bg-white/10 object-contain p-1 shrink-0" />
             )}
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold">{tournament.title}</h1>
-              <p className="text-sm opacity-90">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{tournament.title}</h1>
+              <p className="text-sm opacity-90 truncate">
                 {tournament.course_name}{tournament.date && ` · ${new Date(tournament.date).toLocaleDateString()}`}
               </p>
             </div>
           </div>
-          {isOrganizerPreview && <Badge variant="secondary" className="gap-1"><Eye className="w-3 h-3" /> Preview</Badge>}
+          <div className="flex items-center gap-2">
+            {tournament.day_of_weather_enabled && weatherLoc && <WeatherWidget location={weatherLoc} />}
+            {isOrganizerPreview && <Badge variant="secondary" className="gap-1"><Eye className="w-3 h-3" /> Preview</Badge>}
+          </div>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-4 -mt-2">
-        {/* Title sponsors banner */}
-        {titleSponsors.length > 0 && (
-          <div className="bg-card border-2 border-primary/30 rounded-lg p-4 shadow-sm">
+        {titleSponsors.length > 0 && tournament.day_of_show_sponsors && (
+          <div className="bg-card border-2 rounded-lg p-4 shadow-sm" style={{ borderColor: `${accent}55` }}>
             <p className="text-[10px] uppercase tracking-widest text-center text-muted-foreground mb-2">Presented by</p>
             <div className="flex flex-wrap items-center justify-center gap-6">
               {titleSponsors.map((s) => (
@@ -278,12 +352,13 @@ function DayOfInner() {
           </div>
         )}
 
-        {/* Welcome + quick stats */}
+        {/* Welcome */}
         <Card className="shadow-md overflow-hidden">
-          <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${primary}15, transparent)` }}>
+          <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
             <CardTitle className="text-2xl">Welcome, {reg.first_name}! 👋</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
+            <p className="text-sm text-muted-foreground">You are checked in and ready to play.</p>
             {tournament.day_of_welcome_message && (
               <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.day_of_welcome_message) }} />
             )}
@@ -301,6 +376,22 @@ function DayOfInner() {
             )}
           </CardContent>
         </Card>
+
+        {/* Quick action cards (2x2 grid) */}
+        <div className="grid grid-cols-2 gap-3">
+          {tournament.day_of_show_scores_card && (
+            <ActionCard to={`/t/${tournament.slug}/scoring`} icon={<PenLine className="w-5 h-5" />} title="Enter Your Scores" cta="Enter Scores" accent={accent} />
+          )}
+          {tournament.day_of_show_leaderboard_card && (
+            <ActionCard to={`/live/${tournament.slug}`} icon={<BarChart3 className="w-5 h-5" />} title="Live Leaderboard" cta="View Leaderboard" accent={accent} />
+          )}
+          {tournament.day_of_show_coursemap_card && (
+            <ActionCard to="#course-map" icon={<MapPin className="w-5 h-5" />} title="Course Map" cta={tournament.day_of_course_map_url ? "View Course Map" : "Not available"} accent={accent} disabled={!tournament.day_of_course_map_url} />
+          )}
+          {tournament.day_of_show_announcements_card && (
+            <ActionCard to="#announcements" icon={<Megaphone className="w-5 h-5" />} title="Announcements" cta={hasAnnouncements ? "View Messages" : "Nothing yet"} accent={accent} disabled={!hasAnnouncements} />
+          )}
+        </div>
 
         {group.length > 1 && (
           <Card>
@@ -323,38 +414,34 @@ function DayOfInner() {
           </Card>
         )}
 
-        {tournament.day_of_announcements && (
-          <Card className="border-secondary/30">
+        {tournament.day_of_show_announcements_card && hasAnnouncements && (
+          <Card id="announcements" className="border-secondary/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2"><Megaphone className="w-4 h-4 text-secondary" /> Announcements</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2"><Megaphone className="w-4 h-4" style={{ color: accent }} /> Announcements</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.day_of_announcements) }} />
+            <CardContent className="space-y-2">
+              {announcementsList.length > 0 && (
+                <ul className="space-y-1.5">
+                  {announcementsList.filter(Boolean).map((a, i) => (
+                    <li key={i} className="text-sm flex gap-2"><span style={{ color: accent }}>•</span><span>{a}</span></li>
+                  ))}
+                </ul>
+              )}
+              {tournament.day_of_announcements && (
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.day_of_announcements) }} />
+              )}
             </CardContent>
           </Card>
         )}
 
         {/* Sponsor spotlight */}
-        {sortedSponsors.length > 0 && (
+        {tournament.day_of_show_sponsors && sortedSponsors.length > 0 && (
           <Card className="border-primary/30 bg-gradient-to-br from-card to-muted/30">
             <CardHeader className="pb-2 text-center">
               <CardTitle className="text-lg">{tournament.day_of_sponsor_title || "Our Generous Sponsors"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {(otherSponsors.length ? otherSponsors : sortedSponsors).map((s) => {
-                  const inner = s.logo_url ? (
-                    <img src={s.logo_url} alt={s.name} className="max-h-16 mx-auto object-contain" />
-                  ) : (
-                    <span className="text-sm font-medium">{s.name}</span>
-                  );
-                  return (
-                    <div key={s.id} className="border rounded-lg p-3 bg-card flex items-center justify-center min-h-[80px] hover:shadow-md transition-shadow">
-                      {s.website_url ? <a href={s.website_url} target="_blank" rel="noreferrer">{inner}</a> : inner}
-                    </div>
-                  );
-                })}
-              </div>
+              <SponsorBlock layout={tournament.day_of_sponsor_layout} sponsors={otherSponsors.length ? otherSponsors : sortedSponsors} />
               {tournament.day_of_sponsor_thanks && (
                 <p className="text-center text-sm italic text-muted-foreground">"{tournament.day_of_sponsor_thanks}"</p>
               )}
@@ -362,31 +449,47 @@ function DayOfInner() {
           </Card>
         )}
 
+        {/* Pin sheets */}
+        {tournament.day_of_show_pin_sheets && tournament.day_of_pin_sheet_pdf_url && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4" /> Pin Sheets &amp; Course Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <a href={tournament.day_of_pin_sheet_pdf_url} target="_blank" rel="noreferrer">
+                <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-1" /> Download Pin Sheet PDF</Button>
+              </a>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Live leaderboard */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2"><Trophy className="w-4 h-4 text-secondary" /> Live Leaderboard</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {leaders.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No scores posted yet — check back during play.</p>
-            ) : (
-              <ol className="space-y-1">
-                {leaders.map((l, i) => (
-                  <li key={i} className="flex justify-between text-sm py-1 border-b last:border-b-0">
-                    <span><span className="font-semibold mr-2">{i + 1}.</span>{l.name}</span>
-                    <span className="font-mono">{l.total > 0 ? `+${l.total}` : l.total}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-            <div className="pt-3">
-              <Link to={`/live/${tournament.slug}`}>
-                <Button variant="outline" size="sm">View Full Leaderboard →</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        {tournament.day_of_show_leaderboard && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><Trophy className="w-4 h-4" style={{ color: accent }} /> Live Leaderboard</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {leaders.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No scores posted yet — check back during play.</p>
+              ) : (
+                <ol className="space-y-1">
+                  {leaders.map((l, i) => (
+                    <li key={i} className="flex justify-between text-sm py-1 border-b last:border-b-0">
+                      <span><span className="font-semibold mr-2">{i + 1}.</span>{l.name}</span>
+                      <span className="font-mono">{l.total > 0 ? `+${l.total}` : l.total}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              <div className="pt-3">
+                <Link to={`/live/${tournament.slug}`}>
+                  <Button variant="outline" size="sm">View Full Leaderboard →</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick links */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -410,7 +513,7 @@ function DayOfInner() {
         </div>
 
         {tournament.day_of_course_map_url && (
-          <Card>
+          <Card id="course-map">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4" /> Course Map</CardTitle>
             </CardHeader>
@@ -424,7 +527,7 @@ function DayOfInner() {
         {(tournament.day_of_director_name || tournament.day_of_director_phone || tournament.day_of_director_email || tournament.day_of_emergency_contact) && (
           <Card className="bg-muted/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Need Help?</CardTitle>
+              <CardTitle className="text-base">📞 Need Help?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               {tournament.day_of_director_name && (
@@ -452,7 +555,9 @@ function DayOfInner() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Link to={`/t/${tournament.slug}/scoring`}><Button className="w-full">Enter Scores</Button></Link>
+          <Link to={`/t/${tournament.slug}/scoring`}>
+            <Button className="w-full" style={{ backgroundColor: accent, color: bg }}>Enter Scores</Button>
+          </Link>
           <Link to={`/t/${tournament.slug}`}><Button variant="outline" className="w-full">Tournament Site</Button></Link>
         </div>
       </main>
@@ -465,6 +570,67 @@ function Stat({ label, value, icon }: { label: string; value: React.ReactNode; i
     <div className="bg-muted rounded-md p-3">
       <p className="text-xs uppercase text-muted-foreground flex items-center gap-1">{icon}{label}</p>
       <p className="text-xl font-bold mt-0.5">{value}</p>
+    </div>
+  );
+}
+
+function ActionCard({ to, icon, title, cta, accent, disabled }: { to: string; icon: ReactNode; title: string; cta: string; accent: string; disabled?: boolean }) {
+  const inner = (
+    <Card className={`h-full hover:shadow-md transition-shadow ${disabled ? "opacity-50 pointer-events-none" : ""}`}>
+      <CardContent className="p-4 flex flex-col gap-2 h-full">
+        <div className="flex items-center gap-2" style={{ color: accent }}>{icon}<span className="font-semibold text-sm text-foreground">{title}</span></div>
+        <span className="text-xs mt-auto" style={{ color: accent }}>{cta} →</span>
+      </CardContent>
+    </Card>
+  );
+  if (disabled) return inner;
+  if (to.startsWith("#")) return <a href={to}>{inner}</a>;
+  return <Link to={to}>{inner}</Link>;
+}
+
+function SponsorBlock({ layout, sponsors }: { layout: string; sponsors: Sponsor[] }) {
+  const Item = (s: Sponsor) => {
+    const inner = s.logo_url ? (
+      <img src={s.logo_url} alt={s.name} className="max-h-16 mx-auto object-contain" />
+    ) : (
+      <span className="text-sm font-medium">{s.name}</span>
+    );
+    return s.website_url ? <a href={s.website_url} target="_blank" rel="noreferrer">{inner}</a> : inner;
+  };
+
+  if (layout === "list") {
+    return (
+      <ul className="divide-y">
+        {sponsors.map((s) => (
+          <li key={s.id} className="py-2 flex items-center justify-between gap-3">
+            <span className="text-sm font-medium">{s.name}</span>
+            {s.logo_url && <img src={s.logo_url} alt={s.name} className="max-h-10 object-contain" />}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (layout === "carousel") {
+    return (
+      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
+        {sponsors.map((s) => (
+          <div key={s.id} className="border rounded-lg p-3 bg-card flex items-center justify-center min-h-[80px] min-w-[140px] snap-center">
+            {Item(s)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // default grid
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      {sponsors.map((s) => (
+        <div key={s.id} className="border rounded-lg p-3 bg-card flex items-center justify-center min-h-[80px] hover:shadow-md transition-shadow">
+          {Item(s)}
+        </div>
+      ))}
     </div>
   );
 }
@@ -484,5 +650,6 @@ function QuickLink({ href, icon, title, disabled }: { href?: string; icon: React
   );
   if (disabled || !href) return inner;
   if (href.startsWith("http")) return <a href={href} target="_blank" rel="noreferrer">{inner}</a>;
+  if (href.startsWith("#")) return <a href={href}>{inner}</a>;
   return <Link to={href}>{inner}</Link>;
 }

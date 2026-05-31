@@ -55,6 +55,7 @@ interface T {
   day_of_show_pin_sheets: boolean;
   day_of_pin_sheet_pdf_url: string | null;
   day_of_show_leaderboard: boolean;
+  day_of_placeholder_fallback: string | null;
   pin_sheets_enabled?: boolean;
 }
 
@@ -62,7 +63,7 @@ const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 10 * 1024 * 1024;
 const PDF_MAX_BYTES = 20 * 1024 * 1024;
 
-const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
+const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, day_of_placeholder_fallback, pin_sheets_enabled";
 
 export default function DayOfSettings() {
   const [tournaments, setTournaments] = useState<Array<{ id: string; title: string; organization_id: string }>>([]);
@@ -141,6 +142,7 @@ export default function DayOfSettings() {
       day_of_show_pin_sheets: t.day_of_show_pin_sheets,
       day_of_pin_sheet_pdf_url: t.day_of_pin_sheet_pdf_url,
       day_of_show_leaderboard: t.day_of_show_leaderboard,
+      day_of_placeholder_fallback: t.day_of_placeholder_fallback,
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });

@@ -70,8 +70,10 @@ export default function DayOfSettings() {
   const [t, setT] = useState<T | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"map" | "header" | null>(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const mapFileRef = useRef<HTMLInputElement | null>(null);
   const headerFileRef = useRef<HTMLInputElement | null>(null);
+  const pinPdfFileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     (async () => {

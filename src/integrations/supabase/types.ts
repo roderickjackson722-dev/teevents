@@ -5670,12 +5670,14 @@ export type Database = {
           day_of_show_pin_sheets: boolean
           day_of_show_scores_card: boolean
           day_of_show_sponsors: boolean
+          day_of_show_welcome: boolean
           day_of_sponsor_layout: string
           day_of_sponsor_thanks: string | null
           day_of_sponsor_title: string | null
           day_of_weather_enabled: boolean
           day_of_weather_location: string | null
           day_of_welcome_message: string | null
+          day_of_welcome_title: string | null
           demo_admin_id: string | null
           demo_flyer_url: string | null
           description: string | null
@@ -5830,12 +5832,14 @@ export type Database = {
           day_of_show_pin_sheets?: boolean
           day_of_show_scores_card?: boolean
           day_of_show_sponsors?: boolean
+          day_of_show_welcome?: boolean
           day_of_sponsor_layout?: string
           day_of_sponsor_thanks?: string | null
           day_of_sponsor_title?: string | null
           day_of_weather_enabled?: boolean
           day_of_weather_location?: string | null
           day_of_welcome_message?: string | null
+          day_of_welcome_title?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
           description?: string | null
@@ -5990,12 +5994,14 @@ export type Database = {
           day_of_show_pin_sheets?: boolean
           day_of_show_scores_card?: boolean
           day_of_show_sponsors?: boolean
+          day_of_show_welcome?: boolean
           day_of_sponsor_layout?: string
           day_of_sponsor_thanks?: string | null
           day_of_sponsor_title?: string | null
           day_of_weather_enabled?: boolean
           day_of_weather_location?: string | null
           day_of_welcome_message?: string | null
+          day_of_welcome_title?: string | null
           demo_admin_id?: string | null
           demo_flyer_url?: string | null
           description?: string | null

@@ -25,7 +25,7 @@ interface T {
   title: string;
   date: string | null;
   course_name: string | null;
-  city?: string | null;
+  
   state?: string | null;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
@@ -64,7 +64,7 @@ interface Sponsor {
   id: string; name: string; tier: string | null; logo_url: string | null; website_url: string | null;
 }
 
-const FIELDS = "id, slug, title, date, course_name, city, state, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, primary_color, logo_url";
+const FIELDS = "id, slug, title, date, course_name, location, state, day_of_page_enabled, day_of_page_mode, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, primary_color, logo_url";
 
 const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6 };
 
@@ -74,7 +74,7 @@ const MOCK_TOURNAMENT: T = {
   title: "Your Tournament Name",
   date: new Date().toISOString().slice(0, 10),
   course_name: "Your Golf Course",
-  city: "Pebble Beach", state: "CA",
+  location: "Pebble Beach", state: "CA",
   day_of_page_enabled: true,
   day_of_page_mode: "preview",
   day_of_welcome_message: "<p>Welcome to the tournament! We're thrilled to have you here.</p>",
@@ -308,7 +308,7 @@ function DayOfInner() {
   const otherSponsors = sortedSponsors.filter((s) => !["title", "platinum"].includes(s.tier || ""));
 
   const weatherLoc = tournament.day_of_weather_location
-    || [tournament.city, tournament.state].filter(Boolean).join(", ")
+    || [tournament.location, tournament.state].filter(Boolean).join(", ")
     || tournament.course_name
     || "";
 

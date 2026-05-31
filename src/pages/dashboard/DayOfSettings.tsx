@@ -585,3 +585,51 @@ function ColorField({ label, value, onChange, placeholder }: { label: string; va
     </div>
   );
 }
+
+function WelcomePreview({ t }: { t: T }) {
+  const [testPlayer, setTestPlayer] = useState({
+    name: "Sample Player",
+    tee_time: "8:30 AM",
+    hole: 1,
+  });
+  const fallback = t.day_of_placeholder_fallback || "TBD";
+  const fill = (s: string) => (s || "")
+    .split("[Tournament Name]").join(t.title || "")
+    .split("[Player Name]").join(testPlayer.name || "Player")
+    .split("[Tee Time]").join(testPlayer.tee_time || fallback)
+    .split("[Starting Hole]").join(testPlayer.hole != null ? `#${testPlayer.hole}` : fallback);
+  const DEFAULT_TITLE = "Welcome to [Tournament Name]!";
+  const title = fill((t.day_of_welcome_title && t.day_of_welcome_title.trim()) || DEFAULT_TITLE);
+  const msg = fill((t.day_of_welcome_message && t.day_of_welcome_message.trim()) || "");
+  return (
+    <div className="border rounded-lg bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Live Preview</Label>
+        <div className="text-[11px] text-muted-foreground">Test data — only you see this</div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div>
+          <Label className="text-[11px]">Player Name</Label>
+          <Input value={testPlayer.name} onChange={(e) => setTestPlayer({ ...testPlayer, name: e.target.value })} className="h-8" />
+        </div>
+        <div>
+          <Label className="text-[11px]">Tee Time (blank = fallback)</Label>
+          <Input value={testPlayer.tee_time} onChange={(e) => setTestPlayer({ ...testPlayer, tee_time: e.target.value })} className="h-8" />
+        </div>
+        <div>
+          <Label className="text-[11px]">Starting Hole (blank = fallback)</Label>
+          <Input
+            type="number"
+            value={testPlayer.hole as any}
+            onChange={(e) => setTestPlayer({ ...testPlayer, hole: e.target.value === "" ? (null as any) : Number(e.target.value) })}
+            className="h-8"
+          />
+        </div>
+      </div>
+      <div className="bg-card border rounded-md p-4 shadow-sm">
+        <h3 className="text-lg font-bold mb-2">{title}</h3>
+        <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg || <span className="italic text-muted-foreground">No message yet — click "Reset to Default Template" to load one.</span>}</div>
+      </div>
+    </div>
+  );
+}

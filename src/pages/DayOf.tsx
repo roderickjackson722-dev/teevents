@@ -80,7 +80,9 @@ const MOCK_TOURNAMENT: T = {
   location: "Pebble Beach", state: "CA",
   day_of_page_enabled: true,
   day_of_page_mode: "preview",
-  day_of_welcome_message: "<p>Welcome to the tournament! We're thrilled to have you here.</p>",
+  day_of_show_welcome: true,
+  day_of_welcome_title: "Welcome to [Tournament Name]!",
+  day_of_welcome_message: "Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.\n\nPlease review your tee time and starting hole below.\n\nBest of luck today!",
   day_of_announcements: null,
   day_of_announcements_list: [
     "Lunch served at 12:00 PM in the clubhouse",

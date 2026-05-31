@@ -340,7 +340,19 @@ export default function DayOfSettings() {
                 Available placeholders: <code>[Tournament Name]</code>, <code>[Player Name]</code>, <code>[Tee Time]</code>, <code>[Starting Hole]</code>. They are replaced automatically on each player's page.
               </p>
             </div>
+            <div>
+              <Label className="text-xs">Fallback text when tee time / hole isn't set</Label>
+              <Input
+                value={t.day_of_placeholder_fallback ?? "TBD"}
+                onChange={(e) => setT({ ...t, day_of_placeholder_fallback: e.target.value })}
+                placeholder="TBD"
+                className="max-w-[200px]"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Shown in place of <code>[Tee Time]</code> or <code>[Starting Hole]</code> when a player doesn't have one assigned yet.</p>
+            </div>
+            <WelcomePreview t={t} />
           </section>
+
 
 
           {/* QUICK ACTION CARDS */}

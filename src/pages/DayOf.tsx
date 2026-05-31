@@ -363,10 +363,10 @@ function DayOfInner() {
           const teeTime = reg.tee_time || "";
           const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : "";
           const fill = (s: string) => s
-            .replaceAll("[Tournament Name]", tournament.title || "")
-            .replaceAll("[Player Name]", playerName)
-            .replaceAll("[Tee Time]", teeTime)
-            .replaceAll("[Starting Hole]", startingHole);
+            .split("[Tournament Name]").join(tournament.title || "")
+            .split("[Player Name]").join(playerName)
+            .split("[Tee Time]").join(teeTime)
+            .split("[Starting Hole]").join(startingHole);
           const rawTitle = tournament.day_of_welcome_title || `Welcome, ${reg.first_name}! 👋`;
           const title = fill(rawTitle);
           const rawMsg = tournament.day_of_welcome_message || "";

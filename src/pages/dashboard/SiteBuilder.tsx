@@ -504,8 +504,8 @@ const SiteBuilder = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
+      <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
           <Link
             to="/dashboard/tournaments"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-2 transition-colors"
@@ -513,38 +513,38 @@ const SiteBuilder = () => {
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Tournaments
           </Link>
-          <h1 className="text-2xl font-display font-bold text-foreground">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground break-words">
             Site Builder — {settings.title}
           </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <label className="flex items-center gap-2 shrink-0">
             <Switch
               checked={!!settings.registration_open}
               onCheckedChange={(v) => updateField("registration_open", v)}
             />
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">
               {settings.registration_open ? "Close Registration" : "Open Registration"}
             </span>
-          </div>
-          <div className="flex items-center gap-2">
+          </label>
+          <label className="flex items-center gap-2 shrink-0">
             <Switch
               checked={!!settings.site_published}
               onCheckedChange={(v) => updateField("site_published", v)}
             />
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">
               {settings.site_published ? "Published" : "Publish"}
             </span>
-          </div>
+          </label>
           {publicUrl && settings.site_published && (
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="shrink-0">
               <Link to={publicUrl} target="_blank">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                 View Site
               </Link>
             </Button>
           )}
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving} className="shrink-0">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             <span className="ml-1.5">Save</span>
           </Button>

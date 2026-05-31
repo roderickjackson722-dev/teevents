@@ -55,6 +55,7 @@ interface T {
   day_of_show_pin_sheets: boolean;
   day_of_pin_sheet_pdf_url: string | null;
   day_of_show_leaderboard: boolean;
+  day_of_placeholder_fallback: string | null;
   pin_sheets_enabled?: boolean;
 }
 
@@ -62,7 +63,7 @@ const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 10 * 1024 * 1024;
 const PDF_MAX_BYTES = 20 * 1024 * 1024;
 
-const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, pin_sheets_enabled";
+const FIELDS = "id, title, slug, organization_id, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, day_of_placeholder_fallback, pin_sheets_enabled";
 
 export default function DayOfSettings() {
   const [tournaments, setTournaments] = useState<Array<{ id: string; title: string; organization_id: string }>>([]);
@@ -141,6 +142,7 @@ export default function DayOfSettings() {
       day_of_show_pin_sheets: t.day_of_show_pin_sheets,
       day_of_pin_sheet_pdf_url: t.day_of_pin_sheet_pdf_url,
       day_of_show_leaderboard: t.day_of_show_leaderboard,
+      day_of_placeholder_fallback: t.day_of_placeholder_fallback,
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
@@ -338,7 +340,19 @@ export default function DayOfSettings() {
                 Available placeholders: <code>[Tournament Name]</code>, <code>[Player Name]</code>, <code>[Tee Time]</code>, <code>[Starting Hole]</code>. They are replaced automatically on each player's page.
               </p>
             </div>
+            <div>
+              <Label className="text-xs">Fallback text when tee time / hole isn't set</Label>
+              <Input
+                value={t.day_of_placeholder_fallback ?? "TBD"}
+                onChange={(e) => setT({ ...t, day_of_placeholder_fallback: e.target.value })}
+                placeholder="TBD"
+                className="max-w-[200px]"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Shown in place of <code>[Tee Time]</code> or <code>[Starting Hole]</code> when a player doesn't have one assigned yet.</p>
+            </div>
+            <WelcomePreview t={t} />
           </section>
+
 
 
           {/* QUICK ACTION CARDS */}
@@ -567,6 +581,54 @@ function ColorField({ label, value, onChange, placeholder }: { label: string; va
           placeholder={placeholder}
           className="flex-1"
         />
+      </div>
+    </div>
+  );
+}
+
+function WelcomePreview({ t }: { t: T }) {
+  const [testPlayer, setTestPlayer] = useState({
+    name: "Sample Player",
+    tee_time: "8:30 AM",
+    hole: 1,
+  });
+  const fallback = t.day_of_placeholder_fallback || "TBD";
+  const fill = (s: string) => (s || "")
+    .split("[Tournament Name]").join(t.title || "")
+    .split("[Player Name]").join(testPlayer.name || "Player")
+    .split("[Tee Time]").join(testPlayer.tee_time || fallback)
+    .split("[Starting Hole]").join(testPlayer.hole != null ? `#${testPlayer.hole}` : fallback);
+  const DEFAULT_TITLE = "Welcome to [Tournament Name]!";
+  const title = fill((t.day_of_welcome_title && t.day_of_welcome_title.trim()) || DEFAULT_TITLE);
+  const msg = fill((t.day_of_welcome_message && t.day_of_welcome_message.trim()) || "");
+  return (
+    <div className="border rounded-lg bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Live Preview</Label>
+        <div className="text-[11px] text-muted-foreground">Test data — only you see this</div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div>
+          <Label className="text-[11px]">Player Name</Label>
+          <Input value={testPlayer.name} onChange={(e) => setTestPlayer({ ...testPlayer, name: e.target.value })} className="h-8" />
+        </div>
+        <div>
+          <Label className="text-[11px]">Tee Time (blank = fallback)</Label>
+          <Input value={testPlayer.tee_time} onChange={(e) => setTestPlayer({ ...testPlayer, tee_time: e.target.value })} className="h-8" />
+        </div>
+        <div>
+          <Label className="text-[11px]">Starting Hole (blank = fallback)</Label>
+          <Input
+            type="number"
+            value={testPlayer.hole as any}
+            onChange={(e) => setTestPlayer({ ...testPlayer, hole: e.target.value === "" ? (null as any) : Number(e.target.value) })}
+            className="h-8"
+          />
+        </div>
+      </div>
+      <div className="bg-card border rounded-md p-4 shadow-sm">
+        <h3 className="text-lg font-bold mb-2">{title}</h3>
+        <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg || <span className="italic text-muted-foreground">No message yet — click "Reset to Default Template" to load one.</span>}</div>
       </div>
     </div>
   );

@@ -79,6 +79,7 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Name, date, location, fees, add‑ons" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
+      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
       { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
@@ -105,7 +106,6 @@ const categories: SidebarCategory[] = [
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
       { title: "Tee Sheet", url: "/dashboard/tee-sheet", icon: Clock, feature: "leaderboard", description: "Pairings, tee times, hole assignments" },
-      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Admin view, edit scores" },
       { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups, test mode" },
       { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard", description: "Practice scoring before live event" },
       

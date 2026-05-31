@@ -1,0 +1,400 @@
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from "@/hooks/use-toast";
+import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
+
+export interface LeaderboardDesign {
+  title: string;
+  show_position: boolean;
+  show_player: boolean;
+  show_gross: boolean;
+  show_net: boolean;
+  show_thru: boolean;
+  default_view: "gross" | "net" | "both";
+  auto_refresh_seconds: number;
+  max_rows: number;
+  background_color: string;
+  header_background: string;
+  text_color: string;
+  accent_color: string;
+  row_stripe: boolean;
+  font_size: "small" | "medium" | "large";
+  font_family: string;
+  show_sponsor_banner: boolean;
+  sponsor_banner_position: "top" | "bottom" | "sidebar";
+  sponsor_rotation_seconds: number;
+  sponsor_filter: "all" | "selected";
+  show_ticker: boolean;
+  ticker_text: string;
+  ticker_speed: "slow" | "normal" | "fast";
+}
+
+export const DEFAULT_DESIGN: LeaderboardDesign = {
+  title: "",
+  show_position: true,
+  show_player: true,
+  show_gross: true,
+  show_net: true,
+  show_thru: true,
+  default_view: "both",
+  auto_refresh_seconds: 10,
+  max_rows: 20,
+  background_color: "#1a5c38",
+  header_background: "#0d3b26",
+  text_color: "#FFFFFF",
+  accent_color: "#F5A623",
+  row_stripe: true,
+  font_size: "medium",
+  font_family: "Inter",
+  show_sponsor_banner: true,
+  sponsor_banner_position: "top",
+  sponsor_rotation_seconds: 5,
+  sponsor_filter: "all",
+  show_ticker: false,
+  ticker_text: "",
+  ticker_speed: "normal",
+};
+
+const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];
+const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
+
+interface Props {
+  tournamentId: string;
+  tournamentSlug: string | null;
+}
+
+export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: Props) {
+  const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    setLoading(true);
+    supabase
+      .from("tournaments")
+      .select("leaderboard_design")
+      .eq("id", tournamentId)
+      .maybeSingle()
+      .then(({ data }) => {
+        const d = (data as any)?.leaderboard_design;
+        setDesign({ ...DEFAULT_DESIGN, ...(d || {}) });
+        setLoading(false);
+      });
+  }, [tournamentId]);
+
+  const update = <K extends keyof LeaderboardDesign>(k: K, v: LeaderboardDesign[K]) =>
+    setDesign((d) => ({ ...d, [k]: v }));
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ leaderboard_design: design } as any)
+      .eq("id", tournamentId);
+    setSaving(false);
+    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Leaderboard design saved" });
+  };
+
+  const reset = () => {
+    if (!confirm("Reset all leaderboard design settings to defaults?")) return;
+    setDesign(DEFAULT_DESIGN);
+  };
+
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const publicUrl = tournamentSlug ? `${baseUrl}/live/${tournamentSlug}` : "";
+  const tvUrl = tournamentSlug ? `${publicUrl}?display=1` : "";
+  const qrUrl = tvUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(tvUrl)}`
+    : "";
+
+  const copy = (s: string) => {
+    navigator.clipboard.writeText(s);
+    toast({ title: "Copied!" });
+  };
+
+  // Mock preview rows
+  const previewRows = useMemo(
+    () => [
+      { pos: 1, name: "Mike Wilson", gross: 68, net: 62, thru: 18 },
+      { pos: 2, name: "Sarah Lee", gross: 70, net: 64, thru: 18 },
+      { pos: 3, name: "John Smith", gross: 72, net: 66, thru: 17 },
+      { pos: 4, name: "Jane Doe", gross: 73, net: 68, thru: 18 },
+      { pos: 5, name: "Bob Johnson", gross: 75, net: 70, thru: 16 },
+    ],
+    []
+  );
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">Loading design settings…</CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Tv2 className="w-5 h-5" /> Live Leaderboard Design</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* PREVIEW */}
+        <section>
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Preview</Label>
+          <LeaderboardPreview design={design} rows={previewRows} />
+        </section>
+
+        {/* DISPLAY SETTINGS */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Display Settings</Label>
+          <div>
+            <Label className="text-xs">Leaderboard Title (optional)</Label>
+            <Input value={design.title} onChange={(e) => update("title", e.target.value)} placeholder="e.g. Pebble Beach Classic Leaderboard" />
+          </div>
+          <div>
+            <Label className="text-xs">Show Columns</Label>
+            <div className="flex flex-wrap gap-4 mt-1">
+              <Check label="Position" checked={design.show_position} onChange={(v) => update("show_position", v)} />
+              <Check label="Player / Team" checked={design.show_player} onChange={(v) => update("show_player", v)} />
+              <Check label="Gross" checked={design.show_gross} onChange={(v) => update("show_gross", v)} />
+              <Check label="Net" checked={design.show_net} onChange={(v) => update("show_net", v)} />
+              <Check label="Thru" checked={design.show_thru} onChange={(v) => update("show_thru", v)} />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Default View</Label>
+            <RadioGroup value={design.default_view} onValueChange={(v) => update("default_view", v as any)} className="flex flex-wrap gap-4 mt-1">
+              <RadioOpt value="gross" label="Gross Only" />
+              <RadioOpt value="net" label="Net Only" />
+              <RadioOpt value="both" label="Both (toggle)" />
+            </RadioGroup>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs">Auto-Refresh: {design.auto_refresh_seconds}s</Label>
+              <Slider min={5} max={60} step={1} value={[design.auto_refresh_seconds]} onValueChange={([v]) => update("auto_refresh_seconds", v)} />
+            </div>
+            <div>
+              <Label className="text-xs">Rows to Show: {design.max_rows}</Label>
+              <Slider min={5} max={50} step={1} value={[design.max_rows]} onValueChange={([v]) => update("max_rows", v)} />
+            </div>
+          </div>
+        </section>
+
+        {/* COLOR & STYLE */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Color &amp; Style</Label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Color label="Background" value={design.background_color} onChange={(v) => update("background_color", v)} />
+            <Color label="Header BG" value={design.header_background} onChange={(v) => update("header_background", v)} />
+            <Color label="Text" value={design.text_color} onChange={(v) => update("text_color", v)} />
+            <Color label="Accent" value={design.accent_color} onChange={(v) => update("accent_color", v)} />
+          </div>
+          <Check label="Alternate row colors (stripe)" checked={design.row_stripe} onChange={(v) => update("row_stripe", v)} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">Font Size</Label>
+              <Select value={design.font_size} onValueChange={(v) => update("font_size", v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="small">Small</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="large">Large</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Font Family</Label>
+              <Select value={design.font_family} onValueChange={(v) => update("font_family", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FONT_OPTIONS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </section>
+
+        {/* SPONSOR BANNER */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Sponsor Banner</Label>
+          <Check label="Show sponsor banner on leaderboard" checked={design.show_sponsor_banner} onChange={(v) => update("show_sponsor_banner", v)} />
+          {design.show_sponsor_banner && (
+            <>
+              <div>
+                <Label className="text-xs">Banner Position</Label>
+                <RadioGroup value={design.sponsor_banner_position} onValueChange={(v) => update("sponsor_banner_position", v as any)} className="flex flex-wrap gap-4 mt-1">
+                  <RadioOpt value="top" label="Top" />
+                  <RadioOpt value="bottom" label="Bottom" />
+                  <RadioOpt value="sidebar" label="Sidebar" />
+                </RadioGroup>
+              </div>
+              <div>
+                <Label className="text-xs">Rotation Speed: {design.sponsor_rotation_seconds}s between logos</Label>
+                <Slider min={2} max={20} step={1} value={[design.sponsor_rotation_seconds]} onValueChange={([v]) => update("sponsor_rotation_seconds", v)} />
+              </div>
+              <div>
+                <Label className="text-xs">Sponsor Display</Label>
+                <RadioGroup value={design.sponsor_filter} onValueChange={(v) => update("sponsor_filter", v as any)} className="flex flex-wrap gap-4 mt-1">
+                  <RadioOpt value="all" label="All sponsors" />
+                  <RadioOpt value="selected" label="Selected only (use sponsor toggles)" />
+                </RadioGroup>
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* SCROLLING TICKER */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Scrolling Ticker</Label>
+          <Check label="Enable scrolling ticker" checked={design.show_ticker} onChange={(v) => update("show_ticker", v)} />
+          {design.show_ticker && (
+            <>
+              <div>
+                <Label className="text-xs">Ticker Text</Label>
+                <Input value={design.ticker_text} onChange={(e) => update("ticker_text", e.target.value)} placeholder="Thank you to our sponsors!" />
+              </div>
+              <div>
+                <Label className="text-xs">Ticker Speed</Label>
+                <Select value={design.ticker_speed} onValueChange={(v) => update("ticker_speed", v as any)}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="slow">Slow</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="fast">Fast</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* TV DISPLAY MODE */}
+        {tournamentSlug && (
+          <section className="space-y-3 border-t pt-5">
+            <Label className="text-base font-semibold">TV Display Mode (Public URL)</Label>
+            <div>
+              <Label className="text-xs">TV Display URL</Label>
+              <div className="flex gap-2 mt-1">
+                <Input readOnly value={tvUrl} className="font-mono text-xs" />
+                <Button type="button" variant="outline" size="sm" onClick={() => copy(tvUrl)}><Copy className="w-4 h-4 mr-1" /> Copy</Button>
+                <a href={tvUrl} target="_blank" rel="noreferrer">
+                  <Button type="button" variant="outline" size="sm"><ExternalLink className="w-4 h-4 mr-1" /> Open</Button>
+                </a>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Add <code>?display=1</code> for full-screen TV mode (no chrome, auto-refresh).</p>
+            </div>
+            {qrUrl && (
+              <div className="flex items-center gap-4 flex-wrap">
+                <img src={qrUrl} alt="TV display QR code" className="border rounded bg-white p-2" />
+                <a href={qrUrl} download={`leaderboard-qr-${tournamentSlug}.png`} target="_blank" rel="noreferrer">
+                  <Button type="button" variant="outline" size="sm">Download QR Code</Button>
+                </a>
+              </div>
+            )}
+          </section>
+        )}
+
+        <div className="flex flex-wrap gap-3 pt-4 border-t">
+          <Button onClick={save} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
+            {saving ? "Saving…" : (<><Save className="w-4 h-4 mr-1" /> Save Leaderboard Design</>)}
+          </Button>
+          <Button variant="ghost" onClick={reset}><RotateCcw className="w-4 h-4 mr-1" /> Reset to Default</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LeaderboardPreview({ design, rows }: { design: LeaderboardDesign; rows: any[] }) {
+  const fontSize = FONT_SIZE_PX[design.font_size] || 16;
+  return (
+    <div
+      className="rounded-lg overflow-hidden border mt-2"
+      style={{ backgroundColor: design.background_color, color: design.text_color, fontFamily: design.font_family, fontSize }}
+    >
+      {design.title && (
+        <div className="px-4 py-2 font-bold text-center" style={{ backgroundColor: design.header_background }}>
+          {design.title}
+        </div>
+      )}
+      {design.show_sponsor_banner && design.sponsor_banner_position === "top" && (
+        <div className="text-center text-xs py-1.5 opacity-80" style={{ backgroundColor: design.accent_color, color: design.header_background }}>
+          [ Sponsor Banner ]
+        </div>
+      )}
+      <table className="w-full">
+        <thead>
+          <tr style={{ backgroundColor: design.header_background }}>
+            {design.show_position && <th className="px-3 py-2 text-left">#</th>}
+            {design.show_player && <th className="px-3 py-2 text-left">Player</th>}
+            {design.show_gross && (design.default_view !== "net") && <th className="px-3 py-2 text-right">Gross</th>}
+            {design.show_net && (design.default_view !== "gross") && <th className="px-3 py-2 text-right">Net</th>}
+            {design.show_thru && <th className="px-3 py-2 text-right">Thru</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(0, Math.min(rows.length, design.max_rows)).map((r, i) => (
+            <tr key={i} style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${design.header_background}66` : "transparent" }}>
+              {design.show_position && <td className="px-3 py-1.5" style={{ color: i < 3 ? design.accent_color : undefined, fontWeight: i < 3 ? 700 : 400 }}>{r.pos}</td>}
+              {design.show_player && <td className="px-3 py-1.5">{r.name}</td>}
+              {design.show_gross && (design.default_view !== "net") && <td className="px-3 py-1.5 text-right font-mono">{r.gross}</td>}
+              {design.show_net && (design.default_view !== "gross") && <td className="px-3 py-1.5 text-right font-mono">{r.net}</td>}
+              {design.show_thru && <td className="px-3 py-1.5 text-right opacity-80">{r.thru}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {design.show_ticker && design.ticker_text && (
+        <div className="overflow-hidden whitespace-nowrap py-1.5 text-sm" style={{ backgroundColor: design.header_background }}>
+          <span className="inline-block animate-marquee px-4">{design.ticker_text}</span>
+        </div>
+      )}
+      {design.show_sponsor_banner && design.sponsor_banner_position === "bottom" && (
+        <div className="text-center text-xs py-1.5 opacity-80" style={{ backgroundColor: design.accent_color, color: design.header_background }}>
+          [ Sponsor Banner ]
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-2 cursor-pointer">
+      <Switch checked={checked} onCheckedChange={onChange} />
+      <span className="text-sm">{label}</span>
+    </label>
+  );
+}
+
+function RadioOpt({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <RadioGroupItem value={value} id={`ropt-${value}`} />
+      <Label htmlFor={`ropt-${value}`} className="font-normal cursor-pointer">{label}</Label>
+    </div>
+  );
+}
+
+function Color({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-2">
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-12 rounded border cursor-pointer bg-transparent shrink-0" />
+        <Input value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 text-xs font-mono" />
+      </div>
+    </div>
+  );
+}

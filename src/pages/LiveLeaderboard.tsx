@@ -117,7 +117,10 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
 
 export default function LiveLeaderboard() {
   const { slug } = useParams<{ slug: string }>();
+  const [search] = useSearchParams();
+  const isTvMode = search.get("display") === "1";
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [scores, setScores] = useState<any[]>([]);
@@ -132,7 +135,7 @@ export default function LiveLeaderboard() {
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published")
+      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design")
       .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
       .maybeSingle()
       .then(({ data }) => {
@@ -147,6 +150,7 @@ export default function LiveLeaderboard() {
           return;
         }
         setTournament(data as Tournament);
+        setDesign({ ...DEFAULT_DESIGN, ...((data as any).leaderboard_design || {}) });
         setLoading(false);
       });
   }, [slug]);

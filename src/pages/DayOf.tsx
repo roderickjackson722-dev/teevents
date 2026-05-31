@@ -359,17 +359,20 @@ function DayOfInner() {
 
         {/* Welcome */}
         {tournament.day_of_show_welcome && (() => {
-          const playerName = `${reg.first_name} ${reg.last_name}`.trim() || reg.first_name;
-          const teeTime = reg.tee_time || "";
-          const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : "";
+          const playerName = `${reg.first_name} ${reg.last_name}`.trim() || reg.first_name || "Player";
+          const fallback = (tournament as any).day_of_placeholder_fallback || "TBD";
+          const teeTime = reg.tee_time || fallback;
+          const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : fallback;
           const fill = (s: string) => s
             .split("[Tournament Name]").join(tournament.title || "")
             .split("[Player Name]").join(playerName)
             .split("[Tee Time]").join(teeTime)
             .split("[Starting Hole]").join(startingHole);
-          const rawTitle = tournament.day_of_welcome_title || `Welcome, ${reg.first_name}! 👋`;
+          const DEFAULT_TITLE = "Welcome to [Tournament Name]!";
+          const DEFAULT_MSG = `Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.\n\nPlease review your tee time and starting hole below. Use the buttons on this page to enter your scores, follow the live leaderboard, and view important announcements.\n\nIf you need anything, find a tournament staff member or use the contact information at the bottom of this page.\n\nBest of luck today!`;
+          const rawTitle = (tournament.day_of_welcome_title && tournament.day_of_welcome_title.trim()) || DEFAULT_TITLE;
           const title = fill(rawTitle);
-          const rawMsg = tournament.day_of_welcome_message || "";
+          const rawMsg = (tournament.day_of_welcome_message && tournament.day_of_welcome_message.trim()) || DEFAULT_MSG;
           const filledMsg = fill(rawMsg);
           const isHtml = /<[a-z][\s\S]*>/i.test(filledMsg);
           const html = isHtml ? filledMsg : filledMsg.replace(/\n/g, "<br/>");
@@ -383,10 +386,10 @@ function DayOfInner() {
                   <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <Stat label="Tee Time" value={reg.tee_time || "—"} icon={<Clock className="w-4 h-4" />} />
-                  <Stat label="Hole" value={reg.hole_assignment ?? "—"} icon={<MapPin className="w-4 h-4" />} />
-                  <Stat label="Group" value={reg.group_number ?? "—"} icon={<Users className="w-4 h-4" />} />
-                  <Stat label="Position" value={reg.group_position ?? "—"} />
+                  <Stat label="Tee Time" value={reg.tee_time || fallback} icon={<Clock className="w-4 h-4" />} />
+                  <Stat label="Hole" value={reg.hole_assignment ?? fallback} icon={<MapPin className="w-4 h-4" />} />
+                  <Stat label="Group" value={reg.group_number ?? fallback} icon={<Users className="w-4 h-4" />} />
+                  <Stat label="Position" value={reg.group_position ?? fallback} />
                 </div>
                 {reg.scoring_code && (
                   <div className="rounded-md bg-muted px-3 py-2">
@@ -398,6 +401,7 @@ function DayOfInner() {
             </Card>
           );
         })()}
+
 
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">

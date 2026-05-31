@@ -30,6 +30,8 @@ interface T {
   location?: string | null;
   day_of_page_enabled: boolean;
   day_of_page_mode: string;
+  day_of_show_welcome: boolean;
+  day_of_welcome_title: string | null;
   day_of_welcome_message: string | null;
   day_of_announcements: string | null;
   day_of_announcements_list: string[];

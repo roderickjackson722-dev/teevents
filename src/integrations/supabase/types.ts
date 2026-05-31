@@ -5662,6 +5662,7 @@ export type Database = {
           day_of_page_mode: string
           day_of_pairings_url: string | null
           day_of_pin_sheet_pdf_url: string | null
+          day_of_placeholder_fallback: string
           day_of_rules_url: string | null
           day_of_show_announcements_card: boolean
           day_of_show_coursemap_card: boolean
@@ -5700,6 +5701,7 @@ export type Database = {
           image_url: string | null
           is_demo: boolean
           is_pro: boolean
+          leaderboard_design: Json
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
           live_display_enabled: boolean
@@ -5824,6 +5826,7 @@ export type Database = {
           day_of_page_mode?: string
           day_of_pairings_url?: string | null
           day_of_pin_sheet_pdf_url?: string | null
+          day_of_placeholder_fallback?: string
           day_of_rules_url?: string | null
           day_of_show_announcements_card?: boolean
           day_of_show_coursemap_card?: boolean
@@ -5862,6 +5865,7 @@ export type Database = {
           image_url?: string | null
           is_demo?: boolean
           is_pro?: boolean
+          leaderboard_design?: Json
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           live_display_enabled?: boolean
@@ -5986,6 +5990,7 @@ export type Database = {
           day_of_page_mode?: string
           day_of_pairings_url?: string | null
           day_of_pin_sheet_pdf_url?: string | null
+          day_of_placeholder_fallback?: string
           day_of_rules_url?: string | null
           day_of_show_announcements_card?: boolean
           day_of_show_coursemap_card?: boolean
@@ -6024,6 +6029,7 @@ export type Database = {
           image_url?: string | null
           is_demo?: boolean
           is_pro?: boolean
+          leaderboard_design?: Json
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           live_display_enabled?: boolean

@@ -1,0 +1,27 @@
+ALTER TABLE public.tournaments
+  ADD COLUMN IF NOT EXISTS day_of_placeholder_fallback text NOT NULL DEFAULT 'TBD',
+  ADD COLUMN IF NOT EXISTS leaderboard_design jsonb NOT NULL DEFAULT '{
+    "title": "",
+    "show_position": true,
+    "show_player": true,
+    "show_gross": true,
+    "show_net": true,
+    "show_thru": true,
+    "default_view": "both",
+    "auto_refresh_seconds": 10,
+    "max_rows": 20,
+    "background_color": "#1a5c38",
+    "header_background": "#0d3b26",
+    "text_color": "#FFFFFF",
+    "accent_color": "#F5A623",
+    "row_stripe": true,
+    "font_size": "medium",
+    "font_family": "Inter",
+    "show_sponsor_banner": true,
+    "sponsor_banner_position": "top",
+    "sponsor_rotation_seconds": 5,
+    "sponsor_filter": "all",
+    "show_ticker": false,
+    "ticker_text": "",
+    "ticker_speed": "normal"
+  }'::jsonb;

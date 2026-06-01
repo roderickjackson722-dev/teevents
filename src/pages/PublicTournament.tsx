@@ -39,6 +39,8 @@ interface TournamentSite {
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
   leaderboard_rotating_logos?: Array<{ url: string; name?: string; website_url?: string }> | null;
+  leaderboard_sponsor_banner_enabled?: boolean | null;
+  leaderboard_sponsor_rotation_order?: string | null;
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean; max_group_size?: number;
   pass_fees_to_registrants?: boolean;

@@ -38,6 +38,7 @@ interface TournamentSite {
   waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null; max_waitlist_slots?: number | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
   leaderboard_sponsor_interval_ms: number; leaderboard_sponsor_style: string;
+  leaderboard_rotating_logos?: Array<{ url: string; name?: string; website_url?: string }> | null;
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean; max_group_size?: number;
   pass_fees_to_registrants?: boolean;
@@ -1836,7 +1837,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 </p>
               )}
               {(() => {
-                const lbSponsors = sponsors.filter(s => s.show_on_leaderboard);
+                const baseLbSponsors = sponsors.filter(s => s.show_on_leaderboard);
+                const uploadedLogos = (tournament.leaderboard_rotating_logos || []).map((l, idx) => ({
+                  id: `uploaded-${idx}`,
+                  name: l.name || "Sponsor",
+                  logo_url: l.url,
+                  website_url: l.website_url || null,
+                  tier: "gold",
+                  show_on_leaderboard: true,
+                }));
+                const lbSponsors = [...baseLbSponsors, ...uploadedLogos];
                 const style = tournament.leaderboard_sponsor_style || 'banner';
                 const interval = tournament.leaderboard_sponsor_interval_ms || 5000;
                 if (lbSponsors.length === 0) return null;
@@ -1857,7 +1867,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     </div>
                   );
                 }
-                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors} intervalMs={interval} /></div>;
+                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors as any} intervalMs={interval} /></div>;
               })()}
 
               {isStableford && (

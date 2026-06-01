@@ -5769,6 +5769,7 @@ export type Database = {
           is_demo: boolean
           is_pro: boolean
           leaderboard_design: Json
+          leaderboard_rotating_logos: Json
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
           live_allow_edit_past_holes: boolean
@@ -5943,6 +5944,7 @@ export type Database = {
           is_demo?: boolean
           is_pro?: boolean
           leaderboard_design?: Json
+          leaderboard_rotating_logos?: Json
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           live_allow_edit_past_holes?: boolean
@@ -6117,6 +6119,7 @@ export type Database = {
           is_demo?: boolean
           is_pro?: boolean
           leaderboard_design?: Json
+          leaderboard_rotating_logos?: Json
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
           live_allow_edit_past_holes?: boolean

@@ -156,6 +156,9 @@ export default function CheckIn() {
     window.open(url, "_blank");
   };
 
+  const escapeAttr = (s: string) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+
   const filtered = players?.filter((p) => {
     const q = search.toLowerCase();
     return p.first_name.toLowerCase().includes(q) || p.last_name.toLowerCase().includes(q) || p.email.toLowerCase().includes(q);

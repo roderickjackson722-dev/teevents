@@ -205,7 +205,7 @@ export default function DayOfSettings() {
   };
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/demo` : "";
+  const previewUrl = t ? `${baseUrl}/day-of/${t.id}/demo?preview=1` : "";
 
   const [sending, setSending] = useState(false);
   const [testEmail, setTestEmail] = useState("");

@@ -439,8 +439,6 @@ const Sponsors = () => {
   const [uploading, setUploading] = useState(false);
   const [logoCropOpen, setLogoCropOpen] = useState(false);
   const [logoCropSrc, setLogoCropSrc] = useState<string | null>(null);
-  const [lbInterval, setLbInterval] = useState(5000);
-  const [lbStyle, setLbStyle] = useState("banner");
   const [form, setForm] = useState({
     name: "",
     tier: "silver",

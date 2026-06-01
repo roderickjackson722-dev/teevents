@@ -58,7 +58,7 @@ export default function LiveScoring() {
     if (!slug) return;
     supabase
       .from("tournaments")
-      .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos")
+      .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order")
       .eq("slug", slug)
       .eq("site_published", true)
       .single()

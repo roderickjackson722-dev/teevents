@@ -72,6 +72,7 @@ export default function DayOfSettings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"map" | "header" | null>(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
   const mapFileRef = useRef<HTMLInputElement | null>(null);
   const headerFileRef = useRef<HTMLInputElement | null>(null);
   const pinPdfFileRef = useRef<HTMLInputElement | null>(null);
@@ -146,7 +147,7 @@ export default function DayOfSettings() {
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Saved" });
+    else { toast({ title: "Saved" }); setPreviewKey(k => k + 1); }
   };
 
   const uploadPinSheetPdf = async (file: File) => {

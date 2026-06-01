@@ -570,9 +570,32 @@ export default function DayOfSettings() {
 
           <div className="border-t pt-4 text-sm text-muted-foreground">
             <p className="font-medium text-foreground mb-1">Player access</p>
-            <p>When a player checks in (QR scan), they are sent to their personalized day-of page. You can also share this link template:</p>
+            <p>When a player scans their QR code or opens their email link, they go directly to their personalized day-of page. Share link template:</p>
             <code className="block bg-muted px-2 py-1 rounded mt-1 text-xs break-all">{baseUrl}/day-of/{t.slug}/[scoring-code]</code>
           </div>
+
+          <Card className="p-4 space-y-3 border-t">
+            <div>
+              <p className="font-semibold text-foreground">Email Players</p>
+              <p className="text-xs text-muted-foreground">Send each registered player a personalized link to their Day-of Event Page.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                className="w-[260px]"
+              />
+              <Button type="button" variant="outline" size="sm" disabled={sending || !testEmail} onClick={() => sendDayOfLinks("test")}>
+                Send Test Email
+              </Button>
+              <Button type="button" size="sm" disabled={sending} onClick={() => sendDayOfLinks("all")} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
+                {sending ? "Sending…" : "Send now to all registered players"}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Sends a one-time email with each player's unique day-of link. Rate-limited to avoid spam flags.</p>
+          </Card>
         </Card>
       )}
         </div>

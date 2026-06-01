@@ -1,0 +1,374 @@
+import { useEffect, useMemo, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { allocateStrokes } from "@/lib/handicapUtils";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+
+interface Reg {
+  id: string;
+  first_name: string;
+  last_name: string;
+  group_position: number | null;
+  playing_handicap: number | null;
+  course_handicap: number | null;
+  handicap: number | null;
+}
+
+interface Tournament {
+  id: string;
+  title: string;
+  slug: string | null;
+  course_par: number | null;
+  hole_pars: number[] | null;
+  live_allow_edit_past_holes: boolean;
+  live_require_confirm_save: boolean;
+  live_leaderboard_enabled: boolean;
+}
+
+const NUM_HOLES = 18;
+const DEFAULT_SI = Array.from({ length: 18 }, (_, i) => i + 1);
+
+export default function GroupScoring() {
+  const { slug, code } = useParams<{ slug: string; code: string }>();
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [players, setPlayers] = useState<Reg[]>([]);
+  const [scores, setScores] = useState<Record<string, Record<number, number>>>({});
+  const [currentHole, setCurrentHole] = useState(1);
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    if (!slug || !code) return;
+    (async () => {
+      setLoading(true);
+      const { data: t } = await supabase
+        .from("tournaments")
+        .select("id, title, slug, course_par, hole_pars, live_allow_edit_past_holes, live_require_confirm_save, live_leaderboard_enabled, site_published")
+        .or(`slug.eq.${slug},custom_slug.eq.${slug},id.eq.${slug}`)
+        .maybeSingle();
+      if (!t || !(t as any).site_published) {
+        setError("Tournament not found or not published.");
+        setLoading(false);
+        return;
+      }
+      setTournament(t as Tournament);
+
+      const { data: regs } = await supabase
+        .from("tournament_registrations")
+        .select("id, first_name, last_name, group_position, playing_handicap, course_handicap, handicap")
+        .eq("tournament_id", (t as any).id)
+        .eq("group_scoring_code", code.toUpperCase())
+        .order("group_position");
+      if (!regs || regs.length === 0) {
+        setError("No players found for this code.");
+        setLoading(false);
+        return;
+      }
+      setPlayers(regs as Reg[]);
+
+      const ids = (regs as Reg[]).map((r) => r.id);
+      const { data: sc } = await supabase
+        .from("tournament_scores")
+        .select("registration_id, hole_number, strokes")
+        .in("registration_id", ids);
+      const map: Record<string, Record<number, number>> = {};
+      (sc || []).forEach((s: any) => {
+        map[s.registration_id] = map[s.registration_id] || {};
+        map[s.registration_id][s.hole_number] = s.strokes;
+      });
+      setScores(map);
+
+      // jump to first unscored hole
+      const firstUnscored = (() => {
+        for (let h = 1; h <= NUM_HOLES; h++) {
+          if (!(regs as Reg[]).every((p) => map[p.id]?.[h] != null)) return h;
+        }
+        return 1;
+      })();
+      setCurrentHole(firstUnscored);
+      setLoading(false);
+    })();
+  }, [slug, code]);
+
+  // Realtime updates from other devices in the group
+  useEffect(() => {
+    if (!tournament || players.length === 0) return;
+    const ids = players.map((p) => p.id);
+    const channel = supabase
+      .channel(`group-scoring-${code}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
+        (payload: any) => {
+          const row = payload.new || payload.old;
+          if (!row || !ids.includes(row.registration_id)) return;
+          setScores((prev) => {
+            const next = { ...prev };
+            next[row.registration_id] = { ...(next[row.registration_id] || {}) };
+            if (payload.eventType === "DELETE") delete next[row.registration_id][row.hole_number];
+            else next[row.registration_id][row.hole_number] = row.strokes;
+            return next;
+          });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [tournament, players, code]);
+
+  const holePar = useMemo(() => {
+    if (!tournament) return 4;
+    if (tournament.hole_pars && tournament.hole_pars[currentHole - 1]) return tournament.hole_pars[currentHole - 1];
+    return Math.round((tournament.course_par || 72) / 18);
+  }, [tournament, currentHole]);
+
+  const strokesByPlayer = useMemo(() => {
+    const out: Record<string, number[]> = {};
+    players.forEach((p) => {
+      const ph = p.playing_handicap ?? p.course_handicap ?? p.handicap ?? 0;
+      out[p.id] = allocateStrokes(ph, DEFAULT_SI);
+    });
+    return out;
+  }, [players]);
+
+  const pendingChanges = useMemo(() => {
+    return players.filter((p) => {
+      const d = draft[p.id];
+      if (d == null || d === "") return false;
+      const n = parseInt(d, 10);
+      return !isNaN(n) && n !== scores[p.id]?.[currentHole];
+    });
+  }, [draft, scores, players, currentHole]);
+
+  const isPastHole = currentHole < (() => {
+    for (let h = 1; h <= NUM_HOLES; h++) {
+      if (!players.every((p) => scores[p.id]?.[h] != null)) return h;
+    }
+    return NUM_HOLES + 1;
+  })();
+
+  const editLocked = isPastHole && tournament && !tournament.live_allow_edit_past_holes;
+
+  const performSave = async () => {
+    if (!tournament) return;
+    setSaving(true);
+    const rows = pendingChanges.map((p) => ({
+      tournament_id: tournament.id,
+      registration_id: p.id,
+      hole_number: currentHole,
+      strokes: parseInt(draft[p.id], 10),
+    }));
+    const { error } = await supabase
+      .from("tournament_scores")
+      .upsert(rows, { onConflict: "registration_id,hole_number" });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setScores((prev) => {
+      const next = { ...prev };
+      rows.forEach((r) => {
+        next[r.registration_id] = { ...(next[r.registration_id] || {}), [r.hole_number]: r.strokes };
+      });
+      return next;
+    });
+    setDraft({});
+    toast({ title: "Saved" });
+    if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
+  };
+
+  const handleSave = () => {
+    if (pendingChanges.length === 0) {
+      if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
+      return;
+    }
+    if (tournament?.live_require_confirm_save) setConfirmOpen(true);
+    else performSave();
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (error || !tournament) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center gap-4">
+        <Trophy className="h-12 w-12 text-muted-foreground/40" />
+        <p className="text-muted-foreground">{error || "Tournament unavailable."}</p>
+        <Button asChild variant="outline"><Link to={`/score/${slug}`}>Try a different code</Link></Button>
+      </div>
+    );
+  }
+
+  const getNet = (p: Reg, hole: number, gross: number | undefined) => {
+    if (gross == null) return null;
+    const s = strokesByPlayer[p.id]?.[hole - 1] || 0;
+    return gross - s;
+  };
+
+  return (
+    <div className="min-h-screen bg-background pb-32">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+        <div className="min-w-0">
+          <h1 className="font-bold text-foreground truncate flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-secondary shrink-0" />
+            <span className="truncate">{tournament.title}</span>
+          </h1>
+          <p className="text-xs text-muted-foreground">Group {code}</p>
+        </div>
+        {tournament.live_leaderboard_enabled && tournament.slug && (
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/live/${tournament.slug}`}>Leaderboard</Link>
+          </Button>
+        )}
+      </header>
+
+      <main className="max-w-2xl mx-auto p-4 space-y-4">
+        {/* Hole nav */}
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <Button variant="outline" size="icon" onClick={() => setCurrentHole((h) => Math.max(1, h - 1))} disabled={currentHole === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex-1 text-center">
+                <p className="text-xs text-muted-foreground">Hole</p>
+                <p className="text-2xl font-bold">{currentHole} <span className="text-base font-normal text-muted-foreground">of {NUM_HOLES}</span></p>
+              </div>
+              <Button variant="outline" size="icon" onClick={() => setCurrentHole((h) => Math.min(NUM_HOLES, h + 1))} disabled={currentHole === NUM_HOLES}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select value={String(currentHole)} onValueChange={(v) => setCurrentHole(parseInt(v, 10))}>
+                <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: NUM_HOLES }, (_, i) => i + 1).map((h) => {
+                    const allScored = players.every((p) => scores[p.id]?.[h] != null);
+                    return <SelectItem key={h} value={String(h)}>Hole {h} {allScored ? "✓" : ""}</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+              <div className="text-xs text-muted-foreground whitespace-nowrap">
+                Par {holePar} · SI {currentHole}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Player rows */}
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Scores</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {players.map((p) => {
+              const sStrokes = strokesByPlayer[p.id]?.[currentHole - 1] || 0;
+              const gross = scores[p.id]?.[currentHole];
+              const draftVal = draft[p.id] ?? (gross != null ? String(gross) : "");
+              const grossNum = draftVal === "" ? undefined : parseInt(draftVal, 10);
+              const net = getNet(p, currentHole, grossNum);
+              return (
+                <div key={p.id} className="flex items-center gap-3 p-2 rounded border border-border">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{p.first_name} {p.last_name}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {sStrokes > 0 && (
+                        <span className="text-secondary" title={`${sStrokes} stroke${sStrokes > 1 ? "s" : ""} on this hole`}>
+                          {"●".repeat(sStrokes)}
+                        </span>
+                      )}
+                      {grossNum != null && <span>net: {net}</span>}
+                    </div>
+                  </div>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={15}
+                    value={draftVal}
+                    disabled={editLocked || false}
+                    onChange={(e) => setDraft((d) => ({ ...d, [p.id]: e.target.value }))}
+                    className="w-16 text-center text-lg font-bold h-12"
+                  />
+                </div>
+              );
+            })}
+            {editLocked && (
+              <p className="text-xs text-muted-foreground text-center pt-1">
+                Editing past holes is locked by the organizer.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Hole summary */}
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Round Progress</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-6 gap-1.5">
+            {Array.from({ length: NUM_HOLES }, (_, i) => i + 1).map((h) => {
+              const allScored = players.every((p) => scores[p.id]?.[h] != null);
+              const isCurrent = h === currentHole;
+              return (
+                <button
+                  key={h}
+                  onClick={() => setCurrentHole(h)}
+                  className={`aspect-square rounded text-xs font-semibold border transition-colors ${
+                    isCurrent
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : allScored
+                        ? "bg-secondary/20 border-secondary/40 text-foreground"
+                        : "bg-muted/40 border-border text-muted-foreground"
+                  }`}
+                  aria-label={`Hole ${h}${allScored ? " complete" : ""}`}
+                >
+                  {h}
+                  {allScored && <Check className="h-3 w-3 mx-auto" />}
+                </button>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </main>
+
+      {/* Sticky Save bar */}
+      <div className="fixed bottom-0 inset-x-0 bg-card border-t border-border p-3 z-20">
+        <div className="max-w-2xl mx-auto">
+          <Button
+            onClick={handleSave}
+            disabled={saving || editLocked || false}
+            className="w-full h-12 text-base bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> :
+              pendingChanges.length > 0 ? `Save & ${currentHole < NUM_HOLES ? "Next Hole →" : "Finish"}` :
+              currentHole < NUM_HOLES ? "Next Hole →" : "Done"}
+          </Button>
+        </div>
+      </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm scores for Hole {currentHole}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingChanges.map((p) => `${p.first_name}: ${draft[p.id]}`).join(" · ")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setConfirmOpen(false); performSave(); }}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

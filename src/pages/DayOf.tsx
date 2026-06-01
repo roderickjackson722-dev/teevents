@@ -15,6 +15,7 @@ interface Reg {
   group_number: number | null;
   group_position: number | null;
   scoring_code: string | null;
+  group_scoring_code?: string | null;
   tee_time?: string | null;
   hole_assignment?: number | null;
 }
@@ -253,7 +254,7 @@ function DayOfInner() {
       if (!code) { setError("Missing player code. Please scan your QR code or use the link from your confirmation."); setLoading(false); return; }
       const { data: r } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, group_number, group_position, scoring_code")
+        .select("id, first_name, last_name, group_number, group_position, scoring_code, group_scoring_code")
         .eq("tournament_id", tt.id)
         .eq("scoring_code", code.toUpperCase())
         .maybeSingle();
@@ -264,7 +265,7 @@ function DayOfInner() {
       if (rr.group_number != null) {
         const { data: g } = await supabase
           .from("tournament_registrations")
-          .select("id, first_name, last_name, group_number, group_position, scoring_code")
+          .select("id, first_name, last_name, group_number, group_position, scoring_code, group_scoring_code")
           .eq("tournament_id", tt.id)
           .eq("group_number", rr.group_number)
           .order("group_position");
@@ -397,7 +398,19 @@ function DayOfInner() {
                   <Stat label="Group" value={reg.group_number ?? fallback} icon={<Users className="w-4 h-4" />} />
                   <Stat label="Position" value={reg.group_position ?? fallback} />
                 </div>
-                {reg.scoring_code && (
+                {reg.group_scoring_code && (
+                  <div className="rounded-md border-2 border-secondary/40 bg-secondary/5 px-4 py-3">
+                    <p className="text-xs uppercase text-muted-foreground font-semibold">Your group scoring code</p>
+                    <p className="text-3xl font-mono font-bold tracking-widest text-foreground my-1">{reg.group_scoring_code}</p>
+                    <a
+                      href={`/score/${tournament.slug}/${reg.group_scoring_code}`}
+                      className="text-sm underline text-primary"
+                    >
+                      Open scoring page →
+                    </a>
+                  </div>
+                )}
+                {!reg.group_scoring_code && reg.scoring_code && (
                   <div className="rounded-md bg-muted px-3 py-2">
                     <p className="text-xs uppercase text-muted-foreground">Your scoring code</p>
                     <p className="text-lg font-mono font-semibold">{reg.scoring_code}</p>
@@ -412,7 +425,7 @@ function DayOfInner() {
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">
           {tournament.day_of_show_scores_card && (
-            <ActionCard to={`/t/${tournament.slug}/scoring`} icon={<PenLine className="w-5 h-5" />} title="Enter Your Scores" cta="Enter Scores" accent={accent} />
+            <ActionCard to={reg.group_scoring_code ? `/score/${tournament.slug}/${reg.group_scoring_code}` : `/t/${tournament.slug}/scoring`} icon={<PenLine className="w-5 h-5" />} title="Enter Your Scores" cta="Enter Scores" accent={accent} />
           )}
           {tournament.day_of_show_leaderboard_card && (
             <ActionCard to={`/live/${tournament.slug}`} icon={<BarChart3 className="w-5 h-5" />} title="Live Leaderboard" cta="View Leaderboard" accent={accent} />

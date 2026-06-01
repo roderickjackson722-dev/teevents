@@ -1,73 +1,102 @@
-## Goal
-Consolidate admin dashboard navigation by adding a new top-level **Sales** category (separate from TeeVents Operations) that houses outreach/demo tools. Add a Send-to-Prospect modal on every email template in Mockup Outreach, a downloadable PDF demo agenda, and log every send to a new `outreach_logs` table.
 
-## 1. Sidebar reorganization (`src/pages/AdminDashboard.tsx`)
+# Live Leaderboard & Scoring Enhancement Plan
 
-New **Sales** category containing:
-- **Demo** — combines `AdminDemoScript` (existing 15-min script for admin) + new **Download Demo Agenda PDF** button (for prospects). Same order as the script so admin can follow along.
-- **Outreach** — current `AdminEmailScripts` email-sequence tool, with a new **"Send to Prospect"** button on each template.
-- **Mockup Outreach** — current `SampleGenerator` (moved here from its own tab).
+This is a large, multi-surface feature. I'll implement it in cohesive phases. All other platform functionality remains untouched.
 
-Removed from the old **Outreach / Sales Hub** tab:
-- Prospect Tracker (`AdminProspects`)
-- Prospecting Stats (`AdminProspectStats`)
-- The hub itself goes away; `AdminSalesHub` wrapper is no longer rendered.
+## Scope Summary
 
-Moved into **TeeVents Operations** category:
-- **Sales Prospecting Tool** link (currently a top-level button) becomes a normal sidebar item under TeeVents Operations.
-
-No other tabs are touched.
-
-## 2. Send-to-Prospect modal (new `src/components/admin/SendProspectEmailModal.tsx`)
-
-Triggered from each template card in `AdminEmailScripts` and each sample card in `SampleGenerator` via a **Send** button. Modal fields:
-- Prospect Email (required)
-- Prospect Name (optional, merges into `{name}` / `[Tournament Name]` tokens)
-- Editable subject + body pre-filled from the selected template (with the exact copy from the user's spec for the initial outreach email)
-- Buttons: **Send via Email**, **Copy to Clipboard**, **Cancel**
-
-On Send: calls existing `send-mockup-outreach` edge function (already used by `SendProspectModal`) and inserts a row into `outreach_logs` with `email_type: 'initial'` or `'followup'`.
-
-A second template option in the modal is the **Follow-up** copy ("Great – here's your free example…") so I can send it once they reply yes. The sample link is auto-inserted from the selected/most recent sample.
-
-## 3. Demo Agenda PDF (`src/pages/sales/DemoAgenda.tsx` already exists as web page)
-
-Add a **Download PDF** button on the new Demo subtab that opens `/sales/demo-agenda?print=1` and uses `window.print()` with print CSS, producing a clean one-page agenda branded TeeVents (gold + forest green). Content mirrors the 15-min script sections so prospects can follow along.
-
-No new PDF library — uses the existing print-to-PDF pattern already used elsewhere in the app (e.g. `SalesFlyer`, `CompareEventbritePdf`).
-
-## 4. Database — `outreach_logs` table (migration)
-
-```
-outreach_logs(
-  id uuid pk default gen_random_uuid(),
-  sample_id uuid null references prospect_samples(id) on delete set null,
-  prospect_email text not null,
-  prospect_name text,
-  email_type text not null check (email_type in ('initial','followup','custom')),
-  subject text,
-  template_key text,
-  sent_by uuid references auth.users(id),
-  sent_at timestamptz not null default now()
-)
-```
-- GRANTs to `authenticated` + `service_role` (no anon).
-- RLS: only `admin` role can select/insert (uses existing `has_role(auth.uid(),'admin')`).
-
-If `prospect_samples` table doesn't exist in the current schema, the FK is dropped and `sample_id` stays as a plain uuid column.
-
-## 5. Files touched
-
-- `src/pages/AdminDashboard.tsx` — sidebar groups, tab type union, tab rendering
-- `src/components/admin/AdminEmailScripts.tsx` — add **Send to Prospect** button per template
-- `src/components/admin/SampleGenerator.tsx` — add **Send** button next to existing actions per sample
-- `src/components/admin/SendProspectEmailModal.tsx` — **new** unified modal (supersedes/extends `SendProspectModal.tsx`)
-- `src/pages/sales/DemoAgenda.tsx` — add **Download PDF** button + print CSS
-- New Supabase migration creating `outreach_logs`
-
-## What is NOT changing
-Organizer-facing dashboard, public site, payments, all unrelated admin tabs.
+1. Scoring code login page (`/score/{slug}`)
+2. Mobile-first hole-by-hole score entry with net scoring + edit
+3. Improved player-facing Live Leaderboard (`/live/{slug}`) with Gross/Net toggle + sponsor footer
+4. Organizer Live Leaderboard Settings panel
+5. Scoring code generation & display (on Day-of page + printable scorecards)
 
 ---
 
-Approve and I'll implement in this order: migration → sidebar restructure → modal component → wire-up in EmailScripts/SampleGenerator → PDF button on DemoAgenda.
+## Part 1 — Database Changes (single migration)
+
+Add columns to `tournaments` for leaderboard settings:
+- `live_leaderboard_enabled` (bool, default true)
+- `live_scoring_require_code` (bool, default true)
+- `live_show_gross` (bool, default true)
+- `live_show_net` (bool, default true)
+- `live_default_view` ('gross' | 'net', default 'gross')
+- `live_show_sponsors` (bool, default true)
+- `live_sponsor_placement` ('footer' | 'banner' | 'sidebar', default 'footer')
+- `live_allow_edit_past_holes` (bool, default true)
+- `live_require_confirm_save` (bool, default false)
+
+Add group-level scoring code (shared by foursome):
+- `tournament_registrations.group_scoring_code` (TEXT, nullable)
+- Backfill: for each group, generate one shared 6-char unambiguous code (exclude O, 0, I, 1) and copy to all members of that group
+- Add index on `group_scoring_code`
+
+RLS: anon can SELECT registrations by `group_scoring_code` when tournament is published (already partially in place via day-of policy — extend or reuse).
+
+No changes to existing per-player `scoring_code` (it stays for QR/day-of).
+
+## Part 2 — New Page: `/score/:slug`  (`src/pages/ScoreLogin.tsx`)
+
+- Single large 6-char code input (auto-uppercase, monospace)
+- Continue button → looks up registrations by `group_scoring_code` for that tournament
+- On success → navigate to `/score/:slug/:code`
+
+## Part 3 — New Page: `/score/:slug/:code`  (`src/pages/GroupScoring.tsx`)
+
+Mobile-first scorecard:
+- Header: tournament title + menu
+- Current hole indicator + Prev/Next + jump-to-hole dropdown
+- Hole info card: Par, Stroke Index, yardage
+- Player rows: name, gross input (number stepper), net (computed), stroke indicator dots
+- "Save & Next Hole" CTA
+- Below scorecard: compact 18-hole summary list with "Edit" links
+- Net = gross − strokes-on-hole, using existing `handicapUtils` (`allocateStrokes`)
+- Saves to `tournament_scores` (existing table)
+- Realtime: refresh via channel when scores update
+
+Honors organizer settings:
+- `live_allow_edit_past_holes`
+- `live_require_confirm_save` (confirm dialog before save)
+
+## Part 4 — Refactored Live Leaderboard (`src/pages/LiveLeaderboard.tsx`)
+
+Keep current TV/display mode, add player-friendly mode:
+- Show Gross/Net columns based on settings; toggle pill if both enabled
+- Position, Player/Team, Gross, Net, Thru
+- Mobile-stacked table
+- Sponsor footer (existing logic preserved); honor `live_sponsor_placement`
+- Respect `live_leaderboard_enabled` gate (replaces `live_display_enabled` for player view; keep existing for TV)
+
+## Part 5 — Organizer Settings Panel
+
+New component `src/components/dashboard/LiveLeaderboardSettings.tsx` mounted on the existing **Scoring** dashboard page (`src/pages/dashboard/Scoring.tsx`) as a new card section "Live Leaderboard Settings" — does not disturb existing scoring config.
+
+Renders the 9 toggles/selects above, saves to `tournaments`.
+
+## Part 6 — Scoring Code Display
+
+- **Day-of Event Page** (`src/pages/DayOf.tsx`): show the group's shared `group_scoring_code` prominently with copy button + link to `/score/:slug/:code`
+- **Printable Scorecards** (`src/components/printables/ScorecardsTab.tsx`): add the text code beneath the existing QR
+
+## Part 7 — Routing (`src/App.tsx`)
+
+Add:
+- `/score/:slug` → ScoreLogin
+- `/score/:slug/:code` → GroupScoring
+
+## Technical Notes
+
+- Reuse `src/lib/handicapUtils.ts` for stroke allocation
+- Reuse `src/lib/scoringFormats.ts` and existing `tournament_scores` table — no schema change for scores
+- Code generation utility: `src/lib/scoringCode.ts` with `generateGroupCode()` using unambiguous alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`
+- For backfill we'll do it inline in the migration with a PL/pgSQL block grouping by `(tournament_id, group_number)`
+- All UI uses design system tokens (Gold CTA / Forest Green text per project memory)
+
+## Out of Scope (explicitly preserved)
+
+- Existing `/day-of`, QR routing, email functions — untouched
+- Existing per-player `scoring_code` — untouched
+- TV/Live Display mode — preserved
+- Admin invoices, Day-of editor — untouched
+
+Once approved I'll start with the migration, then build pages/components in parallel where possible.

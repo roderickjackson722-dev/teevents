@@ -5112,6 +5112,7 @@ export type Database = {
           first_name: string
           group_number: number | null
           group_position: number | null
+          group_scoring_code: string | null
           handicap: number | null
           handicap_index: number | null
           id: string
@@ -5143,6 +5144,7 @@ export type Database = {
           first_name: string
           group_number?: number | null
           group_position?: number | null
+          group_scoring_code?: string | null
           handicap?: number | null
           handicap_index?: number | null
           id?: string
@@ -5174,6 +5176,7 @@ export type Database = {
           first_name?: string
           group_number?: number | null
           group_position?: number | null
+          group_scoring_code?: string | null
           handicap?: number | null
           handicap_index?: number | null
           id?: string
@@ -5768,8 +5771,17 @@ export type Database = {
           leaderboard_design: Json
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_style: string
+          live_allow_edit_past_holes: boolean
+          live_default_view: string
           live_display_enabled: boolean
           live_display_refresh_seconds: number
+          live_leaderboard_enabled: boolean
+          live_require_confirm_save: boolean
+          live_scoring_require_code: boolean
+          live_show_gross: boolean
+          live_show_net: boolean
+          live_show_sponsors: boolean
+          live_sponsor_placement: string
           location: string | null
           managed_by_teevents: boolean
           max_group_size: number
@@ -5933,8 +5945,17 @@ export type Database = {
           leaderboard_design?: Json
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
+          live_allow_edit_past_holes?: boolean
+          live_default_view?: string
           live_display_enabled?: boolean
           live_display_refresh_seconds?: number
+          live_leaderboard_enabled?: boolean
+          live_require_confirm_save?: boolean
+          live_scoring_require_code?: boolean
+          live_show_gross?: boolean
+          live_show_net?: boolean
+          live_show_sponsors?: boolean
+          live_sponsor_placement?: string
           location?: string | null
           managed_by_teevents?: boolean
           max_group_size?: number
@@ -6098,8 +6119,17 @@ export type Database = {
           leaderboard_design?: Json
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_style?: string
+          live_allow_edit_past_holes?: boolean
+          live_default_view?: string
           live_display_enabled?: boolean
           live_display_refresh_seconds?: number
+          live_leaderboard_enabled?: boolean
+          live_require_confirm_save?: boolean
+          live_scoring_require_code?: boolean
+          live_show_gross?: boolean
+          live_show_net?: boolean
+          live_show_sponsors?: boolean
+          live_sponsor_placement?: string
           location?: string | null
           managed_by_teevents?: boolean
           max_group_size?: number

@@ -257,6 +257,30 @@ export default function CheckIn() {
             </CardContent>
           </Card>
 
+          <Card>
+            <CardContent className="pt-6 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Mail className="h-4 w-4 text-primary" /> Send a test Day-of email (organizer only)
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Sends a sample Day-of Event Page email to the address below so you can preview what registrants will receive.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  className="max-w-xs"
+                />
+                <Button size="sm" onClick={sendTestDayOfEmail} disabled={sendingTest || !testEmail.trim()}>
+                  {sendingTest ? "Sending..." : "Send Test Email"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input

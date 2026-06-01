@@ -27,7 +27,7 @@ export default function CheckIn() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title")
+        .select("id, title, slug")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -35,6 +35,8 @@ export default function CheckIn() {
     },
     enabled: !!org,
   });
+
+  const currentTournament = tournaments?.find((t: any) => t.id === selectedTournament) as { id: string; title: string; slug: string | null } | undefined;
 
   const { data: players } = useQuery({
     queryKey: ["checkin-players", selectedTournament],

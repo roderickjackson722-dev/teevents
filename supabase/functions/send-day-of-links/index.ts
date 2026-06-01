@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     );
 
     const body = (await req.json()) as Body;
-    const { tournament_id, test_email } = body;
+    const { tournament_id, test_email, registration_id } = body;
     if (!tournament_id) {
       return new Response(JSON.stringify({ error: "Missing tournament_id" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

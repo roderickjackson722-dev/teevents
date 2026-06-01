@@ -173,7 +173,7 @@ export default function Leaderboard() {
           .order("sort_order"),
         supabase
           .from("tournaments")
-          .select("leaderboard_rotating_logos")
+          .select("leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order")
           .eq("id", selectedTournament)
           .maybeSingle(),
       ]);
@@ -186,7 +186,10 @@ export default function Leaderboard() {
         tier: "gold",
         show_on_leaderboard: true,
       }));
-      return [...(sponsorRows || []), ...uploaded];
+      const enabled = (tRow as any)?.leaderboard_sponsor_banner_enabled !== false;
+      const interval = (tRow as any)?.leaderboard_sponsor_interval_ms || 5000;
+      const randomOrder = ((tRow as any)?.leaderboard_sponsor_rotation_order || "sequential") === "random";
+      return { list: enabled ? [...uploaded, ...(sponsorRows || [])] : [], interval, randomOrder };
     },
     enabled: !!selectedTournament,
   });
@@ -420,8 +423,8 @@ export default function Leaderboard() {
         </Card>
       )}
 
-      {selectedTournament && leaderboardSponsors && leaderboardSponsors.length > 0 && (
-        <SponsorBanner sponsors={leaderboardSponsors} />
+      {selectedTournament && leaderboardSponsors && leaderboardSponsors.list.length > 0 && (
+        <SponsorBanner sponsors={leaderboardSponsors.list} intervalMs={leaderboardSponsors.interval} preserveOrder randomOrder={leaderboardSponsors.randomOrder} />
       )}
 
       {/* ===== TEAM LEADERBOARD ===== */}

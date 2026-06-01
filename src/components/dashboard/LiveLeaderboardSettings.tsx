@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, Settings, Trophy, Upload, Trash2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Settings, Trophy, Upload, Trash2, Image as ImageIcon, GripVertical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { validateAndProcessLogo } from "@/lib/imageProcessing";
 
 interface Props { tournamentId: string }
 
@@ -33,6 +34,8 @@ interface Settings {
   leaderboard_sponsor_style: string;
   leaderboard_sponsor_interval_ms: number;
   leaderboard_rotating_logos: RotatingLogo[];
+  leaderboard_sponsor_banner_enabled: boolean;
+  leaderboard_sponsor_rotation_order: string; // 'sequential' | 'random'
 }
 
 const DEFAULTS: Settings = {
@@ -48,10 +51,12 @@ const DEFAULTS: Settings = {
   leaderboard_sponsor_style: "banner",
   leaderboard_sponsor_interval_ms: 5000,
   leaderboard_rotating_logos: [],
+  leaderboard_sponsor_banner_enabled: true,
+  leaderboard_sponsor_rotation_order: "sequential",
 };
 
 const SETTINGS_COLS =
-  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos";
+  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order";
 
 export default function LiveLeaderboardSettings({ tournamentId }: Props) {
   const { org } = useOrgContext();
@@ -59,6 +64,7 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -84,6 +90,11 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
       });
   }, [tournamentId]);
 
+  const persist = async (patch: Partial<Settings>) => {
+    const { error } = await supabase.from("tournaments").update(patch as any).eq("id", tournamentId);
+    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+  };
+
   const save = async () => {
     setSaving(true);
     const { error } = await supabase.from("tournaments").update(s as any).eq("id", tournamentId);
@@ -100,28 +111,36 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
       return;
     }
     setUploading(true);
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${org.orgId}/${tournamentId}/leaderboard-logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
-    if (error) {
+    try {
+      const processed = await validateAndProcessLogo(file, {
+        maxWidth: 600,
+        maxHeight: 300,
+        outputMime: file.type === "image/svg+xml" ? undefined as any : "image/png",
+      });
+      const ext = processed.name.split(".").pop() || "png";
+      const path = `${org.orgId}/${tournamentId}/leaderboard-logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, processed, {
+        upsert: true,
+        contentType: processed.type,
+      });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      const newLogo: RotatingLogo = { url: urlData.publicUrl, name: file.name.replace(/\.[^.]+$/, "") };
+      const updated = [...s.leaderboard_rotating_logos, newLogo];
+      setS((p) => ({ ...p, leaderboard_rotating_logos: updated }));
+      await persist({ leaderboard_rotating_logos: updated });
+      toast({ title: "Logo uploaded", description: "Resized and optimized for the leaderboard." });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e?.message || "Unknown error", variant: "destructive" });
+    } finally {
       setUploading(false);
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-      return;
     }
-    const { data: urlData } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-    const newLogo: RotatingLogo = { url: urlData.publicUrl, name: file.name.replace(/\.[^.]+$/, "") };
-    const updated = [...s.leaderboard_rotating_logos, newLogo];
-    setS((p) => ({ ...p, leaderboard_rotating_logos: updated }));
-    // Persist immediately
-    await supabase.from("tournaments").update({ leaderboard_rotating_logos: updated } as any).eq("id", tournamentId);
-    setUploading(false);
-    toast({ title: "Logo uploaded" });
   };
 
   const removeLogo = async (idx: number) => {
     const updated = s.leaderboard_rotating_logos.filter((_, i) => i !== idx);
     setS((p) => ({ ...p, leaderboard_rotating_logos: updated }));
-    await supabase.from("tournaments").update({ leaderboard_rotating_logos: updated } as any).eq("id", tournamentId);
+    await persist({ leaderboard_rotating_logos: updated });
   };
 
   const updateLogoMeta = (idx: number, field: "name" | "website_url", value: string) => {
@@ -129,6 +148,15 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
       ...p,
       leaderboard_rotating_logos: p.leaderboard_rotating_logos.map((l, i) => (i === idx ? { ...l, [field]: value } : l)),
     }));
+  };
+
+  const moveLogo = async (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    const arr = [...s.leaderboard_rotating_logos];
+    const [item] = arr.splice(from, 1);
+    arr.splice(to, 0, item);
+    setS((p) => ({ ...p, leaderboard_rotating_logos: arr }));
+    await persist({ leaderboard_rotating_logos: arr });
   };
 
   if (loading) return <div className="p-6 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
@@ -204,41 +232,70 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <Label className="text-sm mb-2 block">Display Style</Label>
-            <Select value={s.leaderboard_sponsor_style} onValueChange={(v) => set("leaderboard_sponsor_style", v)}>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="banner">Rotating Banner</SelectItem>
-                <SelectItem value="ticker">Scrolling Ticker</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Row
+            label="Enable rotating sponsor banner"
+            desc="Master switch — turn the rotating banner on or off for this tournament."
+          >
+            <Switch
+              checked={s.leaderboard_sponsor_banner_enabled}
+              onCheckedChange={(v) => { set("leaderboard_sponsor_banner_enabled", v); persist({ leaderboard_sponsor_banner_enabled: v }); }}
+            />
+          </Row>
 
-          {s.leaderboard_sponsor_style === "banner" && (
-            <div>
-              <Label className="text-sm mb-2 block">
-                Rotation Speed: {(s.leaderboard_sponsor_interval_ms / 1000).toFixed(1)}s
-              </Label>
-              <Slider
-                value={[s.leaderboard_sponsor_interval_ms]}
-                onValueChange={([v]) => set("leaderboard_sponsor_interval_ms", v)}
-                min={2000}
-                max={15000}
-                step={500}
-                className="w-64"
-              />
-              <p className="text-xs text-muted-foreground mt-1">How long each sponsor logo is shown before rotating.</p>
-            </div>
+          {s.leaderboard_sponsor_banner_enabled && (
+            <>
+              <div>
+                <Label className="text-sm mb-2 block">Display Style</Label>
+                <Select value={s.leaderboard_sponsor_style} onValueChange={(v) => { set("leaderboard_sponsor_style", v); persist({ leaderboard_sponsor_style: v }); }}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="banner">Rotating Banner</SelectItem>
+                    <SelectItem value="ticker">Scrolling Ticker</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {s.leaderboard_sponsor_style === "banner" && (
+                <>
+                  <div>
+                    <Label className="text-sm mb-2 block">
+                      Rotation Interval: {(s.leaderboard_sponsor_interval_ms / 1000).toFixed(1)}s
+                    </Label>
+                    <Slider
+                      value={[s.leaderboard_sponsor_interval_ms]}
+                      onValueChange={([v]) => set("leaderboard_sponsor_interval_ms", v)}
+                      onValueCommit={([v]) => persist({ leaderboard_sponsor_interval_ms: v })}
+                      min={2000}
+                      max={15000}
+                      step={500}
+                      className="w-64"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">How long each sponsor logo is shown before rotating.</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm mb-2 block">Rotation Order</Label>
+                    <RadioGroup
+                      className="flex gap-4"
+                      value={s.leaderboard_sponsor_rotation_order}
+                      onValueChange={(v) => { set("leaderboard_sponsor_rotation_order", v); persist({ leaderboard_sponsor_rotation_order: v }); }}
+                    >
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="sequential" id="ro-seq" /><Label htmlFor="ro-seq">Sequential (use the order below)</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="random" id="ro-rand" /><Label htmlFor="ro-rand">Random shuffle</Label></div>
+                    </RadioGroup>
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           <div className="pt-2 border-t">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <Label className="text-sm">Uploaded Sponsor Logos</Label>
-                <p className="text-xs text-muted-foreground">PNG, JPG, or SVG. Transparent backgrounds recommended.</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG, WebP, or SVG (max 8MB). Auto-resized to 600×300 for crisp display. Drag to reorder.</p>
               </div>
               <Button
                 size="sm"
@@ -252,7 +309,7 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
@@ -270,7 +327,19 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {s.leaderboard_rotating_logos.map((logo, i) => (
-                  <div key={i} className="border rounded-lg p-3 flex gap-3 items-start">
+                  <div
+                    key={i}
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragOver={(e) => { e.preventDefault(); }}
+                    onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) moveLogo(dragIndex, i); setDragIndex(null); }}
+                    onDragEnd={() => setDragIndex(null)}
+                    className={`border rounded-lg p-3 flex gap-2 items-start bg-card transition ${dragIndex === i ? "opacity-50" : ""}`}
+                  >
+                    <div className="flex flex-col items-center gap-1 pt-1 shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground">
+                      <GripVertical className="h-4 w-4" />
+                      <span className="text-[10px] font-semibold">#{i + 1}</span>
+                    </div>
                     <div className="h-16 w-20 shrink-0 bg-muted/30 rounded flex items-center justify-center overflow-hidden">
                       <img src={logo.url} alt={logo.name || ""} className="max-h-full max-w-full object-contain" />
                     </div>
@@ -278,14 +347,14 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
                       <Input
                         value={logo.name || ""}
                         onChange={(e) => updateLogoMeta(i, "name", e.target.value)}
-                        onBlur={save}
+                        onBlur={() => persist({ leaderboard_rotating_logos: s.leaderboard_rotating_logos })}
                         placeholder="Sponsor name"
                         className="h-8 text-sm"
                       />
                       <Input
                         value={logo.website_url || ""}
                         onChange={(e) => updateLogoMeta(i, "website_url", e.target.value)}
-                        onBlur={save}
+                        onBlur={() => persist({ leaderboard_rotating_logos: s.leaderboard_rotating_logos })}
                         placeholder="https://sponsor.com (optional)"
                         className="h-8 text-xs"
                       />

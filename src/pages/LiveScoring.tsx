@@ -58,7 +58,7 @@ export default function LiveScoring() {
     if (!slug) return;
     supabase
       .from("tournaments")
-      .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos")
+      .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order")
       .eq("slug", slug)
       .eq("site_published", true)
       .single()
@@ -74,6 +74,8 @@ export default function LiveScoring() {
             .eq("show_on_leaderboard", true)
             .order("sort_order")
             .then(({ data: sp }) => {
+              const enabled = (data as any).leaderboard_sponsor_banner_enabled !== false;
+              if (!enabled) { setSponsors([]); return; }
               const uploaded = (((data as any).leaderboard_rotating_logos) || []).map((l: any, idx: number) => ({
                 id: `uploaded-${idx}`,
                 name: l.name || "Sponsor",
@@ -81,7 +83,7 @@ export default function LiveScoring() {
                 website_url: l.website_url || null,
                 tier: "gold",
               }));
-              setSponsors([...(sp || []), ...uploaded]);
+              setSponsors([...uploaded, ...(sp || [])]);
             });
 
           // Load course data (pars, SI, distances)
@@ -319,7 +321,12 @@ export default function LiveScoring() {
       <div className="max-w-5xl mx-auto space-y-4">
         {sponsors.length > 0 && (
           <div className="mb-2">
-            <SponsorBanner sponsors={sponsors} />
+            <SponsorBanner
+              sponsors={sponsors}
+              intervalMs={(tournament as any).leaderboard_sponsor_interval_ms || 5000}
+              preserveOrder
+              randomOrder={((tournament as any).leaderboard_sponsor_rotation_order || "sequential") === "random"}
+            />
           </div>
         )}
         <div className="flex items-center justify-between">

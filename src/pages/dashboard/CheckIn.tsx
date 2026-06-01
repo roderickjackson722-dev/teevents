@@ -21,6 +21,43 @@ export default function CheckIn() {
   const [showQR, setShowQR] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [qrLayout, setQrLayout] = useState<"spaced" | "compact">("spaced");
+  const [emailingId, setEmailingId] = useState<string | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+
+  const sendDayOfEmail = async (registrationId: string, name: string) => {
+    if (!selectedTournament) return;
+    if (demoGuard()) return;
+    setEmailingId(registrationId);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-of-links", {
+        body: { tournament_id: selectedTournament, registration_id: registrationId },
+      });
+      if (error || (data as any)?.error) throw new Error(error?.message || (data as any)?.error);
+      toast.success(`Day-of link emailed to ${name}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send email");
+    } finally {
+      setEmailingId(null);
+    }
+  };
+
+  const sendTestDayOfEmail = async () => {
+    if (!selectedTournament || !testEmail.trim()) return;
+    setSendingTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-of-links", {
+        body: { tournament_id: selectedTournament, test_email: testEmail.trim() },
+      });
+      if (error || (data as any)?.error) throw new Error(error?.message || (data as any)?.error);
+      toast.success(`Test email sent to ${testEmail.trim()}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send test");
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],

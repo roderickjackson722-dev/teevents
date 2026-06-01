@@ -20,6 +20,7 @@ export default function CheckIn() {
   const [search, setSearch] = useState("");
   const [showQR, setShowQR] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [qrLayout, setQrLayout] = useState<"spaced" | "compact">("spaced");
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],

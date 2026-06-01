@@ -5727,6 +5727,7 @@ export type Database = {
           day_of_pin_sheet_pdf_url: string | null
           day_of_placeholder_fallback: string
           day_of_rules_url: string | null
+          day_of_send_link_in_confirmation: boolean
           day_of_show_announcements_card: boolean
           day_of_show_coursemap_card: boolean
           day_of_show_leaderboard: boolean
@@ -5891,6 +5892,7 @@ export type Database = {
           day_of_pin_sheet_pdf_url?: string | null
           day_of_placeholder_fallback?: string
           day_of_rules_url?: string | null
+          day_of_send_link_in_confirmation?: boolean
           day_of_show_announcements_card?: boolean
           day_of_show_coursemap_card?: boolean
           day_of_show_leaderboard?: boolean
@@ -6055,6 +6057,7 @@ export type Database = {
           day_of_pin_sheet_pdf_url?: string | null
           day_of_placeholder_fallback?: string
           day_of_rules_url?: string | null
+          day_of_send_link_in_confirmation?: boolean
           day_of_show_announcements_card?: boolean
           day_of_show_coursemap_card?: boolean
           day_of_show_leaderboard?: boolean

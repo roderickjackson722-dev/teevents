@@ -205,7 +205,27 @@ export default function DayOfSettings() {
   };
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1` : "";
+  const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/demo` : "";
+
+  const [sending, setSending] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const sendDayOfLinks = async (mode: "test" | "all") => {
+    if (!t) return;
+    if (mode === "all" && !confirm("Send the Day-of Event Page link to every registered player with an email on file?")) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-of-links", {
+        body: mode === "test" ? { tournament_id: t.id, test_email: testEmail } : { tournament_id: t.id },
+      });
+      if (error) throw error;
+      const sent = (data as any)?.sent ?? 0;
+      toast({ title: mode === "test" ? "Test email sent" : `Sent to ${sent} player${sent === 1 ? "" : "s"}` });
+    } catch (e: any) {
+      toast({ title: "Failed to send", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 space-y-4 max-w-[1600px]">
@@ -550,9 +570,32 @@ export default function DayOfSettings() {
 
           <div className="border-t pt-4 text-sm text-muted-foreground">
             <p className="font-medium text-foreground mb-1">Player access</p>
-            <p>When a player checks in (QR scan), they are sent to their personalized day-of page. You can also share this link template:</p>
+            <p>When a player scans their QR code or opens their email link, they go directly to their personalized day-of page. Share link template:</p>
             <code className="block bg-muted px-2 py-1 rounded mt-1 text-xs break-all">{baseUrl}/day-of/{t.slug}/[scoring-code]</code>
           </div>
+
+          <Card className="p-4 space-y-3 border-t">
+            <div>
+              <p className="font-semibold text-foreground">Email Players</p>
+              <p className="text-xs text-muted-foreground">Send each registered player a personalized link to their Day-of Event Page.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                className="w-[260px]"
+              />
+              <Button type="button" variant="outline" size="sm" disabled={sending || !testEmail} onClick={() => sendDayOfLinks("test")}>
+                Send Test Email
+              </Button>
+              <Button type="button" size="sm" disabled={sending} onClick={() => sendDayOfLinks("all")} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
+                {sending ? "Sending…" : "Send now to all registered players"}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Sends a one-time email with each player's unique day-of link. Rate-limited to avoid spam flags.</p>
+          </Card>
         </Card>
       )}
         </div>
@@ -562,7 +605,7 @@ export default function DayOfSettings() {
           <div className="flex items-center justify-between gap-2">
             <Label className="text-sm font-semibold">Live Preview</Label>
             {t && (
-              <a href={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`} target="_blank" rel="noreferrer">
+              <a href={`${baseUrl}/day-of/${t.slug}/demo`} target="_blank" rel="noreferrer">
                 <Button type="button" size="sm" variant="outline"><ExternalLink className="w-3 h-3 mr-1" /> Open</Button>
               </a>
             )}

@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, ExternalLink, MapPin, Plus, X, RotateCcw } from "lucide-react";
+import DayOfLivePreview from "@/components/dashboard/DayOfLivePreview";
 
 export const DEFAULT_WELCOME_TITLE = "Welcome to [Tournament Name]!";
 export const DEFAULT_WELCOME_MESSAGE = `Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.
@@ -560,29 +561,20 @@ export default function DayOfSettings() {
         <div className="lg:sticky lg:top-4 space-y-2">
           <div className="flex items-center justify-between gap-2">
             <Label className="text-sm font-semibold">Live Preview</Label>
-            <div className="flex items-center gap-2">
-              <Button type="button" size="sm" variant="ghost" onClick={() => setPreviewKey(k => k + 1)}>Refresh</Button>
-              {t && (
-                <a href={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`} target="_blank" rel="noreferrer">
-                  <Button type="button" size="sm" variant="outline"><ExternalLink className="w-3 h-3 mr-1" /> Open</Button>
-                </a>
-              )}
-            </div>
+            {t && (
+              <a href={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`} target="_blank" rel="noreferrer">
+                <Button type="button" size="sm" variant="outline"><ExternalLink className="w-3 h-3 mr-1" /> Open</Button>
+              </a>
+            )}
           </div>
           <div className="border-[8px] border-gray-800 rounded-[28px] overflow-hidden bg-gray-800 shadow-xl">
             {t ? (
-              <iframe
-                key={previewKey}
-                title="Day of Event preview"
-                src={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`}
-                className="w-full bg-white"
-                style={{ height: "calc(100vh - 220px)", minHeight: 600 }}
-              />
+              <DayOfLivePreview t={t as any} />
             ) : (
               <div className="h-[600px] flex items-center justify-center text-sm text-muted-foreground bg-white">Select a tournament to preview</div>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground">Preview uses sample player data. Click <strong>Save Changes</strong> to refresh.</p>
+          <p className="text-[11px] text-muted-foreground">Preview updates instantly as you edit — uses sample player data.</p>
         </div>
       </div>
     </div>

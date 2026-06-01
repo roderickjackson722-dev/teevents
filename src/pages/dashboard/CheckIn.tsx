@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, CheckCircle2, Users, Download } from "lucide-react";
+import { Search, CheckCircle2, Users, Download, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CheckIn() {

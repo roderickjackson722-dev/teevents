@@ -1837,7 +1837,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 </p>
               )}
               {(() => {
-                const lbSponsors = sponsors.filter(s => s.show_on_leaderboard);
+                const baseLbSponsors = sponsors.filter(s => s.show_on_leaderboard);
+                const uploadedLogos = (tournament.leaderboard_rotating_logos || []).map((l, idx) => ({
+                  id: `uploaded-${idx}`,
+                  name: l.name || "Sponsor",
+                  logo_url: l.url,
+                  website_url: l.website_url || null,
+                  tier: "gold",
+                  show_on_leaderboard: true,
+                }));
+                const lbSponsors = [...baseLbSponsors, ...uploadedLogos];
                 const style = tournament.leaderboard_sponsor_style || 'banner';
                 const interval = tournament.leaderboard_sponsor_interval_ms || 5000;
                 if (lbSponsors.length === 0) return null;
@@ -1858,7 +1867,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     </div>
                   );
                 }
-                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors} intervalMs={interval} /></div>;
+                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors as any} intervalMs={interval} /></div>;
               })()}
 
               {isStableford && (

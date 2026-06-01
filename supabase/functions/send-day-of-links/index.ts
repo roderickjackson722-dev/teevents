@@ -141,6 +141,44 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Single registrant mode
+    if (registration_id) {
+      const { data: rg } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("id, first_name, email, scoring_code")
+        .eq("id", registration_id)
+        .eq("tournament_id", tournament_id)
+        .maybeSingle();
+      if (!rg) {
+        return new Response(JSON.stringify({ error: "Registrant not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!rg.email) {
+        return new Response(JSON.stringify({ error: "Registrant has no email on file" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const link = `${BASE_URL}/day-of/${t.slug}/${rg.scoring_code || "DEMO"}`;
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+        body: JSON.stringify({
+          from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+          to: [rg.email],
+          subject,
+          html: buildHtml(rg.first_name || "Player", link),
+        }),
+      });
+      if (!r.ok) {
+        const txt = await r.text();
+        throw new Error(`Resend failed (${r.status}): ${txt}`);
+      }
+      return new Response(JSON.stringify({ sent: 1, to: rg.email }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Bulk to all registered players with an email
     const { data: regs, error: rErr } = await supabaseAdmin
       .from("tournament_registrations")

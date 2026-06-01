@@ -179,7 +179,7 @@ function DayOfInner() {
   const { slug, code } = useParams<{ slug: string; code: string }>();
   const [search] = useSearchParams();
   const isOrganizerPreview = search.get("preview") === "1";
-  const isPreviewCode = !code || code.toUpperCase() === "PREVIEW";
+  const isPreviewCode = !code || ["PREVIEW", "DEMO"].includes(code.toUpperCase());
 
   const [tournament, setTournament] = useState<T | null>(null);
   const [reg, setReg] = useState<Reg | null>(null);

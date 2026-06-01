@@ -117,18 +117,17 @@ const Index = () => {
             className="h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 mx-auto mb-4 md:mb-6 object-contain"
           />
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
-            Run Your Golf Tournament
+            For Golf Tournament
             <br />
-            <span className="text-secondary">Like a Pro</span>
+            <span className="text-secondary">Organizers</span>
           </h1>
-           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            The all-in-one platform for nonprofits and corporations to plan,
-            manage, and execute world-class golf tournaments.
-            <span className="block mt-2 text-secondary font-semibold text-sm sm:text-base">
+          <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
+            Plan, promote, and run your golf tournament – all in one place.
+          </p>
+          <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
+            TeeVents gives you a custom website, online registration, live leaderboard, and automatic payouts.
+            <span className="block mt-2 text-secondary font-semibold">
               Built by golf tournament managers, for golf tournament managers.
-            </span>
-            <span className="block mt-1 text-primary-foreground/70 text-sm">
-              Payments split automatically at checkout — we never hold your money.
             </span>
           </p>
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
@@ -143,9 +142,10 @@ const Index = () => {
               to="/book"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              Reserve a Demo
+              Book a Demo
             </Link>
           </div>
+
         </motion.div>
       </HeroSection>
 
@@ -173,8 +173,72 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Value Prop */}
-      <section className="bg-golf-cream py-24">
+      {/* For Tournament Organizers */}
+      <section className="bg-golf-cream py-20 md:py-24">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4 text-center">
+              For You
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground leading-tight text-center mb-10">
+              For Tournament Organizers
+            </h2>
+            <ul className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+              {[
+                "Create a professional tournament website in minutes",
+                "Sell registrations & sponsorships online",
+                "Manage players, pairings, and live scoring",
+                "Get paid automatically – we never hold your money",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 bg-card p-4 rounded-lg border border-border">
+                  <CheckCircle className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground/90">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* For Golfers */}
+      <section className="bg-background py-20 md:py-24 border-t border-border">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4 text-center">
+              For Players
+            </h3>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground leading-tight text-center mb-10">
+              For Golfers
+            </h2>
+            <ul className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+              {[
+                "Discover & register for tournaments",
+                "QR check‑in & live scoring from your phone",
+                "Follow the live leaderboard",
+                "Instant email confirmation & calendar invites",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 bg-card p-4 rounded-lg border border-border">
+                  <CheckCircle className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground/90">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Trust / Differentiation */}
+      <section className="bg-primary py-20 md:py-24">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -182,22 +246,30 @@ const Index = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-4">
+            <h3 className="text-sm font-semibold tracking-[0.3em] uppercase text-secondary mb-6">
               Why TeeVents
             </h3>
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground leading-tight">
-              Stop Juggling Spreadsheets.
-              <br />
-              Start Running Great Tournaments.
-            </h2>
-            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              From registration to the awards ceremony, our platform handles
-              every detail so you can focus on your cause. One dashboard,
-              zero headaches.
+            <p className="text-xl md:text-2xl font-display text-primary-foreground leading-relaxed mb-8">
+              Built by golf tournament managers, for golf tournament managers.
+              With over a decade of experience, we built TeeVents to solve the exact problems we faced.
             </p>
+            <div className="bg-primary-foreground/5 border border-primary-foreground/15 rounded-xl p-6 md:p-8 mb-10">
+              <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
+                <span className="text-secondary font-semibold">We never hold your money.</span>{" "}
+                Payments split automatically at checkout. You get paid when your players register.
+              </p>
+            </div>
+            <Link
+              to="/get-started"
+              className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
+            >
+              Start a Tournament for Free
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </motion.div>
         </div>
       </section>
+
 
       {/* Features Grid */}
       <section className="bg-background py-24">

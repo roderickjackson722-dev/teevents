@@ -205,7 +205,27 @@ export default function DayOfSettings() {
   };
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1` : "";
+  const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/demo` : "";
+
+  const [sending, setSending] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const sendDayOfLinks = async (mode: "test" | "all") => {
+    if (!t) return;
+    if (mode === "all" && !confirm("Send the Day-of Event Page link to every registered player with an email on file?")) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-of-links", {
+        body: mode === "test" ? { tournament_id: t.id, test_email: testEmail } : { tournament_id: t.id },
+      });
+      if (error) throw error;
+      const sent = (data as any)?.sent ?? 0;
+      toast({ title: mode === "test" ? "Test email sent" : `Sent to ${sent} player${sent === 1 ? "" : "s"}` });
+    } catch (e: any) {
+      toast({ title: "Failed to send", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 space-y-4 max-w-[1600px]">

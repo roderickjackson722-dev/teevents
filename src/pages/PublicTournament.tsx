@@ -1839,6 +1839,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 </p>
               )}
               {(() => {
+                if (tournament.leaderboard_sponsor_banner_enabled === false) return null;
                 const baseLbSponsors = sponsors.filter(s => s.show_on_leaderboard);
                 const uploadedLogos = (tournament.leaderboard_rotating_logos || []).map((l, idx) => ({
                   id: `uploaded-${idx}`,
@@ -1848,15 +1849,17 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   tier: "gold",
                   show_on_leaderboard: true,
                 }));
-                const lbSponsors = [...baseLbSponsors, ...uploadedLogos];
+                const lbSponsors = [...uploadedLogos, ...baseLbSponsors];
                 const style = tournament.leaderboard_sponsor_style || 'banner';
                 const interval = tournament.leaderboard_sponsor_interval_ms || 5000;
+                const randomOrder = (tournament.leaderboard_sponsor_rotation_order || 'sequential') === 'random';
                 if (lbSponsors.length === 0) return null;
                 if (style === 'ticker') {
+                  const ordered = randomOrder ? [...lbSponsors].sort(() => Math.random() - 0.5) : lbSponsors;
                   return (
                     <div className="mb-6 overflow-hidden rounded-lg border" style={{ borderColor: "#e5e5e5" }}>
                       <div className="flex animate-marquee items-center gap-8 py-2 px-4 bg-white">
-                        {[...lbSponsors, ...lbSponsors].map((s, i) => (
+                        {[...ordered, ...ordered].map((s, i) => (
                           <div key={i} className="flex items-center gap-2 shrink-0">
                             {s.logo_url ? (
                               <img src={s.logo_url} alt={s.name} className="h-6 max-w-[80px] object-contain" />
@@ -1869,7 +1872,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     </div>
                   );
                 }
-                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors as any} intervalMs={interval} /></div>;
+                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors as any} intervalMs={interval} preserveOrder randomOrder={randomOrder} /></div>;
               })()}
 
               {isStableford && (

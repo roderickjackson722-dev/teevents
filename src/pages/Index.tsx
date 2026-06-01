@@ -117,18 +117,17 @@ const Index = () => {
             className="h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 mx-auto mb-4 md:mb-6 object-contain"
           />
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
-            Run Your Golf Tournament
+            For Golf Tournament
             <br />
-            <span className="text-secondary">Like a Pro</span>
+            <span className="text-secondary">Organizers</span>
           </h1>
-           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            The all-in-one platform for nonprofits and corporations to plan,
-            manage, and execute world-class golf tournaments.
-            <span className="block mt-2 text-secondary font-semibold text-sm sm:text-base">
+          <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
+            Plan, promote, and run your golf tournament – all in one place.
+          </p>
+          <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
+            TeeVents gives you a custom website, online registration, live leaderboard, and automatic payouts.
+            <span className="block mt-2 text-secondary font-semibold">
               Built by golf tournament managers, for golf tournament managers.
-            </span>
-            <span className="block mt-1 text-primary-foreground/70 text-sm">
-              Payments split automatically at checkout — we never hold your money.
             </span>
           </p>
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
@@ -143,9 +142,10 @@ const Index = () => {
               to="/book"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              Reserve a Demo
+              Book a Demo
             </Link>
           </div>
+
         </motion.div>
       </HeroSection>
 

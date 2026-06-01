@@ -311,12 +311,22 @@ export default function CheckIn() {
                         <p className="text-[10px] text-muted-foreground break-all text-center max-w-[180px]">{playerDayOfUrl((p as any).scoring_code) || "No scoring code yet"}</p>
                       </div>
                     )}
-                    <button
-                      onClick={() => setShowQR(showQR === p.id ? null : p.id)}
-                      className="text-xs text-primary mt-2 hover:underline"
-                    >
-                      {showQR === p.id ? "Hide QR" : "Show QR Code"}
-                    </button>
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        onClick={() => setShowQR(showQR === p.id ? null : p.id)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {showQR === p.id ? "Hide QR" : "Show QR Code"}
+                      </button>
+                      <button
+                        onClick={() => sendDayOfEmail(p.id, fullName)}
+                        disabled={emailingId === p.id || !p.email}
+                        className="text-xs text-primary hover:underline inline-flex items-center gap-1 disabled:opacity-50"
+                        title={!p.email ? "No email on file" : "Send Day-of link to this player"}
+                      >
+                        <Mail className="h-3 w-3" /> {emailingId === p.id ? "Sending..." : "Email Day-of Link"}
+                      </button>
+                    </div>
                   </CardContent>
                 </Card>
               );

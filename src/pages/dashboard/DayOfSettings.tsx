@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, ExternalLink, MapPin, Plus, X, RotateCcw } from "lucide-react";
+import DayOfLivePreview from "@/components/dashboard/DayOfLivePreview";
 
 export const DEFAULT_WELCOME_TITLE = "Welcome to [Tournament Name]!";
 export const DEFAULT_WELCOME_MESSAGE = `Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.

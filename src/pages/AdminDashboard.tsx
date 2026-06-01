@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
@@ -28,6 +28,7 @@ import AdminFeatureFlags from "@/components/admin/AdminFeatureFlags";
 import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import AdminSetupChecklist from "@/components/admin/AdminSetupChecklist";
 import SampleGenerator from "@/components/admin/SampleGenerator";
+import AdminInvoices from "@/components/admin/AdminInvoices";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -53,7 +54,7 @@ const AdminDashboard = () => {
     if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -851,6 +852,7 @@ const AdminDashboard = () => {
                    ["feature-flags", "Feature Flags", KeyRound],
                    ["feature-guide", "Feature Guide PDF", FileText],
                    ["setup-checklist", "Setup Checklist", ClipboardList],
+                   ["invoices", "Invoices", Receipt],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}

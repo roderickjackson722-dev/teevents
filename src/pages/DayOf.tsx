@@ -218,12 +218,12 @@ function DayOfInner() {
       if (!t) { setError("Tournament not found"); setLoading(false); return; }
       const tt = normalizeTournament(t);
 
-      if (!isOrganizerPreview && !tt.day_of_page_enabled) {
+      if (!isOrganizerPreview && !isPreviewCode && !tt.day_of_page_enabled) {
         setError("Day of event page is not enabled yet.");
         setLoading(false);
         return;
       }
-      if (!isOrganizerPreview && tt.day_of_page_mode === "preview") {
+      if (!isOrganizerPreview && !isPreviewCode && tt.day_of_page_mode === "preview") {
         setError("This page is in preview mode. Players will see it once the organizer switches to Live.");
         setLoading(false);
         return;
@@ -237,7 +237,7 @@ function DayOfInner() {
         .order("sort_order");
       setSponsors((sp as any) || []);
 
-      if (isOrganizerPreview && isPreviewCode) {
+      if (isPreviewCode) {
         setReg(MOCK_REG);
         setGroup(MOCK_GROUP);
         setLoading(false);

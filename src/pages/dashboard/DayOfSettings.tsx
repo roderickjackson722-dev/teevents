@@ -582,7 +582,7 @@ export default function DayOfSettings() {
           <div className="flex items-center justify-between gap-2">
             <Label className="text-sm font-semibold">Live Preview</Label>
             {t && (
-              <a href={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`} target="_blank" rel="noreferrer">
+              <a href={`${baseUrl}/day-of/${t.slug}/demo`} target="_blank" rel="noreferrer">
                 <Button type="button" size="sm" variant="outline"><ExternalLink className="w-3 h-3 mr-1" /> Open</Button>
               </a>
             )}

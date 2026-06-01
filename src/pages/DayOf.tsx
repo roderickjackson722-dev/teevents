@@ -194,13 +194,19 @@ function DayOfInner() {
       setLoading(true);
       setError(null);
 
-      const { data: t } = await supabase
-        .from("tournaments")
-        .select(FIELDS)
-        .eq("slug", slug!)
-        .maybeSingle();
+      // Allow slug OR tournament id in the URL (preview links use id to avoid slug mismatches).
+      const isUuid = !!slug && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+      let t: any = null;
+      if (slug) {
+        const bySlug = await supabase.from("tournaments").select(FIELDS).eq("slug", slug).maybeSingle();
+        t = bySlug.data;
+        if (!t && isUuid) {
+          const byId = await supabase.from("tournaments").select(FIELDS).eq("id", slug).maybeSingle();
+          t = byId.data;
+        }
+      }
 
-      if (!t && isOrganizerPreview) {
+      if (!t && (isOrganizerPreview || isPreviewCode)) {
         setTournament({ ...MOCK_TOURNAMENT, slug: slug || "preview" });
         setReg(MOCK_REG);
         setGroup(MOCK_GROUP);

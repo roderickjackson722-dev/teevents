@@ -2010,7 +2010,8 @@ const AdminDashboard = () => {
 
           {/* Group Trips Tab */}
           {activeTab === "group-trips" && <AdminGroupTrips />}
-          {activeTab === "setup-checklist" && <AdminSetupChecklist />}
+         {activeTab === "setup-checklist" && <AdminSetupChecklist />}
+         {activeTab === "invoices" && <AdminInvoices />}
           {activeTab === "mockup-outreach" && <SampleGenerator />}
         </div>
       </section>

@@ -89,19 +89,68 @@ export default function CheckIn() {
   };
 
   const handleDownloadQRCodes = () => {
-    if (!players) return;
-    const html = `<html><head><title>QR Codes</title><style>
-      body { font-family: sans-serif; }
-      .card { display: inline-block; text-align: center; padding: 20px; margin: 10px; border: 1px solid #ddd; border-radius: 8px; }
-      .name { font-weight: bold; margin-top: 8px; }
-    </style></head><body>
-      <h1>Tournament Check-In QR Codes</h1>
-      ${players.map((p) => `<div class="card">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${p.id}" />
-        <div class="name">${p.first_name} ${p.last_name}</div>
-        <div style="font-size:10px;color:#999">${p.id.slice(0, 8)}</div>
-      </div>`).join("")}
-    </body></html>`;
+    if (!players || !currentTournament?.slug) {
+      toast.error("Tournament slug not set – cannot generate QR sheet.");
+      return;
+    }
+    const compact = qrLayout === "compact";
+    const cols = compact ? 3 : 2;
+    const gap = compact ? "0.5rem" : "1.5rem";
+    const qrSize = compact ? 130 : 180;
+    const origin = window.location.origin;
+    const slug = currentTournament.slug;
+
+    const html = `<!DOCTYPE html><html><head><title>QR Codes – ${escapeAttr(currentTournament.title)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 1rem; color: #111; }
+  h1 { font-size: 16px; margin: 0 0 0.5rem; }
+  .meta { font-size: 11px; color: #666; margin-bottom: 1rem; }
+  .qr-code-sheet {
+    display: grid;
+    grid-template-columns: repeat(${cols}, 1fr);
+    gap: ${gap};
+    padding: 0.25rem;
+  }
+  .qr-code-item {
+    text-align: center;
+    padding: ${compact ? "8px" : "16px"};
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .qr-code-item img { width: ${qrSize}px; height: ${qrSize}px; display: block; margin: 0 auto; }
+  .name { font-weight: bold; margin-top: 8px; font-size: ${compact ? "12px" : "14px"}; }
+  .meta-row { font-size: 10px; color: #6b7280; margin-top: 2px; }
+  .code { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: #9ca3af; margin-top: 2px; }
+  @media print {
+    @page { margin: 0.5in; }
+    body { padding: 0; }
+    .no-print { display: none; }
+    .qr-code-sheet { gap: ${gap}; }
+    .qr-code-item { break-inside: avoid; page-break-inside: avoid; }
+  }
+  .toolbar { margin-bottom: 1rem; }
+  .toolbar button { padding: 6px 12px; border: 1px solid #1a5c38; background: #1a5c38; color: #fff; border-radius: 6px; cursor: pointer; }
+</style></head><body>
+  <div class="no-print toolbar"><button onclick="window.print()">Print this sheet</button></div>
+  <h1>${escapeAttr(currentTournament.title)} – Day-of QR Codes</h1>
+  <div class="meta">Each player scans their QR to open their personalized Day-of Event Page. Layout: ${compact ? "Compact" : "Spaced (recommended)"}.</div>
+  <div class="qr-code-sheet">
+    ${players.map((p) => {
+      const code = (p as any).scoring_code || "";
+      const link = code ? `${origin}/day-of/${slug}/${code}` : `${origin}/day-of/${slug}/DEMO`;
+      const groupText = p.group_number ? `Hole #${p.group_number}` : "";
+      return `<div class="qr-code-item">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(link)}" alt="QR" />
+        <div class="name">${escapeAttr(p.first_name)} ${escapeAttr(p.last_name)}</div>
+        ${groupText ? `<div class="meta-row">${groupText}</div>` : ""}
+        <div class="code">${escapeAttr(code || "no-code")}</div>
+      </div>`;
+    }).join("")}
+  </div>
+</body></html>`;
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");

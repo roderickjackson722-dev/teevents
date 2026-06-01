@@ -269,8 +269,9 @@ export default function CheckIn() {
                       </div>
                     </div>
                     {showQR === p.id && (
-                      <div className="mt-3 flex justify-center">
-                        <QRCodeSVG value={p.id} size={120} />
+                      <div className="mt-3 flex flex-col items-center gap-1">
+                        <QRCodeSVG value={playerDayOfUrl((p as any).scoring_code) || `${window.location.origin}/day-of/${currentTournament?.slug || ""}/DEMO`} size={140} level="H" includeMargin fgColor="#1a5c38" />
+                        <p className="text-[10px] text-muted-foreground break-all text-center max-w-[180px]">{playerDayOfUrl((p as any).scoring_code) || "No scoring code yet"}</p>
                       </div>
                     )}
                     <button

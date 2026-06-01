@@ -72,6 +72,7 @@ export default function DayOfSettings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"map" | "header" | null>(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
   const mapFileRef = useRef<HTMLInputElement | null>(null);
   const headerFileRef = useRef<HTMLInputElement | null>(null);
   const pinPdfFileRef = useRef<HTMLInputElement | null>(null);
@@ -146,7 +147,7 @@ export default function DayOfSettings() {
     } as any).eq("id", t.id);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Saved" });
+    else { toast({ title: "Saved" }); setPreviewKey(k => k + 1); }
   };
 
   const uploadPinSheetPdf = async (file: File) => {
@@ -206,10 +207,10 @@ export default function DayOfSettings() {
   const previewUrl = t ? `${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1` : "";
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-3xl">
+    <div className="p-4 sm:p-6 space-y-4 max-w-[1600px]">
       <div>
         <h1 className="text-2xl font-bold">Day of Event Page</h1>
-        <p className="text-muted-foreground text-sm">A mobile-friendly page each player can open on event day showing their group, tee time, hole assignment, live leaderboard, announcements, and sponsors.</p>
+        <p className="text-muted-foreground text-sm">A mobile-friendly page each player can open on event day. The live preview on the right shows what players will see — save changes to refresh.</p>
       </div>
 
       <div>
@@ -222,6 +223,8 @@ export default function DayOfSettings() {
         </Select>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] gap-4 items-start">
+        <div className="space-y-6 min-w-0">
       {t && (
         <Card className="p-4 sm:p-5 space-y-6">
           <div className="flex items-center gap-3">
@@ -551,6 +554,37 @@ export default function DayOfSettings() {
           </div>
         </Card>
       )}
+        </div>
+
+        {/* LIVE PREVIEW PANE */}
+        <div className="lg:sticky lg:top-4 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-sm font-semibold">Live Preview</Label>
+            <div className="flex items-center gap-2">
+              <Button type="button" size="sm" variant="ghost" onClick={() => setPreviewKey(k => k + 1)}>Refresh</Button>
+              {t && (
+                <a href={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`} target="_blank" rel="noreferrer">
+                  <Button type="button" size="sm" variant="outline"><ExternalLink className="w-3 h-3 mr-1" /> Open</Button>
+                </a>
+              )}
+            </div>
+          </div>
+          <div className="border-[8px] border-gray-800 rounded-[28px] overflow-hidden bg-gray-800 shadow-xl">
+            {t ? (
+              <iframe
+                key={previewKey}
+                title="Day of Event preview"
+                src={`${baseUrl}/day-of/${t.slug}/PREVIEW?preview=1`}
+                className="w-full bg-white"
+                style={{ height: "calc(100vh - 220px)", minHeight: 600 }}
+              />
+            ) : (
+              <div className="h-[600px] flex items-center justify-center text-sm text-muted-foreground bg-white">Select a tournament to preview</div>
+            )}
+          </div>
+          <p className="text-[11px] text-muted-foreground">Preview uses sample player data. Click <strong>Save Changes</strong> to refresh.</p>
+        </div>
+      </div>
     </div>
   );
 }

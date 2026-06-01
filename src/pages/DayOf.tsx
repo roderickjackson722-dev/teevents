@@ -253,7 +253,7 @@ function DayOfInner() {
       if (!code) { setError("Missing player code. Please scan your QR code or use the link from your confirmation."); setLoading(false); return; }
       const { data: r } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, group_number, group_position, scoring_code, tee_time, hole_assignment")
+        .select("id, first_name, last_name, group_number, group_position, scoring_code")
         .eq("tournament_id", tt.id)
         .eq("scoring_code", code.toUpperCase())
         .maybeSingle();
@@ -264,7 +264,7 @@ function DayOfInner() {
       if (rr.group_number != null) {
         const { data: g } = await supabase
           .from("tournament_registrations")
-          .select("id, first_name, last_name, group_number, group_position, scoring_code, tee_time, hole_assignment")
+          .select("id, first_name, last_name, group_number, group_position, scoring_code")
           .eq("tournament_id", tt.id)
           .eq("group_number", rr.group_number)
           .order("group_position");

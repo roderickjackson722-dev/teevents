@@ -164,14 +164,29 @@ export default function Leaderboard() {
   const { data: leaderboardSponsors } = useQuery({
     queryKey: ["leaderboard-sponsors", selectedTournament],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tournament_sponsors")
-        .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
-        .eq("tournament_id", selectedTournament)
-        .eq("show_on_leaderboard", true)
-        .order("sort_order");
+      const [{ data: sponsorRows, error }, { data: tRow }] = await Promise.all([
+        supabase
+          .from("tournament_sponsors")
+          .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
+          .eq("tournament_id", selectedTournament)
+          .eq("show_on_leaderboard", true)
+          .order("sort_order"),
+        supabase
+          .from("tournaments")
+          .select("leaderboard_rotating_logos")
+          .eq("id", selectedTournament)
+          .maybeSingle(),
+      ]);
       if (error) throw error;
-      return data;
+      const uploaded = ((tRow as any)?.leaderboard_rotating_logos || []).map((l: any, idx: number) => ({
+        id: `uploaded-${idx}`,
+        name: l.name || "Sponsor",
+        logo_url: l.url,
+        website_url: l.website_url || null,
+        tier: "gold",
+        show_on_leaderboard: true,
+      }));
+      return [...(sponsorRows || []), ...uploaded];
     },
     enabled: !!selectedTournament,
   });

@@ -67,7 +67,7 @@ interface Sponsor {
   id: string; name: string; tier: string | null; logo_url: string | null; website_url: string | null;
 }
 
-const FIELDS = "id, slug, title, date, course_name, location, state, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard, primary_color, logo_url";
+const FIELDS = "id, slug, title, date, course_name, location, state, day_of_page_enabled, day_of_page_mode, day_of_show_welcome, day_of_welcome_title, day_of_welcome_message, day_of_announcements, day_of_announcements_list, day_of_course_map_url, day_of_sponsor_title, day_of_sponsor_thanks, day_of_sponsor_layout, day_of_pairings_url, day_of_rules_url, day_of_director_name, day_of_director_phone, day_of_director_email, day_of_emergency_contact, day_of_bg_color, day_of_accent_color, day_of_font_color, day_of_header_image_url, day_of_weather_enabled, day_of_weather_location, day_of_show_scores_card, day_of_show_leaderboard_card, day_of_show_coursemap_card, day_of_show_announcements_card, day_of_show_sponsors, day_of_show_pin_sheets, day_of_pin_sheet_pdf_url, day_of_show_leaderboard";
 
 const tierOrder: Record<string, number> = { title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6 };
 
@@ -253,7 +253,7 @@ function DayOfInner() {
       if (!code) { setError("Missing player code. Please scan your QR code or use the link from your confirmation."); setLoading(false); return; }
       const { data: r } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, group_number, group_position, scoring_code, tee_time, hole_assignment")
+        .select("id, first_name, last_name, group_number, group_position, scoring_code")
         .eq("tournament_id", tt.id)
         .eq("scoring_code", code.toUpperCase())
         .maybeSingle();
@@ -264,7 +264,7 @@ function DayOfInner() {
       if (rr.group_number != null) {
         const { data: g } = await supabase
           .from("tournament_registrations")
-          .select("id, first_name, last_name, group_number, group_position, scoring_code, tee_time, hole_assignment")
+          .select("id, first_name, last_name, group_number, group_position, scoring_code")
           .eq("tournament_id", tt.id)
           .eq("group_number", rr.group_number)
           .order("group_position");

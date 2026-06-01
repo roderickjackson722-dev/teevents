@@ -43,7 +43,7 @@ export default function CheckIn() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, phone, checked_in, check_in_time, group_number, scoring_code, tee_time")
+        .select("id, first_name, last_name, email, phone, checked_in, check_in_time, group_number, scoring_code")
         .eq("tournament_id", selectedTournament)
         .order("last_name");
       if (error) throw error;

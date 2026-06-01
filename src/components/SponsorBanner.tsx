@@ -12,18 +12,35 @@ interface Sponsor {
 interface SponsorBannerProps {
   sponsors: Sponsor[];
   intervalMs?: number;
+  /** Preserve the order passed in (skip tier-priority sort). */
+  preserveOrder?: boolean;
+  /** Randomize rotation order. */
+  randomOrder?: boolean;
 }
 
 const tierPriority: Record<string, number> = {
   title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6,
 };
 
-export function SponsorBanner({ sponsors, intervalMs = 5000 }: SponsorBannerProps) {
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export function SponsorBanner({ sponsors, intervalMs = 5000, preserveOrder = false, randomOrder = false }: SponsorBannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const sorted = [...sponsors].sort(
-    (a, b) => (tierPriority[a.tier] ?? 99) - (tierPriority[b.tier] ?? 99)
-  );
+  const sorted = randomOrder
+    ? shuffle(sponsors)
+    : preserveOrder
+      ? [...sponsors]
+      : [...sponsors].sort(
+          (a, b) => (tierPriority[a.tier] ?? 99) - (tierPriority[b.tier] ?? 99)
+        );
 
   useEffect(() => {
     if (sorted.length <= 1) return;

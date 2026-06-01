@@ -10,11 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical } from "lucide-react";
+import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
+import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
 
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();
@@ -132,6 +133,9 @@ export default function Scoring() {
             </TabsTrigger>
             <TabsTrigger value="handicap">
               <Calculator className="h-4 w-4 mr-1.5" /> Handicap Settings
+            </TabsTrigger>
+            <TabsTrigger value="live-settings">
+              <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
             </TabsTrigger>
             <TabsTrigger value="test-simulator">
               <FlaskConical className="h-4 w-4 mr-1.5" /> Test Simulator
@@ -373,6 +377,11 @@ export default function Scoring() {
           {/* ===== HANDICAP SETTINGS TAB ===== */}
           <TabsContent value="handicap" className="space-y-4">
             <HandicapSettings tournamentId={selectedTournament} scoringFormat={selectedData?.scoring_format || undefined} />
+          </TabsContent>
+
+          {/* ===== LIVE LEADERBOARD SETTINGS TAB ===== */}
+          <TabsContent value="live-settings" className="space-y-4">
+            <LiveLeaderboardSettings tournamentId={selectedTournament} />
           </TabsContent>
 
           {/* ===== TEST SIMULATOR TAB ===== */}

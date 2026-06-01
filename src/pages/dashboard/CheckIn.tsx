@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
-import { Search, CheckCircle2, Users, Download } from "lucide-react";
+import { Search, CheckCircle2, Users, Download, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CheckIn() {
@@ -21,6 +21,43 @@ export default function CheckIn() {
   const [showQR, setShowQR] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [qrLayout, setQrLayout] = useState<"spaced" | "compact">("spaced");
+  const [emailingId, setEmailingId] = useState<string | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+
+  const sendDayOfEmail = async (registrationId: string, name: string) => {
+    if (!selectedTournament) return;
+    if (demoGuard()) return;
+    setEmailingId(registrationId);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-of-links", {
+        body: { tournament_id: selectedTournament, registration_id: registrationId },
+      });
+      if (error || (data as any)?.error) throw new Error(error?.message || (data as any)?.error);
+      toast.success(`Day-of link emailed to ${name}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send email");
+    } finally {
+      setEmailingId(null);
+    }
+  };
+
+  const sendTestDayOfEmail = async () => {
+    if (!selectedTournament || !testEmail.trim()) return;
+    setSendingTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-of-links", {
+        body: { tournament_id: selectedTournament, test_email: testEmail.trim() },
+      });
+      if (error || (data as any)?.error) throw new Error(error?.message || (data as any)?.error);
+      toast.success(`Test email sent to ${testEmail.trim()}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send test");
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -220,6 +257,30 @@ export default function CheckIn() {
             </CardContent>
           </Card>
 
+          <Card>
+            <CardContent className="pt-6 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Mail className="h-4 w-4 text-primary" /> Send a test Day-of email (organizer only)
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Sends a sample Day-of Event Page email to the address below so you can preview what registrants will receive.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  className="max-w-xs"
+                />
+                <Button size="sm" onClick={sendTestDayOfEmail} disabled={sendingTest || !testEmail.trim()}>
+                  {sendingTest ? "Sending..." : "Send Test Email"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -274,12 +335,22 @@ export default function CheckIn() {
                         <p className="text-[10px] text-muted-foreground break-all text-center max-w-[180px]">{playerDayOfUrl((p as any).scoring_code) || "No scoring code yet"}</p>
                       </div>
                     )}
-                    <button
-                      onClick={() => setShowQR(showQR === p.id ? null : p.id)}
-                      className="text-xs text-primary mt-2 hover:underline"
-                    >
-                      {showQR === p.id ? "Hide QR" : "Show QR Code"}
-                    </button>
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        onClick={() => setShowQR(showQR === p.id ? null : p.id)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {showQR === p.id ? "Hide QR" : "Show QR Code"}
+                      </button>
+                      <button
+                        onClick={() => sendDayOfEmail(p.id, fullName)}
+                        disabled={emailingId === p.id || !p.email}
+                        className="text-xs text-primary hover:underline inline-flex items-center gap-1 disabled:opacity-50"
+                        title={!p.email ? "No email on file" : "Send Day-of link to this player"}
+                      >
+                        <Mail className="h-3 w-3" /> {emailingId === p.id ? "Sending..." : "Email Day-of Link"}
+                      </button>
+                    </div>
                   </CardContent>
                 </Card>
               );

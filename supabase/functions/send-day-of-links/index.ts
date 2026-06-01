@@ -18,6 +18,7 @@ const BASE_URL = "https://www.teevents.golf";
 interface Body {
   tournament_id: string;
   test_email?: string;        // if provided, sends a single test using DEMO code
+  registration_id?: string;   // if provided, sends to that single registrant with their real code
 }
 
 Deno.serve(async (req) => {
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
     );
 
     const body = (await req.json()) as Body;
-    const { tournament_id, test_email } = body;
+    const { tournament_id, test_email, registration_id } = body;
     if (!tournament_id) {
       return new Response(JSON.stringify({ error: "Missing tournament_id" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -136,6 +137,44 @@ Deno.serve(async (req) => {
         throw new Error(`Resend test failed (${r.status}): ${txt}`);
       }
       return new Response(JSON.stringify({ sent: 1, test: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Single registrant mode
+    if (registration_id) {
+      const { data: rg } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("id, first_name, email, scoring_code")
+        .eq("id", registration_id)
+        .eq("tournament_id", tournament_id)
+        .maybeSingle();
+      if (!rg) {
+        return new Response(JSON.stringify({ error: "Registrant not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!rg.email) {
+        return new Response(JSON.stringify({ error: "Registrant has no email on file" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const link = `${BASE_URL}/day-of/${t.slug}/${rg.scoring_code || "DEMO"}`;
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+        body: JSON.stringify({
+          from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+          to: [rg.email],
+          subject,
+          html: buildHtml(rg.first_name || "Player", link),
+        }),
+      });
+      if (!r.ok) {
+        const txt = await r.text();
+        throw new Error(`Resend failed (${r.status}): ${txt}`);
+      }
+      return new Response(JSON.stringify({ sent: 1, to: rg.email }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

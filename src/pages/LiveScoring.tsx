@@ -58,7 +58,7 @@ export default function LiveScoring() {
     if (!slug) return;
     supabase
       .from("tournaments")
-      .select("id, title, course_par, scoring_format, handicap_enabled")
+      .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos")
       .eq("slug", slug)
       .eq("site_published", true)
       .single()
@@ -66,14 +66,23 @@ export default function LiveScoring() {
         setTournament(data as TournamentData | null);
         setLoading(false);
         if (data) {
-          // Load sponsors
+          // Load sponsors + uploaded rotating logos
           supabase
             .from("tournament_sponsors")
             .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
             .eq("tournament_id", data.id)
             .eq("show_on_leaderboard", true)
             .order("sort_order")
-            .then(({ data: sp }) => setSponsors(sp || []));
+            .then(({ data: sp }) => {
+              const uploaded = (((data as any).leaderboard_rotating_logos) || []).map((l: any, idx: number) => ({
+                id: `uploaded-${idx}`,
+                name: l.name || "Sponsor",
+                logo_url: l.url,
+                website_url: l.website_url || null,
+                tier: "gold",
+              }));
+              setSponsors([...(sp || []), ...uploaded]);
+            });
 
           // Load course data (pars, SI, distances)
           supabase

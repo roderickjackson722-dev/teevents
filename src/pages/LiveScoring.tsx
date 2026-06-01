@@ -321,7 +321,12 @@ export default function LiveScoring() {
       <div className="max-w-5xl mx-auto space-y-4">
         {sponsors.length > 0 && (
           <div className="mb-2">
-            <SponsorBanner sponsors={sponsors} />
+            <SponsorBanner
+              sponsors={sponsors}
+              intervalMs={(tournament as any).leaderboard_sponsor_interval_ms || 5000}
+              preserveOrder
+              randomOrder={((tournament as any).leaderboard_sponsor_rotation_order || "sequential") === "random"}
+            />
           </div>
         )}
         <div className="flex items-center justify-between">

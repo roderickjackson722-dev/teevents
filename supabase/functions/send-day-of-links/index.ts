@@ -18,6 +18,7 @@ const BASE_URL = "https://www.teevents.golf";
 interface Body {
   tournament_id: string;
   test_email?: string;        // if provided, sends a single test using DEMO code
+  registration_id?: string;   // if provided, sends to that single registrant with their real code
 }
 
 Deno.serve(async (req) => {

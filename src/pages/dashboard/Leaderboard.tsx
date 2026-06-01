@@ -423,8 +423,8 @@ export default function Leaderboard() {
         </Card>
       )}
 
-      {selectedTournament && leaderboardSponsors && leaderboardSponsors.length > 0 && (
-        <SponsorBanner sponsors={leaderboardSponsors} />
+      {selectedTournament && leaderboardSponsors && leaderboardSponsors.list.length > 0 && (
+        <SponsorBanner sponsors={leaderboardSponsors.list} intervalMs={leaderboardSponsors.interval} preserveOrder randomOrder={leaderboardSponsors.randomOrder} />
       )}
 
       {/* ===== TEAM LEADERBOARD ===== */}

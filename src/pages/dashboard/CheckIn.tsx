@@ -43,7 +43,7 @@ export default function CheckIn() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, phone, checked_in, check_in_time, group_number")
+        .select("id, first_name, last_name, email, phone, checked_in, check_in_time, group_number, scoring_code, tee_time")
         .eq("tournament_id", selectedTournament)
         .order("last_name");
       if (error) throw error;
@@ -51,6 +51,12 @@ export default function CheckIn() {
     },
     enabled: !!selectedTournament,
   });
+
+  const playerDayOfUrl = (scoring_code: string | null) => {
+    const slug = currentTournament?.slug;
+    if (!slug || !scoring_code) return "";
+    return `${window.location.origin}/day-of/${slug}/${scoring_code}`;
+  };
 
   const handleCheckIn = async (playerId: string, playerName: string) => {
     if (demoGuard()) return;

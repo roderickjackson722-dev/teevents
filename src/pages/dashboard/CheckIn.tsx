@@ -191,9 +191,18 @@ export default function CheckIn() {
         </Select>
 
         {selectedTournament && players && players.length > 0 && (
-          <Button variant="outline" size="sm" onClick={handleDownloadQRCodes}>
-            <Download className="mr-2 h-4 w-4" /> Print QR Codes
-          </Button>
+          <>
+            <Select value={qrLayout} onValueChange={(v) => setQrLayout(v as "spaced" | "compact")}>
+              <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="spaced">Spaced layout (easier scanning)</SelectItem>
+                <SelectItem value="compact">Compact layout (more per page)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={handleDownloadQRCodes}>
+              <Download className="mr-2 h-4 w-4" /> Print QR Codes
+            </Button>
+          </>
         )}
       </div>
 

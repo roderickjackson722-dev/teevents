@@ -97,6 +97,12 @@ const Players = () => {
   const [scoringCodeInput, setScoringCodeInput] = useState("");
   const [regenerating, setRegenerating] = useState(false);
   const [viewingPlayer, setViewingPlayer] = useState<Registration | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<Registration | null>(null);
+  const [editForm, setEditForm] = useState({
+    first_name: "", last_name: "", email: "", phone: "",
+    handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
   useEffect(() => {
     if (!org) return;
     supabase

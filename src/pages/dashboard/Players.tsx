@@ -152,6 +152,51 @@ const Players = () => {
     }
   };
 
+  const openEditPlayer = (p: Registration) => {
+    setEditingPlayer(p);
+    setEditForm({
+      first_name: p.first_name || "",
+      last_name: p.last_name || "",
+      email: p.email || "",
+      phone: p.phone || "",
+      handicap: p.handicap !== null && p.handicap !== undefined ? String(p.handicap) : "",
+      shirt_size: p.shirt_size || "",
+      dietary_restrictions: p.dietary_restrictions || "",
+      group_number: p.group_number !== null && p.group_number !== undefined ? String(p.group_number) : "",
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPlayer || demoGuard()) return;
+    if (!editForm.first_name.trim() || !editForm.last_name.trim() || !editForm.email.trim()) {
+      toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
+      return;
+    }
+    setSavingEdit(true);
+    const updates: any = {
+      first_name: editForm.first_name.trim(),
+      last_name: editForm.last_name.trim(),
+      email: editForm.email.trim().toLowerCase(),
+      phone: editForm.phone.trim() || null,
+      handicap: editForm.handicap ? parseFloat(editForm.handicap) : null,
+      shirt_size: editForm.shirt_size || null,
+      dietary_restrictions: editForm.dietary_restrictions.trim() || null,
+      group_number: editForm.group_number ? parseInt(editForm.group_number) : null,
+    };
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update(updates)
+      .eq("id", editingPlayer.id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setPlayers((prev) => prev.map((p) => p.id === editingPlayer.id ? { ...p, ...updates } : p));
+    toast({ title: "Player updated", description: `${updates.first_name} ${updates.last_name} saved.` });
+    setEditingPlayer(null);
+  };
+
   const handleSaveScoringCode = async (playerId: string) => {
     if (demoGuard()) return;
     const code = scoringCodeInput.trim().toUpperCase();

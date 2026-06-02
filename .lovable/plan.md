@@ -1,102 +1,59 @@
+# TeeVents Platform Enhancements
 
-# Live Leaderboard & Scoring Enhancement Plan
+Large scope (4 parts). I'll implement in this order, each as an independent shippable chunk.
 
-This is a large, multi-surface feature. I'll implement it in cohesive phases. All other platform functionality remains untouched.
+## Part 1 — Dashboard Menu Reorganization (smallest, no DB)
 
-## Scope Summary
+Edit `src/components/DashboardSidebar.tsx`:
+- Reorder categories: Organizer Setup → Course Setup → Tournament Setup → **Operations** → Promotion & Marketing → Finance → Post-Event → Settings.
+- **Tournament Setup**: add Live Leaderboard (already there), Event Day Contest (moved from Operations, below Sponsorship Management), Side Events (moved, below Day of Event Page).
+- **Operations**: rename "Players" → "Players & Pairings"; remove "Test Simulator" and "Tee Sheet"; add "Live Leaderboard (view only)" pointing to `/dashboard/leaderboard?view=1`; move Team Performance directly below Messages; add new "CRM" item at end.
+- **Course Setup**: keep Handicap Settings link; remove any "Live Settings" sub-link if present (already only handicap tab).
+- No item duplicated, no item lost (except Test Simulator + Tee Sheet per spec).
 
-1. Scoring code login page (`/score/{slug}`)
-2. Mobile-first hole-by-hole score entry with net scoring + edit
-3. Improved player-facing Live Leaderboard (`/live/{slug}`) with Gross/Net toggle + sponsor footer
-4. Organizer Live Leaderboard Settings panel
-5. Scoring code generation & display (on Day-of page + printable scorecards)
+## Part 2 — Course Database with Search
 
----
+Migration: create `public.course_database` table with columns from spec + RLS.
+- SELECT: authenticated users can read all verified rows + their own unverified.
+- INSERT: authenticated users (auto-set created_by).
+- UPDATE/DELETE: only created_by or admin.
+- Seed: skip third-party API. Provide manual entry + "Save to my library" toggle. (No 500-course pre-load — would require external data; instead enable crowdsource pattern.)
 
-## Part 1 — Database Changes (single migration)
+UI: Update `src/pages/dashboard/CourseDetails.tsx` — add a search box at top that queries `course_database` by `course_name ilike`, shows result cards with [Select] to populate hole pars/SI/distances/rating/slope into the current tournament. "Manual Entry" toggle keeps existing form. Checkbox "Save this course to my library" on save.
 
-Add columns to `tournaments` for leaderboard settings:
-- `live_leaderboard_enabled` (bool, default true)
-- `live_scoring_require_code` (bool, default true)
-- `live_show_gross` (bool, default true)
-- `live_show_net` (bool, default true)
-- `live_default_view` ('gross' | 'net', default 'gross')
-- `live_show_sponsors` (bool, default true)
-- `live_sponsor_placement` ('footer' | 'banner' | 'sidebar', default 'footer')
-- `live_allow_edit_past_holes` (bool, default true)
-- `live_require_confirm_save` (bool, default false)
+## Part 3 — Invoice Management
 
-Add group-level scoring code (shared by foursome):
-- `tournament_registrations.group_scoring_code` (TEXT, nullable)
-- Backfill: for each group, generate one shared 6-char unambiguous code (exclude O, 0, I, 1) and copy to all members of that group
-- Add index on `group_scoring_code`
+Migration on `public.invoices`: add `status TEXT DEFAULT 'draft'`, `last_edited_by UUID`, `edit_history JSONB DEFAULT '[]'`.
 
-RLS: anon can SELECT registrations by `group_scoring_code` when tournament is published (already partially in place via day-of policy — extend or reuse).
+Admin UI in `src/components/admin/AdminInvoices.tsx`:
+- List view with Status column + filters (Draft / Sent / Paid).
+- Actions: Edit (opens modal for any field), Save as Draft, Send (sets status='sent'), Clone (duplicates row with status='draft', new id), View history.
+- Version history: on each update, append `{user_id, at, changes}` to `edit_history` (done client-side; also stamp `last_edited_by`).
 
-No changes to existing per-player `scoring_code` (it stays for QR/day-of).
+## Part 4 — CRM
 
-## Part 2 — New Page: `/score/:slug`  (`src/pages/ScoreLogin.tsx`)
+Migration: create `crm_contacts`, `crm_communications`, `crm_tasks`, `crm_audit_log` tables with org-scoped RLS via tournament → organization_id.
+- RLS: org members read; editors insert/update their own; owners full; audit log read-only for non-owners.
+- Trigger: `crm_contacts` AFTER UPDATE → insert per-field rows into `crm_audit_log`.
 
-- Single large 6-char code input (auto-uppercase, monospace)
-- Continue button → looks up registrations by `group_scoring_code` for that tournament
-- On success → navigate to `/score/:slug/:code`
+UI: New route `/dashboard/crm` (`src/pages/dashboard/CRM.tsx`):
+- Tournament-scoped contact list with search/filter (type, status).
+- Add/Edit contact dialog.
+- Contact detail drawer with: info, notes, Communication History (log activity), Tasks (add/complete), Audit Log.
+- CSV import/export (client-side parse).
+- "Send Email Batch" defers to existing Messages flow (link out) — full bulk email is out of scope for this pass.
 
-## Part 3 — New Page: `/score/:slug/:code`  (`src/pages/GroupScoring.tsx`)
+Register route in `src/App.tsx`; add sidebar entry (done in Part 1).
 
-Mobile-first scorecard:
-- Header: tournament title + menu
-- Current hole indicator + Prev/Next + jump-to-hole dropdown
-- Hole info card: Par, Stroke Index, yardage
-- Player rows: name, gross input (number stepper), net (computed), stroke indicator dots
-- "Save & Next Hole" CTA
-- Below scorecard: compact 18-hole summary list with "Edit" links
-- Net = gross − strokes-on-hole, using existing `handicapUtils` (`allocateStrokes`)
-- Saves to `tournament_scores` (existing table)
-- Realtime: refresh via channel when scores update
+## Technical notes
+- All migrations include GRANTs (anon excluded; authenticated + service_role).
+- CRM permissions piggyback on existing `org_members.role` / `permissions` — new permission key `manage_crm` for editors; owners always allowed.
+- Course DB shared across all orgs (acts as a public registry) with `created_by` for moderation.
+- No changes to payments, Stripe, registration, email infra, or any non-listed feature.
 
-Honors organizer settings:
-- `live_allow_edit_past_holes`
-- `live_require_confirm_save` (confirm dialog before save)
+## Out of scope explicitly skipped
+- Pre-loading 500+ US courses (no licensed data source available in-sandbox).
+- Bulk email send from CRM (uses existing Messages page).
+- "Live Leaderboard (view only)" is a link to the existing leaderboard page — not a new component.
 
-## Part 4 — Refactored Live Leaderboard (`src/pages/LiveLeaderboard.tsx`)
-
-Keep current TV/display mode, add player-friendly mode:
-- Show Gross/Net columns based on settings; toggle pill if both enabled
-- Position, Player/Team, Gross, Net, Thru
-- Mobile-stacked table
-- Sponsor footer (existing logic preserved); honor `live_sponsor_placement`
-- Respect `live_leaderboard_enabled` gate (replaces `live_display_enabled` for player view; keep existing for TV)
-
-## Part 5 — Organizer Settings Panel
-
-New component `src/components/dashboard/LiveLeaderboardSettings.tsx` mounted on the existing **Scoring** dashboard page (`src/pages/dashboard/Scoring.tsx`) as a new card section "Live Leaderboard Settings" — does not disturb existing scoring config.
-
-Renders the 9 toggles/selects above, saves to `tournaments`.
-
-## Part 6 — Scoring Code Display
-
-- **Day-of Event Page** (`src/pages/DayOf.tsx`): show the group's shared `group_scoring_code` prominently with copy button + link to `/score/:slug/:code`
-- **Printable Scorecards** (`src/components/printables/ScorecardsTab.tsx`): add the text code beneath the existing QR
-
-## Part 7 — Routing (`src/App.tsx`)
-
-Add:
-- `/score/:slug` → ScoreLogin
-- `/score/:slug/:code` → GroupScoring
-
-## Technical Notes
-
-- Reuse `src/lib/handicapUtils.ts` for stroke allocation
-- Reuse `src/lib/scoringFormats.ts` and existing `tournament_scores` table — no schema change for scores
-- Code generation utility: `src/lib/scoringCode.ts` with `generateGroupCode()` using unambiguous alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`
-- For backfill we'll do it inline in the migration with a PL/pgSQL block grouping by `(tournament_id, group_number)`
-- All UI uses design system tokens (Gold CTA / Forest Green text per project memory)
-
-## Out of Scope (explicitly preserved)
-
-- Existing `/day-of`, QR routing, email functions — untouched
-- Existing per-player `scoring_code` — untouched
-- TV/Live Display mode — preserved
-- Admin invoices, Day-of editor — untouched
-
-Once approved I'll start with the migration, then build pages/components in parallel where possible.
+Total: ~3 migrations, ~6 new files, ~5 edited files.

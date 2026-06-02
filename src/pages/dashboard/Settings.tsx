@@ -519,6 +519,45 @@ const Settings = () => {
       {/* Email Notifications */}
       {org && <NotificationSettings orgId={org.orgId} />}
 
+      {/* TeeVents Branding */}
+      {tournaments.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="bg-card rounded-lg border border-border p-6"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <Building2 className="h-6 w-6 text-primary" />
+            <h2 className="text-lg font-display font-bold text-foreground">TeeVents Branding</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            A small "Powered by TeeVents" badge appears in the corner of your public pages (tournament site, live leaderboard, day-of page). {isProPlan ? "Toggle it off per tournament." : "Upgrade to Pro to hide the badge."}
+          </p>
+          <div className="space-y-3">
+            {tournaments.map((t) => (
+              <div key={t.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm text-foreground truncate">{t.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t.show_branding_badge ? "Badge visible on public pages" : "Badge hidden"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`badge-${t.id}`} className="text-xs text-muted-foreground">Show badge</Label>
+                  <Switch
+                    id={`badge-${t.id}`}
+                    checked={t.show_branding_badge !== false}
+                    disabled={savingBadgeToggle === t.id || (!isProPlan && t.show_branding_badge !== false)}
+                    onCheckedChange={() => handleToggleBadge(t.id, t.show_branding_badge !== false)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Tournament Scoring Formats */}
       {tournaments.length > 0 && (
         <motion.div

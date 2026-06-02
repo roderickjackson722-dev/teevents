@@ -57,6 +57,7 @@ interface TournamentSettings {
   refund_policy: string;
   rain_date_policy_type: string;
   rain_date_policy: string;
+  show_branding_badge: boolean;
 }
 
 const Settings = () => {
@@ -78,7 +79,7 @@ const Settings = () => {
       setDashboardName(org.dashboardName || "");
       supabase
         .from("tournaments")
-        .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy")
+        .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy, show_branding_badge")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false })
         .then(({ data }) => setTournaments((data as any) || []));

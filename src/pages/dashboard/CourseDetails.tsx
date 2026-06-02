@@ -18,6 +18,7 @@ import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
+import CourseDatabaseSearch, { type CourseDBResult } from "@/components/dashboard/CourseDatabaseSearch";
 
 interface HoleData {
   par: string;
@@ -344,6 +345,48 @@ export default function CourseDetails() {
           )}
         </CardContent>
       </Card>
+
+      {tournamentId && (
+        <CourseDatabaseSearch
+          onSelect={(c: CourseDBResult) => {
+            setCourseName(c.course_name);
+            if (c.tee_name) setTeeName(c.tee_name);
+            if (c.course_rating != null) setCourseRating(String(c.course_rating));
+            if (c.slope_rating != null) setSlopeRating(String(c.slope_rating));
+            const pars = c.hole_pars ?? [];
+            const sis = c.hole_stroke_indexes ?? [];
+            const dists = c.hole_distances ?? [];
+            setHoles(Array.from({ length: 18 }, (_, i) => ({
+              par: pars[i] != null ? String(pars[i]) : "4",
+              si: sis[i] != null ? String(sis[i]) : "",
+              distance: dists[i] != null ? String(dists[i]) : "",
+            })));
+            toast({ title: `Loaded "${c.course_name}" from library` });
+          }}
+          onSaveCurrent={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            const payload = {
+              course_name: courseName.trim(),
+              tee_name: teeName,
+              par_total: parTotal,
+              course_rating: parseFloat(courseRating) || null,
+              slope_rating: parseInt(slopeRating) || null,
+              hole_pars: holes.map(h => parseInt(h.par) || 4),
+              hole_stroke_indexes: holes.map(h => parseInt(h.si) || 0),
+              hole_distances: holes.map(h => parseInt(h.distance) || 0),
+              created_by: user.id,
+            };
+            if (!payload.course_name) {
+              toast({ title: "Enter a course name first", variant: "destructive" });
+              return;
+            }
+            const { error } = await supabase.from("course_database" as any).insert(payload);
+            if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+            else toast({ title: "Saved to course library" });
+          }}
+        />
+      )}
 
       {!tournamentId && (
         <Alert>

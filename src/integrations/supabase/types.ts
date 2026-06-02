@@ -214,9 +214,11 @@ export type Database = {
           customer_name: string
           discount_cents: number
           due_date: string | null
+          edit_history: Json
           id: string
           invoice_number: string
           issue_date: string
+          last_edited_by: string | null
           line_items: Json
           notes: string | null
           status: string
@@ -234,9 +236,11 @@ export type Database = {
           customer_name?: string
           discount_cents?: number
           due_date?: string | null
+          edit_history?: Json
           id?: string
           invoice_number: string
           issue_date?: string
+          last_edited_by?: string | null
           line_items?: Json
           notes?: string | null
           status?: string
@@ -254,9 +258,11 @@ export type Database = {
           customer_name?: string
           discount_cents?: number
           due_date?: string | null
+          edit_history?: Json
           id?: string
           invoice_number?: string
           issue_date?: string
+          last_edited_by?: string | null
           line_items?: Json
           notes?: string | null
           status?: string
@@ -951,6 +957,60 @@ export type Database = {
         }
         Relationships: []
       }
+      course_database: {
+        Row: {
+          city: string | null
+          course_name: string
+          course_rating: number | null
+          created_at: string
+          created_by: string | null
+          hole_distances: Json | null
+          hole_pars: Json | null
+          hole_stroke_indexes: Json | null
+          id: string
+          is_verified: boolean
+          par_total: number | null
+          slope_rating: number | null
+          state: string | null
+          tee_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          course_name: string
+          course_rating?: number | null
+          created_at?: string
+          created_by?: string | null
+          hole_distances?: Json | null
+          hole_pars?: Json | null
+          hole_stroke_indexes?: Json | null
+          id?: string
+          is_verified?: boolean
+          par_total?: number | null
+          slope_rating?: number | null
+          state?: string | null
+          tee_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          course_name?: string
+          course_rating?: number | null
+          created_at?: string
+          created_by?: string | null
+          hole_distances?: Json | null
+          hole_pars?: Json | null
+          hole_stroke_indexes?: Json | null
+          id?: string
+          is_verified?: boolean
+          par_total?: number | null
+          slope_rating?: number | null
+          state?: string | null
+          tee_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       course_tee_sets: {
         Row: {
           course_rating: number
@@ -997,6 +1057,219 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "course_tee_sets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_audit_log: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          contact_id: string
+          field_name: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          contact_id: string
+          field_name?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          contact_id?: string
+          field_name?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_audit_log_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_communications: {
+        Row: {
+          communication_type: string
+          contact_id: string
+          created_at: string
+          created_by: string | null
+          direction: string
+          id: string
+          message: string | null
+          sent_at: string | null
+          subject: string | null
+        }
+        Insert: {
+          communication_type?: string
+          contact_id: string
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          id?: string
+          message?: string | null
+          sent_at?: string | null
+          subject?: string | null
+        }
+        Update: {
+          communication_type?: string
+          contact_id?: string
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          id?: string
+          message?: string | null
+          sent_at?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_communications_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          company: string | null
+          contact_type: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          id: string
+          invited: boolean
+          invited_at: string | null
+          last_name: string
+          notes: string | null
+          organization_id: string
+          phone: string | null
+          responded_at: string | null
+          response_status: string
+          title: string | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          contact_type?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          invited?: boolean
+          invited_at?: string | null
+          last_name: string
+          notes?: string | null
+          organization_id: string
+          phone?: string | null
+          responded_at?: string | null
+          response_status?: string
+          title?: string | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          contact_type?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          invited?: boolean
+          invited_at?: string | null
+          last_name?: string
+          notes?: string | null
+          organization_id?: string
+          phone?: string | null
+          responded_at?: string | null
+          response_status?: string
+          title?: string | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_contacts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          status: string
+          task_type: string
+          title: string | null
+          tournament_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          task_type?: string
+          title?: string | null
+          tournament_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          task_type?: string
+          title?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"

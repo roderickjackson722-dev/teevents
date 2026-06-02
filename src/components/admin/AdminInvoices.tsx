@@ -399,70 +399,185 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
   );
 }
 
-function downloadPdf(inv: Invoice) {
+async function fetchLogoDataUrl(): Promise<string | null> {
+  try {
+    const res = await fetch(logoAsset.url);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function downloadPdf(inv: Invoice) {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
+  const PAGE_W = 612;
   const M = 48;
-  let y = M;
-  doc.setFontSize(24); doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", M, y); y += 28;
-  doc.setFontSize(10); doc.setFont("helvetica", "normal");
-  doc.text("TeeVents Golf Management", M, y); y += 14;
-  doc.text("info@teevents.golf", M, y); y += 14;
-  doc.text("teevents.golf", M, y);
+  const CONTENT_W = PAGE_W - M * 2;
+  const RIGHT = M + CONTENT_W;
 
-  doc.setFontSize(10);
-  doc.text(`Invoice #: ${inv.invoice_number}`, 400, M + 28);
-  doc.text(`Issue Date: ${inv.issue_date}`, 400, M + 42);
-  if (inv.due_date) doc.text(`Due Date: ${inv.due_date}`, 400, M + 56);
-  doc.text(`Status: ${inv.status.toUpperCase()}`, 400, M + 70);
+  // Header: logo + company
+  const logo = await fetchLogoDataUrl();
+  if (logo) {
+    try { doc.addImage(logo, "PNG", M, M, 70, 70); } catch {}
+  }
+  const companyX = M + 84;
+  let cy = M + 14;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(20, 20, 20);
+  doc.text("TeeVents Golf Management", companyX, cy); cy += 16;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90, 90, 90);
+  doc.text("info@teevents.golf", companyX, cy); cy += 13;
+  doc.text("www.teevents.golf", companyX, cy);
 
-  y += 30;
-  doc.setFont("helvetica", "bold"); doc.text("Bill To:", M, y); y += 14;
-  doc.setFont("helvetica", "normal");
-  if (inv.customer_name) { doc.text(inv.customer_name, M, y); y += 12; }
-  if (inv.customer_company) { doc.text(inv.customer_company, M, y); y += 12; }
-  if (inv.customer_email) { doc.text(inv.customer_email, M, y); y += 12; }
-  if (inv.customer_address) { doc.text(inv.customer_address, M, y); y += 12; }
+  // Invoice meta (right)
+  doc.setTextColor(20, 20, 20);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(26);
+  doc.text("INVOICE", RIGHT, M + 18, { align: "right" });
 
-  y += 16;
-  // table header
-  doc.setFillColor(240, 240, 240); doc.rect(M, y, 520, 22, "F");
-  doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-  doc.text("Item", M + 8, y + 15);
-  doc.text("Qty", 360, y + 15, { align: "right" });
-  doc.text("Unit", 430, y + 15, { align: "right" });
-  doc.text("Amount", M + 520 - 8, y + 15, { align: "right" });
-  y += 26;
-  doc.setFont("helvetica", "normal");
-
-  const items: LineItem[] = Array.isArray(inv.line_items) ? inv.line_items : [];
-  items.forEach(it => {
-    const amount = it.quantity * it.unit_price_cents;
-    const lines = doc.splitTextToSize(it.name + (it.description ? `\n${it.description}` : ""), 320);
-    doc.text(lines, M + 8, y);
-    doc.text(String(it.quantity), 360, y, { align: "right" });
-    doc.text(fmt(it.unit_price_cents), 430, y, { align: "right" });
-    doc.text(fmt(amount), M + 520 - 8, y, { align: "right" });
-    y += Math.max(14, lines.length * 12) + 6;
-    if (y > 720) { doc.addPage(); y = M; }
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  const metaLines: Array<[string, string]> = [
+    ["Invoice #", inv.invoice_number || ""],
+    ["Issue Date", inv.issue_date || ""],
+  ];
+  if (inv.due_date) metaLines.push(["Due Date", inv.due_date]);
+  let my = M + 36;
+  metaLines.forEach(([k, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(`${k}:`, RIGHT - 110, my);
+    doc.setTextColor(20, 20, 20);
+    doc.text(v, RIGHT, my, { align: "right" });
+    my += 14;
   });
 
-  const totals = calcTotal(items, Number(inv.tax_rate) || 0, Number(inv.discount_cents) || 0);
-  y += 6;
-  doc.line(M, y, M + 520, y); y += 14;
-  doc.text("Subtotal", 400, y); doc.text(fmt(totals.subtotal), M + 520 - 8, y, { align: "right" }); y += 14;
-  if (inv.discount_cents) { doc.text("Discount", 400, y); doc.text(`-${fmt(inv.discount_cents)}`, M + 520 - 8, y, { align: "right" }); y += 14; }
-  doc.text(`Tax (${inv.tax_rate}%)`, 400, y); doc.text(fmt(totals.tax), M + 520 - 8, y, { align: "right" }); y += 14;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(12);
-  doc.text("TOTAL", 400, y + 4); doc.text(fmt(totals.total), M + 520 - 8, y + 4, { align: "right" });
+  let y = Math.max(M + 90, my + 8);
+  doc.setDrawColor(220, 220, 220);
+  doc.line(M, y, RIGHT, y);
+  y += 24;
 
-  if (inv.notes) {
-    y += 36;
-    doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("Notes / Terms", M, y); y += 14;
-    doc.setFont("helvetica", "normal");
-    const lines = doc.splitTextToSize(inv.notes, 520);
-    doc.text(lines, M, y);
+  // Bill To
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(120, 120, 120);
+  doc.text("BILL TO", M, y); y += 14;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(20, 20, 20);
+  if (inv.customer_name) { doc.text(inv.customer_name, M, y); y += 14; }
+  if (inv.customer_company) { doc.text(inv.customer_company, M, y); y += 14; }
+  if (inv.customer_email) { doc.setTextColor(90, 90, 90); doc.text(inv.customer_email, M, y); doc.setTextColor(20, 20, 20); y += 14; }
+  if (inv.customer_address) {
+    doc.setTextColor(90, 90, 90);
+    const addrLines = doc.splitTextToSize(inv.customer_address, CONTENT_W * 0.6);
+    doc.text(addrLines, M, y);
+    y += addrLines.length * 13;
+    doc.setTextColor(20, 20, 20);
   }
+
+  y += 20;
+
+  // Items table
+  const colQtyX = M + CONTENT_W - 230;
+  const colUnitX = M + CONTENT_W - 130;
+  const colAmtX = RIGHT - 4;
+
+  doc.setFillColor(245, 247, 250);
+  doc.rect(M, y, CONTENT_W, 26, "F");
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(60, 60, 60);
+  doc.text("DESCRIPTION", M + 12, y + 17);
+  doc.text("QTY", colQtyX, y + 17, { align: "right" });
+  doc.text("UNIT", colUnitX, y + 17, { align: "right" });
+  doc.text("AMOUNT", colAmtX, y + 17, { align: "right" });
+  y += 26;
+
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(20, 20, 20);
+
+  const items: LineItem[] = Array.isArray(inv.line_items) ? inv.line_items : [];
+  items.forEach((it, idx) => {
+    const amount = it.quantity * it.unit_price_cents;
+    const nameLines = doc.splitTextToSize(it.name || "", CONTENT_W - 260);
+    const descLines = it.description ? doc.splitTextToSize(it.description, CONTENT_W - 260) : [];
+    const rowH = Math.max(24, 14 + nameLines.length * 12 + descLines.length * 11 + 10);
+
+    if (idx % 2 === 1) {
+      doc.setFillColor(252, 252, 252);
+      doc.rect(M, y, CONTENT_W, rowH, "F");
+    }
+
+    let ty = y + 14;
+    doc.setFont("helvetica", "bold"); doc.setTextColor(20, 20, 20);
+    doc.text(nameLines, M + 12, ty);
+    ty += nameLines.length * 12;
+    if (descLines.length) {
+      doc.setFont("helvetica", "normal"); doc.setTextColor(110, 110, 110); doc.setFontSize(9);
+      doc.text(descLines, M + 12, ty);
+      doc.setFontSize(10);
+    }
+
+    doc.setFont("helvetica", "normal"); doc.setTextColor(20, 20, 20);
+    doc.text(String(it.quantity), colQtyX, y + 14, { align: "right" });
+    doc.text(fmt(it.unit_price_cents), colUnitX, y + 14, { align: "right" });
+    doc.text(fmt(amount), colAmtX, y + 14, { align: "right" });
+
+    y += rowH;
+    if (y > 700) { doc.addPage(); y = M; }
+  });
+
+  doc.setDrawColor(220, 220, 220);
+  doc.line(M, y, RIGHT, y);
+  y += 18;
+
+  // Totals
+  const totals = calcTotal(items, Number(inv.tax_rate) || 0, Number(inv.discount_cents) || 0);
+  const totalsLabelX = RIGHT - 160;
+  const totalsValueX = colAmtX;
+
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90, 90, 90);
+  doc.text("Subtotal", totalsLabelX, y);
+  doc.setTextColor(20, 20, 20);
+  doc.text(fmt(totals.subtotal), totalsValueX, y, { align: "right" });
+  y += 16;
+
+  if (inv.discount_cents) {
+    doc.setTextColor(90, 90, 90);
+    doc.text("Discount", totalsLabelX, y);
+    doc.setTextColor(20, 20, 20);
+    doc.text(`-${fmt(inv.discount_cents)}`, totalsValueX, y, { align: "right" });
+    y += 16;
+  }
+
+  doc.setTextColor(90, 90, 90);
+  doc.text(`Tax (${inv.tax_rate}%)`, totalsLabelX, y);
+  doc.setTextColor(20, 20, 20);
+  doc.text(fmt(totals.tax), totalsValueX, y, { align: "right" });
+  y += 14;
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(totalsLabelX, y, totalsValueX, y);
+  y += 16;
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(20, 20, 20);
+  doc.text("TOTAL", totalsLabelX, y);
+  doc.text(fmt(totals.total), totalsValueX, y, { align: "right" });
+  y += 32;
+
+  // Notes
+  if (inv.notes) {
+    if (y > 680) { doc.addPage(); y = M; }
+    doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(120, 120, 120);
+    doc.text("NOTES / TERMS", M, y); y += 14;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(60, 60, 60);
+    const noteLines = doc.splitTextToSize(inv.notes, CONTENT_W);
+    doc.text(noteLines, M, y, { lineHeightFactor: 1.5 });
+  }
+
+  // Footer
+  const footerY = 760;
+  doc.setDrawColor(230, 230, 230);
+  doc.line(M, footerY - 14, RIGHT, footerY - 14);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(140, 140, 140);
+  doc.text("Thank you for your business — TeeVents Golf Management Co.", PAGE_W / 2, footerY, { align: "center" });
+  doc.text("www.teevents.golf  •  info@teevents.golf", PAGE_W / 2, footerY + 12, { align: "center" });
 
   doc.save(`${inv.invoice_number || "invoice"}.pdf`);
 }

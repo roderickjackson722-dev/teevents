@@ -134,6 +134,29 @@ const Settings = () => {
     setSavingFeeToggle(null);
   };
 
+  const [savingBadgeToggle, setSavingBadgeToggle] = useState<string | null>(null);
+  const isProPlan = org?.plan === "pro" || org?.plan === "starter" || org?.plan === "premium" || org?.plan === "enterprise";
+
+  const handleToggleBadge = async (tournamentId: string, currentValue: boolean) => {
+    if (demoGuard()) return;
+    if (currentValue && !isProPlan) {
+      toast.error("Hiding the TeeVents badge is a Pro feature. Upgrade to remove it.");
+      return;
+    }
+    setSavingBadgeToggle(tournamentId);
+    const newValue = !currentValue;
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ show_branding_badge: newValue } as any)
+      .eq("id", tournamentId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(newValue ? "Badge will appear on public pages" : "Badge hidden on public pages");
+      setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, show_branding_badge: newValue } : t));
+    }
+    setSavingBadgeToggle(null);
+  };
+
   const getPolicyEdit = (tournamentId: string) => policyEdits[tournamentId] || {};
 
   const handleRefundPolicyTypeChange = (tournamentId: string, typeId: string) => {

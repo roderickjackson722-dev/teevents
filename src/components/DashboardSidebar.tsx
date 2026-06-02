@@ -3,9 +3,9 @@ import {
   LayoutDashboard, Trophy, ClipboardCheck, Users, MessageSquare,
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
-  Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
-  FlaskConical, MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  PartyPopper, Building2, Store, Target, BedDouble, Ticket, Eye, Activity,
+  CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
+  MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
+  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -48,12 +48,11 @@ interface NavItem {
 
 interface SidebarCategory {
   label: string;
-  color: string; // tailwind border-l color class
+  color: string;
   items: NavItem[];
 }
 
-// Phase-based navigation, ordered from planning → setup → promotion → day-of → finance → post-event → settings.
-// Each category has a distinct subtle background tint and a colored left border for visual scanning.
+// Phase-based navigation. Operations now sits above Promotion & Marketing.
 const categories: SidebarCategory[] = [
   {
     label: "Organizer Setup",
@@ -79,12 +78,31 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Name, date, location, fees, add‑ons" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
-      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard" },
+      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard (includes settings)" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
+      { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
       { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
       { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null, description: "About us, mission, history, contact" },
       { title: "Day of Event Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
+      { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },
+    ],
+  },
+  {
+    label: "Operations",
+    color: "border-l-purple-400 bg-purple-400/5",
+    items: [
+      { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
+      { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
+      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
+      { title: "Live Leaderboard (View)", url: "/dashboard/leaderboard?view=1", icon: Eye, feature: "leaderboard", description: "View-only leaderboard during play" },
+      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
+      { title: "Sponsor Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Manage sponsors during the event" },
+      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
+      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
+      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging", description: "Email and SMS blasts to players" },
+      { title: "Team Performance", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Referral tracking, promoter leaderboard" },
+      { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],
   },
   {
@@ -96,25 +114,6 @@ const categories: SidebarCategory[] = [
       { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Confirmation, reminder, thank‑you emails" },
       { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
-    ],
-  },
-  {
-    label: "Operations",
-    color: "border-l-purple-400 bg-purple-400/5",
-    items: [
-      { title: "Players", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import player roster" },
-      { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
-      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
-      { title: "Tee Sheet", url: "/dashboard/tee-sheet", icon: Clock, feature: "leaderboard", description: "Pairings, tee times, hole assignments" },
-      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups, test mode" },
-      { title: "Test Simulator", url: "/dashboard/test-simulator", icon: FlaskConical, feature: "leaderboard", description: "Practice scoring before live event" },
-      
-      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
-      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
-      { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },
-      { title: "Team Performance", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Referral tracking, promoter leaderboard" },
-      { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
-      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging", description: "Email and SMS blasts to players" },
     ],
   },
   {

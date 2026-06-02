@@ -724,6 +724,13 @@ const Players = () => {
                         >
                           <Search className="h-4 w-4" />
                         </button>
+                        <button
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit player"
+                          onClick={() => openEditPlayer(p)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
                         {p.payment_status === "paid" && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

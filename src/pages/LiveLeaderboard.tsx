@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { Trophy, Loader2, Award } from "lucide-react";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
+import { BrandingBadge } from "@/components/BrandingBadge";
 
 interface Sponsor {
   id: string;
@@ -33,6 +34,7 @@ interface Tournament {
   site_primary_color: string | null;
   live_display_enabled: boolean;
   live_display_refresh_seconds: number;
+  show_branding_badge?: boolean | null;
 }
 
 interface LeaderboardRow {
@@ -135,7 +137,7 @@ export default function LiveLeaderboard() {
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design")
+      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge")
       .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
       .maybeSingle()
       .then(({ data }) => {
@@ -414,6 +416,7 @@ export default function LiveLeaderboard() {
           </div>
         </footer>
       )}
+      <BrandingBadge show={tournament.show_branding_badge !== false} />
     </div>
   );
 }

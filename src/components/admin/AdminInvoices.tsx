@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { Plus, Trash2, GripVertical, FileDown, Save, ArrowLeft, Pencil, Copy } from "lucide-react";
 import jsPDF from "jspdf";
+import logoAsset from "@/assets/teevents-logo.png.asset.json";
 
 // Catalog of platform features that can be added as line items.
 const FEATURE_CATALOG: { name: string; description: string; price: number }[] = [

@@ -97,6 +97,12 @@ const Players = () => {
   const [scoringCodeInput, setScoringCodeInput] = useState("");
   const [regenerating, setRegenerating] = useState(false);
   const [viewingPlayer, setViewingPlayer] = useState<Registration | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<Registration | null>(null);
+  const [editForm, setEditForm] = useState({
+    first_name: "", last_name: "", email: "", phone: "",
+    handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
   useEffect(() => {
     if (!org) return;
     supabase
@@ -144,6 +150,51 @@ const Players = () => {
       setPlayers((prev) => prev.filter((p) => p.id !== id));
       toast({ title: "Player removed" });
     }
+  };
+
+  const openEditPlayer = (p: Registration) => {
+    setEditingPlayer(p);
+    setEditForm({
+      first_name: p.first_name || "",
+      last_name: p.last_name || "",
+      email: p.email || "",
+      phone: p.phone || "",
+      handicap: p.handicap !== null && p.handicap !== undefined ? String(p.handicap) : "",
+      shirt_size: p.shirt_size || "",
+      dietary_restrictions: p.dietary_restrictions || "",
+      group_number: p.group_number !== null && p.group_number !== undefined ? String(p.group_number) : "",
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPlayer || demoGuard()) return;
+    if (!editForm.first_name.trim() || !editForm.last_name.trim() || !editForm.email.trim()) {
+      toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
+      return;
+    }
+    setSavingEdit(true);
+    const updates: any = {
+      first_name: editForm.first_name.trim(),
+      last_name: editForm.last_name.trim(),
+      email: editForm.email.trim().toLowerCase(),
+      phone: editForm.phone.trim() || null,
+      handicap: editForm.handicap ? parseFloat(editForm.handicap) : null,
+      shirt_size: editForm.shirt_size || null,
+      dietary_restrictions: editForm.dietary_restrictions.trim() || null,
+      group_number: editForm.group_number ? parseInt(editForm.group_number) : null,
+    };
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update(updates)
+      .eq("id", editingPlayer.id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setPlayers((prev) => prev.map((p) => p.id === editingPlayer.id ? { ...p, ...updates } : p));
+    toast({ title: "Player updated", description: `${updates.first_name} ${updates.last_name} saved.` });
+    setEditingPlayer(null);
   };
 
   const handleSaveScoringCode = async (playerId: string) => {
@@ -673,6 +724,13 @@ const Players = () => {
                         >
                           <Search className="h-4 w-4" />
                         </button>
+                        <button
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit player"
+                          onClick={() => openEditPlayer(p)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
                         {p.payment_status === "paid" && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -942,6 +1000,69 @@ const Players = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Player Dialog */}
+      <Dialog open={!!editingPlayer} onOpenChange={(open) => !open && setEditingPlayer(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Player</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ep-first">First Name *</Label>
+                <Input id="ep-first" value={editForm.first_name} onChange={(e) => setEditForm((f) => ({ ...f, first_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="ep-last">Last Name *</Label>
+                <Input id="ep-last" value={editForm.last_name} onChange={(e) => setEditForm((f) => ({ ...f, last_name: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="ep-email">Email *</Label>
+              <Input id="ep-email" type="email" value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ep-phone">Phone</Label>
+                <Input id="ep-phone" value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="ep-hcp">Handicap</Label>
+                <Input id="ep-hcp" type="number" step="0.1" value={editForm.handicap} onChange={(e) => setEditForm((f) => ({ ...f, handicap: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ep-shirt">Shirt Size</Label>
+                <Select value={editForm.shirt_size} onValueChange={(v) => setEditForm((f) => ({ ...f, shirt_size: v }))}>
+                  <SelectTrigger id="ep-shirt"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    {["S", "M", "L", "XL", "XXL"].map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="ep-hole">Hole / Group</Label>
+                <Input id="ep-hole" type="number" min="1" placeholder="Unassigned" value={editForm.group_number} onChange={(e) => setEditForm((f) => ({ ...f, group_number: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="ep-diet">Dietary Restrictions</Label>
+              <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setEditingPlayer(null)} disabled={savingEdit}>Cancel</Button>
+              <Button onClick={handleSaveEdit} disabled={savingEdit}>
+                {savingEdit ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                Save Changes
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

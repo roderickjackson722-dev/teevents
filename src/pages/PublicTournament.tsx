@@ -18,6 +18,7 @@ import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
+import { BrandingBadge } from "@/components/BrandingBadge";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -2577,6 +2578,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           Powered by <span className="font-semibold" style={{ color: primary }}>TeeVents</span>
         </p>
       </footer>
+      <BrandingBadge show={(tournament as any).show_branding_badge !== false} />
     </div>
   );
 };

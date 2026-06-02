@@ -6104,6 +6104,7 @@ export type Database = {
           schedule_info_html: string | null
           scoring_format: string
           setup_checklist_dismissed: boolean
+          show_branding_badge: boolean
           show_countdown: boolean
           show_in_public_search: boolean
           show_org_tab: boolean
@@ -6281,6 +6282,7 @@ export type Database = {
           schedule_info_html?: string | null
           scoring_format?: string
           setup_checklist_dismissed?: boolean
+          show_branding_badge?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
           show_org_tab?: boolean
@@ -6458,6 +6460,7 @@ export type Database = {
           schedule_info_html?: string | null
           scoring_format?: string
           setup_checklist_dismissed?: boolean
+          show_branding_badge?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
           show_org_tab?: boolean

@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS show_branding_badge boolean NOT NULL DEFAULT true;

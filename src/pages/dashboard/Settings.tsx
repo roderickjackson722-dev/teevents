@@ -57,6 +57,7 @@ interface TournamentSettings {
   refund_policy: string;
   rain_date_policy_type: string;
   rain_date_policy: string;
+  show_branding_badge: boolean;
 }
 
 const Settings = () => {
@@ -78,7 +79,7 @@ const Settings = () => {
       setDashboardName(org.dashboardName || "");
       supabase
         .from("tournaments")
-        .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy")
+        .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy, show_branding_badge")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false })
         .then(({ data }) => setTournaments((data as any) || []));
@@ -131,6 +132,29 @@ const Settings = () => {
       setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, pass_fees_to_participants: newValue } : t));
     }
     setSavingFeeToggle(null);
+  };
+
+  const [savingBadgeToggle, setSavingBadgeToggle] = useState<string | null>(null);
+  const isProPlan = org?.plan === "pro" || org?.plan === "starter" || org?.plan === "premium" || org?.plan === "enterprise";
+
+  const handleToggleBadge = async (tournamentId: string, currentValue: boolean) => {
+    if (demoGuard()) return;
+    if (currentValue && !isProPlan) {
+      toast.error("Hiding the TeeVents badge is a Pro feature. Upgrade to remove it.");
+      return;
+    }
+    setSavingBadgeToggle(tournamentId);
+    const newValue = !currentValue;
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ show_branding_badge: newValue } as any)
+      .eq("id", tournamentId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(newValue ? "Badge will appear on public pages" : "Badge hidden on public pages");
+      setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, show_branding_badge: newValue } : t));
+    }
+    setSavingBadgeToggle(null);
   };
 
   const getPolicyEdit = (tournamentId: string) => policyEdits[tournamentId] || {};
@@ -494,6 +518,45 @@ const Settings = () => {
 
       {/* Email Notifications */}
       {org && <NotificationSettings orgId={org.orgId} />}
+
+      {/* TeeVents Branding */}
+      {tournaments.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="bg-card rounded-lg border border-border p-6"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <Building2 className="h-6 w-6 text-primary" />
+            <h2 className="text-lg font-display font-bold text-foreground">TeeVents Branding</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            A small "Powered by TeeVents" badge appears in the corner of your public pages (tournament site, live leaderboard, day-of page). {isProPlan ? "Toggle it off per tournament." : "Upgrade to Pro to hide the badge."}
+          </p>
+          <div className="space-y-3">
+            {tournaments.map((t) => (
+              <div key={t.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm text-foreground truncate">{t.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t.show_branding_badge ? "Badge visible on public pages" : "Badge hidden"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`badge-${t.id}`} className="text-xs text-muted-foreground">Show badge</Label>
+                  <Switch
+                    id={`badge-${t.id}`}
+                    checked={t.show_branding_badge !== false}
+                    disabled={savingBadgeToggle === t.id || (!isProPlan && t.show_branding_badge !== false)}
+                    onCheckedChange={() => handleToggleBadge(t.id, t.show_branding_badge !== false)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Tournament Scoring Formats */}
       {tournaments.length > 0 && (

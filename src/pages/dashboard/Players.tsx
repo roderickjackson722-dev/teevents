@@ -1002,6 +1002,69 @@ const Players = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit Player Dialog */}
+      <Dialog open={!!editingPlayer} onOpenChange={(open) => !open && setEditingPlayer(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Player</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ep-first">First Name *</Label>
+                <Input id="ep-first" value={editForm.first_name} onChange={(e) => setEditForm((f) => ({ ...f, first_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="ep-last">Last Name *</Label>
+                <Input id="ep-last" value={editForm.last_name} onChange={(e) => setEditForm((f) => ({ ...f, last_name: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="ep-email">Email *</Label>
+              <Input id="ep-email" type="email" value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ep-phone">Phone</Label>
+                <Input id="ep-phone" value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div>
+                <Label htmlFor="ep-hcp">Handicap</Label>
+                <Input id="ep-hcp" type="number" step="0.1" value={editForm.handicap} onChange={(e) => setEditForm((f) => ({ ...f, handicap: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="ep-shirt">Shirt Size</Label>
+                <Select value={editForm.shirt_size} onValueChange={(v) => setEditForm((f) => ({ ...f, shirt_size: v }))}>
+                  <SelectTrigger id="ep-shirt"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    {["S", "M", "L", "XL", "XXL"].map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="ep-hole">Hole / Group</Label>
+                <Input id="ep-hole" type="number" min="1" placeholder="Unassigned" value={editForm.group_number} onChange={(e) => setEditForm((f) => ({ ...f, group_number: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="ep-diet">Dietary Restrictions</Label>
+              <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setEditingPlayer(null)} disabled={savingEdit}>Cancel</Button>
+              <Button onClick={handleSaveEdit} disabled={savingEdit}>
+                {savingEdit ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

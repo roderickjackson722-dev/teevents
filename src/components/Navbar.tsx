@@ -93,7 +93,7 @@ const Navbar = () => {
           ) : (
             <>
               <Link
-                to="/login"
+                to="/get-started?mode=signin"
                 className="flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-3 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-primary-foreground/10 transition-colors"
               >
                 <LogIn className="h-4 w-4" /> Sign In

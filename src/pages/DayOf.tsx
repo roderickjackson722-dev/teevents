@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { Trophy, MapPin, Megaphone, Users, Clock, Eye, Phone, Mail, FileText, ListOrdered, AlertCircle, PenLine, BarChart3, Download } from "lucide-react";
 import WeatherWidget from "@/components/day-of/WeatherWidget";
+import { BrandingBadge } from "@/components/BrandingBadge";
 
 interface Reg {
   id: string;
@@ -606,6 +607,7 @@ function DayOfInner() {
           <Link to={`/t/${tournament.slug}`}><Button variant="outline" className="w-full">Tournament Site</Button></Link>
         </div>
       </main>
+      <BrandingBadge show={(tournament as any).show_branding_badge !== false} />
     </div>
   );
 }

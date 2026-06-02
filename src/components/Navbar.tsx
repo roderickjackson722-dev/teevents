@@ -152,7 +152,7 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/login" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase w-fit">
+                  <Link to="/get-started?mode=signin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase w-fit">
                     <LogIn className="h-4 w-4" /> Sign In
                   </Link>
                   <Link to="/get-started" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase w-fit">

@@ -180,6 +180,17 @@ export default function AdminInvoices() {
                 <td className="p-3 text-right">
                   <div className="inline-flex items-center gap-1">
                     <Button size="sm" variant="outline" onClick={() => setEditing(inv)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
+                    <Button size="sm" variant="ghost" onClick={async () => {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) return;
+                      const { id, created_at, invoice_number, ...rest } = inv as any;
+                      const newNum = `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000 + 1000)}`;
+                      const { error } = await supabase.from("admin_invoices").insert({
+                        ...rest, invoice_number: newNum, status: "draft", created_by: user.id, edit_history: [],
+                      });
+                      if (error) toast({ title: "Clone failed", description: error.message, variant: "destructive" });
+                      else { toast({ title: "Invoice cloned as draft" }); load(); }
+                    }}><Copy className="w-3 h-3 mr-1" /> Clone</Button>
                     <Button size="sm" variant="ghost" onClick={() => downloadPdf(inv)}><FileDown className="w-3 h-3 mr-1" /> PDF</Button>
                     <Button size="sm" variant="ghost" onClick={async () => {
                       if (!confirm("Delete this invoice?")) return;
@@ -254,7 +265,9 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
     };
     let err;
     if (inv.id) {
-      ({ error: err } = await supabase.from("admin_invoices").update(payload).eq("id", inv.id));
+      const historyEntry = { user_id: user.id, at: new Date().toISOString(), status: inv.status };
+      const nextHistory = [ ...((invoice as any).edit_history || []), historyEntry ].slice(-50);
+      ({ error: err } = await supabase.from("admin_invoices").update({ ...payload, last_edited_by: user.id, edit_history: nextHistory as any }).eq("id", inv.id));
     } else {
       ({ error: err } = await supabase.from("admin_invoices").insert({ ...payload, created_by: user.id }));
     }

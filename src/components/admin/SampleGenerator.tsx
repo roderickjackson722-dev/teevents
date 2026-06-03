@@ -20,7 +20,18 @@ interface SampleRow {
   view_count: number;
   last_accessed_at: string | null;
   created_at: string;
+  prospect_name?: string | null;
+  prospect_email?: string | null;
+  prospect_company?: string | null;
+  prospect_source?: string | null;
+  last_contacted_at?: string | null;
+  crm_status?: string | null;
+  crm_notes?: string | null;
 }
+
+const PROSPECT_SOURCES = ["eventbrite", "facebook", "givebutter", "flyer", "venmo", "cashapp", "referral", "other"];
+const CRM_STATUSES = ["lead", "contacted", "demo_scheduled", "converted", "lost"];
+const OUTREACH_ACTIONS = ["email_sent", "email_opened", "link_clicked", "demo_booked", "converted", "note"];
 
 const DEFAULT_FORM = {
   tournament_name: "",
@@ -32,6 +43,12 @@ const DEFAULT_FORM = {
   scoring_format: "Scramble",
   registration_fee_cents: 25000,
   team_fee_cents: 100000,
+  prospect_name: "",
+  prospect_email: "",
+  prospect_company: "",
+  prospect_source: "",
+  crm_status: "lead",
+  crm_notes: "",
 };
 
 function ImageUploadField({ value, onChange, label }: { value: string; onChange: (url: string) => void; label: string }) {

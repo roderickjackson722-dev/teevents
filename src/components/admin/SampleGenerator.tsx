@@ -200,6 +200,12 @@ export default function SampleGenerator() {
           scoring_format: data.scoring_format || "Scramble",
           registration_fee_cents: data.registration_fee_cents || 25000,
           team_fee_cents: data.team_fee_cents || 100000,
+          prospect_name: (data as any).prospect_name || "",
+          prospect_email: (data as any).prospect_email || "",
+          prospect_company: (data as any).prospect_company || "",
+          prospect_source: (data as any).prospect_source || "",
+          crm_status: (data as any).crm_status || "lead",
+          crm_notes: (data as any).crm_notes || "",
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
       }

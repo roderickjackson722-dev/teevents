@@ -6,7 +6,8 @@ import {
   CheckCircle2, AlertCircle, ListChecks, Printer, ClipboardList,
   QrCode, BarChart3, ShoppingBag, Gavel, Camera, Gift, Share2,
   Palette, CreditCard, HelpCircle, CalendarRange, FileText, Lock,
-  Star, MapPin, X, Menu,
+  Star, MapPin, X, Menu, Sliders, Building2, Store, Target, BedDouble,
+  Ticket, Eye, ContactRound, Megaphone, ScanLine, Search as SearchIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -49,59 +50,96 @@ interface SidebarCategory {
 
 const sidebarCategories: SidebarCategory[] = [
   {
-    label: "OVERVIEW",
-    color: "border-gray-400",
+    label: "ORGANIZER SETUP",
+    color: "border-emerald-400",
     items: [
       { key: "home", label: "Dashboard", icon: LayoutDashboard, plan: "base" },
-      { key: "tournaments", label: "Tournaments", icon: CalendarRange, plan: "base" },
       { key: "planning-guide", label: "Planning Guide", icon: ListChecks, plan: "base" },
-      { key: "printables", label: "Printables", icon: Printer, plan: "base" },
+      { key: "setup-checklist", label: "Setup Checklist", icon: CheckCircle2, plan: "base" },
+      { key: "view-tournament", label: "View Tournament", icon: Eye, plan: "base" },
     ],
   },
   {
-    label: "MANAGEMENT",
+    label: "COURSE SETUP",
+    color: "border-sky-400",
+    items: [
+      { key: "course-details", label: "Course Details", icon: MapPin, plan: "base" },
+      { key: "pin-sheets", label: "Pin Sheets", icon: MapPin, plan: "base" },
+      { key: "handicap-settings", label: "Handicap Settings", icon: Sliders, plan: "starter" },
+    ],
+  },
+  {
+    label: "TOURNAMENT SETUP",
     color: "border-blue-400",
     items: [
-      { key: "registration", label: "Registration", icon: ClipboardList, plan: "base" },
-      { key: "players", label: "Players", icon: Users, plan: "base" },
-      { key: "check-in", label: "Check-In", icon: QrCode, plan: "base" },
-      { key: "waitlist", label: "Waitlist", icon: Clock, plan: "starter" },
-      { key: "leaderboard", label: "Leaderboard", icon: Trophy, plan: "starter" },
-      { key: "scoring", label: "Scoring", icon: Star, plan: "starter" },
-      { key: "tee-sheet", label: "Tee Sheet", icon: MapPin, plan: "starter" },
-      { key: "messages", label: "Messages", icon: MessageSquare, plan: "starter" },
-      { key: "email-templates", label: "Email Templates", icon: Mail, plan: "starter" },
+      { key: "tournaments", label: "Tournament Details", icon: Trophy, plan: "base" },
+      { key: "registration", label: "Registration Management", icon: ClipboardList, plan: "base" },
+      { key: "leaderboard", label: "Live Leaderboard", icon: BarChart3, plan: "starter" },
+      { key: "sponsors", label: "Sponsorship Management", icon: Heart, plan: "starter" },
+      { key: "contests", label: "Event Day Contest", icon: Trophy, plan: "base" },
+      { key: "lodging", label: "Lodging", icon: BedDouble, plan: "base" },
+      { key: "team", label: "Team Management", icon: Building2, plan: "base" },
+      { key: "organization-info", label: "Organization Info", icon: Building2, plan: "base" },
+      { key: "day-of", label: "Day of Event Page", icon: ScanLine, plan: "base" },
+      { key: "side-events", label: "Side Events", icon: Ticket, plan: "base" },
     ],
   },
   {
-    label: "FINANCES",
-    color: "border-yellow-500",
+    label: "OPERATIONS",
+    color: "border-purple-400",
     items: [
-      { key: "finances", label: "Finances", icon: DollarSign, plan: "base" },
-      { key: "budget", label: "Budget", icon: BarChart3, plan: "starter" },
-      { key: "sponsors", label: "Sponsors", icon: Heart, plan: "starter" },
-      { key: "store", label: "Add On Store", icon: ShoppingBag, plan: "premium" },
-      { key: "auction", label: "Auction", icon: Gavel, plan: "premium" },
+      { key: "players", label: "Players & Pairings", icon: Users, plan: "base" },
+      { key: "waitlist", label: "Waitlist", icon: Clock, plan: "starter" },
+      { key: "check-in", label: "Check-In", icon: QrCode, plan: "base" },
+      { key: "leaderboard-view", label: "Live Leaderboard (view)", icon: Eye, plan: "starter" },
+      { key: "scoring", label: "Scoring", icon: Star, plan: "starter" },
+      { key: "sponsor-management", label: "Sponsor Management", icon: Heart, plan: "starter" },
+      { key: "volunteers", label: "Volunteers", icon: UserCheck, plan: "starter" },
+      { key: "vendors", label: "Vendors", icon: Store, plan: "base" },
+      { key: "team-performance", label: "Team Performance", icon: Target, plan: "base" },
+      { key: "messages", label: "Messages", icon: MessageSquare, plan: "starter" },
+      { key: "crm", label: "CRM", icon: ContactRound, plan: "base" },
     ],
   },
   {
-    label: "ENGAGEMENT & OPERATIONS",
+    label: "PROMOTION & MARKETING",
     color: "border-green-400",
     items: [
-      { key: "gallery", label: "Gallery", icon: Camera, plan: "starter" },
-      { key: "volunteers", label: "Volunteers", icon: UserCheck, plan: "starter" },
-      { key: "surveys", label: "Surveys", icon: FileText, plan: "starter" },
-      { key: "donations", label: "Donations", icon: Gift, plan: "premium" },
       { key: "share", label: "Share & Promote", icon: Share2, plan: "base" },
       { key: "flyer-studio", label: "Flyer Studio", icon: Palette, plan: "premium" },
+      { key: "printables", label: "Printables", icon: Printer, plan: "base" },
+      { key: "email-templates", label: "Email Templates", icon: Mail, plan: "starter" },
+      { key: "public-search", label: "Public Search", icon: SearchIcon, plan: "base" },
+    ],
+  },
+  {
+    label: "FINANCE",
+    color: "border-yellow-400",
+    items: [
+      { key: "finances", label: "Finances", icon: Wallet, plan: "base" },
+      { key: "payout-settings", label: "Payout Settings", icon: CreditCard, plan: "base" },
+      { key: "budget", label: "Budget", icon: DollarSign, plan: "starter" },
+      { key: "store", label: "Add On Store", icon: ShoppingBag, plan: "premium" },
+      { key: "director-shop", label: "Director Shop", icon: ShoppingBag, plan: "premium" },
+    ],
+  },
+  {
+    label: "POST-EVENT",
+    color: "border-teal-400",
+    items: [
+      { key: "surveys", label: "Surveys & Feedback", icon: FileText, plan: "starter" },
+      { key: "gallery", label: "Photo Gallery", icon: Camera, plan: "starter" },
+      { key: "donations", label: "Donations", icon: Gift, plan: "premium" },
+      { key: "auction", label: "Auctions", icon: Gavel, plan: "premium" },
+      { key: "raffles", label: "Raffles", icon: Ticket, plan: "premium" },
+      { key: "media-clips", label: "Media Clips", icon: Camera, plan: "base" },
     ],
   },
   {
     label: "SETTINGS",
     color: "border-gray-400",
     items: [
-      { key: "payout-settings", label: "Payout Settings", icon: CreditCard, plan: "base" },
-      { key: "director-shop", label: "Director Shop", icon: ShoppingBag, plan: "premium" },
+      { key: "settings", label: "General Settings", icon: Settings, plan: "base" },
       { key: "help", label: "Help Center", icon: HelpCircle, plan: "base" },
     ],
   },
@@ -235,36 +273,45 @@ const SampleDashboard = () => {
         </header>
 
         <main className="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto space-y-6">
-          {activeTab === "home" && <HomeTab />}
-          {activeTab === "tournaments" && <TournamentsTab />}
-          {activeTab === "planning-guide" && <PlanningGuideTab />}
-          {activeTab === "printables" && <PrintablesTab />}
-          {activeTab === "registration" && <PlayersTab />}
-          {activeTab === "players" && <PlayersTab />}
-          {activeTab === "check-in" && <CheckInTab />}
-          {activeTab === "waitlist" && <WaitlistTab />}
-          {activeTab === "leaderboard" && <LeaderboardTab />}
-          {activeTab === "scoring" && <ScoringTab />}
-          {activeTab === "tee-sheet" && <TeeSheetTab />}
-          {activeTab === "messages" && <MessagesTab />}
-          {activeTab === "email-templates" && <EmailTemplatesTab />}
-          {activeTab === "finances" && <FinancesTab />}
-          {activeTab === "budget" && <BudgetTab />}
-          {activeTab === "sponsors" && <SponsorsTab />}
-          {activeTab === "store" && <StoreTab />}
-          {activeTab === "auction" && <AuctionTab />}
-          {activeTab === "gallery" && <GalleryTab />}
-          {activeTab === "volunteers" && <VolunteersTab />}
-          {activeTab === "surveys" && <SurveysTab />}
-          {activeTab === "donations" && <DonationsTab />}
-          {activeTab === "share" && <ShareTab />}
-          {activeTab === "flyer-studio" && <FlyerStudioTab />}
-          {activeTab === "payout-settings" && <PayoutSettingsTab />}
-          {activeTab === "director-shop" && <DirectorShopTab />}
-          {activeTab === "help" && <HelpTab />}
-          {activeTab === "settings" && <SettingsTab />}
+          {(() => {
+            switch (activeTab) {
+              case "home": return <HomeTab />;
+              case "tournaments": return <TournamentsTab />;
+              case "planning-guide": return <PlanningGuideTab />;
+              case "printables": return <PrintablesTab />;
+              case "registration": return <PlayersTab />;
+              case "players": return <PlayersTab />;
+              case "check-in": return <CheckInTab />;
+              case "waitlist": return <WaitlistTab />;
+              case "leaderboard":
+              case "leaderboard-view": return <LeaderboardTab />;
+              case "scoring": return <ScoringTab />;
+              case "tee-sheet": return <TeeSheetTab />;
+              case "messages": return <MessagesTab />;
+              case "email-templates": return <EmailTemplatesTab />;
+              case "finances": return <FinancesTab />;
+              case "budget": return <BudgetTab />;
+              case "sponsors":
+              case "sponsor-management": return <SponsorsTab />;
+              case "store": return <StoreTab />;
+              case "auction": return <AuctionTab />;
+              case "gallery": return <GalleryTab />;
+              case "volunteers": return <VolunteersTab />;
+              case "surveys": return <SurveysTab />;
+              case "donations": return <DonationsTab />;
+              case "share": return <ShareTab />;
+              case "flyer-studio": return <FlyerStudioTab />;
+              case "payout-settings": return <PayoutSettingsTab />;
+              case "director-shop": return <DirectorShopTab />;
+              case "help": return <HelpTab />;
+              case "settings": return <SettingsTab />;
+              case "crm": return <SampleCrmTab />;
+              default: return <ComingSoonTab title={allItems.find(i => i.key === activeTab)?.label || "Coming soon"} />;
+            }
+          })()}
         </main>
       </div>
+
 
       {/* Upgrade Modal */}
       <Dialog open={!!upgradeModal} onOpenChange={() => setUpgradeModal(null)}>
@@ -1169,6 +1216,98 @@ const SettingsTab = () => (
             <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
             <p className="text-xs text-muted-foreground">This is a demo dashboard. In a real tournament, you can edit all settings, toggle fee models, manage registration fields, and configure your tournament website.</p>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+const ComingSoonTab = ({ title }: { title: string }) => (
+  <Card>
+    <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+    <CardContent>
+      <p className="text-sm text-muted-foreground">
+        This section is available in the live organizer dashboard. In the demo, sample data for this view is coming soon — try the live product to explore the full feature.
+      </p>
+    </CardContent>
+  </Card>
+);
+
+const sampleCrmContacts = [
+  { name: "Sarah Mitchell", role: "Sponsor lead", company: "First National Bank", status: "Contacted", last: "2 days ago" },
+  { name: "Mike Thompson", role: "Volunteer coordinator", company: "Local Rotary", status: "Demo Scheduled", last: "Yesterday" },
+  { name: "Jen O'Connor", role: "Player captain", company: "ACME Industries", status: "Lead", last: "1 week ago" },
+];
+
+const sampleCrmComms = [
+  { date: "Apr 4", channel: "Email", subject: "Sponsorship deck v2", direction: "Sent" },
+  { date: "Apr 3", channel: "Phone", subject: "Confirmation call — Title Sponsor", direction: "Inbound" },
+  { date: "Apr 1", channel: "Email", subject: "Follow up on golf team", direction: "Sent" },
+];
+
+const sampleCrmTasks = [
+  { task: "Follow up with First National Bank", due: "Tomorrow", owner: "You" },
+  { task: "Send signed sponsor agreement", due: "Apr 8", owner: "Operations" },
+  { task: "Confirm volunteer count for hole 13", due: "Apr 10", owner: "You" },
+];
+
+const SampleCrmTab = () => (
+  <div className="space-y-6">
+    <SectionHeader title="CRM" />
+    <Card>
+      <CardHeader><CardTitle className="text-base">Contacts</CardTitle></CardHeader>
+      <CardContent>
+        <div className="divide-y text-sm">
+          {sampleCrmContacts.map((c) => (
+            <div key={c.name} className="py-2 flex flex-wrap justify-between gap-2">
+              <div>
+                <div className="font-semibold">{c.name}</div>
+                <div className="text-xs text-muted-foreground">{c.role} · {c.company}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{c.status}</Badge>
+                <span className="text-xs text-muted-foreground">{c.last}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+    <div className="grid md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader><CardTitle className="text-base">Recent Communications</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {sampleCrmComms.map((c, i) => (
+            <div key={i} className="flex justify-between border-b pb-1.5 last:border-0">
+              <div>
+                <div className="font-medium">{c.subject}</div>
+                <div className="text-xs text-muted-foreground">{c.channel} · {c.direction}</div>
+              </div>
+              <span className="text-xs text-muted-foreground">{c.date}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle className="text-base">Open Tasks</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {sampleCrmTasks.map((t, i) => (
+            <div key={i} className="flex justify-between border-b pb-1.5 last:border-0">
+              <div>
+                <div className="font-medium">{t.task}</div>
+                <div className="text-xs text-muted-foreground">Owner: {t.owner}</div>
+              </div>
+              <span className="text-xs text-muted-foreground">{t.due}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+    <Card>
+      <CardContent className="pt-5">
+        <div className="flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-muted-foreground">Sample CRM data. The live CRM tracks unlimited contacts, communications, tasks, and an audit trail per organization.</p>
         </div>
       </CardContent>
     </Card>

@@ -20,7 +20,18 @@ interface SampleRow {
   view_count: number;
   last_accessed_at: string | null;
   created_at: string;
+  prospect_name?: string | null;
+  prospect_email?: string | null;
+  prospect_company?: string | null;
+  prospect_source?: string | null;
+  last_contacted_at?: string | null;
+  crm_status?: string | null;
+  crm_notes?: string | null;
 }
+
+const PROSPECT_SOURCES = ["eventbrite", "facebook", "givebutter", "flyer", "venmo", "cashapp", "referral", "other"];
+const CRM_STATUSES = ["lead", "contacted", "demo_scheduled", "converted", "lost"];
+const OUTREACH_ACTIONS = ["email_sent", "email_opened", "link_clicked", "demo_booked", "converted", "note"];
 
 const DEFAULT_FORM = {
   tournament_name: "",
@@ -32,6 +43,12 @@ const DEFAULT_FORM = {
   scoring_format: "Scramble",
   registration_fee_cents: 25000,
   team_fee_cents: 100000,
+  prospect_name: "",
+  prospect_email: "",
+  prospect_company: "",
+  prospect_source: "",
+  crm_status: "lead",
+  crm_notes: "",
 };
 
 function ImageUploadField({ value, onChange, label }: { value: string; onChange: (url: string) => void; label: string }) {
@@ -77,11 +94,47 @@ export default function SampleGenerator() {
   const [samples, setSamples] = useState<SampleRow[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sendModal, setSendModal] = useState<SampleRow | null>(null);
+  const [crmSample, setCrmSample] = useState<SampleRow | null>(null);
+  const [outreachLog, setOutreachLog] = useState<any[]>([]);
+  const [newAction, setNewAction] = useState<string>("email_sent");
+  const [newActionNotes, setNewActionNotes] = useState("");
+
+  async function loadOutreachLog(sampleId: string) {
+    const { data } = await supabase
+      .from("sample_outreach_log" as any)
+      .select("*")
+      .eq("sample_tournament_id", sampleId)
+      .order("created_at", { ascending: false });
+    setOutreachLog((data as any[]) || []);
+  }
+
+  async function logOutreach(sampleId: string, action: string, notes?: string) {
+    const { data: u } = await supabase.auth.getUser();
+    await supabase.from("sample_outreach_log" as any).insert({
+      sample_tournament_id: sampleId,
+      action,
+      notes: notes || null,
+      created_by: u?.user?.id ?? null,
+    });
+    await supabase
+      .from("sample_tournaments")
+      .update({ last_contacted_at: new Date().toISOString() } as any)
+      .eq("id", sampleId);
+    if (crmSample) await loadOutreachLog(sampleId);
+    await loadSamples();
+  }
+
+  async function updateCrmStatus(sampleId: string, status: string) {
+    await supabase.from("sample_tournaments").update({ crm_status: status } as any).eq("id", sampleId);
+    await loadSamples();
+    if (crmSample && crmSample.id === sampleId) setCrmSample({ ...crmSample, crm_status: status });
+  }
+
 
   async function loadSamples() {
     const { data } = await supabase
       .from("sample_tournaments")
-      .select("id, unique_slug, tournament_name, event_date, location, view_count, last_accessed_at, created_at")
+      .select("id, unique_slug, tournament_name, event_date, location, view_count, last_accessed_at, created_at, prospect_name, prospect_email, prospect_company, prospect_source, last_contacted_at, crm_status, crm_notes")
       .order("created_at", { ascending: false });
     setSamples((data as SampleRow[]) || []);
   }
@@ -121,7 +174,7 @@ export default function SampleGenerator() {
     setSaving(true);
     try {
       const slug = await ensureUniqueSlug(slugify(form.tournament_name), editingId || undefined);
-      const payload = {
+      const payload: any = {
         tournament_name: form.tournament_name,
         event_date: form.event_date || null,
         location: form.location || null,
@@ -132,6 +185,12 @@ export default function SampleGenerator() {
         registration_fee_cents: form.registration_fee_cents,
         team_fee_cents: form.team_fee_cents,
         unique_slug: slug,
+        prospect_name: form.prospect_name || null,
+        prospect_email: form.prospect_email || null,
+        prospect_company: form.prospect_company || null,
+        prospect_source: form.prospect_source || null,
+        crm_status: form.crm_status || "lead",
+        crm_notes: form.crm_notes || null,
       };
       let id = editingId;
       if (editingId) {
@@ -183,6 +242,12 @@ export default function SampleGenerator() {
           scoring_format: data.scoring_format || "Scramble",
           registration_fee_cents: data.registration_fee_cents || 25000,
           team_fee_cents: data.team_fee_cents || 100000,
+          prospect_name: (data as any).prospect_name || "",
+          prospect_email: (data as any).prospect_email || "",
+          prospect_company: (data as any).prospect_company || "",
+          prospect_source: (data as any).prospect_source || "",
+          crm_status: (data as any).crm_status || "lead",
+          crm_notes: (data as any).crm_notes || "",
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -248,6 +313,39 @@ export default function SampleGenerator() {
                 label="hero"
               />
             </div>
+
+            <div className="md:col-span-2 pt-4 mt-2 border-t">
+              <h4 className="text-sm font-semibold mb-2">Prospect / CRM</h4>
+            </div>
+            <div>
+              <Label>Prospect Name</Label>
+              <Input value={form.prospect_name} onChange={e => setForm({ ...form, prospect_name: e.target.value })} placeholder="John Smith" />
+            </div>
+            <div>
+              <Label>Prospect Email</Label>
+              <Input type="email" value={form.prospect_email} onChange={e => setForm({ ...form, prospect_email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div>
+              <Label>Company</Label>
+              <Input value={form.prospect_company} onChange={e => setForm({ ...form, prospect_company: e.target.value })} placeholder="ABC Golf Club" />
+            </div>
+            <div>
+              <Label>Source</Label>
+              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.prospect_source} onChange={e => setForm({ ...form, prospect_source: e.target.value })}>
+                <option value="">— Select —</option>
+                {PROSPECT_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.crm_status} onChange={e => setForm({ ...form, crm_status: e.target.value })}>
+                {CRM_STATUSES.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <Label>CRM Notes</Label>
+              <Textarea rows={2} value={form.crm_notes} onChange={e => setForm({ ...form, crm_notes: e.target.value })} placeholder="Internal notes about this prospect..." />
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
@@ -270,9 +368,19 @@ export default function SampleGenerator() {
               {samples.map(s => (
                 <div key={s.id} className="flex flex-wrap items-center gap-3 border rounded-md p-3">
                   <div className="flex-1 min-w-[200px]">
-                    <div className="font-semibold">{s.tournament_name}</div>
+                    <div className="font-semibold flex items-center gap-2 flex-wrap">
+                      {s.tournament_name}
+                      {s.crm_status && (
+                        <Badge variant="secondary" className="text-[10px]">{s.crm_status.replace("_", " ")}</Badge>
+                      )}
+                      {s.prospect_source && (
+                        <Badge variant="outline" className="text-[10px]">src: {s.prospect_source}</Badge>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {s.event_date && new Date(s.event_date).toLocaleDateString()} • {s.location || "—"}
+                      {s.prospect_name && <> • <span className="font-medium">{s.prospect_name}</span></>}
+                      {s.prospect_email && <> &lt;{s.prospect_email}&gt;</>}
                     </div>
                     <div className="text-xs font-mono text-muted-foreground mt-0.5">{buildLink(s.unique_slug)}</div>
                   </div>
@@ -281,6 +389,7 @@ export default function SampleGenerator() {
                     <Button size="sm" variant="outline" onClick={() => window.open(buildLink(s.unique_slug), "_blank")}><Eye className="h-3 w-3" /></Button>
                     <Button size="sm" variant="outline" onClick={() => copyLink(s.unique_slug)}><Copy className="h-3 w-3" /></Button>
                     <Button size="sm" variant="outline" onClick={() => setSendModal(s)}><Mail className="h-3 w-3" /></Button>
+                    <Button size="sm" variant="outline" onClick={() => { setCrmSample(s); loadOutreachLog(s.id); }}>CRM</Button>
                     <Button size="sm" variant="outline" onClick={() => handleEdit(s)}>Edit</Button>
                     <Button size="sm" variant="outline" onClick={() => handleRegenerate(s.id)}><RefreshCw className="h-3 w-3" /></Button>
                     <Button size="sm" variant="outline" onClick={() => handleDelete(s.id)}><Trash2 className="h-3 w-3" /></Button>
@@ -300,6 +409,90 @@ export default function SampleGenerator() {
           sampleLink={buildLink(sendModal.unique_slug)}
         />
       )}
+
+      {crmSample && (
+        <CrmDrawer
+          sample={crmSample}
+          log={outreachLog}
+          newAction={newAction}
+          setNewAction={setNewAction}
+          newActionNotes={newActionNotes}
+          setNewActionNotes={setNewActionNotes}
+          onClose={() => { setCrmSample(null); setOutreachLog([]); setNewActionNotes(""); }}
+          onLog={async () => {
+            await logOutreach(crmSample.id, newAction, newActionNotes);
+            setNewActionNotes("");
+          }}
+          onStatus={(s: string) => updateCrmStatus(crmSample.id, s)}
+          buildLink={buildLink}
+        />
+      )}
+    </div>
+  );
+}
+
+function CrmDrawer({ sample, log, newAction, setNewAction, newActionNotes, setNewActionNotes, onClose, onLog, onStatus, buildLink }: any) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card text-card-foreground rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">CRM — {sample.tournament_name}</h3>
+            <p className="text-xs text-muted-foreground">Outreach tracking for this sample mockup</p>
+          </div>
+          <Button size="sm" variant="ghost" onClick={onClose}><X className="h-4 w-4" /></Button>
+        </div>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><span className="text-muted-foreground">Name:</span> {sample.prospect_name || "—"}</div>
+            <div><span className="text-muted-foreground">Source:</span> {sample.prospect_source || "—"}</div>
+            <div><span className="text-muted-foreground">Email:</span> {sample.prospect_email || "—"}</div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Status:</span>
+              <select className="h-8 rounded border bg-background px-2 text-xs" value={sample.crm_status || "lead"} onChange={(e) => onStatus(e.target.value)}>
+                {CRM_STATUSES.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2"><span className="text-muted-foreground">Company:</span> {sample.prospect_company || "—"}</div>
+            {sample.crm_notes && <div className="col-span-2 text-xs bg-muted/40 rounded p-2">{sample.crm_notes}</div>}
+          </div>
+
+          <div className="border rounded-md p-3 space-y-2">
+            <Label className="text-xs">Log Outreach Action</Label>
+            <div className="flex gap-2 flex-wrap">
+              <select className="h-9 rounded border bg-background px-2 text-sm" value={newAction} onChange={e => setNewAction(e.target.value)}>
+                {OUTREACH_ACTIONS.map(a => <option key={a} value={a}>{a.replace("_", " ")}</option>)}
+              </select>
+              <Input className="flex-1 min-w-[180px]" placeholder="Optional notes" value={newActionNotes} onChange={e => setNewActionNotes(e.target.value)} />
+              <Button size="sm" onClick={onLog}>Log</Button>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold mb-2">Outreach History</h4>
+            {log.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No outreach logged yet.</p>
+            ) : (
+              <div className="border rounded-md divide-y">
+                {log.map((l: any) => (
+                  <div key={l.id} className="p-2 text-xs flex justify-between gap-3">
+                    <div>
+                      <Badge variant="outline" className="mr-2">{l.action.replace("_", " ")}</Badge>
+                      {l.notes && <span className="text-muted-foreground">{l.notes}</span>}
+                    </div>
+                    <span className="text-muted-foreground whitespace-nowrap">{new Date(l.created_at).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t pt-3 space-y-1 text-xs">
+            <div className="font-semibold">Sample Links</div>
+            <div className="font-mono text-muted-foreground break-all">{buildLink(sample.unique_slug)}</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

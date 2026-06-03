@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone
 } from "lucide-react";
 import AdminProspects from "@/components/admin/AdminProspects";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
@@ -791,18 +791,6 @@ const AdminDashboard = () => {
                   </button>
                 ))}
                 <button
-                  onClick={() => navigate("/admin/sales/prospecting")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Target className="h-4 w-4" /> Sales Prospecting Tool
-                </button>
-                <button
-                  onClick={() => navigate("/admin/demo-leads")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Users className="h-4 w-4" /> Demo Leads
-                </button>
-                <button
                   onClick={() => navigate("/admin/stripe-connections")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
@@ -812,12 +800,12 @@ const AdminDashboard = () => {
             </div>
 
             <div>
-              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Sales</div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Sales Outreach</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["sales-demo", "Demo", FileText],
-                  ["sales-outreach", "Outreach", Mail],
-                  ["mockup-outreach", "Mockup Outreach", Trophy],
+                  ["mockup-outreach", "Sample Mockups (CRM)", Trophy],
+                  ["sales-outreach", "Outreach Templates", Mail],
+                  ["sales-demo", "Demo / Sales Hub", FileText],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -829,8 +817,27 @@ const AdminDashboard = () => {
                     <Icon className="h-4 w-4" /> {label}
                   </button>
                 ))}
+                <button
+                  onClick={() => navigate("/admin/sales/prospecting")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Target className="h-4 w-4" /> Sales Prospecting
+                </button>
+                <button
+                  onClick={() => navigate("/admin/outreach")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Megaphone className="h-4 w-4" /> Outreach Campaigns
+                </button>
+                <button
+                  onClick={() => navigate("/admin/demo-leads")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Users className="h-4 w-4" /> Demo Leads
+                </button>
               </div>
             </div>
+
 
             <div>
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Other</div>

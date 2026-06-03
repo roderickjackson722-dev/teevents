@@ -14,11 +14,18 @@ import { Link } from "react-router-dom";
 const BASE_AGREEMENT_ITEMS = [
   {
     id: "platform_fee_5",
-    label: "I understand that TeeVents charges a 5% platform fee on every paid transaction (registrations, sponsorships, donations, store, and auctions) processed through my tournament.",
+    label: (
+      <>
+        I understand that TeeVents charges a 5% platform fee per transaction.{" "}
+        <strong className="text-foreground">I can choose to pass this fee to my registrants (golfers — recommended) or absorb it myself.</strong>{" "}
+        This fee is automatically deducted at checkout.{" "}
+        <a href="/help/fees-and-hold" target="_blank" className="text-primary underline">See how it works</a>.
+      </>
+    ),
   },
   {
     id: "stripe_fee",
-    label: "I understand that Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all payments processed through my tournament.",
+    label: "I understand that Stripe's standard processing fee of 2.9% + $0.30 per transaction applies to all payments processed through my tournament. This fee can also be passed to registrants or absorbed by my organization.",
   },
   {
     id: "stripe_connect",
@@ -39,7 +46,7 @@ const BASE_AGREEMENT_ITEMS = [
 
 const FREE_PLAN_AGREEMENT_ITEM = {
   id: "platform_fee",
-  label: "I understand that standard Stripe processing fees apply to all transactions processed through my tournament. Fees can be passed to participants or absorbed by my organization.",
+  label: "I understand that standard Stripe processing fees apply to all transactions processed through my tournament. Fees can be passed to participants (recommended) or absorbed by my organization.",
 };
 
 const CustomerAuth = () => {

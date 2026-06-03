@@ -96,6 +96,32 @@ const Players = () => {
     payment_status: "paid",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
+  const FIELD_DEFS = [
+    { key: "phone", label: "Phone" },
+    { key: "handicap", label: "Handicap" },
+    { key: "shirt_size", label: "Shirt Size" },
+    { key: "payment_status", label: "Payment Status" },
+  ] as const;
+  type FieldKey = typeof FIELD_DEFS[number]["key"];
+  const fieldsStorageKey = selectedTournament ? `teevents_add_player_fields_${selectedTournament}` : "";
+  const [visibleFields, setVisibleFields] = useState<Record<FieldKey, boolean>>({
+    phone: true, handicap: true, shirt_size: true, payment_status: true,
+  });
+  useEffect(() => {
+    if (!fieldsStorageKey) return;
+    try {
+      const raw = localStorage.getItem(fieldsStorageKey);
+      if (raw) setVisibleFields((prev) => ({ ...prev, ...JSON.parse(raw) }));
+      else setVisibleFields({ phone: true, handicap: true, shirt_size: true, payment_status: true });
+    } catch { /* noop */ }
+  }, [fieldsStorageKey]);
+  const toggleField = (k: FieldKey) => {
+    setVisibleFields((prev) => {
+      const next = { ...prev, [k]: !prev[k] };
+      try { if (fieldsStorageKey) localStorage.setItem(fieldsStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
   const [editingScoringCode, setEditingScoringCode] = useState<string | null>(null);
   const [scoringCodeInput, setScoringCodeInput] = useState("");
   const [regenerating, setRegenerating] = useState(false);

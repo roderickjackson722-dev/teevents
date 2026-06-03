@@ -273,36 +273,45 @@ const SampleDashboard = () => {
         </header>
 
         <main className="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto space-y-6">
-          {activeTab === "home" && <HomeTab />}
-          {activeTab === "tournaments" && <TournamentsTab />}
-          {activeTab === "planning-guide" && <PlanningGuideTab />}
-          {activeTab === "printables" && <PrintablesTab />}
-          {activeTab === "registration" && <PlayersTab />}
-          {activeTab === "players" && <PlayersTab />}
-          {activeTab === "check-in" && <CheckInTab />}
-          {activeTab === "waitlist" && <WaitlistTab />}
-          {activeTab === "leaderboard" && <LeaderboardTab />}
-          {activeTab === "scoring" && <ScoringTab />}
-          {activeTab === "tee-sheet" && <TeeSheetTab />}
-          {activeTab === "messages" && <MessagesTab />}
-          {activeTab === "email-templates" && <EmailTemplatesTab />}
-          {activeTab === "finances" && <FinancesTab />}
-          {activeTab === "budget" && <BudgetTab />}
-          {activeTab === "sponsors" && <SponsorsTab />}
-          {activeTab === "store" && <StoreTab />}
-          {activeTab === "auction" && <AuctionTab />}
-          {activeTab === "gallery" && <GalleryTab />}
-          {activeTab === "volunteers" && <VolunteersTab />}
-          {activeTab === "surveys" && <SurveysTab />}
-          {activeTab === "donations" && <DonationsTab />}
-          {activeTab === "share" && <ShareTab />}
-          {activeTab === "flyer-studio" && <FlyerStudioTab />}
-          {activeTab === "payout-settings" && <PayoutSettingsTab />}
-          {activeTab === "director-shop" && <DirectorShopTab />}
-          {activeTab === "help" && <HelpTab />}
-          {activeTab === "settings" && <SettingsTab />}
+          {(() => {
+            switch (activeTab) {
+              case "home": return <HomeTab />;
+              case "tournaments": return <TournamentsTab />;
+              case "planning-guide": return <PlanningGuideTab />;
+              case "printables": return <PrintablesTab />;
+              case "registration": return <PlayersTab />;
+              case "players": return <PlayersTab />;
+              case "check-in": return <CheckInTab />;
+              case "waitlist": return <WaitlistTab />;
+              case "leaderboard":
+              case "leaderboard-view": return <LeaderboardTab />;
+              case "scoring": return <ScoringTab />;
+              case "tee-sheet": return <TeeSheetTab />;
+              case "messages": return <MessagesTab />;
+              case "email-templates": return <EmailTemplatesTab />;
+              case "finances": return <FinancesTab />;
+              case "budget": return <BudgetTab />;
+              case "sponsors":
+              case "sponsor-management": return <SponsorsTab />;
+              case "store": return <StoreTab />;
+              case "auction": return <AuctionTab />;
+              case "gallery": return <GalleryTab />;
+              case "volunteers": return <VolunteersTab />;
+              case "surveys": return <SurveysTab />;
+              case "donations": return <DonationsTab />;
+              case "share": return <ShareTab />;
+              case "flyer-studio": return <FlyerStudioTab />;
+              case "payout-settings": return <PayoutSettingsTab />;
+              case "director-shop": return <DirectorShopTab />;
+              case "help": return <HelpTab />;
+              case "settings": return <SettingsTab />;
+              case "crm": return <SampleCrmTab />;
+              default: return <ComingSoonTab title={allItems.find(i => i.key === activeTab)?.label || "Coming soon"} />;
+            }
+          })()}
         </main>
       </div>
+
 
       {/* Upgrade Modal */}
       <Dialog open={!!upgradeModal} onOpenChange={() => setUpgradeModal(null)}>

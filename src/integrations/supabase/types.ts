@@ -3818,6 +3818,41 @@ export type Database = {
           },
         ]
       }
+      sample_outreach_log: {
+        Row: {
+          action: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          sample_tournament_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          sample_tournament_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          sample_tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_outreach_log_sample_tournament_id_fkey"
+            columns: ["sample_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sample_participants: {
         Row: {
           created_at: string
@@ -3898,13 +3933,20 @@ export type Database = {
         Row: {
           admin_id: string | null
           created_at: string
+          crm_notes: string | null
+          crm_status: string | null
           description: string | null
           event_date: string | null
           hero_image_url: string | null
           id: string
           last_accessed_at: string | null
+          last_contacted_at: string | null
           location: string | null
           logo_url: string | null
+          prospect_company: string | null
+          prospect_email: string | null
+          prospect_name: string | null
+          prospect_source: string | null
           registration_fee_cents: number | null
           scoring_format: string | null
           team_fee_cents: number | null
@@ -3916,13 +3958,20 @@ export type Database = {
         Insert: {
           admin_id?: string | null
           created_at?: string
+          crm_notes?: string | null
+          crm_status?: string | null
           description?: string | null
           event_date?: string | null
           hero_image_url?: string | null
           id?: string
           last_accessed_at?: string | null
+          last_contacted_at?: string | null
           location?: string | null
           logo_url?: string | null
+          prospect_company?: string | null
+          prospect_email?: string | null
+          prospect_name?: string | null
+          prospect_source?: string | null
           registration_fee_cents?: number | null
           scoring_format?: string | null
           team_fee_cents?: number | null
@@ -3934,13 +3983,20 @@ export type Database = {
         Update: {
           admin_id?: string | null
           created_at?: string
+          crm_notes?: string | null
+          crm_status?: string | null
           description?: string | null
           event_date?: string | null
           hero_image_url?: string | null
           id?: string
           last_accessed_at?: string | null
+          last_contacted_at?: string | null
           location?: string | null
           logo_url?: string | null
+          prospect_company?: string | null
+          prospect_email?: string | null
+          prospect_name?: string | null
+          prospect_source?: string | null
           registration_fee_cents?: number | null
           scoring_format?: string | null
           team_fee_cents?: number | null

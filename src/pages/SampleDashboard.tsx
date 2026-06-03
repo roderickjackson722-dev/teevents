@@ -6,7 +6,8 @@ import {
   CheckCircle2, AlertCircle, ListChecks, Printer, ClipboardList,
   QrCode, BarChart3, ShoppingBag, Gavel, Camera, Gift, Share2,
   Palette, CreditCard, HelpCircle, CalendarRange, FileText, Lock,
-  Star, MapPin, X, Menu,
+  Star, MapPin, X, Menu, Sliders, Building2, Store, Target, BedDouble,
+  Ticket, Eye, ContactRound, Megaphone, ScanLine, Search as SearchIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

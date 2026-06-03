@@ -94,6 +94,42 @@ export default function SampleGenerator() {
   const [samples, setSamples] = useState<SampleRow[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sendModal, setSendModal] = useState<SampleRow | null>(null);
+  const [crmSample, setCrmSample] = useState<SampleRow | null>(null);
+  const [outreachLog, setOutreachLog] = useState<any[]>([]);
+  const [newAction, setNewAction] = useState<string>("email_sent");
+  const [newActionNotes, setNewActionNotes] = useState("");
+
+  async function loadOutreachLog(sampleId: string) {
+    const { data } = await supabase
+      .from("sample_outreach_log" as any)
+      .select("*")
+      .eq("sample_tournament_id", sampleId)
+      .order("created_at", { ascending: false });
+    setOutreachLog((data as any[]) || []);
+  }
+
+  async function logOutreach(sampleId: string, action: string, notes?: string) {
+    const { data: u } = await supabase.auth.getUser();
+    await supabase.from("sample_outreach_log" as any).insert({
+      sample_tournament_id: sampleId,
+      action,
+      notes: notes || null,
+      created_by: u?.user?.id ?? null,
+    });
+    await supabase
+      .from("sample_tournaments")
+      .update({ last_contacted_at: new Date().toISOString() } as any)
+      .eq("id", sampleId);
+    if (crmSample) await loadOutreachLog(sampleId);
+    await loadSamples();
+  }
+
+  async function updateCrmStatus(sampleId: string, status: string) {
+    await supabase.from("sample_tournaments").update({ crm_status: status } as any).eq("id", sampleId);
+    await loadSamples();
+    if (crmSample && crmSample.id === sampleId) setCrmSample({ ...crmSample, crm_status: status });
+  }
+
 
   async function loadSamples() {
     const { data } = await supabase

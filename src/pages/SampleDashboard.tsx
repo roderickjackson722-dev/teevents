@@ -1222,4 +1222,96 @@ const SettingsTab = () => (
   </div>
 );
 
+const ComingSoonTab = ({ title }: { title: string }) => (
+  <Card>
+    <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+    <CardContent>
+      <p className="text-sm text-muted-foreground">
+        This section is available in the live organizer dashboard. In the demo, sample data for this view is coming soon — try the live product to explore the full feature.
+      </p>
+    </CardContent>
+  </Card>
+);
+
+const sampleCrmContacts = [
+  { name: "Sarah Mitchell", role: "Sponsor lead", company: "First National Bank", status: "Contacted", last: "2 days ago" },
+  { name: "Mike Thompson", role: "Volunteer coordinator", company: "Local Rotary", status: "Demo Scheduled", last: "Yesterday" },
+  { name: "Jen O'Connor", role: "Player captain", company: "ACME Industries", status: "Lead", last: "1 week ago" },
+];
+
+const sampleCrmComms = [
+  { date: "Apr 4", channel: "Email", subject: "Sponsorship deck v2", direction: "Sent" },
+  { date: "Apr 3", channel: "Phone", subject: "Confirmation call — Title Sponsor", direction: "Inbound" },
+  { date: "Apr 1", channel: "Email", subject: "Follow up on golf team", direction: "Sent" },
+];
+
+const sampleCrmTasks = [
+  { task: "Follow up with First National Bank", due: "Tomorrow", owner: "You" },
+  { task: "Send signed sponsor agreement", due: "Apr 8", owner: "Operations" },
+  { task: "Confirm volunteer count for hole 13", due: "Apr 10", owner: "You" },
+];
+
+const SampleCrmTab = () => (
+  <div className="space-y-6">
+    <SectionHeader title="CRM" />
+    <Card>
+      <CardHeader><CardTitle className="text-base">Contacts</CardTitle></CardHeader>
+      <CardContent>
+        <div className="divide-y text-sm">
+          {sampleCrmContacts.map((c) => (
+            <div key={c.name} className="py-2 flex flex-wrap justify-between gap-2">
+              <div>
+                <div className="font-semibold">{c.name}</div>
+                <div className="text-xs text-muted-foreground">{c.role} · {c.company}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{c.status}</Badge>
+                <span className="text-xs text-muted-foreground">{c.last}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+    <div className="grid md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader><CardTitle className="text-base">Recent Communications</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {sampleCrmComms.map((c, i) => (
+            <div key={i} className="flex justify-between border-b pb-1.5 last:border-0">
+              <div>
+                <div className="font-medium">{c.subject}</div>
+                <div className="text-xs text-muted-foreground">{c.channel} · {c.direction}</div>
+              </div>
+              <span className="text-xs text-muted-foreground">{c.date}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle className="text-base">Open Tasks</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {sampleCrmTasks.map((t, i) => (
+            <div key={i} className="flex justify-between border-b pb-1.5 last:border-0">
+              <div>
+                <div className="font-medium">{t.task}</div>
+                <div className="text-xs text-muted-foreground">Owner: {t.owner}</div>
+              </div>
+              <span className="text-xs text-muted-foreground">{t.due}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+    <Card>
+      <CardContent className="pt-5">
+        <div className="flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-muted-foreground">Sample CRM data. The live CRM tracks unlimited contacts, communications, tasks, and an audit trail per organization.</p>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
 export default SampleDashboard;

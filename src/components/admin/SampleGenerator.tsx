@@ -98,7 +98,7 @@ export default function SampleGenerator() {
   async function loadSamples() {
     const { data } = await supabase
       .from("sample_tournaments")
-      .select("id, unique_slug, tournament_name, event_date, location, view_count, last_accessed_at, created_at")
+      .select("id, unique_slug, tournament_name, event_date, location, view_count, last_accessed_at, created_at, prospect_name, prospect_email, prospect_company, prospect_source, last_contacted_at, crm_status, crm_notes")
       .order("created_at", { ascending: false });
     setSamples((data as SampleRow[]) || []);
   }

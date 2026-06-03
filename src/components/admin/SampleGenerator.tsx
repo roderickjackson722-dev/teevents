@@ -368,9 +368,19 @@ export default function SampleGenerator() {
               {samples.map(s => (
                 <div key={s.id} className="flex flex-wrap items-center gap-3 border rounded-md p-3">
                   <div className="flex-1 min-w-[200px]">
-                    <div className="font-semibold">{s.tournament_name}</div>
+                    <div className="font-semibold flex items-center gap-2 flex-wrap">
+                      {s.tournament_name}
+                      {s.crm_status && (
+                        <Badge variant="secondary" className="text-[10px]">{s.crm_status.replace("_", " ")}</Badge>
+                      )}
+                      {s.prospect_source && (
+                        <Badge variant="outline" className="text-[10px]">src: {s.prospect_source}</Badge>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {s.event_date && new Date(s.event_date).toLocaleDateString()} • {s.location || "—"}
+                      {s.prospect_name && <> • <span className="font-medium">{s.prospect_name}</span></>}
+                      {s.prospect_email && <> &lt;{s.prospect_email}&gt;</>}
                     </div>
                     <div className="text-xs font-mono text-muted-foreground mt-0.5">{buildLink(s.unique_slug)}</div>
                   </div>
@@ -379,6 +389,7 @@ export default function SampleGenerator() {
                     <Button size="sm" variant="outline" onClick={() => window.open(buildLink(s.unique_slug), "_blank")}><Eye className="h-3 w-3" /></Button>
                     <Button size="sm" variant="outline" onClick={() => copyLink(s.unique_slug)}><Copy className="h-3 w-3" /></Button>
                     <Button size="sm" variant="outline" onClick={() => setSendModal(s)}><Mail className="h-3 w-3" /></Button>
+                    <Button size="sm" variant="outline" onClick={() => { setCrmSample(s); loadOutreachLog(s.id); }}>CRM</Button>
                     <Button size="sm" variant="outline" onClick={() => handleEdit(s)}>Edit</Button>
                     <Button size="sm" variant="outline" onClick={() => handleRegenerate(s.id)}><RefreshCw className="h-3 w-3" /></Button>
                     <Button size="sm" variant="outline" onClick={() => handleDelete(s.id)}><Trash2 className="h-3 w-3" /></Button>
@@ -398,6 +409,90 @@ export default function SampleGenerator() {
           sampleLink={buildLink(sendModal.unique_slug)}
         />
       )}
+
+      {crmSample && (
+        <CrmDrawer
+          sample={crmSample}
+          log={outreachLog}
+          newAction={newAction}
+          setNewAction={setNewAction}
+          newActionNotes={newActionNotes}
+          setNewActionNotes={setNewActionNotes}
+          onClose={() => { setCrmSample(null); setOutreachLog([]); setNewActionNotes(""); }}
+          onLog={async () => {
+            await logOutreach(crmSample.id, newAction, newActionNotes);
+            setNewActionNotes("");
+          }}
+          onStatus={(s: string) => updateCrmStatus(crmSample.id, s)}
+          buildLink={buildLink}
+        />
+      )}
+    </div>
+  );
+}
+
+function CrmDrawer({ sample, log, newAction, setNewAction, newActionNotes, setNewActionNotes, onClose, onLog, onStatus, buildLink }: any) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card text-card-foreground rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">CRM — {sample.tournament_name}</h3>
+            <p className="text-xs text-muted-foreground">Outreach tracking for this sample mockup</p>
+          </div>
+          <Button size="sm" variant="ghost" onClick={onClose}><X className="h-4 w-4" /></Button>
+        </div>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><span className="text-muted-foreground">Name:</span> {sample.prospect_name || "—"}</div>
+            <div><span className="text-muted-foreground">Source:</span> {sample.prospect_source || "—"}</div>
+            <div><span className="text-muted-foreground">Email:</span> {sample.prospect_email || "—"}</div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Status:</span>
+              <select className="h-8 rounded border bg-background px-2 text-xs" value={sample.crm_status || "lead"} onChange={(e) => onStatus(e.target.value)}>
+                {CRM_STATUSES.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2"><span className="text-muted-foreground">Company:</span> {sample.prospect_company || "—"}</div>
+            {sample.crm_notes && <div className="col-span-2 text-xs bg-muted/40 rounded p-2">{sample.crm_notes}</div>}
+          </div>
+
+          <div className="border rounded-md p-3 space-y-2">
+            <Label className="text-xs">Log Outreach Action</Label>
+            <div className="flex gap-2 flex-wrap">
+              <select className="h-9 rounded border bg-background px-2 text-sm" value={newAction} onChange={e => setNewAction(e.target.value)}>
+                {OUTREACH_ACTIONS.map(a => <option key={a} value={a}>{a.replace("_", " ")}</option>)}
+              </select>
+              <Input className="flex-1 min-w-[180px]" placeholder="Optional notes" value={newActionNotes} onChange={e => setNewActionNotes(e.target.value)} />
+              <Button size="sm" onClick={onLog}>Log</Button>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold mb-2">Outreach History</h4>
+            {log.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No outreach logged yet.</p>
+            ) : (
+              <div className="border rounded-md divide-y">
+                {log.map((l: any) => (
+                  <div key={l.id} className="p-2 text-xs flex justify-between gap-3">
+                    <div>
+                      <Badge variant="outline" className="mr-2">{l.action.replace("_", " ")}</Badge>
+                      {l.notes && <span className="text-muted-foreground">{l.notes}</span>}
+                    </div>
+                    <span className="text-muted-foreground whitespace-nowrap">{new Date(l.created_at).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t pt-3 space-y-1 text-xs">
+            <div className="font-semibold">Sample Links</div>
+            <div className="font-mono text-muted-foreground break-all">{buildLink(sample.unique_slug)}</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

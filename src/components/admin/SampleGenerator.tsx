@@ -277,6 +277,39 @@ export default function SampleGenerator() {
                 label="hero"
               />
             </div>
+
+            <div className="md:col-span-2 pt-4 mt-2 border-t">
+              <h4 className="text-sm font-semibold mb-2">Prospect / CRM</h4>
+            </div>
+            <div>
+              <Label>Prospect Name</Label>
+              <Input value={form.prospect_name} onChange={e => setForm({ ...form, prospect_name: e.target.value })} placeholder="John Smith" />
+            </div>
+            <div>
+              <Label>Prospect Email</Label>
+              <Input type="email" value={form.prospect_email} onChange={e => setForm({ ...form, prospect_email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div>
+              <Label>Company</Label>
+              <Input value={form.prospect_company} onChange={e => setForm({ ...form, prospect_company: e.target.value })} placeholder="ABC Golf Club" />
+            </div>
+            <div>
+              <Label>Source</Label>
+              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.prospect_source} onChange={e => setForm({ ...form, prospect_source: e.target.value })}>
+                <option value="">— Select —</option>
+                {PROSPECT_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.crm_status} onChange={e => setForm({ ...form, crm_status: e.target.value })}>
+                {CRM_STATUSES.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <Label>CRM Notes</Label>
+              <Textarea rows={2} value={form.crm_notes} onChange={e => setForm({ ...form, crm_notes: e.target.value })} placeholder="Internal notes about this prospect..." />
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">

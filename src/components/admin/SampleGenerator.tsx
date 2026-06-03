@@ -138,7 +138,7 @@ export default function SampleGenerator() {
     setSaving(true);
     try {
       const slug = await ensureUniqueSlug(slugify(form.tournament_name), editingId || undefined);
-      const payload = {
+      const payload: any = {
         tournament_name: form.tournament_name,
         event_date: form.event_date || null,
         location: form.location || null,
@@ -149,6 +149,12 @@ export default function SampleGenerator() {
         registration_fee_cents: form.registration_fee_cents,
         team_fee_cents: form.team_fee_cents,
         unique_slug: slug,
+        prospect_name: form.prospect_name || null,
+        prospect_email: form.prospect_email || null,
+        prospect_company: form.prospect_company || null,
+        prospect_source: form.prospect_source || null,
+        crm_status: form.crm_status || "lead",
+        crm_notes: form.crm_notes || null,
       };
       let id = editingId;
       if (editingId) {

@@ -18,6 +18,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Settings2 } from "lucide-react";
 import {
   Users,
   Trophy,
@@ -93,6 +96,32 @@ const Players = () => {
     payment_status: "paid",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
+  const FIELD_DEFS = [
+    { key: "phone", label: "Phone" },
+    { key: "handicap", label: "Handicap" },
+    { key: "shirt_size", label: "Shirt Size" },
+    { key: "payment_status", label: "Payment Status" },
+  ] as const;
+  type FieldKey = typeof FIELD_DEFS[number]["key"];
+  const fieldsStorageKey = selectedTournament ? `teevents_add_player_fields_${selectedTournament}` : "";
+  const [visibleFields, setVisibleFields] = useState<Record<FieldKey, boolean>>({
+    phone: true, handicap: true, shirt_size: true, payment_status: true,
+  });
+  useEffect(() => {
+    if (!fieldsStorageKey) return;
+    try {
+      const raw = localStorage.getItem(fieldsStorageKey);
+      if (raw) setVisibleFields((prev) => ({ ...prev, ...JSON.parse(raw) }));
+      else setVisibleFields({ phone: true, handicap: true, shirt_size: true, payment_status: true });
+    } catch { /* noop */ }
+  }, [fieldsStorageKey]);
+  const toggleField = (k: FieldKey) => {
+    setVisibleFields((prev) => {
+      const next = { ...prev, [k]: !prev[k] };
+      try { if (fieldsStorageKey) localStorage.setItem(fieldsStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
   const [editingScoringCode, setEditingScoringCode] = useState<string | null>(null);
   const [scoringCodeInput, setScoringCodeInput] = useState("");
   const [regenerating, setRegenerating] = useState(false);
@@ -550,7 +579,29 @@ const Players = () => {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Add Player Manually</DialogTitle>
+                <div className="flex items-center justify-between pr-6">
+                  <DialogTitle>Add Player Manually</DialogTitle>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+                        <Settings2 className="h-3.5 w-3.5" />
+                        <span className="text-xs">Fields</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-56">
+                      <p className="text-xs font-medium mb-2 text-muted-foreground">Show optional fields</p>
+                      <div className="space-y-2">
+                        {FIELD_DEFS.map((f) => (
+                          <label key={f.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                            <Checkbox checked={visibleFields[f.key]} onCheckedChange={() => toggleField(f.key)} />
+                            {f.label}
+                          </label>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-3">First name, last name & email are always required.</p>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="grid grid-cols-2 gap-3">
@@ -567,40 +618,52 @@ const Players = () => {
                   <Label htmlFor="ap-email">Email *</Label>
                   <Input id="ap-email" type="email" value={newPlayer.email} onChange={(e) => setNewPlayer((p) => ({ ...p, email: e.target.value }))} placeholder="john@example.com" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="ap-phone">Phone</Label>
-                    <Input id="ap-phone" value={newPlayer.phone} onChange={(e) => setNewPlayer((p) => ({ ...p, phone: e.target.value }))} placeholder="(555) 123-4567" />
+                {(visibleFields.phone || visibleFields.handicap) && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {visibleFields.phone && (
+                      <div>
+                        <Label htmlFor="ap-phone">Phone</Label>
+                        <Input id="ap-phone" value={newPlayer.phone} onChange={(e) => setNewPlayer((p) => ({ ...p, phone: e.target.value }))} placeholder="(555) 123-4567" />
+                      </div>
+                    )}
+                    {visibleFields.handicap && (
+                      <div>
+                        <Label htmlFor="ap-hcp">Handicap</Label>
+                        <Input id="ap-hcp" type="number" value={newPlayer.handicap} onChange={(e) => setNewPlayer((p) => ({ ...p, handicap: e.target.value }))} placeholder="12" />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <Label htmlFor="ap-hcp">Handicap</Label>
-                    <Input id="ap-hcp" type="number" value={newPlayer.handicap} onChange={(e) => setNewPlayer((p) => ({ ...p, handicap: e.target.value }))} placeholder="12" />
+                )}
+                {(visibleFields.shirt_size || visibleFields.payment_status) && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {visibleFields.shirt_size && (
+                      <div>
+                        <Label htmlFor="ap-shirt">Shirt Size</Label>
+                        <Select value={newPlayer.shirt_size} onValueChange={(v) => setNewPlayer((p) => ({ ...p, shirt_size: v }))}>
+                          <SelectTrigger id="ap-shirt"><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent>
+                            {["S", "M", "L", "XL", "XXL"].map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    {visibleFields.payment_status && (
+                      <div>
+                        <Label htmlFor="ap-payment">Payment Status</Label>
+                        <Select value={newPlayer.payment_status} onValueChange={(v) => setNewPlayer((p) => ({ ...p, payment_status: v }))}>
+                          <SelectTrigger id="ap-payment"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="comp">Comp</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="ap-shirt">Shirt Size</Label>
-                    <Select value={newPlayer.shirt_size} onValueChange={(v) => setNewPlayer((p) => ({ ...p, shirt_size: v }))}>
-                      <SelectTrigger id="ap-shirt"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        {["S", "M", "L", "XL", "XXL"].map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="ap-payment">Payment Status</Label>
-                    <Select value={newPlayer.payment_status} onValueChange={(v) => setNewPlayer((p) => ({ ...p, payment_status: v }))}>
-                      <SelectTrigger id="ap-payment"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="comp">Comp</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                )}
                 <Button onClick={handleAddPlayer} disabled={addingPlayer} className="w-full">
                   {addingPlayer ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
                   Add Player

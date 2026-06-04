@@ -78,26 +78,30 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Name, date, location, fees, add‑ons" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
-      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard (includes settings)" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
       { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
       { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null, description: "About us, mission, history, contact" },
-      { title: "Day of Event Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
       { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },
+      { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
+    ],
+  },
+  {
+    label: "Event Day",
+    color: "border-l-orange-400 bg-orange-400/5",
+    items: [
+      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard" },
+      { title: "Day of Event Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
+      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
+      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
     ],
   },
   {
     label: "Operations",
     color: "border-l-purple-400 bg-purple-400/5",
     items: [
-      { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
-      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
-      { title: "Live Leaderboard (View)", url: "/dashboard/leaderboard?view=1", icon: Eye, feature: "leaderboard", description: "View-only leaderboard during play" },
-      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
-      { title: "Sponsor Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Manage sponsors during the event" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
       { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging", description: "Email and SMS blasts to players" },
@@ -105,6 +109,7 @@ const categories: SidebarCategory[] = [
       { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],
   },
+
   {
     label: "Promotion & Marketing",
     color: "border-l-green-400 bg-green-400/5",

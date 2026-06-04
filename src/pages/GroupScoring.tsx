@@ -53,22 +53,34 @@ export default function GroupScoring() {
     if (!slug || !code) return;
     (async () => {
       setLoading(true);
-      const { data: t } = await supabase
-        .from("tournaments")
-        .select("id, title, slug, course_par, hole_pars, live_allow_edit_past_holes, live_require_confirm_save, live_leaderboard_enabled")
-        .or(`slug.eq.${slug},custom_slug.eq.${slug},id.eq.${slug}`)
-        .maybeSingle();
-      if (!t) {
-        setError("Tournament not found. Please double-check the link from your scorecard.");
+      setError(null);
+      const cleanCode = code.trim().toUpperCase();
+      const { data: access, error: accessError } = await (supabase as any).rpc("lookup_scoring_access", {
+        _slug: slug,
+        _code: cleanCode,
+      });
+      const match = Array.isArray(access) ? access[0] : null;
+      if (accessError || !match || match.kind !== "group") {
+        setError(accessError?.message || "No players found for this code.");
         setLoading(false);
         return;
       }
-      setTournament(t as Tournament);
+      const t = {
+        id: match.tournament_id,
+        title: match.title,
+        slug: match.route_slug,
+        course_par: match.course_par,
+        hole_pars: match.hole_pars,
+        live_allow_edit_past_holes: match.live_allow_edit_past_holes,
+        live_require_confirm_save: match.live_require_confirm_save,
+        live_leaderboard_enabled: match.live_leaderboard_enabled,
+      } as Tournament;
+      setTournament(t);
 
       const { data: regs } = await supabase
         .rpc("get_group_scoring_roster", {
-          _tournament_id: (t as any).id,
-          _code: code.toUpperCase(),
+          _tournament_id: t.id,
+          _code: cleanCode,
         });
       if (!regs || regs.length === 0) {
         setError("No players found for this code.");

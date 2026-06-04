@@ -32,18 +32,31 @@ export default function ScoreLogin() {
       return;
     }
     setLoading(true);
-    const { data } = await supabase
+    // Try group scoring code first (whole group scores together)
+    const { data: groupMatch } = await supabase
       .from("tournament_registrations")
       .select("id")
       .eq("tournament_id", tournament.id)
       .eq("group_scoring_code", clean)
       .limit(1);
-    setLoading(false);
-    if (!data || data.length === 0) {
-      toast({ title: "Code not recognized", description: "Double-check the 6-character code on your scorecard.", variant: "destructive" });
+    if (groupMatch && groupMatch.length > 0) {
+      setLoading(false);
+      navigate(`/score/${slug}/${clean}`);
       return;
     }
-    navigate(`/score/${slug}/${clean}`);
+    // Fall back to individual player code → Day-of page
+    const { data: indivMatch } = await supabase
+      .from("tournament_registrations")
+      .select("id")
+      .eq("tournament_id", tournament.id)
+      .eq("scoring_code", clean)
+      .limit(1);
+    setLoading(false);
+    if (indivMatch && indivMatch.length > 0) {
+      navigate(`/day-of/${slug}/${clean}`);
+      return;
+    }
+    toast({ title: "Code not recognized", description: "Double-check the 6-character code on your scorecard.", variant: "destructive" });
   };
 
   return (

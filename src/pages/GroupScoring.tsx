@@ -55,11 +55,11 @@ export default function GroupScoring() {
       setLoading(true);
       const { data: t } = await supabase
         .from("tournaments")
-        .select("id, title, slug, course_par, hole_pars, live_allow_edit_past_holes, live_require_confirm_save, live_leaderboard_enabled, site_published")
+        .select("id, title, slug, course_par, hole_pars, live_allow_edit_past_holes, live_require_confirm_save, live_leaderboard_enabled")
         .or(`slug.eq.${slug},custom_slug.eq.${slug},id.eq.${slug}`)
         .maybeSingle();
-      if (!t || !(t as any).site_published) {
-        setError("Tournament not found or not published.");
+      if (!t) {
+        setError("Tournament not found. Please double-check the link from your scorecard.");
         setLoading(false);
         return;
       }

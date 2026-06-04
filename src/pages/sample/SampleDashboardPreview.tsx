@@ -6,9 +6,9 @@ import {
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
-  FlaskConical, MapPin, Sliders, Search as SearchIcon, Megaphone,
+  MapPin, Sliders, Search as SearchIcon, Megaphone,
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ArrowRight,
-  Menu,
+  Menu, ContactRound,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";

@@ -27,23 +27,27 @@ export default function ScoreLogin() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = code.trim().toUpperCase();
-    if (clean.length !== 6 || !tournament) {
+    if (clean.length !== 6) {
       toast({ title: "Enter a 6-character code", variant: "destructive" });
       return;
     }
     setLoading(true);
-    // Try group scoring code first (whole group scores together)
-    const { data: kind } = await supabase.rpc("lookup_player_scoring_code", {
-      _tournament_id: tournament.id,
+    const { data: access, error } = await (supabase as any).rpc("lookup_scoring_access", {
+      _slug: slug || null,
       _code: clean,
     });
     setLoading(false);
-    if (kind === "group") {
-      navigate(`/score/${slug}/${clean}`);
+    if (error) {
+      toast({ title: "Could not check code", description: error.message, variant: "destructive" });
       return;
     }
-    if (kind === "individual") {
-      navigate(`/day-of/${slug}/${clean}`);
+    const match = Array.isArray(access) ? access[0] : null;
+    if (match?.kind === "group") {
+      navigate(`/score/${match.route_slug}/${clean}`);
+      return;
+    }
+    if (match?.kind === "individual") {
+      navigate(`/day-of/${match.route_slug}/${clean}`);
       return;
     }
     toast({ title: "Code not recognized", description: "Double-check the 6-character code on your scorecard.", variant: "destructive" });
@@ -65,9 +69,9 @@ export default function ScoreLogin() {
               autoFocus
               inputMode="text"
               autoCapitalize="characters"
-              maxLength={6}
+              maxLength={32}
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
               placeholder="ABC123"
               className="text-center text-3xl font-mono tracking-[0.5em] h-16"
             />

@@ -7407,6 +7407,20 @@ export type Database = {
         Args: { _code: string; _tournament_id: string }
         Returns: string
       }
+      lookup_scoring_access: {
+        Args: { _code: string; _slug: string }
+        Returns: {
+          course_par: number
+          hole_pars: Json
+          kind: string
+          live_allow_edit_past_holes: boolean
+          live_leaderboard_enabled: boolean
+          live_require_confirm_save: boolean
+          route_slug: string
+          title: string
+          tournament_id: string
+        }[]
+      }
       mark_demo_lead_started: {
         Args: { _id: string; _role: string; _user_agent: string }
         Returns: undefined

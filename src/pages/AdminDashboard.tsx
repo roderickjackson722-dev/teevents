@@ -29,6 +29,7 @@ import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import AdminSetupChecklist from "@/components/admin/AdminSetupChecklist";
 import SampleGenerator from "@/components/admin/SampleGenerator";
 import AdminInvoices from "@/components/admin/AdminInvoices";
+import AdminDemoRequests from "@/components/admin/AdminDemoRequests";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";

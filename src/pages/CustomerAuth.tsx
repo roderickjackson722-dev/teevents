@@ -46,7 +46,13 @@ const BASE_AGREEMENT_ITEMS = [
 
 const FREE_PLAN_AGREEMENT_ITEM = {
   id: "platform_fee",
-  label: "I understand that standard Stripe processing fees apply to all transactions processed through my tournament. Fees can be passed to participants (recommended) or absorbed by my organization.",
+  label: (
+    <>
+      I understand that TeeVents charges a 5% platform fee per transaction.{" "}
+      <strong className="text-foreground">I can choose to pass this fee to my registrants (golfers — recommended) or absorb it myself.</strong>{" "}
+      Standard Stripe processing fees (2.9% + $0.30) also apply and can be passed to registrants or absorbed.
+    </>
+  ),
 };
 
 const CustomerAuth = () => {

@@ -6,9 +6,9 @@ import {
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   Clock, CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
-  FlaskConical, MapPin, Sliders, Search as SearchIcon, Megaphone,
+  MapPin, Sliders, Search as SearchIcon, Megaphone,
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ArrowRight,
-  Menu,
+  Menu, ContactRound,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -43,10 +43,31 @@ const categories: { label: string; color: string; items: { title: string; icon: 
     items: [
       { title: "Tournament Details", icon: Trophy },
       { title: "Registration Management", icon: FileEdit },
+      { title: "Live Leaderboard", icon: BarChart3 },
       { title: "Sponsorship Management", icon: Award },
+      { title: "Event Day Contests", icon: Trophy },
       { title: "Lodging", icon: BedDouble },
       { title: "Team Management", icon: Building2 },
       { title: "Organization Info", icon: Building2 },
+      { title: "Day of Event Page", icon: ScanLine },
+      { title: "Side Events", icon: Ticket },
+    ],
+  },
+  {
+    label: "Operations",
+    color: "border-l-purple-400 bg-purple-400/5",
+    items: [
+      { title: "Players & Pairings", icon: Users },
+      { title: "Waitlist", icon: ClipboardList },
+      { title: "Check-In", icon: ScanLine },
+      { title: "Live Leaderboard (View)", icon: Eye },
+      { title: "Scoring", icon: PenLine },
+      { title: "Sponsor Management", icon: Award },
+      { title: "Volunteers", icon: UserCheck },
+      { title: "Vendors", icon: Store },
+      { title: "Messages", icon: MessageSquare },
+      { title: "Team Performance", icon: Target },
+      { title: "CRM", icon: ContactRound },
     ],
   },
   {
@@ -58,25 +79,6 @@ const categories: { label: string; color: string; items: { title: string; icon: 
       { title: "Printables", icon: Printer },
       { title: "Email Templates", icon: Mail },
       { title: "Public Search", icon: SearchIcon },
-    ],
-  },
-  {
-    label: "Operations",
-    color: "border-l-purple-400 bg-purple-400/5",
-    items: [
-      { title: "Players", icon: Users },
-      { title: "Waitlist", icon: ClipboardList },
-      { title: "Check-In", icon: ScanLine },
-      { title: "Tee Sheet", icon: Clock },
-      { title: "Live Leaderboard", icon: BarChart3 },
-      { title: "Scoring", icon: PenLine },
-      { title: "Test Simulator", icon: FlaskConical },
-      { title: "Volunteers", icon: UserCheck },
-      { title: "Vendors", icon: Store },
-      { title: "Side Events", icon: Ticket },
-      { title: "Team Performance", icon: Target },
-      { title: "Event Day Contests", icon: Trophy },
-      { title: "Messages", icon: MessageSquare },
     ],
   },
   {
@@ -100,7 +102,6 @@ const categories: { label: string; color: string; items: { title: string; icon: 
       { title: "Auctions", icon: Gavel },
       { title: "Raffles", icon: Ticket },
       { title: "Media Clips", icon: ImageIcon },
-      { title: "Day-Of Page", icon: ScanLine },
     ],
   },
 ];
@@ -291,7 +292,7 @@ export default function SampleDashboardPreview() {
                 <div className="bg-card rounded-lg border border-border p-6 mb-6">
                   <h2 className="text-lg font-display font-bold text-foreground mb-4">Quick Actions</h2>
                   <div className="flex flex-wrap gap-3">
-                    <Button onClick={() => setActiveNav("Players")}><Users className="h-4 w-4 mr-2" />Players & Pairings</Button>
+                    <Button onClick={() => setActiveNav("Players & Pairings")}><Users className="h-4 w-4 mr-2" />Players & Pairings</Button>
                     <Button variant="outline" onClick={() => setActiveNav("Registration Management")}><ClipboardList className="h-4 w-4 mr-2" />Registration</Button>
                     <Button variant="outline" onClick={() => setActiveNav("Check-In")}><ScanLine className="h-4 w-4 mr-2" />Check-In</Button>
                     <Button variant="outline" onClick={() => setActiveNav("Messages")}><MessageSquare className="h-4 w-4 mr-2" />Messages</Button>
@@ -316,9 +317,9 @@ export default function SampleDashboardPreview() {
             )}
 
             {/* Contextual sample panels — change with sidebar selection */}
-            {activeNav === "Players" ? <PlayersPanel /> : null}
-            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? <LeaderboardPanel tournamentName={orgName} /> : null}
-            {activeNav === "Sponsorship Management" ? <SponsorsPanel /> : null}
+            {activeNav === "Players & Pairings" ? <PlayersPanel /> : null}
+            {activeNav === "Live Leaderboard" || activeNav === "Live Leaderboard (View)" || activeNav === "Scoring" ? <LeaderboardPanel tournamentName={orgName} /> : null}
+            {activeNav === "Sponsorship Management" || activeNav === "Sponsor Management" ? <SponsorsPanel /> : null}
             {activeNav === "Finances" ? <FinancesPanel /> : null}
             {activeNav === "Payout Settings" ? <PayoutPanel /> : null}
             {activeNav === "Share & Promote" ? <SharePanel slug={slug || ""} tournamentName={orgName} /> : null}
@@ -330,13 +331,14 @@ export default function SampleDashboardPreview() {
             {activeNav === "Media Clips" || activeNav === "Photo Gallery" ? <MediaClipsPanel /> : null}
             {activeNav === "Tournament Details" || activeNav === "View Tournament" ? <SiteBuilderPanel tournamentName={orgName} slug={slug || ""} eventDate={sample.event_date} /> : null}
             {activeNav === "Waitlist" ? <WaitlistPanel /> : null}
+            {activeNav === "CRM" ? <CrmPanel tournamentName={orgName} participants={participants} /> : null}
 
             {/* Generic feature preview — any other sidebar item shows a realistic mock panel */}
             {![
-              "Dashboard","Players","Live Leaderboard","Scoring","Sponsorship Management",
+              "Dashboard","Players & Pairings","Live Leaderboard","Live Leaderboard (View)","Scoring","Sponsorship Management","Sponsor Management",
               "Finances","Payout Settings","Share & Promote","Check-In","Volunteers",
               "Email Templates","Messages","Auctions","Raffles","Media Clips","Photo Gallery",
-              "Tournament Details","View Tournament","Waitlist",
+              "Tournament Details","View Tournament","Waitlist","CRM",
             ].includes(activeNav) ? (
               <GenericFeaturePanel
                 title={activeNav}
@@ -1063,6 +1065,98 @@ function SidebarNavContent({ activeNav, onSelect }: { activeNav: string; onSelec
         <button className="flex items-center gap-2 text-primary-foreground/60 hover:text-primary-foreground text-sm w-full">
           <LogOut className="h-4 w-4" /> Sign Out
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------- CRM Panel (mirrors organizer CRM) ----------
+function CrmPanel({ tournamentName, participants }: { tournamentName: string; participants: any[] }) {
+  const prospects = [
+    { name: "Acme Corp", contact: "Sarah Johnson", email: "sjohnson@acme.com", stage: "Sponsor Prospect", lastContact: "2 days ago", value: "$5,000" },
+    { name: "First Tee Foundation", contact: "Marcus Lee", email: "mlee@firsttee.org", stage: "Negotiating", lastContact: "Yesterday", value: "$10,000" },
+    { name: "Coastal Realty", contact: "Jenna Park", email: "jenna@coastal.com", stage: "Closed Won", lastContact: "1 week ago", value: "$2,500" },
+    { name: "Local Auto Group", contact: "Dan Rivera", email: "dan@autogroup.com", stage: "Lead", lastContact: "4 days ago", value: "$1,500" },
+  ];
+  const tasks = [
+    { task: "Follow up with Acme Corp about gold sponsorship", due: "Today", owner: "You" },
+    { task: "Send thank-you email to closed sponsors", due: "Tomorrow", owner: "You" },
+    { task: "Call First Tee Foundation to confirm logo", due: "Fri", owner: "Marketing" },
+  ];
+  const auditLog = [
+    { who: "You", what: "Logged call with Sarah Johnson (Acme Corp)", when: "2h ago" },
+    { who: "System", what: "Email opened by mlee@firsttee.org", when: "5h ago" },
+    { who: "You", what: "Updated stage for Coastal Realty → Closed Won", when: "1d ago" },
+  ];
+  return (
+    <div className="space-y-6">
+      <div className="bg-card rounded-lg border border-border p-5">
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <div>
+            <h3 className="text-lg font-display font-bold text-foreground">CRM — Prospects & Communications</h3>
+            <p className="text-sm text-muted-foreground">Track sponsors, donors, and partners for {tournamentName}.</p>
+          </div>
+          <Button size="sm" className="bg-secondary text-secondary-foreground">+ Add Prospect</Button>
+        </div>
+        <div className="grid sm:grid-cols-4 gap-3 mb-5">
+          {[
+            { label: "Active Prospects", value: prospects.length },
+            { label: "Pipeline Value", value: "$19,000" },
+            { label: "Closed Won", value: "$2,500" },
+            { label: "Open Tasks", value: tasks.length },
+          ].map((s) => (
+            <div key={s.label} className="bg-muted/30 rounded-md p-3">
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p className="text-xl font-bold text-foreground">{s.value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th className="p-2">Organization</th><th className="p-2">Contact</th><th className="p-2">Stage</th><th className="p-2">Value</th><th className="p-2">Last Contact</th></tr>
+            </thead>
+            <tbody>
+              {prospects.map((p) => (
+                <tr key={p.name} className="border-t border-border">
+                  <td className="p-2 font-semibold text-foreground">{p.name}</td>
+                  <td className="p-2"><div>{p.contact}</div><div className="text-xs text-muted-foreground">{p.email}</div></td>
+                  <td className="p-2"><span className="text-xs px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-semibold">{p.stage}</span></td>
+                  <td className="p-2 font-semibold">{p.value}</td>
+                  <td className="p-2 text-muted-foreground">{p.lastContact}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h4 className="font-bold text-foreground mb-3">Tasks</h4>
+          <ul className="space-y-2 text-sm">
+            {tasks.map((t) => (
+              <li key={t.task} className="flex items-start gap-2 border-b border-border pb-2">
+                <ClipboardList className="h-4 w-4 text-secondary mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-foreground">{t.task}</p>
+                  <p className="text-xs text-muted-foreground">Due {t.due} · {t.owner}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h4 className="font-bold text-foreground mb-3">Audit Log</h4>
+          <ul className="space-y-2 text-sm">
+            {auditLog.map((l, i) => (
+              <li key={i} className="border-b border-border pb-2">
+                <p className="text-foreground"><span className="font-semibold">{l.who}</span> — {l.what}</p>
+                <p className="text-xs text-muted-foreground">{l.when}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

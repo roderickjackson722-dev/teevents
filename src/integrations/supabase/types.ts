@@ -1319,6 +1319,44 @@ export type Database = {
         }
         Relationships: []
       }
+      day_of_emails: {
+        Row: {
+          id: string
+          message: string | null
+          recipient_count: number
+          sent_at: string
+          sent_by: string | null
+          subject: string | null
+          tournament_id: string
+        }
+        Insert: {
+          id?: string
+          message?: string | null
+          recipient_count?: number
+          sent_at?: string
+          sent_by?: string | null
+          subject?: string | null
+          tournament_id: string
+        }
+        Update: {
+          id?: string
+          message?: string | null
+          recipient_count?: number
+          sent_at?: string
+          sent_by?: string | null
+          subject?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "day_of_emails_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_events: {
         Row: {
           created_at: string
@@ -2431,6 +2469,7 @@ export type Database = {
           platform_fee_rate: number | null
           primary_color: string | null
           secondary_color: string | null
+          status: string
           stripe_account_id: string | null
           subdomain: string | null
           updated_at: string
@@ -2453,6 +2492,7 @@ export type Database = {
           platform_fee_rate?: number | null
           primary_color?: string | null
           secondary_color?: string | null
+          status?: string
           stripe_account_id?: string | null
           subdomain?: string | null
           updated_at?: string
@@ -2475,6 +2515,7 @@ export type Database = {
           platform_fee_rate?: number | null
           primary_color?: string | null
           secondary_color?: string | null
+          status?: string
           stripe_account_id?: string | null
           subdomain?: string | null
           updated_at?: string

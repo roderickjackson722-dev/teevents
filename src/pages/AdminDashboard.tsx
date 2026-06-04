@@ -2022,6 +2022,7 @@ const AdminDashboard = () => {
          {activeTab === "setup-checklist" && <AdminSetupChecklist />}
          {activeTab === "invoices" && <AdminInvoices />}
           {activeTab === "mockup-outreach" && <SampleGenerator />}
+          {activeTab === "demo-requests" && <AdminDemoRequests />}
         </div>
       </section>
 

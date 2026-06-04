@@ -317,9 +317,9 @@ export default function SampleDashboardPreview() {
             )}
 
             {/* Contextual sample panels — change with sidebar selection */}
-            {activeNav === "Players" ? <PlayersPanel /> : null}
-            {activeNav === "Live Leaderboard" || activeNav === "Scoring" ? <LeaderboardPanel tournamentName={orgName} /> : null}
-            {activeNav === "Sponsorship Management" ? <SponsorsPanel /> : null}
+            {activeNav === "Players & Pairings" ? <PlayersPanel /> : null}
+            {activeNav === "Live Leaderboard" || activeNav === "Live Leaderboard (View)" || activeNav === "Scoring" ? <LeaderboardPanel tournamentName={orgName} /> : null}
+            {activeNav === "Sponsorship Management" || activeNav === "Sponsor Management" ? <SponsorsPanel /> : null}
             {activeNav === "Finances" ? <FinancesPanel /> : null}
             {activeNav === "Payout Settings" ? <PayoutPanel /> : null}
             {activeNav === "Share & Promote" ? <SharePanel slug={slug || ""} tournamentName={orgName} /> : null}
@@ -331,13 +331,14 @@ export default function SampleDashboardPreview() {
             {activeNav === "Media Clips" || activeNav === "Photo Gallery" ? <MediaClipsPanel /> : null}
             {activeNav === "Tournament Details" || activeNav === "View Tournament" ? <SiteBuilderPanel tournamentName={orgName} slug={slug || ""} eventDate={sample.event_date} /> : null}
             {activeNav === "Waitlist" ? <WaitlistPanel /> : null}
+            {activeNav === "CRM" ? <CrmPanel tournamentName={orgName} participants={participants} /> : null}
 
             {/* Generic feature preview — any other sidebar item shows a realistic mock panel */}
             {![
-              "Dashboard","Players","Live Leaderboard","Scoring","Sponsorship Management",
+              "Dashboard","Players & Pairings","Live Leaderboard","Live Leaderboard (View)","Scoring","Sponsorship Management","Sponsor Management",
               "Finances","Payout Settings","Share & Promote","Check-In","Volunteers",
               "Email Templates","Messages","Auctions","Raffles","Media Clips","Photo Gallery",
-              "Tournament Details","View Tournament","Waitlist",
+              "Tournament Details","View Tournament","Waitlist","CRM",
             ].includes(activeNav) ? (
               <GenericFeaturePanel
                 title={activeNav}

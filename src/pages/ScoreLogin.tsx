@@ -69,9 +69,9 @@ export default function ScoreLogin() {
               autoFocus
               inputMode="text"
               autoCapitalize="characters"
-              maxLength={6}
+              maxLength={32}
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
               placeholder="ABC123"
               className="text-center text-3xl font-mono tracking-[0.5em] h-16"
             />

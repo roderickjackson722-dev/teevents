@@ -267,14 +267,16 @@ export default function LiveLeaderboard() {
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-md">
           <Trophy className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">Live Display Unavailable</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Leaderboard data is loading</h1>
           <p className="text-muted-foreground">
-            This tournament's live display is not available. Please contact the organizer.
+            We couldn't find this tournament's live leaderboard. Please check back in a few moments,
+            or contact the organizer if this keeps happening.
           </p>
         </div>
       </div>
     );
   }
+
 
   const heroImage = gallery.find((g) => g.is_hero) || gallery[galleryIdx];
   const bannerSponsor = bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)];

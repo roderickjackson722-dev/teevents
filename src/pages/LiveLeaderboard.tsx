@@ -121,6 +121,7 @@ export default function LiveLeaderboard() {
   const { slug } = useParams<{ slug: string }>();
   const [search] = useSearchParams();
   const isTvMode = search.get("display") === "1";
+  const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
   const [loading, setLoading] = useState(true);
@@ -141,12 +142,14 @@ export default function LiveLeaderboard() {
       .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
       .maybeSingle()
       .then(({ data }) => {
-        if (!data || !(data as any).site_published) {
+        if (!data) {
           setAccessDenied(true);
           setLoading(false);
           return;
         }
-        if ((data as any).live_display_enabled === false) {
+        // In preview mode, bypass publish gating so organizers can preview before going live.
+        // Only block when the organizer has explicitly disabled the live display.
+        if (!isPreview && (data as any).live_display_enabled === false) {
           setAccessDenied(true);
           setLoading(false);
           return;
@@ -155,7 +158,8 @@ export default function LiveLeaderboard() {
         setDesign({ ...DEFAULT_DESIGN, ...((data as any).leaderboard_design || {}) });
         setLoading(false);
       });
-  }, [slug]);
+  }, [slug, isPreview]);
+
 
   // Load related data
   useEffect(() => {

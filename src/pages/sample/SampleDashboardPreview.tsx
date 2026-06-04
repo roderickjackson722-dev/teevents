@@ -1069,3 +1069,95 @@ function SidebarNavContent({ activeNav, onSelect }: { activeNav: string; onSelec
     </div>
   );
 }
+
+// ---------- CRM Panel (mirrors organizer CRM) ----------
+function CrmPanel({ tournamentName, participants }: { tournamentName: string; participants: any[] }) {
+  const prospects = [
+    { name: "Acme Corp", contact: "Sarah Johnson", email: "sjohnson@acme.com", stage: "Sponsor Prospect", lastContact: "2 days ago", value: "$5,000" },
+    { name: "First Tee Foundation", contact: "Marcus Lee", email: "mlee@firsttee.org", stage: "Negotiating", lastContact: "Yesterday", value: "$10,000" },
+    { name: "Coastal Realty", contact: "Jenna Park", email: "jenna@coastal.com", stage: "Closed Won", lastContact: "1 week ago", value: "$2,500" },
+    { name: "Local Auto Group", contact: "Dan Rivera", email: "dan@autogroup.com", stage: "Lead", lastContact: "4 days ago", value: "$1,500" },
+  ];
+  const tasks = [
+    { task: "Follow up with Acme Corp about gold sponsorship", due: "Today", owner: "You" },
+    { task: "Send thank-you email to closed sponsors", due: "Tomorrow", owner: "You" },
+    { task: "Call First Tee Foundation to confirm logo", due: "Fri", owner: "Marketing" },
+  ];
+  const auditLog = [
+    { who: "You", what: "Logged call with Sarah Johnson (Acme Corp)", when: "2h ago" },
+    { who: "System", what: "Email opened by mlee@firsttee.org", when: "5h ago" },
+    { who: "You", what: "Updated stage for Coastal Realty → Closed Won", when: "1d ago" },
+  ];
+  return (
+    <div className="space-y-6">
+      <div className="bg-card rounded-lg border border-border p-5">
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <div>
+            <h3 className="text-lg font-display font-bold text-foreground">CRM — Prospects & Communications</h3>
+            <p className="text-sm text-muted-foreground">Track sponsors, donors, and partners for {tournamentName}.</p>
+          </div>
+          <Button size="sm" className="bg-secondary text-secondary-foreground">+ Add Prospect</Button>
+        </div>
+        <div className="grid sm:grid-cols-4 gap-3 mb-5">
+          {[
+            { label: "Active Prospects", value: prospects.length },
+            { label: "Pipeline Value", value: "$19,000" },
+            { label: "Closed Won", value: "$2,500" },
+            { label: "Open Tasks", value: tasks.length },
+          ].map((s) => (
+            <div key={s.label} className="bg-muted/30 rounded-md p-3">
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p className="text-xl font-bold text-foreground">{s.value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th className="p-2">Organization</th><th className="p-2">Contact</th><th className="p-2">Stage</th><th className="p-2">Value</th><th className="p-2">Last Contact</th></tr>
+            </thead>
+            <tbody>
+              {prospects.map((p) => (
+                <tr key={p.name} className="border-t border-border">
+                  <td className="p-2 font-semibold text-foreground">{p.name}</td>
+                  <td className="p-2"><div>{p.contact}</div><div className="text-xs text-muted-foreground">{p.email}</div></td>
+                  <td className="p-2"><span className="text-xs px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-semibold">{p.stage}</span></td>
+                  <td className="p-2 font-semibold">{p.value}</td>
+                  <td className="p-2 text-muted-foreground">{p.lastContact}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h4 className="font-bold text-foreground mb-3">Tasks</h4>
+          <ul className="space-y-2 text-sm">
+            {tasks.map((t) => (
+              <li key={t.task} className="flex items-start gap-2 border-b border-border pb-2">
+                <ClipboardList className="h-4 w-4 text-secondary mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-foreground">{t.task}</p>
+                  <p className="text-xs text-muted-foreground">Due {t.due} · {t.owner}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h4 className="font-bold text-foreground mb-3">Audit Log</h4>
+          <ul className="space-y-2 text-sm">
+            {auditLog.map((l, i) => (
+              <li key={i} className="border-b border-border pb-2">
+                <p className="text-foreground"><span className="font-semibold">{l.who}</span> — {l.what}</p>
+                <p className="text-xs text-muted-foreground">{l.when}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -66,11 +66,10 @@ export default function GroupScoring() {
       setTournament(t as Tournament);
 
       const { data: regs } = await supabase
-        .from("tournament_registrations")
-        .select("id, first_name, last_name, group_position, playing_handicap, course_handicap, handicap")
-        .eq("tournament_id", (t as any).id)
-        .eq("group_scoring_code", code.toUpperCase())
-        .order("group_position");
+        .rpc("get_group_scoring_roster", {
+          _tournament_id: (t as any).id,
+          _code: code.toUpperCase(),
+        });
       if (!regs || regs.length === 0) {
         setError("No players found for this code.");
         setLoading(false);

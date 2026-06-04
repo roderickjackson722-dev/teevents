@@ -807,6 +807,7 @@ const AdminDashboard = () => {
                   ["mockup-outreach", "Sample Mockups (CRM)", Trophy],
                   ["sales-outreach", "Outreach Templates", Mail],
                   ["sales-demo", "Demo / Sales Hub", FileText],
+                  ["demo-requests", "Demo Requests", UserCheck],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}

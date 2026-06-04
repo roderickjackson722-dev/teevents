@@ -284,7 +284,13 @@ export default function LiveLeaderboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {isPreview && (
+        <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
+          Preview Mode — this is how your leaderboard will appear to players.
+        </div>
+      )}
       {/* Top Banner Sponsor */}
+
       {bannerSponsor && (
         <div className="w-full bg-card border-b border-border py-3 px-6 flex items-center justify-center gap-4">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">

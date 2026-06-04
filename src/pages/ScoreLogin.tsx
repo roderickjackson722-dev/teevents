@@ -33,26 +33,16 @@ export default function ScoreLogin() {
     }
     setLoading(true);
     // Try group scoring code first (whole group scores together)
-    const { data: groupMatch } = await supabase
-      .from("tournament_registrations")
-      .select("id")
-      .eq("tournament_id", tournament.id)
-      .eq("group_scoring_code", clean)
-      .limit(1);
-    if (groupMatch && groupMatch.length > 0) {
-      setLoading(false);
+    const { data: kind } = await supabase.rpc("lookup_player_scoring_code", {
+      _tournament_id: tournament.id,
+      _code: clean,
+    });
+    setLoading(false);
+    if (kind === "group") {
       navigate(`/score/${slug}/${clean}`);
       return;
     }
-    // Fall back to individual player code → Day-of page
-    const { data: indivMatch } = await supabase
-      .from("tournament_registrations")
-      .select("id")
-      .eq("tournament_id", tournament.id)
-      .eq("scoring_code", clean)
-      .limit(1);
-    setLoading(false);
-    if (indivMatch && indivMatch.length > 0) {
+    if (kind === "individual") {
       navigate(`/day-of/${slug}/${clean}`);
       return;
     }

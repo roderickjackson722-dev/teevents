@@ -7331,6 +7331,18 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_group_scoring_roster: {
+        Args: { _code: string; _tournament_id: string }
+        Returns: {
+          course_handicap: number
+          first_name: string
+          group_position: number
+          handicap: number
+          id: string
+          last_name: string
+          playing_handicap: number
+        }[]
+      }
       get_player_hub_by_token: {
         Args: { _token: string }
         Returns: {
@@ -7390,6 +7402,10 @@ export type Database = {
       is_trip_organizer: {
         Args: { _trip_id: string; _user_id: string }
         Returns: boolean
+      }
+      lookup_player_scoring_code: {
+        Args: { _code: string; _tournament_id: string }
+        Returns: string
       }
       mark_demo_lead_started: {
         Args: { _id: string; _role: string; _user_agent: string }

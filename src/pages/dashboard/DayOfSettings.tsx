@@ -13,6 +13,8 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, ExternalLink, MapPin, Plus, X, RotateCcw } from "lucide-react";
 import DayOfLivePreview from "@/components/dashboard/DayOfLivePreview";
+import { ParticipantEmailSender } from "@/components/dashboard/ParticipantEmailSender";
+
 
 export const DEFAULT_WELCOME_TITLE = "Welcome to [Tournament Name]!";
 export const DEFAULT_WELCOME_MESSAGE = `Welcome, [Player Name]! You are officially checked in and ready to play. We're thrilled to have you here.
@@ -574,28 +576,8 @@ export default function DayOfSettings() {
             <code className="block bg-muted px-2 py-1 rounded mt-1 text-xs break-all">{baseUrl}/day-of/{t.slug}/[scoring-code]</code>
           </div>
 
-          <Card className="p-4 space-y-3 border-t">
-            <div>
-              <p className="font-semibold text-foreground">Email Players</p>
-              <p className="text-xs text-muted-foreground">Send each registered player a personalized link to their Day-of Event Page.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
-                className="w-[260px]"
-              />
-              <Button type="button" variant="outline" size="sm" disabled={sending || !testEmail} onClick={() => sendDayOfLinks("test")}>
-                Send Test Email
-              </Button>
-              <Button type="button" size="sm" disabled={sending} onClick={() => sendDayOfLinks("all")} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                {sending ? "Sending…" : "Send now to all registered players"}
-              </Button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">Sends a one-time email with each player's unique day-of link. Rate-limited to avoid spam flags.</p>
-          </Card>
+          <ParticipantEmailSender tournamentId={t.id} tournamentTitle={t.title} />
+
         </Card>
       )}
         </div>

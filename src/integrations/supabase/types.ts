@@ -1420,6 +1420,57 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_requests: {
+        Row: {
+          contacted_at: string | null
+          created_at: string
+          email: string
+          expected_players: number | null
+          heard_from: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          planning_status: string | null
+          role: string | null
+          status: string
+          tournament_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          contacted_at?: string | null
+          created_at?: string
+          email: string
+          expected_players?: number | null
+          heard_from?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          planning_status?: string | null
+          role?: string | null
+          status?: string
+          tournament_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contacted_at?: string | null
+          created_at?: string
+          email?: string
+          expected_players?: number | null
+          heard_from?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          planning_status?: string | null
+          role?: string | null
+          status?: string
+          tournament_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       director_shop_orders: {
         Row: {
           amount_cents: number
@@ -4182,6 +4233,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      signup_vetting: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          heard_from: string | null
+          heard_from_other: string | null
+          id: string
+          phone: string | null
+          planning_status: string | null
+          role_other: string | null
+          roles: string[] | null
+          user_id: string
+          vetting_status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          heard_from?: string | null
+          heard_from_other?: string | null
+          id?: string
+          phone?: string | null
+          planning_status?: string | null
+          role_other?: string | null
+          roles?: string[] | null
+          user_id: string
+          vetting_status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          heard_from?: string | null
+          heard_from_other?: string | null
+          id?: string
+          phone?: string | null
+          planning_status?: string | null
+          role_other?: string | null
+          roles?: string[] | null
+          user_id?: string
+          vetting_status?: string
+        }
+        Relationships: []
       }
       site_visits: {
         Row: {

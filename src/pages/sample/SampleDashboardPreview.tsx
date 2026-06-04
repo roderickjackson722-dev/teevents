@@ -292,7 +292,7 @@ export default function SampleDashboardPreview() {
                 <div className="bg-card rounded-lg border border-border p-6 mb-6">
                   <h2 className="text-lg font-display font-bold text-foreground mb-4">Quick Actions</h2>
                   <div className="flex flex-wrap gap-3">
-                    <Button onClick={() => setActiveNav("Players")}><Users className="h-4 w-4 mr-2" />Players & Pairings</Button>
+                    <Button onClick={() => setActiveNav("Players & Pairings")}><Users className="h-4 w-4 mr-2" />Players & Pairings</Button>
                     <Button variant="outline" onClick={() => setActiveNav("Registration Management")}><ClipboardList className="h-4 w-4 mr-2" />Registration</Button>
                     <Button variant="outline" onClick={() => setActiveNav("Check-In")}><ScanLine className="h-4 w-4 mr-2" />Check-In</Button>
                     <Button variant="outline" onClick={() => setActiveNav("Messages")}><MessageSquare className="h-4 w-4 mr-2" />Messages</Button>

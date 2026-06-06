@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Search, Library, CheckCircle2, Globe, MapPin, X } from "lucide-react";
+import { Loader2, Search, Library, CheckCircle2, MapPin, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { US_STATES } from "@/lib/usStates";
-import { supabase } from "@/integrations/supabase/client";
 
 export interface CourseDBResult {
   id: string;
@@ -30,6 +28,11 @@ export interface CourseDBResult {
 interface Props {
   onSelect: (course: CourseDBResult) => void;
   onSaveCurrent?: () => Promise<void> | void;
+}
+
+function fullAddress(c: CourseDBResult): string {
+  if (c.address && c.address.trim().length > 0) return c.address;
+  return [c.city, c.state].filter(Boolean).join(", ");
 }
 
 export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props) {
@@ -107,7 +110,10 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
     }
     setSelected(full);
     setOpen(false);
+    setResults([]);
+    setQ(full.course_name);
     onSelect(full);
+    toast({ title: `Selected ${full.course_name}` });
   };
 
   const clearSelection = () => {
@@ -123,8 +129,8 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
           Golf Course Database
         </CardTitle>
         <CardDescription>
-          Start typing a course name — suggestions appear automatically. Pick one to auto-fill par,
-          slope, rating, and hole data. Then verify the address below before saving.
+          Start typing a course name — suggestions appear automatically. Tap one to auto-fill par,
+          slope, rating, and hole data. Verify the address below before saving.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -143,43 +149,33 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
             {/* Autocomplete dropdown */}
             {open && results.length > 0 && (
               <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg max-h-80 overflow-auto">
-                {results.map((c) => (
-                  <button
-                    key={`${c.source ?? "saved"}-${c.id}`}
-                    type="button"
-                    onClick={() => handleSelect(c)}
-                    className="w-full text-left px-3 py-2 hover:bg-muted/60 border-b last:border-b-0"
-                  >
-                    <div className="font-medium text-sm flex items-center gap-2 flex-wrap">
-                      <span className="truncate">{c.course_name}</span>
-                      {c.source === "api" && (
-                        <Badge variant="outline" className="text-[10px]">
-                          <Globe className="h-3 w-3 mr-0.5" /> OpenGolfAPI
-                        </Badge>
-                      )}
-                      {c.source === "saved" && (
-                        <Badge variant="outline" className="text-[10px]">Library</Badge>
-                      )}
-                      {c.is_verified && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          <CheckCircle2 className="h-3 w-3 mr-0.5" /> Verified
-                        </Badge>
+                {results.map((c, idx) => {
+                  const addr = fullAddress(c);
+                  return (
+                    <div
+                      key={`${c.source ?? "saved"}-${c.id ?? idx}`}
+                      role="button"
+                      tabIndex={0}
+                      onMouseDown={(e) => { e.preventDefault(); handleSelect(c); }}
+                      onTouchStart={(e) => { e.preventDefault(); handleSelect(c); }}
+                      className="w-full text-left px-3 py-2.5 hover:bg-muted/60 active:bg-muted border-b last:border-b-0 cursor-pointer"
+                    >
+                      <div className="font-semibold text-sm truncate">{c.course_name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5 flex items-start gap-1">
+                        <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
+                        <span className="truncate">{addr || "Location unknown"}</span>
+                      </div>
+                      {(c.tee_name || c.par_total || c.slope_rating) && (
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          {c.tee_name ? `${c.tee_name} Tees` : ""}
+                          {c.par_total ? ` • Par ${c.par_total}` : ""}
+                          {c.course_rating ? ` • Rating ${c.course_rating}` : ""}
+                          {c.slope_rating ? ` • Slope ${c.slope_rating}` : ""}
+                        </div>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                      <MapPin className="h-3 w-3 shrink-0" />
-                      <span className="truncate">
-                        {c.address || [c.city, c.state].filter(Boolean).join(", ") || "Location unknown"}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">
-                      {c.tee_name ? `${c.tee_name} Tees` : ""}
-                      {c.par_total ? ` • Par ${c.par_total}` : ""}
-                      {c.course_rating ? ` • Rating ${c.course_rating}` : ""}
-                      {c.slope_rating ? ` • Slope ${c.slope_rating}` : ""}
-                    </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -205,7 +201,7 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
           )}
         </div>
 
-        {q.trim().length >= 2 && !loading && results.length === 0 && (
+        {q.trim().length >= 2 && !loading && results.length === 0 && !selected && (
           <p className="text-sm text-muted-foreground italic">
             No matches yet. Keep typing, or enter your course details manually below — you can save
             it to the library after.
@@ -220,18 +216,10 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
                 <div className="flex items-center gap-2 flex-wrap">
                   <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                   <span className="font-semibold">{selected.course_name}</span>
-                  {selected.source === "api" && (
-                    <Badge variant="outline" className="text-[10px]">OpenGolfAPI</Badge>
-                  )}
-                  {selected.source === "saved" && (
-                    <Badge variant="outline" className="text-[10px]">Library</Badge>
-                  )}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1 flex items-start gap-1">
                   <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                  <span>
-                    {selected.address || [selected.city, selected.state].filter(Boolean).join(", ") || "Location not provided — verify manually below"}
-                  </span>
+                  <span>{fullAddress(selected) || "Location not provided — verify manually below"}</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   {selected.tee_name ? `${selected.tee_name} Tees` : ""}

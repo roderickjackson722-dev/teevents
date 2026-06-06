@@ -91,6 +91,7 @@ import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
 import AdminPayouts from "./pages/admin/Payouts";
 import AdminStripeConnections from "./pages/admin/StripeConnections";
+import AdminCourseDatabase from "./pages/admin/CourseDatabase";
 import AdminOutreach from "./pages/admin/Outreach";
 import Unsubscribe from "./pages/Unsubscribe";
 import FlyerToDemo from "./pages/admin/FlyerToDemo";
@@ -250,7 +251,8 @@ const App = () => (
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
-           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
+          <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
+          <Route path="/admin/course-database" element={<AdminCourseDatabase />} />
            <Route path="/admin/outreach" element={<AdminOutreach />} />
            <Route path="/unsubscribe" element={<Unsubscribe />} />
            <Route path="/admin/sales/flyer-to-demo" element={<FlyerToDemo />} />

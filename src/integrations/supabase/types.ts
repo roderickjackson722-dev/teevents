@@ -968,12 +968,14 @@ export type Database = {
           hole_pars: Json | null
           hole_stroke_indexes: Json | null
           id: string
+          is_public: boolean
           is_verified: boolean
           par_total: number | null
           slope_rating: number | null
           state: string | null
           tee_name: string | null
           updated_at: string
+          use_count: number
         }
         Insert: {
           city?: string | null
@@ -985,12 +987,14 @@ export type Database = {
           hole_pars?: Json | null
           hole_stroke_indexes?: Json | null
           id?: string
+          is_public?: boolean
           is_verified?: boolean
           par_total?: number | null
           slope_rating?: number | null
           state?: string | null
           tee_name?: string | null
           updated_at?: string
+          use_count?: number
         }
         Update: {
           city?: string | null
@@ -1002,12 +1006,14 @@ export type Database = {
           hole_pars?: Json | null
           hole_stroke_indexes?: Json | null
           id?: string
+          is_public?: boolean
           is_verified?: boolean
           par_total?: number | null
           slope_rating?: number | null
           state?: string | null
           tee_name?: string | null
           updated_at?: string
+          use_count?: number
         }
         Relationships: []
       }
@@ -6293,6 +6299,7 @@ export type Database = {
           registration_url: string | null
           reserve_percentage: number | null
           results_url: string | null
+          saved_course_id: string | null
           schedule_info: string | null
           schedule_info_html: string | null
           scoring_format: string
@@ -6471,6 +6478,7 @@ export type Database = {
           registration_url?: string | null
           reserve_percentage?: number | null
           results_url?: string | null
+          saved_course_id?: string | null
           schedule_info?: string | null
           schedule_info_html?: string | null
           scoring_format?: string
@@ -6649,6 +6657,7 @@ export type Database = {
           registration_url?: string | null
           reserve_percentage?: number | null
           results_url?: string | null
+          saved_course_id?: string | null
           schedule_info?: string | null
           schedule_info_html?: string | null
           scoring_format?: string
@@ -6710,6 +6719,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournaments_saved_course_id_fkey"
+            columns: ["saved_course_id"]
+            isOneToOne: false
+            referencedRelation: "course_database"
             referencedColumns: ["id"]
           },
         ]

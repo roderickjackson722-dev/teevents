@@ -353,6 +353,9 @@ export default function CourseDetails() {
             if (c.tee_name) setTeeName(c.tee_name);
             if (c.course_rating != null) setCourseRating(String(c.course_rating));
             if (c.slope_rating != null) setSlopeRating(String(c.slope_rating));
+            const addr = (c as any).address || [c.city, c.state].filter(Boolean).join(", ");
+            if (addr) setCourseAddress(addr);
+            if ((c as any).website) setCourseWebsite((c as any).website);
             const pars = c.hole_pars ?? [];
             const sis = c.hole_stroke_indexes ?? [];
             const dists = c.hole_distances ?? [];
@@ -361,7 +364,7 @@ export default function CourseDetails() {
               si: sis[i] != null ? String(sis[i]) : "",
               distance: dists[i] != null ? String(dists[i]) : "",
             })));
-            toast({ title: `Loaded "${c.course_name}" from library` });
+            toast({ title: `Loaded "${c.course_name}"`, description: "Review the address & hole data, then click Save Course Details to sync to live scoring." });
           }}
           onSaveCurrent={async () => {
             const { data: { user } } = await supabase.auth.getUser();

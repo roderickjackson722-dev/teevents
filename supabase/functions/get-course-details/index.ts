@@ -1,7 +1,13 @@
 // Get Course Details — fetches either a saved library course or an
 // OpenGolfAPI course by id and returns it in our schema shape.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -53,6 +59,8 @@ Deno.serve(async (req) => {
       course_name: data.name,
       city: data.city,
       state: data.state,
+      address: data.address || [data.street, data.city, data.state].filter(Boolean).join(", ") || null,
+      website: data.website || null,
       tee_name: data.tees?.[0]?.name || "Blue",
       par_total: Array.isArray(data.pars) ? data.pars.reduce((a: number, b: number) => a + b, 0) : null,
       hole_pars: data.pars || null,

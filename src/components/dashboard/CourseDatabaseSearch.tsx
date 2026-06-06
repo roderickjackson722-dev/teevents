@@ -1,19 +1,21 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Search, Library, CheckCircle2, Globe } from "lucide-react";
+import { Loader2, Search, Library, CheckCircle2, Globe, MapPin, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { US_STATES } from "@/lib/usStates";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface CourseDBResult {
   id: string;
   course_name: string;
   city: string | null;
   state: string | null;
+  address?: string | null;
+  website?: string | null;
   tee_name: string | null;
   par_total: number | null;
   course_rating: number | null;
@@ -35,28 +37,22 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
   const [stateFilter, setStateFilter] = useState<string>("");
   const [results, setResults] = useState<CourseDBResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<CourseDBResult | null>(null);
+  const debounceRef = useRef<number | null>(null);
 
-  const search = async () => {
-    if (!q.trim() && !stateFilter) {
-      toast({ title: "Enter a course name or pick a state to search" });
+  const runSearch = async (query: string, st: string) => {
+    if (!query.trim() && !st) {
+      setResults([]);
       return;
     }
     setLoading(true);
-    setSearched(true);
     try {
-      const { data, error } = await supabase.functions.invoke("search-golf-courses", {
-        method: "GET" as any,
-        body: undefined,
-        // Pass as query string via headers fallback: use fetch directly
-      });
-      // supabase.functions.invoke doesn't accept query params for GET reliably,
-      // so use a direct fetch to the function URL.
       const url = new URL(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/search-golf-courses`,
       );
-      if (q.trim()) url.searchParams.set("query", q.trim());
-      if (stateFilter) url.searchParams.set("state", stateFilter);
+      if (query.trim()) url.searchParams.set("query", query.trim());
+      if (st) url.searchParams.set("state", st);
       const res = await fetch(url.toString(), {
         headers: {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -66,9 +62,7 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Search failed");
       setResults((json.courses as CourseDBResult[]) || []);
-      // Suppress unused-var warning for the unused invoke return
-      void data;
-      void error;
+      setOpen(true);
     } catch (e: any) {
       toast({ title: "Search failed", description: e?.message, variant: "destructive" });
     } finally {
@@ -76,9 +70,25 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
     }
   };
 
+  // Debounced typeahead
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    if (q.trim().length < 2 && !stateFilter) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    debounceRef.current = window.setTimeout(() => {
+      runSearch(q, stateFilter);
+    }, 300);
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [q, stateFilter]);
+
   const handleSelect = async (c: CourseDBResult) => {
+    let full = c;
     if (c.source === "api" && c.id) {
-      // Fetch full details from API for completeness
       try {
         const url = new URL(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-course-details`,
@@ -92,15 +102,17 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
           },
         });
         const json = await res.json();
-        if (res.ok && json.course) {
-          onSelect({ ...c, ...json.course });
-          return;
-        }
-      } catch {
-        // fall through to onSelect with summary data
-      }
+        if (res.ok && json.course) full = { ...c, ...json.course };
+      } catch { /* ignore, use summary */ }
     }
-    onSelect(c);
+    setSelected(full);
+    setOpen(false);
+    onSelect(full);
+  };
+
+  const clearSelection = () => {
+    setSelected(null);
+    setQ("");
   };
 
   return (
@@ -111,20 +123,68 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
           Golf Course Database
         </CardTitle>
         <CardDescription>
-          Search by course name or state. Results include your saved library and the public OpenGolfAPI directory. Pick a course to auto-fill par, slope, rating, and hole data.
+          Start typing a course name — suggestions appear automatically. Pick one to auto-fill par,
+          slope, rating, and hole data. Then verify the address below before saving.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Input
-            placeholder="Search by course name (e.g. Pebble Beach)"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && search()}
-            className="flex-1"
-          />
+        <div className="flex flex-col sm:flex-row gap-2 relative">
+          <div className="flex-1 relative">
+            <Input
+              placeholder="Search by course name (e.g. Pebble Beach)"
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setSelected(null); }}
+              onFocus={() => results.length > 0 && setOpen(true)}
+              autoComplete="off"
+            />
+            {loading && (
+              <Loader2 className="h-4 w-4 animate-spin absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            )}
+            {/* Autocomplete dropdown */}
+            {open && results.length > 0 && (
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg max-h-80 overflow-auto">
+                {results.map((c) => (
+                  <button
+                    key={`${c.source ?? "saved"}-${c.id}`}
+                    type="button"
+                    onClick={() => handleSelect(c)}
+                    className="w-full text-left px-3 py-2 hover:bg-muted/60 border-b last:border-b-0"
+                  >
+                    <div className="font-medium text-sm flex items-center gap-2 flex-wrap">
+                      <span className="truncate">{c.course_name}</span>
+                      {c.source === "api" && (
+                        <Badge variant="outline" className="text-[10px]">
+                          <Globe className="h-3 w-3 mr-0.5" /> OpenGolfAPI
+                        </Badge>
+                      )}
+                      {c.source === "saved" && (
+                        <Badge variant="outline" className="text-[10px]">Library</Badge>
+                      )}
+                      {c.is_verified && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          <CheckCircle2 className="h-3 w-3 mr-0.5" /> Verified
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      <span className="truncate">
+                        {c.address || [c.city, c.state].filter(Boolean).join(", ") || "Location unknown"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      {c.tee_name ? `${c.tee_name} Tees` : ""}
+                      {c.par_total ? ` • Par ${c.par_total}` : ""}
+                      {c.course_rating ? ` • Rating ${c.course_rating}` : ""}
+                      {c.slope_rating ? ` • Slope ${c.slope_rating}` : ""}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Select value={stateFilter || "all"} onValueChange={(v) => setStateFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="sm:w-48">
+            <SelectTrigger className="sm:w-44">
               <SelectValue placeholder="Any state" />
             </SelectTrigger>
             <SelectContent className="max-h-72">
@@ -134,8 +194,8 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={search} disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          <Button variant="outline" onClick={() => runSearch(q, stateFilter)} disabled={loading}>
+            <Search className="h-4 w-4" />
             <span className="ml-1 hidden sm:inline">Search</span>
           </Button>
           {onSaveCurrent && (
@@ -145,44 +205,49 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
           )}
         </div>
 
-        {searched && results.length === 0 && !loading && (
+        {q.trim().length >= 2 && !loading && results.length === 0 && (
           <p className="text-sm text-muted-foreground italic">
-            No matches. Enter your course details manually below — you can save it to the library after.
+            No matches yet. Keep typing, or enter your course details manually below — you can save
+            it to the library after.
           </p>
         )}
 
-        {results.length > 0 && (
-          <div className="space-y-2 max-h-72 overflow-auto">
-            {results.map((c) => (
-              <div key={`${c.source ?? "saved"}-${c.id}`} className="flex items-center justify-between gap-3 rounded-md border p-3 hover:bg-muted/40">
-                <div className="min-w-0">
-                  <div className="font-medium flex items-center gap-2 flex-wrap">
-                    <span className="truncate">{c.course_name}</span>
-                    {c.is_verified && (
-                      <Badge variant="secondary" className="text-[10px]">
-                        <CheckCircle2 className="h-3 w-3 mr-0.5" /> Verified
-                      </Badge>
-                    )}
-                    {c.source === "api" && (
-                      <Badge variant="outline" className="text-[10px]">
-                        <Globe className="h-3 w-3 mr-0.5" /> OpenGolfAPI
-                      </Badge>
-                    )}
-                    {c.source === "saved" && (
-                      <Badge variant="outline" className="text-[10px]">Library</Badge>
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {[c.city, c.state].filter(Boolean).join(", ")}
-                    {c.tee_name ? ` • ${c.tee_name} Tees` : ""}
-                    {c.par_total ? ` • Par ${c.par_total}` : ""}
-                    {c.course_rating ? ` • Rating ${c.course_rating}` : ""}
-                    {c.slope_rating ? ` • Slope ${c.slope_rating}` : ""}
-                  </div>
+        {/* Selected course verification card */}
+        {selected && (
+          <div className="rounded-md border border-primary/40 bg-primary/5 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-semibold">{selected.course_name}</span>
+                  {selected.source === "api" && (
+                    <Badge variant="outline" className="text-[10px]">OpenGolfAPI</Badge>
+                  )}
+                  {selected.source === "saved" && (
+                    <Badge variant="outline" className="text-[10px]">Library</Badge>
+                  )}
                 </div>
-                <Button size="sm" onClick={() => handleSelect(c)}>Select</Button>
+                <div className="text-sm text-muted-foreground mt-1 flex items-start gap-1">
+                  <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span>
+                    {selected.address || [selected.city, selected.state].filter(Boolean).join(", ") || "Location not provided — verify manually below"}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {selected.tee_name ? `${selected.tee_name} Tees` : ""}
+                  {selected.par_total ? ` • Par ${selected.par_total}` : ""}
+                  {selected.course_rating ? ` • Rating ${selected.course_rating}` : ""}
+                  {selected.slope_rating ? ` • Slope ${selected.slope_rating}` : ""}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Not the right course? Several clubs share similar names — clear and search again, or
+                  edit the details below to match your venue exactly.
+                </p>
               </div>
-            ))}
+              <Button size="sm" variant="ghost" onClick={clearSelection}>
+                <X className="h-4 w-4 mr-1" /> Clear
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

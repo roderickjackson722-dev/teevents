@@ -1,8 +1,13 @@
 // Search Golf Courses — combines the shared course_database library with
-// OpenGolfAPI results. Public function (no JWT required) so any signed-in
-// organizer can search; OpenGolfAPI key is optional.
+// OpenGolfAPI results. Public function (no JWT required).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -24,10 +29,12 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Saved library results
+    // Saved library results — fuzzy match across name + city
     let saved: any[] = [];
-    let sQ = admin.from("course_database").select("*").limit(10);
-    if (query) sQ = sQ.ilike("course_name", `%${query}%`);
+    let sQ = admin.from("course_database").select("*").limit(15);
+    if (query) {
+      sQ = sQ.or(`course_name.ilike.%${query}%,city.ilike.%${query}%`);
+    }
     if (state) sQ = sQ.ilike("state", state);
     const { data: savedData } = await sQ;
     saved = savedData || [];
@@ -36,7 +43,7 @@ Deno.serve(async (req) => {
     let apiCourses: any[] = [];
     const apiKey = Deno.env.get("OPENGOLFAPI_KEY");
     try {
-      const params = new URLSearchParams({ limit: "20" });
+      const params = new URLSearchParams({ limit: "25" });
       if (query) params.set("query", query);
       if (state) params.set("state", state);
       const res = await fetch(
@@ -56,6 +63,8 @@ Deno.serve(async (req) => {
       course_name: c.name,
       city: c.city,
       state: c.state,
+      address: c.address || [c.street, c.city, c.state].filter(Boolean).join(", ") || null,
+      website: c.website || null,
       tee_name: c.tees?.[0]?.name || "Blue",
       par_total: Array.isArray(c.pars) ? c.pars.reduce((a: number, b: number) => a + b, 0) : null,
       hole_pars: c.pars || null,
@@ -66,10 +75,13 @@ Deno.serve(async (req) => {
       source: "api" as const,
     }));
 
-    const courses = [
-      ...saved.map((c) => ({ ...c, source: "saved" as const })),
-      ...apiFormatted,
-    ];
+    const savedFormatted = saved.map((c) => ({
+      ...c,
+      address: c.address || [c.city, c.state].filter(Boolean).join(", ") || null,
+      source: "saved" as const,
+    }));
+
+    const courses = [...savedFormatted, ...apiFormatted];
 
     return new Response(JSON.stringify({ courses }), {
       status: 200,

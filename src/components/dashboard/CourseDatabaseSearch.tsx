@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Library, CheckCircle2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Search, Library, CheckCircle2, Globe } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { US_STATES } from "@/lib/usStates";
 
 export interface CourseDBResult {
   id: string;
@@ -19,7 +21,8 @@ export interface CourseDBResult {
   hole_pars: number[] | null;
   hole_stroke_indexes: number[] | null;
   hole_distances: number[] | null;
-  is_verified: boolean;
+  is_verified?: boolean;
+  source?: "saved" | "api";
 }
 
 interface Props {
@@ -29,27 +32,75 @@ interface Props {
 
 export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props) {
   const [q, setQ] = useState("");
+  const [stateFilter, setStateFilter] = useState<string>("");
   const [results, setResults] = useState<CourseDBResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
   const search = async () => {
-    if (!q.trim()) return;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("course_database" as any)
-      .select("*")
-      .ilike("course_name", `%${q.trim()}%`)
-      .order("is_verified", { ascending: false })
-      .order("course_name")
-      .limit(25);
-    setLoading(false);
-    setSearched(true);
-    if (error) {
-      toast({ title: "Search failed", description: error.message, variant: "destructive" });
+    if (!q.trim() && !stateFilter) {
+      toast({ title: "Enter a course name or pick a state to search" });
       return;
     }
-    setResults((data as any) || []);
+    setLoading(true);
+    setSearched(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("search-golf-courses", {
+        method: "GET" as any,
+        body: undefined,
+        // Pass as query string via headers fallback: use fetch directly
+      });
+      // supabase.functions.invoke doesn't accept query params for GET reliably,
+      // so use a direct fetch to the function URL.
+      const url = new URL(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/search-golf-courses`,
+      );
+      if (q.trim()) url.searchParams.set("query", q.trim());
+      if (stateFilter) url.searchParams.set("state", stateFilter);
+      const res = await fetch(url.toString(), {
+        headers: {
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Search failed");
+      setResults((json.courses as CourseDBResult[]) || []);
+      // Suppress unused-var warning for the unused invoke return
+      void data;
+      void error;
+    } catch (e: any) {
+      toast({ title: "Search failed", description: e?.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelect = async (c: CourseDBResult) => {
+    if (c.source === "api" && c.id) {
+      // Fetch full details from API for completeness
+      try {
+        const url = new URL(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-course-details`,
+        );
+        url.searchParams.set("courseId", c.id);
+        url.searchParams.set("source", "api");
+        const res = await fetch(url.toString(), {
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        });
+        const json = await res.json();
+        if (res.ok && json.course) {
+          onSelect({ ...c, ...json.course });
+          return;
+        }
+      } catch {
+        // fall through to onSelect with summary data
+      }
+    }
+    onSelect(c);
   };
 
   return (
@@ -57,21 +108,33 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Library className="h-4 w-4 text-primary" />
-          Course Database
+          Golf Course Database
         </CardTitle>
         <CardDescription>
-          Search the shared course library to auto-fill par, slope, rating, and per-hole data. If you don't find your course, enter it below and save it to the library for next time.
+          Search by course name or state. Results include your saved library and the public OpenGolfAPI directory. Pick a course to auto-fill par, slope, rating, and hole data.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Input
             placeholder="Search by course name (e.g. Pebble Beach)"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && search()}
+            className="flex-1"
           />
-          <Button onClick={search} disabled={loading || !q.trim()}>
+          <Select value={stateFilter || "all"} onValueChange={(v) => setStateFilter(v === "all" ? "" : v)}>
+            <SelectTrigger className="sm:w-48">
+              <SelectValue placeholder="Any state" />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <SelectItem value="all">Any state</SelectItem>
+              {US_STATES.map((s) => (
+                <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={search} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             <span className="ml-1 hidden sm:inline">Search</span>
           </Button>
@@ -91,14 +154,22 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
         {results.length > 0 && (
           <div className="space-y-2 max-h-72 overflow-auto">
             {results.map((c) => (
-              <div key={c.id} className="flex items-center justify-between gap-3 rounded-md border p-3 hover:bg-muted/40">
+              <div key={`${c.source ?? "saved"}-${c.id}`} className="flex items-center justify-between gap-3 rounded-md border p-3 hover:bg-muted/40">
                 <div className="min-w-0">
-                  <div className="font-medium flex items-center gap-2">
+                  <div className="font-medium flex items-center gap-2 flex-wrap">
                     <span className="truncate">{c.course_name}</span>
                     {c.is_verified && (
                       <Badge variant="secondary" className="text-[10px]">
                         <CheckCircle2 className="h-3 w-3 mr-0.5" /> Verified
                       </Badge>
+                    )}
+                    {c.source === "api" && (
+                      <Badge variant="outline" className="text-[10px]">
+                        <Globe className="h-3 w-3 mr-0.5" /> OpenGolfAPI
+                      </Badge>
+                    )}
+                    {c.source === "saved" && (
+                      <Badge variant="outline" className="text-[10px]">Library</Badge>
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -109,7 +180,7 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
                     {c.slope_rating ? ` • Slope ${c.slope_rating}` : ""}
                   </div>
                 </div>
-                <Button size="sm" onClick={() => onSelect(c)}>Select</Button>
+                <Button size="sm" onClick={() => handleSelect(c)}>Select</Button>
               </div>
             ))}
           </div>

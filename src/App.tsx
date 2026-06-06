@@ -91,6 +91,7 @@ import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
 import AdminPayouts from "./pages/admin/Payouts";
 import AdminStripeConnections from "./pages/admin/StripeConnections";
+import AdminCourseDatabase from "./pages/admin/CourseDatabase";
 import AdminOutreach from "./pages/admin/Outreach";
 import Unsubscribe from "./pages/Unsubscribe";
 import FlyerToDemo from "./pages/admin/FlyerToDemo";

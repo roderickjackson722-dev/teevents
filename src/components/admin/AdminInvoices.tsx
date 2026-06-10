@@ -194,6 +194,7 @@ export default function AdminInvoices() {
                       if (error) toast({ title: "Clone failed", description: error.message, variant: "destructive" });
                       else { toast({ title: "Invoice cloned as draft" }); load(); }
                     }}><Copy className="w-3 h-3 mr-1" /> Clone</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setPreviewing(inv)}><Eye className="w-3 h-3 mr-1" /> Preview</Button>
                     <Button size="sm" variant="ghost" onClick={() => downloadPdf(inv)}><FileDown className="w-3 h-3 mr-1" /> PDF</Button>
                     <Button size="sm" variant="ghost" onClick={async () => {
                       if (!confirm("Delete this invoice?")) return;

@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
     const buildAddress = (c: any) => {
       const street = c.address || c.street || null;
       const cityStateZip = [c.city, c.state, c.postal_code].filter(Boolean).join(", ");
+      if (street && c.city && street.toLowerCase().includes(String(c.city).toLowerCase())) return street;
       return [street, cityStateZip].filter(Boolean).join(", ") || null;
     };
 

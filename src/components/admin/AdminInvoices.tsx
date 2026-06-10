@@ -111,6 +111,7 @@ export default function AdminInvoices() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Invoice | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [previewing, setPreviewing] = useState<Invoice | null>(null);
 
   const load = async () => {
     setLoading(true);

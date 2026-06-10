@@ -537,7 +537,7 @@ async function downloadPdf(inv: Invoice) {
   const writeWrapped = (text: string, muted = false) => {
     if (!text) return;
     if (muted) doc.setTextColor(90, 90, 90); else doc.setTextColor(20, 20, 20);
-    const lines = doc.splitTextToSize(clean(text), billW);
+    const lines = splitToWidth(text, billW);
     y = ensureSpace(lines.length * LH_BODY, y);
     doc.text(lines, M, y);
     y += lines.length * LH_BODY;
@@ -551,20 +551,28 @@ async function downloadPdf(inv: Invoice) {
   y += 18;
 
   // Items table
-  const colQtyX = M + CONTENT_W - 230;
-  const colUnitX = M + CONTENT_W - 130;
-  const colAmtX = RIGHT - 4;
-  const descColW = colQtyX - (M + 12) - 8;
+  const TABLE_PAD_X = 8;
+  const TABLE_PAD_TOP = 11;
+  const TABLE_PAD_BOTTOM = 9;
+  const COL_QTY_W = 44;
+  const COL_UNIT_W = 82;
+  const COL_AMT_W = 92;
+  const COL_GAP = 10;
+  const COL_DESC_W = CONTENT_W - (TABLE_PAD_X * 2) - COL_QTY_W - COL_UNIT_W - COL_AMT_W - (COL_GAP * 3);
+  const descX = M + TABLE_PAD_X;
+  const qtyRightX = descX + COL_DESC_W + COL_GAP + COL_QTY_W;
+  const unitRightX = qtyRightX + COL_GAP + COL_UNIT_W;
+  const amtRightX = unitRightX + COL_GAP + COL_AMT_W;
 
   const drawTableHeader = () => {
     y = ensureSpace(30, y);
     doc.setFillColor(245, 247, 250);
     doc.rect(M, y, CONTENT_W, 24, "F");
     doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(60, 60, 60);
-    doc.text("DESCRIPTION", M + 12, y + 16);
-    doc.text("QTY", colQtyX, y + 16, { align: "right" });
-    doc.text("UNIT", colUnitX, y + 16, { align: "right" });
-    doc.text("AMOUNT", colAmtX, y + 16, { align: "right" });
+    doc.text("DESCRIPTION", descX, y + 16);
+    doc.text("QTY", qtyRightX, y + 16, { align: "right" });
+    doc.text("UNIT", unitRightX, y + 16, { align: "right" });
+    doc.text("AMOUNT", amtRightX, y + 16, { align: "right" });
     y += 24;
   };
   drawTableHeader();
@@ -573,9 +581,9 @@ async function downloadPdf(inv: Invoice) {
   const items: LineItem[] = Array.isArray(inv.line_items) ? inv.line_items : [];
   items.forEach((it, idx) => {
     const amount = it.quantity * it.unit_price_cents;
-    const nameLines = doc.splitTextToSize(clean(it.name || ""), descColW);
-    const descLines = it.description ? doc.splitTextToSize(clean(it.description), descColW) : [];
-    const rowH = 10 + nameLines.length * 12 + descLines.length * 11 + 8;
+    const nameLines = splitToWidth(it.name || "", COL_DESC_W);
+    const descLines = it.description ? splitToWidth(it.description, COL_DESC_W) : [];
+    const rowH = TABLE_PAD_TOP + nameLines.length * 12 + descLines.length * 11 + TABLE_PAD_BOTTOM;
 
     if (y + rowH > BOTTOM_LIMIT) {
       drawFooter();
@@ -590,19 +598,19 @@ async function downloadPdf(inv: Invoice) {
       doc.rect(M, y, CONTENT_W, rowH, "F");
     }
 
-    let ty = y + 14;
+    let ty = y + TABLE_PAD_TOP;
     doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20);
-    doc.text(nameLines, M + 12, ty);
+    doc.text(nameLines, descX, ty);
     ty += nameLines.length * 12;
     if (descLines.length) {
       doc.setFont("helvetica", "normal"); doc.setTextColor(110, 110, 110); doc.setFontSize(FS_SMALL);
-      doc.text(descLines, M + 12, ty);
+      doc.text(descLines, descX, ty);
     }
 
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20);
-    doc.text(String(it.quantity), colQtyX, y + 14, { align: "right" });
-    doc.text(fmt(it.unit_price_cents), colUnitX, y + 14, { align: "right" });
-    doc.text(fmt(amount), colAmtX, y + 14, { align: "right" });
+    doc.text(String(it.quantity), qtyRightX, y + TABLE_PAD_TOP, { align: "right" });
+    doc.text(fmt(it.unit_price_cents), unitRightX, y + TABLE_PAD_TOP, { align: "right" });
+    doc.text(fmt(amount), amtRightX, y + TABLE_PAD_TOP, { align: "right" });
 
     y += rowH;
   });
@@ -613,8 +621,8 @@ async function downloadPdf(inv: Invoice) {
 
   // Totals
   const totals = calcTotal(items, Number(inv.tax_rate) || 0, Number(inv.discount_cents) || 0);
-  const totalsLabelX = RIGHT - 160;
-  const totalsValueX = colAmtX;
+  const totalsLabelX = RIGHT - 172;
+  const totalsValueX = RIGHT - TABLE_PAD_X;
   const totalsBlockH = 16 * (3 + (inv.discount_cents ? 1 : 0)) + 16;
   y = ensureSpace(totalsBlockH, y);
 

@@ -435,8 +435,19 @@ async function downloadPdf(inv: Invoice) {
   const setMuted = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(110, 110, 110); };
   const setLabel = () => { doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(120, 120, 120); };
 
-  // Normalize text: strip tabs and non-breaking spaces that cause letter-spacing artifacts
-  const clean = (s: string) => (s || "").replace(/\t/g, "  ").replace(/\u00A0/g, " ").replace(/\r/g, "");
+  // Normalize text: strip artifacts AND collapse letter-spaced runs (e.g. "P l a n n i n g")
+  // that come from pasted styled text. Pattern: 4+ single non-space chars separated by
+  // single (or double) spaces — collapse the inner whitespace so words render cleanly.
+  const clean = (s: string) => {
+    let out = (s || "")
+      .replace(/\t/g, "  ")
+      .replace(/\u00A0/g, " ")
+      .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
+      .replace(/\r/g, "");
+    out = out.replace(/(?:\S {1,2}){3,}\S/g, (m) => m.replace(/ +/g, ""));
+    out = out.replace(/ {3,}/g, "  ");
+    return out;
+  };
 
   const drawFooter = () => {
     const fy = PAGE_H - 28;
@@ -612,22 +623,27 @@ async function downloadPdf(inv: Invoice) {
   doc.text(fmt(totals.total), totalsValueX, y, { align: "right" });
   y += 26;
 
-  // Notes — paginate cleanly
+  // Notes — paginate cleanly with consistent line height
   if (inv.notes) {
     y = ensureSpace(30, y);
     setLabel();
     doc.text("NOTES / TERMS", M, y); y += 14;
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(60, 60, 60);
 
-    const paragraphs = clean(inv.notes).split(/\n/);
-    paragraphs.forEach((para) => {
-      if (para.trim() === "") { y += LH_SMALL / 2; return; }
-      const lines = doc.splitTextToSize(para, CONTENT_W);
-      lines.forEach((ln: string) => {
-        y = ensureSpace(LH_SMALL, y);
+    const NOTE_LH = 12;
+    const PARA_GAP = 5;
+    const cleanedNotes = clean(inv.notes);
+    const paragraphs = cleanedNotes.split(/\n+/);
+    paragraphs.forEach((para, idx) => {
+      const trimmed = para.trim();
+      if (!trimmed) return;
+      const lines = doc.splitTextToSize(trimmed, CONTENT_W) as string[];
+      lines.forEach((ln) => {
+        y = ensureSpace(NOTE_LH, y);
         doc.text(ln, M, y);
-        y += LH_SMALL;
+        y += NOTE_LH;
       });
+      if (idx < paragraphs.length - 1) y += PARA_GAP;
     });
   }
 

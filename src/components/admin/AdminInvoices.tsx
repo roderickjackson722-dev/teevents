@@ -431,9 +431,10 @@ async function downloadPdf(inv: Invoice) {
   const FS_SMALL = 9;
   const LH_SMALL = 12;
 
-  const setBody = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20); };
-  const setMuted = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(110, 110, 110); };
-  const setLabel = () => { doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(120, 120, 120); };
+  const resetTextSpacing = () => { (doc as any).setCharSpace?.(0); };
+  const setBody = () => { resetTextSpacing(); doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20); };
+  const setMuted = () => { resetTextSpacing(); doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(110, 110, 110); };
+  const setLabel = () => { resetTextSpacing(); doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(120, 120, 120); };
 
   // Normalize text: strip artifacts AND collapse letter-spaced runs (e.g. "P l a n n i n g")
   // that come from pasted styled text. Pattern: 4+ single non-space chars separated by
@@ -442,11 +443,34 @@ async function downloadPdf(inv: Invoice) {
     let out = (s || "")
       .replace(/\t/g, "  ")
       .replace(/\u00A0/g, " ")
+      .replace(/\u00AD/g, "")
       .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
-      .replace(/\r/g, "");
-    out = out.replace(/(?:\S {1,2}){3,}\S/g, (m) => m.replace(/ +/g, ""));
-    out = out.replace(/ {3,}/g, "  ");
-    return out;
+      .replace(/\r\n?/g, "\n");
+    out = out.replace(/(^| {2,})((?:[A-Za-z0-9&/().,-] ){2,}[A-Za-z0-9&/().,-])(?= {2,}|$)/g, (_match, lead, spaced) => `${lead}${spaced.replace(/ +/g, "")}`);
+    out = out.replace(/\b(?:[A-Za-z]\s){3,}[A-Za-z]\b/g, (match) => {
+      const compact = match.replace(/\s+/g, "");
+      return compact.length <= 18 ? compact : match;
+    });
+    return out.replace(/ {2,}/g, " ").trim();
+  };
+
+  const splitToWidth = (text: string, width: number) => {
+    const lines = doc.splitTextToSize(clean(text), width) as string[];
+    return lines.flatMap((line) => {
+      if (doc.getTextWidth(line) <= width) return [line];
+      const chunks: string[] = [];
+      let chunk = "";
+      for (const ch of line) {
+        if (chunk && doc.getTextWidth(chunk + ch) > width) {
+          chunks.push(chunk.trimEnd());
+          chunk = ch.trimStart();
+        } else {
+          chunk += ch;
+        }
+      }
+      if (chunk) chunks.push(chunk.trimEnd());
+      return chunks;
+    });
   };
 
   const drawFooter = () => {

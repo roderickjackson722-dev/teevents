@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import { Plus, Trash2, GripVertical, FileDown, Save, ArrowLeft, Pencil, Copy } from "lucide-react";
+import { Plus, Trash2, GripVertical, FileDown, Save, ArrowLeft, Pencil, Copy, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
 import logoAsset from "@/assets/teevents-logo.png.asset.json";
 
@@ -110,6 +111,7 @@ export default function AdminInvoices() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Invoice | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [previewing, setPreviewing] = useState<Invoice | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -192,6 +194,7 @@ export default function AdminInvoices() {
                       if (error) toast({ title: "Clone failed", description: error.message, variant: "destructive" });
                       else { toast({ title: "Invoice cloned as draft" }); load(); }
                     }}><Copy className="w-3 h-3 mr-1" /> Clone</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setPreviewing(inv)}><Eye className="w-3 h-3 mr-1" /> Preview</Button>
                     <Button size="sm" variant="ghost" onClick={() => downloadPdf(inv)}><FileDown className="w-3 h-3 mr-1" /> PDF</Button>
                     <Button size="sm" variant="ghost" onClick={async () => {
                       if (!confirm("Delete this invoice?")) return;
@@ -205,7 +208,51 @@ export default function AdminInvoices() {
           </tbody>
         </table>
       </Card>
+
+      <PdfPreviewDialog invoice={previewing} onClose={() => setPreviewing(null)} />
     </div>
+  );
+}
+
+function PdfPreviewDialog({ invoice, onClose }: { invoice: Invoice | null; onClose: () => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let revoke: string | null = null;
+    if (invoice) {
+      setLoading(true);
+      previewPdfBlobUrl(invoice)
+        .then((u) => { revoke = u; setUrl(u); })
+        .catch((e) => toast({ title: "Preview failed", description: String(e?.message || e), variant: "destructive" }))
+        .finally(() => setLoading(false));
+    } else {
+      setUrl(null);
+    }
+    return () => { if (revoke) URL.revokeObjectURL(revoke); };
+  }, [invoice]);
+
+  return (
+    <Dialog open={!!invoice} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="p-4 pb-2 border-b">
+          <DialogTitle>PDF Preview — {invoice?.invoice_number}</DialogTitle>
+          <p className="text-xs text-muted-foreground">Rendered at 8.5″ × 11″ (US Letter). Verify the layout fits before downloading.</p>
+        </DialogHeader>
+        <div className="flex-1 bg-muted/30 overflow-hidden">
+          {loading && <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Rendering preview…</div>}
+          {url && !loading && (
+            <iframe title="Invoice PDF preview" src={url} className="w-full h-full border-0" />
+          )}
+        </div>
+        <DialogFooter className="p-3 border-t">
+          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button onClick={() => invoice && downloadPdf(invoice)} disabled={!url}>
+            <FileDown className="w-4 h-4 mr-1" /> Download PDF
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -216,6 +263,7 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
   }));
   const [saving, setSaving] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const totals = useMemo(() => calcTotal(inv.line_items, Number(inv.tax_rate) || 0, Number(inv.discount_cents) || 0), [inv.line_items, inv.tax_rate, inv.discount_cents]);
 
   const updateItem = (idx: number, patch: Partial<LineItem>) => {
@@ -282,6 +330,7 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <Button variant="ghost" onClick={onClose}><ArrowLeft className="w-4 h-4 mr-1" /> Back to invoices</Button>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setPreviewOpen(true)}><Eye className="w-4 h-4 mr-1" /> Preview PDF</Button>
           <Button variant="outline" onClick={() => downloadPdf({ ...inv, total_cents: totals.total })}><FileDown className="w-4 h-4 mr-1" /> Download PDF</Button>
           <Button onClick={save} disabled={saving}><Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save Invoice"}</Button>
         </div>
@@ -396,6 +445,11 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
           </div>
         </div>
       </Card>
+
+      <PdfPreviewDialog
+        invoice={previewOpen ? { ...inv, total_cents: totals.total } : null}
+        onClose={() => setPreviewOpen(false)}
+      />
     </div>
   );
 }
@@ -415,30 +469,36 @@ async function fetchLogoDataUrl(): Promise<string | null> {
   }
 }
 
-async function downloadPdf(inv: Invoice) {
+// Page constants (US Letter, points)
+const PAGE_W = 612;
+const PAGE_H = 792;
+const MARGIN = 48;
+const CONTENT_W = PAGE_W - MARGIN * 2;
+
+/**
+ * Build a jsPDF invoice document at the given typographic scale.
+ * Returns the doc and total page count so callers can decide if it fits.
+ * Exported for regression tests.
+ */
+export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: jsPDF; pages: number }> {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
-  const PAGE_W = 612;
-  const PAGE_H = 792;
-  const M = 48;
-  const CONTENT_W = PAGE_W - M * 2;
+  const M = MARGIN;
   const RIGHT = M + CONTENT_W;
   const FOOTER_H = 40;
   const BOTTOM_LIMIT = PAGE_H - FOOTER_H - 8;
 
-  // Consistent type system
-  const FS_BODY = 10;
-  const LH_BODY = 13;
-  const FS_SMALL = 9;
-  const LH_SMALL = 12;
+  // Scaled type system
+  const FS_BODY = Math.max(8, 10 * scale);
+  const FS_SMALL = Math.max(7.5, 9 * scale);
+  const FS_TITLE = Math.max(16, 22 * scale);
+  const FS_TOTAL = Math.max(10, 12 * scale);
+  const LH_BODY = Math.max(10, 13 * scale);
+  const LH_SMALL = Math.max(9, 12 * scale);
 
   const resetTextSpacing = () => { (doc as any).setCharSpace?.(0); };
   const setBody = () => { resetTextSpacing(); doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20); };
-  const setMuted = () => { resetTextSpacing(); doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(110, 110, 110); };
   const setLabel = () => { resetTextSpacing(); doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(120, 120, 120); };
 
-  // Normalize text: strip artifacts AND collapse letter-spaced runs (e.g. "P l a n n i n g")
-  // that come from pasted styled text. Pattern: 4+ single non-space chars separated by
-  // single (or double) spaces — collapse the inner whitespace so words render cleanly.
   const clean = (s: string) => {
     let out = (s || "")
       .replace(/\t/g, "  ")
@@ -497,22 +557,21 @@ async function downloadPdf(inv: Invoice) {
     return currentY;
   };
 
-  // Header: logo + company
+  // Header
   const logo = await fetchLogoDataUrl();
   if (logo) {
     try { doc.addImage(logo, "PNG", M, M, 60, 60); } catch {}
   }
   const companyX = M + 74;
   let cy = M + 14;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(20, 20, 20);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(Math.max(11, 13 * scale)); doc.setTextColor(20, 20, 20);
   doc.text("TeeVents Golf Management", companyX, cy); cy += 14;
   doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(90, 90, 90);
   doc.text("info@teevents.golf", companyX, cy); cy += 11;
   doc.text("www.teevents.golf", companyX, cy);
 
-  // Invoice meta (right)
   doc.setTextColor(20, 20, 20);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(22);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(FS_TITLE);
   doc.text("INVOICE", RIGHT, M + 16, { align: "right" });
 
   doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL);
@@ -556,10 +615,10 @@ async function downloadPdf(inv: Invoice) {
 
   y += 18;
 
-  // Items table
+  // Items table — fixed widths so columns always align
   const TABLE_PAD_X = 8;
-  const TABLE_PAD_TOP = 11;
-  const TABLE_PAD_BOTTOM = 9;
+  const TABLE_PAD_TOP = Math.max(9, 11 * scale);
+  const TABLE_PAD_BOTTOM = Math.max(7, 9 * scale);
   const COL_QTY_W = 44;
   const COL_UNIT_W = 82;
   const COL_AMT_W = 92;
@@ -569,6 +628,8 @@ async function downloadPdf(inv: Invoice) {
   const qtyRightX = descX + COL_DESC_W + COL_GAP + COL_QTY_W;
   const unitRightX = qtyRightX + COL_GAP + COL_UNIT_W;
   const amtRightX = unitRightX + COL_GAP + COL_AMT_W;
+  const NAME_LH = Math.max(10, 12 * scale);
+  const DESC_LH = Math.max(9, 11 * scale);
 
   const drawTableHeader = () => {
     y = ensureSpace(30, y);
@@ -587,9 +648,11 @@ async function downloadPdf(inv: Invoice) {
   const items: LineItem[] = Array.isArray(inv.line_items) ? inv.line_items : [];
   items.forEach((it, idx) => {
     const amount = it.quantity * it.unit_price_cents;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY);
     const nameLines = splitToWidth(it.name || "", COL_DESC_W);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL);
     const descLines = it.description ? splitToWidth(it.description, COL_DESC_W) : [];
-    const rowH = TABLE_PAD_TOP + nameLines.length * 12 + descLines.length * 11 + TABLE_PAD_BOTTOM;
+    const rowH = TABLE_PAD_TOP + nameLines.length * NAME_LH + descLines.length * DESC_LH + TABLE_PAD_BOTTOM;
 
     if (y + rowH > BOTTOM_LIMIT) {
       drawFooter();
@@ -607,7 +670,7 @@ async function downloadPdf(inv: Invoice) {
     let ty = y + TABLE_PAD_TOP;
     doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20);
     doc.text(nameLines, descX, ty);
-    ty += nameLines.length * 12;
+    ty += nameLines.length * NAME_LH;
     if (descLines.length) {
       doc.setFont("helvetica", "normal"); doc.setTextColor(110, 110, 110); doc.setFontSize(FS_SMALL);
       doc.text(descLines, descX, ty);
@@ -656,20 +719,20 @@ async function downloadPdf(inv: Invoice) {
   doc.line(totalsLabelX, y, totalsValueX, y);
   y += 14;
 
-  doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(20, 20, 20);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(FS_TOTAL); doc.setTextColor(20, 20, 20);
   doc.text("TOTAL", totalsLabelX, y);
   doc.text(fmt(totals.total), totalsValueX, y, { align: "right" });
   y += 26;
 
-  // Notes — paginate cleanly with consistent line height
+  // Notes / Terms — wraps within CONTENT_W and paginates safely
   if (inv.notes) {
     y = ensureSpace(32, y);
     setLabel();
     doc.text("NOTES / TERMS", M, y); y += 14;
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(60, 60, 60);
 
-    const NOTE_LH = 12;
-    const PARA_GAP = 5;
+    const NOTE_LH = LH_SMALL;
+    const PARA_GAP = Math.max(4, 5 * scale);
     const cleanedNotes = clean(inv.notes);
     const paragraphs = cleanedNotes.split(/\n+/);
     paragraphs.forEach((para, idx) => {
@@ -686,5 +749,33 @@ async function downloadPdf(inv: Invoice) {
   }
 
   drawFooter();
+  return { doc, pages: doc.getNumberOfPages() };
+}
+
+/**
+ * Generate the final invoice PDF, auto-scaling typography down (in small steps)
+ * so the invoice fits on a single 8.5×11 page when possible. If the content
+ * genuinely needs more than one page, the smallest scale is used so columns
+ * and Notes/Terms never clip.
+ */
+export async function generateInvoicePdf(inv: Invoice): Promise<jsPDF> {
+  const scales = [1, 0.95, 0.9, 0.85, 0.8];
+  let last: { doc: jsPDF; pages: number } | null = null;
+  for (const s of scales) {
+    last = await buildInvoicePdf(inv, s);
+    if (last.pages === 1) return last.doc;
+  }
+  return last!.doc;
+}
+
+async function downloadPdf(inv: Invoice) {
+  const doc = await generateInvoicePdf(inv);
   doc.save(`${inv.invoice_number || "invoice"}.pdf`);
 }
+
+async function previewPdfBlobUrl(inv: Invoice): Promise<string> {
+  const doc = await generateInvoicePdf(inv);
+  const blob = doc.output("blob");
+  return URL.createObjectURL(blob);
+}
+

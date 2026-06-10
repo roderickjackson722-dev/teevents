@@ -446,7 +446,13 @@ async function downloadPdf(inv: Invoice) {
       .replace(/\u00AD/g, "")
       .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
       .replace(/\r\n?/g, "\n");
-    out = out.replace(/(^| {2,})((?:[A-Za-z0-9&/().,-] ){2,}[A-Za-z0-9&/().,-])(?= {2,}|$)/g, (_match, lead, spaced) => `${lead}${spaced.replace(/ +/g, "")}`);
+    out = out.split("\n").map((line) =>
+      line.split(/ {2,}/).map((part) =>
+        /^(?:[A-Za-z0-9&/().,-] ){2,}[A-Za-z0-9&/().,-]$/.test(part)
+          ? part.replace(/ +/g, "")
+          : part
+      ).join(" ")
+    ).join("\n");
     out = out.replace(/\b(?:[A-Za-z]\s){3,}[A-Za-z]\b/g, (match) => {
       const compact = match.replace(/\s+/g, "");
       return compact.length <= 18 ? compact : match;

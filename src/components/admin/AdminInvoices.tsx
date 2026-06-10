@@ -448,7 +448,7 @@ async function downloadPdf(inv: Invoice) {
       .replace(/\r\n?/g, "\n");
     out = out.split("\n").map((line) =>
       line.split(/ {2,}/).map((part) =>
-        /^(?:[A-Za-z0-9&/().,-] ){2,}[A-Za-z0-9&/().,-]$/.test(part)
+        /^(?:[A-Za-z0-9&/().,-] ){1,}[A-Za-z0-9&/().,-]$/.test(part)
           ? part.replace(/ +/g, "")
           : part
       ).join(" ")

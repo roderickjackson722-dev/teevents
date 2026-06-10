@@ -55,17 +55,31 @@ Deno.serve(async (req) => {
     if (!res.ok) throw new Error("Course not found in API");
     const data = await res.json();
 
+    const buildAddress = (c: any) => {
+      const street = c.address || c.street || null;
+      const cityStateZip = [c.city, c.state, c.postal_code].filter(Boolean).join(", ");
+      if (street && c.city && street.toLowerCase().includes(String(c.city).toLowerCase())) return street;
+      return [street, cityStateZip].filter(Boolean).join(", ") || null;
+    };
+    const sortedScorecard = Array.isArray(data.scorecard)
+      ? data.scorecard.slice().sort((a: any, b: any) => (a.hole_number ?? a.hole ?? 0) - (b.hole_number ?? b.hole ?? 0))
+      : [];
+    const scorecardPars = sortedScorecard.map((h: any) => h.par).filter((p: any) => typeof p === "number");
+    const scorecardIndexes = sortedScorecard
+      .map((h: any) => h.handicap_index ?? h.stroke_index ?? h.handicap)
+      .filter((p: any) => typeof p === "number");
+
     const formatted = {
-      course_name: data.name,
+      course_name: data.course_name || data.name || data.club_name || "Unnamed course",
       city: data.city,
       state: data.state,
-      address: data.address || [data.street, data.city, data.state].filter(Boolean).join(", ") || null,
+      address: buildAddress(data),
       website: data.website || null,
       tee_name: data.tees?.[0]?.name || "Blue",
-      par_total: Array.isArray(data.pars) ? data.pars.reduce((a: number, b: number) => a + b, 0) : null,
-      hole_pars: data.pars || null,
+      par_total: data.par_total ?? data.par ?? (Array.isArray(data.pars) ? data.pars.reduce((a: number, b: number) => a + b, 0) : null),
+      hole_pars: scorecardPars.length ? scorecardPars : data.pars || null,
       hole_distances: data.yardages || null,
-      hole_stroke_indexes: data.handicaps || null,
+      hole_stroke_indexes: scorecardIndexes.length ? scorecardIndexes : data.handicaps || null,
       slope_rating: data.tees?.[0]?.slope ?? null,
       course_rating: data.tees?.[0]?.rating ?? null,
       source: "api" as const,

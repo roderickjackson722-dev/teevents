@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import { Plus, Trash2, GripVertical, FileDown, Save, ArrowLeft, Pencil, Copy } from "lucide-react";
+import { Plus, Trash2, GripVertical, FileDown, Save, ArrowLeft, Pencil, Copy, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
 import logoAsset from "@/assets/teevents-logo.png.asset.json";
 

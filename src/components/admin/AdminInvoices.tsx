@@ -263,6 +263,7 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
   }));
   const [saving, setSaving] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const totals = useMemo(() => calcTotal(inv.line_items, Number(inv.tax_rate) || 0, Number(inv.discount_cents) || 0), [inv.line_items, inv.tax_rate, inv.discount_cents]);
 
   const updateItem = (idx: number, patch: Partial<LineItem>) => {

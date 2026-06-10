@@ -39,12 +39,36 @@ Deno.serve(async (req) => {
     const { data: savedData } = await sQ;
     saved = savedData || [];
 
+    const buildAddress = (c: any) => {
+      const street = c.address || c.street || null;
+      const cityStateZip = [c.city, c.state, c.postal_code].filter(Boolean).join(", ");
+      return [street, cityStateZip].filter(Boolean).join(", ") || null;
+    };
+
+    const holeParsFromScorecard = (scorecard: any[] | undefined) =>
+      Array.isArray(scorecard)
+        ? scorecard
+            .slice()
+            .sort((a, b) => (a.hole_number ?? a.hole ?? 0) - (b.hole_number ?? b.hole ?? 0))
+            .map((h) => h.par)
+            .filter((p) => typeof p === "number")
+        : null;
+
+    const strokeIndexesFromScorecard = (scorecard: any[] | undefined) =>
+      Array.isArray(scorecard)
+        ? scorecard
+            .slice()
+            .sort((a, b) => (a.hole_number ?? a.hole ?? 0) - (b.hole_number ?? b.hole ?? 0))
+            .map((h) => h.handicap_index ?? h.stroke_index ?? h.handicap)
+            .filter((p) => typeof p === "number")
+        : null;
+
     // OpenGolfAPI results (optional)
     let apiCourses: any[] = [];
     const apiKey = Deno.env.get("OPENGOLFAPI_KEY");
     try {
       const params = new URLSearchParams({ limit: "25" });
-      if (query) params.set("query", query);
+      if (query) params.set("q", query);
       if (state) params.set("state", state);
       const res = await fetch(
         `https://api.opengolfapi.org/v1/courses/search?${params.toString()}`,
@@ -60,16 +84,16 @@ Deno.serve(async (req) => {
 
     const apiFormatted = apiCourses.map((c: any) => ({
       id: c.id,
-      course_name: c.name,
+      course_name: c.course_name || c.name || c.club_name || "Unnamed course",
       city: c.city,
       state: c.state,
-      address: c.address || [c.street, c.city, c.state].filter(Boolean).join(", ") || null,
+      address: buildAddress(c),
       website: c.website || null,
       tee_name: c.tees?.[0]?.name || "Blue",
-      par_total: Array.isArray(c.pars) ? c.pars.reduce((a: number, b: number) => a + b, 0) : null,
-      hole_pars: c.pars || null,
+      par_total: c.par_total ?? c.par ?? (Array.isArray(c.pars) ? c.pars.reduce((a: number, b: number) => a + b, 0) : null),
+      hole_pars: holeParsFromScorecard(c.scorecard) || c.pars || null,
       hole_distances: c.yardages || null,
-      hole_stroke_indexes: c.handicaps || null,
+      hole_stroke_indexes: strokeIndexesFromScorecard(c.scorecard) || c.handicaps || null,
       slope_rating: c.tees?.[0]?.slope ?? null,
       course_rating: c.tees?.[0]?.rating ?? null,
       source: "api" as const,

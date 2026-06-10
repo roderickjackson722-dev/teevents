@@ -623,22 +623,27 @@ async function downloadPdf(inv: Invoice) {
   doc.text(fmt(totals.total), totalsValueX, y, { align: "right" });
   y += 26;
 
-  // Notes — paginate cleanly
+  // Notes — paginate cleanly with consistent line height
   if (inv.notes) {
     y = ensureSpace(30, y);
     setLabel();
     doc.text("NOTES / TERMS", M, y); y += 14;
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(60, 60, 60);
 
-    const paragraphs = clean(inv.notes).split(/\n/);
-    paragraphs.forEach((para) => {
-      if (para.trim() === "") { y += LH_SMALL / 2; return; }
-      const lines = doc.splitTextToSize(para, CONTENT_W);
-      lines.forEach((ln: string) => {
-        y = ensureSpace(LH_SMALL, y);
+    const NOTE_LH = 12;
+    const PARA_GAP = 5;
+    const cleanedNotes = clean(inv.notes);
+    const paragraphs = cleanedNotes.split(/\n+/);
+    paragraphs.forEach((para, idx) => {
+      const trimmed = para.trim();
+      if (!trimmed) return;
+      const lines = doc.splitTextToSize(trimmed, CONTENT_W) as string[];
+      lines.forEach((ln) => {
+        y = ensureSpace(NOTE_LH, y);
         doc.text(ln, M, y);
-        y += LH_SMALL;
+        y += NOTE_LH;
       });
+      if (idx < paragraphs.length - 1) y += PARA_GAP;
     });
   }
 

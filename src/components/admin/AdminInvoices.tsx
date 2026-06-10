@@ -615,16 +615,16 @@ async function downloadPdf(inv: Invoice) {
     y += rowH;
   });
 
-  doc.setDrawColor(220, 220, 220);
-  doc.line(M, y, RIGHT, y);
-  y += 16;
-
   // Totals
   const totals = calcTotal(items, Number(inv.tax_rate) || 0, Number(inv.discount_cents) || 0);
   const totalsLabelX = RIGHT - 172;
   const totalsValueX = RIGHT - TABLE_PAD_X;
-  const totalsBlockH = 16 * (3 + (inv.discount_cents ? 1 : 0)) + 16;
+  const totalsBlockH = 16 * (3 + (inv.discount_cents ? 1 : 0)) + 34;
   y = ensureSpace(totalsBlockH, y);
+
+  doc.setDrawColor(220, 220, 220);
+  doc.line(M, y, RIGHT, y);
+  y += 16;
 
   doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(90, 90, 90);
   doc.text("Subtotal", totalsLabelX, y);
@@ -657,7 +657,7 @@ async function downloadPdf(inv: Invoice) {
 
   // Notes — paginate cleanly with consistent line height
   if (inv.notes) {
-    y = ensureSpace(30, y);
+    y = ensureSpace(32, y);
     setLabel();
     doc.text("NOTES / TERMS", M, y); y += 14;
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(60, 60, 60);
@@ -669,13 +669,13 @@ async function downloadPdf(inv: Invoice) {
     paragraphs.forEach((para, idx) => {
       const trimmed = para.trim();
       if (!trimmed) return;
-      const lines = doc.splitTextToSize(trimmed, CONTENT_W) as string[];
+      const lines = splitToWidth(trimmed, CONTENT_W);
       lines.forEach((ln) => {
         y = ensureSpace(NOTE_LH, y);
         doc.text(ln, M, y);
         y += NOTE_LH;
       });
-      if (idx < paragraphs.length - 1) y += PARA_GAP;
+      if (idx < paragraphs.length - 1) y = ensureSpace(PARA_GAP, y) + PARA_GAP;
     });
   }
 

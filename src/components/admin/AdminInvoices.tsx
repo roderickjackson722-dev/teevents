@@ -208,7 +208,51 @@ export default function AdminInvoices() {
           </tbody>
         </table>
       </Card>
+
+      <PdfPreviewDialog invoice={previewing} onClose={() => setPreviewing(null)} />
     </div>
+  );
+}
+
+function PdfPreviewDialog({ invoice, onClose }: { invoice: Invoice | null; onClose: () => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let revoke: string | null = null;
+    if (invoice) {
+      setLoading(true);
+      previewPdfBlobUrl(invoice)
+        .then((u) => { revoke = u; setUrl(u); })
+        .catch((e) => toast({ title: "Preview failed", description: String(e?.message || e), variant: "destructive" }))
+        .finally(() => setLoading(false));
+    } else {
+      setUrl(null);
+    }
+    return () => { if (revoke) URL.revokeObjectURL(revoke); };
+  }, [invoice]);
+
+  return (
+    <Dialog open={!!invoice} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="p-4 pb-2 border-b">
+          <DialogTitle>PDF Preview — {invoice?.invoice_number}</DialogTitle>
+          <p className="text-xs text-muted-foreground">Rendered at 8.5″ × 11″ (US Letter). Verify the layout fits before downloading.</p>
+        </DialogHeader>
+        <div className="flex-1 bg-muted/30 overflow-hidden">
+          {loading && <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Rendering preview…</div>}
+          {url && !loading && (
+            <iframe title="Invoice PDF preview" src={url} className="w-full h-full border-0" />
+          )}
+        </div>
+        <DialogFooter className="p-3 border-t">
+          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button onClick={() => invoice && downloadPdf(invoice)} disabled={!url}>
+            <FileDown className="w-4 h-4 mr-1" /> Download PDF
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

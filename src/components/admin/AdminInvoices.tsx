@@ -445,6 +445,11 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
           </div>
         </div>
       </Card>
+
+      <PdfPreviewDialog
+        invoice={previewOpen ? { ...inv, total_cents: totals.total } : null}
+        onClose={() => setPreviewOpen(false)}
+      />
     </div>
   );
 }

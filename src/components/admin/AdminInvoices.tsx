@@ -330,6 +330,7 @@ function InvoiceEditor({ invoice, onClose }: { invoice: Invoice; onClose: () => 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <Button variant="ghost" onClick={onClose}><ArrowLeft className="w-4 h-4 mr-1" /> Back to invoices</Button>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setPreviewOpen(true)}><Eye className="w-4 h-4 mr-1" /> Preview PDF</Button>
           <Button variant="outline" onClick={() => downloadPdf({ ...inv, total_cents: totals.total })}><FileDown className="w-4 h-4 mr-1" /> Download PDF</Button>
           <Button onClick={save} disabled={saving}><Save className="w-4 h-4 mr-1" /> {saving ? "Saving…" : "Save Invoice"}</Button>
         </div>

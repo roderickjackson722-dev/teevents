@@ -477,20 +477,29 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 
 const appendPdfTextToken = (current: string, token: string) => (current ? `${current} ${token}` : token);
 
+const isLetterToken = (token: string) => /^[A-Za-z0-9]$/.test(token) || /^[A-Za-z0-9][,.;:!?)]$/.test(token);
+
+const shouldCompactLetterSpacedLine = (line: string) => {
+  const tokens = line.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length < 8) return false;
+  const singleCharTokens = tokens.filter(isLetterToken).length;
+  return singleCharTokens >= 6 && singleCharTokens / tokens.length > 0.45;
+};
+
 const compactLetterSpacedSegment = (segment: string) => {
-  const tokens = segment.trim().split(/ +/).filter(Boolean);
+  const tokens = segment.trim().split(/\s+/).filter(Boolean);
   if (tokens.length < 2) return segment.trim();
 
   let output = "";
   let buffered = "";
   const flush = () => {
     if (!buffered) return;
-    output = appendPdfTextToken(output, buffered.length >= 2 ? buffered : buffered);
+    output = appendPdfTextToken(output, buffered);
     buffered = "";
   };
 
   tokens.forEach((token) => {
-    const charWithPunctuation = token.match(/^([A-Za-z0-9])([,.;:!?])$/);
+    const charWithPunctuation = token.match(/^([A-Za-z0-9])([,.;:!?)]$)/);
     if (/^[A-Za-z0-9]$/.test(token)) {
       buffered += token;
       return;
@@ -509,6 +518,16 @@ const compactLetterSpacedSegment = (segment: string) => {
   return output;
 };
 
+const compactLetterSpacedLine = (line: string) => {
+  if (!shouldCompactLetterSpacedLine(line)) return line.trim().replace(/ {2,}/g, " ");
+  return line
+    .trim()
+    .split(/ {2,}/)
+    .map(compactLetterSpacedSegment)
+    .filter(Boolean)
+    .join(" ");
+};
+
 export function normalizeInvoicePdfText(s: string) {
   return (s || "")
     .replace(/\t/g, "  ")
@@ -517,17 +536,7 @@ export function normalizeInvoicePdfText(s: string) {
     .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
     .replace(/\r\n?/g, "\n")
     .split("\n")
-    .map((line) => {
-      const parts = line.split(/ {2,}/);
-      return parts
-        .map((part) => {
-          const tokens = part.trim().split(/ +/).filter(Boolean);
-          const mostlySingleCharacters = tokens.length > 35 && tokens.filter((token) => /^([A-Za-z0-9]|[A-Za-z0-9][,.;:!?])$/.test(token)).length / tokens.length > 0.85;
-          return parts.length === 1 && mostlySingleCharacters ? part.trim() : compactLetterSpacedSegment(part);
-        })
-        .filter(Boolean)
-        .join(" ");
-    })
+    .map(compactLetterSpacedLine)
     .join("\n")
     .replace(/ {2,}/g, " ")
     .trim();

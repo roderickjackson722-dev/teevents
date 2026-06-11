@@ -5,7 +5,8 @@ vi.mock("@/assets/teevents-logo.png.asset.json", () => ({
   default: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" },
 }));
 
-import { buildInvoicePdf, generateInvoicePdf, normalizeInvoicePdfText } from "./AdminInvoices";
+import { buildInvoicePdf, generateInvoicePdf, normalizeInvoicePdfText, splitInvoicePdfTextToWidth } from "./AdminInvoices";
+import jsPDF from "jspdf";
 
 const baseInvoice = {
   id: "test",
@@ -84,6 +85,15 @@ describe("invoice PDF layout", () => {
   it("keeps screenshot-style spaced Notes/Terms text bounded and breakable", async () => {
     const spacedNotes = "Category Specific Services\nP l a n n i n g & L o g i s t i c s  C o u r s e  s e a r c h  a n d  q u o t e s,  o n  s i t e  c o u r s e  v i s i t s,  c o u r s e  c o m m u n i c a t i o n  a n d  f e e  n e g o t i a t i o n\nO n  S i t e  M a n a g e m e n t  O n  s i t e  t o u r n a m e n t  o r g a n i z e r s  f o r  t h r e e  d a y  e v e n t";
     expect(normalizeInvoicePdfText(spacedNotes)).toContain("Planning & Logistics Course search and quotes");
+    expect(normalizeInvoicePdfText(spacedNotes)).not.toContain("P l a n n i n g");
+
+    const docForMeasure = new jsPDF({ unit: "pt", format: "letter" });
+    docForMeasure.setFont("helvetica", "normal");
+    docForMeasure.setFontSize(9);
+    const noteWidth = 444;
+    const measuredLines = splitInvoicePdfTextToWidth(docForMeasure, spacedNotes, noteWidth);
+    expect(measuredLines.every((line) => docForMeasure.getTextWidth(line) <= noteWidth)).toBe(true);
+
     const doc = await generateInvoicePdf({ ...baseInvoice, invoice_number: "INV-TEST-0004", notes: spacedNotes });
     expect(doc.getNumberOfPages()).toBeGreaterThanOrEqual(1);
     expect(doc.output("blob").size).toBeGreaterThan(1500);

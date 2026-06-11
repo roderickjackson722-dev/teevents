@@ -477,20 +477,29 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 
 const appendPdfTextToken = (current: string, token: string) => (current ? `${current} ${token}` : token);
 
+const isLetterToken = (token: string) => /^[A-Za-z0-9]$/.test(token) || /^[A-Za-z0-9][,.;:!?)]$/.test(token);
+
+const shouldCompactLetterSpacedLine = (line: string) => {
+  const tokens = line.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length < 8) return false;
+  const singleCharTokens = tokens.filter(isLetterToken).length;
+  return singleCharTokens >= 6 && singleCharTokens / tokens.length > 0.45;
+};
+
 const compactLetterSpacedSegment = (segment: string) => {
-  const tokens = segment.trim().split(/ +/).filter(Boolean);
+  const tokens = segment.trim().split(/\s+/).filter(Boolean);
   if (tokens.length < 2) return segment.trim();
 
   let output = "";
   let buffered = "";
   const flush = () => {
     if (!buffered) return;
-    output = appendPdfTextToken(output, buffered.length >= 2 ? buffered : buffered);
+    output = appendPdfTextToken(output, buffered);
     buffered = "";
   };
 
   tokens.forEach((token) => {
-    const charWithPunctuation = token.match(/^([A-Za-z0-9])([,.;:!?])$/);
+    const charWithPunctuation = token.match(/^([A-Za-z0-9])([,.;:!?)])$/);
     if (/^[A-Za-z0-9]$/.test(token)) {
       buffered += token;
       return;
@@ -509,6 +518,16 @@ const compactLetterSpacedSegment = (segment: string) => {
   return output;
 };
 
+const compactLetterSpacedLine = (line: string) => {
+  if (!shouldCompactLetterSpacedLine(line)) return line.trim().replace(/ {2,}/g, " ");
+  return line
+    .trim()
+    .split(/ {2,}/)
+    .map(compactLetterSpacedSegment)
+    .filter(Boolean)
+    .join(" ");
+};
+
 export function normalizeInvoicePdfText(s: string) {
   return (s || "")
     .replace(/\t/g, "  ")
@@ -517,20 +536,29 @@ export function normalizeInvoicePdfText(s: string) {
     .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
     .replace(/\r\n?/g, "\n")
     .split("\n")
-    .map((line) => {
-      const parts = line.split(/ {2,}/);
-      return parts
-        .map((part) => {
-          const tokens = part.trim().split(/ +/).filter(Boolean);
-          const mostlySingleCharacters = tokens.length > 35 && tokens.filter((token) => /^([A-Za-z0-9]|[A-Za-z0-9][,.;:!?])$/.test(token)).length / tokens.length > 0.85;
-          return parts.length === 1 && mostlySingleCharacters ? part.trim() : compactLetterSpacedSegment(part);
-        })
-        .filter(Boolean)
-        .join(" ");
-    })
+    .map(compactLetterSpacedLine)
     .join("\n")
     .replace(/ {2,}/g, " ")
     .trim();
+}
+
+export function splitInvoicePdfTextToWidth(doc: jsPDF, text: string, width: number) {
+  const wrapped = doc.splitTextToSize(normalizeInvoicePdfText(text), width) as string[];
+  return wrapped.flatMap((line) => {
+    if (doc.getTextWidth(line) <= width) return [line];
+    const chunks: string[] = [];
+    let chunk = "";
+    for (const ch of line) {
+      if (chunk && doc.getTextWidth(chunk + ch) > width) {
+        chunks.push(chunk.trimEnd());
+        chunk = ch.trimStart();
+      } else {
+        chunk += ch;
+      }
+    }
+    if (chunk) chunks.push(chunk.trimEnd());
+    return chunks;
+  });
 }
 
 /**
@@ -557,24 +585,7 @@ export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: j
   const setBody = () => { resetTextSpacing(); doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20); };
   const setLabel = () => { resetTextSpacing(); doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(120, 120, 120); };
 
-  const splitToWidth = (text: string, width: number) => {
-    const lines = doc.splitTextToSize(normalizeInvoicePdfText(text), width) as string[];
-    return lines.flatMap((line) => {
-      if (doc.getTextWidth(line) <= width) return [line];
-      const chunks: string[] = [];
-      let chunk = "";
-      for (const ch of line) {
-        if (chunk && doc.getTextWidth(chunk + ch) > width) {
-          chunks.push(chunk.trimEnd());
-          chunk = ch.trimStart();
-        } else {
-          chunk += ch;
-        }
-      }
-      if (chunk) chunks.push(chunk.trimEnd());
-      return chunks;
-    });
-  };
+  const splitToWidth = (text: string, width: number) => splitInvoicePdfTextToWidth(doc, text, width);
 
   const drawFooter = () => {
     const fy = PAGE_H - 28;
@@ -770,7 +781,7 @@ export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: j
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(60, 60, 60);
 
     const NOTE_LH = LH_SMALL;
-    const NOTE_W = CONTENT_W - 36;
+    const NOTE_W = CONTENT_W - 72;
     const PARA_GAP = Math.max(4, 5 * scale);
     const cleanedNotes = normalizeInvoicePdfText(inv.notes);
     const paragraphs = cleanedNotes.split(/\n+/);
@@ -780,7 +791,7 @@ export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: j
       const lines = splitToWidth(trimmed, NOTE_W);
       lines.forEach((ln) => {
         y = ensureSpace(NOTE_LH, y);
-        doc.text(ln, M, y);
+        doc.text(ln, M, y, { maxWidth: NOTE_W, charSpace: 0 });
         y += NOTE_LH;
       });
       if (idx < paragraphs.length - 1) y = ensureSpace(PARA_GAP, y) + PARA_GAP;

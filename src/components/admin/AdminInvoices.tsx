@@ -485,7 +485,7 @@ const compactLetterSpacedSegment = (segment: string) => {
   let buffered = "";
   const flush = () => {
     if (!buffered) return;
-    output = appendPdfTextToken(output, buffered.length >= 3 ? buffered : buffered.split("").join(" "));
+    output = appendPdfTextToken(output, buffered.length >= 2 ? buffered : buffered);
     buffered = "";
   };
 
@@ -766,16 +766,18 @@ export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: j
     y = ensureSpace(32, y);
     setLabel();
     doc.text("NOTES / TERMS", M, y); y += 14;
+    resetTextSpacing();
     doc.setFont("helvetica", "normal"); doc.setFontSize(FS_SMALL); doc.setTextColor(60, 60, 60);
 
     const NOTE_LH = LH_SMALL;
+    const NOTE_W = CONTENT_W - 36;
     const PARA_GAP = Math.max(4, 5 * scale);
     const cleanedNotes = normalizeInvoicePdfText(inv.notes);
     const paragraphs = cleanedNotes.split(/\n+/);
     paragraphs.forEach((para, idx) => {
       const trimmed = para.trim();
       if (!trimmed) return;
-      const lines = splitToWidth(trimmed, CONTENT_W);
+      const lines = splitToWidth(trimmed, NOTE_W);
       lines.forEach((ln) => {
         y = ensureSpace(NOTE_LH, y);
         doc.text(ln, M, y);

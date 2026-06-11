@@ -760,7 +760,7 @@ export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: j
 
     const NOTE_LH = LH_SMALL;
     const PARA_GAP = Math.max(4, 5 * scale);
-    const cleanedNotes = clean(inv.notes);
+    const cleanedNotes = normalizeInvoicePdfText(inv.notes);
     const paragraphs = cleanedNotes.split(/\n+/);
     paragraphs.forEach((para, idx) => {
       const trimmed = para.trim();

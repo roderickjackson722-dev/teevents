@@ -479,7 +479,7 @@ const appendPdfTextToken = (current: string, token: string) => (current ? `${cur
 
 const compactLetterSpacedSegment = (segment: string) => {
   const tokens = segment.trim().split(/ +/).filter(Boolean);
-  if (tokens.length < 3) return segment.trim();
+  if (tokens.length < 2) return segment.trim();
 
   let output = "";
   let buffered = "";
@@ -517,7 +517,17 @@ export function normalizeInvoicePdfText(s: string) {
     .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
     .replace(/\r\n?/g, "\n")
     .split("\n")
-    .map((line) => line.split(/ {2,}/).map(compactLetterSpacedSegment).filter(Boolean).join(" "))
+    .map((line) => {
+      const parts = line.split(/ {2,}/);
+      return parts
+        .map((part) => {
+          const tokens = part.trim().split(/ +/).filter(Boolean);
+          const mostlySingleCharacters = tokens.length > 35 && tokens.filter((token) => /^([A-Za-z0-9]|[A-Za-z0-9][,.;:!?])$/.test(token)).length / tokens.length > 0.85;
+          return parts.length === 1 && mostlySingleCharacters ? part.trim() : compactLetterSpacedSegment(part);
+        })
+        .filter(Boolean)
+        .join(" ");
+    })
     .join("\n")
     .replace(/ {2,}/g, " ")
     .trim();

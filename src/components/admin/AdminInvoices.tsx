@@ -475,6 +475,54 @@ const PAGE_H = 792;
 const MARGIN = 48;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
+const appendPdfTextToken = (current: string, token: string) => (current ? `${current} ${token}` : token);
+
+const compactLetterSpacedSegment = (segment: string) => {
+  const tokens = segment.trim().split(/ +/).filter(Boolean);
+  if (tokens.length < 3) return segment.trim();
+
+  let output = "";
+  let buffered = "";
+  const flush = () => {
+    if (!buffered) return;
+    output = appendPdfTextToken(output, buffered.length >= 3 ? buffered : buffered.split("").join(" "));
+    buffered = "";
+  };
+
+  tokens.forEach((token) => {
+    const charWithPunctuation = token.match(/^([A-Za-z0-9])([,.;:!?])$/);
+    if (/^[A-Za-z0-9]$/.test(token)) {
+      buffered += token;
+      return;
+    }
+    if (charWithPunctuation) {
+      buffered += charWithPunctuation[1];
+      flush();
+      output += charWithPunctuation[2];
+      return;
+    }
+    flush();
+    if (/^[,.;:!?)]$/.test(token)) output += token;
+    else output = appendPdfTextToken(output, token);
+  });
+  flush();
+  return output;
+};
+
+export function normalizeInvoicePdfText(s: string) {
+  return (s || "")
+    .replace(/\t/g, "  ")
+    .replace(/\u00A0/g, " ")
+    .replace(/\u00AD/g, "")
+    .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => line.split(/ {2,}/).map(compactLetterSpacedSegment).filter(Boolean).join(" "))
+    .join("\n")
+    .replace(/ {2,}/g, " ")
+    .trim();
+}
+
 /**
  * Build a jsPDF invoice document at the given typographic scale.
  * Returns the doc and total page count so callers can decide if it fits.
@@ -499,29 +547,8 @@ export async function buildInvoicePdf(inv: Invoice, scale = 1): Promise<{ doc: j
   const setBody = () => { resetTextSpacing(); doc.setFont("helvetica", "normal"); doc.setFontSize(FS_BODY); doc.setTextColor(20, 20, 20); };
   const setLabel = () => { resetTextSpacing(); doc.setFont("helvetica", "bold"); doc.setFontSize(FS_BODY); doc.setTextColor(120, 120, 120); };
 
-  const clean = (s: string) => {
-    let out = (s || "")
-      .replace(/\t/g, "  ")
-      .replace(/\u00A0/g, " ")
-      .replace(/\u00AD/g, "")
-      .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
-      .replace(/\r\n?/g, "\n");
-    out = out.split("\n").map((line) =>
-      line.split(/ {2,}/).map((part) =>
-        /^(?:[A-Za-z0-9&/().,-] ){1,}[A-Za-z0-9&/().,-]$/.test(part)
-          ? part.replace(/ +/g, "")
-          : part
-      ).join(" ")
-    ).join("\n");
-    out = out.replace(/\b(?:[A-Za-z]\s){3,}[A-Za-z]\b/g, (match) => {
-      const compact = match.replace(/\s+/g, "");
-      return compact.length <= 18 ? compact : match;
-    });
-    return out.replace(/ {2,}/g, " ").trim();
-  };
-
   const splitToWidth = (text: string, width: number) => {
-    const lines = doc.splitTextToSize(clean(text), width) as string[];
+    const lines = doc.splitTextToSize(normalizeInvoicePdfText(text), width) as string[];
     return lines.flatMap((line) => {
       if (doc.getTextWidth(line) <= width) return [line];
       const chunks: string[] = [];

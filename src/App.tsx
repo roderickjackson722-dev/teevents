@@ -257,6 +257,12 @@ const App = () => (
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
+           <Route path="/admin/demo-converter" element={<DemoConverter />} />
+           <Route path="/demo/:token" element={<DemoTournamentSite />} />
+           <Route path="/demo/:token/dashboard" element={<DemoDashboardPreview />} />
+           <Route path="/demo/:token/live" element={<DemoLiveLeaderboard />} />
+           <Route path="/demo/:token/day-of" element={<DemoDayOfPage />} />
+           <Route path="/claim/:token" element={<Claim />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />
            <Route path="/admin/outreach" element={<AdminOutreach />} />

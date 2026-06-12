@@ -30,7 +30,7 @@ export default function DemoDashboardPreview() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${demo.tournament_name} Dashboard (Demo)`} noIndex />
+      <SEO title={`${demo.tournament_name} Dashboard (Demo)`} description="Demo" noIndex />
       <div className="border-b border-border bg-card p-4">
         <Badge className="bg-[#F5A623] text-[#1a5c38] mb-2">DEMO DASHBOARD — read only preview</Badge>
         <h1 className="text-2xl font-bold">{demo.tournament_name}</h1>

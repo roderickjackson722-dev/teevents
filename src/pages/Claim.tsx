@@ -76,7 +76,7 @@ export default function Claim() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <SEO title="Claim Your Tournament" noIndex />
+      <SEO title="Claim Your Tournament" description="Demo" noIndex />
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle>Claim Your Tournament</CardTitle>

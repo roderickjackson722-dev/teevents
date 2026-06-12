@@ -1464,6 +1464,50 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_players: {
+        Row: {
+          created_at: string
+          demo_tournament_id: string
+          email: string | null
+          group_name: string | null
+          handicap: number | null
+          id: string
+          name: string
+          shirt_size: string | null
+          tee_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_tournament_id: string
+          email?: string | null
+          group_name?: string | null
+          handicap?: number | null
+          id?: string
+          name: string
+          shirt_size?: string | null
+          tee_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_tournament_id?: string
+          email?: string | null
+          group_name?: string | null
+          handicap?: number | null
+          id?: string
+          name?: string
+          shirt_size?: string | null
+          tee_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_players_demo_tournament_id_fkey"
+            columns: ["demo_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "demo_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_requests: {
         Row: {
           contacted_at: string | null
@@ -1511,6 +1555,139 @@ export type Database = {
           role?: string | null
           status?: string
           tournament_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      demo_scores: {
+        Row: {
+          created_at: string
+          demo_tournament_id: string
+          gross_score: number | null
+          hole_number: number | null
+          id: string
+          player_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_tournament_id: string
+          gross_score?: number | null
+          hole_number?: number | null
+          id?: string
+          player_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_tournament_id?: string
+          gross_score?: number | null
+          hole_number?: number | null
+          id?: string
+          player_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_scores_demo_tournament_id_fkey"
+            columns: ["demo_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "demo_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_sponsors: {
+        Row: {
+          created_at: string
+          demo_tournament_id: string
+          id: string
+          level: string | null
+          logo_url: string | null
+          name: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_tournament_id: string
+          id?: string
+          level?: string | null
+          logo_url?: string | null
+          name: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_tournament_id?: string
+          id?: string
+          level?: string | null
+          logo_url?: string | null
+          name?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_sponsors_demo_tournament_id_fkey"
+            columns: ["demo_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "demo_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_tournaments: {
+        Row: {
+          admin_id: string | null
+          conversion_token: string | null
+          converted_at: string | null
+          course_name: string | null
+          created_at: string
+          event_date: string | null
+          id: string
+          live_tournament_id: string | null
+          location: string | null
+          prospect_email: string | null
+          prospect_name: string | null
+          public_token: string
+          registration_fee_cents: number
+          scoring_format: string
+          status: string
+          tournament_name: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          conversion_token?: string | null
+          converted_at?: string | null
+          course_name?: string | null
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          live_tournament_id?: string | null
+          location?: string | null
+          prospect_email?: string | null
+          prospect_name?: string | null
+          public_token?: string
+          registration_fee_cents?: number
+          scoring_format?: string
+          status?: string
+          tournament_name: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          conversion_token?: string | null
+          converted_at?: string | null
+          course_name?: string | null
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          live_tournament_id?: string | null
+          location?: string | null
+          prospect_email?: string | null
+          prospect_name?: string | null
+          public_token?: string
+          registration_fee_cents?: number
+          scoring_format?: string
+          status?: string
+          tournament_name?: string
           updated_at?: string
         }
         Relationships: []

@@ -28,7 +28,7 @@ export default function DemoDayOfPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${demo.tournament_name} Day-of (Demo)`} noindex />
+      <SEO title={`${demo.tournament_name} Day-of (Demo)`} noIndex />
       <div className="bg-[#1a5c38] text-white p-6 text-center">
         <Badge className="bg-[#F5A623] text-[#1a5c38] mb-2">DEMO</Badge>
         <h1 className="text-3xl font-bold">{demo.tournament_name}</h1>

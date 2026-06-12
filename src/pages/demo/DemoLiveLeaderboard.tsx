@@ -33,7 +33,7 @@ export default function DemoLiveLeaderboard() {
 
   return (
     <div className="min-h-screen bg-[#1a5c38] text-white">
-      <SEO title={`${demo.tournament_name} Live (Demo)`} noindex />
+      <SEO title={`${demo.tournament_name} Live (Demo)`} noIndex />
       <div className="p-6 text-center border-b border-white/20">
         <Badge className="bg-[#F5A623] text-[#1a5c38] mb-2">DEMO</Badge>
         <h1 className="text-4xl font-bold">{demo.tournament_name}</h1>

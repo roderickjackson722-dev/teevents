@@ -47,7 +47,7 @@ export default function DemoTournamentSite() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${demo.tournament_name} (Demo)`} description="TeeVents demo tournament site" noindex />
+      <SEO title={`${demo.tournament_name} (Demo)`} description="TeeVents demo tournament site" noIndex />
       <div className="bg-[#1a5c38] text-white py-12 px-4 text-center">
         <Badge className="bg-[#F5A623] text-[#1a5c38] mb-3">DEMO</Badge>
         <h1 className="text-4xl font-bold">{demo.tournament_name}</h1>

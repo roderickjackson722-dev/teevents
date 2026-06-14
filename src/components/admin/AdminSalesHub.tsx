@@ -408,6 +408,7 @@ CLOSING (30 seconds)
           <Textarea value={script} readOnly rows={30} className="font-mono text-xs" />
           <div className="flex gap-2 flex-wrap">
             <Button onClick={handleCopy} className="gap-2">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Copied!" : "Copy Script"}</Button>
+            <Button variant="outline" onClick={() => window.open("/admin/sales-hub/demo-agenda", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> Demo Agenda Editor</Button>
             <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> vs Eventbrite Page</Button>
             <Button variant="outline" onClick={() => window.open("/admin/sales-hub/compare-golf-genius", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> vs Golf Genius Page</Button>
           </div>

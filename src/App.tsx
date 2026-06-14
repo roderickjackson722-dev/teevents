@@ -91,6 +91,7 @@ import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
 import AdminPayouts from "./pages/admin/Payouts";
 import DemoConverter from "./pages/admin/DemoConverter";
+import DemoAgendaEditor from "./pages/admin/DemoAgendaEditor";
 import DemoTournamentSite from "./pages/demo/DemoTournamentSite";
 import DemoDashboardPreview from "./pages/demo/DemoDashboardPreview";
 import DemoLiveLeaderboard from "./pages/demo/DemoLiveLeaderboard";
@@ -258,6 +259,7 @@ const App = () => (
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
            <Route path="/admin/demo-converter" element={<DemoConverter />} />
+           <Route path="/admin/sales-hub/demo-agenda" element={<DemoAgendaEditor />} />
            <Route path="/demo/:token" element={<DemoTournamentSite />} />
            <Route path="/demo/:token/dashboard" element={<DemoDashboardPreview />} />
            <Route path="/demo/:token/live" element={<DemoLiveLeaderboard />} />

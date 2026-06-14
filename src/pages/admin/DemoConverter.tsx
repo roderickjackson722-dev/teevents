@@ -1,70 +1,69 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Send, Sparkles, RotateCcw, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon } from "lucide-react";
+import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
-interface DemoRow {
+interface DemoTournamentRow {
   id: string;
-  tournament_name: string;
-  event_date: string | null;
+  title: string;
+  date: string | null;
   location: string | null;
   course_name: string | null;
-  registration_fee_cents: number;
-  scoring_format: string;
-  status: string;
-  prospect_email: string | null;
-  prospect_name: string | null;
-  public_token: string;
-  conversion_token: string | null;
-  converted_at: string | null;
+  slug: string | null;
+  custom_slug: string | null;
+  organization_id: string;
+  site_hero_image_url: string | null;
   created_at: string;
 }
 
-const SCORING_FORMATS = ["Scramble", "Best Ball", "Stroke Play", "Stableford", "Modified Stableford", "Match Play", "Shamble", "Chapman"];
+const SCORING_FORMATS = [
+  { value: "stroke_play", label: "Stroke Play" },
+  { value: "scramble", label: "Scramble" },
+  { value: "best_ball", label: "Best Ball" },
+  { value: "stableford", label: "Stableford" },
+  { value: "modified_stableford", label: "Modified Stableford" },
+  { value: "match_play", label: "Match Play" },
+  { value: "shamble", label: "Shamble" },
+  { value: "chapman", label: "Chapman" },
+];
 
 export default function DemoConverter() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [demos, setDemos] = useState<DemoRow[]>([]);
+  const [demos, setDemos] = useState<DemoTournamentRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<DemoRow | null>(null);
 
-  // form state
   const [form, setForm] = useState({
     tournament_name: "",
     event_date: "",
     location: "",
     course_name: "",
     registration_fee_dollars: "150",
-    scoring_format: "Scramble",
-    generate_players: true,
-    generate_sponsors: true,
-    generate_scores: true,
-    generate_checkins: true,
+    scoring_format: "scramble",
   });
   const [creating, setCreating] = useState(false);
 
-  // convert state
-  const [convert, setConvert] = useState({ email: "", name: "" });
-  const [converting, setConverting] = useState(false);
+  // image state
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [croppedFile, setCroppedFile] = useState<File | null>(null);
+  const [croppedPreviewUrl, setCroppedPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/admin-login");
-        return;
-      }
+      if (!user) { navigate("/admin-login"); return; }
       const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
       setIsAdmin(!!data);
       setAuthChecked(true);
@@ -75,11 +74,52 @@ export default function DemoConverter() {
   async function loadDemos() {
     setLoading(true);
     const { data } = await supabase
-      .from("demo_tournaments")
-      .select("*")
+      .from("tournaments")
+      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at")
+      .eq("is_demo", true)
       .order("created_at", { ascending: false });
-    setDemos((data as DemoRow[]) || []);
+    setDemos((data as DemoTournamentRow[]) || []);
     setLoading(false);
+  }
+
+  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      toast({ title: "Image too large", description: "Max 5MB.", variant: "destructive" });
+      return;
+    }
+    const src = await fileToDataUrl(f);
+    setRawImageSrc(src);
+    setCropOpen(true);
+  }
+
+  async function handleCropped(file: File) {
+    setCroppedFile(file);
+    if (croppedPreviewUrl) URL.revokeObjectURL(croppedPreviewUrl);
+    setCroppedPreviewUrl(URL.createObjectURL(file));
+  }
+
+  function clearImage() {
+    setCroppedFile(null);
+    if (croppedPreviewUrl) URL.revokeObjectURL(croppedPreviewUrl);
+    setCroppedPreviewUrl(null);
+    setRawImageSrc(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function uploadHeroImage(): Promise<string | null> {
+    if (!croppedFile) return null;
+    const ts = Date.now();
+    const safe = croppedFile.name.replace(/[^a-z0-9.]/gi, "_");
+    const path = `demo-hero/${ts}_${safe}`;
+    const { error } = await supabase.storage.from("tournament-assets").upload(path, croppedFile, {
+      contentType: croppedFile.type,
+      upsert: false,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+    return data.publicUrl;
   }
 
   async function createDemo() {
@@ -88,81 +128,53 @@ export default function DemoConverter() {
       return;
     }
     setCreating(true);
-    const fee_cents = Math.round(parseFloat(form.registration_fee_dollars || "0") * 100);
-    const { data, error } = await supabase.functions.invoke("create-demo-tournament", {
-      body: {
-        tournament_name: form.tournament_name,
-        event_date: form.event_date || null,
-        location: form.location,
-        course_name: form.course_name,
-        registration_fee_cents: fee_cents,
-        scoring_format: form.scoring_format,
-        generate_players: form.generate_players,
-        generate_sponsors: form.generate_sponsors,
-        generate_scores: form.generate_scores,
-      },
-    });
-    setCreating(false);
-    if (error || (data as any)?.error) {
-      toast({ title: "Failed", description: error?.message || (data as any)?.error, variant: "destructive" });
-      return;
+    try {
+      let hero_image_url: string | null = null;
+      try {
+        hero_image_url = await uploadHeroImage();
+      } catch (upErr: any) {
+        toast({ title: "Image upload failed", description: upErr.message, variant: "destructive" });
+        setCreating(false);
+        return;
+      }
+      const fee_cents = Math.round(parseFloat(form.registration_fee_dollars || "0") * 100);
+      const { data, error } = await supabase.functions.invoke("create-demo-real-tournament", {
+        body: {
+          tournament_name: form.tournament_name,
+          event_date: form.event_date || null,
+          location: form.location,
+          course_name: form.course_name,
+          registration_fee_cents: fee_cents,
+          scoring_format: form.scoring_format,
+          hero_image_url,
+        },
+      });
+      if (error || (data as any)?.error) {
+        toast({ title: "Failed", description: error?.message || (data as any)?.error, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Demo tournament created", description: "12 mock players added. Open the dashboard to start your walkthrough." });
+      setForm({ ...form, tournament_name: "", event_date: "", location: "", course_name: "" });
+      clearImage();
+      await loadDemos();
+    } finally {
+      setCreating(false);
     }
-    toast({ title: "Demo created" });
-    setSelected((data as any).demo);
-    setForm({ ...form, tournament_name: "", event_date: "", location: "", course_name: "" });
-    await loadDemos();
   }
 
-  async function mockToggle(demo_id: string, action: "add" | "remove" | "reset", kind: "players" | "sponsors" | "scores" | "all") {
-    const { error } = await supabase.functions.invoke("demo-mock-data-toggle", {
-      body: { demo_id, action, kind },
-    });
+  async function deleteDemo(id: string) {
+    if (!confirm("Delete this demo tournament and all its mock data?")) return;
+    const { error } = await supabase.from("tournaments").delete().eq("id", id).eq("is_demo", true);
     if (error) {
-      toast({ title: "Failed", description: error.message, variant: "destructive" });
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: `Mock ${kind} ${action}` });
+    toast({ title: "Deleted" });
     await loadDemos();
   }
 
-  async function convertDemo() {
-    if (!selected) return;
-    if (!convert.email) {
-      toast({ title: "Prospect email required", variant: "destructive" });
-      return;
-    }
-    setConverting(true);
-    const { data, error } = await supabase.functions.invoke("convert-demo-to-live", {
-      body: {
-        demo_id: selected.id,
-        prospect_email: convert.email,
-        prospect_name: convert.name,
-        app_base_url: window.location.origin,
-      },
-    });
-    setConverting(false);
-    if (error || (data as any)?.error) {
-      toast({ title: "Failed", description: error?.message || (data as any)?.error, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Converted! Claim email sent to prospect." });
-    await loadDemos();
-    setSelected(null);
-  }
-
-  function demoUrls(d: DemoRow) {
-    const base = window.location.origin;
-    return {
-      site: `${base}/demo/${d.public_token}`,
-      dashboard: `${base}/demo/${d.public_token}/dashboard`,
-      live: `${base}/demo/${d.public_token}/live`,
-      dayOf: `${base}/demo/${d.public_token}/day-of`,
-    };
-  }
-
-  function copy(text: string) {
-    navigator.clipboard.writeText(text);
-    toast({ title: "Copied" });
+  function slugOf(d: DemoTournamentRow) {
+    return d.custom_slug || d.slug || d.id;
   }
 
   if (!authChecked) return <div className="p-8">Loading…</div>;
@@ -171,21 +183,22 @@ export default function DemoConverter() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-card">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
             <ArrowLeft className="h-4 w-4 mr-1" /> Admin
           </Button>
           <h1 className="text-xl font-semibold">Demo Converter</h1>
-          <Badge variant="secondary" className="ml-2">Turn prospects into customers</Badge>
+          <Badge variant="secondary" className="ml-2">Real tournaments for screen-share demos</Badge>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        {/* Step 1 + 2: Create */}
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Step 1 & 2 — Create a Demo Tournament</CardTitle>
-            <CardDescription>Generate a fully populated demo to show prospects.</CardDescription>
+            <CardTitle>Create Demo Tournament</CardTitle>
+            <CardDescription>
+              Creates a fully functional, real tournament under your <strong>Demo Sandbox</strong> organization with 12 mock players pre-loaded. Every dashboard tab works exactly like a live tournament.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -214,25 +227,44 @@ export default function DemoConverter() {
                 <Select value={form.scoring_format} onValueChange={(v) => setForm({ ...form, scoring_format: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {SCORING_FORMATS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {SCORING_FORMATS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            <div className="space-y-2 pt-2 border-t border-border">
-              <div className="text-sm font-medium">Generate Mock Data</div>
-              {([
-                ["generate_players", "Mock players (12 golfers with realistic names, handicaps)"],
-                ["generate_sponsors", "Mock sponsors (6 sponsors with tiers and logos)"],
-                ["generate_scores", "Mock scores (for live leaderboard)"],
-                ["generate_checkins", "Mock check-ins (simulate player check-in)"],
-              ] as const).map(([key, label]) => (
-                <label key={key} className="flex items-center gap-2 text-sm">
-                  <Checkbox checked={(form as any)[key]} onCheckedChange={(v) => setForm({ ...form, [key]: !!v })} />
-                  {label}
-                </label>
-              ))}
+            <div className="pt-2 border-t border-border space-y-2">
+              <Label>Hero Image (optional)</Label>
+              <div className="text-xs text-muted-foreground">JPG, PNG, or WebP. Max 5MB. Recommended 16:9 (1920×1080).</div>
+              <div className="flex flex-wrap items-start gap-3">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={onFileChosen}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                  <Upload className="h-4 w-4 mr-1" /> Choose File
+                </Button>
+                {croppedPreviewUrl ? (
+                  <div className="relative">
+                    <img src={croppedPreviewUrl} alt="Hero preview" className="w-64 h-36 object-cover rounded border border-border" />
+                    <Button type="button" size="sm" variant="ghost" className="absolute top-1 right-1 h-6 w-6 p-0 bg-background/80" onClick={clearImage}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-64 h-36 rounded border border-dashed border-border flex items-center justify-center text-muted-foreground text-xs">
+                    <ImageIcon className="h-4 w-4 mr-1" /> No image
+                  </div>
+                )}
+                {rawImageSrc && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setCropOpen(true)}>
+                    Re-crop
+                  </Button>
+                )}
+              </div>
             </div>
 
             <Button onClick={createDemo} disabled={creating} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
@@ -242,123 +274,58 @@ export default function DemoConverter() {
           </CardContent>
         </Card>
 
-        {/* Step 3: Share */}
-        {selected && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Step 3 — Share Demo</CardTitle>
-              <CardDescription>{selected.tournament_name}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {Object.entries(demoUrls(selected)).map(([k, url]) => (
-                <div key={k} className="flex items-center gap-2 text-sm">
-                  <span className="w-32 capitalize text-muted-foreground">{k.replace(/([A-Z])/g, " $1")}:</span>
-                  <a href={url} target="_blank" rel="noreferrer" className="text-primary underline truncate flex-1">{url}</a>
-                  <Button size="sm" variant="ghost" onClick={() => copy(url)}><Copy className="h-3 w-3" /></Button>
-                </div>
-              ))}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => copy(Object.values(demoUrls(selected)).join("\n"))}
-              >
-                <Copy className="h-3 w-3 mr-1" /> Copy All Links
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 4: Convert */}
-        {selected && selected.status === "active" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Step 4 — Convert to Live Tournament</CardTitle>
-              <CardDescription>Send the prospect a claim link to take ownership.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Prospect Email</Label>
-                  <Input type="email" value={convert.email} onChange={(e) => setConvert({ ...convert, email: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Prospect Name</Label>
-                  <Input value={convert.name} onChange={(e) => setConvert({ ...convert, name: e.target.value })} />
-                </div>
-              </div>
-              <div className="text-xs text-muted-foreground space-y-1 border border-border rounded p-3 bg-muted/40">
-                <div>When converting:</div>
-                <div>• Mock players, sponsors, scores will be removed</div>
-                <div>• Tournament structure (dates, fees, course details) retained</div>
-                <div>• Prospect will receive a signup link to claim their tournament</div>
-              </div>
-              <Button onClick={convertDemo} disabled={converting} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
-                <Send className="h-4 w-4 mr-2" />
-                {converting ? "Converting…" : "Convert to Live Tournament"}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Mock data controls */}
-        {selected && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Demo Controls (Admin Only)</CardTitle>
-              <CardDescription>These actions only affect the demo.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {(["players", "sponsors", "scores"] as const).map((k) => (
-                <div key={k} className="flex items-center gap-1">
-                  <Button size="sm" variant="outline" onClick={() => mockToggle(selected.id, "add", k)}>
-                    <Plus className="h-3 w-3 mr-1" /> Add {k}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => mockToggle(selected.id, "remove", k)}>
-                    <Trash2 className="h-3 w-3 mr-1" /> Remove {k}
-                  </Button>
-                </div>
-              ))}
-              <Button size="sm" variant="secondary" onClick={() => mockToggle(selected.id, "reset", "all")}>
-                <RotateCcw className="h-3 w-3 mr-1" /> Reset Demo
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* All demos */}
         <Card>
           <CardHeader>
-            <CardTitle>All Demos</CardTitle>
+            <CardTitle>Your Demo Tournaments</CardTitle>
+            <CardDescription>Click <strong>Open Dashboard</strong> to walk a prospect through every tab during a screen share.</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div>Loading…</div>
             ) : demos.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No demos yet.</div>
+              <div className="text-sm text-muted-foreground">No demo tournaments yet. Create one above.</div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Prospect</TableHead>
                     <TableHead></TableHead>
+                    <TableHead>Tournament</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Links</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {demos.map((d) => (
-                    <TableRow key={d.id} className={selected?.id === d.id ? "bg-muted/40" : ""}>
-                      <TableCell className="font-medium">{d.tournament_name}</TableCell>
-                      <TableCell>{d.event_date || "—"}</TableCell>
+                    <TableRow key={d.id}>
                       <TableCell>
-                        <Badge variant={d.status === "active" ? "default" : d.status === "converted" ? "secondary" : "outline"}>
-                          {d.status}
-                        </Badge>
+                        {d.site_hero_image_url ? (
+                          <img src={d.site_hero_image_url} alt="" className="w-16 h-10 object-cover rounded" />
+                        ) : (
+                          <div className="w-16 h-10 rounded bg-muted" />
+                        )}
                       </TableCell>
-                      <TableCell className="text-xs">{d.prospect_email || "—"}</TableCell>
                       <TableCell>
-                        <Button size="sm" variant="ghost" onClick={() => setSelected(d)}>Manage</Button>
+                        <div className="font-medium">{d.title}</div>
+                        <div className="text-xs text-muted-foreground">{d.course_name || d.location || ""}</div>
+                      </TableCell>
+                      <TableCell>{d.date || "—"}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-wrap justify-end gap-1">
+                          <Button size="sm" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold" asChild>
+                            <a href={`/dashboard?admin_org=${d.organization_id}`} target="_blank" rel="noreferrer">
+                              Open Dashboard <ExternalLink className="h-3 w-3 ml-1" />
+                            </a>
+                          </Button>
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`/tournament/${slugOf(d)}`} target="_blank" rel="noreferrer">Public Site</a>
+                          </Button>
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`/live/${slugOf(d)}`} target="_blank" rel="noreferrer">Live Leaderboard</a>
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteDemo(d.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -368,6 +335,16 @@ export default function DemoConverter() {
           </CardContent>
         </Card>
       </div>
+
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={setCropOpen}
+        imageSrc={rawImageSrc}
+        defaultAspect="16:9"
+        outputMime="image/jpeg"
+        title="Crop Hero Image (16:9 recommended)"
+        onCropped={handleCropped}
+      />
     </div>
   );
 }

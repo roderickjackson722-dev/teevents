@@ -227,6 +227,9 @@ export default function LiveLeaderboard() {
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [tournament]);
+
+
 
 
   // Auto-refresh fallback

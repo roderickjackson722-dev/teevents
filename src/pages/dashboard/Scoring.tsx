@@ -381,27 +381,6 @@ export default function Scoring() {
             <LiveLeaderboardSettings tournamentId={selectedTournament} />
           </TabsContent>
 
-          {/* ===== TEST SIMULATOR TAB ===== */}
-          <TabsContent value="test-simulator" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FlaskConical className="h-5 w-5" /> Test Score Simulator
-                </CardTitle>
-                <CardDescription>
-                  Spin up fake players and scores to validate handicap allowances, scoring
-                  formats, and leaderboard layout before the real round starts.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild>
-                  <RouterLink to="/dashboard/test-simulator">
-                    Open Test Simulator <ExternalLink className="h-4 w-4 ml-1.5" />
-                  </RouterLink>
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       )}
     </div>

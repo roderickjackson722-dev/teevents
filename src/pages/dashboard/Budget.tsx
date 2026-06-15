@@ -132,6 +132,7 @@ export default function BudgetPage() {
       if (cancelled) return;
       setBudget(b as Budget);
       await loadBudgetData(b.id);
+      await syncTiersIntoIncome(b.id, selectedId);
       await syncActualsFromTransactions(b.id, selectedId);
       setLoading(false);
     })();

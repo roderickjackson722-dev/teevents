@@ -137,9 +137,6 @@ export default function Scoring() {
             <TabsTrigger value="live-settings">
               <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
             </TabsTrigger>
-            <TabsTrigger value="test-simulator">
-              <FlaskConical className="h-4 w-4 mr-1.5" /> Test Simulator
-            </TabsTrigger>
           </TabsList>
 
           {/* ===== SCORING LINKS TAB ===== */}

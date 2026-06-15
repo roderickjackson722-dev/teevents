@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
+import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
+
 
 export interface LeaderboardDesign {
   title: string;

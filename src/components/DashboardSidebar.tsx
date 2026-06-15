@@ -251,10 +251,10 @@ export function DashboardSidebar() {
 
           {categories.map((cat) => {
             let items = cat.items;
-            if (cat.label === "Organizer Setup" && tournamentSlug) {
+            if (cat.label === "Public Webpage" && tournamentSlug) {
               items = [
+                { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
                 ...cat.items,
-                { title: "View Tournament", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
               ];
             }
             const visibleItems = items.filter(isVisible);

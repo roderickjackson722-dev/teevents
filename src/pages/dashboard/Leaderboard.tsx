@@ -382,7 +382,7 @@ export default function Leaderboard() {
               <Copy className="h-4 w-4 mr-1.5" /> Copy Scoring Link
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <a href={`/t/${selectedTournamentData.slug}/scoring`} target="_blank" rel="noopener noreferrer">
+              <a href={`/live/${selectedTournamentData.slug}?preview=1`} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4 mr-1.5" /> Preview
               </a>
             </Button>
@@ -399,29 +399,6 @@ export default function Leaderboard() {
           </Tabs>
         )}
       </div>
-
-      {selectedTournament && (
-        <Card className="bg-accent/30 border-accent">
-          <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-accent">
-                <FlaskConical className="h-5 w-5 text-accent-foreground" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Preview Leaderboard with Mock Data</p>
-                <p className="text-xs text-muted-foreground">
-                  Try the leaderboard with simulated players and scores before going live.
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/dashboard/test-simulator">
-                <FlaskConical className="h-4 w-4 mr-1.5" /> Open Test Simulator
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
       {selectedTournament && leaderboardSponsors && leaderboardSponsors.list.length > 0 && (
         <SponsorBanner sponsors={leaderboardSponsors.list} intervalMs={leaderboardSponsors.interval} preserveOrder randomOrder={leaderboardSponsors.randomOrder} />

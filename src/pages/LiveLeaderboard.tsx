@@ -210,6 +210,25 @@ export default function LiveLeaderboard() {
     };
   }, [tournament]);
 
+  // Realtime design updates — propagate organizer design changes immediately
+  useEffect(() => {
+    if (!tournament) return;
+    const channel = supabase
+      .channel(`live-design-${tournament.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tournaments", filter: `id=eq.${tournament.id}` },
+        (payload: any) => {
+          const next = payload?.new?.leaderboard_design;
+          if (next !== undefined) setDesign(mergeDesign(next));
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+
+
   // Auto-refresh fallback
   useEffect(() => {
     if (!tournament) return;

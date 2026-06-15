@@ -56,16 +56,15 @@ describe("LeaderboardRenderer parity (preview vs live)", () => {
   });
 
   it("compact (preview) and full (live) modes apply the same colors and row count", () => {
-    const { getByTestId: getPreview } = render(
+    const { container: previewContainer } = render(
       <LeaderboardRenderer design={design} title="Test Cup" rows={rows} bannerSponsor={banner} compact />
     );
-    const { getByTestId: getLive } = render(
+    const { container: liveContainer } = render(
       <LeaderboardRenderer design={design} title="Test Cup" rows={rows} bannerSponsor={banner} />
     );
 
-    // Same background, text color, font, and font size on both renderers.
-    const preview = getPreview("lb-root").getAttribute("style") || "";
-    const live = getLive("lb-root").getAttribute("style") || "";
+    const preview = (previewContainer.querySelector('[data-testid="lb-root"]') as HTMLElement).getAttribute("style") || "";
+    const live = (liveContainer.querySelector('[data-testid="lb-root"]') as HTMLElement).getAttribute("style") || "";
     for (const token of [
       "background-color: rgb(17, 34, 51)",
       "color: rgb(171, 205, 239)",
@@ -75,7 +74,11 @@ describe("LeaderboardRenderer parity (preview vs live)", () => {
       expect(preview).toContain(token);
       expect(live).toContain(token);
     }
+
+    expect(previewContainer.querySelectorAll('[data-testid="lb-row"]').length).toBe(3);
+    expect(liveContainer.querySelectorAll('[data-testid="lb-row"]').length).toBe(3);
   });
+
 
   it("falls back to defaults when design tokens are missing", () => {
     const partial = mergeDesign({ background_color: "#000000" } as any);

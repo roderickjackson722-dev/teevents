@@ -148,11 +148,6 @@ const categories: SidebarCategory[] = [
     color: "border-l-teal-400 bg-teal-400/5",
     items: [
       { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys" },
-      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
-      { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
-      { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
-      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
-      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
     ],
   },
 ];

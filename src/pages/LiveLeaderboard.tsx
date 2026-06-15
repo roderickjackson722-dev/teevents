@@ -125,7 +125,7 @@ export default function LiveLeaderboard() {
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
+  const [design, setDesign] = useState<LeaderboardDesign>(mergeDesign(null));
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [scores, setScores] = useState<any[]>([]);

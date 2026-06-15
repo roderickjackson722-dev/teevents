@@ -60,11 +60,15 @@ type Income = {
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n || 0);
 
-// Computed totals helpers (income uses qty × price when qty>0, otherwise raw amounts)
+// Computed totals helpers (income uses qty × price when both are set, otherwise raw amounts)
 const incomeProjected = (i: Income) =>
-  i.quantity_estimated > 0 ? Number(i.quantity_estimated) * Number(i.unit_price) : Number(i.projected_amount);
+  i.quantity_estimated > 0 && Number(i.unit_price) > 0
+    ? Number(i.quantity_estimated) * Number(i.unit_price)
+    : Number(i.projected_amount);
 const incomeActual = (i: Income) =>
-  i.quantity_actual > 0 ? Number(i.quantity_actual) * Number(i.unit_price) : Number(i.actual_amount);
+  i.quantity_actual > 0 && Number(i.unit_price) > 0
+    ? Number(i.quantity_actual) * Number(i.unit_price)
+    : Number(i.actual_amount);
 
 export default function BudgetPage() {
   const { org } = useOrgContext();

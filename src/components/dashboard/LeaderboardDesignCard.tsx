@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
+import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
+
 
 export interface LeaderboardDesign {
   title: string;
@@ -317,57 +319,28 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
 }
 
 function LeaderboardPreview({ design, rows }: { design: LeaderboardDesign; rows: any[] }) {
-  const fontSize = FONT_SIZE_PX[design.font_size] || 16;
+  // Use the same renderer as the public live leaderboard so the preview can
+  // never visually diverge from what players actually see.
+  const mockBanner = design.show_sponsor_banner
+    ? { id: "preview-sponsor", name: "Your Sponsor", logo_url: null }
+    : null;
   return (
-    <div
-      className="rounded-lg overflow-hidden border mt-2"
-      style={{ backgroundColor: design.background_color, color: design.text_color, fontFamily: design.font_family, fontSize }}
-    >
-      {design.title && (
-        <div className="px-4 py-2 font-bold text-center" style={{ backgroundColor: design.header_background }}>
-          {design.title}
-        </div>
-      )}
-      {design.show_sponsor_banner && design.sponsor_banner_position === "top" && (
-        <div className="text-center text-xs py-1.5 opacity-80" style={{ backgroundColor: design.accent_color, color: design.header_background }}>
-          [ Sponsor Banner ]
-        </div>
-      )}
-      <table className="w-full">
-        <thead>
-          <tr style={{ backgroundColor: design.header_background }}>
-            {design.show_position && <th className="px-3 py-2 text-left">#</th>}
-            {design.show_player && <th className="px-3 py-2 text-left">Player</th>}
-            {design.show_gross && (design.default_view !== "net") && <th className="px-3 py-2 text-right">Gross</th>}
-            {design.show_net && (design.default_view !== "gross") && <th className="px-3 py-2 text-right">Net</th>}
-            {design.show_thru && <th className="px-3 py-2 text-right">Thru</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.slice(0, Math.min(rows.length, design.max_rows)).map((r, i) => (
-            <tr key={i} style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${design.header_background}66` : "transparent" }}>
-              {design.show_position && <td className="px-3 py-1.5" style={{ color: i < 3 ? design.accent_color : undefined, fontWeight: i < 3 ? 700 : 400 }}>{r.pos}</td>}
-              {design.show_player && <td className="px-3 py-1.5">{r.name}</td>}
-              {design.show_gross && (design.default_view !== "net") && <td className="px-3 py-1.5 text-right font-mono">{r.gross}</td>}
-              {design.show_net && (design.default_view !== "gross") && <td className="px-3 py-1.5 text-right font-mono">{r.net}</td>}
-              {design.show_thru && <td className="px-3 py-1.5 text-right opacity-80">{r.thru}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {design.show_ticker && design.ticker_text && (
-        <div className="overflow-hidden whitespace-nowrap py-1.5 text-sm" style={{ backgroundColor: design.header_background }}>
-          <span className="inline-block animate-marquee px-4">{design.ticker_text}</span>
-        </div>
-      )}
-      {design.show_sponsor_banner && design.sponsor_banner_position === "bottom" && (
-        <div className="text-center text-xs py-1.5 opacity-80" style={{ backgroundColor: design.accent_color, color: design.header_background }}>
-          [ Sponsor Banner ]
-        </div>
-      )}
+    <div className="mt-2">
+      <LeaderboardRenderer
+        compact
+        design={design}
+        title="Tournament Title"
+        rows={rows.map((r) => ({
+          name: r.name,
+          total: design.default_view === "net" ? r.net : r.gross,
+          thru: r.thru,
+        }))}
+        bannerSponsor={mockBanner}
+      />
     </div>
   );
 }
+
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (

@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
-import { Trophy, Loader2, Award } from "lucide-react";
-import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
+import { Trophy, Loader2 } from "lucide-react";
+import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
+import { LeaderboardRenderer, mergeDesign } from "@/components/leaderboard/LeaderboardCore";
 import { BrandingBadge } from "@/components/BrandingBadge";
+
 
 interface Sponsor {
   id: string;
@@ -123,7 +125,7 @@ export default function LiveLeaderboard() {
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
+  const [design, setDesign] = useState<LeaderboardDesign>(mergeDesign(null));
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [scores, setScores] = useState<any[]>([]);
@@ -155,7 +157,7 @@ export default function LiveLeaderboard() {
           return;
         }
         setTournament(data as Tournament);
-        setDesign({ ...DEFAULT_DESIGN, ...((data as any).leaderboard_design || {}) });
+        setDesign(mergeDesign((data as any).leaderboard_design));
         setLoading(false);
       });
   }, [slug, isPreview]);
@@ -207,6 +209,28 @@ export default function LiveLeaderboard() {
       supabase.removeChannel(channel);
     };
   }, [tournament]);
+
+  // Realtime design updates — propagate organizer design changes immediately
+  useEffect(() => {
+    if (!tournament) return;
+    const channel = supabase
+      .channel(`live-design-${tournament.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tournaments", filter: `id=eq.${tournament.id}` },
+        (payload: any) => {
+          const next = payload?.new?.leaderboard_design;
+          if (next !== undefined) setDesign(mergeDesign(next));
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tournament]);
+
+
+
 
   // Auto-refresh fallback
   useEffect(() => {
@@ -279,195 +303,31 @@ export default function LiveLeaderboard() {
 
 
   const heroImage = gallery.find((g) => g.is_hero) || gallery[galleryIdx];
-  const bannerSponsor = bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)];
+  const bannerSponsor = bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)] || null;
   const isStableford = getFormatById(tournament.scoring_format)?.scoring === "stableford";
 
-  // Apply design tokens
-  const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
-  const fontSize = FONT_SIZE_PX[design.font_size] || 16;
-  const bg = design.background_color;
-  const headerBg = design.header_background;
-  const textColor = design.text_color;
-  const accent = design.accent_color;
-  const showSponsorBanner = design.show_sponsor_banner !== false;
-  const sponsorPos = design.sponsor_banner_position || "top";
-  const visibleRows = leaderboard.slice(0, Math.max(1, design.max_rows || 20));
-  const showGross = design.show_gross !== false && design.default_view !== "net";
-  const showNet = design.show_net !== false && design.default_view !== "gross";
-  const showThru = design.show_thru !== false;
-  const showPos = design.show_position !== false;
-  const showPlayer = design.show_player !== false;
-  const tickerSpeedClass = design.ticker_speed === "slow" ? "animate-[marquee_40s_linear_infinite]" : design.ticker_speed === "fast" ? "animate-[marquee_12s_linear_infinite]" : "animate-marquee";
-
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
-    >
-      {isPreview && (
-        <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
-          Preview Mode — this is how your leaderboard will appear to players.
-        </div>
-      )}
-      {/* Top Banner Sponsor */}
-      {showSponsorBanner && sponsorPos === "top" && bannerSponsor && (
-        <div className="w-full py-3 px-6 flex items-center justify-center gap-4" style={{ backgroundColor: accent, color: headerBg }}>
-          <span className="text-[10px] uppercase tracking-widest font-semibold opacity-80">Sponsored by</span>
-          {bannerSponsor.logo_url ? (
-            <img src={bannerSponsor.logo_url} alt={bannerSponsor.name} className="h-12 max-w-[200px] object-contain" />
-          ) : (
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              <span className="text-lg font-bold">{bannerSponsor.name}</span>
+    <>
+      <LeaderboardRenderer
+        design={design}
+        title={tournament.title}
+        rows={leaderboard.map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players }))}
+        isStableford={isStableford}
+        bannerSponsor={bannerSponsor}
+        sidebarSponsors={sidebarSponsors}
+        footerSponsors={footerSponsors}
+        heroImage={heroImage || null}
+        logoUrl={tournament.site_logo_url}
+        topNotice={
+          isPreview ? (
+            <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
+              Preview Mode — this is how your leaderboard will appear to players.
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Header */}
-      <header className="px-6 py-4 sm:py-6" style={{ backgroundColor: headerBg }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {tournament.site_logo_url && (
-              <img src={tournament.site_logo_url} alt="" className="h-12 w-12 object-contain rounded" />
-            )}
-            <div>
-              <h1 className="text-xl sm:text-3xl font-bold leading-tight" style={{ color: textColor }}>
-                {design.title || tournament.title}
-              </h1>
-              <p className="text-xs sm:text-sm flex items-center gap-2 opacity-80">
-                <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
-              </p>
-            </div>
-          </div>
-          <Trophy className="h-8 w-8 sm:h-12 sm:w-12" style={{ color: accent }} />
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="flex-1 px-4 sm:px-6 py-6">
-        <div className={`max-w-7xl mx-auto grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" ? "lg:grid-cols-[1fr_280px]" : ""} gap-6`}>
-          {/* Leaderboard */}
-          <section className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}33` }}>
-            <div className="px-4 sm:px-6 py-3" style={{ backgroundColor: headerBg }}>
-              <h2 className="font-bold text-base sm:text-lg" style={{ color: textColor }}>Leaderboard</h2>
-            </div>
-            {visibleRows.length === 0 ? (
-              <div className="p-12 text-center opacity-70">
-                <Trophy className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                <p>Scoring hasn't started yet.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead style={{ backgroundColor: headerBg }}>
-                    <tr className="text-xs uppercase tracking-wider">
-                      {showPos && <th className="text-left px-4 sm:px-6 py-3 w-12">#</th>}
-                      {showPlayer && <th className="text-left px-4 sm:px-6 py-3">Player / Team</th>}
-                      {showThru && <th className="text-right px-4 sm:px-6 py-3 w-20">Thru</th>}
-                      {(showGross || showNet) && (
-                        <th className="text-right px-4 sm:px-6 py-3 w-24">{isStableford ? "Pts" : "Total"}</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleRows.map((row, i) => (
-                      <tr
-                        key={`${row.name}-${i}`}
-                        style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${headerBg}66` : "transparent" }}
-                      >
-                        {showPos && (
-                          <td className="px-4 sm:px-6 py-3 font-bold" style={{ color: i < 3 ? accent : textColor }}>
-                            {i + 1}
-                          </td>
-                        )}
-                        {showPlayer && (
-                          <td className="px-4 sm:px-6 py-3">
-                            <div className="font-semibold">{row.name}</div>
-                            {row.players && row.players.length > 0 && (
-                              <div className="text-xs opacity-70 truncate max-w-[300px]">{row.players.join(", ")}</div>
-                            )}
-                          </td>
-                        )}
-                        {showThru && <td className="px-4 sm:px-6 py-3 text-right opacity-80">{row.thru || "—"}</td>}
-                        {(showGross || showNet) && (
-                          <td className="px-4 sm:px-6 py-3 text-right font-mono font-bold">{row.total || "—"}</td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          {/* Sidebar */}
-          {showSponsorBanner && sponsorPos === "sidebar" && (
-            <aside className="space-y-4">
-              {heroImage && (
-                <div className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}55` }}>
-                  <img src={heroImage.image_url} alt={heroImage.caption || "Tournament photo"} className="w-full h-48 object-cover" />
-                  {heroImage.caption && <div className="px-3 py-2 text-xs opacity-80">{heroImage.caption}</div>}
-                </div>
-              )}
-
-              {sidebarSponsors.length > 0 && (
-                <div className="rounded-lg p-4" style={{ backgroundColor: `${headerBg}55` }}>
-                  <h3 className="text-[10px] uppercase tracking-widest font-bold mb-3 opacity-80">Our Sponsors</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {sidebarSponsors.map((s) => (
-                      <div key={s.id} className="flex items-center justify-center p-2 rounded bg-white/10">
-                        {s.logo_url ? (
-                          <img src={s.logo_url} alt={s.name} className="h-12 max-w-full object-contain" />
-                        ) : (
-                          <span className="text-xs font-semibold text-center">{s.name}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </aside>
-          )}
-        </div>
-      </main>
-
-      {/* Ticker */}
-      {design.show_ticker && design.ticker_text && (
-        <div className="overflow-hidden whitespace-nowrap py-2" style={{ backgroundColor: headerBg }}>
-          <span className={`inline-block ${tickerSpeedClass} px-4`}>{design.ticker_text}</span>
-        </div>
-      )}
-
-      {/* Bottom Sponsor Banner */}
-      {showSponsorBanner && sponsorPos === "bottom" && bannerSponsor && (
-        <div className="w-full py-3 px-6 flex items-center justify-center gap-4" style={{ backgroundColor: accent, color: headerBg }}>
-          <span className="text-[10px] uppercase tracking-widest font-semibold opacity-80">Sponsored by</span>
-          {bannerSponsor.logo_url ? (
-            <img src={bannerSponsor.logo_url} alt={bannerSponsor.name} className="h-12 max-w-[200px] object-contain" />
-          ) : (
-            <span className="text-lg font-bold">{bannerSponsor.name}</span>
-          )}
-        </div>
-      )}
-
-      {/* Rotating Footer Sponsors */}
-      {footerSponsors.length > 0 && (
-        <footer className="overflow-hidden" style={{ backgroundColor: headerBg }}>
-          <div className="flex items-center gap-12 py-4 animate-marquee whitespace-nowrap">
-            {[...footerSponsors, ...footerSponsors].map((s, i) => (
-              <div key={`${s.id}-${i}`} className="flex items-center gap-3 shrink-0 px-4">
-                {s.logo_url ? (
-                  <img src={s.logo_url} alt={s.name} className="h-10 max-w-[160px] object-contain" />
-                ) : (
-                  <span className="text-sm font-semibold opacity-80">{s.name}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </footer>
-      )}
+          ) : null
+        }
+      />
       <BrandingBadge show={tournament.show_branding_badge !== false} />
-    </div>
+    </>
   );
 }
+

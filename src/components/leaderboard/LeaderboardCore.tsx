@@ -1,0 +1,267 @@
+import { Trophy, Award } from "lucide-react";
+import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
+
+export interface LbRow {
+  name: string;
+  total: number;
+  thru: number;
+  players?: string[];
+}
+
+export interface LbSponsor {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  leaderboard_placement?: string;
+}
+
+export interface LbGalleryItem {
+  id: string;
+  image_url: string;
+  caption?: string | null;
+  is_hero?: boolean;
+}
+
+const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
+
+/**
+ * Always merge against DEFAULT_DESIGN so a missing or partial token never
+ * causes the live leaderboard to diverge from the configured preview.
+ */
+export function mergeDesign(partial: Partial<LeaderboardDesign> | null | undefined): LeaderboardDesign {
+  return { ...DEFAULT_DESIGN, ...(partial || {}) };
+}
+
+export function tickerSpeedClass(speed: LeaderboardDesign["ticker_speed"]): string {
+  if (speed === "slow") return "animate-[marquee_40s_linear_infinite]";
+  if (speed === "fast") return "animate-[marquee_12s_linear_infinite]";
+  return "animate-marquee";
+}
+
+interface RendererProps {
+  design: LeaderboardDesign;
+  title: string;
+  rows: LbRow[];
+  isStableford?: boolean;
+  bannerSponsor?: LbSponsor | null;
+  sidebarSponsors?: LbSponsor[];
+  footerSponsors?: LbSponsor[];
+  heroImage?: LbGalleryItem | null;
+  logoUrl?: string | null;
+  /** Compact mode for the in-dashboard preview card. */
+  compact?: boolean;
+  /** Optional banner above the leaderboard (eg. "Preview Mode"). */
+  topNotice?: React.ReactNode;
+}
+
+/**
+ * Single source of truth for rendering the leaderboard. Used by both the
+ * organizer's design-preview card AND the public live leaderboard so the two
+ * can never visually diverge.
+ */
+export function LeaderboardRenderer({
+  design,
+  title,
+  rows,
+  isStableford,
+  bannerSponsor,
+  sidebarSponsors = [],
+  footerSponsors = [],
+  heroImage,
+  logoUrl,
+  compact = false,
+  topNotice,
+}: RendererProps) {
+  const fontSize = FONT_SIZE_PX[design.font_size] || 16;
+  const bg = design.background_color;
+  const headerBg = design.header_background;
+  const textColor = design.text_color;
+  const accent = design.accent_color;
+  const showSponsorBanner = design.show_sponsor_banner !== false;
+  const sponsorPos = design.sponsor_banner_position || "top";
+  const visibleRows = rows.slice(0, Math.max(1, design.max_rows || 20));
+  const showGross = design.show_gross !== false && design.default_view !== "net";
+  const showNet = design.show_net !== false && design.default_view !== "gross";
+  const showThru = design.show_thru !== false;
+  const showPos = design.show_position !== false;
+  const showPlayer = design.show_player !== false;
+
+  const padX = compact ? "px-3" : "px-4 sm:px-6";
+  const padY = compact ? "py-2" : "py-3";
+  const headerPadY = compact ? "py-2" : "py-4 sm:py-6";
+
+  return (
+    <div
+      data-testid="lb-root"
+      className={`flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
+      style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
+    >
+      {topNotice}
+
+      {showSponsorBanner && sponsorPos === "top" && bannerSponsor && (
+        <div
+          data-testid="lb-banner-top"
+          className={`w-full ${compact ? "py-1.5 px-3" : "py-3 px-6"} flex items-center justify-center gap-3`}
+          style={{ backgroundColor: accent, color: headerBg }}
+        >
+          <span className="text-[10px] uppercase tracking-widest font-semibold opacity-80">Sponsored by</span>
+          {bannerSponsor.logo_url ? (
+            <img src={bannerSponsor.logo_url} alt={bannerSponsor.name} className={`${compact ? "h-6" : "h-12"} max-w-[200px] object-contain`} />
+          ) : (
+            <div className="flex items-center gap-2">
+              <Award className={compact ? "h-3 w-3" : "h-5 w-5"} />
+              <span className={compact ? "text-sm font-bold" : "text-lg font-bold"}>{bannerSponsor.name}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <header className={`${padX} ${headerPadY}`} style={{ backgroundColor: headerBg }} data-testid="lb-header">
+        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center justify-between gap-4`}>
+          <div className="flex items-center gap-3">
+            {logoUrl && (
+              <img src={logoUrl} alt="" className={`${compact ? "h-6 w-6" : "h-12 w-12"} object-contain rounded`} />
+            )}
+            <div>
+              <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl"} font-bold leading-tight`} style={{ color: textColor }}>
+                {design.title || title}
+              </h1>
+              {!compact && (
+                <p className="text-xs sm:text-sm flex items-center gap-2 opacity-80">
+                  <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
+                </p>
+              )}
+            </div>
+          </div>
+          <Trophy className={compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"} style={{ color: accent }} />
+        </div>
+      </header>
+
+      <main className={`flex-1 ${compact ? "p-2" : "px-4 sm:px-6 py-6"}`}>
+        <div className={`${compact ? "" : "max-w-7xl mx-auto"} grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" && !compact ? "lg:grid-cols-[1fr_280px]" : ""} gap-4`}>
+          <section className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}33` }} data-testid="lb-table-section">
+            <div className={`${padX} ${padY}`} style={{ backgroundColor: headerBg }}>
+              <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>Leaderboard</h2>
+            </div>
+            {visibleRows.length === 0 ? (
+              <div className={`${compact ? "p-4" : "p-12"} text-center opacity-70`}>
+                <Trophy className={`${compact ? "h-5 w-5" : "h-10 w-10"} mx-auto mb-2 opacity-40`} />
+                <p className={compact ? "text-xs" : ""}>Scoring hasn't started yet.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full" data-testid="lb-table">
+                  <thead style={{ backgroundColor: headerBg }}>
+                    <tr className="text-xs uppercase tracking-wider">
+                      {showPos && <th className={`text-left ${padX} ${padY} w-12`}>#</th>}
+                      {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
+                      {showThru && <th className={`text-right ${padX} ${padY} w-20`}>Thru</th>}
+                      {(showGross || showNet) && (
+                        <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleRows.map((row, i) => (
+                      <tr
+                        key={`${row.name}-${i}`}
+                        data-testid="lb-row"
+                        style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${headerBg}66` : "transparent" }}
+                      >
+                        {showPos && (
+                          <td className={`${padX} ${padY} font-bold`} style={{ color: i < 3 ? accent : textColor }}>
+                            {i + 1}
+                          </td>
+                        )}
+                        {showPlayer && (
+                          <td className={`${padX} ${padY}`}>
+                            <div className="font-semibold">{row.name}</div>
+                            {row.players && row.players.length > 0 && (
+                              <div className="text-xs opacity-70 truncate max-w-[300px]">{row.players.join(", ")}</div>
+                            )}
+                          </td>
+                        )}
+                        {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru || "—"}</td>}
+                        {(showGross || showNet) && (
+                          <td className={`${padX} ${padY} text-right font-mono font-bold`}>{row.total || "—"}</td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          {showSponsorBanner && sponsorPos === "sidebar" && !compact && (
+            <aside className="space-y-4" data-testid="lb-sidebar">
+              {heroImage && (
+                <div className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}55` }}>
+                  <img src={heroImage.image_url} alt={heroImage.caption || "Tournament photo"} className="w-full h-48 object-cover" />
+                  {heroImage.caption && <div className="px-3 py-2 text-xs opacity-80">{heroImage.caption}</div>}
+                </div>
+              )}
+              {sidebarSponsors.length > 0 && (
+                <div className="rounded-lg p-4" style={{ backgroundColor: `${headerBg}55` }}>
+                  <h3 className="text-[10px] uppercase tracking-widest font-bold mb-3 opacity-80">Our Sponsors</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {sidebarSponsors.map((s) => (
+                      <div key={s.id} className="flex items-center justify-center p-2 rounded bg-white/10">
+                        {s.logo_url ? (
+                          <img src={s.logo_url} alt={s.name} className="h-12 max-w-full object-contain" />
+                        ) : (
+                          <span className="text-xs font-semibold text-center">{s.name}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+          )}
+        </div>
+      </main>
+
+      {design.show_ticker && design.ticker_text && (
+        <div
+          data-testid="lb-ticker"
+          className={`overflow-hidden whitespace-nowrap ${compact ? "py-1 text-xs" : "py-2"}`}
+          style={{ backgroundColor: headerBg }}
+        >
+          <span className={`inline-block ${tickerSpeedClass(design.ticker_speed)} px-4`}>{design.ticker_text}</span>
+        </div>
+      )}
+
+      {showSponsorBanner && sponsorPos === "bottom" && bannerSponsor && (
+        <div
+          data-testid="lb-banner-bottom"
+          className={`w-full ${compact ? "py-1.5 px-3" : "py-3 px-6"} flex items-center justify-center gap-3`}
+          style={{ backgroundColor: accent, color: headerBg }}
+        >
+          <span className="text-[10px] uppercase tracking-widest font-semibold opacity-80">Sponsored by</span>
+          {bannerSponsor.logo_url ? (
+            <img src={bannerSponsor.logo_url} alt={bannerSponsor.name} className={`${compact ? "h-6" : "h-12"} max-w-[200px] object-contain`} />
+          ) : (
+            <span className={compact ? "text-sm font-bold" : "text-lg font-bold"}>{bannerSponsor.name}</span>
+          )}
+        </div>
+      )}
+
+      {footerSponsors.length > 0 && !compact && (
+        <footer className="overflow-hidden" style={{ backgroundColor: headerBg }} data-testid="lb-footer">
+          <div className="flex items-center gap-12 py-4 animate-marquee whitespace-nowrap">
+            {[...footerSponsors, ...footerSponsors].map((s, i) => (
+              <div key={`${s.id}-${i}`} className="flex items-center gap-3 shrink-0 px-4">
+                {s.logo_url ? (
+                  <img src={s.logo_url} alt={s.name} className="h-10 max-w-[160px] object-contain" />
+                ) : (
+                  <span className="text-sm font-semibold opacity-80">{s.name}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+}

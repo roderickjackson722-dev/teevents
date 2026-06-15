@@ -68,7 +68,6 @@ const categories: SidebarCategory[] = [
     color: "border-l-sky-400 bg-sky-400/5",
     items: [
       { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null, description: "Par, slope, rating, hole data" },
-      { title: "Pin Sheets", url: "/dashboard/pin-sheets", icon: MapPin, feature: null, description: "Hole locations for tournament day" },
       { title: "Handicap Settings", url: "/dashboard/scoring?tab=handicap", icon: Sliders, feature: "leaderboard", description: "Allowances, max handicap, formats" },
     ],
   },
@@ -80,11 +79,24 @@ const categories: SidebarCategory[] = [
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
-      { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
-      { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null, description: "About us, mission, history, contact" },
-      { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },
       { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
+    ],
+  },
+  {
+    label: "Public Webpage",
+    color: "border-l-emerald-400 bg-emerald-400/5",
+    items: [
+      // "View Live Tournament Page" injected dynamically when a tournament slug exists
+      { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null, description: "About us, mission, history, contact" },
+      { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
+      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
+      { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },
+      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
+      { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
+      { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
+      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
+      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
     ],
   },
   {
@@ -103,7 +115,6 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
-      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
       { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging", description: "Email and SMS blasts to players" },
       { title: "Team Performance", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Referral tracking, promoter leaderboard" },
       { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
@@ -137,11 +148,6 @@ const categories: SidebarCategory[] = [
     color: "border-l-teal-400 bg-teal-400/5",
     items: [
       { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys" },
-      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
-      { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
-      { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
-      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
-      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
     ],
   },
 ];
@@ -245,10 +251,10 @@ export function DashboardSidebar() {
 
           {categories.map((cat) => {
             let items = cat.items;
-            if (cat.label === "Organizer Setup" && tournamentSlug) {
+            if (cat.label === "Public Webpage" && tournamentSlug) {
               items = [
+                { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
                 ...cat.items,
-                { title: "View Tournament", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
               ];
             }
             const visibleItems = items.filter(isVisible);

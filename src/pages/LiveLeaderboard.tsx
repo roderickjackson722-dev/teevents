@@ -157,7 +157,7 @@ export default function LiveLeaderboard() {
           return;
         }
         setTournament(data as Tournament);
-        setDesign({ ...DEFAULT_DESIGN, ...((data as any).leaderboard_design || {}) });
+        setDesign(mergeDesign((data as any).leaderboard_design));
         setLoading(false);
       });
   }, [slug, isPreview]);

@@ -417,49 +417,6 @@ export default function DayOfSettings() {
             </div>
           </section>
 
-          {/* PIN SHEETS */}
-          <section className="space-y-3 border-t pt-5">
-            <Label className="text-base">Pin Sheets</Label>
-            <Toggle label="Show pin sheets section" checked={t.day_of_show_pin_sheets} onChange={(v) => setT({ ...t, day_of_show_pin_sheets: v })} />
-            <div className="space-y-2">
-              <Label className="text-xs">Pin Sheet PDF</Label>
-              {t.day_of_pin_sheet_pdf_url && (
-                <div className="text-xs">
-                  <a href={t.day_of_pin_sheet_pdf_url} target="_blank" rel="noreferrer" className="text-primary underline break-all">
-                    Current file
-                  </a>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <input
-                  ref={pinPdfFileRef}
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPinSheetPdf(f); e.currentTarget.value = ""; }}
-                />
-                <Button type="button" size="sm" variant="outline" onClick={() => pinPdfFileRef.current?.click()} disabled={uploadingPdf}>
-                  <Upload className="w-4 h-4 mr-1" /> {uploadingPdf ? "Uploading…" : (t.day_of_pin_sheet_pdf_url ? "Replace PDF" : "Upload PDF")}
-                </Button>
-                {t.day_of_pin_sheet_pdf_url && (
-                  <Button type="button" size="sm" variant="ghost" onClick={() => setT({ ...t, day_of_pin_sheet_pdf_url: null })}>Remove</Button>
-                )}
-              </div>
-              <details>
-                <summary className="text-xs text-muted-foreground cursor-pointer">Or paste a PDF URL</summary>
-                <Input
-                  className="mt-1"
-                  value={t.day_of_pin_sheet_pdf_url || ""}
-                  onChange={(e) => setT({ ...t, day_of_pin_sheet_pdf_url: e.target.value })}
-                  placeholder="https://..."
-                />
-              </details>
-              <p className="text-xs text-muted-foreground">PDF, max 20MB. Or manage hole-by-hole pin placements in the Pin Sheets tool.</p>
-            </div>
-            <Link to="/dashboard/pin-sheets">
-              <Button size="sm" variant="outline">Open Pin Sheets</Button>
-            </Link>
-          </section>
 
           {/* ANNOUNCEMENTS */}
           <section className="space-y-2 border-t pt-5">

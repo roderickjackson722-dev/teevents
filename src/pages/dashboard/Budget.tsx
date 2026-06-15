@@ -60,11 +60,15 @@ type Income = {
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n || 0);
 
-// Computed totals helpers (income uses qty × price when qty>0, otherwise raw amounts)
+// Computed totals helpers (income uses qty × price when both are set, otherwise raw amounts)
 const incomeProjected = (i: Income) =>
-  i.quantity_estimated > 0 ? Number(i.quantity_estimated) * Number(i.unit_price) : Number(i.projected_amount);
+  i.quantity_estimated > 0 && Number(i.unit_price) > 0
+    ? Number(i.quantity_estimated) * Number(i.unit_price)
+    : Number(i.projected_amount);
 const incomeActual = (i: Income) =>
-  i.quantity_actual > 0 ? Number(i.quantity_actual) * Number(i.unit_price) : Number(i.actual_amount);
+  i.quantity_actual > 0 && Number(i.unit_price) > 0
+    ? Number(i.quantity_actual) * Number(i.unit_price)
+    : Number(i.actual_amount);
 
 export default function BudgetPage() {
   const { org } = useOrgContext();
@@ -128,6 +132,7 @@ export default function BudgetPage() {
       if (cancelled) return;
       setBudget(b as Budget);
       await loadBudgetData(b.id);
+      await syncTiersIntoIncome(b.id, selectedId);
       await syncActualsFromTransactions(b.id, selectedId);
       setLoading(false);
     })();
@@ -145,6 +150,60 @@ export default function BudgetPage() {
     side_event_ticket: { category: "Add-ons & Extras",  item: "Auto: Side Event Tickets" },
     vendor:            { category: "Misc Income",       item: "Auto: Vendor Payments" },
   };
+
+  // Sync configured registration tiers and sponsorship tiers into Income as
+  // "Auto:" rows so organizers immediately see expected revenue from their
+  // pricing setup. Unit price reflects the tier; organizers can edit qty.
+  async function syncTiersIntoIncome(bId: string, tournamentId: string) {
+    try {
+      const [regRes, spRes] = await Promise.all([
+        supabase.from("tournament_registration_tiers").select("name, price_cents").eq("tournament_id", tournamentId),
+        supabase.from("sponsorship_tiers").select("name, price_cents").eq("tournament_id", tournamentId),
+      ]);
+      const rows: { item: string; category: IncomeCategory; price: number }[] = [];
+      for (const r of (regRes.data as any[]) || []) {
+        if (r?.name) rows.push({ item: `Auto: ${r.name}`, category: "Registrations", price: Number(r.price_cents || 0) / 100 });
+      }
+      for (const s of (spRes.data as any[]) || []) {
+        if (s?.name) rows.push({ item: `Auto: ${s.name}`, category: "Sponsorships", price: Number(s.price_cents || 0) / 100 });
+      }
+      if (rows.length === 0) return;
+
+      const { data: existingRows } = await supabase.from("budget_income").select("*").eq("budget_id", bId);
+      const existing = (existingRows as any[]) || [];
+      const updated: any[] = [...existing];
+
+      for (const r of rows) {
+        const found = existing.find((x: any) => x.item_name === r.item && x.category === r.category);
+        if (found) {
+          if (Number(found.unit_price) !== r.price) {
+            await supabase.from("budget_income").update({ unit_price: r.price }).eq("id", found.id);
+            const idx = updated.findIndex((u) => u.id === found.id);
+            if (idx >= 0) updated[idx] = { ...updated[idx], unit_price: r.price };
+          }
+        } else {
+          const { data: ins } = await supabase
+            .from("budget_income")
+            .insert({
+              budget_id: bId,
+              item_name: r.item,
+              category: r.category,
+              unit_price: r.price,
+              quantity_estimated: 0,
+              notes: "Auto-synced from your tournament pricing setup. Edit quantity to project income.",
+              sort_order: updated.length,
+            })
+            .select()
+            .single();
+          if (ins) updated.push(ins);
+        }
+      }
+      setIncome(updated as any);
+    } catch (e) {
+      console.error("syncTiersIntoIncome", e);
+    }
+  }
+
   async function syncActualsFromTransactions(bId: string, tournamentId: string) {
     try {
       const { data: txs, error } = await supabase

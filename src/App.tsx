@@ -106,6 +106,8 @@ import Unsubscribe from "./pages/Unsubscribe";
 import FlyerToDemo from "./pages/admin/FlyerToDemo";
 import SalesProspecting from "./pages/admin/SalesProspecting";
 import DemoLeads from "./pages/admin/DemoLeads";
+import AdminCompetitors from "./pages/admin/Competitors";
+import DemoPrepShare from "./pages/DemoPrepShare";
 import HelpCenter from "./pages/help/HelpCenter";
 import StepByStep from "./pages/help/StepByStep";
 import ConnectStripe from "./pages/help/ConnectStripe";
@@ -268,7 +270,9 @@ const App = () => (
             <Route path="/demo/:token/live" element={<DemoLiveLeaderboard />} />
             <Route path="/demo/:token/day-of" element={<DemoDayOfPage />} />
             <Route path="/claim/:token" element={<Claim />} />
-            <Route path="/claim-demo/:token" element={<ClaimDemo />} />
+             <Route path="/claim-demo/:token" element={<ClaimDemo />} />
+             <Route path="/demo-prep/:token" element={<DemoPrepShare />} />
+             <Route path="/admin/competitors" element={<AdminCompetitors />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />
            <Route path="/admin/outreach" element={<AdminOutreach />} />

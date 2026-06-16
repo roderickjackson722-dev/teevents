@@ -1164,6 +1164,7 @@ const Registration = () => {
           </TabsContent>
         </Tabs>
       )}
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

@@ -284,16 +284,16 @@ export default function LiveScoring() {
           <CardHeader className="text-center">
             <Trophy className="h-10 w-10 text-primary mx-auto mb-2" />
             <CardTitle className="text-xl">{tournament.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">Live Scoring — Enter your hole to begin</p>
+            <p className="text-sm text-muted-foreground">Live Scoring — Enter your scoring code to begin</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Hole Number</label>
+              <label className="text-sm font-medium mb-1 block">Scoring Code</label>
               <Input
-                type="number"
-                placeholder="e.g. 3"
-                value={groupInput}
-                onChange={(e) => { setGroupInput(e.target.value); setEmailInput(""); }}
+                type="text"
+                placeholder="e.g. AB12CD"
+                value={codeInput}
+                onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setEmailInput(""); setGroupInput(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>
@@ -308,7 +308,7 @@ export default function LiveScoring() {
                 type="email"
                 placeholder="john@example.com"
                 value={emailInput}
-                onChange={(e) => { setEmailInput(e.target.value); setGroupInput(""); }}
+                onChange={(e) => { setEmailInput(e.target.value); setCodeInput(""); setGroupInput(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>

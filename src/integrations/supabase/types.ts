@@ -6424,7 +6424,17 @@ export type Database = {
           day_of_welcome_message: string | null
           day_of_welcome_title: string | null
           demo_admin_id: string | null
+          demo_checklist: Json
+          demo_conversion_sent_at: string | null
+          demo_conversion_token: string | null
+          demo_converted_at: string | null
           demo_flyer_url: string | null
+          demo_notes: string | null
+          demo_prepared: boolean
+          demo_prospect_email: string | null
+          demo_prospect_name: string | null
+          demo_prospect_other: string | null
+          demo_prospect_platform: string | null
           description: string | null
           description_html: string | null
           display_order: number
@@ -6605,7 +6615,17 @@ export type Database = {
           day_of_welcome_message?: string | null
           day_of_welcome_title?: string | null
           demo_admin_id?: string | null
+          demo_checklist?: Json
+          demo_conversion_sent_at?: string | null
+          demo_conversion_token?: string | null
+          demo_converted_at?: string | null
           demo_flyer_url?: string | null
+          demo_notes?: string | null
+          demo_prepared?: boolean
+          demo_prospect_email?: string | null
+          demo_prospect_name?: string | null
+          demo_prospect_other?: string | null
+          demo_prospect_platform?: string | null
           description?: string | null
           description_html?: string | null
           display_order?: number
@@ -6786,7 +6806,17 @@ export type Database = {
           day_of_welcome_message?: string | null
           day_of_welcome_title?: string | null
           demo_admin_id?: string | null
+          demo_checklist?: Json
+          demo_conversion_sent_at?: string | null
+          demo_conversion_token?: string | null
+          demo_converted_at?: string | null
           demo_flyer_url?: string | null
+          demo_notes?: string | null
+          demo_prepared?: boolean
+          demo_prospect_email?: string | null
+          demo_prospect_name?: string | null
+          demo_prospect_other?: string | null
+          demo_prospect_platform?: string | null
           description?: string | null
           description_html?: string | null
           display_order?: number

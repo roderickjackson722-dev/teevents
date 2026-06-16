@@ -316,6 +316,9 @@ export default function DemoConverter() {
                               Open Dashboard <ExternalLink className="h-3 w-3 ml-1" />
                             </a>
                           </Button>
+                          <Button size="sm" variant="secondary" onClick={() => navigate(`/admin/demo-converter/${d.id}`)}>
+                            <Sparkles className="h-3 w-3 mr-1" /> Prepare Demo
+                          </Button>
                           <Button size="sm" variant="outline" asChild>
                             <a href={`/tournament/${slugOf(d)}`} target="_blank" rel="noreferrer">Public Site</a>
                           </Button>

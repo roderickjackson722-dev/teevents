@@ -97,6 +97,8 @@ import DemoDashboardPreview from "./pages/demo/DemoDashboardPreview";
 import DemoLiveLeaderboard from "./pages/demo/DemoLiveLeaderboard";
 import DemoDayOfPage from "./pages/demo/DemoDayOfPage";
 import Claim from "./pages/Claim";
+import ClaimDemo from "./pages/ClaimDemo";
+import DemoPreparation from "./pages/admin/DemoPreparation";
 import AdminStripeConnections from "./pages/admin/StripeConnections";
 import AdminCourseDatabase from "./pages/admin/CourseDatabase";
 import AdminOutreach from "./pages/admin/Outreach";
@@ -259,12 +261,14 @@ const App = () => (
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
            <Route path="/admin/payouts" element={<AdminPayouts />} />
            <Route path="/admin/demo-converter" element={<DemoConverter />} />
-           <Route path="/admin/sales-hub/demo-agenda" element={<DemoAgendaEditor />} />
-           <Route path="/demo/:token" element={<DemoTournamentSite />} />
-           <Route path="/demo/:token/dashboard" element={<DemoDashboardPreview />} />
-           <Route path="/demo/:token/live" element={<DemoLiveLeaderboard />} />
-           <Route path="/demo/:token/day-of" element={<DemoDayOfPage />} />
-           <Route path="/claim/:token" element={<Claim />} />
+            <Route path="/admin/demo-converter/:id" element={<DemoPreparation />} />
+            <Route path="/admin/sales-hub/demo-agenda" element={<DemoAgendaEditor />} />
+            <Route path="/demo/:token" element={<DemoTournamentSite />} />
+            <Route path="/demo/:token/dashboard" element={<DemoDashboardPreview />} />
+            <Route path="/demo/:token/live" element={<DemoLiveLeaderboard />} />
+            <Route path="/demo/:token/day-of" element={<DemoDayOfPage />} />
+            <Route path="/claim/:token" element={<Claim />} />
+            <Route path="/claim-demo/:token" element={<ClaimDemo />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />
            <Route path="/admin/outreach" element={<AdminOutreach />} />

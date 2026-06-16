@@ -124,10 +124,11 @@ export default function AdminCompetitors() {
       </div>
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) { setOpen(false); setEditing(null); } }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Competitor" : "Add Competitor"}</DialogTitle></DialogHeader>
           {editing && (
-            <div className="space-y-3">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
                   <Label>Name</Label>

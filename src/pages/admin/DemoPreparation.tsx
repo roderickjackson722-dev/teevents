@@ -16,7 +16,6 @@ import { DEFAULT_CHECKLIST, PLATFORM_LABELS, TALKING_POINTS, type PlatformKey } 
 import { generateDemoAgendaPdf } from "@/lib/demoAgendaPdf";
 
 type DbCompetitor = { slug: string; name: string; talking_points: { pain: string; solution: string }[]; is_active: boolean; sort_order: number };
-import { generateDemoAgendaPdf } from "@/lib/demoAgendaPdf";
 
 export default function DemoPreparation() {
   const { id } = useParams();

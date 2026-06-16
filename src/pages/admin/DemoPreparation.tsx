@@ -270,9 +270,26 @@ export default function DemoPreparation() {
                 <Input type="email" value={prospectEmail} onChange={(e) => setProspectEmail(e.target.value)} placeholder="jane@example.com" />
               </div>
             </div>
-            <Button variant="outline" onClick={downloadPdf}>
-              <Download className="h-4 w-4 mr-2" /> Download Demo Agenda PDF
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={downloadPdf}>
+                <Download className="h-4 w-4 mr-2" /> Download Demo Agenda PDF
+              </Button>
+              <Button variant="outline" onClick={generateShareLink} disabled={generatingShare}>
+                <LinkIcon className="h-4 w-4 mr-2" /> {t.demo_share_token ? "Copy Share Link" : "Generate Share Link"}
+              </Button>
+              {t.demo_share_token && (
+                <Button variant="ghost" size="sm" onClick={revokeShareLink}>Revoke link</Button>
+              )}
+            </div>
+            {(shareUrl || t.demo_share_token) && (
+              <div className="text-xs break-all p-2 bg-muted rounded flex items-center gap-2">
+                <span className="flex-1">{shareUrl || `${window.location.origin}/demo-prep/${t.demo_share_token}`}</span>
+                <Button size="sm" variant="ghost" onClick={() => {
+                  const u = shareUrl || `${window.location.origin}/demo-prep/${t.demo_share_token}`;
+                  navigator.clipboard.writeText(u); toast({ title: "Copied" });
+                }}><Copy className="h-3 w-3" /></Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

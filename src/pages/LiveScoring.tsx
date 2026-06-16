@@ -238,8 +238,19 @@ export default function LiveScoring() {
     });
 
     if (upserts.length > 0) {
-      const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-        onConflict: "registration_id,hole_number",
+      if (!scoringCode) {
+        toast.error("Missing scoring code. Please log in again with your code.");
+        setSaving(false);
+        return;
+      }
+      const { error } = await supabase.rpc("save_group_scores", {
+        _tournament_id: tournament.id,
+        _code: scoringCode,
+        _scores: upserts.map((u) => ({
+          registration_id: u.registration_id,
+          hole_number: u.hole_number,
+          strokes: u.strokes,
+        })),
       });
       if (error) { toast.error(error.message); }
       else {

@@ -685,6 +685,7 @@ export default function CourseDetails() {
           </CardContent>
         )}
       </Card>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 }

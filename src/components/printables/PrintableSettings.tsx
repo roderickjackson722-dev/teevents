@@ -210,12 +210,16 @@ function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: P
             )}
           </div>
           {options.showLogo && (
-            <div
-              className="text-[9px] font-bold border px-1.5 py-0.5 rounded"
-              style={{ borderColor: layout === "bold" ? "hsl(var(--primary-foreground))" : accent, color: layout === "bold" ? "hsl(var(--primary-foreground))" : accent }}
-            >
-              LOGO
-            </div>
+            logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-10 max-w-[80px] object-contain bg-white rounded p-0.5" />
+            ) : (
+              <div
+                className="text-[9px] font-bold border px-1.5 py-0.5 rounded"
+                style={{ borderColor: layout === "bold" ? "hsl(var(--primary-foreground))" : accent, color: layout === "bold" ? "hsl(var(--primary-foreground))" : accent }}
+              >
+                LOGO
+              </div>
+            )
           )}
         </div>
         <div className="p-2">

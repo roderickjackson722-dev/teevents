@@ -4767,6 +4767,7 @@ export type Database = {
           name: string
           package_type: string | null
           price_cents: number
+          show_remaining: boolean
           spots_used: number
           total_spots: number | null
           tournament_id: string
@@ -4783,6 +4784,7 @@ export type Database = {
           name: string
           package_type?: string | null
           price_cents: number
+          show_remaining?: boolean
           spots_used?: number
           total_spots?: number | null
           tournament_id: string
@@ -4799,6 +4801,7 @@ export type Database = {
           name?: string
           package_type?: string | null
           price_cents?: number
+          show_remaining?: boolean
           spots_used?: number
           total_spots?: number | null
           tournament_id?: string
@@ -5780,6 +5783,7 @@ export type Database = {
           dietary_restrictions: string | null
           email: string
           first_name: string
+          group_label: string | null
           group_number: number | null
           group_position: number | null
           group_scoring_code: string | null
@@ -5812,6 +5816,7 @@ export type Database = {
           dietary_restrictions?: string | null
           email: string
           first_name: string
+          group_label?: string | null
           group_number?: number | null
           group_position?: number | null
           group_scoring_code?: string | null
@@ -5844,6 +5849,7 @@ export type Database = {
           dietary_restrictions?: string | null
           email?: string
           first_name?: string
+          group_label?: string | null
           group_number?: number | null
           group_position?: number | null
           group_scoring_code?: string | null
@@ -6374,6 +6380,7 @@ export type Database = {
           captain_label: string | null
           confirmation_email_config: Json | null
           contact_email: string | null
+          contact_name: string | null
           contact_phone: string | null
           countdown_style: string
           course_name: string | null
@@ -6480,6 +6487,7 @@ export type Database = {
           post_event_survey_sent_at: string | null
           printable_font: string
           printable_layout: string
+          printable_logo_url: string | null
           pro_paid_at: string | null
           pro_payment_intent_id: string | null
           public_tabs: Json | null
@@ -6553,6 +6561,7 @@ export type Database = {
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
+          contact_name?: string | null
           contact_phone?: string | null
           countdown_style?: string
           course_name?: string | null
@@ -6659,6 +6668,7 @@ export type Database = {
           post_event_survey_sent_at?: string | null
           printable_font?: string
           printable_layout?: string
+          printable_logo_url?: string | null
           pro_paid_at?: string | null
           pro_payment_intent_id?: string | null
           public_tabs?: Json | null
@@ -6732,6 +6742,7 @@ export type Database = {
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
+          contact_name?: string | null
           contact_phone?: string | null
           countdown_style?: string
           course_name?: string | null
@@ -6838,6 +6849,7 @@ export type Database = {
           post_event_survey_sent_at?: string | null
           printable_font?: string
           printable_layout?: string
+          printable_logo_url?: string | null
           pro_paid_at?: string | null
           pro_payment_intent_id?: string | null
           public_tabs?: Json | null

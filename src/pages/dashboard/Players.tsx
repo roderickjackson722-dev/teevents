@@ -62,6 +62,7 @@ interface Registration {
   notes: string | null;
   payment_status: string;
   group_number: number | null;
+  group_label: string | null;
   group_position: number | null;
   created_at: string;
   scoring_code: string | null;
@@ -129,7 +130,7 @@ const Players = () => {
   const [editingPlayer, setEditingPlayer] = useState<Registration | null>(null);
   const [editForm, setEditForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
-    handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "",
+    handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "", group_label: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
   useEffect(() => {
@@ -183,6 +184,7 @@ const Players = () => {
 
   const openEditPlayer = (p: Registration) => {
     setEditingPlayer(p);
+    const label = p.group_label || (p.group_number != null ? String(p.group_number) : "");
     setEditForm({
       first_name: p.first_name || "",
       last_name: p.last_name || "",
@@ -192,6 +194,7 @@ const Players = () => {
       shirt_size: p.shirt_size || "",
       dietary_restrictions: p.dietary_restrictions || "",
       group_number: p.group_number !== null && p.group_number !== undefined ? String(p.group_number) : "",
+      group_label: label,
     });
   };
 
@@ -202,6 +205,10 @@ const Players = () => {
       return;
     }
     setSavingEdit(true);
+    // Parse leading integer from group_label (e.g. "1A" → 1) to keep numeric group_number in sync
+    const labelRaw = editForm.group_label.trim();
+    const leadingNum = labelRaw.match(/^(\d+)/);
+    const parsedGroupNumber = leadingNum ? parseInt(leadingNum[1]) : null;
     const updates: any = {
       first_name: editForm.first_name.trim(),
       last_name: editForm.last_name.trim(),
@@ -210,7 +217,8 @@ const Players = () => {
       handicap: editForm.handicap ? parseFloat(editForm.handicap) : null,
       shirt_size: editForm.shirt_size || null,
       dietary_restrictions: editForm.dietary_restrictions.trim() || null,
-      group_number: editForm.group_number ? parseInt(editForm.group_number) : null,
+      group_number: parsedGroupNumber,
+      group_label: labelRaw || null,
     };
     const { error } = await supabase
       .from("tournament_registrations")
@@ -737,9 +745,9 @@ const Players = () => {
                     </td>
                     <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
                     <td className="px-4 py-3 text-center">
-                      {p.group_number ? (
+                      {(p.group_label || p.group_number) ? (
                         <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                          #{p.group_number}
+                          #{p.group_label || p.group_number}
                         </span>
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
@@ -1038,7 +1046,7 @@ const Players = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Hole Assignment</p>
-                  <p className="text-sm text-foreground">{viewingPlayer.group_number ? `Hole #${viewingPlayer.group_number}` : "Unassigned"}</p>
+                  <p className="text-sm text-foreground">{(viewingPlayer.group_label || viewingPlayer.group_number) ? `Hole #${viewingPlayer.group_label || viewingPlayer.group_number}` : "Unassigned"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Scoring Code</p>
@@ -1111,7 +1119,8 @@ const Players = () => {
               </div>
               <div>
                 <Label htmlFor="ep-hole">Hole / Group</Label>
-                <Input id="ep-hole" type="number" min="1" placeholder="Unassigned" value={editForm.group_number} onChange={(e) => setEditForm((f) => ({ ...f, group_number: e.target.value }))} />
+                <Input id="ep-hole" type="text" placeholder="Unassigned (e.g. 1, 1A, 1B)" value={editForm.group_label} onChange={(e) => setEditForm((f) => ({ ...f, group_label: e.target.value }))} />
+                <p className="text-[10px] text-muted-foreground mt-1">Accepts numbers or split-tee labels like 1A / 1B.</p>
               </div>
             </div>
             <div>

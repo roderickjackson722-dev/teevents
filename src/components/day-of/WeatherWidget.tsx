@@ -47,7 +47,15 @@ export default function WeatherWidget({ location }: Props) {
     return () => { cancelled = true; };
   }, [location]);
 
-  if (err || !data) return null;
+  if (err) {
+    return (
+      <div className="flex items-center gap-2 text-xs bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm opacity-80">
+        <Cloud className="w-3.5 h-3.5" />
+        <span>Weather data unavailable</span>
+      </div>
+    );
+  }
+  if (!data) return null;
   const { Icon } = describe(data.code);
   return (
     <div className="flex items-center gap-2 text-sm bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">

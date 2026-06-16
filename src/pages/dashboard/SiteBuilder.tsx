@@ -1223,48 +1223,28 @@ const SiteBuilder = () => {
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="registrationUrl">Registration URL (external)</Label>
-                <Input
-                  id="registrationUrl"
-                  value={settings.registration_url || ""}
-                  onChange={(e) => updateField("registration_url", e.target.value)}
-                  placeholder="https://..."
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Link to an external registration page, or leave blank to use built-in registration.
-                </p>
-              </div>
-
-              {!settings.registration_url && (
-                <div>
-                  <Label htmlFor="registrationFee">Registration Fee (USD)</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-muted-foreground">$</span>
-                    <Input
-                      id="registrationFee"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={settings.registration_fee_cents ? (settings.registration_fee_cents / 100).toFixed(2) : ""}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        updateField("registration_fee_cents" as any, isNaN(val) ? 0 : Math.round(val * 100));
-                      }}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Leave at $0 for free registration. Requires Stripe Connect in Settings.
-                  </p>
-                </div>
-              )}
+              <p className="text-xs text-muted-foreground italic">
+                Registration pricing is managed in the Registration Management tab — the single source of truth for fees.
+              </p>
             </>
           )}
 
           {activeTab === "contact" && (
             <>
               <h2 className="text-lg font-display font-bold text-foreground">Contact Info</h2>
+
+              <div>
+                <Label htmlFor="contactName">Contact Name</Label>
+                <Input
+                  id="contactName"
+                  value={(settings as any).contact_name || ""}
+                  onChange={(e) => updateField("contact_name" as any, e.target.value)}
+                  placeholder="Jane Smith"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Who should attendees reach out to about this tournament?
+                </p>
+              </div>
 
               <div>
                 <Label htmlFor="contactEmail">Contact Email</Label>

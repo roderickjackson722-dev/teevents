@@ -154,6 +154,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     package_type: "",
     custom_package_label: "",
     hide_price_when_sold_out: true,
+    show_remaining: false,
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
@@ -208,7 +209,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true, show_remaining: false });
     setEditTier(null);
   };
 
@@ -232,6 +233,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       package_type: form.package_type || null,
       custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
       hide_price_when_sold_out: form.hide_price_when_sold_out,
+      show_remaining: form.show_remaining,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
@@ -266,6 +268,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       package_type: tier.package_type || "",
       custom_package_label: (tier as any).custom_package_label || "",
       hide_price_when_sold_out: (tier as any).hide_price_when_sold_out !== false,
+      show_remaining: (tier as any).show_remaining === true,
     });
     setDialogOpen(true);
   };
@@ -508,6 +511,17 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                       <p className="text-xs text-muted-foreground mt-0.5">Shows "Sold Out" instead of the price once all spots are taken.</p>
                     </div>
                   </div>
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="show-remaining"
+                      checked={form.show_remaining}
+                      onCheckedChange={(v) => setForm({ ...form, show_remaining: v })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="show-remaining" className="text-sm">Show remaining spots</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Off by default. When on (and Total Spots is set), the public page shows "X spots remaining".</p>
+                    </div>
+                  </div>
                   <Button type="submit" className="w-full" disabled={saving}>
                     {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
                     {editTier ? "Update Tier" : "Save Tier"}
@@ -544,7 +558,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                             : tier.package_type}
                         </Badge>
                       )}
-                      {tier.total_spots != null && (() => {
+                      {tier.total_spots != null && (tier as any).show_remaining === true && (() => {
                         const remaining = Math.max(0, tier.total_spots - (tier.spots_used || 0));
                         return (
                           <Badge variant={remaining === 0 ? "destructive" : "secondary"} className="text-xs">

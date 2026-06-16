@@ -176,6 +176,41 @@ export default function AdminCompetitors() {
                   <span>Active</span>
                 </label>
               </div>
+              </div>
+
+              {/* Live Preview */}
+              <div className="border-l md:pl-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Live Preview</Label>
+                  <Badge variant="outline">{editing.name || "Unnamed"}</Badge>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <h3 className="text-sm font-bold mb-1">{editing.name || "Competitor"}</h3>
+                  {editing.description && (
+                    <p className="text-xs text-muted-foreground mb-3">{editing.description}</p>
+                  )}
+                  <div className="space-y-2">
+                    {editing.talking_points.filter(tp => tp.pain.trim() || tp.solution.trim()).length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Add a pain point and solution to preview.</p>
+                    )}
+                    {editing.talking_points.filter(tp => tp.pain.trim() || tp.solution.trim()).map((tp, i) => (
+                      <div key={i} className="grid grid-cols-2 gap-2 rounded-md border border-border bg-background p-2 text-xs">
+                        <div>
+                          <div className="font-semibold text-destructive mb-0.5">Pain</div>
+                          <div>{tp.pain || <span className="text-muted-foreground italic">—</span>}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#1a5c38] mb-0.5">Solution</div>
+                          <div>{tp.solution || <span className="text-muted-foreground italic">—</span>}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  This is how talking points will appear in Demo Preparation when the prospect's platform is set to <code className="bg-muted px-1 rounded">{editing.slug || "—"}</code>.
+                </p>
+              </div>
             </div>
           )}
           <DialogFooter>

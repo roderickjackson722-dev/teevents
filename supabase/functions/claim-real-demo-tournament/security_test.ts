@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY")!;
 const anon = () => createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 0 } } });
 const t = (name: string, fn: () => Promise<void>) => Deno.test({ name, fn, sanitizeOps: false, sanitizeResources: false });
 
-Deno.test("save_group_scores rejects empty/missing code", async () => {
+t("save_group_scores rejects empty/missing code", async () => {
   const sb = anon();
   const { error } = await sb.rpc("save_group_scores", {
     _tournament_id: "00000000-0000-0000-0000-000000000000",
@@ -22,7 +22,7 @@ Deno.test("save_group_scores rejects empty/missing code", async () => {
   assert(/missing|invalid/i.test(error!.message), `got: ${error?.message}`);
 });
 
-Deno.test("save_group_scores rejects unknown code", async () => {
+t("save_group_scores rejects unknown code", async () => {
   const sb = anon();
   const { error } = await sb.rpc("save_group_scores", {
     _tournament_id: crypto.randomUUID(),
@@ -33,7 +33,7 @@ Deno.test("save_group_scores rejects unknown code", async () => {
   assert(/invalid/i.test(error!.message), `got: ${error?.message}`);
 });
 
-Deno.test("get_day_of_player returns null for bad code", async () => {
+t("get_day_of_player returns null for bad code", async () => {
   const sb = anon();
   const { data, error } = await sb.rpc("get_day_of_player", {
     _tournament_id: crypto.randomUUID(),
@@ -43,7 +43,7 @@ Deno.test("get_day_of_player returns null for bad code", async () => {
   assertEquals(data, null);
 });
 
-Deno.test("lookup_scoring_access returns no row for bad code", async () => {
+t("lookup_scoring_access returns no row for bad code", async () => {
   const sb = anon();
   const { data, error } = await sb.rpc("lookup_scoring_access", {
     _slug: "non-existent-slug",
@@ -53,7 +53,7 @@ Deno.test("lookup_scoring_access returns no row for bad code", async () => {
   assert(!data || (Array.isArray(data) && data.length === 0));
 });
 
-Deno.test("anon cannot select tournament_registrations directly", async () => {
+t("anon cannot select tournament_registrations directly", async () => {
   const sb = anon();
   const { data, error } = await sb.from("tournament_registrations").select("id, email, scoring_code").limit(1);
   // Either RLS blocks (data empty) or error — never expose PII via direct read.
@@ -65,7 +65,7 @@ Deno.test("anon cannot select tournament_registrations directly", async () => {
   void error;
 });
 
-Deno.test("anon cannot insert tournament_scores directly", async () => {
+t("anon cannot insert tournament_scores directly", async () => {
   const sb = anon();
   const { error } = await sb.from("tournament_scores").insert({
     tournament_id: crypto.randomUUID(),
@@ -76,7 +76,7 @@ Deno.test("anon cannot insert tournament_scores directly", async () => {
   assert(error, "expected RLS to block direct anon insert into tournament_scores");
 });
 
-Deno.test("anon cannot insert admin_notifications", async () => {
+t("anon cannot insert admin_notifications", async () => {
   const sb = anon();
   const { error } = await sb.from("admin_notifications").insert({
     type: "test", title: "x", message: "y",
@@ -84,14 +84,14 @@ Deno.test("anon cannot insert admin_notifications", async () => {
   assert(error, "expected RLS to block anon insert into admin_notifications");
 });
 
-Deno.test("get_demo_prep_share returns null for invalid token", async () => {
+t("get_demo_prep_share returns null for invalid token", async () => {
   const sb = anon();
   const { data, error } = await sb.rpc("get_demo_prep_share", { _token: crypto.randomUUID() });
   assertEquals(error, null);
   assertEquals(data, null);
 });
 
-Deno.test("claim-real-demo-tournament rejects calls with no auth header", async () => {
+t("claim-real-demo-tournament rejects calls with no auth header", async () => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/claim-real-demo-tournament`, {
     method: "POST",
     headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
@@ -102,7 +102,7 @@ Deno.test("claim-real-demo-tournament rejects calls with no auth header", async 
   assert(res.status === 401, `expected 401, got ${res.status}`);
 });
 
-Deno.test("claim-real-demo-tournament rejects malformed token", async () => {
+t("claim-real-demo-tournament rejects malformed token", async () => {
   // Use the anon key as a "user" token — getUser() will fail and we should 401
   const res = await fetch(`${SUPABASE_URL}/functions/v1/claim-real-demo-tournament`, {
     method: "POST",
@@ -118,7 +118,7 @@ Deno.test("claim-real-demo-tournament rejects malformed token", async () => {
   assert(res.status === 400 || res.status === 401, `expected 400/401, got ${res.status}`);
 });
 
-Deno.test("prepare-demo-conversion rejects non-admin caller", async () => {
+t("prepare-demo-conversion rejects non-admin caller", async () => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/prepare-demo-conversion`, {
     method: "POST",
     headers: {

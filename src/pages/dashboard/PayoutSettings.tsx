@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -995,6 +996,7 @@ export default function PayoutSettings() {
           </div>
         </DialogContent>
       </Dialog>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 }

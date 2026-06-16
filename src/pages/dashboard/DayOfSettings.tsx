@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -543,7 +544,8 @@ export default function DayOfSettings() {
           </div>
           <p className="text-[11px] text-muted-foreground">Preview updates instantly as you edit — uses sample player data.</p>
         </div>
-      </div>
+      <StickySaveBar onSave={() => {}} />
+    </div>
     </div>
   );
 }

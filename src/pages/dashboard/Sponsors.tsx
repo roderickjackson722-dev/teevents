@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -679,6 +680,7 @@ const Sponsors = () => {
         title="Crop Sponsor Logo (any shape — wide, square, or tall)"
         onCropped={(file) => handleLogoUpload(file)}
       />
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

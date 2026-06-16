@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -1137,6 +1138,7 @@ const Players = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

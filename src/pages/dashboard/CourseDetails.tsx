@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -684,6 +685,7 @@ export default function CourseDetails() {
           </CardContent>
         )}
       </Card>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 }

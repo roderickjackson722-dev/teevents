@@ -200,9 +200,14 @@ export default function Surveys() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Post-Event Survey & Analytics</h1>
-        <p className="text-muted-foreground">Gather feedback and analyze results.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Post-Event Survey & Analytics</h1>
+          <p className="text-muted-foreground">Gather feedback and analyze results.</p>
+        </div>
+        <Button variant="outline" asChild>
+          <a href="/dashboard/email-templates"><ClipboardList className="mr-2 h-4 w-4" /> Edit Email Templates</a>
+        </Button>
       </div>
 
       <Select value={selectedTournament} onValueChange={setSelectedTournament}>

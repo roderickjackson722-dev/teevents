@@ -74,6 +74,84 @@ export default function DemoConverter() {
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const [croppedPreviewUrl, setCroppedPreviewUrl] = useState<string | null>(null);
 
+  // Conversion modal
+  const [convOpen, setConvOpen] = useState(false);
+  const [convTarget, setConvTarget] = useState<DemoTournamentRow | null>(null);
+  const [convForm, setConvForm] = useState({
+    prospect_email: "",
+    prospect_name: "",
+    discount_type: "none" as DiscountType,
+    discount_value: 0,
+  });
+  const [convSending, setConvSending] = useState(false);
+
+  function openConvert(d: DemoTournamentRow) {
+    setConvTarget(d);
+    setConvForm({
+      prospect_email: d.demo_prospect_email || "",
+      prospect_name: d.demo_prospect_name || "",
+      discount_type: (d.demo_conversion_discount_type as DiscountType) || "none",
+      discount_value: d.demo_conversion_discount_value || 0,
+    });
+    setConvOpen(true);
+  }
+
+  function offerLine(type: DiscountType, value: number): string | null {
+    switch (type) {
+      case "free_pro": return "🔥 Special offer: Free Pro upgrade ($399 value — 100% off)";
+      case "percentage": return value > 0 ? `🔥 Special offer: ${value}% off Pro` : null;
+      case "fixed": return value > 0 ? `🔥 Special offer: $${value} off Pro` : null;
+      default: return null;
+    }
+  }
+
+  async function sendConversion(testMode: boolean) {
+    if (!convTarget) return;
+    if (!testMode && !convForm.prospect_email) {
+      toast({ title: "Prospect email required", variant: "destructive" });
+      return;
+    }
+    setConvSending(true);
+    const { data, error } = await supabase.functions.invoke("prepare-demo-conversion", {
+      body: {
+        tournament_id: convTarget.id,
+        prospect_email: convForm.prospect_email,
+        prospect_name: convForm.prospect_name || null,
+        app_base_url: window.location.origin,
+        test_mode: testMode,
+        discount: { type: convForm.discount_type, value: convForm.discount_value },
+      },
+    });
+    setConvSending(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Send failed", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: testMode ? "Test email sent" : "Signup link sent",
+      description: testMode ? `Sent to your admin email. Link valid 24h.` : `Sent to ${convForm.prospect_email}. Link valid 72h.`,
+    });
+    setConvOpen(false);
+    await loadDemos();
+  }
+
+  function copyLink(d: DemoTournamentRow) {
+    if (!d.demo_conversion_token) return;
+    const url = `${window.location.origin}/claim-demo/${d.demo_conversion_token}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Link copied" });
+  }
+
+  function statusOf(d: DemoTournamentRow): { label: string; variant: "default" | "secondary" | "destructive" | "outline" } {
+    if (d.demo_converted_at) return { label: "✅ Claimed", variant: "default" };
+    if (!d.demo_conversion_token) return { label: "—", variant: "outline" };
+    if (d.demo_conversion_token_expires_at && new Date(d.demo_conversion_token_expires_at) < new Date()) {
+      return { label: "⏰ Expired", variant: "destructive" };
+    }
+    if (d.demo_conversion_is_test) return { label: "🔬 Test sent", variant: "secondary" };
+    return { label: "⏳ Pending", variant: "secondary" };
+  }
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();

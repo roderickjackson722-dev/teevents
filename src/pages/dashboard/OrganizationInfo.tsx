@@ -263,6 +263,7 @@ const OrganizationInfo = () => {
           Save Organization Info
         </Button>
       </motion.div>
+      <StickySaveBar onSave={save} disabled={saving} />
     </div>
   );
 };

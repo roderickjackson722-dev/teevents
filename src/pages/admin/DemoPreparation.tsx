@@ -11,8 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Download, Send, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Download, Send, Sparkles, CheckCircle2, Link as LinkIcon, Copy } from "lucide-react";
 import { DEFAULT_CHECKLIST, PLATFORM_LABELS, TALKING_POINTS, type PlatformKey } from "@/lib/demoTalkingPoints";
+import { generateDemoAgendaPdf } from "@/lib/demoAgendaPdf";
+
+type DbCompetitor = { slug: string; name: string; talking_points: { pain: string; solution: string }[]; is_active: boolean; sort_order: number };
 import { generateDemoAgendaPdf } from "@/lib/demoAgendaPdf";
 
 export default function DemoPreparation() {
@@ -22,6 +25,9 @@ export default function DemoPreparation() {
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [t, setT] = useState<any>(null);
+  const [competitors, setCompetitors] = useState<DbCompetitor[]>([]);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [generatingShare, setGeneratingShare] = useState(false);
 
   const [platform, setPlatform] = useState<PlatformKey>("google_forms");
   const [other, setOther] = useState("");
@@ -43,9 +49,15 @@ export default function DemoPreparation() {
       if (!role) { setLoading(false); return; }
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, is_demo, demo_prospect_platform, demo_prospect_other, demo_prospect_email, demo_prospect_name, demo_notes, demo_prepared, demo_checklist, demo_converted_at, demo_conversion_token")
+        .select("id, title, is_demo, demo_prospect_platform, demo_prospect_other, demo_prospect_email, demo_prospect_name, demo_notes, demo_prepared, demo_checklist, demo_converted_at, demo_conversion_token, demo_conversion_token_expires_at, demo_conversion_used_at, demo_share_token")
         .eq("id", id)
         .maybeSingle();
+      const { data: comps } = await supabase
+        .from("admin_competitors")
+        .select("slug, name, talking_points, is_active, sort_order")
+        .eq("is_active", true)
+        .order("sort_order");
+      setCompetitors((comps || []) as any);
       if (data) {
         setT(data);
         setPlatform((data.demo_prospect_platform as PlatformKey) || "google_forms");

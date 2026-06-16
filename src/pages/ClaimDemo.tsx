@@ -22,7 +22,7 @@ export default function ClaimDemo() {
       if (!token) return;
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, demo_prospect_email, demo_prospect_name, demo_converted_at")
+        .select("id, title, demo_prospect_email, demo_prospect_name, demo_converted_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test")
         .eq("demo_conversion_token", token)
         .maybeSingle();
       setT(data);
@@ -30,6 +30,16 @@ export default function ClaimDemo() {
       setLoading(false);
     })();
   }, [token]);
+
+  function offerLabel(): string | null {
+    if (!t) return null;
+    switch (t.demo_conversion_discount_type) {
+      case "free_pro": return "🔥 Free Pro upgrade ($399 value)";
+      case "percentage": return t.demo_conversion_discount_value ? `🔥 ${t.demo_conversion_discount_value}% off Pro` : null;
+      case "fixed": return t.demo_conversion_discount_value ? `🔥 $${t.demo_conversion_discount_value} off Pro` : null;
+      default: return null;
+    }
+  }
 
   async function handleClaim() {
     if (!form.email || !form.password) { toast({ title: "Email and password required", variant: "destructive" }); return; }

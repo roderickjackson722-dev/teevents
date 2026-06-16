@@ -440,11 +440,6 @@ export default function DemoConverter() {
         </Card>
       </div>
 
-      <ImageCropperDialog
-        open={cropOpen}
-        onOpenChange={setCropOpen}
-        imageSrc={rawImageSrc}
-        defaultAspect="16:9"
         <Card>
           <CardHeader>
             <CardTitle>Sent Conversions</CardTitle>

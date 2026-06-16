@@ -345,7 +345,7 @@ function DayOfInner() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {tournament.day_of_weather_enabled && weatherLoc && <WeatherWidget location={weatherLoc} />}
+            {/* Weather widget removed per request */}
             {isOrganizerPreview && <Badge variant="secondary" className="gap-1"><Eye className="w-3 h-3" /> Preview</Badge>}
           </div>
         </div>

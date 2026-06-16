@@ -23,6 +23,9 @@ interface Props {
   options: PrintableOptions;
   onChange: (options: PrintableOptions) => void;
   showCourseName?: boolean; // whether to show the course name toggle (scorecards only)
+  tournamentId?: string;
+  logoUrl?: string | null;
+  onLogoChange?: (url: string) => void;
 }
 
 export function getDefaultOptions(tournament: { printable_font?: string | null; printable_layout?: string | null } | null): PrintableOptions {
@@ -36,8 +39,28 @@ export function getDefaultOptions(tournament: { printable_font?: string | null; 
   };
 }
 
-export default function PrintableSettings({ options, onChange, showCourseName = false }: Props) {
+export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange }: Props) {
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handleLogoUpload = async (file: File) => {
+    if (!tournamentId) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${tournamentId}/printable-logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      await supabase.from("tournaments").update({ printable_logo_url: data.publicUrl }).eq("id", tournamentId);
+      onLogoChange?.(data.publicUrl);
+      toast({ title: "Logo uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const update = (partial: Partial<PrintableOptions>) => {
     onChange({ ...options, ...partial });

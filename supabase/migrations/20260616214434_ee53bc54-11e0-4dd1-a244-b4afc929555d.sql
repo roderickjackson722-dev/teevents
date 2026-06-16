@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS golfers_register_first boolean NOT NULL DEFAULT false;

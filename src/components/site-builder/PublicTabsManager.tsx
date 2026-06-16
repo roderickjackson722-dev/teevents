@@ -17,18 +17,21 @@ interface PublicTabsManagerProps {
   tournamentId: string;
   initialVisibility: Partial<Record<string, boolean>> | null | undefined;
   initialOrder: string[] | null | undefined;
+  initialGolfersFirst?: boolean | null;
 }
 
 export const PublicTabsManager = ({
   tournamentId,
   initialVisibility,
   initialOrder,
+  initialGolfersFirst,
 }: PublicTabsManagerProps) => {
   const { toast } = useToast();
   const [visibility, setVisibility] = useState<Record<PublicTabKey, boolean>>(
     normalizeVisibility(initialVisibility),
   );
   const [order, setOrder] = useState<PublicTabKey[]>(normalizeOrder(initialOrder));
+  const [golfersFirst, setGolfersFirst] = useState<boolean>(!!initialGolfersFirst);
   const [saving, setSaving] = useState(false);
 
   const tabMeta = (key: PublicTabKey) =>
@@ -53,6 +56,7 @@ export const PublicTabsManager = ({
       .update({
         public_tabs: visibility as any,
         public_tabs_order: order,
+        golfers_register_first: golfersFirst,
       } as any)
       .eq("id", tournamentId);
     setSaving(false);
@@ -135,6 +139,26 @@ export const PublicTabsManager = ({
           )}
         </Droppable>
       </DragDropContext>
+
+      <div className="border-t border-border pt-3">
+        <div className="flex items-start gap-3">
+          <Switch
+            checked={golfersFirst}
+            onCheckedChange={setGolfersFirst}
+            aria-label="Show golfer registration before sponsors"
+          />
+          <div className="flex-1 min-w-0">
+            <Label className="text-sm font-semibold cursor-pointer block">
+              Show golfer registration before sponsors
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              When on, the player registration section appears above "Become a Sponsor" on your public page.
+            </p>
+          </div>
+        </div>
+      </div>
+
+
 
       <div className="flex items-center justify-between gap-3 pt-1">
         <p className="text-xs text-muted-foreground">

@@ -116,15 +116,15 @@ export default function LiveScoring() {
     setAutoLogging(true);
 
     (async () => {
-      const { data } = await supabase
-        .from("tournament_registrations")
-        .select("group_number")
-        .eq("tournament_id", tournament.id)
-        .eq("scoring_code", code.toUpperCase())
-        .single();
+      const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
+        _tournament_id: tournament.id,
+        _scoring_code: code,
+        _email: null,
+      });
 
-      if (data?.group_number) {
-        await loadGroup(data.group_number);
+      if (gNum) {
+        setScoringCode(code.toUpperCase());
+        await loadGroup(gNum as number);
       } else {
         setError("Invalid scoring code or player not assigned to a hole.");
       }
@@ -135,32 +135,25 @@ export default function LiveScoring() {
   const loadGroup = async (gNum: number) => {
     if (!tournament) return;
 
-    const { data: groupPlayers } = await supabase
-      .from("tournament_registrations")
-      .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole")
-      .eq("tournament_id", tournament.id)
-      .eq("group_number", gNum)
-      .order("group_position");
+    const { data: payload } = await supabase.rpc("get_live_scoring_group", {
+      _tournament_id: tournament.id,
+      _group_number: gNum,
+    });
+    const groupPlayers = (payload as any)?.players as any[] | undefined;
+    const existingScores = (payload as any)?.scores as any[] | undefined;
 
     if (!groupPlayers || groupPlayers.length === 0) {
       setError(`No players found in Hole ${gNum}.`);
       return;
     }
 
-    const regIds = groupPlayers.map((p) => p.id);
-    const { data: existingScores } = await supabase
-      .from("tournament_scores")
-      .select("registration_id, hole_number, strokes")
-      .eq("tournament_id", tournament.id)
-      .in("registration_id", regIds);
-
     const scoreMap: Record<string, Record<number, number>> = {};
-    existingScores?.forEach((s) => {
+    existingScores?.forEach((s: any) => {
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
 
-    const mappedPlayers: Player[] = groupPlayers.map((p) => ({
+    const mappedPlayers: Player[] = groupPlayers.map((p: any) => ({
       id: p.id,
       first_name: p.first_name,
       last_name: p.last_name,
@@ -169,6 +162,12 @@ export default function LiveScoring() {
       playing_handicap: p.playing_handicap,
       strokes_per_hole: p.strokes_per_hole as number[] | null,
     }));
+
+    // Remember a scoring_code from the group so we can authorize saves
+    if (!scoringCode) {
+      const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
+      if (anyCode) setScoringCode(anyCode);
+    }
 
     setPlayers(mappedPlayers);
     setScores(scoreMap);
@@ -181,20 +180,25 @@ export default function LiveScoring() {
     setError("");
     let gNum: number | null = null;
 
-    if (groupInput.trim()) {
-      gNum = parseInt(groupInput.trim());
-      if (isNaN(gNum)) { setError("Invalid group number"); return; }
+    if (codeInput.trim()) {
+      const { data } = await supabase.rpc("live_scoring_lookup_group", {
+        _tournament_id: tournament.id,
+        _scoring_code: codeInput.trim(),
+        _email: null,
+      });
+      if (!data) { setError("Invalid scoring code."); return; }
+      setScoringCode(codeInput.trim().toUpperCase());
+      gNum = data as number;
     } else if (emailInput.trim()) {
-      const { data } = await supabase
-        .from("tournament_registrations")
-        .select("group_number")
-        .eq("tournament_id", tournament.id)
-        .eq("email", emailInput.trim().toLowerCase())
-        .single();
-      if (!data?.group_number) { setError("Player not found or not assigned to a hole."); return; }
-      gNum = data.group_number;
+      const { data } = await supabase.rpc("live_scoring_lookup_group", {
+        _tournament_id: tournament.id,
+        _scoring_code: null,
+        _email: emailInput.trim(),
+      });
+      if (!data) { setError("Player not found or not assigned to a hole."); return; }
+      gNum = data as number;
     } else {
-      setError("Enter a hole number or your email."); return;
+      setError("Enter your scoring code or email."); return;
     }
 
     await loadGroup(gNum);

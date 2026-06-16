@@ -1,6 +1,6 @@
 // Admin-only: marks a real demo tournament as converted, generates a one-time
-// conversion token, deletes all mock data (registrations, scores, sponsors),
-// and emails the prospect a claim/signup link.
+// time-limited conversion token (7 days), deletes mock data, and emails the
+// prospect a claim/signup link. Refuses if the demo was already converted.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -9,6 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 const FROM = "TeeVents <info@notifications.teevents.golf>";
+const TOKEN_TTL_DAYS = 7;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -29,22 +30,33 @@ serve(async (req) => {
     if (!tournament_id || !prospect_email) {
       return new Response(JSON.stringify({ error: "tournament_id and prospect_email required" }), { status: 400, headers: corsHeaders });
     }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(prospect_email));
+    if (!emailOk) {
+      return new Response(JSON.stringify({ error: "Invalid email" }), { status: 400, headers: corsHeaders });
+    }
 
     const { data: t, error: tErr } = await admin
-      .from("tournaments").select("id, title, is_demo, demo_conversion_token").eq("id", tournament_id).maybeSingle();
+      .from("tournaments").select("id, title, is_demo, demo_converted_at, demo_conversion_used_at")
+      .eq("id", tournament_id).maybeSingle();
     if (tErr || !t) return new Response(JSON.stringify({ error: "Tournament not found" }), { status: 404, headers: corsHeaders });
     if (!t.is_demo) return new Response(JSON.stringify({ error: "Not a demo tournament" }), { status: 400, headers: corsHeaders });
+    if (t.demo_converted_at || t.demo_conversion_used_at) {
+      return new Response(JSON.stringify({ error: "This demo has already been converted/claimed" }), { status: 409, headers: corsHeaders });
+    }
 
     // Wipe mock data
     await admin.from("tournament_scores").delete().eq("tournament_id", tournament_id);
     await admin.from("tournament_registrations").delete().eq("tournament_id", tournament_id);
     await admin.from("tournament_sponsors").delete().eq("tournament_id", tournament_id);
 
-    const token = t.demo_conversion_token || crypto.randomUUID();
+    // Always rotate to a fresh token + expiry on each send (no reuse across resends)
+    const token = crypto.randomUUID();
+    const expires = new Date(Date.now() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
     const { error: updErr } = await admin
       .from("tournaments")
       .update({
         demo_conversion_token: token,
+        demo_conversion_token_expires_at: expires,
         demo_conversion_sent_at: new Date().toISOString(),
         demo_prospect_email: prospect_email,
         demo_prospect_name: prospect_name || null,
@@ -62,7 +74,7 @@ serve(async (req) => {
   <p style="text-align:center;margin:28px 0">
     <a href="${claimUrl}" style="background:#F5A623;color:#1a5c38;font-weight:700;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block">Claim Your Tournament</a>
   </p>
-  <p>This link will:</p>
+  <p>This single-use link expires in ${TOKEN_TTL_DAYS} days. It will:</p>
   <ul>
     <li>Create your organizer account</li>
     <li>Give you full ownership of the tournament</li>
@@ -71,7 +83,7 @@ serve(async (req) => {
   <p>Questions? Just reply to this email.</p>
   <p style="margin-top:24px">Best,<br/>Rod Jackson<br/>TeeVents Golf</p>
 </div>`;
-    const text = `Hi ${prospect_name || "there"},\n\nClaim your tournament "${t.title}" here:\n${claimUrl}\n\n— Rod Jackson, TeeVents Golf`;
+    const text = `Hi ${prospect_name || "there"},\n\nClaim your tournament "${t.title}" here (expires in ${TOKEN_TTL_DAYS} days):\n${claimUrl}\n\n— Rod Jackson, TeeVents Golf`;
 
     let emailResult: any = { skipped: true };
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -90,7 +102,7 @@ serve(async (req) => {
       emailResult = await r.json();
     }
 
-    return new Response(JSON.stringify({ ok: true, claimUrl, token, email: emailResult }), {
+    return new Response(JSON.stringify({ ok: true, claimUrl, token, expiresAt: expires, email: emailResult }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

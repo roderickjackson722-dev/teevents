@@ -11,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Download, Send, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Download, Send, Sparkles, CheckCircle2, Link as LinkIcon, Copy } from "lucide-react";
 import { DEFAULT_CHECKLIST, PLATFORM_LABELS, TALKING_POINTS, type PlatformKey } from "@/lib/demoTalkingPoints";
 import { generateDemoAgendaPdf } from "@/lib/demoAgendaPdf";
+
+type DbCompetitor = { slug: string; name: string; talking_points: { pain: string; solution: string }[]; is_active: boolean; sort_order: number };
 
 export default function DemoPreparation() {
   const { id } = useParams();
@@ -22,6 +24,9 @@ export default function DemoPreparation() {
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [t, setT] = useState<any>(null);
+  const [competitors, setCompetitors] = useState<DbCompetitor[]>([]);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [generatingShare, setGeneratingShare] = useState(false);
 
   const [platform, setPlatform] = useState<PlatformKey>("google_forms");
   const [other, setOther] = useState("");
@@ -43,9 +48,15 @@ export default function DemoPreparation() {
       if (!role) { setLoading(false); return; }
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, is_demo, demo_prospect_platform, demo_prospect_other, demo_prospect_email, demo_prospect_name, demo_notes, demo_prepared, demo_checklist, demo_converted_at, demo_conversion_token")
+        .select("id, title, is_demo, demo_prospect_platform, demo_prospect_other, demo_prospect_email, demo_prospect_name, demo_notes, demo_prepared, demo_checklist, demo_converted_at, demo_conversion_token, demo_conversion_token_expires_at, demo_conversion_used_at, demo_share_token")
         .eq("id", id)
         .maybeSingle();
+      const { data: comps } = await supabase
+        .from("admin_competitors")
+        .select("slug, name, talking_points, is_active, sort_order")
+        .eq("is_active", true)
+        .order("sort_order");
+      setCompetitors((comps || []) as any);
       if (data) {
         setT(data);
         setPlatform((data.demo_prospect_platform as PlatformKey) || "google_forms");
@@ -121,7 +132,35 @@ export default function DemoPreparation() {
   if (!t) return <div className="p-8">Tournament not found.</div>;
   if (!t.is_demo) return <div className="p-8">This is not a demo tournament.</div>;
 
-  const points = TALKING_POINTS[platform] || [];
+  const selectedComp = competitors.find((c) => c.slug === platform);
+  const points = selectedComp?.talking_points || TALKING_POINTS[platform as PlatformKey] || [];
+  const platformOptions: { slug: string; name: string }[] = competitors.length
+    ? competitors.map((c) => ({ slug: c.slug, name: c.name }))
+    : (Object.keys(PLATFORM_LABELS) as PlatformKey[]).map((k) => ({ slug: k, name: PLATFORM_LABELS[k] }));
+
+  async function generateShareLink() {
+    setGeneratingShare(true);
+    let token = t.demo_share_token;
+    if (!token) {
+      token = crypto.randomUUID();
+      const { error } = await supabase.from("tournaments").update({ demo_share_token: token }).eq("id", id);
+      if (error) { setGeneratingShare(false); toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      setT({ ...t, demo_share_token: token });
+    }
+    const url = `${window.location.origin}/demo-prep/${token}`;
+    setShareUrl(url);
+    try { await navigator.clipboard.writeText(url); toast({ title: "Share link copied" }); } catch { toast({ title: "Share link ready" }); }
+    setGeneratingShare(false);
+  }
+
+  async function revokeShareLink() {
+    if (!confirm("Revoke the current share link? Anyone with the old link will lose access.")) return;
+    const { error } = await supabase.from("tournaments").update({ demo_share_token: null }).eq("id", id);
+    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+    setT({ ...t, demo_share_token: null });
+    setShareUrl(null);
+    toast({ title: "Share link revoked" });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -143,16 +182,19 @@ export default function DemoPreparation() {
           </CardHeader>
           <CardContent>
             <RadioGroup value={platform} onValueChange={(v) => setPlatform(v as PlatformKey)} className="space-y-2">
-              {(Object.keys(PLATFORM_LABELS) as PlatformKey[]).map((k) => (
-                <div key={k} className="flex items-center gap-2">
-                  <RadioGroupItem value={k} id={`p-${k}`} />
-                  <Label htmlFor={`p-${k}`} className="cursor-pointer">{PLATFORM_LABELS[k]}</Label>
+              {platformOptions.map((opt) => (
+                <div key={opt.slug} className="flex items-center gap-2">
+                  <RadioGroupItem value={opt.slug} id={`p-${opt.slug}`} />
+                  <Label htmlFor={`p-${opt.slug}`} className="cursor-pointer">{opt.name}</Label>
                 </div>
               ))}
             </RadioGroup>
             {platform === "other" && (
               <Input className="mt-3" placeholder="Specify platform…" value={other} onChange={(e) => setOther(e.target.value)} />
             )}
+            <div className="mt-3 text-xs text-muted-foreground">
+              Manage the competitor list at <a href="/admin/competitors" className="underline">/admin/competitors</a>.
+            </div>
           </CardContent>
         </Card>
 
@@ -228,9 +270,26 @@ export default function DemoPreparation() {
                 <Input type="email" value={prospectEmail} onChange={(e) => setProspectEmail(e.target.value)} placeholder="jane@example.com" />
               </div>
             </div>
-            <Button variant="outline" onClick={downloadPdf}>
-              <Download className="h-4 w-4 mr-2" /> Download Demo Agenda PDF
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={downloadPdf}>
+                <Download className="h-4 w-4 mr-2" /> Download Demo Agenda PDF
+              </Button>
+              <Button variant="outline" onClick={generateShareLink} disabled={generatingShare}>
+                <LinkIcon className="h-4 w-4 mr-2" /> {t.demo_share_token ? "Copy Share Link" : "Generate Share Link"}
+              </Button>
+              {t.demo_share_token && (
+                <Button variant="ghost" size="sm" onClick={revokeShareLink}>Revoke link</Button>
+              )}
+            </div>
+            {(shareUrl || t.demo_share_token) && (
+              <div className="text-xs break-all p-2 bg-muted rounded flex items-center gap-2">
+                <span className="flex-1">{shareUrl || `${window.location.origin}/demo-prep/${t.demo_share_token}`}</span>
+                <Button size="sm" variant="ghost" onClick={() => {
+                  const u = shareUrl || `${window.location.origin}/demo-prep/${t.demo_share_token}`;
+                  navigator.clipboard.writeText(u); toast({ title: "Copied" });
+                }}><Copy className="h-3 w-3" /></Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

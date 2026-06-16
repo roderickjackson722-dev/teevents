@@ -164,6 +164,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_competitors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          talking_points: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          talking_points?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          talking_points?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_demo_events: {
         Row: {
           created_at: string
@@ -6427,6 +6463,8 @@ export type Database = {
           demo_checklist: Json
           demo_conversion_sent_at: string | null
           demo_conversion_token: string | null
+          demo_conversion_token_expires_at: string | null
+          demo_conversion_used_at: string | null
           demo_converted_at: string | null
           demo_flyer_url: string | null
           demo_notes: string | null
@@ -6435,6 +6473,7 @@ export type Database = {
           demo_prospect_name: string | null
           demo_prospect_other: string | null
           demo_prospect_platform: string | null
+          demo_share_token: string | null
           description: string | null
           description_html: string | null
           display_order: number
@@ -6618,6 +6657,8 @@ export type Database = {
           demo_checklist?: Json
           demo_conversion_sent_at?: string | null
           demo_conversion_token?: string | null
+          demo_conversion_token_expires_at?: string | null
+          demo_conversion_used_at?: string | null
           demo_converted_at?: string | null
           demo_flyer_url?: string | null
           demo_notes?: string | null
@@ -6626,6 +6667,7 @@ export type Database = {
           demo_prospect_name?: string | null
           demo_prospect_other?: string | null
           demo_prospect_platform?: string | null
+          demo_share_token?: string | null
           description?: string | null
           description_html?: string | null
           display_order?: number
@@ -6809,6 +6851,8 @@ export type Database = {
           demo_checklist?: Json
           demo_conversion_sent_at?: string | null
           demo_conversion_token?: string | null
+          demo_conversion_token_expires_at?: string | null
+          demo_conversion_used_at?: string | null
           demo_converted_at?: string | null
           demo_flyer_url?: string | null
           demo_notes?: string | null
@@ -6817,6 +6861,7 @@ export type Database = {
           demo_prospect_name?: string | null
           demo_prospect_other?: string | null
           demo_prospect_platform?: string | null
+          demo_share_token?: string | null
           description?: string | null
           description_html?: string | null
           display_order?: number
@@ -7591,6 +7636,7 @@ export type Database = {
         Args: { _code: string; _tournament_id: string }
         Returns: Json
       }
+      get_demo_prep_share: { Args: { _token: string }; Returns: Json }
       get_group_scoring_roster: {
         Args: { _code: string; _tournament_id: string }
         Returns: {

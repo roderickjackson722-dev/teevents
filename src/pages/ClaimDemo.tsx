@@ -22,7 +22,7 @@ export default function ClaimDemo() {
       if (!token) return;
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, demo_prospect_email, demo_prospect_name, demo_converted_at")
+        .select("id, title, demo_prospect_email, demo_prospect_name, demo_converted_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test")
         .eq("demo_conversion_token", token)
         .maybeSingle();
       setT(data);
@@ -30,6 +30,16 @@ export default function ClaimDemo() {
       setLoading(false);
     })();
   }, [token]);
+
+  function offerLabel(): string | null {
+    if (!t) return null;
+    switch (t.demo_conversion_discount_type) {
+      case "free_pro": return "🔥 Free Pro upgrade ($399 value)";
+      case "percentage": return t.demo_conversion_discount_value ? `🔥 ${t.demo_conversion_discount_value}% off Pro` : null;
+      case "fixed": return t.demo_conversion_discount_value ? `🔥 $${t.demo_conversion_discount_value} off Pro` : null;
+      default: return null;
+    }
+  }
 
   async function handleClaim() {
     if (!form.email || !form.password) { toast({ title: "Email and password required", variant: "destructive" }); return; }
@@ -66,8 +76,14 @@ export default function ClaimDemo() {
   }
 
   if (loading) return <div className="p-8">Loading…</div>;
-  if (!t) return <div className="p-8">Invalid or expired claim link.</div>;
-  if (t.demo_converted_at) return <div className="p-8">This tournament has already been claimed.</div>;
+  if (!t) return <div className="p-8 text-center"><h1 className="text-xl font-semibold mb-2">Invalid claim link</h1><p className="text-muted-foreground">Please contact the tournament organizer for a new link.</p></div>;
+  if (t.demo_converted_at || t.demo_conversion_used_at) return <div className="p-8 text-center"><h1 className="text-xl font-semibold mb-2">Already claimed</h1><p className="text-muted-foreground">This link has already been used.</p></div>;
+  if (t.demo_conversion_token_expires_at && new Date(t.demo_conversion_token_expires_at) < new Date()) {
+    return <div className="p-8 text-center"><h1 className="text-xl font-semibold mb-2">This link has expired</h1><p className="text-muted-foreground">Please contact the tournament organizer for a new link.</p></div>;
+  }
+
+  const offer = offerLabel();
+  const expiresAt = t.demo_conversion_token_expires_at ? new Date(t.demo_conversion_token_expires_at) : null;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -78,6 +94,21 @@ export default function ClaimDemo() {
           <CardDescription>You've been invited to manage <strong>{t.title}</strong></CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {t.demo_conversion_is_test && (
+            <div className="bg-yellow-50 border border-yellow-300 text-yellow-900 text-xs rounded p-2">
+              🔬 TEST link — claim will be simulated, no real tournament will be transferred.
+            </div>
+          )}
+          {offer && (
+            <div className="bg-[#FFF7E6] border-l-4 border-[#F5A623] p-3 rounded text-sm font-semibold">
+              {offer}
+            </div>
+          )}
+          {expiresAt && (
+            <div className="text-xs text-muted-foreground">
+              Link expires {expiresAt.toLocaleString()}
+            </div>
+          )}
           <div>
             <Label>Email</Label>
             <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />

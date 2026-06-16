@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw } from "lucide-react";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
 interface DemoTournamentRow {
@@ -23,7 +25,19 @@ interface DemoTournamentRow {
   organization_id: string;
   site_hero_image_url: string | null;
   created_at: string;
+  demo_prospect_email?: string | null;
+  demo_prospect_name?: string | null;
+  demo_conversion_token?: string | null;
+  demo_conversion_sent_at?: string | null;
+  demo_conversion_token_expires_at?: string | null;
+  demo_conversion_used_at?: string | null;
+  demo_conversion_discount_type?: string | null;
+  demo_conversion_discount_value?: number | null;
+  demo_conversion_is_test?: boolean | null;
+  demo_converted_at?: string | null;
 }
+
+type DiscountType = "none" | "free_pro" | "percentage" | "fixed";
 
 const SCORING_FORMATS = [
   { value: "stroke_play", label: "Stroke Play" },
@@ -60,6 +74,84 @@ export default function DemoConverter() {
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
   const [croppedPreviewUrl, setCroppedPreviewUrl] = useState<string | null>(null);
 
+  // Conversion modal
+  const [convOpen, setConvOpen] = useState(false);
+  const [convTarget, setConvTarget] = useState<DemoTournamentRow | null>(null);
+  const [convForm, setConvForm] = useState({
+    prospect_email: "",
+    prospect_name: "",
+    discount_type: "none" as DiscountType,
+    discount_value: 0,
+  });
+  const [convSending, setConvSending] = useState(false);
+
+  function openConvert(d: DemoTournamentRow) {
+    setConvTarget(d);
+    setConvForm({
+      prospect_email: d.demo_prospect_email || "",
+      prospect_name: d.demo_prospect_name || "",
+      discount_type: (d.demo_conversion_discount_type as DiscountType) || "none",
+      discount_value: d.demo_conversion_discount_value || 0,
+    });
+    setConvOpen(true);
+  }
+
+  function offerLine(type: DiscountType, value: number): string | null {
+    switch (type) {
+      case "free_pro": return "🔥 Special offer: Free Pro upgrade ($399 value — 100% off)";
+      case "percentage": return value > 0 ? `🔥 Special offer: ${value}% off Pro` : null;
+      case "fixed": return value > 0 ? `🔥 Special offer: $${value} off Pro` : null;
+      default: return null;
+    }
+  }
+
+  async function sendConversion(testMode: boolean) {
+    if (!convTarget) return;
+    if (!testMode && !convForm.prospect_email) {
+      toast({ title: "Prospect email required", variant: "destructive" });
+      return;
+    }
+    setConvSending(true);
+    const { data, error } = await supabase.functions.invoke("prepare-demo-conversion", {
+      body: {
+        tournament_id: convTarget.id,
+        prospect_email: convForm.prospect_email,
+        prospect_name: convForm.prospect_name || null,
+        app_base_url: window.location.origin,
+        test_mode: testMode,
+        discount: { type: convForm.discount_type, value: convForm.discount_value },
+      },
+    });
+    setConvSending(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Send failed", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: testMode ? "Test email sent" : "Signup link sent",
+      description: testMode ? `Sent to your admin email. Link valid 24h.` : `Sent to ${convForm.prospect_email}. Link valid 72h.`,
+    });
+    setConvOpen(false);
+    await loadDemos();
+  }
+
+  function copyLink(d: DemoTournamentRow) {
+    if (!d.demo_conversion_token) return;
+    const url = `${window.location.origin}/claim-demo/${d.demo_conversion_token}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Link copied" });
+  }
+
+  function statusOf(d: DemoTournamentRow): { label: string; variant: "default" | "secondary" | "destructive" | "outline" } {
+    if (d.demo_converted_at) return { label: "✅ Claimed", variant: "default" };
+    if (!d.demo_conversion_token) return { label: "—", variant: "outline" };
+    if (d.demo_conversion_token_expires_at && new Date(d.demo_conversion_token_expires_at) < new Date()) {
+      return { label: "⏰ Expired", variant: "destructive" };
+    }
+    if (d.demo_conversion_is_test) return { label: "🔬 Test sent", variant: "secondary" };
+    return { label: "⏳ Pending", variant: "secondary" };
+  }
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -75,7 +167,7 @@ export default function DemoConverter() {
     setLoading(true);
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at")
+      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at")
       .eq("is_demo", true)
       .order("created_at", { ascending: false });
     setDemos((data as DemoTournamentRow[]) || []);
@@ -319,6 +411,15 @@ export default function DemoConverter() {
                           <Button size="sm" variant="secondary" onClick={() => navigate(`/admin/demo-converter/${d.id}`)}>
                             <Sparkles className="h-3 w-3 mr-1" /> Prepare Demo
                           </Button>
+                          <Button
+                            size="sm"
+                            className="bg-[#1a5c38] text-white hover:bg-[#1a5c38]/90"
+                            disabled={!!d.demo_converted_at}
+                            onClick={() => openConvert(d)}
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            {d.demo_converted_at ? "Claimed" : d.demo_conversion_token ? "Resend Link" : "Convert to Live"}
+                          </Button>
                           <Button size="sm" variant="outline" asChild>
                             <a href={`/tournament/${slugOf(d)}`} target="_blank" rel="noreferrer">Public Site</a>
                           </Button>
@@ -337,7 +438,162 @@ export default function DemoConverter() {
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Sent Conversions</CardTitle>
+            <CardDescription>72-hour signup links sent to prospects. Test links last 24 hours.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const sent = demos.filter((d) => d.demo_conversion_token || d.demo_converted_at);
+              if (sent.length === 0) return <div className="text-sm text-muted-foreground">No conversion links sent yet.</div>;
+              return (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tournament</TableHead>
+                      <TableHead>Prospect</TableHead>
+                      <TableHead>Offer</TableHead>
+                      <TableHead>Sent</TableHead>
+                      <TableHead>Expires</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sent.map((d) => {
+                      const s = statusOf(d);
+                      const offer = offerLine((d.demo_conversion_discount_type as DiscountType) || "none", d.demo_conversion_discount_value || 0);
+                      return (
+                        <TableRow key={d.id}>
+                          <TableCell className="font-medium">{d.title}</TableCell>
+                          <TableCell className="text-sm">{d.demo_prospect_email || "—"}</TableCell>
+                          <TableCell className="text-xs">{offer ? offer.replace("🔥 Special offer: ", "") : "Standard pricing"}</TableCell>
+                          <TableCell className="text-xs">{d.demo_conversion_sent_at ? new Date(d.demo_conversion_sent_at).toLocaleString() : "—"}</TableCell>
+                          <TableCell className="text-xs">{d.demo_conversion_token_expires_at ? new Date(d.demo_conversion_token_expires_at).toLocaleString() : "—"}</TableCell>
+                          <TableCell><Badge variant={s.variant}>{s.label}</Badge></TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              {d.demo_conversion_token && !d.demo_converted_at && (
+                                <Button size="sm" variant="outline" onClick={() => copyLink(d)}><Copy className="h-3 w-3" /></Button>
+                              )}
+                              {!d.demo_converted_at && (
+                                <Button size="sm" variant="outline" onClick={() => openConvert(d)}>
+                                  <RotateCw className="h-3 w-3 mr-1" /> Resend
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              );
+            })()}
+          </CardContent>
+        </Card>
       </div>
+
+      <Dialog open={convOpen} onOpenChange={setConvOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Convert to Live Tournament — 72-Hour Offer</DialogTitle>
+            <DialogDescription>{convTarget?.title}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label>Prospect Email</Label>
+                <Input
+                  type="email"
+                  value={convForm.prospect_email}
+                  onChange={(e) => setConvForm({ ...convForm, prospect_email: e.target.value })}
+                  placeholder="prospect@example.com"
+                />
+              </div>
+              <div>
+                <Label>Prospect Name</Label>
+                <Input
+                  value={convForm.prospect_name}
+                  onChange={(e) => setConvForm({ ...convForm, prospect_name: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="border rounded-md p-3 space-y-3">
+              <Label className="font-semibold">Offer Type</Label>
+              <RadioGroup
+                value={convForm.discount_type}
+                onValueChange={(v) => setConvForm({ ...convForm, discount_type: v as DiscountType })}
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="none" id="d-none" />
+                  <span>No discount — standard pricing</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="free_pro" id="d-free" />
+                  <span>Free Pro upgrade ($399 value — 100% off)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="percentage" id="d-pct" />
+                  <span>Percentage discount:</span>
+                  <Input
+                    type="number" min={1} max={100}
+                    className="w-20 h-8"
+                    value={convForm.discount_type === "percentage" ? convForm.discount_value || "" : ""}
+                    onChange={(e) => setConvForm({ ...convForm, discount_type: "percentage", discount_value: Number(e.target.value) || 0 })}
+                  />
+                  <span>% off</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="fixed" id="d-fix" />
+                  <span>Fixed discount: $</span>
+                  <Input
+                    type="number" min={1}
+                    className="w-24 h-8"
+                    value={convForm.discount_type === "fixed" ? convForm.discount_value || "" : ""}
+                    onChange={(e) => setConvForm({ ...convForm, discount_type: "fixed", discount_value: Number(e.target.value) || 0 })}
+                  />
+                  <span>off</span>
+                </label>
+              </RadioGroup>
+            </div>
+
+            <div className="border rounded-md p-3 bg-muted/30 text-sm space-y-2">
+              <div className="font-semibold">📧 Email Preview</div>
+              <div className="text-xs text-muted-foreground">
+                Subject: Claim your tournament – {convTarget?.title}
+              </div>
+              <div className="border-t pt-2 space-y-1">
+                <div>Hi {convForm.prospect_name || "[Name]"},</div>
+                <div>Your tournament <strong>{convTarget?.title}</strong> is ready to be claimed.</div>
+                <div>👉 [Signup Link] — valid for 72 hours</div>
+                {offerLine(convForm.discount_type, convForm.discount_value) && (
+                  <div className="bg-yellow-50 border-l-4 border-yellow-500 px-2 py-1">
+                    <strong>{offerLine(convForm.discount_type, convForm.discount_value)}</strong>
+                  </div>
+                )}
+                <div>— Rod Jackson, TeeVents Golf</div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 flex-col sm:flex-row">
+            <Button variant="outline" onClick={() => sendConversion(true)} disabled={convSending}>
+              🔬 Send Test (to myself, 24h)
+            </Button>
+            <Button
+              className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold"
+              onClick={() => sendConversion(false)}
+              disabled={convSending}
+            >
+              <Send className="h-4 w-4 mr-1" />
+              {convSending ? "Sending…" : "Send Signup Link"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ImageCropperDialog
         open={cropOpen}

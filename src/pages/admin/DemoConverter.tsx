@@ -411,6 +411,15 @@ export default function DemoConverter() {
                           <Button size="sm" variant="secondary" onClick={() => navigate(`/admin/demo-converter/${d.id}`)}>
                             <Sparkles className="h-3 w-3 mr-1" /> Prepare Demo
                           </Button>
+                          <Button
+                            size="sm"
+                            className="bg-[#1a5c38] text-white hover:bg-[#1a5c38]/90"
+                            disabled={!!d.demo_converted_at}
+                            onClick={() => openConvert(d)}
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            {d.demo_converted_at ? "Claimed" : d.demo_conversion_token ? "Resend Link" : "Convert to Live"}
+                          </Button>
                           <Button size="sm" variant="outline" asChild>
                             <a href={`/tournament/${slugOf(d)}`} target="_blank" rel="noreferrer">Public Site</a>
                           </Button>

@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw } from "lucide-react";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
 interface DemoTournamentRow {
@@ -23,7 +25,19 @@ interface DemoTournamentRow {
   organization_id: string;
   site_hero_image_url: string | null;
   created_at: string;
+  demo_prospect_email?: string | null;
+  demo_prospect_name?: string | null;
+  demo_conversion_token?: string | null;
+  demo_conversion_sent_at?: string | null;
+  demo_conversion_token_expires_at?: string | null;
+  demo_conversion_used_at?: string | null;
+  demo_conversion_discount_type?: string | null;
+  demo_conversion_discount_value?: number | null;
+  demo_conversion_is_test?: boolean | null;
+  demo_converted_at?: string | null;
 }
+
+type DiscountType = "none" | "free_pro" | "percentage" | "fixed";
 
 const SCORING_FORMATS = [
   { value: "stroke_play", label: "Stroke Play" },

@@ -1,11 +1,14 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Settings2, Upload } from "lucide-react";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "./types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export interface PrintableOptions {
   font: string;
@@ -20,6 +23,9 @@ interface Props {
   options: PrintableOptions;
   onChange: (options: PrintableOptions) => void;
   showCourseName?: boolean; // whether to show the course name toggle (scorecards only)
+  tournamentId?: string;
+  logoUrl?: string | null;
+  onLogoChange?: (url: string) => void;
 }
 
 export function getDefaultOptions(tournament: { printable_font?: string | null; printable_layout?: string | null } | null): PrintableOptions {
@@ -33,8 +39,28 @@ export function getDefaultOptions(tournament: { printable_font?: string | null; 
   };
 }
 
-export default function PrintableSettings({ options, onChange, showCourseName = false }: Props) {
+export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange }: Props) {
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handleLogoUpload = async (file: File) => {
+    if (!tournamentId) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${tournamentId}/printable-logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      await supabase.from("tournaments").update({ printable_logo_url: data.publicUrl }).eq("id", tournamentId);
+      onLogoChange?.(data.publicUrl);
+      toast({ title: "Logo uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const update = (partial: Partial<PrintableOptions>) => {
     onChange({ ...options, ...partial });
@@ -108,8 +134,35 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
             )}
           </div>
 
+          {/* Logo upload */}
+          {options.showLogo && tournamentId && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <Label className="text-xs font-medium">Printable Logo</Label>
+              <div className="flex items-center gap-3">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-12 w-12 object-contain border rounded bg-white" />
+                ) : (
+                  <div className="h-12 w-12 border border-dashed rounded flex items-center justify-center text-muted-foreground">
+                    <Upload className="h-4 w-4" />
+                  </div>
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleLogoUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Appears on scorecards, cart signs, and other printables.</p>
+            </div>
+          )}
+
           {/* Live Preview */}
-          <ScorecardMiniPreview options={options} showCourseName={showCourseName} />
+          <ScorecardMiniPreview options={options} showCourseName={showCourseName} logoUrl={logoUrl} />
         </div>
       </CollapsibleContent>
     </Collapsible>
@@ -117,7 +170,7 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
 }
 
 /** Live mini-preview that updates as font/layout/toggles change. */
-function ScorecardMiniPreview({ options, showCourseName }: { options: PrintableOptions; showCourseName: boolean }) {
+function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: PrintableOptions; showCourseName: boolean; logoUrl?: string | null }) {
   const fontMap: Record<string, string> = {
     georgia: "'Georgia', serif",
     helvetica: "'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -157,12 +210,16 @@ function ScorecardMiniPreview({ options, showCourseName }: { options: PrintableO
             )}
           </div>
           {options.showLogo && (
-            <div
-              className="text-[9px] font-bold border px-1.5 py-0.5 rounded"
-              style={{ borderColor: layout === "bold" ? "hsl(var(--primary-foreground))" : accent, color: layout === "bold" ? "hsl(var(--primary-foreground))" : accent }}
-            >
-              LOGO
-            </div>
+            logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-10 max-w-[80px] object-contain bg-white rounded p-0.5" />
+            ) : (
+              <div
+                className="text-[9px] font-bold border px-1.5 py-0.5 rounded"
+                style={{ borderColor: layout === "bold" ? "hsl(var(--primary-foreground))" : accent, color: layout === "bold" ? "hsl(var(--primary-foreground))" : accent }}
+              >
+                LOGO
+              </div>
+            )
           )}
         </div>
         <div className="p-2">

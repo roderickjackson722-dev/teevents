@@ -428,9 +428,28 @@ export default function EmailTemplateEditor() {
                   <Switch checked={config.show_logo} onCheckedChange={v => setConfig(p => ({ ...p, show_logo: v }))} />
                 </div>
                 {config.show_logo && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Logo URL</Label>
-                    <Input value={config.logo_url} onChange={e => setConfig(p => ({ ...p, logo_url: e.target.value }))} placeholder="https://..." className="mt-1" />
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Logo</Label>
+                    <div className="flex items-center gap-3">
+                      {config.logo_url && (
+                        <img src={config.logo_url} alt="Logo preview" className="h-12 w-12 object-contain border rounded bg-white" />
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !selectedTournament) return;
+                          const ext = file.name.split(".").pop();
+                          const path = `${selectedTournament}/email-logo-${Date.now()}.${ext}`;
+                          const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+                          if (upErr) { toast.error(upErr.message); return; }
+                          const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+                          setConfig((p) => ({ ...p, logo_url: data.publicUrl }));
+                          toast.success("Logo uploaded");
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
                 <div className="flex items-center justify-between">

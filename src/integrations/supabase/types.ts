@@ -1420,6 +1420,50 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_conversion_discounts: {
+        Row: {
+          conversion_token: string
+          created_at: string
+          discount_type: string
+          discount_value: number | null
+          id: string
+          tournament_id: string
+          used: boolean
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          conversion_token: string
+          created_at?: string
+          discount_type: string
+          discount_value?: number | null
+          id?: string
+          tournament_id: string
+          used?: boolean
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          conversion_token?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number | null
+          id?: string
+          tournament_id?: string
+          used?: boolean
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_conversion_discounts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_events: {
         Row: {
           created_at: string
@@ -6461,6 +6505,11 @@ export type Database = {
           day_of_welcome_title: string | null
           demo_admin_id: string | null
           demo_checklist: Json
+          demo_conversion_claimed_at: string | null
+          demo_conversion_claimed_by: string | null
+          demo_conversion_discount_type: string | null
+          demo_conversion_discount_value: number | null
+          demo_conversion_is_test: boolean
           demo_conversion_sent_at: string | null
           demo_conversion_token: string | null
           demo_conversion_token_expires_at: string | null
@@ -6474,6 +6523,7 @@ export type Database = {
           demo_prospect_other: string | null
           demo_prospect_platform: string | null
           demo_share_token: string | null
+          demo_test_converted_at: string | null
           description: string | null
           description_html: string | null
           display_order: number
@@ -6656,6 +6706,11 @@ export type Database = {
           day_of_welcome_title?: string | null
           demo_admin_id?: string | null
           demo_checklist?: Json
+          demo_conversion_claimed_at?: string | null
+          demo_conversion_claimed_by?: string | null
+          demo_conversion_discount_type?: string | null
+          demo_conversion_discount_value?: number | null
+          demo_conversion_is_test?: boolean
           demo_conversion_sent_at?: string | null
           demo_conversion_token?: string | null
           demo_conversion_token_expires_at?: string | null
@@ -6669,6 +6724,7 @@ export type Database = {
           demo_prospect_other?: string | null
           demo_prospect_platform?: string | null
           demo_share_token?: string | null
+          demo_test_converted_at?: string | null
           description?: string | null
           description_html?: string | null
           display_order?: number
@@ -6851,6 +6907,11 @@ export type Database = {
           day_of_welcome_title?: string | null
           demo_admin_id?: string | null
           demo_checklist?: Json
+          demo_conversion_claimed_at?: string | null
+          demo_conversion_claimed_by?: string | null
+          demo_conversion_discount_type?: string | null
+          demo_conversion_discount_value?: number | null
+          demo_conversion_is_test?: boolean
           demo_conversion_sent_at?: string | null
           demo_conversion_token?: string | null
           demo_conversion_token_expires_at?: string | null
@@ -6864,6 +6925,7 @@ export type Database = {
           demo_prospect_other?: string | null
           demo_prospect_platform?: string | null
           demo_share_token?: string | null
+          demo_test_converted_at?: string | null
           description?: string | null
           description_html?: string | null
           display_order?: number
@@ -7639,6 +7701,7 @@ export type Database = {
         Args: { _code: string; _tournament_id: string }
         Returns: Json
       }
+      get_demo_conversion_discount: { Args: { _token: string }; Returns: Json }
       get_demo_prep_share: { Args: { _token: string }; Returns: Json }
       get_group_scoring_roster: {
         Args: { _code: string; _tournament_id: string }

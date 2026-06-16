@@ -175,14 +175,15 @@ export default function GroupScoring() {
     if (!tournament) return;
     setSaving(true);
     const rows = pendingChanges.map((p) => ({
-      tournament_id: tournament.id,
       registration_id: p.id,
       hole_number: currentHole,
       strokes: parseInt(draft[p.id], 10),
     }));
-    const { error } = await supabase
-      .from("tournament_scores")
-      .upsert(rows, { onConflict: "registration_id,hole_number" });
+    const { error } = await supabase.rpc("save_group_scores", {
+      _tournament_id: tournament.id,
+      _code: code,
+      _scores: rows,
+    });
     setSaving(false);
     if (error) {
       toast({ title: "Save failed", description: error.message, variant: "destructive" });

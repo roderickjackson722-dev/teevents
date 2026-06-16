@@ -45,7 +45,9 @@ export default function LiveScoring() {
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);
   const [groupInput, setGroupInput] = useState("");
+  const [codeInput, setCodeInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
+  const [scoringCode, setScoringCode] = useState<string | null>(null);
   const [groupNumber, setGroupNumber] = useState<number | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [scores, setScores] = useState<Record<string, Record<number, number>>>({});
@@ -116,15 +118,15 @@ export default function LiveScoring() {
     setAutoLogging(true);
 
     (async () => {
-      const { data } = await supabase
-        .from("tournament_registrations")
-        .select("group_number")
-        .eq("tournament_id", tournament.id)
-        .eq("scoring_code", code.toUpperCase())
-        .single();
+      const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
+        _tournament_id: tournament.id,
+        _scoring_code: code,
+        _email: null,
+      });
 
-      if (data?.group_number) {
-        await loadGroup(data.group_number);
+      if (gNum) {
+        setScoringCode(code.toUpperCase());
+        await loadGroup(gNum as number);
       } else {
         setError("Invalid scoring code or player not assigned to a hole.");
       }
@@ -135,32 +137,25 @@ export default function LiveScoring() {
   const loadGroup = async (gNum: number) => {
     if (!tournament) return;
 
-    const { data: groupPlayers } = await supabase
-      .from("tournament_registrations")
-      .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole")
-      .eq("tournament_id", tournament.id)
-      .eq("group_number", gNum)
-      .order("group_position");
+    const { data: payload } = await supabase.rpc("get_live_scoring_group", {
+      _tournament_id: tournament.id,
+      _group_number: gNum,
+    });
+    const groupPlayers = (payload as any)?.players as any[] | undefined;
+    const existingScores = (payload as any)?.scores as any[] | undefined;
 
     if (!groupPlayers || groupPlayers.length === 0) {
       setError(`No players found in Hole ${gNum}.`);
       return;
     }
 
-    const regIds = groupPlayers.map((p) => p.id);
-    const { data: existingScores } = await supabase
-      .from("tournament_scores")
-      .select("registration_id, hole_number, strokes")
-      .eq("tournament_id", tournament.id)
-      .in("registration_id", regIds);
-
     const scoreMap: Record<string, Record<number, number>> = {};
-    existingScores?.forEach((s) => {
+    existingScores?.forEach((s: any) => {
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
 
-    const mappedPlayers: Player[] = groupPlayers.map((p) => ({
+    const mappedPlayers: Player[] = groupPlayers.map((p: any) => ({
       id: p.id,
       first_name: p.first_name,
       last_name: p.last_name,
@@ -169,6 +164,12 @@ export default function LiveScoring() {
       playing_handicap: p.playing_handicap,
       strokes_per_hole: p.strokes_per_hole as number[] | null,
     }));
+
+    // Remember a scoring_code from the group so we can authorize saves
+    if (!scoringCode) {
+      const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
+      if (anyCode) setScoringCode(anyCode);
+    }
 
     setPlayers(mappedPlayers);
     setScores(scoreMap);
@@ -181,20 +182,25 @@ export default function LiveScoring() {
     setError("");
     let gNum: number | null = null;
 
-    if (groupInput.trim()) {
-      gNum = parseInt(groupInput.trim());
-      if (isNaN(gNum)) { setError("Invalid group number"); return; }
+    if (codeInput.trim()) {
+      const { data } = await supabase.rpc("live_scoring_lookup_group", {
+        _tournament_id: tournament.id,
+        _scoring_code: codeInput.trim(),
+        _email: null,
+      });
+      if (!data) { setError("Invalid scoring code."); return; }
+      setScoringCode(codeInput.trim().toUpperCase());
+      gNum = data as number;
     } else if (emailInput.trim()) {
-      const { data } = await supabase
-        .from("tournament_registrations")
-        .select("group_number")
-        .eq("tournament_id", tournament.id)
-        .eq("email", emailInput.trim().toLowerCase())
-        .single();
-      if (!data?.group_number) { setError("Player not found or not assigned to a hole."); return; }
-      gNum = data.group_number;
+      const { data } = await supabase.rpc("live_scoring_lookup_group", {
+        _tournament_id: tournament.id,
+        _scoring_code: null,
+        _email: emailInput.trim(),
+      });
+      if (!data) { setError("Player not found or not assigned to a hole."); return; }
+      gNum = data as number;
     } else {
-      setError("Enter a hole number or your email."); return;
+      setError("Enter your scoring code or email."); return;
     }
 
     await loadGroup(gNum);
@@ -232,8 +238,19 @@ export default function LiveScoring() {
     });
 
     if (upserts.length > 0) {
-      const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-        onConflict: "registration_id,hole_number",
+      if (!scoringCode) {
+        toast.error("Missing scoring code. Please log in again with your code.");
+        setSaving(false);
+        return;
+      }
+      const { error } = await supabase.rpc("save_group_scores", {
+        _tournament_id: tournament.id,
+        _code: scoringCode,
+        _scores: upserts.map((u) => ({
+          registration_id: u.registration_id,
+          hole_number: u.hole_number,
+          strokes: u.strokes,
+        })),
       });
       if (error) { toast.error(error.message); }
       else {
@@ -278,16 +295,16 @@ export default function LiveScoring() {
           <CardHeader className="text-center">
             <Trophy className="h-10 w-10 text-primary mx-auto mb-2" />
             <CardTitle className="text-xl">{tournament.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">Live Scoring — Enter your hole to begin</p>
+            <p className="text-sm text-muted-foreground">Live Scoring — Enter your scoring code to begin</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Hole Number</label>
+              <label className="text-sm font-medium mb-1 block">Scoring Code</label>
               <Input
-                type="number"
-                placeholder="e.g. 3"
-                value={groupInput}
-                onChange={(e) => { setGroupInput(e.target.value); setEmailInput(""); }}
+                type="text"
+                placeholder="e.g. AB12CD"
+                value={codeInput}
+                onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setEmailInput(""); setGroupInput(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>
@@ -302,7 +319,7 @@ export default function LiveScoring() {
                 type="email"
                 placeholder="john@example.com"
                 value={emailInput}
-                onChange={(e) => { setEmailInput(e.target.value); setGroupInput(""); }}
+                onChange={(e) => { setEmailInput(e.target.value); setCodeInput(""); setGroupInput(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>

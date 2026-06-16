@@ -253,40 +253,15 @@ function DayOfInner() {
       }
 
       if (!code) { setError("Missing player code. Please scan your QR code or use the link from your confirmation."); setLoading(false); return; }
-      const { data: r } = await supabase
-        .from("tournament_registrations")
-        .select("id, first_name, last_name, group_number, group_position, scoring_code, group_scoring_code")
-        .eq("tournament_id", tt.id)
-        .eq("scoring_code", code.toUpperCase())
-        .maybeSingle();
-      if (!r) { setError("Player not found. Please check your code."); setLoading(false); return; }
-      const rr = r as any as Reg;
-      setReg(rr);
-
-      if (rr.group_number != null) {
-        const { data: g } = await supabase
-          .from("tournament_registrations")
-          .select("id, first_name, last_name, group_number, group_position, scoring_code, group_scoring_code")
-          .eq("tournament_id", tt.id)
-          .eq("group_number", rr.group_number)
-          .order("group_position");
-        setGroup(((g as any) || []) as Reg[]);
-      }
-
-      const { data: scores } = await supabase
-        .from("tournament_scores")
-        .select("registration_id, strokes, tournament_registrations(first_name, last_name)")
-        .eq("tournament_id", tt.id);
-      if (scores) {
-        const map: Record<string, { name: string; total: number }> = {};
-        for (const s of scores as any[]) {
-          const k = s.registration_id;
-          const nm = s.tournament_registrations ? `${s.tournament_registrations.first_name} ${s.tournament_registrations.last_name}` : "Player";
-          map[k] = map[k] || { name: nm, total: 0 };
-          map[k].total += s.strokes || 0;
-        }
-        setLeaders(Object.values(map).sort((a, b) => a.total - b.total).slice(0, 10));
-      }
+      const { data: rpcData } = await supabase.rpc("get_day_of_player", {
+        _tournament_id: tt.id,
+        _code: code,
+      });
+      const payload = rpcData as any;
+      if (!payload?.player) { setError("Player not found. Please check your code."); setLoading(false); return; }
+      setReg(payload.player as Reg);
+      setGroup((payload.group || []) as Reg[]);
+      setLeaders((payload.leaders || []) as { name: string; total: number }[]);
       setLoading(false);
     })();
   }, [slug, code, isOrganizerPreview, isPreviewCode]);

@@ -7557,6 +7557,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_day_of_player: {
+        Args: { _code: string; _tournament_id: string }
+        Returns: Json
+      }
       get_group_scoring_roster: {
         Args: { _code: string; _tournament_id: string }
         Returns: {
@@ -7568,6 +7572,10 @@ export type Database = {
           last_name: string
           playing_handicap: number
         }[]
+      }
+      get_live_scoring_group: {
+        Args: { _group_number: number; _tournament_id: string }
+        Returns: Json
       }
       get_player_hub_by_token: {
         Args: { _token: string }
@@ -7629,6 +7637,10 @@ export type Database = {
         Args: { _trip_id: string; _user_id: string }
         Returns: boolean
       }
+      live_scoring_lookup_group: {
+        Args: { _email: string; _scoring_code: string; _tournament_id: string }
+        Returns: number
+      }
       lookup_player_scoring_code: {
         Args: { _code: string; _tournament_id: string }
         Returns: string
@@ -7673,6 +7685,10 @@ export type Database = {
       regenerate_player_qr_token: {
         Args: { _registration_id: string }
         Returns: string
+      }
+      save_group_scores: {
+        Args: { _code: string; _scores: Json; _tournament_id: string }
+        Returns: undefined
       }
       update_college_invitation_rsvp_by_token: {
         Args: { _response: string; _token: string }

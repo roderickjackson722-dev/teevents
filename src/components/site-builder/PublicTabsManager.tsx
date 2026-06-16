@@ -140,6 +140,26 @@ export const PublicTabsManager = ({
         </Droppable>
       </DragDropContext>
 
+      <div className="border-t border-border pt-3">
+        <div className="flex items-start gap-3">
+          <Switch
+            checked={golfersFirst}
+            onCheckedChange={setGolfersFirst}
+            aria-label="Show golfer registration before sponsors"
+          />
+          <div className="flex-1 min-w-0">
+            <Label className="text-sm font-semibold cursor-pointer block">
+              Show golfer registration before sponsors
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              When on, the player registration section appears above "Become a Sponsor" on your public page.
+            </p>
+          </div>
+        </div>
+      </div>
+
+
+
       <div className="flex items-center justify-between gap-3 pt-1">
         <p className="text-xs text-muted-foreground">
           Tip: a tab with no data (e.g. Sponsors with no sponsors yet) is hidden automatically.

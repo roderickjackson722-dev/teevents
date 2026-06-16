@@ -1138,6 +1138,7 @@ const Players = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

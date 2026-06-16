@@ -170,7 +170,7 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
 }
 
 /** Live mini-preview that updates as font/layout/toggles change. */
-function ScorecardMiniPreview({ options, showCourseName }: { options: PrintableOptions; showCourseName: boolean }) {
+function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: PrintableOptions; showCourseName: boolean; logoUrl?: string | null }) {
   const fontMap: Record<string, string> = {
     georgia: "'Georgia', serif",
     helvetica: "'Helvetica Neue', Helvetica, Arial, sans-serif",

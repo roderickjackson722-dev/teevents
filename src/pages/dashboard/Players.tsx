@@ -745,9 +745,9 @@ const Players = () => {
                     </td>
                     <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
                     <td className="px-4 py-3 text-center">
-                      {p.group_number ? (
+                      {(p.group_label || p.group_number) ? (
                         <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                          #{p.group_number}
+                          #{p.group_label || p.group_number}
                         </span>
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
@@ -1046,7 +1046,7 @@ const Players = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Hole Assignment</p>
-                  <p className="text-sm text-foreground">{viewingPlayer.group_number ? `Hole #${viewingPlayer.group_number}` : "Unassigned"}</p>
+                  <p className="text-sm text-foreground">{(viewingPlayer.group_label || viewingPlayer.group_number) ? `Hole #${viewingPlayer.group_label || viewingPlayer.group_number}` : "Unassigned"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Scoring Code</p>

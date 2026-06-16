@@ -880,6 +880,106 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   ) : null;
 
 
+  const golfersFirst = (tournament as any).golfers_register_first === true;
+  const registrationSection = (
+    <>
+      {/* ===== REGISTRATION ===== */}
+      {tournament.registration_open && !tournament.registration_url && (
+        <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
+                <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+                <p style={{ color: "#666" }}>
+                  {isTournamentFull && tournament.waitlist_enabled
+                    ? "This tournament is currently full. Join the waitlist below."
+                    : tournament.foursome_registration
+                      ? "Register your foursome below to secure your spots."
+                      : "Fill out the form below to secure your spot."}
+                </p>
+                {tournament.max_players && (
+                  <p className="text-xs mt-2" style={{ color: "#999" }}>
+                    {registrationCount} / {tournament.max_players} spots filled
+                  </p>
+                )}
+              </div>
+
+              {isTournamentFull && tournament.waitlist_enabled ? (
+                <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
+                  <WaitlistSignup
+                    tournamentId={tournament.id}
+                    primaryColor={primary}
+                    secondaryColor={secondary}
+                    depositCents={tournament.waitlist_deposit_cents || 0}
+                    maxWaitlistSlots={tournament.max_waitlist_slots ?? null}
+                    maxGroupSize={4}
+                  />
+                </div>
+              ) : isTournamentFull ? (
+                <div className="bg-white rounded-xl border p-8 shadow-sm text-center" style={{ borderColor: "#e5e5e5" }}>
+                  <Users className="h-12 w-12 mx-auto mb-3" style={{ color: "#999" }} />
+                  <h3 className="text-xl font-bold mb-2" style={{ color: "#1a1a1a" }}>Tournament Full</h3>
+                  <p style={{ color: "#666" }}>All spots have been filled. Check back later for cancellations.</p>
+                </div>
+              ) : showConfirmation ? (
+                <div className="bg-white rounded-xl border p-8 shadow-sm text-center relative" style={{ borderColor: "#e5e5e5" }}>
+                  <button onClick={() => setShowConfirmation(false)} className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors" aria-label="Close">
+                    <X className="h-5 w-5" style={{ color: "#999" }} />
+                  </button>
+                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
+                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>You're Registered!</h3>
+                  <p style={{ color: "#666" }}>Payment confirmed. You'll receive confirmation details via email.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
+                  <RegistrationForm
+                    tournamentId={tournament.id}
+                    primaryColor={primary}
+                    secondaryColor={secondary}
+                    registrationFeeCents={tournament.registration_fee_cents || 0}
+                    foursomeMode={tournament.foursome_registration}
+                    maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
+                    isNonprofit={nonprofitInfo.isNonprofit}
+                    nonprofitName={nonprofitInfo.nonprofitName}
+                    ein={nonprofitInfo.ein}
+                    platformFeeRate={nonprofitInfo.platformFeeRate}
+                    passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
+                    allowCoverFees={tournament.allow_cover_fees !== false}
+                    tiers={regTiers}
+                    fields={regFields}
+                    addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
+                    captainLabel={(tournament as any).captain_label || null}
+                  />
+                </div>
+              )}
+              {tournament.refund_policy_text && (
+                <div className="mt-4 p-4 rounded-lg border text-sm" style={{ borderColor: "#e5e5e5", backgroundColor: "#fff" }}>
+                  <p className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: primary }}>Refund Policy</p>
+                  <p style={{ color: "#666" }}>{tournament.refund_policy_text}</p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {tournament.registration_url && (
+        <section id="register" className="py-16" style={{ backgroundColor: primary }}>
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">Ready to Play?</h2>
+              <p className="text-white/70 max-w-xl mx-auto mb-8">Secure your spot today. Space is limited!</p>
+              <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: secondary, color: primary }}>
+                Register Now <ExternalLink className="h-4 w-4" />
+              </a>
+            </motion.div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}
@@ -1284,6 +1384,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
         </div>
       </div>
+
+      {golfersFirst && registrationSection}
 
       {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
       {isTabVisible("sponsors") && (
@@ -1931,103 +2033,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
       {galleryPosition === "after_leaderboard" && galleryNode}
 
-      {/* ===== REGISTRATION ===== */}
-      {tournament.registration_open && !tournament.registration_url && (
-        <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
-          <div className="max-w-xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
-                <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-                <p style={{ color: "#666" }}>
-                  {isTournamentFull && tournament.waitlist_enabled
-                    ? "This tournament is currently full. Join the waitlist below."
-                    : tournament.foursome_registration
-                      ? "Register your foursome below to secure your spots."
-                      : "Fill out the form below to secure your spot."}
-                </p>
-                {tournament.max_players && (
-                  <p className="text-xs mt-2" style={{ color: "#999" }}>
-                    {registrationCount} / {tournament.max_players} spots filled
-                  </p>
-                )}
-              </div>
-
-              {/* Waitlist when full */}
-              {isTournamentFull && tournament.waitlist_enabled ? (
-                <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
-                  <WaitlistSignup
-                    tournamentId={tournament.id}
-                    primaryColor={primary}
-                    secondaryColor={secondary}
-                    depositCents={tournament.waitlist_deposit_cents || 0}
-                    maxWaitlistSlots={tournament.max_waitlist_slots ?? null}
-                    maxGroupSize={4}
-                  />
-                </div>
-              ) : isTournamentFull ? (
-                <div className="bg-white rounded-xl border p-8 shadow-sm text-center" style={{ borderColor: "#e5e5e5" }}>
-                  <Users className="h-12 w-12 mx-auto mb-3" style={{ color: "#999" }} />
-                  <h3 className="text-xl font-bold mb-2" style={{ color: "#1a1a1a" }}>Tournament Full</h3>
-                  <p style={{ color: "#666" }}>All spots have been filled. Check back later for cancellations.</p>
-                </div>
-              ) : showConfirmation ? (
-                <div className="bg-white rounded-xl border p-8 shadow-sm text-center relative" style={{ borderColor: "#e5e5e5" }}>
-                  <button onClick={() => setShowConfirmation(false)} className="absolute top-3 right-3 rounded-full p-1 hover:bg-gray-100 transition-colors" aria-label="Close">
-                    <X className="h-5 w-5" style={{ color: "#999" }} />
-                  </button>
-                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
-                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>You're Registered!</h3>
-                  <p style={{ color: "#666" }}>Payment confirmed. You'll receive confirmation details via email.</p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
-                  <RegistrationForm
-                    tournamentId={tournament.id}
-                    primaryColor={primary}
-                    secondaryColor={secondary}
-                    registrationFeeCents={tournament.registration_fee_cents || 0}
-                    foursomeMode={tournament.foursome_registration}
-                    maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
-                    isNonprofit={nonprofitInfo.isNonprofit}
-                    nonprofitName={nonprofitInfo.nonprofitName}
-                    ein={nonprofitInfo.ein}
-                    platformFeeRate={nonprofitInfo.platformFeeRate}
-                    passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
-                    allowCoverFees={tournament.allow_cover_fees !== false}
-                    tiers={regTiers}
-                    fields={regFields}
-                    addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
-                    captainLabel={(tournament as any).captain_label || null}
-                  />
-                </div>
-              )}
-              {/* Refund Policy Display */}
-              {tournament.refund_policy_text && (
-                <div className="mt-4 p-4 rounded-lg border text-sm" style={{ borderColor: "#e5e5e5", backgroundColor: "#fff" }}>
-                  <p className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: primary }}>Refund Policy</p>
-                  <p style={{ color: "#666" }}>{tournament.refund_policy_text}</p>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        </section>
-      )}
-
-      {/* External Registration CTA */}
-      {tournament.registration_url && (
-        <section id="register" className="py-16" style={{ backgroundColor: primary }}>
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">Ready to Play?</h2>
-              <p className="text-white/70 max-w-xl mx-auto mb-8">Secure your spot today. Space is limited!</p>
-              <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: secondary, color: primary }}>
-                Register Now <ExternalLink className="h-4 w-4" />
-              </a>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      {!golfersFirst && registrationSection}
 
       {/* ===== AUCTION & RAFFLE ===== */}
       {isTabVisible("auction") && auctionItems.length > 0 && (

@@ -680,6 +680,7 @@ const Sponsors = () => {
         title="Crop Sponsor Logo (any shape — wide, square, or tall)"
         onCropped={(file) => handleLogoUpload(file)}
       />
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

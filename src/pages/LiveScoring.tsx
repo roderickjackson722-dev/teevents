@@ -45,7 +45,9 @@ export default function LiveScoring() {
   const [loading, setLoading] = useState(true);
   const [loginMode, setLoginMode] = useState(true);
   const [groupInput, setGroupInput] = useState("");
+  const [codeInput, setCodeInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
+  const [scoringCode, setScoringCode] = useState<string | null>(null);
   const [groupNumber, setGroupNumber] = useState<number | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [scores, setScores] = useState<Record<string, Record<number, number>>>({});

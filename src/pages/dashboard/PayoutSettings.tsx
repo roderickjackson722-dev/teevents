@@ -996,6 +996,7 @@ export default function PayoutSettings() {
           </div>
         </DialogContent>
       </Dialog>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 }

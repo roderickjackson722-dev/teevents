@@ -445,6 +445,167 @@ export default function DemoConverter() {
         onOpenChange={setCropOpen}
         imageSrc={rawImageSrc}
         defaultAspect="16:9"
+        <Card>
+          <CardHeader>
+            <CardTitle>Sent Conversions</CardTitle>
+            <CardDescription>72-hour signup links sent to prospects. Test links last 24 hours.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const sent = demos.filter((d) => d.demo_conversion_token || d.demo_converted_at);
+              if (sent.length === 0) return <div className="text-sm text-muted-foreground">No conversion links sent yet.</div>;
+              return (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tournament</TableHead>
+                      <TableHead>Prospect</TableHead>
+                      <TableHead>Offer</TableHead>
+                      <TableHead>Sent</TableHead>
+                      <TableHead>Expires</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sent.map((d) => {
+                      const s = statusOf(d);
+                      const offer = offerLine((d.demo_conversion_discount_type as DiscountType) || "none", d.demo_conversion_discount_value || 0);
+                      return (
+                        <TableRow key={d.id}>
+                          <TableCell className="font-medium">{d.title}</TableCell>
+                          <TableCell className="text-sm">{d.demo_prospect_email || "—"}</TableCell>
+                          <TableCell className="text-xs">{offer ? offer.replace("🔥 Special offer: ", "") : "Standard pricing"}</TableCell>
+                          <TableCell className="text-xs">{d.demo_conversion_sent_at ? new Date(d.demo_conversion_sent_at).toLocaleString() : "—"}</TableCell>
+                          <TableCell className="text-xs">{d.demo_conversion_token_expires_at ? new Date(d.demo_conversion_token_expires_at).toLocaleString() : "—"}</TableCell>
+                          <TableCell><Badge variant={s.variant}>{s.label}</Badge></TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              {d.demo_conversion_token && !d.demo_converted_at && (
+                                <Button size="sm" variant="outline" onClick={() => copyLink(d)}><Copy className="h-3 w-3" /></Button>
+                              )}
+                              {!d.demo_converted_at && (
+                                <Button size="sm" variant="outline" onClick={() => openConvert(d)}>
+                                  <RotateCw className="h-3 w-3 mr-1" /> Resend
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Dialog open={convOpen} onOpenChange={setConvOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Convert to Live Tournament — 72-Hour Offer</DialogTitle>
+            <DialogDescription>{convTarget?.title}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label>Prospect Email</Label>
+                <Input
+                  type="email"
+                  value={convForm.prospect_email}
+                  onChange={(e) => setConvForm({ ...convForm, prospect_email: e.target.value })}
+                  placeholder="prospect@example.com"
+                />
+              </div>
+              <div>
+                <Label>Prospect Name</Label>
+                <Input
+                  value={convForm.prospect_name}
+                  onChange={(e) => setConvForm({ ...convForm, prospect_name: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="border rounded-md p-3 space-y-3">
+              <Label className="font-semibold">Offer Type</Label>
+              <RadioGroup
+                value={convForm.discount_type}
+                onValueChange={(v) => setConvForm({ ...convForm, discount_type: v as DiscountType })}
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="none" id="d-none" />
+                  <span>No discount — standard pricing</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="free_pro" id="d-free" />
+                  <span>Free Pro upgrade ($399 value — 100% off)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="percentage" id="d-pct" />
+                  <span>Percentage discount:</span>
+                  <Input
+                    type="number" min={1} max={100}
+                    className="w-20 h-8"
+                    value={convForm.discount_type === "percentage" ? convForm.discount_value || "" : ""}
+                    onChange={(e) => setConvForm({ ...convForm, discount_type: "percentage", discount_value: Number(e.target.value) || 0 })}
+                  />
+                  <span>% off</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="fixed" id="d-fix" />
+                  <span>Fixed discount: $</span>
+                  <Input
+                    type="number" min={1}
+                    className="w-24 h-8"
+                    value={convForm.discount_type === "fixed" ? convForm.discount_value || "" : ""}
+                    onChange={(e) => setConvForm({ ...convForm, discount_type: "fixed", discount_value: Number(e.target.value) || 0 })}
+                  />
+                  <span>off</span>
+                </label>
+              </RadioGroup>
+            </div>
+
+            <div className="border rounded-md p-3 bg-muted/30 text-sm space-y-2">
+              <div className="font-semibold">📧 Email Preview</div>
+              <div className="text-xs text-muted-foreground">
+                Subject: Claim your tournament – {convTarget?.title}
+              </div>
+              <div className="border-t pt-2 space-y-1">
+                <div>Hi {convForm.prospect_name || "[Name]"},</div>
+                <div>Your tournament <strong>{convTarget?.title}</strong> is ready to be claimed.</div>
+                <div>👉 [Signup Link] — valid for 72 hours</div>
+                {offerLine(convForm.discount_type, convForm.discount_value) && (
+                  <div className="bg-yellow-50 border-l-4 border-yellow-500 px-2 py-1">
+                    <strong>{offerLine(convForm.discount_type, convForm.discount_value)}</strong>
+                  </div>
+                )}
+                <div>— Rod Jackson, TeeVents Golf</div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 flex-col sm:flex-row">
+            <Button variant="outline" onClick={() => sendConversion(true)} disabled={convSending}>
+              🔬 Send Test (to myself, 24h)
+            </Button>
+            <Button
+              className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold"
+              onClick={() => sendConversion(false)}
+              disabled={convSending}
+            >
+              <Send className="h-4 w-4 mr-1" />
+              {convSending ? "Sending…" : "Send Signup Link"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ImageCropperDialog
+        open={cropOpen}
+        onOpenChange={setCropOpen}
+        imageSrc={rawImageSrc}
+        defaultAspect="16:9"
         outputMime="image/jpeg"
         title="Crop Hero Image (16:9 recommended)"
         onCropped={handleCropped}

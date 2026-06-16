@@ -37,7 +37,7 @@ serve(async (req) => {
     // Look up the demo tournament
     const { data: t, error: tErr } = await admin
       .from("tournaments")
-      .select("id, title, is_demo, demo_converted_at, demo_conversion_used_at, demo_conversion_token_expires_at, demo_prospect_name")
+      .select("id, title, is_demo, demo_converted_at, demo_conversion_used_at, demo_conversion_token_expires_at, demo_prospect_name, demo_conversion_is_test, demo_conversion_discount_type, demo_conversion_discount_value")
       .eq("demo_conversion_token", conversion_token)
       .maybeSingle();
     if (tErr || !t) {
@@ -53,13 +53,17 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "This claim link has expired" }), { status: 410, headers: corsHeaders });
     }
 
-    // Atomically claim the token: only one caller wins. We update the row
-    // gated on token + not-yet-used + not-yet-expired, and require exactly 1
-    // row affected. If 0 rows come back, someone else already claimed it.
     const nowIso = new Date().toISOString();
+    const isTest = !!t.demo_conversion_is_test;
+
+    // Atomically claim the token
     const { data: claimed, error: claimErr } = await admin
       .from("tournaments")
-      .update({ demo_conversion_used_at: nowIso })
+      .update({
+        demo_conversion_used_at: nowIso,
+        demo_conversion_claimed_by: user.id,
+        demo_conversion_claimed_at: nowIso,
+      })
       .eq("id", t.id)
       .eq("demo_conversion_token", conversion_token)
       .is("demo_conversion_used_at", null)
@@ -70,7 +74,27 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "This tournament has already been claimed" }), { status: 409, headers: corsHeaders });
     }
 
-    // Create the organization + owner membership, then transfer the tournament.
+    // TEST MODE: mark the demo as test-converted, do NOT transfer org, do NOT wipe
+    // (we already preserved data on send). Reopen for further testing.
+    if (isTest) {
+      await admin
+        .from("tournaments")
+        .update({
+          demo_test_converted_at: nowIso,
+          // Reopen token slot so admin can re-issue a new test link later
+          demo_conversion_token: null,
+          demo_conversion_token_expires_at: null,
+          demo_conversion_used_at: null,
+          demo_conversion_is_test: false,
+        })
+        .eq("id", t.id);
+      return new Response(JSON.stringify({
+        ok: true, test: true, tournament_id: t.id,
+        message: "Test claim succeeded. Demo preserved for further testing.",
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Real claim — create org, transfer tournament
     const orgName = orgNameInput || t.demo_prospect_name || `${t.title} Org`;
     const { data: org, error: orgErr } = await admin
       .from("organizations").insert({ name: orgName, plan: "base" }).select().single();
@@ -92,10 +116,20 @@ serve(async (req) => {
       .eq("id", t.id);
     if (updErr) throw updErr;
 
-    return new Response(JSON.stringify({ ok: true, tournament_id: t.id, organization_id: org.id }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Mark discount as used (consumed when prospect claims). The future
+    // Pro-checkout flow can read it via get_demo_conversion_discount() before
+    // marking used; here we record the claim event.
+    await admin
+      .from("demo_conversion_discounts")
+      .update({ used: true, used_at: nowIso, used_by: user.id })
+      .eq("conversion_token", conversion_token);
+
+    return new Response(JSON.stringify({
+      ok: true, tournament_id: t.id, organization_id: org.id,
+      discount: t.demo_conversion_discount_type && t.demo_conversion_discount_type !== "none" ? {
+        type: t.demo_conversion_discount_type, value: t.demo_conversion_discount_value,
+      } : null,
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), {
       status: 500,

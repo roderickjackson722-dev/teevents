@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

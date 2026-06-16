@@ -1243,6 +1243,7 @@ const Finances = () => {
           )}
         </DialogContent>
       </Dialog>
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

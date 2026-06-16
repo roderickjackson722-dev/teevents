@@ -12,7 +12,25 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { page_url, referrer, user_agent } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const rawPage = typeof body.page_url === "string" ? body.page_url : "";
+    const rawRef = typeof body.referrer === "string" ? body.referrer : "";
+    const rawUa = typeof body.user_agent === "string" ? body.user_agent : "";
+
+    // Input validation: cap lengths and require a recognisable internal path.
+    const page_url = rawPage.slice(0, 2048);
+    const referrer = rawRef.slice(0, 2048) || "Direct / No referrer";
+    const user_agent = rawUa.slice(0, 512) || null;
+
+    // Reject obvious garbage / external URLs to keep analytics clean.
+    const isValidPath =
+      page_url.startsWith("/") ||
+      /^https?:\/\/([a-z0-9-]+\.)*(teevents\.golf|teevents\.lovable\.app|lovable\.app)(\/|$)/i.test(page_url);
+    if (!page_url || !isValidPath) {
+      return new Response(JSON.stringify({ ok: true, skipped: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Get visitor IP from request headers
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
@@ -47,10 +65,10 @@ Deno.serve(async (req) => {
     const { error: insertError } = await supabaseAdmin
       .from("site_visits")
       .insert({
-        page_url: page_url || "unknown",
-        referrer: referrer || "Direct / No referrer",
-        user_agent: user_agent || null,
-        ip_address: ip,
+        page_url,
+        referrer,
+        user_agent,
+        ip_address: ip.slice(0, 64),
         city,
         country,
       });

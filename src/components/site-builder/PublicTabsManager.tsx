@@ -17,18 +17,21 @@ interface PublicTabsManagerProps {
   tournamentId: string;
   initialVisibility: Partial<Record<string, boolean>> | null | undefined;
   initialOrder: string[] | null | undefined;
+  initialGolfersFirst?: boolean | null;
 }
 
 export const PublicTabsManager = ({
   tournamentId,
   initialVisibility,
   initialOrder,
+  initialGolfersFirst,
 }: PublicTabsManagerProps) => {
   const { toast } = useToast();
   const [visibility, setVisibility] = useState<Record<PublicTabKey, boolean>>(
     normalizeVisibility(initialVisibility),
   );
   const [order, setOrder] = useState<PublicTabKey[]>(normalizeOrder(initialOrder));
+  const [golfersFirst, setGolfersFirst] = useState<boolean>(!!initialGolfersFirst);
   const [saving, setSaving] = useState(false);
 
   const tabMeta = (key: PublicTabKey) =>
@@ -53,6 +56,7 @@ export const PublicTabsManager = ({
       .update({
         public_tabs: visibility as any,
         public_tabs_order: order,
+        golfers_register_first: golfersFirst,
       } as any)
       .eq("id", tournamentId);
     setSaving(false);

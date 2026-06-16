@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, Fragment } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";

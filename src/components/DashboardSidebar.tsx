@@ -68,7 +68,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-sky-400 bg-sky-400/5",
     items: [
       { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null, description: "Par, slope, rating, hole data" },
-      { title: "Handicap Settings", url: "/dashboard/scoring?tab=handicap", icon: Sliders, feature: "leaderboard", description: "Allowances, max handicap, formats" },
+      { title: "Handicap", url: "/dashboard/scoring?tab=handicap", icon: Sliders, feature: "leaderboard", description: "Allowances, max handicap, formats" },
     ],
   },
   {
@@ -107,6 +107,7 @@ const categories: SidebarCategory[] = [
       { title: "Day of Event Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
       { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
+      { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
     ],
   },
   {
@@ -127,9 +128,9 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null, description: "QR codes, short URLs, social templates" },
       { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
-      { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
-      { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Confirmation, reminder, thank‑you emails" },
       { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
+      { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys" },
+      { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Templates used by surveys, confirmations, and reminders" },
     ],
   },
   {
@@ -141,13 +142,6 @@ const categories: SidebarCategory[] = [
       { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
       { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, extras" },
       { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null, description: "Consulting, signage, insurance" },
-    ],
-  },
-  {
-    label: "Post-Event",
-    color: "border-l-teal-400 bg-teal-400/5",
-    items: [
-      { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys" },
     ],
   },
 ];

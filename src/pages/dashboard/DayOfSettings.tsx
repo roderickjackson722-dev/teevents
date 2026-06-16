@@ -503,21 +503,6 @@ export default function DayOfSettings() {
             </div>
           </section>
 
-          <Card className="p-4 bg-muted/40 border-dashed">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 mt-0.5 text-primary" />
-              <div className="flex-1">
-                <p className="font-medium">Pin sheet placements</p>
-                <p className="text-sm text-muted-foreground">Manage hole-by-hole pin positions; they appear on the day-of page automatically.</p>
-                <div className="mt-2 flex items-center gap-3">
-                  <Link to="/dashboard/pin-sheets">
-                    <Button size="sm" variant="outline">Open Pin Sheets</Button>
-                  </Link>
-                  {t.pin_sheets_enabled && <span className="text-xs text-green-700">Enabled</span>}
-                </div>
-              </div>
-            </div>
-          </Card>
 
           <div className="pt-2 flex flex-wrap items-center gap-3 border-t">
             <Button onClick={save} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">{saving ? "Saving…" : "Save Changes"}</Button>

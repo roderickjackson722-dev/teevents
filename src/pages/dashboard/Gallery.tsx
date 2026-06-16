@@ -52,7 +52,7 @@ export default function Gallery() {
     await supabase.from("tournament_photos").insert({
       tournament_id: selectedTournament,
       image_url: urlData.publicUrl,
-      caption: file.name.replace(/\.[^/.]+$/, ""),
+      caption: null,
     });
   };
 

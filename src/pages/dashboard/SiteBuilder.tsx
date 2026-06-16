@@ -1929,6 +1929,7 @@ const SiteBuilder = () => {
         minOutputWidth={pendingType === "logo" ? 1024 : 1920}
         onCropped={(file) => handleFileUpload(file, pendingType)}
       />
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 };

@@ -662,6 +662,7 @@ export default function Leaderboard() {
       {selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
       )}
+      <StickySaveBar onSave={() => {}} />
     </div>
   );
 }

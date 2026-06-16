@@ -1517,6 +1517,7 @@ const SiteBuilder = () => {
                 tournamentId={settings.id}
                 initialVisibility={settings.public_tabs}
                 initialOrder={settings.public_tabs_order}
+                initialGolfersFirst={(settings as any).golfers_register_first}
               />
             </>
           )}

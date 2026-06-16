@@ -132,7 +132,35 @@ export default function DemoPreparation() {
   if (!t) return <div className="p-8">Tournament not found.</div>;
   if (!t.is_demo) return <div className="p-8">This is not a demo tournament.</div>;
 
-  const points = TALKING_POINTS[platform] || [];
+  const selectedComp = competitors.find((c) => c.slug === platform);
+  const points = selectedComp?.talking_points || TALKING_POINTS[platform as PlatformKey] || [];
+  const platformOptions: { slug: string; name: string }[] = competitors.length
+    ? competitors.map((c) => ({ slug: c.slug, name: c.name }))
+    : (Object.keys(PLATFORM_LABELS) as PlatformKey[]).map((k) => ({ slug: k, name: PLATFORM_LABELS[k] }));
+
+  async function generateShareLink() {
+    setGeneratingShare(true);
+    let token = t.demo_share_token;
+    if (!token) {
+      token = crypto.randomUUID();
+      const { error } = await supabase.from("tournaments").update({ demo_share_token: token }).eq("id", id);
+      if (error) { setGeneratingShare(false); toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      setT({ ...t, demo_share_token: token });
+    }
+    const url = `${window.location.origin}/demo-prep/${token}`;
+    setShareUrl(url);
+    try { await navigator.clipboard.writeText(url); toast({ title: "Share link copied" }); } catch { toast({ title: "Share link ready" }); }
+    setGeneratingShare(false);
+  }
+
+  async function revokeShareLink() {
+    if (!confirm("Revoke the current share link? Anyone with the old link will lose access.")) return;
+    const { error } = await supabase.from("tournaments").update({ demo_share_token: null }).eq("id", id);
+    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+    setT({ ...t, demo_share_token: null });
+    setShareUrl(null);
+    toast({ title: "Share link revoked" });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,16 +182,19 @@ export default function DemoPreparation() {
           </CardHeader>
           <CardContent>
             <RadioGroup value={platform} onValueChange={(v) => setPlatform(v as PlatformKey)} className="space-y-2">
-              {(Object.keys(PLATFORM_LABELS) as PlatformKey[]).map((k) => (
-                <div key={k} className="flex items-center gap-2">
-                  <RadioGroupItem value={k} id={`p-${k}`} />
-                  <Label htmlFor={`p-${k}`} className="cursor-pointer">{PLATFORM_LABELS[k]}</Label>
+              {platformOptions.map((opt) => (
+                <div key={opt.slug} className="flex items-center gap-2">
+                  <RadioGroupItem value={opt.slug} id={`p-${opt.slug}`} />
+                  <Label htmlFor={`p-${opt.slug}`} className="cursor-pointer">{opt.name}</Label>
                 </div>
               ))}
             </RadioGroup>
             {platform === "other" && (
               <Input className="mt-3" placeholder="Specify platform…" value={other} onChange={(e) => setOther(e.target.value)} />
             )}
+            <div className="mt-3 text-xs text-muted-foreground">
+              Manage the competitor list at <a href="/admin/competitors" className="underline">/admin/competitors</a>.
+            </div>
           </CardContent>
         </Card>
 

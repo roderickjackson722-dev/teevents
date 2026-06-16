@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";

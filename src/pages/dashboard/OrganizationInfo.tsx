@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { toast } from "sonner";
 
 interface CustomSection {

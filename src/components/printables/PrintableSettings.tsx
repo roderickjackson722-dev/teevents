@@ -134,8 +134,35 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
             )}
           </div>
 
+          {/* Logo upload */}
+          {options.showLogo && tournamentId && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <Label className="text-xs font-medium">Printable Logo</Label>
+              <div className="flex items-center gap-3">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-12 w-12 object-contain border rounded bg-white" />
+                ) : (
+                  <div className="h-12 w-12 border border-dashed rounded flex items-center justify-center text-muted-foreground">
+                    <Upload className="h-4 w-4" />
+                  </div>
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleLogoUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Appears on scorecards, cart signs, and other printables.</p>
+            </div>
+          )}
+
           {/* Live Preview */}
-          <ScorecardMiniPreview options={options} showCourseName={showCourseName} />
+          <ScorecardMiniPreview options={options} showCourseName={showCourseName} logoUrl={logoUrl} />
         </div>
       </CollapsibleContent>
     </Collapsible>

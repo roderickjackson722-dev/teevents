@@ -1,11 +1,14 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Settings2, Upload } from "lucide-react";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "./types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export interface PrintableOptions {
   font: string;

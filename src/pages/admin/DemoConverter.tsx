@@ -90,6 +90,8 @@ export default function DemoConverter() {
   const [welcomeEnabled, setWelcomeEnabled] = useState(true);
   const [welcomeIncludeOffer, setWelcomeIncludeOffer] = useState(true);
   const [welcomeSetupFee, setWelcomeSetupFee] = useState("199");
+  const [welcomeSubject, setWelcomeSubject] = useState("Welcome to TeeVents – Let's get your tournament started!");
+  const [welcomeHtml, setWelcomeHtml] = useState("");
   const [savingWelcome, setSavingWelcome] = useState(false);
 
   // Conversion history

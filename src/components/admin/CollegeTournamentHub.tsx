@@ -612,10 +612,14 @@ const CollegeTournamentHub = () => {
           </h2>
           <p className="text-sm text-muted-foreground">Create and manage college golf tournaments with invitations, RSVP tracking, and event pages.</p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> New College Tournament</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <a href="/admin/college-hub/bookings"><Calendar className="h-4 w-4 mr-2" />Bookings</a>
+          </Button>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-2" /> New College Tournament</Button>
+            </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="font-display">Create College Tournament</DialogTitle>

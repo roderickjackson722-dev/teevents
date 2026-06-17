@@ -449,10 +449,12 @@ const CollegeTournamentHub = () => {
   // Tabs
   const addTab = async () => {
     if (!expandedId || !newTabTitle.trim()) return;
+    const isBookings = newTabType === "bookings";
     await supabase.from("college_tournament_tabs").insert({
       tournament_id: expandedId,
       title: newTabTitle.trim(),
       content_type: newTabType,
+      content: isBookings ? `college-hub:${expandedId}` : null,
       sort_order: tabs.length,
     } as any);
     setNewTabTitle("");
@@ -1200,7 +1202,21 @@ const CollegeTournamentHub = () => {
                               </div>
                             </div>
 
-                            {tab.content_type === "file" ? (
+                            {tab.content_type === "bookings" ? (
+                              <div className="space-y-2">
+                                <p className="text-xs text-muted-foreground">
+                                  Coaches can book trainer sessions from this tab. Manage available slots, categories, and reservations below.
+                                </p>
+                                <a
+                                  href={`/admin/college-hub/bookings?context=${encodeURIComponent(tab.content || `college-hub:${expandedId}`)}&label=${encodeURIComponent(tab.title)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                                >
+                                  <Settings className="h-3.5 w-3.5" /> Manage Booking Slots
+                                </a>
+                              </div>
+                            ) : tab.content_type === "file" ? (
                               <div className="space-y-2">
                                 {tab.file_url && (
                                   <a href={tab.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
@@ -1272,9 +1288,13 @@ const CollegeTournamentHub = () => {
                               <option value="rich_text">Rich Text</option>
                               <option value="file">File Upload</option>
                               <option value="structured">Structured Data</option>
+                              <option value="bookings">Bookings (Team Therapy)</option>
                             </select>
                             <Button onClick={addTab}><Plus className="h-4 w-4 mr-1" /> Add Tab</Button>
                           </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Tip: Add a tab named <strong>Team Therapy</strong> with type <strong>Bookings</strong> so coaches can book sessions with your trainers.
+                          </p>
                         </div>
                       </TabsContent>
 

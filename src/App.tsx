@@ -274,6 +274,7 @@ const App = () => (
              <Route path="/claim-demo/:token" element={<ClaimDemo />} />
              <Route path="/demo-prep/:token" element={<DemoPrepShare />} />
              <Route path="/admin/competitors" element={<AdminCompetitors />} />
+             <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />
            <Route path="/admin/outreach" element={<AdminOutreach />} />

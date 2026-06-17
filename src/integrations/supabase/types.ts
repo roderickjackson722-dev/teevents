@@ -3725,6 +3725,7 @@ export type Database = {
       platform_settings: {
         Row: {
           description: string | null
+          is_public: boolean
           key: string
           updated_at: string
           updated_by: string | null
@@ -3732,6 +3733,7 @@ export type Database = {
         }
         Insert: {
           description?: string | null
+          is_public?: boolean
           key: string
           updated_at?: string
           updated_by?: string | null
@@ -3739,6 +3741,7 @@ export type Database = {
         }
         Update: {
           description?: string | null
+          is_public?: boolean
           key?: string
           updated_at?: string
           updated_by?: string | null

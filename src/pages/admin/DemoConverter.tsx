@@ -112,6 +112,12 @@ export default function DemoConverter() {
       return;
     }
     setConvSending(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setConvSending(false);
+      toast({ title: "Please sign in again", description: "Your admin session expired.", variant: "destructive" });
+      return;
+    }
     const { data, error } = await supabase.functions.invoke("prepare-demo-conversion", {
       body: {
         tournament_id: convTarget.id,
@@ -121,6 +127,7 @@ export default function DemoConverter() {
         test_mode: testMode,
         discount: { type: convForm.discount_type, value: convForm.discount_value },
       },
+      headers: { Authorization: `Bearer ${session.access_token}` },
     });
     setConvSending(false);
     if (error || (data as any)?.error) {

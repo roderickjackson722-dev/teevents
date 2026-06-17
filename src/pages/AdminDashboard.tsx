@@ -855,6 +855,12 @@ const AdminDashboard = () => {
                 >
                   <Sparkles className="h-4 w-4" /> Demo Converter
                 </button>
+                <button
+                  onClick={() => navigate("/admin/ai-sales-agent")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Sparkles className="h-4 w-4" /> AI Sales Agent
+                </button>
               </div>
             </div>
 

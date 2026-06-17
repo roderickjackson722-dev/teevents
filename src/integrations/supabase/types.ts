@@ -6457,6 +6457,9 @@ export type Database = {
           about_us: string | null
           allow_cover_fees: boolean
           auction_tab_title: string | null
+          branding_footer_admin_override: boolean
+          branding_footer_admin_show: boolean
+          branding_footer_custom_text: string | null
           captain_label: string | null
           confirmation_email_config: Json | null
           contact_email: string | null
@@ -6611,6 +6614,7 @@ export type Database = {
           scoring_format: string
           setup_checklist_dismissed: boolean
           show_branding_badge: boolean
+          show_branding_footer: boolean
           show_countdown: boolean
           show_in_public_search: boolean
           show_org_tab: boolean
@@ -6658,6 +6662,9 @@ export type Database = {
           about_us?: string | null
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
+          branding_footer_admin_override?: boolean
+          branding_footer_admin_show?: boolean
+          branding_footer_custom_text?: string | null
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -6812,6 +6819,7 @@ export type Database = {
           scoring_format?: string
           setup_checklist_dismissed?: boolean
           show_branding_badge?: boolean
+          show_branding_footer?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
           show_org_tab?: boolean
@@ -6859,6 +6867,9 @@ export type Database = {
           about_us?: string | null
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
+          branding_footer_admin_override?: boolean
+          branding_footer_admin_show?: boolean
+          branding_footer_custom_text?: string | null
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -7013,6 +7024,7 @@ export type Database = {
           scoring_format?: string
           setup_checklist_dismissed?: boolean
           show_branding_badge?: boolean
+          show_branding_footer?: boolean
           show_countdown?: boolean
           show_in_public_search?: boolean
           show_org_tab?: boolean

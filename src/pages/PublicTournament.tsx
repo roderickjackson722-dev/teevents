@@ -19,6 +19,7 @@ import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicT
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { BrandingBadge } from "@/components/BrandingBadge";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -2579,11 +2580,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </div>
       </section>
 
-      <footer className="py-4 text-center" style={{ borderTop: "1px solid #e5e5e5" }}>
-        <p className="text-xs" style={{ color: "#aaa" }}>
-          Powered by <span className="font-semibold" style={{ color: primary }}>TeeVents</span>
-        </p>
-      </footer>
+      <TeeventsFooter tournament={tournament as any} />
       <BrandingBadge show={(tournament as any).show_branding_badge !== false} />
     </div>
   );

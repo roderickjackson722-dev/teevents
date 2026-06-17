@@ -58,6 +58,7 @@ interface TournamentSettings {
   rain_date_policy_type: string;
   rain_date_policy: string;
   show_branding_badge: boolean;
+  show_branding_footer: boolean;
 }
 
 const Settings = () => {
@@ -79,7 +80,7 @@ const Settings = () => {
       setDashboardName(org.dashboardName || "");
       supabase
         .from("tournaments")
-        .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy, show_branding_badge")
+        .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy, show_branding_badge, show_branding_footer")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false })
         .then(({ data }) => setTournaments((data as any) || []));
@@ -156,6 +157,28 @@ const Settings = () => {
     }
     setSavingBadgeToggle(null);
   };
+
+  const [savingFooterToggle, setSavingFooterToggle] = useState<string | null>(null);
+  const handleToggleFooter = async (tournamentId: string, currentValue: boolean) => {
+    if (demoGuard()) return;
+    if (currentValue && !isProPlan) {
+      toast.error("Hiding the TeeVents footer is a Pro feature. Upgrade to remove it.");
+      return;
+    }
+    setSavingFooterToggle(tournamentId);
+    const newValue = !currentValue;
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ show_branding_footer: newValue } as any)
+      .eq("id", tournamentId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(newValue ? "Footer will appear on public pages" : "Footer hidden on public pages");
+      setTournaments((prev) => prev.map((t) => t.id === tournamentId ? { ...t, show_branding_footer: newValue } : t));
+    }
+    setSavingFooterToggle(null);
+  };
+
 
   const getPolicyEdit = (tournamentId: string) => policyEdits[tournamentId] || {};
 
@@ -532,25 +555,46 @@ const Settings = () => {
             <h2 className="text-lg font-display font-bold text-foreground">TeeVents Branding</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            A small "Powered by TeeVents" badge appears in the corner of your public pages (tournament site, live leaderboard, day-of page). {isProPlan ? "Toggle it off per tournament." : "Upgrade to Pro to hide the badge."}
+            A small "Powered by TeeVents" badge appears in the corner, and a "Powered by TeeVents" footer sits at the bottom of every public page (tournament site, live leaderboard, day-of page). {isProPlan ? "Toggle them off per tournament." : "Upgrade to Pro to hide them."}
           </p>
           <div className="space-y-3">
             {tournaments.map((t) => (
-              <div key={t.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border">
-                <div className="min-w-0">
-                  <p className="font-semibold text-sm text-foreground truncate">{t.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t.show_branding_badge ? "Badge visible on public pages" : "Badge hidden"}
-                  </p>
+              <div key={t.id} className="rounded-lg border border-border p-3 space-y-3">
+                <p className="font-semibold text-sm text-foreground truncate">{t.title}</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">
+                      {t.show_branding_badge ? "Corner badge visible" : "Corner badge hidden"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor={`badge-${t.id}`} className="text-xs text-muted-foreground">Show badge</Label>
+                    <Switch
+                      id={`badge-${t.id}`}
+                      checked={t.show_branding_badge !== false}
+                      disabled={savingBadgeToggle === t.id || (!isProPlan && t.show_branding_badge !== false)}
+                      onCheckedChange={() => handleToggleBadge(t.id, t.show_branding_badge !== false)}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor={`badge-${t.id}`} className="text-xs text-muted-foreground">Show badge</Label>
-                  <Switch
-                    id={`badge-${t.id}`}
-                    checked={t.show_branding_badge !== false}
-                    disabled={savingBadgeToggle === t.id || (!isProPlan && t.show_branding_badge !== false)}
-                    onCheckedChange={() => handleToggleBadge(t.id, t.show_branding_badge !== false)}
-                  />
+                <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">
+                      {t.show_branding_footer !== false ? "Branding footer visible on public pages" : "Branding footer hidden"}
+                    </p>
+                    {!isProPlan && (
+                      <p className="text-[11px] text-muted-foreground/80 italic">Free plan must show the footer.</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor={`footer-${t.id}`} className="text-xs text-muted-foreground">Show footer</Label>
+                    <Switch
+                      id={`footer-${t.id}`}
+                      checked={t.show_branding_footer !== false}
+                      disabled={savingFooterToggle === t.id || (!isProPlan && t.show_branding_footer !== false)}
+                      onCheckedChange={() => handleToggleFooter(t.id, t.show_branding_footer !== false)}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

@@ -10,6 +10,8 @@ import {
   Calendar, MapPin, Trophy, Loader2, CheckCircle, XCircle, Users, FileText, School,
 } from "lucide-react";
 import SEO from "@/components/SEO";
+import { sanitizeHtml } from "@/components/ui/rich-text-editor";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
 import golfCourseHero from "@/assets/golf-course-hero.jpg";
 
 interface RegistrationField {
@@ -534,7 +536,10 @@ const CollegeTournament = () => {
                       )}
                     </div>
                   ) : tab.content ? (
-                    <div className="prose prose-sm max-w-none whitespace-pre-wrap">{tab.content}</div>
+                    <div
+                      className="prose prose-sm md:prose-base max-w-none"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(tab.content) }}
+                    />
                   ) : (
                     <p className="text-muted-foreground italic">Content coming soon.</p>
                   )}
@@ -544,13 +549,8 @@ const CollegeTournament = () => {
           </Tabs>
         )}
 
-        {/* Footer */}
-        <div className="text-center py-8 mt-8 border-t border-border">
-          <p className="text-sm text-muted-foreground">
-            Powered by <a href="/" className="text-primary hover:underline font-semibold">TeeVents</a>
-          </p>
-        </div>
       </div>
+      <TeeventsFooter tournament={{}} />
     </div>
   );
 };

@@ -7,11 +7,12 @@ import { FontFamily } from "@tiptap/extension-font-family";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
-import { useEffect } from "react";
+import Image from "@tiptap/extension-image";
+import { useEffect, useRef } from "react";
 import {
   Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, Heading3,
   List, ListOrdered, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, Undo, Redo,
-  Highlighter,
+  Highlighter, Image as ImageIcon, Eraser,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +27,10 @@ const FONTS = [
   { label: "Times New Roman", value: "'Times New Roman', serif" },
   { label: "Verdana", value: "Verdana, sans-serif" },
   { label: "Courier New", value: "'Courier New', monospace" },
+  { label: "Lato", value: "Lato, sans-serif" },
+  { label: "Montserrat", value: "Montserrat, sans-serif" },
+  { label: "Roboto", value: "Roboto, sans-serif" },
+  { label: "Open Sans", value: "'Open Sans', sans-serif" },
 ];
 
 const SIZES = ["12", "14", "16", "18", "20", "24", "32"];
@@ -35,9 +40,11 @@ interface Props {
   onChange: (html: string) => void;
   placeholder?: string;
   className?: string;
+  /** Async uploader; should return a public URL to insert as <img>. */
+  onImageUpload?: (file: File) => Promise<string>;
 }
 
-export function RichTextEditor({ value, onChange, placeholder, className }: Props) {
+export function RichTextEditor({ value, onChange, placeholder, className, onImageUpload }: Props) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -48,6 +55,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
       Link.configure({ openOnClick: false, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
+      Image.configure({ HTMLAttributes: { class: "max-w-full rounded-md my-2" } }),
     ],
     content: value || "",
     editorProps: {
@@ -68,13 +76,15 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
 
   return (
     <div className={cn("border border-input rounded-md bg-background", className)}>
-      <Toolbar editor={editor} />
+      <Toolbar editor={editor} onImageUpload={onImageUpload} />
       <EditorContent editor={editor} placeholder={placeholder} />
     </div>
   );
 }
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (file: File) => Promise<string> }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const setFont = (v: string) => {
     if (!v) editor.chain().focus().unsetFontFamily().run();
     else editor.chain().focus().setFontFamily(v).run();
@@ -87,6 +97,23 @@ function Toolbar({ editor }: { editor: Editor }) {
     const url = prompt("Enter URL");
     if (!url) return;
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  };
+  const clearFormatting = () => {
+    editor.chain().focus().unsetAllMarks().clearNodes().run();
+  };
+  const handleImage = async (file: File) => {
+    if (!onImageUpload) {
+      const reader = new FileReader();
+      reader.onload = () => editor.chain().focus().setImage({ src: reader.result as string }).run();
+      reader.readAsDataURL(file);
+      return;
+    }
+    try {
+      const url = await onImageUpload(file);
+      editor.chain().focus().setImage({ src: url }).run();
+    } catch (e) {
+      console.error("image upload failed", e);
+    }
   };
 
   const Btn = ({ onClick, active, children, title }: any) => (
@@ -155,6 +182,19 @@ function Toolbar({ editor }: { editor: Editor }) {
       <Btn title="Align right" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="h-4 w-4" /></Btn>
       <div className="w-px h-6 bg-border mx-1" />
       <Btn title="Insert link" active={editor.isActive("link")} onClick={insertLink}><LinkIcon className="h-4 w-4" /></Btn>
+      <Btn title="Insert image" onClick={() => fileInputRef.current?.click()}><ImageIcon className="h-4 w-4" /></Btn>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleImage(file);
+          e.target.value = "";
+        }}
+      />
+      <Btn title="Clear formatting" onClick={clearFormatting}><Eraser className="h-4 w-4" /></Btn>
       <div className="ml-auto flex gap-1">
         <Btn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo className="h-4 w-4" /></Btn>
         <Btn title="Redo" onClick={() => editor.chain().focus().redo().run()}><Redo className="h-4 w-4" /></Btn>
@@ -165,7 +205,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 
 export function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["b", "i", "u", "strong", "em", "mark", "h1", "h2", "h3", "h4", "p", "br", "ul", "ol", "li", "a", "span", "div", "blockquote", "code", "pre"],
-    ALLOWED_ATTR: ["href", "target", "rel", "style", "class", "data-color"],
+    ALLOWED_TAGS: ["b", "i", "u", "strong", "em", "mark", "h1", "h2", "h3", "h4", "p", "br", "ul", "ol", "li", "a", "span", "div", "blockquote", "code", "pre", "img"],
+    ALLOWED_ATTR: ["href", "target", "rel", "style", "class", "data-color", "src", "alt", "title", "width", "height"],
   });
 }

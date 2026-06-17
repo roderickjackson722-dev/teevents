@@ -6,6 +6,7 @@ import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 import { LeaderboardRenderer, mergeDesign } from "@/components/leaderboard/LeaderboardCore";
 import { BrandingBadge } from "@/components/BrandingBadge";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 
 interface Sponsor {
@@ -140,7 +141,7 @@ export default function LiveLeaderboard() {
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge")
+      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text")
       .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
       .maybeSingle()
       .then(({ data }) => {
@@ -327,6 +328,7 @@ export default function LiveLeaderboard() {
         }
       />
       <BrandingBadge show={tournament.show_branding_badge !== false} />
+      <TeeventsFooter tournament={tournament as any} />
     </>
   );
 }

@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -1212,11 +1213,21 @@ const CollegeTournamentHub = () => {
                               <div>
                                 {editingTab === tab.id ? (
                                   <div className="space-y-2">
-                                    <Textarea
+                                    <RichTextEditor
                                       value={editTabContent}
-                                      onChange={e => setEditTabContent(e.target.value)}
+                                      onChange={(html) => setEditTabContent(html)}
                                       placeholder="Enter content..."
-                                      className="min-h-[120px] text-sm"
+                                      onImageUpload={async (file) => {
+                                        const ext = file.name.split(".").pop() || "png";
+                                        const path = `college/${expandedId}/tab-${tab.id}-${Date.now()}.${ext}`;
+                                        const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+                                        if (upErr) {
+                                          toast({ title: "Image upload failed", description: upErr.message, variant: "destructive" });
+                                          throw upErr;
+                                        }
+                                        const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+                                        return publicUrl;
+                                      }}
                                     />
                                     <div className="flex gap-2">
                                       <Button size="sm" onClick={() => saveTabContent(tab.id)}><Save className="h-3.5 w-3.5 mr-1" /> Save</Button>
@@ -1226,7 +1237,10 @@ const CollegeTournamentHub = () => {
                                 ) : (
                                   <div>
                                     {tab.content ? (
-                                      <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">{tab.content}</p>
+                                      <div
+                                        className="prose prose-sm max-w-none text-muted-foreground line-clamp-4"
+                                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(tab.content) }}
+                                      />
                                     ) : (
                                       <p className="text-xs text-muted-foreground italic">No content yet.</p>
                                     )}

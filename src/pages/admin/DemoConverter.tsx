@@ -103,16 +103,31 @@ export default function DemoConverter() {
   };
   const [history, setHistory] = useState<LogRow[]>([]);
 
+  const DEFAULT_WELCOME_HTML = `<p>Hi {{name}},</p>
+<p>I'm Rod, the founder of TeeVents. I'm here to make sure you get the most out of the platform.</p>
+<p>{{tournament_block}}</p>
+<p>Here's where to start:</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="{{dashboard_url}}" style="background:#F5A623;color:#1a5c38;font-weight:700;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block">Open Your Dashboard</a>
+</p>
+<p>If you need help with anything – setting up your event, adding players, or configuring payments – just reply to this email. I'm happy to help.</p>
+{{setup_offer}}
+<p style="margin-top:24px">Best,<br/>Rod Jackson<br/>TeeVents Golf</p>`;
+
   async function loadWelcomeSettings() {
     const { data } = await supabase
       .from("platform_settings")
       .select("key, value")
-      .in("key", ["welcome_email_enabled", "welcome_email_include_setup_offer", "welcome_setup_fee_dollars"]);
+      .in("key", ["welcome_email_enabled", "welcome_email_include_setup_offer", "welcome_setup_fee_dollars", "welcome_email_subject", "welcome_email_html"]);
+    let foundHtml = false;
     for (const r of data || []) {
       if (r.key === "welcome_email_enabled") setWelcomeEnabled((r.value as any) !== false);
       if (r.key === "welcome_email_include_setup_offer") setWelcomeIncludeOffer((r.value as any) !== false);
       if (r.key === "welcome_setup_fee_dollars") setWelcomeSetupFee(String(r.value ?? 199));
+      if (r.key === "welcome_email_subject" && r.value) setWelcomeSubject(String(r.value));
+      if (r.key === "welcome_email_html" && r.value) { setWelcomeHtml(String(r.value)); foundHtml = true; }
     }
+    if (!foundHtml) setWelcomeHtml(DEFAULT_WELCOME_HTML);
   }
 
   async function saveWelcomeSettings() {
@@ -121,12 +136,24 @@ export default function DemoConverter() {
       { key: "welcome_email_enabled", value: welcomeEnabled as any },
       { key: "welcome_email_include_setup_offer", value: welcomeIncludeOffer as any },
       { key: "welcome_setup_fee_dollars", value: (Number(welcomeSetupFee) || 199) as any },
+      { key: "welcome_email_subject", value: welcomeSubject as any },
+      { key: "welcome_email_html", value: welcomeHtml as any },
     ];
     for (const r of rows) {
       await supabase.from("platform_settings").upsert(r, { onConflict: "key" });
     }
     setSavingWelcome(false);
     toast({ title: "Welcome email settings saved" });
+  }
+
+  async function sendWelcomeTest() {
+    const email = prompt("Send test welcome email to which address?");
+    if (!email) return;
+    const { error } = await supabase.functions.invoke("send-organizer-welcome", {
+      body: { email, full_name: "Test Coach", plan: "Base", tournament_name: "Test Tournament" },
+    });
+    if (error) toast({ title: "Test send failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Test email sent", description: `Check ${email}` });
   }
 
   async function loadHistory() {

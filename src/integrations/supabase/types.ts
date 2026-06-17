@@ -537,6 +537,178 @@ export type Database = {
           },
         ]
       }
+      booking_categories: {
+        Row: {
+          color: string | null
+          context: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          context?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          context?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      booking_notification_settings: {
+        Row: {
+          additional_email: string | null
+          admin_email: string
+          context: string
+          created_at: string
+          id: string
+          send_on_booking: boolean
+          send_on_cancellation: boolean
+          updated_at: string
+        }
+        Insert: {
+          additional_email?: string | null
+          admin_email?: string
+          context?: string
+          created_at?: string
+          id?: string
+          send_on_booking?: boolean
+          send_on_cancellation?: boolean
+          updated_at?: string
+        }
+        Update: {
+          additional_email?: string | null
+          admin_email?: string
+          context?: string
+          created_at?: string
+          id?: string
+          send_on_booking?: boolean
+          send_on_cancellation?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      booking_reservations: {
+        Row: {
+          booking_reference: string | null
+          coach_email: string
+          coach_name: string
+          coach_phone: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          slot_id: string
+          status: string
+          team_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          booking_reference?: string | null
+          coach_email: string
+          coach_name: string
+          coach_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          slot_id: string
+          status?: string
+          team_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          booking_reference?: string | null
+          coach_email?: string
+          coach_name?: string
+          coach_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          slot_id?: string
+          status?: string
+          team_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_reservations_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "booking_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_slots: {
+        Row: {
+          category_id: string | null
+          context: string | null
+          created_at: string
+          created_by: string | null
+          current_bookings: number
+          description: string | null
+          end_time: string
+          id: string
+          is_active: boolean
+          location: string | null
+          max_bookings: number
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          context?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_bookings?: number
+          description?: string | null
+          end_time: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          max_bookings?: number
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          context?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_bookings?: number
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          max_bookings?: number
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_slots_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "booking_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_estimates: {
         Row: {
           budget_id: string

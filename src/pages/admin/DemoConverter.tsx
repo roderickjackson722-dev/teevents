@@ -553,7 +553,97 @@ export default function DemoConverter() {
             })()}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Conversion History</CardTitle>
+            <CardDescription>Every demo that was converted (or test-converted) to a live tournament.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {history.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No conversions yet.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tournament</TableHead>
+                    <TableHead>Prospect</TableHead>
+                    <TableHead>Converted</TableHead>
+                    <TableHead>Live Link</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {history.map((h) => (
+                    <TableRow key={h.id}>
+                      <TableCell className="font-medium">{h.tournament_name || "—"}</TableCell>
+                      <TableCell className="text-sm">
+                        <div>{h.prospect_email || "—"}</div>
+                        {h.prospect_name && <div className="text-xs text-muted-foreground">{h.prospect_name}</div>}
+                      </TableCell>
+                      <TableCell className="text-xs">{new Date(h.converted_at).toLocaleString()}</TableCell>
+                      <TableCell>
+                        {h.tournament_id ? (
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`/dashboard?admin_org=${h.organization_id || ""}`} target="_blank" rel="noreferrer">
+                              View <ExternalLink className="h-3 w-3 ml-1" />
+                            </a>
+                          </Button>
+                        ) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {h.is_test ? (
+                          <Badge variant="secondary">🔬 Test</Badge>
+                        ) : h.converted_to_live ? (
+                          <Badge>✅ Active</Badge>
+                        ) : (
+                          <Badge variant="outline">Pending</Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome Email Settings</CardTitle>
+            <CardDescription>Controls the welcome email sent to new organizers on signup or after a demo claim.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Send welcome email to new organizers</div>
+                <div className="text-xs text-muted-foreground">Triggered on both free and paid signups, and after demo conversion.</div>
+              </div>
+              <Switch checked={welcomeEnabled} onCheckedChange={setWelcomeEnabled} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Include optional setup service in welcome email</div>
+                <div className="text-xs text-muted-foreground">Adds a white-glove setup offer with the price below.</div>
+              </div>
+              <Switch checked={welcomeIncludeOffer} onCheckedChange={setWelcomeIncludeOffer} />
+            </div>
+            <div className="max-w-xs">
+              <Label>Setup Service Price ($)</Label>
+              <Input
+                type="number" min={0}
+                value={welcomeSetupFee}
+                onChange={(e) => setWelcomeSetupFee(e.target.value)}
+                disabled={!welcomeIncludeOffer}
+              />
+            </div>
+            <Button onClick={saveWelcomeSettings} disabled={savingWelcome} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
+              <Save className="h-4 w-4 mr-1" /> {savingWelcome ? "Saving…" : "Save Settings"}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
 
       <Dialog open={convOpen} onOpenChange={setConvOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

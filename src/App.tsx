@@ -107,6 +107,7 @@ import FlyerToDemo from "./pages/admin/FlyerToDemo";
 import SalesProspecting from "./pages/admin/SalesProspecting";
 import DemoLeads from "./pages/admin/DemoLeads";
 import AdminCompetitors from "./pages/admin/Competitors";
+import AdminBrandingFooter from "./pages/admin/BrandingFooter";
 import DemoPrepShare from "./pages/DemoPrepShare";
 import HelpCenter from "./pages/help/HelpCenter";
 import StepByStep from "./pages/help/StepByStep";

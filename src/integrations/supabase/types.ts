@@ -1636,6 +1636,63 @@ export type Database = {
           },
         ]
       }
+      demo_conversion_log: {
+        Row: {
+          converted_at: string
+          converted_by: string | null
+          converted_to_live: boolean
+          id: string
+          is_test: boolean
+          notes: string | null
+          organization_id: string | null
+          prospect_email: string | null
+          prospect_name: string | null
+          tournament_id: string | null
+          tournament_name: string | null
+        }
+        Insert: {
+          converted_at?: string
+          converted_by?: string | null
+          converted_to_live?: boolean
+          id?: string
+          is_test?: boolean
+          notes?: string | null
+          organization_id?: string | null
+          prospect_email?: string | null
+          prospect_name?: string | null
+          tournament_id?: string | null
+          tournament_name?: string | null
+        }
+        Update: {
+          converted_at?: string
+          converted_by?: string | null
+          converted_to_live?: boolean
+          id?: string
+          is_test?: boolean
+          notes?: string | null
+          organization_id?: string | null
+          prospect_email?: string | null
+          prospect_name?: string | null
+          tournament_id?: string | null
+          tournament_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_conversion_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demo_conversion_log_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_events: {
         Row: {
           created_at: string

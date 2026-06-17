@@ -647,7 +647,8 @@ const CollegeTournamentHub = () => {
               </Button>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Delete Confirmation */}

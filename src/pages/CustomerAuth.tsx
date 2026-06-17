@@ -278,6 +278,14 @@ const CustomerAuth = () => {
           vetting_status: isInviteFlow ? "approved" : "approved",
         },
       });
+      // Welcome email to the new organizer (also sends admin signup alert)
+      supabase.functions.invoke("send-organizer-welcome", {
+        body: {
+          email,
+          full_name: fullName.trim(),
+          plan: "Base",
+        },
+      });
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });

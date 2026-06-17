@@ -88,6 +88,16 @@ serve(async (req) => {
           demo_conversion_is_test: false,
         })
         .eq("id", t.id);
+      // Log test conversion
+      await admin.from("demo_conversion_log").insert({
+        tournament_id: t.id,
+        tournament_name: t.title,
+        prospect_name: t.demo_prospect_name,
+        converted_to_live: false,
+        converted_by: user.id,
+        is_test: true,
+        notes: "Test claim",
+      });
       return new Response(JSON.stringify({
         ok: true, test: true, tournament_id: t.id,
         message: "Test claim succeeded. Demo preserved for further testing.",
@@ -123,6 +133,61 @@ serve(async (req) => {
       .from("demo_conversion_discounts")
       .update({ used: true, used_at: nowIso, used_by: user.id })
       .eq("conversion_token", conversion_token);
+
+    // Log conversion
+    const { data: prospect } = await admin.auth.admin.getUserById(user.id);
+    const prospectEmail = prospect?.user?.email || null;
+    await admin.from("demo_conversion_log").insert({
+      tournament_id: t.id,
+      tournament_name: t.title,
+      prospect_email: prospectEmail,
+      prospect_name: t.demo_prospect_name,
+      organization_id: org.id,
+      converted_to_live: true,
+      converted_by: user.id,
+      is_test: false,
+    });
+
+    // Fire-and-forget: admin "Demo Converted" notification + welcome email
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (RESEND_API_KEY && prospectEmail) {
+      const FROM = "TeeVents <info@notifications.teevents.golf>";
+      const adminHtml = `
+<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111827;line-height:1.55">
+  <h2 style="color:#1a5c38;margin:0 0 8px">🎉 Demo Converted!</h2>
+  <p>A demo has been converted to a live tournament.</p>
+  <table style="width:100%;border-collapse:collapse;margin:8px 0">
+    <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;width:35%">Tournament</td><td style="padding:6px;border:1px solid #e5e7eb">${t.title}</td></tr>
+    <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Organizer</td><td style="padding:6px;border:1px solid #e5e7eb">${t.demo_prospect_name || "—"}</td></tr>
+    <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Email</td><td style="padding:6px;border:1px solid #e5e7eb">${prospectEmail}</td></tr>
+  </table>
+  <p>🔗 <a href="https://www.teevents.golf/admin">View Admin Dashboard</a></p>
+  <p style="color:#6b7280;font-size:12px">Automated notification from TeeVents.</p>
+</div>`;
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: FROM, to: ["info@teevents.golf"],
+          subject: `🎉 Demo Converted! – ${t.title}`, html: adminHtml,
+        }),
+      }).catch(() => {});
+
+      // Welcome email via dedicated function (respects platform_settings)
+      fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-organizer-welcome`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({
+          email: prospectEmail,
+          full_name: t.demo_prospect_name,
+          plan: "Base",
+          tournament_name: t.title,
+        }),
+      }).catch(() => {});
+    }
 
     return new Response(JSON.stringify({
       ok: true, tournament_id: t.id, organization_id: org.id,

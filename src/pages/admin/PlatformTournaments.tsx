@@ -25,7 +25,6 @@ type Row = {
   created_at: string;
   registration_fee_cents: number | null;
   org_name?: string | null;
-  org_owner_email?: string | null;
   registrations_count?: number;
   paid_count?: number;
   revenue_cents?: number;
@@ -65,13 +64,13 @@ export default function PlatformTournaments() {
     const tIds = list.map((t) => t.id);
 
     const [{ data: orgs }, { data: regs }, { data: spons }] = await Promise.all([
-      supabase.from("organizations").select("id, name, owner_email").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
+      supabase.from("organizations").select("id, name").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_registrations").select("tournament_id, payment_status, amount_paid_cents").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_sponsors").select("tournament_id").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
     ]);
 
-    const orgMap: Record<string, { name: string | null; owner_email: string | null }> = {};
-    for (const o of (orgs as any[]) || []) orgMap[o.id] = { name: o.name, owner_email: o.owner_email };
+    const orgMap: Record<string, { name: string | null }> = {};
+    for (const o of (orgs as any[]) || []) orgMap[o.id] = { name: o.name };
 
     const regAgg: Record<string, { count: number; paid: number; revenue: number }> = {};
     for (const r of (regs as any[]) || []) {
@@ -85,7 +84,6 @@ export default function PlatformTournaments() {
     setRows(list.map((t) => ({
       ...t,
       org_name: orgMap[t.organization_id || ""]?.name || null,
-      org_owner_email: orgMap[t.organization_id || ""]?.owner_email || null,
       registrations_count: regAgg[t.id]?.count || 0,
       paid_count: regAgg[t.id]?.paid || 0,
       revenue_cents: regAgg[t.id]?.revenue || 0,
@@ -102,7 +100,7 @@ export default function PlatformTournaments() {
       if (filter === "pro" && !r.is_pro) return false;
       if (filter === "managed" && !r.managed_by_teevents) return false;
       if (!q) return true;
-      return [r.title, r.org_name, r.org_owner_email, r.location, r.course_name, r.slug, r.custom_slug]
+      return [r.title, r.org_name, r.location, r.course_name, r.slug, r.custom_slug]
         .some((v) => (v || "").toLowerCase().includes(q));
     });
   }, [rows, search, filter]);
@@ -189,7 +187,6 @@ export default function PlatformTournaments() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">{r.org_name || <span className="text-muted-foreground italic">—</span>}</div>
-                          <div className="text-xs text-muted-foreground">{r.org_owner_email || ""}</div>
                         </TableCell>
                         <TableCell>
                           {r.is_pro ? <Badge>Pro</Badge> : <Badge variant="outline">Base</Badge>}

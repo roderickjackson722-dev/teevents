@@ -109,6 +109,7 @@ import DemoLeads from "./pages/admin/DemoLeads";
 import AdminCompetitors from "./pages/admin/Competitors";
 import AdminBrandingFooter from "./pages/admin/BrandingFooter";
 import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
+import PlatformTournaments from "./pages/admin/PlatformTournaments";
 import CollegeHubBookingsPublic from "./pages/CollegeHubBookings";
 import DemoPrepShare from "./pages/DemoPrepShare";
 import HelpCenter from "./pages/help/HelpCenter";
@@ -277,7 +278,8 @@ const App = () => (
              <Route path="/demo-prep/:token" element={<DemoPrepShare />} />
              <Route path="/admin/competitors" element={<AdminCompetitors />} />
              <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
-             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
+            <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
+            <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />
              <Route path="/college-hub/bookings" element={<CollegeHubBookingsPublic />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />

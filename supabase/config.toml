@@ -99,3 +99,6 @@ verify_jwt = false
 
 
 
+
+[functions.send-organizer-welcome]
+verify_jwt = false

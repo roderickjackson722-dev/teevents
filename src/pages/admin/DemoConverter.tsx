@@ -86,6 +86,57 @@ export default function DemoConverter() {
   });
   const [convSending, setConvSending] = useState(false);
 
+  // Welcome email settings
+  const [welcomeEnabled, setWelcomeEnabled] = useState(true);
+  const [welcomeIncludeOffer, setWelcomeIncludeOffer] = useState(true);
+  const [welcomeSetupFee, setWelcomeSetupFee] = useState("199");
+  const [savingWelcome, setSavingWelcome] = useState(false);
+
+  // Conversion history
+  type LogRow = {
+    id: string; tournament_id: string | null; tournament_name: string | null;
+    prospect_email: string | null; prospect_name: string | null;
+    organization_id: string | null; converted_to_live: boolean;
+    converted_at: string; is_test: boolean;
+  };
+  const [history, setHistory] = useState<LogRow[]>([]);
+
+  async function loadWelcomeSettings() {
+    const { data } = await supabase
+      .from("platform_settings")
+      .select("key, value")
+      .in("key", ["welcome_email_enabled", "welcome_email_include_setup_offer", "welcome_setup_fee_dollars"]);
+    for (const r of data || []) {
+      if (r.key === "welcome_email_enabled") setWelcomeEnabled((r.value as any) !== false);
+      if (r.key === "welcome_email_include_setup_offer") setWelcomeIncludeOffer((r.value as any) !== false);
+      if (r.key === "welcome_setup_fee_dollars") setWelcomeSetupFee(String(r.value ?? 199));
+    }
+  }
+
+  async function saveWelcomeSettings() {
+    setSavingWelcome(true);
+    const rows = [
+      { key: "welcome_email_enabled", value: welcomeEnabled as any },
+      { key: "welcome_email_include_setup_offer", value: welcomeIncludeOffer as any },
+      { key: "welcome_setup_fee_dollars", value: (Number(welcomeSetupFee) || 199) as any },
+    ];
+    for (const r of rows) {
+      await supabase.from("platform_settings").upsert(r, { onConflict: "key" });
+    }
+    setSavingWelcome(false);
+    toast({ title: "Welcome email settings saved" });
+  }
+
+  async function loadHistory() {
+    const { data } = await supabase
+      .from("demo_conversion_log")
+      .select("id, tournament_id, tournament_name, prospect_email, prospect_name, organization_id, converted_to_live, converted_at, is_test")
+      .order("converted_at", { ascending: false })
+      .limit(100);
+    setHistory((data as LogRow[]) || []);
+  }
+
+
   function openConvert(d: DemoTournamentRow) {
     setConvTarget(d);
     setConvForm({

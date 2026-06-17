@@ -218,7 +218,7 @@ export default function DemoConverter() {
       const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
       setIsAdmin(!!data);
       setAuthChecked(true);
-      if (data) loadDemos();
+      if (data) { loadDemos(); loadWelcomeSettings(); loadHistory(); }
     })();
   }, [navigate]);
 

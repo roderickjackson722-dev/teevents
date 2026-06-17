@@ -25,6 +25,7 @@ const proHighlights = [
   "Custom domain & Flyer Studio",
   "Budget tracking",
   "Up to 5 team members",
+  "Dedicated account manager",
   "Priority support",
 ];
 

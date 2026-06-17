@@ -1,6 +1,5 @@
 // Sends a welcome email to a newly-signed-up organizer (free OR paid),
 // with an optional white-glove setup-service offer driven by platform_settings.
-// Safe to invoke from client code (no auth required; rate-limited by Supabase).
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -11,6 +10,26 @@ const corsHeaders = {
 
 const FROM = "TeeVents <info@notifications.teevents.golf>";
 const DASHBOARD_URL = "https://www.teevents.golf/dashboard";
+
+const DEFAULT_SUBJECT = "Welcome to TeeVents – Let's get your tournament started!";
+const DEFAULT_HTML = `<p>Hi {{name}},</p>
+<p>I'm Rod, the founder of TeeVents. I'm here to make sure you get the most out of the platform.</p>
+<p>{{tournament_block}}</p>
+<p>Here's where to start:</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="{{dashboard_url}}" style="background:#F5A623;color:#1a5c38;font-weight:700;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block">Open Your Dashboard</a>
+</p>
+<p>If you need help with anything – setting up your event, adding players, or configuring payments – just reply to this email. I'm happy to help.</p>
+{{setup_offer}}
+<p style="margin-top:24px">Best,<br/>Rod Jackson<br/>TeeVents Golf</p>`;
+
+function renderTokens(template: string, vars: Record<string, string>) {
+  let out = template;
+  for (const [k, v] of Object.entries(vars)) {
+    out = out.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), v);
+  }
+  return out;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -31,11 +50,16 @@ serve(async (req) => {
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    // Load welcome-email settings
     const { data: rows } = await admin
       .from("platform_settings")
       .select("key, value")
-      .in("key", ["welcome_email_enabled", "welcome_email_include_setup_offer", "welcome_setup_fee_dollars"]);
+      .in("key", [
+        "welcome_email_enabled",
+        "welcome_email_include_setup_offer",
+        "welcome_setup_fee_dollars",
+        "welcome_email_subject",
+        "welcome_email_html",
+      ]);
     const settings: Record<string, unknown> = {};
     for (const r of rows || []) settings[(r as any).key] = (r as any).value;
 
@@ -47,75 +71,44 @@ serve(async (req) => {
     }
     const includeOffer = settings.welcome_email_include_setup_offer !== false;
     const setupFee = Number(settings.welcome_setup_fee_dollars ?? 199) || 199;
+    const subjectTpl = (settings.welcome_email_subject as string) || DEFAULT_SUBJECT;
+    const htmlTpl = (settings.welcome_email_html as string) || DEFAULT_HTML;
 
     const name = (full_name && String(full_name).trim()) || "there";
-    const planLabel = plan ? ` (${plan})` : "";
 
-    const offerHtml = includeOffer ? `
-      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
-      <h3 style="color:#1a5c38;margin:0 0 8px">🔥 Want me to build your tournament for you?</h3>
-      <p>I understand that not everyone has the time to set everything up themselves. If you'd like, I can handle the entire setup for you:</p>
-      <ul>
-        <li>Complete tournament setup (website, registration, payments)</li>
-        <li>Custom branding and design</li>
-        <li>Player and sponsor data migration</li>
-        <li>Full testing before your event</li>
-        <li>One-on-one walkthrough</li>
-      </ul>
-      <p><strong>Price:</strong> $${setupFee} (one-time)</p>
-      <p>If you're interested, just reply "Yes" and I'll send over the details.</p>
-      <p>No pressure – either way, I'm here to help!</p>
-    ` : "";
+    const setupOfferHtml = includeOffer ? `
+<hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
+<h3 style="color:#1a5c38;margin:0 0 8px">🔥 Want me to build your tournament for you?</h3>
+<p>I understand that not everyone has the time to set everything up themselves. If you'd like, I can handle the entire setup for you:</p>
+<ul>
+  <li>Complete tournament setup (website, registration, payments)</li>
+  <li>Custom branding and design</li>
+  <li>Player and sponsor data migration</li>
+  <li>Full testing before your event</li>
+  <li>One-on-one walkthrough</li>
+</ul>
+<p><strong>Price:</strong> $${setupFee} (one-time)</p>
+<p>If you're interested, just reply "Yes" and I'll send over the details.</p>
+<p>No pressure – either way, I'm here to help!</p>` : "";
 
-    const offerText = includeOffer ? `
+    const tournamentBlock = tournament_name
+      ? `Your tournament <strong>${tournament_name}</strong> is ready to go.`
+      : "Your account is ready to go.";
 
----
+    const vars = {
+      name,
+      plan: String(plan || "Base"),
+      tournament_name: String(tournament_name || ""),
+      tournament_block: tournamentBlock,
+      dashboard_url: DASHBOARD_URL,
+      setup_offer: setupOfferHtml,
+    };
 
-🔥 Want me to build your tournament for you?
+    const subject = renderTokens(subjectTpl, vars);
+    const bodyHtml = renderTokens(htmlTpl, vars);
 
-If you'd like, I can handle the entire setup for you:
-• Complete tournament setup (website, registration, payments)
-• Custom branding and design
-• Player and sponsor data migration
-• Full testing before your event
-• One-on-one walkthrough
-
-Price: $${setupFee} (one-time)
-
-If you're interested, just reply "Yes" and I'll send over the details.
-
-No pressure – either way, I'm here to help!
-` : "";
-
-    const html = `
-<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a;line-height:1.6;padding:20px">
-  <h2 style="color:#1a5c38;margin:0 0 12px">Welcome to TeeVents${planLabel} 🎉</h2>
-  <p>Hi ${name},</p>
-  <p>I'm Rod, the founder of TeeVents. I'm here to make sure you get the most out of the platform.</p>
-  ${tournament_name ? `<p>Your tournament <strong>${tournament_name}</strong> is ready to go.</p>` : `<p>Your account is ready to go.</p>`}
-  <p>Here's where to start:</p>
-  <p style="text-align:center;margin:24px 0">
-    <a href="${DASHBOARD_URL}" style="background:#F5A623;color:#1a5c38;font-weight:700;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block">Open Your Dashboard</a>
-  </p>
-  <p>If you need help with anything – setting up your event, adding players, or configuring payments – just reply to this email. I'm happy to help.</p>
-  ${offerHtml}
-  <p style="margin-top:24px">Best,<br/>Rod Jackson<br/>TeeVents Golf</p>
-</div>`;
-
-    const text = `Hi ${name},
-
-Welcome to TeeVents${planLabel}! 🎉
-
-I'm Rod, the founder of TeeVents. I'm here to make sure you get the most out of the platform.
-
-${tournament_name ? `Your tournament "${tournament_name}" is ready to go.\n` : "Your account is ready to go.\n"}
-Here's where to start: ${DASHBOARD_URL}
-
-If you need help with anything – setting up your event, adding players, or configuring payments – just reply to this email. I'm happy to help.${offerText}
-
-Best,
-Rod Jackson
-TeeVents Golf`;
+    const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a;line-height:1.6;padding:20px">${bodyHtml}</div>`;
+    const text = bodyHtml.replace(/<[^>]+>/g, "").replace(/\n\s*\n/g, "\n\n");
 
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -123,15 +116,14 @@ TeeVents Golf`;
       body: JSON.stringify({
         from: FROM,
         to: [email],
-        subject: "Welcome to TeeVents – Let's get your tournament started!",
+        subject,
         html, text,
         reply_to: "info@teevents.golf",
       }),
     });
     const result = await r.json();
 
-    // Also send admin notification about the signup
-    const adminSubject = `🆕 New Organizer Signup – ${name === "there" ? email : name}`;
+    // Admin notification
     const adminHtml = `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111827;line-height:1.55">
   <h2 style="color:#1a5c38;margin:0 0 8px">New Organizer Signup</h2>
@@ -144,7 +136,6 @@ TeeVents Golf`;
     <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Date</td><td style="padding:6px;border:1px solid #e5e7eb">${new Date().toLocaleString("en-US")}</td></tr>
   </table>
   <p>🔗 <a href="https://www.teevents.golf/admin">View in Admin Dashboard</a></p>
-  <p style="color:#6b7280;font-size:12px">This is an automated notification from TeeVents.</p>
 </div>`;
     await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -152,7 +143,7 @@ TeeVents Golf`;
       body: JSON.stringify({
         from: FROM,
         to: ["info@teevents.golf"],
-        subject: adminSubject,
+        subject: `🆕 New Organizer Signup – ${name === "there" ? email : name}`,
         html: adminHtml,
       }),
     }).catch(() => {});

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import SEO from "@/components/SEO";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
+import { BookingsEmbed } from "@/components/bookings/BookingsEmbed";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import golfCourseHero from "@/assets/golf-course-hero.jpg";
 
@@ -523,7 +524,12 @@ const CollegeTournament = () => {
               <TabsContent key={tab.id} value={tab.id} className="mt-6">
                 <div className="bg-card rounded-lg border border-border p-6">
                   <h3 className="font-display font-bold text-lg mb-4">{tab.title}</h3>
-                  {tab.content_type === "file" && tab.file_url ? (
+                  {tab.content_type === "bookings" ? (
+                    <BookingsEmbed
+                      context={tab.content || `college-hub:${tournament.id}`}
+                      title={`Reserve a ${tab.title} session`}
+                    />
+                  ) : tab.content_type === "file" && tab.file_url ? (
                     <div>
                       {tab.file_url.match(/\.(png|jpg|jpeg|gif|webp)$/i) ? (
                         <img src={tab.file_url} alt={tab.title} className="max-w-full rounded-lg" />

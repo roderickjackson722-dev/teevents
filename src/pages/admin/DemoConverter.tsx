@@ -90,6 +90,8 @@ export default function DemoConverter() {
   const [welcomeEnabled, setWelcomeEnabled] = useState(true);
   const [welcomeIncludeOffer, setWelcomeIncludeOffer] = useState(true);
   const [welcomeSetupFee, setWelcomeSetupFee] = useState("199");
+  const [welcomeSubject, setWelcomeSubject] = useState("Welcome to TeeVents – Let's get your tournament started!");
+  const [welcomeHtml, setWelcomeHtml] = useState("");
   const [savingWelcome, setSavingWelcome] = useState(false);
 
   // Conversion history
@@ -101,16 +103,31 @@ export default function DemoConverter() {
   };
   const [history, setHistory] = useState<LogRow[]>([]);
 
+  const DEFAULT_WELCOME_HTML = `<p>Hi {{name}},</p>
+<p>I'm Rod, the founder of TeeVents. I'm here to make sure you get the most out of the platform.</p>
+<p>{{tournament_block}}</p>
+<p>Here's where to start:</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="{{dashboard_url}}" style="background:#F5A623;color:#1a5c38;font-weight:700;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block">Open Your Dashboard</a>
+</p>
+<p>If you need help with anything – setting up your event, adding players, or configuring payments – just reply to this email. I'm happy to help.</p>
+{{setup_offer}}
+<p style="margin-top:24px">Best,<br/>Rod Jackson<br/>TeeVents Golf</p>`;
+
   async function loadWelcomeSettings() {
     const { data } = await supabase
       .from("platform_settings")
       .select("key, value")
-      .in("key", ["welcome_email_enabled", "welcome_email_include_setup_offer", "welcome_setup_fee_dollars"]);
+      .in("key", ["welcome_email_enabled", "welcome_email_include_setup_offer", "welcome_setup_fee_dollars", "welcome_email_subject", "welcome_email_html"]);
+    let foundHtml = false;
     for (const r of data || []) {
       if (r.key === "welcome_email_enabled") setWelcomeEnabled((r.value as any) !== false);
       if (r.key === "welcome_email_include_setup_offer") setWelcomeIncludeOffer((r.value as any) !== false);
       if (r.key === "welcome_setup_fee_dollars") setWelcomeSetupFee(String(r.value ?? 199));
+      if (r.key === "welcome_email_subject" && r.value) setWelcomeSubject(String(r.value));
+      if (r.key === "welcome_email_html" && r.value) { setWelcomeHtml(String(r.value)); foundHtml = true; }
     }
+    if (!foundHtml) setWelcomeHtml(DEFAULT_WELCOME_HTML);
   }
 
   async function saveWelcomeSettings() {
@@ -119,12 +136,24 @@ export default function DemoConverter() {
       { key: "welcome_email_enabled", value: welcomeEnabled as any },
       { key: "welcome_email_include_setup_offer", value: welcomeIncludeOffer as any },
       { key: "welcome_setup_fee_dollars", value: (Number(welcomeSetupFee) || 199) as any },
+      { key: "welcome_email_subject", value: welcomeSubject as any },
+      { key: "welcome_email_html", value: welcomeHtml as any },
     ];
     for (const r of rows) {
       await supabase.from("platform_settings").upsert(r, { onConflict: "key" });
     }
     setSavingWelcome(false);
     toast({ title: "Welcome email settings saved" });
+  }
+
+  async function sendWelcomeTest() {
+    const email = prompt("Send test welcome email to which address?");
+    if (!email) return;
+    const { error } = await supabase.functions.invoke("send-organizer-welcome", {
+      body: { email, full_name: "Test Coach", plan: "Base", tournament_name: "Test Tournament" },
+    });
+    if (error) toast({ title: "Test send failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Test email sent", description: `Check ${email}` });
   }
 
   async function loadHistory() {
@@ -637,9 +666,52 @@ export default function DemoConverter() {
                 disabled={!welcomeIncludeOffer}
               />
             </div>
-            <Button onClick={saveWelcomeSettings} disabled={savingWelcome} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
-              <Save className="h-4 w-4 mr-1" /> {savingWelcome ? "Saving…" : "Save Settings"}
-            </Button>
+
+            <div className="border-t pt-4 space-y-3">
+              <div>
+                <Label>Email Subject</Label>
+                <Input value={welcomeSubject} onChange={(e) => setWelcomeSubject(e.target.value)} />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Email Body (HTML)</Label>
+                  <span className="text-xs text-muted-foreground">
+                    Tokens: <code>{"{{name}}"}</code> <code>{"{{tournament_name}}"}</code> <code>{"{{tournament_block}}"}</code> <code>{"{{dashboard_url}}"}</code> <code>{"{{plan}}"}</code> <code>{"{{setup_offer}}"}</code>
+                  </span>
+                </div>
+                <textarea
+                  className="w-full min-h-[260px] rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                  value={welcomeHtml}
+                  onChange={(e) => setWelcomeHtml(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Live Preview</Label>
+                <div
+                  className="prose prose-sm max-w-none border rounded-md p-4 bg-white text-black"
+                  dangerouslySetInnerHTML={{
+                    __html: welcomeHtml
+                      .replace(/\{\{name\}\}/g, "Coach Smith")
+                      .replace(/\{\{plan\}\}/g, "Base")
+                      .replace(/\{\{tournament_name\}\}/g, "Spring Charity Classic")
+                      .replace(/\{\{tournament_block\}\}/g, 'Your tournament <strong>Spring Charity Classic</strong> is ready to go.')
+                      .replace(/\{\{dashboard_url\}\}/g, "https://www.teevents.golf/dashboard")
+                      .replace(/\{\{setup_offer\}\}/g, welcomeIncludeOffer
+                        ? `<hr/><h3 style="color:#1a5c38">🔥 Want me to build your tournament for you?</h3><p>One-time white-glove setup: <strong>$${Number(welcomeSetupFee) || 199}</strong></p>`
+                        : ""),
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={saveWelcomeSettings} disabled={savingWelcome} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
+                <Save className="h-4 w-4 mr-1" /> {savingWelcome ? "Saving…" : "Save Settings"}
+              </Button>
+              <Button variant="outline" onClick={sendWelcomeTest}>
+                <Send className="h-4 w-4 mr-1" /> Send Test Email
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

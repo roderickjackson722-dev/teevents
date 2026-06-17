@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,11 @@ import { BookingReservationsDrawer } from "@/components/bookings/BookingReservat
 import { BookingExportMenu } from "@/components/bookings/BookingExportMenu";
 import { BookingNotificationSettings } from "@/components/bookings/BookingNotificationSettings";
 
-const CONTEXT = "college-hub";
-
 export default function CollegeHubBookings() {
   const { toast } = useToast();
+  const [params] = useSearchParams();
+  const CONTEXT = params.get("context") || "college-hub";
+  const label = params.get("label") || "College Hub";
   const { slots, categories, loading, reload } = useBookings(CONTEXT);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<BookingSlot | null>(null);
@@ -34,6 +35,8 @@ export default function CollegeHubBookings() {
     else { toast({ title: "Slot deleted" }); reload(); }
   };
 
+  const publicUrl = `/college-hub/bookings?context=${encodeURIComponent(CONTEXT)}`;
+
   return (
     <div className="container max-w-5xl py-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -41,11 +44,11 @@ export default function CollegeHubBookings() {
           <Link to="/admin" className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:underline">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to admin
           </Link>
-          <h1 className="text-2xl font-bold mt-1">College Hub — Bookings</h1>
-          <p className="text-sm text-muted-foreground">Manage physical therapy and other booking slots for coaches.</p>
+          <h1 className="text-2xl font-bold mt-1">{label} — Bookings</h1>
+          <p className="text-sm text-muted-foreground">Manage Team Therapy and other booking slots for coaches. Context: <code className="text-xs">{CONTEXT}</code></p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/college-hub/bookings" target="_blank"><ExternalLink className="w-4 h-4 mr-2" />Public Page</Link>
+          <Link to={publicUrl} target="_blank"><ExternalLink className="w-4 h-4 mr-2" />Public Page</Link>
         </Button>
       </div>
 

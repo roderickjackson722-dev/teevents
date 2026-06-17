@@ -666,9 +666,52 @@ export default function DemoConverter() {
                 disabled={!welcomeIncludeOffer}
               />
             </div>
-            <Button onClick={saveWelcomeSettings} disabled={savingWelcome} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
-              <Save className="h-4 w-4 mr-1" /> {savingWelcome ? "Saving…" : "Save Settings"}
-            </Button>
+
+            <div className="border-t pt-4 space-y-3">
+              <div>
+                <Label>Email Subject</Label>
+                <Input value={welcomeSubject} onChange={(e) => setWelcomeSubject(e.target.value)} />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Email Body (HTML)</Label>
+                  <span className="text-xs text-muted-foreground">
+                    Tokens: <code>{"{{name}}"}</code> <code>{"{{tournament_name}}"}</code> <code>{"{{tournament_block}}"}</code> <code>{"{{dashboard_url}}"}</code> <code>{"{{plan}}"}</code> <code>{"{{setup_offer}}"}</code>
+                  </span>
+                </div>
+                <textarea
+                  className="w-full min-h-[260px] rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                  value={welcomeHtml}
+                  onChange={(e) => setWelcomeHtml(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Live Preview</Label>
+                <div
+                  className="prose prose-sm max-w-none border rounded-md p-4 bg-white text-black"
+                  dangerouslySetInnerHTML={{
+                    __html: welcomeHtml
+                      .replace(/\{\{name\}\}/g, "Coach Smith")
+                      .replace(/\{\{plan\}\}/g, "Base")
+                      .replace(/\{\{tournament_name\}\}/g, "Spring Charity Classic")
+                      .replace(/\{\{tournament_block\}\}/g, 'Your tournament <strong>Spring Charity Classic</strong> is ready to go.')
+                      .replace(/\{\{dashboard_url\}\}/g, "https://www.teevents.golf/dashboard")
+                      .replace(/\{\{setup_offer\}\}/g, welcomeIncludeOffer
+                        ? `<hr/><h3 style="color:#1a5c38">🔥 Want me to build your tournament for you?</h3><p>One-time white-glove setup: <strong>$${Number(welcomeSetupFee) || 199}</strong></p>`
+                        : ""),
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={saveWelcomeSettings} disabled={savingWelcome} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
+                <Save className="h-4 w-4 mr-1" /> {savingWelcome ? "Saving…" : "Save Settings"}
+              </Button>
+              <Button variant="outline" onClick={sendWelcomeTest}>
+                <Send className="h-4 w-4 mr-1" /> Send Test Email
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

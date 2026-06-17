@@ -72,6 +72,7 @@ const proFeatures = [
   "Budget tracking — planned vs. actual",
   "Featured placement in public search",
   "Up to 5 team members",
+  "Dedicated account manager",
   "Priority email + chat support (2-hr response)",
 ];
 

@@ -456,18 +456,24 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       });
   }, [tournament]);
 
-  // Fetch donation totals for goal progress
+  // Fetch donation totals for goal progress (online + offline)
   useEffect(() => {
     if (!tournament) return;
-    supabase
-      .from("tournament_donations")
-      .select("amount_cents")
-      .eq("tournament_id", tournament.id)
-      .eq("status", "completed")
-      .then(({ data }) => {
-        const total = (data || []).reduce((sum: number, d: any) => sum + d.amount_cents, 0);
-        setDonationTotal(total);
-      });
+    Promise.all([
+      supabase
+        .from("tournament_donations")
+        .select("amount_cents")
+        .eq("tournament_id", tournament.id)
+        .eq("status", "completed"),
+      (supabase as any)
+        .from("tournament_offline_donations")
+        .select("amount_cents")
+        .eq("tournament_id", tournament.id),
+    ]).then(([onRes, offRes]: any[]) => {
+      const onlineTotal = ((onRes.data || []) as any[]).reduce((s, d) => s + (d.amount_cents || 0), 0);
+      const offlineTotal = ((offRes.data || []) as any[]).reduce((s, d) => s + (d.amount_cents || 0), 0);
+      setDonationTotal(onlineTotal + offlineTotal);
+    });
   }, [tournament, donated]);
 
   // Verify donation on return from Stripe

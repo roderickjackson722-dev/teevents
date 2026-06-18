@@ -195,6 +195,7 @@ const SponsorRegistrationPage = () => {
           description: form.description || null,
           logo_base64: logoBase64,
           logo_filename: logoFilename,
+          additional_notes: form.additional_notes || null,
         }),
       });
       data = await res.json().catch(() => null);

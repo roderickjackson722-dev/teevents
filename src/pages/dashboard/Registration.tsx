@@ -721,6 +721,54 @@ const Registration = () => {
                 />
               </div>
 
+              {/* Early Registration Discount */}
+              <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <Label className="text-sm font-semibold">Early Registration Discount</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Offer a lower price to golfers who register before a deadline. After the deadline, the regular registration fee applies.
+                    </p>
+                  </div>
+                  <Switch checked={earlyEnabled} onCheckedChange={setEarlyEnabled} />
+                </div>
+                {earlyEnabled && (
+                  <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <Label>Early Bird Price ($)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={earlyPriceDisplay}
+                        onChange={(e) => setEarlyPriceDisplay(e.target.value)}
+                        placeholder="e.g. 125.00"
+                      />
+                    </div>
+                    <div>
+                      <Label>Discount Expires On</Label>
+                      <Input
+                        type="datetime-local"
+                        value={earlyExpires}
+                        onChange={(e) => setEarlyExpires(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Cash payment registration */}
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">Allow Cash Payment Registrations</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Lets you add players who will pay with cash or check on the day of the event. When adding a player, you'll be able to choose Cash or Check as the payment method and mark payment received later.
+                  </p>
+                </div>
+                <Switch checked={allowCash} onCheckedChange={setAllowCash} />
+              </div>
+
+
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings

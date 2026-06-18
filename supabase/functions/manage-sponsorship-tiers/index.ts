@@ -61,7 +61,7 @@ const sanitizeTierPayload = (payload: any, tournamentId: string, fallbackOrder =
     custom_package_label: customPackageLabel,
     hide_price_when_sold_out: payload.hide_price_when_sold_out !== false,
     show_remaining: payload.show_remaining === true,
-    require_logo: payload.require_logo !== false,
+    require_logo: payload.require_logo === true,
     show_logo_upload: payload.show_logo_upload !== false,
     allow_additional_notes: payload.allow_additional_notes === true,
   };

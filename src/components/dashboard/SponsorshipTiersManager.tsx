@@ -530,31 +530,34 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     </div>
                   </div>
 
-                  {/* Logo upload controls */}
-                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
-                    <Switch
-                      id="show-logo-upload"
-                      checked={form.show_logo_upload}
-                      onCheckedChange={(v) => setForm({ ...form, show_logo_upload: v, require_logo: v ? form.require_logo : false })}
-                    />
-                    <div className="flex-1 -mt-0.5">
-                      <Label htmlFor="show-logo-upload" className="text-sm">Show logo upload on the sponsor registration form</Label>
-                      <p className="text-xs text-muted-foreground mt-0.5">Turn off if this tier doesn't include logo placement (e.g., prize sponsorships).</p>
-                    </div>
+                  {/* Logo upload controls — single clear choice avoids confusion */}
+                  <div className="rounded-md border border-border p-3 space-y-2">
+                    <Label className="text-sm">Logo upload on sponsor registration form</Label>
+                    {[
+                      { v: "required", label: "Required — sponsor must upload a logo" },
+                      { v: "optional", label: "Optional — sponsor can skip the logo" },
+                      { v: "hidden", label: "Hidden — don't ask for a logo at all" },
+                    ].map(opt => {
+                      const current = !form.show_logo_upload
+                        ? "hidden"
+                        : form.require_logo ? "required" : "optional";
+                      return (
+                        <label key={opt.v} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input
+                            type="radio"
+                            name="logo-mode"
+                            checked={current === opt.v}
+                            onChange={() => setForm(prev => ({
+                              ...prev,
+                              show_logo_upload: opt.v !== "hidden",
+                              require_logo: opt.v === "required",
+                            }))}
+                          />
+                          <span>{opt.label}</span>
+                        </label>
+                      );
+                    })}
                   </div>
-                  {form.show_logo_upload && (
-                    <div className="flex items-start gap-3 rounded-md border border-border p-3">
-                      <Switch
-                        id="require-logo"
-                        checked={form.require_logo}
-                        onCheckedChange={(v) => setForm({ ...form, require_logo: v })}
-                      />
-                      <div className="flex-1 -mt-0.5">
-                        <Label htmlFor="require-logo" className="text-sm">Require logo upload</Label>
-                        <p className="text-xs text-muted-foreground mt-0.5">When off, the sponsor can skip uploading a logo.</p>
-                      </div>
-                    </div>
-                  )}
                   <div className="flex items-start gap-3 rounded-md border border-border p-3">
                     <Switch
                       id="allow-notes"

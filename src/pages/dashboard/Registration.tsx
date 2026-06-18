@@ -219,25 +219,29 @@ const Registration = () => {
   const saveSettings = async () => {
     if (demoGuard()) return;
     setSaving(true);
-    const { error } = await supabase
-      .from("tournaments")
-      .update({
-        registration_fee_cents: feeCents,
-        registration_open: regOpen,
-        max_players: maxPlayers,
-        foursome_registration: foursomeReg,
-        max_group_size: maxGroupSize,
-        allow_cover_fees: allowCoverFees,
-        captain_label: captainLabel.trim() || null,
-      } as any)
-      .eq("id", selectedTournament);
+    const earlyCents = earlyPriceDisplay ? Math.round(parseFloat(earlyPriceDisplay) * 100) : null;
+    const earlyIso = earlyExpires ? new Date(earlyExpires).toISOString() : null;
+    const updates: any = {
+      registration_fee_cents: feeCents,
+      registration_open: regOpen,
+      max_players: maxPlayers,
+      foursome_registration: foursomeReg,
+      max_group_size: maxGroupSize,
+      allow_cover_fees: allowCoverFees,
+      captain_label: captainLabel.trim() || null,
+      early_registration_enabled: earlyEnabled,
+      early_registration_price_cents: earlyCents,
+      early_registration_expires_at: earlyIso,
+      allow_cash_registration: allowCash,
+    };
+    const { error } = await supabase.from("tournaments").update(updates).eq("id", selectedTournament);
     if (error) toast.error(error.message);
     else {
       toast.success("Registration settings saved!");
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
-            ? { ...t, registration_fee_cents: feeCents, registration_open: regOpen, max_players: maxPlayers, foursome_registration: foursomeReg, max_group_size: maxGroupSize, allow_cover_fees: allowCoverFees }
+            ? { ...t, ...updates }
             : t,
         ),
       );

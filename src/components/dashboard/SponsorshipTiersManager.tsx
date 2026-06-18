@@ -531,6 +531,43 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                       <p className="text-xs text-muted-foreground mt-0.5">Off by default. When on (and Total Spots is set), the public page shows "X spots remaining".</p>
                     </div>
                   </div>
+
+                  {/* Logo upload controls */}
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="show-logo-upload"
+                      checked={form.show_logo_upload}
+                      onCheckedChange={(v) => setForm({ ...form, show_logo_upload: v, require_logo: v ? form.require_logo : false })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="show-logo-upload" className="text-sm">Show logo upload on the sponsor registration form</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Turn off if this tier doesn't include logo placement (e.g., prize sponsorships).</p>
+                    </div>
+                  </div>
+                  {form.show_logo_upload && (
+                    <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                      <Switch
+                        id="require-logo"
+                        checked={form.require_logo}
+                        onCheckedChange={(v) => setForm({ ...form, require_logo: v })}
+                      />
+                      <div className="flex-1 -mt-0.5">
+                        <Label htmlFor="require-logo" className="text-sm">Require logo upload</Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">When off, the sponsor can skip uploading a logo.</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="allow-notes"
+                      checked={form.allow_additional_notes}
+                      onCheckedChange={(v) => setForm({ ...form, allow_additional_notes: v })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="allow-notes" className="text-sm">Add "Additional Notes" box on sponsor checkout</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Lets the sponsor leave a note (e.g., "Please put our logo on hole 5").</p>
+                    </div>
+                  </div>
                   <Button type="submit" className="w-full" disabled={saving}>
                     {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
                     {editTier ? "Update Tier" : "Save Tier"}

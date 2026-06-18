@@ -409,35 +409,53 @@ const SponsorRegistrationPage = () => {
             </div>
           </div>
 
-          {/* Logo Upload */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Upload Your Logo</h2>
-            <label className="cursor-pointer block">
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoSelect(f); }}
-              />
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
-                {logoPreview ? (
-                  <div className="flex items-center justify-center gap-4">
-                    <img src={logoPreview} alt="" className="h-16 w-16 object-contain rounded" />
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-foreground">{logoFile?.name}</p>
-                      <p className="text-xs text-muted-foreground">Click to change</p>
+          {/* Logo Upload (only if this tier wants it) */}
+          {showLogoUpload && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-lg font-display font-bold text-foreground mb-4">
+                {requireLogo ? "Upload Your Logo *" : "Upload Your Logo (optional)"}
+              </h2>
+              <label className="cursor-pointer block">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoSelect(f); }}
+                />
+                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
+                  {logoPreview ? (
+                    <div className="flex items-center justify-center gap-4">
+                      <img src={logoPreview} alt="" className="h-16 w-16 object-contain rounded" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-foreground">{logoFile?.name}</p>
+                        <p className="text-xs text-muted-foreground">Click to change</p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">Click to upload your company logo</p>
-                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG — max 5MB</p>
-                  </>
-                )}
-              </div>
-            </label>
-          </div>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">Click to upload your company logo</p>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG — max 5MB</p>
+                    </>
+                  )}
+                </div>
+              </label>
+            </div>
+          )}
+
+          {/* Additional Notes */}
+          {allowNotes && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-lg font-display font-bold text-foreground mb-3">Additional Notes (optional)</h2>
+              <Textarea
+                value={form.additional_notes}
+                onChange={e => setForm({ ...form, additional_notes: e.target.value })}
+                placeholder="Any special requests or notes for the organizer (e.g., 'Please put our logo on hole 5')."
+                rows={4}
+                maxLength={1500}
+              />
+            </div>
+          )}
 
           {/* Payment Summary & Submit */}
           <div className="bg-card border border-border rounded-xl p-6">

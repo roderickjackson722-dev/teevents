@@ -71,7 +71,7 @@ const Donations = () => {
         .select("id, amount_cents, donor_email, status, created_at")
         .eq("tournament_id", selectedTournament)
         .order("created_at", { ascending: false }),
-      supabase
+      (supabase as any)
         .from("tournaments")
         .select("donation_goal_cents, donations_header_text, donations_footer_text, fundraising_goal_custom")
         .eq("id", selectedTournament)

@@ -987,7 +987,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     tournamentId={tournament.id}
                     primaryColor={primary}
                     secondaryColor={secondary}
-                    registrationFeeCents={tournament.registration_fee_cents || 0}
+                    registrationFeeCents={effectiveFeeCents}
                     foursomeMode={tournament.foursome_registration}
                     maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
                     isNonprofit={nonprofitInfo.isNonprofit}

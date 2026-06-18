@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
         website_url: website_url?.trim() || null,
         description: description?.trim() || null,
         logo_url: finalLogoUrl,
+        additional_notes: additional_notes?.toString().trim() || null,
         amount_cents: tier.price_cents,
         payment_status: "pending",
       })

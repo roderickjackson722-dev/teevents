@@ -888,6 +888,32 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
 
   const golfersFirst = (tournament as any).golfers_register_first === true;
+
+  // Early-bird pricing
+  const earlyEnabledRaw = (tournament as any).early_registration_enabled === true;
+  const earlyExpiresAt = (tournament as any).early_registration_expires_at
+    ? new Date((tournament as any).early_registration_expires_at)
+    : null;
+  const earlyPriceCents = (tournament as any).early_registration_price_cents ?? null;
+  const earlyActive = earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
+  const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament.registration_fee_cents || 0);
+
+  const [earlyNow, setEarlyNow] = useState(Date.now());
+  useEffect(() => {
+    if (!earlyActive || !earlyExpiresAt) return;
+    const id = setInterval(() => setEarlyNow(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, [earlyActive, earlyExpiresAt]);
+  const formatCountdown = () => {
+    if (!earlyExpiresAt) return "";
+    const ms = earlyExpiresAt.getTime() - earlyNow;
+    if (ms <= 0) return "Expired";
+    const days = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    const minutes = Math.floor((ms % 3600000) / 60000);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
   const registrationSection = (
     <>
       {/* ===== REGISTRATION ===== */}
@@ -905,12 +931,29 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       ? "Register your foursome below to secure your spots."
                       : "Fill out the form below to secure your spot."}
                 </p>
+                {earlyActive && (
+                  <div className="mt-4 inline-flex flex-col items-center gap-1 px-4 py-3 rounded-lg" style={{ backgroundColor: secondary + "20", border: `1px solid ${secondary}` }}>
+                    <div className="text-sm" style={{ color: "#666" }}>
+                      <span className="line-through mr-2">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((tournament.registration_fee_cents || 0) / 100)}</span>
+                      <span className="text-lg font-bold" style={{ color: secondary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(effectiveFeeCents / 100)}
+                      </span>
+                      <span className="ml-2 text-xs uppercase tracking-wider font-semibold">Early Bird</span>
+                    </div>
+                    {earlyExpiresAt && (
+                      <div className="text-xs" style={{ color: "#666" }}>
+                        Early bird pricing ends in <strong>{formatCountdown()}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {tournament.max_players && (
                   <p className="text-xs mt-2" style={{ color: "#999" }}>
                     {registrationCount} / {tournament.max_players} spots filled
                   </p>
                 )}
               </div>
+
 
               {isTournamentFull && tournament.waitlist_enabled ? (
                 <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>

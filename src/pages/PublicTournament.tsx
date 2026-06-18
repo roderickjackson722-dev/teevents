@@ -2331,6 +2331,47 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
       {/* Post-event survey moved to email-only delivery after event ends */}
 
+      {/* ===== EVENT DAY SALES ===== */}
+      {eventDaySalesItems.length > 0 && (
+        <section id="event-day-sales" className="py-16" style={{ backgroundColor: "#ffffff" }}>
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>EVENT DAY SALES</h2>
+              <div className="w-16 h-0.5 mx-auto mb-3" style={{ backgroundColor: secondary }} />
+              <p style={{ color: "#666" }}>Walk-up entries, mulligans, contests, and merchandise available the day of the event.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {eventDaySalesItems.map((i) => {
+                const remaining = i.max_quantity != null ? Math.max(0, i.max_quantity - (i.sold_quantity || 0)) : null;
+                const soldOut = remaining === 0;
+                return (
+                  <div key={i.id} className="rounded-xl border p-5 flex flex-col" style={{ borderColor: "#e5e5e5", backgroundColor: "#fafafa" }}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div>
+                        <h3 className="font-display font-bold text-foreground">{i.item_name}</h3>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{i.category}</span>
+                      </div>
+                      <span className="text-lg font-bold" style={{ color: primary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(i.price_cents / 100)}
+                      </span>
+                    </div>
+                    {i.description && <p className="text-sm text-muted-foreground mb-3 whitespace-pre-line">{i.description}</p>}
+                    {remaining != null && (
+                      <p className={`text-xs mb-2 ${soldOut ? "text-destructive" : "text-muted-foreground"}`}>
+                        {soldOut ? "Sold Out" : `${remaining} remaining`}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-6">
+              See an event volunteer or scan an item QR code at the event to purchase.
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* ===== DONATION ===== */}
       {isTabVisible("donations") && (
       <section id="donation" className="py-16" style={{ backgroundColor: primary }}>

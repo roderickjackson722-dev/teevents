@@ -272,6 +272,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       custom_package_label: (tier as any).custom_package_label || "",
       hide_price_when_sold_out: (tier as any).hide_price_when_sold_out !== false,
       show_remaining: (tier as any).show_remaining === true,
+      require_logo: (tier as any).require_logo !== false,
+      show_logo_upload: (tier as any).show_logo_upload !== false,
+      allow_additional_notes: (tier as any).allow_additional_notes === true,
     });
     setDialogOpen(true);
   };

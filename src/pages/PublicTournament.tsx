@@ -912,12 +912,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const earlyActive = earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
   const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament.registration_fee_cents || 0);
 
-  const [earlyNow, setEarlyNow] = useState(Date.now());
   useEffect(() => {
     if (!earlyActive || !earlyExpiresAt) return;
     const id = setInterval(() => setEarlyNow(Date.now()), 60000);
     return () => clearInterval(id);
   }, [earlyActive, earlyExpiresAt]);
+
   const formatCountdown = () => {
     if (!earlyExpiresAt) return "";
     const ms = earlyExpiresAt.getTime() - earlyNow;

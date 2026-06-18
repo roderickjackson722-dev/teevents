@@ -18,6 +18,9 @@ interface Tier {
   total_spots: number | null;
   spots_used: number;
   package_type: string | null;
+  require_logo?: boolean | null;
+  show_logo_upload?: boolean | null;
+  allow_additional_notes?: boolean | null;
 }
 
 interface TournamentInfo {

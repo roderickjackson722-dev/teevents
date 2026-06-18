@@ -142,7 +142,7 @@ const Players = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, max_players")
+      .select("id, title, max_players, allow_cash_registration")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {

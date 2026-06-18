@@ -88,7 +88,7 @@ const SponsorRegistrationPage = () => {
       if (!t) { setLoading(false); return; }
       setTournament(t);
 
-      const { data: tierData } = await supabase
+      const { data: tierData } = await (supabase as any)
         .from("sponsorship_tiers")
         .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type, require_logo, show_logo_upload, allow_additional_notes")
         .eq("tournament_id", t.id)

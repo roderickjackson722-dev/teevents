@@ -287,6 +287,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
   const [eventDaySalesItems, setEventDaySalesItems] = useState<Array<{ id: string; item_name: string; description: string | null; price_cents: number; category: string; max_quantity: number | null; sold_quantity: number; }>>([]);
+  const [earlyNow, setEarlyNow] = useState(Date.now());
+
 
   // Redirect to standalone refund page if ?tab=refund
   useEffect(() => {

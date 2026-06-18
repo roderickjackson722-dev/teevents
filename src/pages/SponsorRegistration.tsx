@@ -18,6 +18,7 @@ interface Tier {
   total_spots: number | null;
   spots_used: number;
   package_type: string | null;
+  custom_package_label: string | null;
   require_logo?: boolean | null;
   show_logo_upload?: boolean | null;
   allow_additional_notes?: boolean | null;
@@ -90,7 +91,7 @@ const SponsorRegistrationPage = () => {
 
       const { data: tierData } = await (supabase as any)
         .from("sponsorship_tiers")
-        .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type, require_logo, show_logo_upload, allow_additional_notes")
+        .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type, custom_package_label, require_logo, show_logo_upload, allow_additional_notes")
         .eq("tournament_id", t.id)
         .eq("is_active", true)
         .order("display_order", { ascending: true });
@@ -289,9 +290,7 @@ const SponsorRegistrationPage = () => {
               {tiers.map(tier => {
                 const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
                 const soldOut = remaining === 0;
-                const packageLabel = tier.package_type
-                  ? tier.package_type.charAt(0).toUpperCase() + tier.package_type.slice(1).replace(/_/g, " ")
-                  : null;
+                const packageLabel = tier.custom_package_label?.trim() || null;
                 return (
                 <label
                   key={tier.id}

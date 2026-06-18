@@ -44,7 +44,7 @@ const sanitizeTierPayload = (payload: any, tournamentId: string, fallbackOrder =
   const packageType = typeof payload.package_type === "string" && payload.package_type.trim()
     ? payload.package_type.trim().slice(0, 50)
     : null;
-  const customPackageLabel = packageType === "custom" && typeof payload.custom_package_label === "string"
+  const customPackageLabel = typeof payload.custom_package_label === "string"
     ? (payload.custom_package_label.trim().slice(0, 60) || null)
     : null;
 

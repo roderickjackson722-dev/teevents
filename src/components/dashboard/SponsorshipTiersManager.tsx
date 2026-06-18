@@ -234,7 +234,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       is_active: true,
       total_spots: Number.isFinite(totalSpotsParsed as number) ? totalSpotsParsed : null,
       package_type: form.package_type || null,
-      custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
+      custom_package_label: form.custom_package_label.trim() || null,
       hide_price_when_sold_out: form.hide_price_when_sold_out,
       show_remaining: form.show_remaining,
       require_logo: form.require_logo,
@@ -492,18 +492,16 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                       </Select>
                     </div>
                   </div>
-                  {form.package_type === "custom" && (
-                    <div>
-                      <Label>Custom Package Label</Label>
-                      <Input
-                        value={form.custom_package_label}
-                        onChange={e => setForm({ ...form, custom_package_label: e.target.value })}
-                        placeholder='e.g. "Hole Sponsor", "Lunch Sponsor"'
-                        maxLength={60}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Shown as the package badge on the public sponsorship page.</p>
-                    </div>
-                  )}
+                  <div>
+                    <Label>Display Title / Badge (optional)</Label>
+                    <Input
+                      value={form.custom_package_label}
+                      onChange={e => setForm({ ...form, custom_package_label: e.target.value })}
+                      placeholder='e.g. "Title Sponsor", "Hole Sponsor"'
+                      maxLength={60}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Leave blank to hide. Shown as a small badge next to the tier name on the public sponsorship page.</p>
+                  </div>
                   <div>
                     <Label>Display Order</Label>
                     <Input type="number" min="0" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })} />
@@ -597,11 +595,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-display font-bold text-foreground">{tier.name}</h4>
                       <span className="text-primary font-mono font-semibold text-sm">{fmt(tier.price_cents)}</span>
-                      {tier.package_type && (
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {tier.package_type === "custom" && (tier as any).custom_package_label
-                            ? (tier as any).custom_package_label
-                            : tier.package_type}
+                      {(tier as any).custom_package_label && (
+                        <Badge variant="outline" className="text-xs">
+                          {(tier as any).custom_package_label}
                         </Badge>
                       )}
                       {tier.total_spots != null && (tier as any).show_remaining === true && (() => {

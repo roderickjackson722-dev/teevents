@@ -107,6 +107,7 @@ const categories: SidebarCategory[] = [
       { title: "Day of Event Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
       { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
+      { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
       { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
     ],
   },

@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     const {
       tournament_id, tier_id, company_name, contact_name, contact_email,
       contact_phone, website_url, description, logo_url, logo_base64, logo_filename,
+      additional_notes,
     } = body;
 
     if (!tournament_id || !tier_id || !company_name?.trim() || !contact_name?.trim() || !contact_email?.trim()) {
@@ -96,6 +97,7 @@ Deno.serve(async (req) => {
         website_url: website_url?.trim() || null,
         description: description?.trim() || null,
         logo_url: finalLogoUrl,
+        additional_notes: additional_notes?.toString().trim() || null,
         amount_cents: tier.price_cents,
         payment_status: "pending",
       })

@@ -62,6 +62,8 @@ interface Registration {
   dietary_restrictions: string | null;
   notes: string | null;
   payment_status: string;
+  payment_method?: string | null;
+  cash_payment_received?: boolean | null;
   group_number: number | null;
   group_label: string | null;
   group_position: number | null;
@@ -74,6 +76,7 @@ interface Tournament {
   id: string;
   title: string;
   max_players: number | null;
+  allow_cash_registration?: boolean | null;
 }
 
 const Players = () => {
@@ -96,6 +99,7 @@ const Players = () => {
     handicap: "",
     shirt_size: "",
     payment_status: "paid",
+    payment_method: "online",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
   const FIELD_DEFS = [
@@ -136,12 +140,12 @@ const Players = () => {
   const [savingEdit, setSavingEdit] = useState(false);
   useEffect(() => {
     if (!org) return;
-    supabase
+    (supabase as any)
       .from("tournaments")
-      .select("id, title, max_players")
+      .select("id, title, max_players, allow_cash_registration")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         const list = data || [];
         setTournaments(list);
         if (list.length > 0) setSelectedTournament(list[0].id);
@@ -285,7 +289,8 @@ const Players = () => {
       return;
     }
     setAddingPlayer(true);
-    const { data, error } = await supabase.from("tournament_registrations").insert({
+    const isCash = newPlayer.payment_method === "cash" || newPlayer.payment_method === "check";
+    const insertPayload: any = {
       tournament_id: selectedTournament,
       first_name: newPlayer.first_name.trim(),
       last_name: newPlayer.last_name.trim(),
@@ -293,17 +298,35 @@ const Players = () => {
       phone: newPlayer.phone.trim() || null,
       handicap: newPlayer.handicap ? parseInt(newPlayer.handicap) : null,
       shirt_size: newPlayer.shirt_size || null,
-      payment_status: newPlayer.payment_status,
-    }).select("*").single();
+      payment_method: newPlayer.payment_method || "online",
+      payment_status: isCash
+        ? (newPlayer.payment_status === "paid" ? "paid" : "pending")
+        : newPlayer.payment_status,
+      cash_payment_received: isCash && newPlayer.payment_status === "paid",
+    };
+    const { data, error } = await supabase.from("tournament_registrations").insert(insertPayload).select("*").single();
     setAddingPlayer(false);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
       setPlayers((prev) => [...prev, data as Registration]);
-      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid" });
+      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
       markChecklistTaskComplete(selectedTournament, "add_first_player");
+    }
+  };
+
+  const markCashReceived = async (id: string) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ payment_status: "paid", cash_payment_received: true } as any)
+      .eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      setPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
+      toast({ title: "Payment marked received" });
     }
   };
 
@@ -673,6 +696,23 @@ const Players = () => {
                     )}
                   </div>
                 )}
+                {(() => {
+                  const tt = tournaments.find((t) => t.id === selectedTournament) as any;
+                  return tt?.allow_cash_registration ? (
+                    <div>
+                      <Label htmlFor="ap-method">Payment Method</Label>
+                      <Select value={newPlayer.payment_method} onValueChange={(v) => setNewPlayer((p) => ({ ...p, payment_method: v }))}>
+                        <SelectTrigger id="ap-method"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="online">Online</SelectItem>
+                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="check">Check</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">Cash/Check registrations skip online payment. Mark received once you collect.</p>
+                    </div>
+                  ) : null;
+                })()}
                 <Button onClick={handleAddPlayer} disabled={addingPlayer} className="w-full">
                   {addingPlayer ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
                   Add Player
@@ -783,9 +823,19 @@ const Players = () => {
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
-                        {p.payment_status}
-                      </span>
+                      <div className="flex flex-col items-center gap-1">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
+                          {p.payment_status}
+                        </span>
+                        {(p as any).payment_method && (p as any).payment_method !== "online" && (
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
+                        )}
+                        {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
+                          <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
+                            Mark Received
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">

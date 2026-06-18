@@ -18,6 +18,9 @@ interface Tier {
   total_spots: number | null;
   spots_used: number;
   package_type: string | null;
+  require_logo?: boolean | null;
+  show_logo_upload?: boolean | null;
+  allow_additional_notes?: boolean | null;
 }
 
 interface TournamentInfo {
@@ -50,6 +53,7 @@ const SponsorRegistrationPage = () => {
     contact_phone: "",
     website_url: "",
     description: "",
+    additional_notes: "",
   });
 
   // Check for success redirect
@@ -84,9 +88,9 @@ const SponsorRegistrationPage = () => {
       if (!t) { setLoading(false); return; }
       setTournament(t);
 
-      const { data: tierData } = await supabase
+      const { data: tierData } = await (supabase as any)
         .from("sponsorship_tiers")
-        .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type")
+        .select("id, name, description, price_cents, benefits, display_order, total_spots, spots_used, package_type, require_logo, show_logo_upload, allow_additional_notes")
         .eq("tournament_id", t.id)
         .eq("is_active", true)
         .order("display_order", { ascending: true });
@@ -130,10 +134,19 @@ const SponsorRegistrationPage = () => {
     return urlData.publicUrl;
   };
 
+  const selectedTierObj = tiers.find((t) => t.id === selectedTier);
+  const showLogoUpload = selectedTierObj ? selectedTierObj.show_logo_upload !== false : true;
+  const requireLogo = selectedTierObj ? (selectedTierObj.require_logo !== false && showLogoUpload) : true;
+  const allowNotes = !!selectedTierObj?.allow_additional_notes;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tournament || !selectedTier || !form.company_name.trim() || !form.contact_name.trim() || !form.contact_email.trim()) {
       toast({ title: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    if (requireLogo && !logoFile) {
+      toast({ title: "Logo required", description: "This sponsorship level requires a logo upload.", variant: "destructive" });
       return;
     }
 
@@ -182,6 +195,7 @@ const SponsorRegistrationPage = () => {
           description: form.description || null,
           logo_base64: logoBase64,
           logo_filename: logoFilename,
+          additional_notes: form.additional_notes || null,
         }),
       });
       data = await res.json().catch(() => null);
@@ -395,35 +409,53 @@ const SponsorRegistrationPage = () => {
             </div>
           </div>
 
-          {/* Logo Upload */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Upload Your Logo</h2>
-            <label className="cursor-pointer block">
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoSelect(f); }}
-              />
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
-                {logoPreview ? (
-                  <div className="flex items-center justify-center gap-4">
-                    <img src={logoPreview} alt="" className="h-16 w-16 object-contain rounded" />
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-foreground">{logoFile?.name}</p>
-                      <p className="text-xs text-muted-foreground">Click to change</p>
+          {/* Logo Upload (only if this tier wants it) */}
+          {showLogoUpload && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-lg font-display font-bold text-foreground mb-4">
+                {requireLogo ? "Upload Your Logo *" : "Upload Your Logo (optional)"}
+              </h2>
+              <label className="cursor-pointer block">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoSelect(f); }}
+                />
+                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
+                  {logoPreview ? (
+                    <div className="flex items-center justify-center gap-4">
+                      <img src={logoPreview} alt="" className="h-16 w-16 object-contain rounded" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-foreground">{logoFile?.name}</p>
+                        <p className="text-xs text-muted-foreground">Click to change</p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">Click to upload your company logo</p>
-                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG — max 5MB</p>
-                  </>
-                )}
-              </div>
-            </label>
-          </div>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">Click to upload your company logo</p>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG — max 5MB</p>
+                    </>
+                  )}
+                </div>
+              </label>
+            </div>
+          )}
+
+          {/* Additional Notes */}
+          {allowNotes && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-lg font-display font-bold text-foreground mb-3">Additional Notes (optional)</h2>
+              <Textarea
+                value={form.additional_notes}
+                onChange={e => setForm({ ...form, additional_notes: e.target.value })}
+                placeholder="Any special requests or notes for the organizer (e.g., 'Please put our logo on hole 5')."
+                rows={4}
+                maxLength={1500}
+              />
+            </div>
+          )}
 
           {/* Payment Summary & Submit */}
           <div className="bg-card border border-border rounded-xl p-6">

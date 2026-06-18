@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_expires_at")
       .eq("id", tournament_id)
       .single();
 
@@ -65,8 +65,18 @@ Deno.serve(async (req) => {
       throw new Error("Registration is not open for this tournament");
     }
 
-    // Determine fee per player: use tier price if tier selected, else tournament default
-    let feePerPlayer = tournament.registration_fee_cents || 0;
+    // Determine effective default fee (early-bird if enabled and not expired)
+    const earlyActive =
+      (tournament as any).early_registration_enabled === true &&
+      (tournament as any).early_registration_price_cents != null &&
+      (!(tournament as any).early_registration_expires_at ||
+        new Date((tournament as any).early_registration_expires_at).getTime() > Date.now());
+    const defaultFeeCents = earlyActive
+      ? Number((tournament as any).early_registration_price_cents) || 0
+      : tournament.registration_fee_cents || 0;
+
+    // Determine fee per player: use tier price if tier selected, else effective default
+    let feePerPlayer = defaultFeeCents;
     if (tierId) {
       const { data: tier } = await supabaseAdmin
         .from("tournament_registration_tiers")

@@ -155,6 +155,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     custom_package_label: "",
     hide_price_when_sold_out: true,
     show_remaining: false,
+    require_logo: true,
+    show_logo_upload: true,
+    allow_additional_notes: false,
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
@@ -209,7 +212,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true, show_remaining: false });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true, show_remaining: false, require_logo: true, show_logo_upload: true, allow_additional_notes: false });
     setEditTier(null);
   };
 
@@ -234,6 +237,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
       hide_price_when_sold_out: form.hide_price_when_sold_out,
       show_remaining: form.show_remaining,
+      require_logo: form.require_logo,
+      show_logo_upload: form.show_logo_upload,
+      allow_additional_notes: form.allow_additional_notes,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {
@@ -269,6 +275,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       custom_package_label: (tier as any).custom_package_label || "",
       hide_price_when_sold_out: (tier as any).hide_price_when_sold_out !== false,
       show_remaining: (tier as any).show_remaining === true,
+      require_logo: (tier as any).require_logo !== false,
+      show_logo_upload: (tier as any).show_logo_upload !== false,
+      allow_additional_notes: (tier as any).allow_additional_notes === true,
     });
     setDialogOpen(true);
   };
@@ -520,6 +529,43 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                     <div className="flex-1 -mt-0.5">
                       <Label htmlFor="show-remaining" className="text-sm">Show remaining spots</Label>
                       <p className="text-xs text-muted-foreground mt-0.5">Off by default. When on (and Total Spots is set), the public page shows "X spots remaining".</p>
+                    </div>
+                  </div>
+
+                  {/* Logo upload controls */}
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="show-logo-upload"
+                      checked={form.show_logo_upload}
+                      onCheckedChange={(v) => setForm({ ...form, show_logo_upload: v, require_logo: v ? form.require_logo : false })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="show-logo-upload" className="text-sm">Show logo upload on the sponsor registration form</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Turn off if this tier doesn't include logo placement (e.g., prize sponsorships).</p>
+                    </div>
+                  </div>
+                  {form.show_logo_upload && (
+                    <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                      <Switch
+                        id="require-logo"
+                        checked={form.require_logo}
+                        onCheckedChange={(v) => setForm({ ...form, require_logo: v })}
+                      />
+                      <div className="flex-1 -mt-0.5">
+                        <Label htmlFor="require-logo" className="text-sm">Require logo upload</Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">When off, the sponsor can skip uploading a logo.</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-start gap-3 rounded-md border border-border p-3">
+                    <Switch
+                      id="allow-notes"
+                      checked={form.allow_additional_notes}
+                      onCheckedChange={(v) => setForm({ ...form, allow_additional_notes: v })}
+                    />
+                    <div className="flex-1 -mt-0.5">
+                      <Label htmlFor="allow-notes" className="text-sm">Add "Additional Notes" box on sponsor checkout</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">Lets the sponsor leave a note (e.g., "Please put our logo on hole 5").</p>
                     </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={saving}>

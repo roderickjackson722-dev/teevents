@@ -1,83 +1,70 @@
-# Booking System Plan
+# Five New Organizer Features
 
-A complete booking system, scoped to the College Hub admin area, built as reusable components so it can be embedded elsewhere later.
+## 1. Early Registration Discount
+**DB (migration):** add to `tournaments`:
+- `early_registration_enabled BOOLEAN DEFAULT FALSE`
+- `early_registration_price_cents INTEGER`
+- `early_registration_expires_at TIMESTAMPTZ`
 
-## 1. Database (one migration)
+**Dashboard:** New "Early Registration Discount" card in `src/pages/dashboard/Registration.tsx` with enable toggle, price input, and datetime picker.
 
-Four new tables:
+**Public page:** In `PublicTournament.tsx` registration block — show early-bird price with regular price struck through, and a live countdown timer ("ends in Xd Xh Xm"). After expiration, fall back to regular price.
 
-- `booking_categories` — name, description, color
-- `booking_slots` — category_id, title, description, start_time, end_time, location, max_bookings, current_bookings, is_active, created_by
-- `booking_reservations` — slot_id, coach_name/email/phone, team_name, notes, booking_reference (auto), status (`confirmed | cancelled | waitlisted`)
-- `booking_notification_settings` — admin_email, additional_email, send_on_booking, send_on_cancellation
+**Checkout logic:** In the registration checkout edge function(s), if `early_registration_enabled` and `now() < early_registration_expires_at`, charge `early_registration_price_cents`; otherwise charge `registration_fee_cents`.
 
-Plus:
-- GRANTs to `authenticated` + `service_role` on every table (anon `SELECT` on `booking_slots` + `booking_categories` so the public page can read availability without login).
-- RLS: admins manage everything; anon can `SELECT` active slots/categories and `INSERT` reservations (rate-limited via app logic).
-- Trigger to auto-generate `booking_reference` (e.g. `BK-XXXXXX`).
-- Trigger to increment/decrement `current_bookings` on reservation insert/cancel.
-- Trigger to set status = `waitlisted` if slot is full at insert time.
-- `updated_at` triggers where relevant.
+## 2. Event Day Sales
+**DB (migration):** create `event_day_sales_items` table (tournament_id, item_name, description, price_cents, category enum-ish text, max_quantity, sold_quantity, show_on_public, show_qr_code, is_active). RLS: organizers manage their tournament's rows; public can SELECT active rows for published tournaments. GRANTs for authenticated, anon (select), service_role. Also a `event_day_sales_purchases` table for orders.
 
-## 2. Reusable Components (`src/components/bookings/`)
+**Dashboard:** New page `src/pages/dashboard/EventDaySales.tsx` (sidebar entry + route). Table with add/edit/delete, category dropdown, QR toggle, public toggle, "Print QR Sheet" button that opens a printable layout of all enabled QRs.
 
-- `BookingSlotList.tsx` — renders available slots (used by both admin + public views)
-- `BookingForm.tsx` — coach booking modal (name/email/phone/team/notes)
-- `BookingSlotEditor.tsx` — admin add/edit slot modal
-- `BookingCategoryManager.tsx` — categories CRUD table
-- `BookingReservationsTable.tsx` — list reservations for a slot (admin)
-- `BookingExportMenu.tsx` — CSV / PDF (print window) / ICS export
-- `useBookings.ts` — data hook (queries slots, reservations, categories)
+**Public:** New section on Day-Of page (and/or `/t/:slug/sales`) listing active items with Buy Now → Stripe Checkout (uses Connect routing like other checkouts, with 5% platform fee).
 
-Each component accepts an optional `context` string and `categoryId` filter so it can be reused outside the College Hub later.
+**Edge function:** `create-event-day-sale-checkout` mirroring `create-sponsor-checkout` pattern (direct charge + platform fallback).
 
-## 3. Admin Pages
+## 3. Cash Payment Registration
+**DB (migration):** 
+- `tournaments.allow_cash_registration BOOLEAN DEFAULT FALSE`
+- `tournament_registrations.payment_method TEXT DEFAULT 'online'` (online/cash/check)
+- `tournament_registrations.cash_payment_received BOOLEAN DEFAULT FALSE`
 
-- `src/pages/admin/CollegeHubBookings.tsx` at route `/admin/college-hub/bookings`
-  - Tabs: **Slots** | **Categories** | **Notifications** | **Export**
-  - Slot cards show date/time/location, `X / Y` spots used, Edit / View Bookings / Delete actions
-  - "View Bookings" opens a drawer with the reservations table + per-reservation cancel
-- Notifications tab: edit `booking_notification_settings` (admin email, additional email, toggles)
+**Dashboard:**
+- Registration Management: toggle "Allow cash payment registrations".
+- Players tab → "Add Player" modal gets a Payment Method select (Online/Cash/Check) when toggle is on. Cash regs created directly without Stripe, marked `payment_status='cash_pending'`.
+- Players list: show payment method + a "Mark Received" action that flips to `cash_received`.
 
-Add a link from the existing College Hub admin page to the new bookings page (single nav entry, no other menu changes).
+**Finances:** Add "Cash Registrations" row/category in `Finances.tsx` summary (frontend aggregation only, no schema changes to finances).
 
-## 4. Public Booking Page
+## 4. Sponsor Logo Optional + Notes
+**DB (migration):**
+- `sponsorship_tiers.require_logo BOOLEAN DEFAULT TRUE`
+- `sponsorship_tiers.show_logo_upload BOOLEAN DEFAULT TRUE`
+- `sponsorship_tiers.allow_additional_notes BOOLEAN DEFAULT FALSE`
+- `sponsor_registrations.additional_notes TEXT`
 
-- `src/pages/CollegeHubBookings.tsx` at route `/college-hub/bookings` (no auth required)
-- Read-only list of active, future slots grouped by date
-- "Book Now" opens `BookingForm`; on submit calls the edge function
-- After success: shows confirmation with booking reference
+**Dashboard:** Update `SponsorshipTiersManager.tsx` with three toggles per tier.
 
-## 5. Edge Functions
+**Public:** Update `SponsorRegistration.tsx` to conditionally render logo field (required/optional/hidden) and notes textarea. Pass `additional_notes` into `create-sponsor-checkout` and store on `sponsor_registrations`.
 
-- `supabase/functions/create-booking/index.ts`
-  - Validates input (Zod), checks slot capacity, inserts reservation, sends two emails via Resend:
-    1. Admin notification (to `admin_email` + `additional_email` if set)
-    2. Coach confirmation
-  - Returns `{ booking_reference, status }`
-- `supabase/functions/cancel-booking/index.ts`
-  - Admin-auth required; sets status = `cancelled`, decrements count, emails coach + admin
+## 5. Donations — Custom Text & Manual Goal
+**DB (migration):** add to `tournaments`:
+- `donations_header_text TEXT`
+- `donations_footer_text TEXT`
+- `fundraising_goal_custom BOOLEAN DEFAULT FALSE`
+- (reuse existing `donation_goal_cents` as manual amount when custom=true)
+- new table `tournament_offline_donations` (donor_name, amount_cents, received_date, notes)
 
-Both use existing `RESEND_API_KEY` and the `info@notifications.teevents.golf` sender already wired up in `_shared/notify.ts`.
+**Dashboard:** Extend `src/pages/dashboard/Donations.tsx`:
+- Header/footer text inputs
+- Auto vs manual goal radio
+- "Add Offline Donation" form + list, with delete
 
-## 6. Exports
+**Public:** Update donation block in `PublicTournament.tsx` to render header/footer text, and progress totals = platform donations + offline donations, vs custom or auto goal.
 
-- CSV: client-side string build + Blob download
-- PDF: reuse `openPrintWindow` from `src/components/printables/printUtils.ts`
-- ICS: client-side string build per slot+reservation; downloads a `.ics` file
+## Out of scope / not touched
+- Other dashboard sections, theming, navigation, payouts, leaderboard, scoring, etc.
+- The "Save button" issue from your previous message is not part of this prompt — say the word and I'll tackle it next.
 
-## 7. Routing
-
-Add 2 routes to `src/App.tsx`:
-- `/admin/college-hub/bookings` → `CollegeHubBookings` (admin-gated)
-- `/college-hub/bookings` → public booking page
-
-No other routes, menus, or features are touched.
-
-## 8. Out of Scope (per your instructions)
-
-- No changes to existing College Hub content, demo converter, footer system, plans, or any other dashboards.
-
----
-
-Confirm to proceed and I'll build it end-to-end.
+## Order of implementation
+1. One combined SQL migration with all schema changes + GRANTs + RLS.
+2. Edge function for event-day-sales checkout + sponsor checkout update for notes.
+3. Frontend: Registration page, EventDaySales page + route + sidebar, Players add-player updates, SponsorshipTiersManager, SponsorRegistration, Donations page, PublicTournament public displays.

@@ -286,6 +286,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
    const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number; passed: boolean } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
+  const [eventDaySalesItems, setEventDaySalesItems] = useState<Array<{ id: string; item_name: string; description: string | null; price_cents: number; category: string; max_quantity: number | null; sold_quantity: number; }>>([]);
 
   // Redirect to standalone refund page if ?tab=refund
   useEffect(() => {
@@ -456,19 +457,38 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       });
   }, [tournament]);
 
-  // Fetch donation totals for goal progress
+  // Fetch donation totals for goal progress (online + offline)
   useEffect(() => {
     if (!tournament) return;
-    supabase
-      .from("tournament_donations")
-      .select("amount_cents")
-      .eq("tournament_id", tournament.id)
-      .eq("status", "completed")
-      .then(({ data }) => {
-        const total = (data || []).reduce((sum: number, d: any) => sum + d.amount_cents, 0);
-        setDonationTotal(total);
-      });
+    Promise.all([
+      supabase
+        .from("tournament_donations")
+        .select("amount_cents")
+        .eq("tournament_id", tournament.id)
+        .eq("status", "completed"),
+      (supabase as any)
+        .from("tournament_offline_donations")
+        .select("amount_cents")
+        .eq("tournament_id", tournament.id),
+    ]).then(([onRes, offRes]: any[]) => {
+      const onlineTotal = ((onRes.data || []) as any[]).reduce((s, d) => s + (d.amount_cents || 0), 0);
+      const offlineTotal = ((offRes.data || []) as any[]).reduce((s, d) => s + (d.amount_cents || 0), 0);
+      setDonationTotal(onlineTotal + offlineTotal);
+    });
   }, [tournament, donated]);
+
+  // Fetch active event day sales items
+  useEffect(() => {
+    if (!tournament) return;
+    (supabase as any)
+      .from("event_day_sales_items")
+      .select("id, item_name, description, price_cents, category, max_quantity, sold_quantity")
+      .eq("tournament_id", tournament.id)
+      .eq("is_active", true)
+      .eq("show_on_public", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }: any) => setEventDaySalesItems((data || []) as any));
+  }, [tournament]);
 
   // Verify donation on return from Stripe
   useEffect(() => {
@@ -882,6 +902,32 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
 
   const golfersFirst = (tournament as any).golfers_register_first === true;
+
+  // Early-bird pricing
+  const earlyEnabledRaw = (tournament as any).early_registration_enabled === true;
+  const earlyExpiresAt = (tournament as any).early_registration_expires_at
+    ? new Date((tournament as any).early_registration_expires_at)
+    : null;
+  const earlyPriceCents = (tournament as any).early_registration_price_cents ?? null;
+  const earlyActive = earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
+  const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament.registration_fee_cents || 0);
+
+  const [earlyNow, setEarlyNow] = useState(Date.now());
+  useEffect(() => {
+    if (!earlyActive || !earlyExpiresAt) return;
+    const id = setInterval(() => setEarlyNow(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, [earlyActive, earlyExpiresAt]);
+  const formatCountdown = () => {
+    if (!earlyExpiresAt) return "";
+    const ms = earlyExpiresAt.getTime() - earlyNow;
+    if (ms <= 0) return "Expired";
+    const days = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    const minutes = Math.floor((ms % 3600000) / 60000);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
   const registrationSection = (
     <>
       {/* ===== REGISTRATION ===== */}
@@ -899,12 +945,29 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       ? "Register your foursome below to secure your spots."
                       : "Fill out the form below to secure your spot."}
                 </p>
+                {earlyActive && (
+                  <div className="mt-4 inline-flex flex-col items-center gap-1 px-4 py-3 rounded-lg" style={{ backgroundColor: secondary + "20", border: `1px solid ${secondary}` }}>
+                    <div className="text-sm" style={{ color: "#666" }}>
+                      <span className="line-through mr-2">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((tournament.registration_fee_cents || 0) / 100)}</span>
+                      <span className="text-lg font-bold" style={{ color: secondary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(effectiveFeeCents / 100)}
+                      </span>
+                      <span className="ml-2 text-xs uppercase tracking-wider font-semibold">Early Bird</span>
+                    </div>
+                    {earlyExpiresAt && (
+                      <div className="text-xs" style={{ color: "#666" }}>
+                        Early bird pricing ends in <strong>{formatCountdown()}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {tournament.max_players && (
                   <p className="text-xs mt-2" style={{ color: "#999" }}>
                     {registrationCount} / {tournament.max_players} spots filled
                   </p>
                 )}
               </div>
+
 
               {isTournamentFull && tournament.waitlist_enabled ? (
                 <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
@@ -938,7 +1001,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     tournamentId={tournament.id}
                     primaryColor={primary}
                     secondaryColor={secondary}
-                    registrationFeeCents={tournament.registration_fee_cents || 0}
+                    registrationFeeCents={effectiveFeeCents}
                     foursomeMode={tournament.foursome_registration}
                     maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
                     isNonprofit={nonprofitInfo.isNonprofit}
@@ -2268,6 +2331,47 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
       {/* Post-event survey moved to email-only delivery after event ends */}
 
+      {/* ===== EVENT DAY SALES ===== */}
+      {eventDaySalesItems.length > 0 && (
+        <section id="event-day-sales" className="py-16" style={{ backgroundColor: "#ffffff" }}>
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>EVENT DAY SALES</h2>
+              <div className="w-16 h-0.5 mx-auto mb-3" style={{ backgroundColor: secondary }} />
+              <p style={{ color: "#666" }}>Walk-up entries, mulligans, contests, and merchandise available the day of the event.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {eventDaySalesItems.map((i) => {
+                const remaining = i.max_quantity != null ? Math.max(0, i.max_quantity - (i.sold_quantity || 0)) : null;
+                const soldOut = remaining === 0;
+                return (
+                  <div key={i.id} className="rounded-xl border p-5 flex flex-col" style={{ borderColor: "#e5e5e5", backgroundColor: "#fafafa" }}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div>
+                        <h3 className="font-display font-bold text-foreground">{i.item_name}</h3>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{i.category}</span>
+                      </div>
+                      <span className="text-lg font-bold" style={{ color: primary }}>
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(i.price_cents / 100)}
+                      </span>
+                    </div>
+                    {i.description && <p className="text-sm text-muted-foreground mb-3 whitespace-pre-line">{i.description}</p>}
+                    {remaining != null && (
+                      <p className={`text-xs mb-2 ${soldOut ? "text-destructive" : "text-muted-foreground"}`}>
+                        {soldOut ? "Sold Out" : `${remaining} remaining`}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-6">
+              See an event volunteer or scan an item QR code at the event to purchase.
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* ===== DONATION ===== */}
       {isTabVisible("donations") && (
       <section id="donation" className="py-16" style={{ backgroundColor: primary }}>
@@ -2287,8 +2391,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <Heart className="h-10 w-10 mx-auto mb-3 text-white/80" />
                 <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">MAKE A DONATION</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-                <p className="text-white/70 max-w-xl mx-auto mb-8">
-                  Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference.
+                <p className="text-white/80 max-w-xl mx-auto mb-8 whitespace-pre-line">
+                  {((tournament as any).donations_header_text as string | null)?.trim() ||
+                    "Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference."}
                 </p>
 
                 {/* Goal progress bar */}
@@ -2406,6 +2511,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   )}
                   {donationLoading ? "Processing..." : `Donate${donationAmount ? ` $${donationAmount}` : customDonation ? ` $${customDonation}` : ""}`}
                 </button>
+                {((tournament as any).donations_footer_text as string | null)?.trim() && (
+                  <p className="text-white/70 text-sm mt-6 max-w-xl mx-auto whitespace-pre-line">
+                    {(tournament as any).donations_footer_text}
+                  </p>
+                )}
               </>
             )}
           </motion.div>

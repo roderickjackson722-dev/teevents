@@ -2336,8 +2336,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <Heart className="h-10 w-10 mx-auto mb-3 text-white/80" />
                 <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">MAKE A DONATION</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-                <p className="text-white/70 max-w-xl mx-auto mb-8">
-                  Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference.
+                <p className="text-white/80 max-w-xl mx-auto mb-8 whitespace-pre-line">
+                  {((tournament as any).donations_header_text as string | null)?.trim() ||
+                    "Can't make it to the event? You can still support the cause with a charitable donation. Every contribution makes a difference."}
                 </p>
 
                 {/* Goal progress bar */}

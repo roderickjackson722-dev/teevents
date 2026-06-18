@@ -823,9 +823,19 @@ const Players = () => {
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
-                        {p.payment_status}
-                      </span>
+                      <div className="flex flex-col items-center gap-1">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
+                          {p.payment_status}
+                        </span>
+                        {(p as any).payment_method && (p as any).payment_method !== "online" && (
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
+                        )}
+                        {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
+                          <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
+                            Mark Received
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">

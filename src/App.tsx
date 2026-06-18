@@ -208,6 +208,7 @@ const App = () => (
           <Route path="/dashboard/raffles" element={<DashboardLayout><PlanGate feature="auction"><Raffles /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/media" element={<DashboardLayout><MediaClips /></DashboardLayout>} />
           <Route path="/dashboard/day-of" element={<DashboardLayout><DayOfSettings /></DashboardLayout>} />
+          <Route path="/dashboard/event-day-sales" element={<DashboardLayout><EventDaySales /></DashboardLayout>} />
           <Route path="/day-of/:slug/:code" element={<DayOf />} />
           <Route path="/day-of/:slug" element={<DayOf />} />
           <Route path="/dashboard/gallery" element={<DashboardLayout><PlanGate feature="gallery"><Gallery /></PlanGate></DashboardLayout>} />

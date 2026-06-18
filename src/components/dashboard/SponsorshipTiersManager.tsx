@@ -212,7 +212,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true, show_remaining: false });
+    setForm({ name: "", description: "", price: "", benefits: "", display_order: "0", total_spots: "", package_type: "", custom_package_label: "", hide_price_when_sold_out: true, show_remaining: false, require_logo: true, show_logo_upload: true, allow_additional_notes: false });
     setEditTier(null);
   };
 

@@ -99,6 +99,7 @@ const Players = () => {
     handicap: "",
     shirt_size: "",
     payment_status: "paid",
+    payment_method: "online",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
   const FIELD_DEFS = [

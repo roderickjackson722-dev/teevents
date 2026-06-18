@@ -586,7 +586,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     await supabase.from("tournament_auction_items").update({ current_bid: amount }).eq("id", bidForm.itemId);
     toast({ title: "Bid placed!" });
     setBidForm(null);
-    const { data } = await supabase.from("tournament_auction_items").select("*").eq("tournament_id", tournament!.id).eq("is_active", true).order("sort_order");
+    const { data } = await supabase.from("tournament_auction_items").select("id,tournament_id,title,description,image_url,type,starting_bid,current_bid,buy_now_price,raffle_ticket_price,winner_name,is_active,sort_order,created_at").eq("tournament_id", tournament!.id).eq("is_active", true).order("sort_order");
     if (data) setAuctionItems(data as AuctionItem[]);
   };
 

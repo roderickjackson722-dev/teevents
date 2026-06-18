@@ -180,6 +180,12 @@ const Registration = () => {
       setMaxGroupSize(tournament.max_group_size || 1);
       setAllowCoverFees(tournament.allow_cover_fees !== false);
       setCaptainLabel(((tournament as any).captain_label as string) || "");
+      setEarlyEnabled(!!tournament.early_registration_enabled);
+      const earlyCents = tournament.early_registration_price_cents;
+      setEarlyPriceDisplay(earlyCents != null ? (earlyCents / 100).toFixed(2) : "");
+      const exp = tournament.early_registration_expires_at;
+      setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
+      setAllowCash(!!tournament.allow_cash_registration);
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([

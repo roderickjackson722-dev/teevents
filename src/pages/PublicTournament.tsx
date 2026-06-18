@@ -2456,6 +2456,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   )}
                   {donationLoading ? "Processing..." : `Donate${donationAmount ? ` $${donationAmount}` : customDonation ? ` $${customDonation}` : ""}`}
                 </button>
+                {((tournament as any).donations_footer_text as string | null)?.trim() && (
+                  <p className="text-white/70 text-sm mt-6 max-w-xl mx-auto whitespace-pre-line">
+                    {(tournament as any).donations_footer_text}
+                  </p>
+                )}
               </>
             )}
           </motion.div>

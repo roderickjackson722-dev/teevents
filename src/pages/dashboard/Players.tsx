@@ -696,6 +696,23 @@ const Players = () => {
                     )}
                   </div>
                 )}
+                {(() => {
+                  const tt = tournaments.find((t) => t.id === selectedTournament) as any;
+                  return tt?.allow_cash_registration ? (
+                    <div>
+                      <Label htmlFor="ap-method">Payment Method</Label>
+                      <Select value={newPlayer.payment_method} onValueChange={(v) => setNewPlayer((p) => ({ ...p, payment_method: v }))}>
+                        <SelectTrigger id="ap-method"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="online">Online</SelectItem>
+                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="check">Check</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">Cash/Check registrations skip online payment. Mark received once you collect.</p>
+                    </div>
+                  ) : null;
+                })()}
                 <Button onClick={handleAddPlayer} disabled={addingPlayer} className="w-full">
                   {addingPlayer ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
                   Add Player

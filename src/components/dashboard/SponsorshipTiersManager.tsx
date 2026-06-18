@@ -155,6 +155,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     custom_package_label: "",
     hide_price_when_sold_out: true,
     show_remaining: false,
+    require_logo: true,
+    show_logo_upload: true,
+    allow_additional_notes: false,
   });
 
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);

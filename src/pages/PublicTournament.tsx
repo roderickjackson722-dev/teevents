@@ -577,6 +577,21 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return () => clearInterval(interval);
   }, [tournament]);
 
+  // Early-bird pricing timer — keep hook before conditional returns.
+  const earlyEnabledRaw = (tournament as any)?.early_registration_enabled === true;
+  const earlyExpiresAt = (tournament as any)?.early_registration_expires_at
+    ? new Date((tournament as any).early_registration_expires_at)
+    : null;
+  const earlyPriceCents = (tournament as any)?.early_registration_price_cents ?? null;
+  const earlyActive = !!tournament && earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
+  const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament?.registration_fee_cents || 0);
+
+  useEffect(() => {
+    if (!earlyActive || !earlyExpiresAt) return;
+    const id = setInterval(() => setEarlyNow(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, [earlyActive, earlyExpiresAt]);
+
   const handlePlaceBid = async () => {
     if (!bidForm) return;
     const amount = parseFloat(bidForm.amount);
@@ -904,21 +919,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
 
   const golfersFirst = (tournament as any).golfers_register_first === true;
-
-  // Early-bird pricing
-  const earlyEnabledRaw = (tournament as any).early_registration_enabled === true;
-  const earlyExpiresAt = (tournament as any).early_registration_expires_at
-    ? new Date((tournament as any).early_registration_expires_at)
-    : null;
-  const earlyPriceCents = (tournament as any).early_registration_price_cents ?? null;
-  const earlyActive = earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
-  const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament.registration_fee_cents || 0);
-
-  useEffect(() => {
-    if (!earlyActive || !earlyExpiresAt) return;
-    const id = setInterval(() => setEarlyNow(Date.now()), 60000);
-    return () => clearInterval(id);
-  }, [earlyActive, earlyExpiresAt]);
 
   const formatCountdown = () => {
     if (!earlyExpiresAt) return "";

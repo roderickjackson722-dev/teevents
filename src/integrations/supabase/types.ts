@@ -2207,6 +2207,119 @@ export type Database = {
           },
         ]
       }
+      event_day_sales_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          item_name: string
+          max_quantity: number | null
+          price_cents: number
+          show_on_public: boolean
+          show_qr_code: boolean
+          sold_quantity: number
+          sort_order: number
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          item_name: string
+          max_quantity?: number | null
+          price_cents?: number
+          show_on_public?: boolean
+          show_qr_code?: boolean
+          sold_quantity?: number
+          sort_order?: number
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          item_name?: string
+          max_quantity?: number | null
+          price_cents?: number
+          show_on_public?: boolean
+          show_qr_code?: boolean
+          sold_quantity?: number
+          sort_order?: number
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_day_sales_items_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_day_sales_purchases: {
+        Row: {
+          amount_cents: number
+          buyer_email: string | null
+          buyer_name: string | null
+          created_at: string
+          id: string
+          item_id: string
+          payment_status: string
+          quantity: number
+          stripe_session_id: string | null
+          tournament_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          id?: string
+          item_id: string
+          payment_status?: string
+          quantity?: number
+          stripe_session_id?: string | null
+          tournament_id: string
+        }
+        Update: {
+          amount_cents?: number
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string
+          payment_status?: string
+          quantity?: number
+          stripe_session_id?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_day_sales_purchases_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "event_day_sales_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_day_sales_purchases_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_resources: {
         Row: {
           created_at: string
@@ -4925,6 +5038,7 @@ export type Database = {
       }
       sponsor_registrations: {
         Row: {
+          additional_notes: string | null
           amount_cents: number
           company_name: string
           contact_email: string
@@ -4946,6 +5060,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          additional_notes?: string | null
           amount_cents: number
           company_name: string
           contact_email: string
@@ -4967,6 +5082,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          additional_notes?: string | null
           amount_cents?: number
           company_name?: string
           contact_email?: string
@@ -5068,6 +5184,7 @@ export type Database = {
       }
       sponsorship_tiers: {
         Row: {
+          allow_additional_notes: boolean
           benefits: string | null
           created_at: string
           custom_package_label: string | null
@@ -5079,12 +5196,15 @@ export type Database = {
           name: string
           package_type: string | null
           price_cents: number
+          require_logo: boolean
+          show_logo_upload: boolean
           show_remaining: boolean
           spots_used: number
           total_spots: number | null
           tournament_id: string
         }
         Insert: {
+          allow_additional_notes?: boolean
           benefits?: string | null
           created_at?: string
           custom_package_label?: string | null
@@ -5096,12 +5216,15 @@ export type Database = {
           name: string
           package_type?: string | null
           price_cents: number
+          require_logo?: boolean
+          show_logo_upload?: boolean
           show_remaining?: boolean
           spots_used?: number
           total_spots?: number | null
           tournament_id: string
         }
         Update: {
+          allow_additional_notes?: boolean
           benefits?: string | null
           created_at?: string
           custom_package_label?: string | null
@@ -5113,6 +5236,8 @@ export type Database = {
           name?: string
           package_type?: string | null
           price_cents?: number
+          require_logo?: boolean
+          show_logo_upload?: boolean
           show_remaining?: boolean
           spots_used?: number
           total_spots?: number | null
@@ -5760,6 +5885,44 @@ export type Database = {
           },
         ]
       }
+      tournament_offline_donations: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          donor_name: string | null
+          id: string
+          notes: string | null
+          received_date: string
+          tournament_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          donor_name?: string | null
+          id?: string
+          notes?: string | null
+          received_date?: string
+          tournament_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          donor_name?: string | null
+          id?: string
+          notes?: string | null
+          received_date?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_offline_donations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_photos: {
         Row: {
           caption: string | null
@@ -6087,6 +6250,7 @@ export type Database = {
       }
       tournament_registrations: {
         Row: {
+          cash_payment_received: boolean
           check_in_time: string | null
           checked_in: boolean | null
           course_handicap: number | null
@@ -6104,6 +6268,7 @@ export type Database = {
           id: string
           last_name: string
           notes: string | null
+          payment_method: string
           payment_status: string
           phone: string | null
           playing_handicap: number | null
@@ -6120,6 +6285,7 @@ export type Database = {
           tournament_id: string
         }
         Insert: {
+          cash_payment_received?: boolean
           check_in_time?: string | null
           checked_in?: boolean | null
           course_handicap?: number | null
@@ -6137,6 +6303,7 @@ export type Database = {
           id?: string
           last_name: string
           notes?: string | null
+          payment_method?: string
           payment_status?: string
           phone?: string | null
           playing_handicap?: number | null
@@ -6153,6 +6320,7 @@ export type Database = {
           tournament_id: string
         }
         Update: {
+          cash_payment_received?: boolean
           check_in_time?: string | null
           checked_in?: boolean | null
           course_handicap?: number | null
@@ -6170,6 +6338,7 @@ export type Database = {
           id?: string
           last_name?: string
           notes?: string | null
+          payment_method?: string
           payment_status?: string
           phone?: string | null
           playing_handicap?: number | null
@@ -6687,6 +6856,7 @@ export type Database = {
       tournaments: {
         Row: {
           about_us: string | null
+          allow_cash_registration: boolean
           allow_cover_fees: boolean
           auction_tab_title: string | null
           branding_footer_admin_override: boolean
@@ -6763,11 +6933,17 @@ export type Database = {
           description_html: string | null
           display_order: number
           donation_goal_cents: number | null
+          donations_footer_text: string | null
+          donations_header_text: string | null
+          early_registration_enabled: boolean
+          early_registration_expires_at: string | null
+          early_registration_price_cents: number | null
           early_signup_enabled: boolean
           early_signup_label: string | null
           end_date: string | null
           external_link: string | null
           foursome_registration: boolean
+          fundraising_goal_custom: boolean
           gallery_position: string
           gallery_url: string | null
           golf_course_id: string | null
@@ -6892,6 +7068,7 @@ export type Database = {
         }
         Insert: {
           about_us?: string | null
+          allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
           branding_footer_admin_override?: boolean
@@ -6968,11 +7145,17 @@ export type Database = {
           description_html?: string | null
           display_order?: number
           donation_goal_cents?: number | null
+          donations_footer_text?: string | null
+          donations_header_text?: string | null
+          early_registration_enabled?: boolean
+          early_registration_expires_at?: string | null
+          early_registration_price_cents?: number | null
           early_signup_enabled?: boolean
           early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
           foursome_registration?: boolean
+          fundraising_goal_custom?: boolean
           gallery_position?: string
           gallery_url?: string | null
           golf_course_id?: string | null
@@ -7097,6 +7280,7 @@ export type Database = {
         }
         Update: {
           about_us?: string | null
+          allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
           branding_footer_admin_override?: boolean
@@ -7173,11 +7357,17 @@ export type Database = {
           description_html?: string | null
           display_order?: number
           donation_goal_cents?: number | null
+          donations_footer_text?: string | null
+          donations_header_text?: string | null
+          early_registration_enabled?: boolean
+          early_registration_expires_at?: string | null
+          early_registration_price_cents?: number | null
           early_signup_enabled?: boolean
           early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
           foursome_registration?: boolean
+          fundraising_goal_custom?: boolean
           gallery_position?: string
           gallery_url?: string | null
           golf_course_id?: string | null

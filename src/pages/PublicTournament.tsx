@@ -287,6 +287,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [registrationCount, setRegistrationCount] = useState(0);
   const [isTournamentFull, setIsTournamentFull] = useState(false);
   const [eventDaySalesItems, setEventDaySalesItems] = useState<Array<{ id: string; item_name: string; description: string | null; price_cents: number; category: string; max_quantity: number | null; sold_quantity: number; }>>([]);
+  const [earlyNow, setEarlyNow] = useState(Date.now());
+
 
   // Redirect to standalone refund page if ?tab=refund
   useEffect(() => {
@@ -912,12 +914,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const earlyActive = earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
   const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament.registration_fee_cents || 0);
 
-  const [earlyNow, setEarlyNow] = useState(Date.now());
   useEffect(() => {
     if (!earlyActive || !earlyExpiresAt) return;
     const id = setInterval(() => setEarlyNow(Date.now()), 60000);
     return () => clearInterval(id);
   }, [earlyActive, earlyExpiresAt]);
+
   const formatCountdown = () => {
     if (!earlyExpiresAt) return "";
     const ms = earlyExpiresAt.getTime() - earlyNow;

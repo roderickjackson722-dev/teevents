@@ -156,6 +156,7 @@ import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
 import SampleTournament from "./pages/sample/SampleTournament";
 import SampleDashboardPreview from "./pages/sample/SampleDashboardPreview";
 import SampleLive from "./pages/sample/SampleLive";
+import EventDaySales from "./pages/dashboard/EventDaySales";
 
 const queryClient = new QueryClient();
 

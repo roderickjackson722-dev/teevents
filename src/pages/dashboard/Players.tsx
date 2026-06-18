@@ -289,7 +289,8 @@ const Players = () => {
       return;
     }
     setAddingPlayer(true);
-    const { data, error } = await supabase.from("tournament_registrations").insert({
+    const isCash = newPlayer.payment_method === "cash" || newPlayer.payment_method === "check";
+    const insertPayload: any = {
       tournament_id: selectedTournament,
       first_name: newPlayer.first_name.trim(),
       last_name: newPlayer.last_name.trim(),
@@ -297,17 +298,35 @@ const Players = () => {
       phone: newPlayer.phone.trim() || null,
       handicap: newPlayer.handicap ? parseInt(newPlayer.handicap) : null,
       shirt_size: newPlayer.shirt_size || null,
-      payment_status: newPlayer.payment_status,
-    }).select("*").single();
+      payment_method: newPlayer.payment_method || "online",
+      payment_status: isCash
+        ? (newPlayer.payment_status === "paid" ? "paid" : "pending")
+        : newPlayer.payment_status,
+      cash_payment_received: isCash && newPlayer.payment_status === "paid",
+    };
+    const { data, error } = await supabase.from("tournament_registrations").insert(insertPayload).select("*").single();
     setAddingPlayer(false);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
       setPlayers((prev) => [...prev, data as Registration]);
-      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid" });
+      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
       markChecklistTaskComplete(selectedTournament, "add_first_player");
+    }
+  };
+
+  const markCashReceived = async (id: string) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ payment_status: "paid", cash_payment_received: true } as any)
+      .eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      setPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
+      toast({ title: "Payment marked received" });
     }
   };
 

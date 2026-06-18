@@ -53,6 +53,7 @@ const SponsorRegistrationPage = () => {
     contact_phone: "",
     website_url: "",
     description: "",
+    additional_notes: "",
   });
 
   // Check for success redirect

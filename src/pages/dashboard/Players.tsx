@@ -62,6 +62,8 @@ interface Registration {
   dietary_restrictions: string | null;
   notes: string | null;
   payment_status: string;
+  payment_method?: string | null;
+  cash_payment_received?: boolean | null;
   group_number: number | null;
   group_label: string | null;
   group_position: number | null;
@@ -74,6 +76,7 @@ interface Tournament {
   id: string;
   title: string;
   max_players: number | null;
+  allow_cash_registration?: boolean | null;
 }
 
 const Players = () => {

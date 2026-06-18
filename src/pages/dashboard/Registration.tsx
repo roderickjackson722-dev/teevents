@@ -149,12 +149,12 @@ const Registration = () => {
   /* fetch tournaments */
   useEffect(() => {
     if (!org) return;
-    supabase
+    (supabase as any)
       .from("tournaments")
       .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_expires_at, allow_cash_registration")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         const t = (data as Tournament[]) || [];
         setTournaments(t);
         if (t.length > 0) setSelectedTournament(t[0].id);

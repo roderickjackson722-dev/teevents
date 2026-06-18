@@ -237,6 +237,9 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
       custom_package_label: form.package_type === "custom" ? (form.custom_package_label.trim() || null) : null,
       hide_price_when_sold_out: form.hide_price_when_sold_out,
       show_remaining: form.show_remaining,
+      require_logo: form.require_logo,
+      show_logo_upload: form.show_logo_upload,
+      allow_additional_notes: form.allow_additional_notes,
     };
 
     const { data, error } = await supabase.functions.invoke("manage-sponsorship-tiers", {

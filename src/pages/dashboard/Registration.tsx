@@ -139,6 +139,12 @@ const Registration = () => {
   const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
   const [allowCoverFees, setAllowCoverFees] = useState<boolean>(true);
   const [captainLabel, setCaptainLabel] = useState<string>("");
+  /* Early registration discount */
+  const [earlyEnabled, setEarlyEnabled] = useState<boolean>(false);
+  const [earlyPriceDisplay, setEarlyPriceDisplay] = useState<string>("");
+  const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
+  /* Cash registration */
+  const [allowCash, setAllowCash] = useState<boolean>(false);
 
   /* fetch tournaments */
   useEffect(() => {

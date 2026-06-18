@@ -134,10 +134,19 @@ const SponsorRegistrationPage = () => {
     return urlData.publicUrl;
   };
 
+  const selectedTierObj = tiers.find((t) => t.id === selectedTier);
+  const showLogoUpload = selectedTierObj ? selectedTierObj.show_logo_upload !== false : true;
+  const requireLogo = selectedTierObj ? (selectedTierObj.require_logo !== false && showLogoUpload) : true;
+  const allowNotes = !!selectedTierObj?.allow_additional_notes;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tournament || !selectedTier || !form.company_name.trim() || !form.contact_name.trim() || !form.contact_email.trim()) {
       toast({ title: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    if (requireLogo && !logoFile) {
+      toast({ title: "Logo required", description: "This sponsorship level requires a logo upload.", variant: "destructive" });
       return;
     }
 

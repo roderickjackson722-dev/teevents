@@ -477,6 +477,19 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     });
   }, [tournament, donated]);
 
+  // Fetch active event day sales items
+  useEffect(() => {
+    if (!tournament) return;
+    (supabase as any)
+      .from("event_day_sales_items")
+      .select("id, item_name, description, price_cents, category, max_quantity, sold_quantity")
+      .eq("tournament_id", tournament.id)
+      .eq("is_active", true)
+      .eq("show_on_public", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }: any) => setEventDaySalesItems((data || []) as any));
+  }, [tournament]);
+
   // Verify donation on return from Stripe
   useEffect(() => {
     if (donated && sessionId) {

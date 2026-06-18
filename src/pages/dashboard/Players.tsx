@@ -140,12 +140,12 @@ const Players = () => {
   const [savingEdit, setSavingEdit] = useState(false);
   useEffect(() => {
     if (!org) return;
-    supabase
+    (supabase as any)
       .from("tournaments")
       .select("id, title, max_players, allow_cash_registration")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         const list = data || [];
         setTournaments(list);
         if (list.length > 0) setSelectedTournament(list[0].id);

@@ -136,6 +136,29 @@ Deno.serve(async (req) => {
       if (!promo) throw new Error("Invalid or inactive promo code");
       if (promo.expires_at && new Date(promo.expires_at) < new Date()) throw new Error("Promo code has expired");
       if (promo.max_uses && promo.current_uses >= promo.max_uses) throw new Error("Promo code has reached its usage limit");
+
+      // Validate applies_to rule
+      const appliesTo = (promo as any).applies_to || "all";
+      const count = players.length;
+      let ruleOk = true;
+      if (appliesTo === "individual") ruleOk = count === 1;
+      else if (appliesTo === "team_2") ruleOk = count === 2;
+      else if (appliesTo === "team_4") ruleOk = count === 4;
+      else if (appliesTo === "custom") {
+        const want = String((promo as any).applies_to_custom || "").trim().toLowerCase();
+        let tierName = "";
+        if (tierId) {
+          const { data: tierRow } = await supabaseAdmin
+            .from("tournament_registration_tiers")
+            .select("name")
+            .eq("id", tierId)
+            .maybeSingle();
+          tierName = String(tierRow?.name || "").trim().toLowerCase();
+        }
+        ruleOk = !!want && tierName === want;
+      }
+      if (!ruleOk) throw new Error("Promo code does not apply to this registration type");
+
       promoRecord = promo;
       if (promo.discount_type === "percent") {
         discountCents = Math.min(baseTotalCents, Math.round(baseTotalCents * (Number(promo.discount_value) / 100)));

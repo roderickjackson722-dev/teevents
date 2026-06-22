@@ -33,6 +33,7 @@ import {
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";
 import { toast } from "sonner";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 /* ── types ── */
 interface Tournament {
@@ -95,6 +96,13 @@ interface PromoCode {
   current_uses: number;
   is_active: boolean;
   expires_at: string | null;
+  auto_apply?: boolean;
+  applies_to?: string;
+  applies_to_custom?: string | null;
+  alert_enabled?: boolean;
+  alert_html?: string | null;
+  show_alert_at_checkout?: boolean;
+  show_alert_on_top?: boolean;
 }
 
 const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [
@@ -432,6 +440,20 @@ const Registration = () => {
   const [newPromoType, setNewPromoType] = useState("percent");
   const [newPromoValue, setNewPromoValue] = useState("");
   const [newPromoMaxUses, setNewPromoMaxUses] = useState("");
+  const [newPromoExpires, setNewPromoExpires] = useState(""); // datetime-local
+  const [newPromoAutoApply, setNewPromoAutoApply] = useState(false);
+  const [newPromoAppliesTo, setNewPromoAppliesTo] = useState("all");
+  const [newPromoAppliesCustom, setNewPromoAppliesCustom] = useState("");
+  const [newPromoAlertEnabled, setNewPromoAlertEnabled] = useState(false);
+  const [newPromoAlertOnTop, setNewPromoAlertOnTop] = useState(true);
+  const [newPromoAlertHtml, setNewPromoAlertHtml] = useState("");
+
+  const resetNewPromo = () => {
+    setNewPromoCode(""); setNewPromoValue(""); setNewPromoMaxUses("");
+    setNewPromoExpires(""); setNewPromoAutoApply(false); setNewPromoAppliesTo("all");
+    setNewPromoAppliesCustom(""); setNewPromoAlertEnabled(false);
+    setNewPromoAlertOnTop(true); setNewPromoAlertHtml("");
+  };
 
   const addPromoCode = async () => {
     if (!newPromoCode.trim() || !newPromoValue) return;
@@ -442,14 +464,20 @@ const Registration = () => {
       discount_value: parseFloat(newPromoValue),
       max_uses: newPromoMaxUses ? parseInt(newPromoMaxUses) : null,
       is_active: true,
+      expires_at: newPromoExpires ? new Date(newPromoExpires).toISOString() : null,
+      auto_apply: newPromoAutoApply,
+      applies_to: newPromoAppliesTo,
+      applies_to_custom: newPromoAppliesTo === "custom" ? (newPromoAppliesCustom.trim() || null) : null,
+      alert_enabled: newPromoAlertEnabled,
+      alert_html: newPromoAlertEnabled ? (newPromoAlertHtml || null) : null,
+      show_alert_at_checkout: newPromoAlertEnabled,
+      show_alert_on_top: newPromoAlertOnTop,
     };
     const { data, error } = await supabase.from("tournament_promo_codes").insert(payload).select("*").single();
     if (error) toast.error(error.message);
     else {
       setPromoCodes((prev) => [data as PromoCode, ...prev]);
-      setNewPromoCode("");
-      setNewPromoValue("");
-      setNewPromoMaxUses("");
+      resetNewPromo();
       toast.success("Promo code created!");
     }
   };
@@ -463,11 +491,21 @@ const Registration = () => {
     else setPromoCodes((prev) => prev.map((p) => (p.id === promo.id ? { ...p, is_active: !p.is_active } : p)));
   };
 
+  const updatePromoField = async (promo: PromoCode, patch: Partial<PromoCode>) => {
+    const { error } = await supabase
+      .from("tournament_promo_codes")
+      .update(patch as any)
+      .eq("id", promo.id!);
+    if (error) { toast.error(error.message); return; }
+    setPromoCodes((prev) => prev.map((p) => (p.id === promo.id ? { ...p, ...patch } : p)));
+  };
+
   const deletePromo = async (id: string) => {
     const { error } = await supabase.from("tournament_promo_codes").delete().eq("id", id);
     if (error) toast.error(error.message);
     else setPromoCodes((prev) => prev.filter((p) => p.id !== id));
   };
+
 
   /* ── tier CRUD ── */
   const [newTierName, setNewTierName] = useState("");
@@ -1154,27 +1192,99 @@ const Registration = () => {
               </p>
 
               {promoCodes.length > 0 && (
-                <div className="space-y-3">
-                  {promoCodes.map((promo) => (
-                    <div key={promo.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <Switch checked={promo.is_active} onCheckedChange={() => togglePromo(promo)} />
-                        <span className="font-mono font-bold text-foreground text-sm">{promo.code}</span>
-                        <Badge variant="outline" className="text-[10px]">
-                          {promo.discount_type === "percent" ? `${promo.discount_value}% off` : `$${promo.discount_value} off`}
-                        </Badge>
-                        {promo.max_uses && (
-                          <span className="text-xs text-muted-foreground">
-                            {promo.current_uses}/{promo.max_uses} used
-                          </span>
-                        )}
-                        {!promo.is_active && <Badge variant="destructive" className="text-[10px]">Inactive</Badge>}
+                <div className="space-y-4">
+                  {promoCodes.map((promo) => {
+                    const expired = !!promo.expires_at && new Date(promo.expires_at) < new Date();
+                    return (
+                      <div key={promo.id} className="p-4 rounded-lg border border-border space-y-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <Switch checked={promo.is_active} onCheckedChange={() => togglePromo(promo)} />
+                            <span className="font-mono font-bold text-foreground text-sm">{promo.code}</span>
+                            <Badge variant="outline" className="text-[10px]">
+                              {promo.discount_type === "percent" ? `${promo.discount_value}% off` : `$${promo.discount_value} off`}
+                            </Badge>
+                            {promo.auto_apply && <Badge className="text-[10px]">Auto-apply</Badge>}
+                            {promo.applies_to && promo.applies_to !== "all" && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                {promo.applies_to === "individual" ? "Individual"
+                                  : promo.applies_to === "team_2" ? "2-Player Team"
+                                  : promo.applies_to === "team_4" ? "4-Player Team"
+                                  : `Custom: ${promo.applies_to_custom || ""}`}
+                              </Badge>
+                            )}
+                            {promo.max_uses && (
+                              <span className="text-xs text-muted-foreground">
+                                {promo.current_uses}/{promo.max_uses} used
+                              </span>
+                            )}
+                            {expired && <Badge variant="destructive" className="text-[10px]">Expired</Badge>}
+                            {!promo.is_active && <Badge variant="destructive" className="text-[10px]">Inactive</Badge>}
+                          </div>
+                          <Button variant="ghost" size="icon" onClick={() => deletePromo(promo.id!)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                          <div>
+                            <Label className="text-xs">Applies To</Label>
+                            <Select value={promo.applies_to || "all"} onValueChange={(v) => updatePromoField(promo, { applies_to: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All registrations</SelectItem>
+                                <SelectItem value="individual">Individual</SelectItem>
+                                <SelectItem value="team_2">2-Player Team</SelectItem>
+                                <SelectItem value="team_4">4-Player Team</SelectItem>
+                                <SelectItem value="custom">Custom (tier name)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          {promo.applies_to === "custom" && (
+                            <div>
+                              <Label className="text-xs">Custom value</Label>
+                              <Input
+                                value={promo.applies_to_custom || ""}
+                                onChange={(e) => updatePromoField(promo, { applies_to_custom: e.target.value })}
+                                placeholder="Tier name to match"
+                              />
+                            </div>
+                          )}
+                          <div>
+                            <Label className="text-xs">Expiration</Label>
+                            <Input
+                              type="datetime-local"
+                              value={promo.expires_at ? new Date(promo.expires_at).toISOString().slice(0, 16) : ""}
+                              onChange={(e) => updatePromoField(promo, { expires_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 pt-5">
+                            <Switch checked={!!promo.auto_apply} onCheckedChange={(v) => updatePromoField(promo, { auto_apply: v })} />
+                            <Label className="text-xs">Auto-apply</Label>
+                          </div>
+                        </div>
+                        <div className="space-y-2 border-t pt-3">
+                          <div className="flex items-center gap-2">
+                            <Switch checked={!!promo.alert_enabled} onCheckedChange={(v) => updatePromoField(promo, { alert_enabled: v, show_alert_at_checkout: v })} />
+                            <Label className="text-xs">Show alert at checkout</Label>
+                            {promo.alert_enabled && (
+                              <>
+                                <div className="ml-4" />
+                                <Switch checked={promo.show_alert_on_top !== false} onCheckedChange={(v) => updatePromoField(promo, { show_alert_on_top: v })} />
+                                <Label className="text-xs">Pin alert to top</Label>
+                              </>
+                            )}
+                          </div>
+                          {promo.alert_enabled && (
+                            <RichTextEditor
+                              value={promo.alert_html || ""}
+                              onChange={(html) => updatePromoField(promo, { alert_html: html })}
+                              placeholder="🎉 Special discount message…"
+                            />
+                          )}
+                        </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => deletePromo(promo.id!)} className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -1211,6 +1321,55 @@ const Registration = () => {
                     value={newPromoMaxUses}
                     onChange={(e) => setNewPromoMaxUses(e.target.value)}
                   />
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div>
+                    <Label className="text-xs">Applies To</Label>
+                    <Select value={newPromoAppliesTo} onValueChange={setNewPromoAppliesTo}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All registrations</SelectItem>
+                        <SelectItem value="individual">Individual</SelectItem>
+                        <SelectItem value="team_2">2-Player Team</SelectItem>
+                        <SelectItem value="team_4">4-Player Team</SelectItem>
+                        <SelectItem value="custom">Custom (tier name)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {newPromoAppliesTo === "custom" && (
+                    <div>
+                      <Label className="text-xs">Custom value</Label>
+                      <Input value={newPromoAppliesCustom} onChange={(e) => setNewPromoAppliesCustom(e.target.value)} placeholder="Tier name to match" />
+                    </div>
+                  )}
+                  <div>
+                    <Label className="text-xs">Expiration (optional)</Label>
+                    <Input type="datetime-local" value={newPromoExpires} onChange={(e) => setNewPromoExpires(e.target.value)} />
+                  </div>
+                  <div className="flex items-center gap-2 pt-5">
+                    <Switch checked={newPromoAutoApply} onCheckedChange={setNewPromoAutoApply} />
+                    <Label className="text-xs">Auto-apply (no manual entry)</Label>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={newPromoAlertEnabled} onCheckedChange={setNewPromoAlertEnabled} />
+                    <Label className="text-xs">Show special alert at checkout</Label>
+                    {newPromoAlertEnabled && (
+                      <>
+                        <div className="ml-4" />
+                        <Switch checked={newPromoAlertOnTop} onCheckedChange={setNewPromoAlertOnTop} />
+                        <Label className="text-xs">Pin alert to top</Label>
+                      </>
+                    )}
+                  </div>
+                  {newPromoAlertEnabled && (
+                    <RichTextEditor
+                      value={newPromoAlertHtml}
+                      onChange={setNewPromoAlertHtml}
+                      placeholder="🎉 Early Bird Discount! Save 20% when you register as a 2-player team."
+                    />
+                  )}
                 </div>
                 <Button onClick={addPromoCode} disabled={!newPromoCode.trim() || !newPromoValue}>
                   <Plus className="h-4 w-4 mr-1" /> Create Code

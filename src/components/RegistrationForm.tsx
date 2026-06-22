@@ -238,9 +238,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [addons, setAddons] = useState<AddonRow[]>([]);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [promoInput, setPromoInput] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number; alert_html?: string | null; show_alert_on_top?: boolean; auto?: boolean } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
+  const [autoPromos, setAutoPromos] = useState<any[]>([]);
 
   // Load active add-ons for this tournament
   useEffect(() => {
@@ -255,8 +256,68 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         if (cancelled) return;
         setAddons((data as AddonRow[]) || []);
       });
+    // Load auto-apply promo codes
+    (supabase as any)
+      .from("tournament_promo_codes")
+      .select("code, discount_type, discount_value, expires_at, max_uses, current_uses, auto_apply, applies_to, applies_to_custom, alert_enabled, alert_html, show_alert_on_top, show_alert_at_checkout")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .eq("auto_apply", true)
+      .then(({ data }: any) => {
+        if (cancelled) return;
+        setAutoPromos(data || []);
+      });
     return () => { cancelled = true; };
   }, [tournamentId]);
+
+
+
+  const allowGroup_pre = maxGroupSize > 1;
+  const playerCount_pre = allowGroup_pre ? players.length : 1;
+
+  // Auto-apply matching promo when player count or tier changes
+  useEffect(() => {
+    if (!autoPromos.length) return;
+    // Don't override a manually-applied (non-auto) code
+    if (appliedPromo && !appliedPromo.auto) return;
+
+    const now = Date.now();
+    const tierName = (tiers.find((t) => t.id === selectedTier)?.name || "").trim().toLowerCase();
+
+    const match = autoPromos.find((p: any) => {
+      if (p.expires_at && new Date(p.expires_at).getTime() < now) return false;
+      if (p.max_uses && (p.current_uses ?? 0) >= p.max_uses) return false;
+      const at = p.applies_to || "all";
+      if (at === "all") return true;
+      if (at === "individual") return playerCount_pre === 1;
+      if (at === "team_2") return playerCount_pre === 2;
+      if (at === "team_4") return playerCount_pre === 4;
+      if (at === "custom") {
+        const want = (p.applies_to_custom || "").trim().toLowerCase();
+        if (!want) return false;
+        return tierName === want;
+      }
+      return false;
+    });
+
+    if (match) {
+      setAppliedPromo({
+        code: match.code,
+        discount_type: match.discount_type,
+        discount_value: Number(match.discount_value),
+        alert_html: match.alert_enabled ? match.alert_html : null,
+        show_alert_on_top: match.show_alert_on_top !== false,
+        auto: true,
+      });
+      setPromoError(null);
+    } else if (appliedPromo?.auto) {
+      // Previously auto-applied but no longer matches
+      setAppliedPromo(null);
+    }
+  }, [autoPromos, players.length, selectedTier, tiers, maxGroupSize]);
+
+
+
 
   const allowGroup = maxGroupSize > 1;
   const activeFee = selectedTier
@@ -586,6 +647,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           ) : null;
         })()}
 
+        {/* Promo alert (top placement) */}
+        {appliedPromo?.alert_html && appliedPromo.show_alert_on_top !== false && (
+          <div
+            className="rounded-md p-4 border-2"
+            style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
+            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+          />
+        )}
+
         {(hasFee || subtotalBeforeDiscount > 0) && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
             {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
@@ -606,6 +676,16 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             )}
           </div>
         )}
+
+        {/* Promo alert (bottom placement) */}
+        {appliedPromo?.alert_html && appliedPromo.show_alert_on_top === false && (
+          <div
+            className="rounded-md p-4 border-2"
+            style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
+            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+          />
+        )}
+
 
         {/* Promo Code */}
         {subtotalBeforeDiscount > 0 && (

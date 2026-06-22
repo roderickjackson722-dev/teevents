@@ -5960,6 +5960,11 @@ export type Database = {
       }
       tournament_promo_codes: {
         Row: {
+          alert_enabled: boolean
+          alert_html: string | null
+          applies_to: string
+          applies_to_custom: string | null
+          auto_apply: boolean
           code: string
           created_at: string
           current_uses: number
@@ -5969,9 +5974,16 @@ export type Database = {
           id: string
           is_active: boolean
           max_uses: number | null
+          show_alert_at_checkout: boolean
+          show_alert_on_top: boolean
           tournament_id: string
         }
         Insert: {
+          alert_enabled?: boolean
+          alert_html?: string | null
+          applies_to?: string
+          applies_to_custom?: string | null
+          auto_apply?: boolean
           code: string
           created_at?: string
           current_uses?: number
@@ -5981,9 +5993,16 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          show_alert_at_checkout?: boolean
+          show_alert_on_top?: boolean
           tournament_id: string
         }
         Update: {
+          alert_enabled?: boolean
+          alert_html?: string | null
+          applies_to?: string
+          applies_to_custom?: string | null
+          auto_apply?: boolean
           code?: string
           created_at?: string
           current_uses?: number
@@ -5993,6 +6012,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          show_alert_at_checkout?: boolean
+          show_alert_on_top?: boolean
           tournament_id?: string
         }
         Relationships: [

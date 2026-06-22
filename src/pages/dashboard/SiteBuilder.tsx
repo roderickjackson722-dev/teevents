@@ -317,6 +317,7 @@ const SiteBuilder = () => {
         site_hero_opacity: settings.site_hero_opacity ?? 100,
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
+        contact_name: (settings as any).contact_name ?? null,
         schedule_info: settings.schedule_info,
         schedule_info_html: (settings as any).schedule_info_html ?? null,
         registration_url: settings.registration_url,
@@ -1900,12 +1901,13 @@ const SiteBuilder = () => {
               )}
 
               {/* Contact Preview */}
-              {(settings.contact_email || settings.contact_phone) && (
+              {((settings as any).contact_name || settings.contact_email || settings.contact_phone) && (
                 <div className="border-t border-border pt-4">
                   <h4 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: settings.site_primary_color || "#1a5c38" }}>
                     Contact
                   </h4>
                   <div className="text-sm text-muted-foreground space-y-1">
+                    {(settings as any).contact_name && <p className="font-semibold text-foreground">{(settings as any).contact_name}</p>}
                     {settings.contact_email && <p>✉️ {settings.contact_email}</p>}
                     {settings.contact_phone && <p>📞 {settings.contact_phone}</p>}
                   </div>

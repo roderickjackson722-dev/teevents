@@ -440,6 +440,20 @@ const Registration = () => {
   const [newPromoType, setNewPromoType] = useState("percent");
   const [newPromoValue, setNewPromoValue] = useState("");
   const [newPromoMaxUses, setNewPromoMaxUses] = useState("");
+  const [newPromoExpires, setNewPromoExpires] = useState(""); // datetime-local
+  const [newPromoAutoApply, setNewPromoAutoApply] = useState(false);
+  const [newPromoAppliesTo, setNewPromoAppliesTo] = useState("all");
+  const [newPromoAppliesCustom, setNewPromoAppliesCustom] = useState("");
+  const [newPromoAlertEnabled, setNewPromoAlertEnabled] = useState(false);
+  const [newPromoAlertOnTop, setNewPromoAlertOnTop] = useState(true);
+  const [newPromoAlertHtml, setNewPromoAlertHtml] = useState("");
+
+  const resetNewPromo = () => {
+    setNewPromoCode(""); setNewPromoValue(""); setNewPromoMaxUses("");
+    setNewPromoExpires(""); setNewPromoAutoApply(false); setNewPromoAppliesTo("all");
+    setNewPromoAppliesCustom(""); setNewPromoAlertEnabled(false);
+    setNewPromoAlertOnTop(true); setNewPromoAlertHtml("");
+  };
 
   const addPromoCode = async () => {
     if (!newPromoCode.trim() || !newPromoValue) return;
@@ -450,14 +464,20 @@ const Registration = () => {
       discount_value: parseFloat(newPromoValue),
       max_uses: newPromoMaxUses ? parseInt(newPromoMaxUses) : null,
       is_active: true,
+      expires_at: newPromoExpires ? new Date(newPromoExpires).toISOString() : null,
+      auto_apply: newPromoAutoApply,
+      applies_to: newPromoAppliesTo,
+      applies_to_custom: newPromoAppliesTo === "custom" ? (newPromoAppliesCustom.trim() || null) : null,
+      alert_enabled: newPromoAlertEnabled,
+      alert_html: newPromoAlertEnabled ? (newPromoAlertHtml || null) : null,
+      show_alert_at_checkout: newPromoAlertEnabled,
+      show_alert_on_top: newPromoAlertOnTop,
     };
     const { data, error } = await supabase.from("tournament_promo_codes").insert(payload).select("*").single();
     if (error) toast.error(error.message);
     else {
       setPromoCodes((prev) => [data as PromoCode, ...prev]);
-      setNewPromoCode("");
-      setNewPromoValue("");
-      setNewPromoMaxUses("");
+      resetNewPromo();
       toast.success("Promo code created!");
     }
   };
@@ -471,11 +491,21 @@ const Registration = () => {
     else setPromoCodes((prev) => prev.map((p) => (p.id === promo.id ? { ...p, is_active: !p.is_active } : p)));
   };
 
+  const updatePromoField = async (promo: PromoCode, patch: Partial<PromoCode>) => {
+    const { error } = await supabase
+      .from("tournament_promo_codes")
+      .update(patch as any)
+      .eq("id", promo.id!);
+    if (error) { toast.error(error.message); return; }
+    setPromoCodes((prev) => prev.map((p) => (p.id === promo.id ? { ...p, ...patch } : p)));
+  };
+
   const deletePromo = async (id: string) => {
     const { error } = await supabase.from("tournament_promo_codes").delete().eq("id", id);
     if (error) toast.error(error.message);
     else setPromoCodes((prev) => prev.filter((p) => p.id !== id));
   };
+
 
   /* ── tier CRUD ── */
   const [newTierName, setNewTierName] = useState("");

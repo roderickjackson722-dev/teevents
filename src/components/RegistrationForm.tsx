@@ -267,6 +267,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         if (cancelled) return;
         setAutoPromos(data || []);
       });
+    return () => { cancelled = true; };
+  }, [tournamentId]);
+
+
 
   const allowGroup_pre = maxGroupSize > 1;
   const playerCount_pre = allowGroup_pre ? players.length : 1;

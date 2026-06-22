@@ -256,8 +256,20 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         if (cancelled) return;
         setAddons((data as AddonRow[]) || []);
       });
+    // Load auto-apply promo codes
+    (supabase as any)
+      .from("tournament_promo_codes")
+      .select("code, discount_type, discount_value, expires_at, max_uses, current_uses, auto_apply, applies_to, applies_to_custom, alert_enabled, alert_html, show_alert_on_top, show_alert_at_checkout")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .eq("auto_apply", true)
+      .then(({ data }: any) => {
+        if (cancelled) return;
+        setAutoPromos(data || []);
+      });
     return () => { cancelled = true; };
   }, [tournamentId]);
+
 
   const allowGroup = maxGroupSize > 1;
   const activeFee = selectedTier

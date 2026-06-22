@@ -317,6 +317,7 @@ const SiteBuilder = () => {
         site_hero_opacity: settings.site_hero_opacity ?? 100,
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
+        contact_name: (settings as any).contact_name ?? null,
         schedule_info: settings.schedule_info,
         schedule_info_html: (settings as any).schedule_info_html ?? null,
         registration_url: settings.registration_url,

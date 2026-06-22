@@ -238,9 +238,10 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [addons, setAddons] = useState<AddonRow[]>([]);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [promoInput, setPromoInput] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number; alert_html?: string | null; show_alert_on_top?: boolean; auto?: boolean } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
+  const [autoPromos, setAutoPromos] = useState<any[]>([]);
 
   // Load active add-ons for this tournament
   useEffect(() => {

@@ -95,6 +95,13 @@ interface PromoCode {
   current_uses: number;
   is_active: boolean;
   expires_at: string | null;
+  auto_apply?: boolean;
+  applies_to?: string;
+  applies_to_custom?: string | null;
+  alert_enabled?: boolean;
+  alert_html?: string | null;
+  show_alert_at_checkout?: boolean;
+  show_alert_on_top?: boolean;
 }
 
 const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [

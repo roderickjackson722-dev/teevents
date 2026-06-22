@@ -267,8 +267,52 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         if (cancelled) return;
         setAutoPromos(data || []);
       });
-    return () => { cancelled = true; };
-  }, [tournamentId]);
+
+  const allowGroup_pre = maxGroupSize > 1;
+  const playerCount_pre = allowGroup_pre ? players.length : 1;
+
+  // Auto-apply matching promo when player count or tier changes
+  useEffect(() => {
+    if (!autoPromos.length) return;
+    // Don't override a manually-applied (non-auto) code
+    if (appliedPromo && !appliedPromo.auto) return;
+
+    const now = Date.now();
+    const tierName = (tiers.find((t) => t.id === selectedTier)?.name || "").trim().toLowerCase();
+
+    const match = autoPromos.find((p: any) => {
+      if (p.expires_at && new Date(p.expires_at).getTime() < now) return false;
+      if (p.max_uses && (p.current_uses ?? 0) >= p.max_uses) return false;
+      const at = p.applies_to || "all";
+      if (at === "all") return true;
+      if (at === "individual") return playerCount_pre === 1;
+      if (at === "team_2") return playerCount_pre === 2;
+      if (at === "team_4") return playerCount_pre === 4;
+      if (at === "custom") {
+        const want = (p.applies_to_custom || "").trim().toLowerCase();
+        if (!want) return false;
+        return tierName === want;
+      }
+      return false;
+    });
+
+    if (match) {
+      setAppliedPromo({
+        code: match.code,
+        discount_type: match.discount_type,
+        discount_value: Number(match.discount_value),
+        alert_html: match.alert_enabled ? match.alert_html : null,
+        show_alert_on_top: match.show_alert_on_top !== false,
+        auto: true,
+      });
+      setPromoError(null);
+    } else if (appliedPromo?.auto) {
+      // Previously auto-applied but no longer matches
+      setAppliedPromo(null);
+    }
+  }, [autoPromos, players.length, selectedTier, tiers, maxGroupSize]);
+
+
 
 
   const allowGroup = maxGroupSize > 1;

@@ -37,6 +37,9 @@ import {
   Check,
   X,
   RotateCcw,
+  ChevronUp,
+  ChevronDown,
+  MapPin,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import {
@@ -388,9 +391,111 @@ const Players = () => {
 
   const nextGroupNumber = allGroupNumbers.length > 0 ? Math.max(...allGroupNumbers) + 1 : 1;
 
+  const [editingGroupNum, setEditingGroupNum] = useState<number | null>(null);
+  const [editGroupValue, setEditGroupValue] = useState<string>("");
+  const [editingLocationNum, setEditingLocationNum] = useState<number | null>(null);
+  const [editLocationValue, setEditLocationValue] = useState<string>("");
+  const locStorageKey = selectedTournament ? `teevents_hole_locations_${selectedTournament}` : "";
+  const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
+  useEffect(() => {
+    if (!locStorageKey) return;
+    try {
+      const raw = localStorage.getItem(locStorageKey);
+      setHoleLocations(raw ? JSON.parse(raw) : {});
+    } catch { setHoleLocations({}); }
+  }, [locStorageKey]);
+  const saveLocations = (next: Record<number, string>) => {
+    setHoleLocations(next);
+    try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
     toast({ title: `Hole ${nextGroupNumber} created` });
+  };
+
+  const handleRenameGroup = async (oldNum: number, newNumRaw: string) => {
+    const newNum = parseInt(newNumRaw);
+    setEditingGroupNum(null);
+    if (!newNum || isNaN(newNum) || newNum === oldNum) return;
+    if (newNum < 1 || newNum > 99) {
+      toast({ title: "Invalid hole number", description: "Use 1-99.", variant: "destructive" });
+      return;
+    }
+    if (allGroupNumbers.includes(newNum)) {
+      toast({ title: "Hole already exists", description: `Hole ${newNum} is already in use.`, variant: "destructive" });
+      return;
+    }
+    const ids = players.filter((p) => p.group_number === oldNum).map((p) => p.id);
+    if (ids.length > 0) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ group_number: newNum })
+        .in("id", ids);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    }
+    setPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
+    setEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
+    if (holeLocations[oldNum]) {
+      const next = { ...holeLocations };
+      next[newNum] = next[oldNum];
+      delete next[oldNum];
+      saveLocations(next);
+    }
+    toast({ title: `Renamed to Hole ${newNum}` });
+  };
+
+  const handleDeleteGroup = async (num: number) => {
+    if (demoGuard()) return;
+    const ids = players.filter((p) => p.group_number === num).map((p) => p.id);
+    if (ids.length > 0) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ group_number: null, group_position: null })
+        .in("id", ids);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    }
+    setPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
+    setEmptyGroups((prev) => prev.filter((n) => n !== num));
+    if (holeLocations[num]) {
+      const next = { ...holeLocations };
+      delete next[num];
+      saveLocations(next);
+    }
+    toast({ title: `Hole ${num} deleted`, description: ids.length > 0 ? `${ids.length} player(s) moved to Unassigned.` : undefined });
+  };
+
+  const handleMoveGroup = async (num: number, dir: -1 | 1) => {
+    const idx = allGroupNumbers.indexOf(num);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= allGroupNumbers.length) return;
+    const other = allGroupNumbers[swapIdx];
+    // Swap via temp number to avoid unique conflicts (none enforced, but safe)
+    const tempNum = Math.max(...allGroupNumbers, 100) + 1;
+    const idsA = players.filter((p) => p.group_number === num).map((p) => p.id);
+    const idsB = players.filter((p) => p.group_number === other).map((p) => p.id);
+    if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: tempNum }).in("id", idsA);
+    if (idsB.length > 0) await supabase.from("tournament_registrations").update({ group_number: num }).in("id", idsB);
+    if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: other }).in("id", idsA);
+    setPlayers((prev) => prev.map((p) => {
+      if (p.group_number === num) return { ...p, group_number: other };
+      if (p.group_number === other) return { ...p, group_number: num };
+      return p;
+    }));
+    setEmptyGroups((prev) => prev.map((n) => n === num ? other : n === other ? num : n));
+    const next = { ...holeLocations };
+    const a = next[num]; const b = next[other];
+    if (a !== undefined) next[other] = a; else delete next[other];
+    if (b !== undefined) next[num] = b; else delete next[num];
+    saveLocations(next);
+  };
+
+  const saveHoleLocation = (num: number, value: string) => {
+    const next = { ...holeLocations };
+    const v = value.trim();
+    if (v) next[num] = v; else delete next[num];
+    saveLocations(next);
+    setEditingLocationNum(null);
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {
@@ -986,15 +1091,100 @@ const Players = () => {
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Holes ({groups.length})
                 </h3>
-                {groups.map((group) => (
+                {groups.map((group, gIdx) => (
                   <div key={group.number}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-bold text-foreground">
-                        Hole {group.number}
-                      </h4>
-                      <span className="text-xs text-muted-foreground">
-                        {group.players.length}/{maxGroupSize}
-                      </span>
+                    <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {editingGroupNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              className="h-7 w-20 text-sm"
+                              value={editGroupValue}
+                              onChange={(e) => setEditGroupValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleRenameGroup(group.number, editGroupValue);
+                                if (e.key === "Escape") setEditingGroupNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => handleRenameGroup(group.number, editGroupValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setEditingGroupNum(null)}>
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-sm font-bold text-foreground hover:text-primary inline-flex items-center gap-1"
+                            onClick={() => { setEditingGroupNum(group.number); setEditGroupValue(String(group.number)); }}
+                            title="Rename hole"
+                          >
+                            Hole {group.number}
+                            <Pencil className="h-3 w-3 opacity-60" />
+                          </button>
+                        )}
+                        {editingLocationNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              className="h-7 w-40 text-xs"
+                              placeholder="Location (e.g. Tee 1, Front 9)"
+                              value={editLocationValue}
+                              onChange={(e) => setEditLocationValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleLocation(group.number, editLocationValue);
+                                if (e.key === "Escape") setEditingLocationNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleLocation(group.number, editLocationValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                            onClick={() => { setEditingLocationNum(group.number); setEditLocationValue(holeLocations[group.number] || ""); }}
+                            title="Set location"
+                          >
+                            <MapPin className="h-3 w-3" />
+                            {holeLocations[group.number] || "Add location"}
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground mr-1">
+                          {group.players.length}/{maxGroupSize}
+                        </span>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0} onClick={() => handleMoveGroup(group.number, -1)} title="Move up">
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1} onClick={() => handleMoveGroup(group.number, 1)} title="Move down">
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" title="Delete hole">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Hole {group.number}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {group.players.length > 0
+                                  ? `${group.players.length} player(s) will be moved back to Unassigned.`
+                                  : "This empty hole will be removed."}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteGroup(group.number)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                     <Droppable droppableId={`group-${group.number}`}>
                       {(provided, snapshot) => (

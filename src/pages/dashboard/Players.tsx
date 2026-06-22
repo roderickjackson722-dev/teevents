@@ -391,9 +391,111 @@ const Players = () => {
 
   const nextGroupNumber = allGroupNumbers.length > 0 ? Math.max(...allGroupNumbers) + 1 : 1;
 
+  const [editingGroupNum, setEditingGroupNum] = useState<number | null>(null);
+  const [editGroupValue, setEditGroupValue] = useState<string>("");
+  const [editingLocationNum, setEditingLocationNum] = useState<number | null>(null);
+  const [editLocationValue, setEditLocationValue] = useState<string>("");
+  const locStorageKey = selectedTournament ? `teevents_hole_locations_${selectedTournament}` : "";
+  const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
+  useEffect(() => {
+    if (!locStorageKey) return;
+    try {
+      const raw = localStorage.getItem(locStorageKey);
+      setHoleLocations(raw ? JSON.parse(raw) : {});
+    } catch { setHoleLocations({}); }
+  }, [locStorageKey]);
+  const saveLocations = (next: Record<number, string>) => {
+    setHoleLocations(next);
+    try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
     toast({ title: `Hole ${nextGroupNumber} created` });
+  };
+
+  const handleRenameGroup = async (oldNum: number, newNumRaw: string) => {
+    const newNum = parseInt(newNumRaw);
+    setEditingGroupNum(null);
+    if (!newNum || isNaN(newNum) || newNum === oldNum) return;
+    if (newNum < 1 || newNum > 99) {
+      toast({ title: "Invalid hole number", description: "Use 1-99.", variant: "destructive" });
+      return;
+    }
+    if (allGroupNumbers.includes(newNum)) {
+      toast({ title: "Hole already exists", description: `Hole ${newNum} is already in use.`, variant: "destructive" });
+      return;
+    }
+    const ids = players.filter((p) => p.group_number === oldNum).map((p) => p.id);
+    if (ids.length > 0) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ group_number: newNum })
+        .in("id", ids);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    }
+    setPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
+    setEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
+    if (holeLocations[oldNum]) {
+      const next = { ...holeLocations };
+      next[newNum] = next[oldNum];
+      delete next[oldNum];
+      saveLocations(next);
+    }
+    toast({ title: `Renamed to Hole ${newNum}` });
+  };
+
+  const handleDeleteGroup = async (num: number) => {
+    if (demoGuard()) return;
+    const ids = players.filter((p) => p.group_number === num).map((p) => p.id);
+    if (ids.length > 0) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ group_number: null, group_position: null })
+        .in("id", ids);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    }
+    setPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
+    setEmptyGroups((prev) => prev.filter((n) => n !== num));
+    if (holeLocations[num]) {
+      const next = { ...holeLocations };
+      delete next[num];
+      saveLocations(next);
+    }
+    toast({ title: `Hole ${num} deleted`, description: ids.length > 0 ? `${ids.length} player(s) moved to Unassigned.` : undefined });
+  };
+
+  const handleMoveGroup = async (num: number, dir: -1 | 1) => {
+    const idx = allGroupNumbers.indexOf(num);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= allGroupNumbers.length) return;
+    const other = allGroupNumbers[swapIdx];
+    // Swap via temp number to avoid unique conflicts (none enforced, but safe)
+    const tempNum = Math.max(...allGroupNumbers, 100) + 1;
+    const idsA = players.filter((p) => p.group_number === num).map((p) => p.id);
+    const idsB = players.filter((p) => p.group_number === other).map((p) => p.id);
+    if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: tempNum }).in("id", idsA);
+    if (idsB.length > 0) await supabase.from("tournament_registrations").update({ group_number: num }).in("id", idsB);
+    if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: other }).in("id", idsA);
+    setPlayers((prev) => prev.map((p) => {
+      if (p.group_number === num) return { ...p, group_number: other };
+      if (p.group_number === other) return { ...p, group_number: num };
+      return p;
+    }));
+    setEmptyGroups((prev) => prev.map((n) => n === num ? other : n === other ? num : n));
+    const next = { ...holeLocations };
+    const a = next[num]; const b = next[other];
+    if (a !== undefined) next[other] = a; else delete next[other];
+    if (b !== undefined) next[num] = b; else delete next[num];
+    saveLocations(next);
+  };
+
+  const saveHoleLocation = (num: number, value: string) => {
+    const next = { ...holeLocations };
+    const v = value.trim();
+    if (v) next[num] = v; else delete next[num];
+    saveLocations(next);
+    setEditingLocationNum(null);
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {

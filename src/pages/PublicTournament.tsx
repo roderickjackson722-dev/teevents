@@ -2661,6 +2661,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
             <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Have questions? We'd love to hear from you.</p>
             <div className="bg-white rounded-xl border p-8 space-y-6" style={{ borderColor: "#e5e5e5" }}>
+              {(tournament as any).contact_name && (
+                <p className="text-center text-base font-semibold" style={{ color: "#1a1a1a" }}>
+                  {(tournament as any).contact_name}
+                </p>
+              )}
               <div className="flex flex-wrap justify-center gap-8 mb-4">
                 {tournament.contact_email && (
                   <a href={`mailto:${tournament.contact_email}`} className="inline-flex items-center gap-3 transition-colors hover:opacity-80" style={{ color: "#333" }}>

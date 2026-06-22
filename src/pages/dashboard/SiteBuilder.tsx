@@ -1901,12 +1901,13 @@ const SiteBuilder = () => {
               )}
 
               {/* Contact Preview */}
-              {(settings.contact_email || settings.contact_phone) && (
+              {((settings as any).contact_name || settings.contact_email || settings.contact_phone) && (
                 <div className="border-t border-border pt-4">
                   <h4 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: settings.site_primary_color || "#1a5c38" }}>
                     Contact
                   </h4>
                   <div className="text-sm text-muted-foreground space-y-1">
+                    {(settings as any).contact_name && <p className="font-semibold text-foreground">{(settings as any).contact_name}</p>}
                     {settings.contact_email && <p>✉️ {settings.contact_email}</p>}
                     {settings.contact_phone && <p>📞 {settings.contact_phone}</p>}
                   </div>

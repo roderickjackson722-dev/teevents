@@ -1091,15 +1091,100 @@ const Players = () => {
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Holes ({groups.length})
                 </h3>
-                {groups.map((group) => (
+                {groups.map((group, gIdx) => (
                   <div key={group.number}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-bold text-foreground">
-                        Hole {group.number}
-                      </h4>
-                      <span className="text-xs text-muted-foreground">
-                        {group.players.length}/{maxGroupSize}
-                      </span>
+                    <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {editingGroupNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              className="h-7 w-20 text-sm"
+                              value={editGroupValue}
+                              onChange={(e) => setEditGroupValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleRenameGroup(group.number, editGroupValue);
+                                if (e.key === "Escape") setEditingGroupNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => handleRenameGroup(group.number, editGroupValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setEditingGroupNum(null)}>
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-sm font-bold text-foreground hover:text-primary inline-flex items-center gap-1"
+                            onClick={() => { setEditingGroupNum(group.number); setEditGroupValue(String(group.number)); }}
+                            title="Rename hole"
+                          >
+                            Hole {group.number}
+                            <Pencil className="h-3 w-3 opacity-60" />
+                          </button>
+                        )}
+                        {editingLocationNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              className="h-7 w-40 text-xs"
+                              placeholder="Location (e.g. Tee 1, Front 9)"
+                              value={editLocationValue}
+                              onChange={(e) => setEditLocationValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleLocation(group.number, editLocationValue);
+                                if (e.key === "Escape") setEditingLocationNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleLocation(group.number, editLocationValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                            onClick={() => { setEditingLocationNum(group.number); setEditLocationValue(holeLocations[group.number] || ""); }}
+                            title="Set location"
+                          >
+                            <MapPin className="h-3 w-3" />
+                            {holeLocations[group.number] || "Add location"}
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground mr-1">
+                          {group.players.length}/{maxGroupSize}
+                        </span>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0} onClick={() => handleMoveGroup(group.number, -1)} title="Move up">
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1} onClick={() => handleMoveGroup(group.number, 1)} title="Move down">
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" title="Delete hole">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Hole {group.number}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {group.players.length > 0
+                                  ? `${group.players.length} player(s) will be moved back to Unassigned.`
+                                  : "This empty hole will be removed."}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteGroup(group.number)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                     <Droppable droppableId={`group-${group.number}`}>
                       {(provided, snapshot) => (

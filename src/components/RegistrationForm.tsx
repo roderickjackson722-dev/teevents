@@ -647,6 +647,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           ) : null;
         })()}
 
+        {/* Promo alert (top placement) */}
+        {appliedPromo?.alert_html && appliedPromo.show_alert_on_top !== false && (
+          <div
+            className="rounded-md p-4 border-2"
+            style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
+            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+          />
+        )}
+
         {(hasFee || subtotalBeforeDiscount > 0) && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
             {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
@@ -667,6 +676,16 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             )}
           </div>
         )}
+
+        {/* Promo alert (bottom placement) */}
+        {appliedPromo?.alert_html && appliedPromo.show_alert_on_top === false && (
+          <div
+            className="rounded-md p-4 border-2"
+            style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
+            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+          />
+        )}
+
 
         {/* Promo Code */}
         {subtotalBeforeDiscount > 0 && (

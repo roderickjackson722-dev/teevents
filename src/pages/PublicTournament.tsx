@@ -583,8 +583,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     ? new Date((tournament as any).early_registration_expires_at)
     : null;
   const earlyPriceCents = (tournament as any)?.early_registration_price_cents ?? null;
+  const earlyPrice2Cents = (tournament as any)?.early_registration_price_2_cents ?? null;
+  const earlyPrice4Cents = (tournament as any)?.early_registration_price_4_cents ?? null;
   const earlyActive = !!tournament && earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
   const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament?.registration_fee_cents || 0);
+  const earlyTeamTotals = earlyActive
+    ? {
+        2: earlyPrice2Cents != null ? Number(earlyPrice2Cents) : null,
+        4: earlyPrice4Cents != null ? Number(earlyPrice4Cents) : null,
+      }
+    : null;
 
   useEffect(() => {
     if (!earlyActive || !earlyExpiresAt) return;

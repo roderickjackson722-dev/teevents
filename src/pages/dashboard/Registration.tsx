@@ -790,25 +790,58 @@ const Registration = () => {
                   <Switch checked={earlyEnabled} onCheckedChange={setEarlyEnabled} />
                 </div>
                 {earlyEnabled && (
-                  <div className="grid sm:grid-cols-2 gap-4 pt-2">
-                    <div>
-                      <Label>Early Bird Price ($)</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={earlyPriceDisplay}
-                        onChange={(e) => setEarlyPriceDisplay(e.target.value)}
-                        placeholder="e.g. 125.00"
-                      />
-                    </div>
-                    <div>
-                      <Label>Discount Expires On</Label>
-                      <Input
-                        type="datetime-local"
-                        value={earlyExpires}
-                        onChange={(e) => setEarlyExpires(e.target.value)}
-                      />
+                  <div className="space-y-4 pt-2">
+                    <p className="text-xs text-muted-foreground">
+                      Set the early-bird price per player for individual registrations, plus optional <strong>team-total</strong> prices for 2-player and 4-player team registrations. Leave team fields blank to fall back to per-player × team size.
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Early Bird Price — Per Player ($)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={earlyPriceDisplay}
+                          onChange={(e) => setEarlyPriceDisplay(e.target.value)}
+                          placeholder="e.g. 125.00"
+                        />
+                      </div>
+                      <div>
+                        <Label>Discount Expires On</Label>
+                        <Input
+                          type="datetime-local"
+                          value={earlyExpires}
+                          onChange={(e) => setEarlyExpires(e.target.value)}
+                        />
+                      </div>
+                      {maxGroupSize >= 2 && (
+                        <div>
+                          <Label>Early Bird — 2-Player Team Total ($)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={earlyPrice2Display}
+                            onChange={(e) => setEarlyPrice2Display(e.target.value)}
+                            placeholder="e.g. 240.00"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Total price for a 2-player team (not per player).</p>
+                        </div>
+                      )}
+                      {maxGroupSize >= 4 && (
+                        <div>
+                          <Label>Early Bird — 4-Player Team Total ($)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={earlyPrice4Display}
+                            onChange={(e) => setEarlyPrice4Display(e.target.value)}
+                            placeholder="e.g. 460.00"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Total price for a 4-player team (not per player).</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

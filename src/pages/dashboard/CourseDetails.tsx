@@ -336,7 +336,7 @@ export default function CourseDetails() {
               <SelectContent>
                 {tournaments.map(t => (
                   <SelectItem key={t.id} value={t.id}>
-                    {t.title}{t.date ? ` — ${new Date(t.date).toLocaleDateString()}` : ""}
+                    {t.title}{t.date ? ` — ${formatTournamentDate(t.date)}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>

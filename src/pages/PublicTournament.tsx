@@ -944,13 +944,21 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-                <p style={{ color: "#666" }}>
-                  {isTournamentFull && tournament.waitlist_enabled
-                    ? "This tournament is currently full. Join the waitlist below."
-                    : tournament.foursome_registration
-                      ? "Register your foursome below to secure your spots."
-                      : "Fill out the form below to secure your spot."}
-                </p>
+                {(tournament as any).registration_intro_html?.trim() ? (
+                  <div
+                    className="prose prose-sm max-w-none mx-auto"
+                    style={{ color: "#666" }}
+                    dangerouslySetInnerHTML={{ __html: (tournament as any).registration_intro_html }}
+                  />
+                ) : (
+                  <p style={{ color: "#666" }}>
+                    {isTournamentFull && tournament.waitlist_enabled
+                      ? "This tournament is currently full. Join the waitlist below."
+                      : tournament.foursome_registration
+                        ? "Register your foursome below to secure your spots."
+                        : "Fill out the form below to secure your spot."}
+                  </p>
+                )}
                 {earlyActive && (
                   <div className="mt-4 inline-flex flex-col items-center gap-1 px-4 py-3 rounded-lg" style={{ backgroundColor: secondary + "20", border: `1px solid ${secondary}` }}>
                     <div className="text-sm" style={{ color: "#666" }}>

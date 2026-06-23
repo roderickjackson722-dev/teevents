@@ -325,9 +325,6 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const allowGroup = maxGroupSize > 1;
   const activeFee = selectedTier
     ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
-  const allowGroup = maxGroupSize > 1;
-  const activeFee = selectedTier
-    ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
     : registrationFeeCents;
   const playerCount = allowGroup ? players.length : 1;
   // Early-bird team total override (only when no tier selected and total provided for this team size).

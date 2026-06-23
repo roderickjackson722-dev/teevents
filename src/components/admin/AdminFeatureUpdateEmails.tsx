@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Plus, Trash2, Save, Mail } from "lucide-react";
+import { Copy, Plus, Trash2, Save, Mail, ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Template {
   id: string;
@@ -91,6 +92,9 @@ export default function AdminFeatureUpdateEmails() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [values, setValues] = useState<Record<string, string>>({});
+  const [screenshots, setScreenshots] = useState<{ url: string; name: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const t = loadTemplates();
@@ -133,8 +137,12 @@ export default function AdminFeatureUpdateEmails() {
       return v ? acc.split(p).join(v) : acc;
     }, text);
 
+  const screenshotBlock = screenshots.length
+    ? `\n\nScreenshot${screenshots.length > 1 ? "s" : ""}:\n${screenshots.map((s) => s.url).join("\n")}`
+    : "";
+
   const renderedSubject = selected ? applyPlaceholders(selected.subject) : "";
-  const renderedBody = selected ? applyPlaceholders(selected.body) : "";
+  const renderedBody = selected ? applyPlaceholders(selected.body) + screenshotBlock : "";
 
   const copy = async (text: string, label: string) => {
     try {
@@ -149,13 +157,57 @@ export default function AdminFeatureUpdateEmails() {
 
   const openMail = () => {
     const to = values["Recipient Email"] || "";
-    const url = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(renderedSubject)}&body=${encodeURIComponent(renderedBody)}`;
-    window.location.href = url;
+    // Some clients truncate very long mailto bodies — keep the body but warn.
+    const MAX = 1800;
+    let body = renderedBody;
+    if (body.length > MAX) {
+      body = body.slice(0, MAX) + "\n\n[Body truncated — full version copied to clipboard]";
+      navigator.clipboard.writeText(renderedBody).catch(() => {});
+      toast.message("Body was long — full version copied to clipboard");
+    }
+    const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(renderedSubject)}&body=${encodeURIComponent(body)}`;
+    // Use a real anchor click so the browser hands the URL to the OS mail handler
+    const a = document.createElement("a");
+    a.href = href;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const insertPlaceholder = (p: string) => {
     if (!selected) return;
     updateTemplate({ body: selected.body + (selected.body.endsWith("\n") ? "" : " ") + p });
+  };
+
+  const handleUploadScreenshot = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `feature-update-emails/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      setScreenshots((prev) => [...prev, { url: data.publicUrl, name: file.name }]);
+      toast.success("Screenshot uploaded");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -269,6 +321,61 @@ export default function AdminFeatureUpdateEmails() {
                 </div>
               );
             })}
+
+            <div className="pt-3 border-t border-border space-y-2">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                Screenshots (optional)
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Upload screenshots showing the update. Public image links are appended to the email body so the organizer can view them.
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleUploadScreenshot(f);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ImagePlus className="h-4 w-4 mr-1" />}
+                {uploading ? "Uploading..." : "Add Screenshot"}
+              </Button>
+              {screenshots.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+                  {screenshots.map((s, i) => (
+                    <div key={s.url} className="relative group border border-border rounded overflow-hidden">
+                      <img src={s.url} alt={s.name} className="w-full h-24 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setScreenshots((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-background/90 border border-border rounded p-0.5"
+                        aria-label="Remove screenshot"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { navigator.clipboard.writeText(s.url); toast.success("URL copied"); }}
+                        className="absolute bottom-1 right-1 bg-background/90 border border-border rounded px-1.5 py-0.5 text-[10px]"
+                      >
+                        Copy URL
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
 
             <div className="pt-3 border-t border-border space-y-2">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Preview</Label>

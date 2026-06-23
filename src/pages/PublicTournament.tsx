@@ -997,7 +997,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     )}
                   </div>
                 )}
-                {tournament.max_players && (
+                {tournament.max_players && tournament.show_registration_count !== false && (
                   <p className="text-xs mt-2" style={{ color: "#999" }}>
                     {registrationCount} / {tournament.max_players} spots filled
                   </p>

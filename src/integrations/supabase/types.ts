@@ -6958,6 +6958,8 @@ export type Database = {
           donations_header_text: string | null
           early_registration_enabled: boolean
           early_registration_expires_at: string | null
+          early_registration_price_2_cents: number | null
+          early_registration_price_4_cents: number | null
           early_registration_price_cents: number | null
           early_signup_enabled: boolean
           early_signup_label: string | null
@@ -7172,6 +7174,8 @@ export type Database = {
           donations_header_text?: string | null
           early_registration_enabled?: boolean
           early_registration_expires_at?: string | null
+          early_registration_price_2_cents?: number | null
+          early_registration_price_4_cents?: number | null
           early_registration_price_cents?: number | null
           early_signup_enabled?: boolean
           early_signup_label?: string | null
@@ -7386,6 +7390,8 @@ export type Database = {
           donations_header_text?: string | null
           early_registration_enabled?: boolean
           early_registration_expires_at?: string | null
+          early_registration_price_2_cents?: number | null
+          early_registration_price_4_cents?: number | null
           early_registration_price_cents?: number | null
           early_signup_enabled?: boolean
           early_signup_label?: string | null

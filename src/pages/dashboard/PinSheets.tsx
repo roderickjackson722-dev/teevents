@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 import { openPrintWindow } from "@/components/printables/printUtils";
+import { formatTournamentDate } from "@/lib/formatDate";
 
 type Depth = "front" | "middle" | "back" | "";
 type Side = "left" | "center" | "right" | "";

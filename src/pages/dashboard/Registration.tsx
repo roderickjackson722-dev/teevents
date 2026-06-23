@@ -152,6 +152,8 @@ const Registration = () => {
   /* Early registration discount */
   const [earlyEnabled, setEarlyEnabled] = useState<boolean>(false);
   const [earlyPriceDisplay, setEarlyPriceDisplay] = useState<string>("");
+  const [earlyPrice2Display, setEarlyPrice2Display] = useState<string>("");
+  const [earlyPrice4Display, setEarlyPrice4Display] = useState<string>("");
   const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);

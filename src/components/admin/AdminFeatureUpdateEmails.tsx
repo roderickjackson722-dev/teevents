@@ -137,8 +137,12 @@ export default function AdminFeatureUpdateEmails() {
       return v ? acc.split(p).join(v) : acc;
     }, text);
 
+  const screenshotBlock = screenshots.length
+    ? `\n\nScreenshot${screenshots.length > 1 ? "s" : ""}:\n${screenshots.map((s) => s.url).join("\n")}`
+    : "";
+
   const renderedSubject = selected ? applyPlaceholders(selected.subject) : "";
-  const renderedBody = selected ? applyPlaceholders(selected.body) : "";
+  const renderedBody = selected ? applyPlaceholders(selected.body) + screenshotBlock : "";
 
   const copy = async (text: string, label: string) => {
     try {
@@ -153,13 +157,57 @@ export default function AdminFeatureUpdateEmails() {
 
   const openMail = () => {
     const to = values["Recipient Email"] || "";
-    const url = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(renderedSubject)}&body=${encodeURIComponent(renderedBody)}`;
-    window.location.href = url;
+    // Some clients truncate very long mailto bodies — keep the body but warn.
+    const MAX = 1800;
+    let body = renderedBody;
+    if (body.length > MAX) {
+      body = body.slice(0, MAX) + "\n\n[Body truncated — full version copied to clipboard]";
+      navigator.clipboard.writeText(renderedBody).catch(() => {});
+      toast.message("Body was long — full version copied to clipboard");
+    }
+    const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(renderedSubject)}&body=${encodeURIComponent(body)}`;
+    // Use a real anchor click so the browser hands the URL to the OS mail handler
+    const a = document.createElement("a");
+    a.href = href;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const insertPlaceholder = (p: string) => {
     if (!selected) return;
     updateTemplate({ body: selected.body + (selected.body.endsWith("\n") ? "" : " ") + p });
+  };
+
+  const handleUploadScreenshot = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `feature-update-emails/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      setScreenshots((prev) => [...prev, { url: data.publicUrl, name: file.name }]);
+      toast.success("Screenshot uploaded");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (

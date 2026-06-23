@@ -1220,7 +1220,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             style={{
               color: "#ffffff",
               textShadow: "0 2px 20px rgba(0,0,0,0.4)",
-              fontSize: `clamp(1.75rem, 5vw, ${headingSize}px)`,
+              fontSize: `clamp(${Math.max(24, Math.round(headingSize * 0.5))}px, ${Math.max(5, Math.round(headingSize / 12))}vw, ${headingSize}px)`,
               letterSpacing: "normal",
               textAlign: textAlignClass[titlePos],
               width: "100%",

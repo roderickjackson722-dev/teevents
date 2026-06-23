@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_expires_at")
+      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at")
       .eq("id", tournament_id)
       .single();
 
@@ -75,8 +75,17 @@ Deno.serve(async (req) => {
       ? Number((tournament as any).early_registration_price_cents) || 0
       : tournament.registration_fee_cents || 0;
 
+    // Early-bird team-total overrides (only used when no tier selected)
+    const earlyTeam2Cents = earlyActive && (tournament as any).early_registration_price_2_cents != null
+      ? Number((tournament as any).early_registration_price_2_cents)
+      : null;
+    const earlyTeam4Cents = earlyActive && (tournament as any).early_registration_price_4_cents != null
+      ? Number((tournament as any).early_registration_price_4_cents)
+      : null;
+
     // Determine fee per player: use tier price if tier selected, else effective default
     let feePerPlayer = defaultFeeCents;
+    let teamTotalOverride: number | null = null;
     if (tierId) {
       const { data: tier } = await supabaseAdmin
         .from("tournament_registration_tiers")
@@ -86,10 +95,19 @@ Deno.serve(async (req) => {
         .eq("is_active", true)
         .single();
       if (tier) feePerPlayer = tier.price_cents;
+    } else if (earlyActive) {
+      if (players.length === 4 && earlyTeam4Cents != null) teamTotalOverride = earlyTeam4Cents;
+      else if (players.length === 2 && earlyTeam2Cents != null) teamTotalOverride = earlyTeam2Cents;
     }
 
     const passFeesToParticipants = (tournament as any).pass_fees_to_participants !== false;
-    const registrationFeeCents = feePerPlayer * players.length;
+    const registrationFeeCents = teamTotalOverride != null
+      ? teamTotalOverride
+      : feePerPlayer * players.length;
+    if (teamTotalOverride != null && players.length > 0) {
+      // Keep feePerPlayer consistent for the per-player line item below.
+      feePerPlayer = Math.round(teamTotalOverride / players.length);
+    }
 
     // Validate add-on selections against DB and compute add-on totals
     type ResolvedAddon = { id: string; name: string; price_cents: number; max_per_golfer: number; qty_per_player: number };
@@ -317,18 +335,34 @@ Deno.serve(async (req) => {
       }
     } else {
       if (registrationFeeCents > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Registration — ${tournament.title}`,
-              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+        if (teamTotalOverride != null) {
+          // Single team-total line to avoid per-player rounding drift.
+          lineItems.push({
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Early Bird Team Registration — ${tournament.title}`,
+                description: `${players.length}-player team: ${playerNames}`,
+              },
+              unit_amount: registrationFeeCents,
             },
-            unit_amount: feePerPlayer,
-          },
-          quantity: players.length,
-        });
+            quantity: 1,
+          });
+        } else {
+          lineItems.push({
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Registration — ${tournament.title}`,
+                description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+              },
+              unit_amount: feePerPlayer,
+            },
+            quantity: players.length,
+          });
+        }
       }
+
 
       for (const a of resolvedAddons) {
         const totalQty = a.qty_per_player * players.length;

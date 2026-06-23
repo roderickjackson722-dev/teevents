@@ -41,6 +41,9 @@ interface RegistrationFormProps {
   primaryColor: string;
   secondaryColor: string;
   registrationFeeCents?: number;
+  /** Optional early-bird team-total prices (in cents) for 2-player and 4-player teams.
+   *  If provided and the team size matches, the total overrides per-player × count. */
+  earlyTeamTotalsCents?: { 2?: number | null; 4?: number | null } | null;
   foursomeMode?: boolean;
   maxGroupSize?: number;
   isNonprofit?: boolean;
@@ -226,7 +229,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -324,7 +327,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
     : registrationFeeCents;
   const playerCount = allowGroup ? players.length : 1;
-  const baseRegistrationCents = activeFee ? activeFee * playerCount : 0;
+  // Early-bird team total override (only when no tier selected and total provided for this team size).
+  const teamTotalOverride = !selectedTier && earlyTeamTotalsCents
+    ? (playerCount === 4 && earlyTeamTotalsCents[4] != null
+        ? Number(earlyTeamTotalsCents[4])
+        : playerCount === 2 && earlyTeamTotalsCents[2] != null
+          ? Number(earlyTeamTotalsCents[2])
+          : null)
+    : null;
+  const baseRegistrationCents = teamTotalOverride != null
+    ? teamTotalOverride
+    : (activeFee ? activeFee * playerCount : 0);
   // Add-on totals (qty is per-golfer; total = qty * playerCount * price)
   const addonTotalCents = addons.reduce((sum, a) => {
     const qty = addonQty[a.id] || 0;

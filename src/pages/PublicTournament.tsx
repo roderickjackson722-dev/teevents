@@ -583,8 +583,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     ? new Date((tournament as any).early_registration_expires_at)
     : null;
   const earlyPriceCents = (tournament as any)?.early_registration_price_cents ?? null;
+  const earlyPrice2Cents = (tournament as any)?.early_registration_price_2_cents ?? null;
+  const earlyPrice4Cents = (tournament as any)?.early_registration_price_4_cents ?? null;
   const earlyActive = !!tournament && earlyEnabledRaw && earlyPriceCents != null && (!earlyExpiresAt || earlyExpiresAt.getTime() > Date.now());
   const effectiveFeeCents = earlyActive ? Number(earlyPriceCents) : (tournament?.registration_fee_cents || 0);
+  const earlyTeamTotals = earlyActive
+    ? {
+        2: earlyPrice2Cents != null ? Number(earlyPrice2Cents) : null,
+        4: earlyPrice4Cents != null ? Number(earlyPrice4Cents) : null,
+      }
+    : null;
 
   useEffect(() => {
     if (!earlyActive || !earlyExpiresAt) return;
@@ -968,6 +976,20 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       </span>
                       <span className="ml-2 text-xs uppercase tracking-wider font-semibold">Early Bird</span>
                     </div>
+                    {(earlyPrice2Cents != null || earlyPrice4Cents != null) && (
+                      <div className="text-xs mt-1" style={{ color: "#666" }}>
+                        {earlyPrice2Cents != null && (
+                          <span className="mr-3">
+                            2-player team: <strong style={{ color: secondary }}>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(earlyPrice2Cents) / 100)}</strong>
+                          </span>
+                        )}
+                        {earlyPrice4Cents != null && (
+                          <span>
+                            4-player team: <strong style={{ color: secondary }}>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(earlyPrice4Cents) / 100)}</strong>
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {earlyExpiresAt && (
                       <div className="text-xs" style={{ color: "#666" }}>
                         Early bird pricing ends in <strong>{formatCountdown()}</strong>
@@ -1016,6 +1038,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     primaryColor={primary}
                     secondaryColor={secondary}
                     registrationFeeCents={effectiveFeeCents}
+                    earlyTeamTotalsCents={earlyTeamTotals}
                     foursomeMode={tournament.foursome_registration}
                     maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
                     isNonprofit={nonprofitInfo.isNonprofit}

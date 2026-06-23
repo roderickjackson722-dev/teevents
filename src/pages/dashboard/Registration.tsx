@@ -47,6 +47,8 @@ interface Tournament {
   allow_cover_fees: boolean;
   early_registration_enabled?: boolean | null;
   early_registration_price_cents?: number | null;
+  early_registration_price_2_cents?: number | null;
+  early_registration_price_4_cents?: number | null;
   early_registration_expires_at?: string | null;
   allow_cash_registration?: boolean | null;
 }
@@ -150,6 +152,8 @@ const Registration = () => {
   /* Early registration discount */
   const [earlyEnabled, setEarlyEnabled] = useState<boolean>(false);
   const [earlyPriceDisplay, setEarlyPriceDisplay] = useState<string>("");
+  const [earlyPrice2Display, setEarlyPrice2Display] = useState<string>("");
+  const [earlyPrice4Display, setEarlyPrice4Display] = useState<string>("");
   const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
@@ -162,7 +166,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -194,6 +198,10 @@ const Registration = () => {
       setEarlyEnabled(!!tournament.early_registration_enabled);
       const earlyCents = tournament.early_registration_price_cents;
       setEarlyPriceDisplay(earlyCents != null ? (earlyCents / 100).toFixed(2) : "");
+      const early2 = (tournament as any).early_registration_price_2_cents;
+      setEarlyPrice2Display(early2 != null ? (early2 / 100).toFixed(2) : "");
+      const early4 = (tournament as any).early_registration_price_4_cents;
+      setEarlyPrice4Display(early4 != null ? (early4 / 100).toFixed(2) : "");
       const exp = tournament.early_registration_expires_at;
       setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
       setAllowCash(!!tournament.allow_cash_registration);
@@ -233,6 +241,8 @@ const Registration = () => {
     if (demoGuard()) return;
     setSaving(true);
     const earlyCents = earlyPriceDisplay ? Math.round(parseFloat(earlyPriceDisplay) * 100) : null;
+    const early2Cents = earlyPrice2Display ? Math.round(parseFloat(earlyPrice2Display) * 100) : null;
+    const early4Cents = earlyPrice4Display ? Math.round(parseFloat(earlyPrice4Display) * 100) : null;
     const earlyIso = earlyExpires ? new Date(earlyExpires).toISOString() : null;
     const updates: any = {
       registration_fee_cents: feeCents,
@@ -244,6 +254,8 @@ const Registration = () => {
       captain_label: captainLabel.trim() || null,
       early_registration_enabled: earlyEnabled,
       early_registration_price_cents: earlyCents,
+      early_registration_price_2_cents: early2Cents,
+      early_registration_price_4_cents: early4Cents,
       early_registration_expires_at: earlyIso,
       allow_cash_registration: allowCash,
       registration_intro_html: registrationIntroHtml.trim() || null,
@@ -778,25 +790,58 @@ const Registration = () => {
                   <Switch checked={earlyEnabled} onCheckedChange={setEarlyEnabled} />
                 </div>
                 {earlyEnabled && (
-                  <div className="grid sm:grid-cols-2 gap-4 pt-2">
-                    <div>
-                      <Label>Early Bird Price ($)</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={earlyPriceDisplay}
-                        onChange={(e) => setEarlyPriceDisplay(e.target.value)}
-                        placeholder="e.g. 125.00"
-                      />
-                    </div>
-                    <div>
-                      <Label>Discount Expires On</Label>
-                      <Input
-                        type="datetime-local"
-                        value={earlyExpires}
-                        onChange={(e) => setEarlyExpires(e.target.value)}
-                      />
+                  <div className="space-y-4 pt-2">
+                    <p className="text-xs text-muted-foreground">
+                      Set the early-bird price per player for individual registrations, plus optional <strong>team-total</strong> prices for 2-player and 4-player team registrations. Leave team fields blank to fall back to per-player × team size.
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Early Bird Price — Per Player ($)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={earlyPriceDisplay}
+                          onChange={(e) => setEarlyPriceDisplay(e.target.value)}
+                          placeholder="e.g. 125.00"
+                        />
+                      </div>
+                      <div>
+                        <Label>Discount Expires On</Label>
+                        <Input
+                          type="datetime-local"
+                          value={earlyExpires}
+                          onChange={(e) => setEarlyExpires(e.target.value)}
+                        />
+                      </div>
+                      {maxGroupSize >= 2 && (
+                        <div>
+                          <Label>Early Bird — 2-Player Team Total ($)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={earlyPrice2Display}
+                            onChange={(e) => setEarlyPrice2Display(e.target.value)}
+                            placeholder="e.g. 240.00"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Total price for a 2-player team (not per player).</p>
+                        </div>
+                      )}
+                      {maxGroupSize >= 4 && (
+                        <div>
+                          <Label>Early Bird — 4-Player Team Total ($)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={earlyPrice4Display}
+                            onChange={(e) => setEarlyPrice4Display(e.target.value)}
+                            placeholder="e.g. 460.00"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Total price for a 4-player team (not per player).</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

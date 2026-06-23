@@ -41,6 +41,9 @@ interface RegistrationFormProps {
   primaryColor: string;
   secondaryColor: string;
   registrationFeeCents?: number;
+  /** Optional early-bird team-total prices (in cents) for 2-player and 4-player teams.
+   *  If provided and the team size matches, the total overrides per-player × count. */
+  earlyTeamTotalsCents?: { 2?: number | null; 4?: number | null } | null;
   foursomeMode?: boolean;
   maxGroupSize?: number;
   isNonprofit?: boolean;

@@ -206,9 +206,16 @@ export default function PlatformTournaments() {
                         <TableCell className="text-right">{money(r.revenue_cents || 0)}</TableCell>
                         <TableCell className="text-right">{r.sponsors_count}</TableCell>
                         <TableCell className="text-right">
-                          <Button asChild variant="outline" size="sm">
-                            <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />View</Link>
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button asChild variant="outline" size="sm">
+                              <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
+                            </Button>
+                            {r.organization_id && (
+                              <Button asChild variant="default" size="sm">
+                                <Link to={`/dashboard?admin_org=${r.organization_id}&tournament_id=${r.id}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Dashboard</Link>
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

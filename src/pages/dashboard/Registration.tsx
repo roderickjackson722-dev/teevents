@@ -261,6 +261,7 @@ const Registration = () => {
       early_registration_price_4_cents: early4Cents,
       early_registration_expires_at: earlyIso,
       allow_cash_registration: allowCash,
+      show_registration_count: showRegCount,
       registration_intro_html: registrationIntroHtml.trim() || null,
       registration_promo_html: registrationPromoHtml.trim() || null,
     };

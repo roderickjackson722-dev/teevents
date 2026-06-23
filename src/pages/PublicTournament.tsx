@@ -1031,11 +1031,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   />
                 </div>
               )}
-              {tournament.refund_policy_text && (
+              {(tournament as any).refund_policy_text && (
                 <div className="mt-4 p-4 rounded-lg border text-sm" style={{ borderColor: "#e5e5e5", backgroundColor: "#fff" }}>
                   <p className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: primary }}>Refund Policy</p>
-                  <p style={{ color: "#666" }}>{tournament.refund_policy_text}</p>
+                  <p style={{ color: "#666" }}>{(tournament as any).refund_policy_text}</p>
                 </div>
+              )}
+              {(tournament as any).registration_promo_html?.trim() && (
+                <div
+                  className="mt-4 p-5 rounded-xl border-2 prose prose-sm max-w-none"
+                  style={{ borderColor: secondary, backgroundColor: secondary + "10", color: "#333" }}
+                  dangerouslySetInnerHTML={{ __html: (tournament as any).registration_promo_html }}
+                />
               )}
             </motion.div>
           </div>

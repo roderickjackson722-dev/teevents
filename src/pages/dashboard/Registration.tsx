@@ -51,6 +51,7 @@ interface Tournament {
   early_registration_price_4_cents?: number | null;
   early_registration_expires_at?: string | null;
   allow_cash_registration?: boolean | null;
+  show_registration_count?: boolean | null;
 }
 
 interface RegistrationTier {
@@ -157,6 +158,7 @@ const Registration = () => {
   const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
+  const [showRegCount, setShowRegCount] = useState<boolean>(true);
   /* Public registration page custom content */
   const [registrationIntroHtml, setRegistrationIntroHtml] = useState<string>("");
   const [registrationPromoHtml, setRegistrationPromoHtml] = useState<string>("");
@@ -166,7 +168,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -205,6 +207,7 @@ const Registration = () => {
       const exp = tournament.early_registration_expires_at;
       setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
       setAllowCash(!!tournament.allow_cash_registration);
+      setShowRegCount((tournament as any).show_registration_count !== false);
       setRegistrationIntroHtml(((tournament as any).registration_intro_html as string) || "");
       setRegistrationPromoHtml(((tournament as any).registration_promo_html as string) || "");
     }
@@ -258,6 +261,7 @@ const Registration = () => {
       early_registration_price_4_cents: early4Cents,
       early_registration_expires_at: earlyIso,
       allow_cash_registration: allowCash,
+      show_registration_count: showRegCount,
       registration_intro_html: registrationIntroHtml.trim() || null,
       registration_promo_html: registrationPromoHtml.trim() || null,
     };
@@ -714,6 +718,12 @@ const Registration = () => {
                     }}
                     onBlur={() => setMaxPlayersDisplay(String(maxPlayers))}
                   />
+                  <div className="flex items-center gap-2 mt-2">
+                    <Switch checked={showRegCount} onCheckedChange={setShowRegCount} id="show-reg-count" />
+                    <Label htmlFor="show-reg-count" className="text-xs text-muted-foreground cursor-pointer">
+                      Show "X / {maxPlayers} spots filled" on public page
+                    </Label>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label>Registration Status</Label>

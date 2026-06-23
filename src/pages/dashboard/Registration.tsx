@@ -153,6 +153,9 @@ const Registration = () => {
   const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
+  /* Public registration page custom content */
+  const [registrationIntroHtml, setRegistrationIntroHtml] = useState<string>("");
+  const [registrationPromoHtml, setRegistrationPromoHtml] = useState<string>("");
 
   /* fetch tournaments */
   useEffect(() => {

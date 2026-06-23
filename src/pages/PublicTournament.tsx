@@ -2589,10 +2589,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       )}
                     </div>
                   ))}
-                {((tournament as any).org_contact_email || (tournament as any).org_contact_phone || (tournament as any).org_address) && (
+                {((tournament as any).contact_name || (tournament as any).org_contact_email || (tournament as any).org_contact_phone || (tournament as any).org_address) && (
                   <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
                     <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Contact</h3>
                     <div className="space-y-2 text-sm" style={{ color: "#333" }}>
+                      {(tournament as any).contact_name && (
+                        <div className="font-semibold" style={{ color: "#1a1a1a" }}>{(tournament as any).contact_name}</div>
+                      )}
                       {(tournament as any).org_contact_email && (
                         <div>Email: <a href={`mailto:${(tournament as any).org_contact_email}`} className="underline" style={{ color: primary }}>{(tournament as any).org_contact_email}</a></div>
                       )}

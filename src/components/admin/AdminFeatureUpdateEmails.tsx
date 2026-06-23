@@ -92,6 +92,9 @@ export default function AdminFeatureUpdateEmails() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [values, setValues] = useState<Record<string, string>>({});
+  const [screenshots, setScreenshots] = useState<{ url: string; name: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const t = loadTemplates();

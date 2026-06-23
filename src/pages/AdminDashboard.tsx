@@ -2014,6 +2014,8 @@ const AdminDashboard = () => {
             <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
           )}
 
+          {activeTab === "feature-update-emails" && <AdminFeatureUpdateEmails />}
+
           {/* Store Tab */}
           {activeTab === "store" && (
             <AdminStore products={platformProducts} callAdminApi={callAdminApi} onRefresh={fetchAll} />

@@ -246,6 +246,8 @@ const Registration = () => {
       early_registration_price_cents: earlyCents,
       early_registration_expires_at: earlyIso,
       allow_cash_registration: allowCash,
+      registration_intro_html: registrationIntroHtml.trim() || null,
+      registration_promo_html: registrationPromoHtml.trim() || null,
     };
     const { error } = await supabase.from("tournaments").update(updates).eq("id", selectedTournament);
     if (error) toast.error(error.message);

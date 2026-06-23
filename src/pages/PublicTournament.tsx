@@ -802,7 +802,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const scrollTo = (href: string) => {
     setMobileNavOpen(false);
     if (href === "#top") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
-    const el = document.querySelector(href);
+    let el = document.querySelector(href);
+    // Fallback: Sponsors nav points to #sponsors (thank-you carousel). If that
+    // section isn't rendered (no paid sponsors yet), jump to the "Become a
+    // Sponsor" tiers section instead so the link is never a no-op.
+    if (!el && href === "#sponsors") el = document.querySelector("#become-a-sponsor");
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 

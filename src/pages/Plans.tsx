@@ -56,6 +56,7 @@ const baseFeatures = [
 ];
 
 const proFeatures = [
+  "Custom website design — we'll work with you to tailor your tournament page layout, colors, and content to match your brand (reasonable requests included; additional customizations available upon request)",
   "Unlimited players",
   "Live leaderboard — embed on your website",
   "Live scoring from player phones (no app)",

@@ -18,6 +18,7 @@ import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
+import AdminFeatureUpdateEmails from "@/components/admin/AdminFeatureUpdateEmails";
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
 import AdminAuditLog from "@/components/admin/AdminAuditLog";
 import AdminProspectStats from "@/components/admin/AdminProspectStats";
@@ -55,7 +56,7 @@ const AdminDashboard = () => {
     if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "demo-requests">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "demo-requests" | "feature-update-emails">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -818,6 +819,7 @@ const AdminDashboard = () => {
                 {([
                   ["mockup-outreach", "Sample Mockups (CRM)", Trophy],
                   ["sales-outreach", "Outreach Templates", Mail],
+                  ["feature-update-emails", "Feature Update Emails", Mail],
                   ["sales-demo", "Demo / Sales Hub", FileText],
                   ["demo-requests", "Demo Requests", UserCheck],
                 ] as const).map(([key, label, Icon]) => (
@@ -2011,6 +2013,8 @@ const AdminDashboard = () => {
           {activeTab === "sales-outreach" && (
             <AdminEmailScripts templates={outreachTemplates} callAdminApi={callAdminApi} onRefresh={fetchAll} />
           )}
+
+          {activeTab === "feature-update-emails" && <AdminFeatureUpdateEmails />}
 
           {/* Store Tab */}
           {activeTab === "store" && (

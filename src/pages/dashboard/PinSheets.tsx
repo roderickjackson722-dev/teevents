@@ -164,7 +164,7 @@ export default function PinSheets() {
     if (!tournament) return;
     const pars = (course?.hole_pars as number[] | null) || [];
     const dists = (course?.hole_distances as number[] | null) || [];
-    const dateStr = tournament.date ? new Date(tournament.date).toLocaleDateString() : "";
+    const dateStr = formatTournamentDate(tournament.date);
     const tournamentUrl = `${window.location.origin}/t/${tournament.slug}`;
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(tournamentUrl)}`;
 

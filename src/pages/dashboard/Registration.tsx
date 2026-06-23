@@ -198,6 +198,10 @@ const Registration = () => {
       setEarlyEnabled(!!tournament.early_registration_enabled);
       const earlyCents = tournament.early_registration_price_cents;
       setEarlyPriceDisplay(earlyCents != null ? (earlyCents / 100).toFixed(2) : "");
+      const early2 = (tournament as any).early_registration_price_2_cents;
+      setEarlyPrice2Display(early2 != null ? (early2 / 100).toFixed(2) : "");
+      const early4 = (tournament as any).early_registration_price_4_cents;
+      setEarlyPrice4Display(early4 != null ? (early4 / 100).toFixed(2) : "");
       const exp = tournament.early_registration_expires_at;
       setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
       setAllowCash(!!tournament.allow_cash_registration);

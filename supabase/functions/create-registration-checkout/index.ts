@@ -335,18 +335,34 @@ Deno.serve(async (req) => {
       }
     } else {
       if (registrationFeeCents > 0) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Registration — ${tournament.title}`,
-              description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+        if (teamTotalOverride != null) {
+          // Single team-total line to avoid per-player rounding drift.
+          lineItems.push({
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Early Bird Team Registration — ${tournament.title}`,
+                description: `${players.length}-player team: ${playerNames}`,
+              },
+              unit_amount: registrationFeeCents,
             },
-            unit_amount: feePerPlayer,
-          },
-          quantity: players.length,
-        });
+            quantity: 1,
+          });
+        } else {
+          lineItems.push({
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Registration — ${tournament.title}`,
+                description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
+              },
+              unit_amount: feePerPlayer,
+            },
+            quantity: players.length,
+          });
+        }
       }
+
 
       for (const a of resolvedAddons) {
         const totalQty = a.qty_per_player * players.length;

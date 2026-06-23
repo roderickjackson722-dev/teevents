@@ -718,6 +718,12 @@ const Registration = () => {
                     }}
                     onBlur={() => setMaxPlayersDisplay(String(maxPlayers))}
                   />
+                  <div className="flex items-center gap-2 mt-2">
+                    <Switch checked={showRegCount} onCheckedChange={setShowRegCount} id="show-reg-count" />
+                    <Label htmlFor="show-reg-count" className="text-xs text-muted-foreground cursor-pointer">
+                      Show "X / {maxPlayers} spots filled" on public page
+                    </Label>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label>Registration Status</Label>

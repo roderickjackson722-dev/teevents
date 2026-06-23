@@ -802,7 +802,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const scrollTo = (href: string) => {
     setMobileNavOpen(false);
     if (href === "#top") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
-    const el = document.querySelector(href);
+    let el = document.querySelector(href);
+    // Fallback: Sponsors nav points to #sponsors (thank-you carousel). If that
+    // section isn't rendered (no paid sponsors yet), jump to the "Become a
+    // Sponsor" tiers section instead so the link is never a no-op.
+    if (!el && href === "#sponsors") el = document.querySelector("#become-a-sponsor");
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -940,13 +944,21 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-                <p style={{ color: "#666" }}>
-                  {isTournamentFull && tournament.waitlist_enabled
-                    ? "This tournament is currently full. Join the waitlist below."
-                    : tournament.foursome_registration
-                      ? "Register your foursome below to secure your spots."
-                      : "Fill out the form below to secure your spot."}
-                </p>
+                {(tournament as any).registration_intro_html?.trim() ? (
+                  <div
+                    className="prose prose-sm max-w-none mx-auto"
+                    style={{ color: "#666" }}
+                    dangerouslySetInnerHTML={{ __html: (tournament as any).registration_intro_html }}
+                  />
+                ) : (
+                  <p style={{ color: "#666" }}>
+                    {isTournamentFull && tournament.waitlist_enabled
+                      ? "This tournament is currently full. Join the waitlist below."
+                      : tournament.foursome_registration
+                        ? "Register your foursome below to secure your spots."
+                        : "Fill out the form below to secure your spot."}
+                  </p>
+                )}
                 {earlyActive && (
                   <div className="mt-4 inline-flex flex-col items-center gap-1 px-4 py-3 rounded-lg" style={{ backgroundColor: secondary + "20", border: `1px solid ${secondary}` }}>
                     <div className="text-sm" style={{ color: "#666" }}>
@@ -1019,11 +1031,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   />
                 </div>
               )}
-              {tournament.refund_policy_text && (
+              {(tournament as any).refund_policy_text && (
                 <div className="mt-4 p-4 rounded-lg border text-sm" style={{ borderColor: "#e5e5e5", backgroundColor: "#fff" }}>
                   <p className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: primary }}>Refund Policy</p>
-                  <p style={{ color: "#666" }}>{tournament.refund_policy_text}</p>
+                  <p style={{ color: "#666" }}>{(tournament as any).refund_policy_text}</p>
                 </div>
+              )}
+              {(tournament as any).registration_promo_html?.trim() && (
+                <div
+                  className="mt-4 p-5 rounded-xl border-2 prose prose-sm max-w-none"
+                  style={{ borderColor: secondary, backgroundColor: secondary + "10", color: "#333" }}
+                  dangerouslySetInnerHTML={{ __html: (tournament as any).registration_promo_html }}
+                />
               )}
             </motion.div>
           </div>
@@ -2570,10 +2589,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                       )}
                     </div>
                   ))}
-                {((tournament as any).org_contact_email || (tournament as any).org_contact_phone || (tournament as any).org_address) && (
+                {((tournament as any).contact_name || (tournament as any).org_contact_email || (tournament as any).org_contact_phone || (tournament as any).org_address) && (
                   <div className="bg-white rounded-xl border p-6" style={{ borderColor: "#e5e5e5" }}>
                     <h3 className="text-lg font-display font-bold mb-3" style={{ color: primary }}>Contact</h3>
                     <div className="space-y-2 text-sm" style={{ color: "#333" }}>
+                      {(tournament as any).contact_name && (
+                        <div className="font-semibold" style={{ color: "#1a1a1a" }}>{(tournament as any).contact_name}</div>
+                      )}
                       {(tournament as any).org_contact_email && (
                         <div>Email: <a href={`mailto:${(tournament as any).org_contact_email}`} className="underline" style={{ color: primary }}>{(tournament as any).org_contact_email}</a></div>
                       )}

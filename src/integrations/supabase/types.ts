@@ -7033,7 +7033,9 @@ export type Database = {
           refund_policy_text: string | null
           refund_policy_type: string
           registration_fee_cents: number | null
+          registration_intro_html: string | null
           registration_open: boolean | null
+          registration_promo_html: string | null
           registration_url: string | null
           reserve_percentage: number | null
           results_url: string | null
@@ -7245,7 +7247,9 @@ export type Database = {
           refund_policy_text?: string | null
           refund_policy_type?: string
           registration_fee_cents?: number | null
+          registration_intro_html?: string | null
           registration_open?: boolean | null
+          registration_promo_html?: string | null
           registration_url?: string | null
           reserve_percentage?: number | null
           results_url?: string | null
@@ -7457,7 +7461,9 @@ export type Database = {
           refund_policy_text?: string | null
           refund_policy_type?: string
           registration_fee_cents?: number | null
+          registration_intro_html?: string | null
           registration_open?: boolean | null
+          registration_promo_html?: string | null
           registration_url?: string | null
           reserve_percentage?: number | null
           results_url?: string | null

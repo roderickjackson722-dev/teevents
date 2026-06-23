@@ -47,6 +47,8 @@ interface Tournament {
   allow_cover_fees: boolean;
   early_registration_enabled?: boolean | null;
   early_registration_price_cents?: number | null;
+  early_registration_price_2_cents?: number | null;
+  early_registration_price_4_cents?: number | null;
   early_registration_expires_at?: string | null;
   allow_cash_registration?: boolean | null;
 }

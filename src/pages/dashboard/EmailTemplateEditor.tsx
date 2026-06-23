@@ -19,6 +19,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { formatTournamentDate } from "@/lib/formatDate";
 
 interface EmailConfig {
   subject: string;

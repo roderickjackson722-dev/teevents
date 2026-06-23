@@ -158,6 +158,7 @@ const Registration = () => {
   const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
+  const [showRegCount, setShowRegCount] = useState<boolean>(true);
   /* Public registration page custom content */
   const [registrationIntroHtml, setRegistrationIntroHtml] = useState<string>("");
   const [registrationPromoHtml, setRegistrationPromoHtml] = useState<string>("");

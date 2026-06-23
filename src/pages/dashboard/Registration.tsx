@@ -814,6 +814,32 @@ const Registration = () => {
               </div>
 
 
+              {/* Public Registration Page Content */}
+              <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-4">
+                <div>
+                  <Label className="text-sm font-semibold">Registration Intro Text</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                    Shown directly below the "REGISTRATION" heading on your public tournament page. Leave blank to use the default ("Register your foursome below to secure your spots." / "Fill out the form below to secure your spot.").
+                  </p>
+                  <RichTextEditor
+                    value={registrationIntroHtml}
+                    onChange={setRegistrationIntroHtml}
+                    placeholder="e.g. Use promo code EARLY50 at checkout to save $50 per player!"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Promotional Info (shown below the registration form)</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                    Optional rich-text block displayed under the registration form. Use it to highlight promo codes, special pricing, what's included, or anything else you want viewers to see.
+                  </p>
+                  <RichTextEditor
+                    value={registrationPromoHtml}
+                    onChange={setRegistrationPromoHtml}
+                    placeholder="e.g. 🎉 Use promo code SUMMER25 for 25% off! Includes lunch, range balls, and cart."
+                  />
+                </div>
+              </div>
+
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings

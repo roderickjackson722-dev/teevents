@@ -323,6 +323,61 @@ export default function AdminFeatureUpdateEmails() {
             })}
 
             <div className="pt-3 border-t border-border space-y-2">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                Screenshots (optional)
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Upload screenshots showing the update. Public image links are appended to the email body so the organizer can view them.
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleUploadScreenshot(f);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ImagePlus className="h-4 w-4 mr-1" />}
+                {uploading ? "Uploading..." : "Add Screenshot"}
+              </Button>
+              {screenshots.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+                  {screenshots.map((s, i) => (
+                    <div key={s.url} className="relative group border border-border rounded overflow-hidden">
+                      <img src={s.url} alt={s.name} className="w-full h-24 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setScreenshots((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-background/90 border border-border rounded p-0.5"
+                        aria-label="Remove screenshot"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { navigator.clipboard.writeText(s.url); toast.success("URL copied"); }}
+                        className="absolute bottom-1 right-1 bg-background/90 border border-border rounded px-1.5 py-0.5 text-[10px]"
+                      >
+                        Copy URL
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
+
+            <div className="pt-3 border-t border-border space-y-2">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Preview</Label>
               <div className="rounded-md border border-border bg-muted/30 p-3 text-sm space-y-2">
                 <div><span className="font-semibold">Subject:</span> {renderedSubject}</div>

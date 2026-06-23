@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
+import { formatTournamentDate } from "@/lib/formatDate";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import CourseDatabaseSearch, { type CourseDBResult } from "@/components/dashboard/CourseDatabaseSearch";
 
@@ -336,7 +337,7 @@ export default function CourseDetails() {
               <SelectContent>
                 {tournaments.map(t => (
                   <SelectItem key={t.id} value={t.id}>
-                    {t.title}{t.date ? ` — ${new Date(t.date).toLocaleDateString()}` : ""}
+                    {t.title}{t.date ? ` — ${formatTournamentDate(t.date)}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>

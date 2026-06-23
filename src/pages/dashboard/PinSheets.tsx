@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 import { openPrintWindow } from "@/components/printables/printUtils";
+import { formatTournamentDate } from "@/lib/formatDate";
 
 type Depth = "front" | "middle" | "back" | "";
 type Side = "left" | "center" | "right" | "";
@@ -163,7 +164,7 @@ export default function PinSheets() {
     if (!tournament) return;
     const pars = (course?.hole_pars as number[] | null) || [];
     const dists = (course?.hole_distances as number[] | null) || [];
-    const dateStr = tournament.date ? new Date(tournament.date).toLocaleDateString() : "";
+    const dateStr = formatTournamentDate(tournament.date);
     const tournamentUrl = `${window.location.origin}/t/${tournament.slug}`;
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(tournamentUrl)}`;
 
@@ -256,7 +257,7 @@ export default function PinSheets() {
               <SelectContent>
                 {tournaments.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
-                    {t.title}{t.date ? ` — ${new Date(t.date).toLocaleDateString()}` : ""}
+                    {t.title}{t.date ? ` — ${formatTournamentDate(t.date)}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>

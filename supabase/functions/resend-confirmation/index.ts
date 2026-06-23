@@ -148,7 +148,8 @@ Deno.serve(async (req) => {
     const useCustom = use_custom_template && emailConfig;
 
     const dateStr = tournament.date
-      ? new Date(tournament.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+      ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
+          .toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : null;
 
     // Send emails

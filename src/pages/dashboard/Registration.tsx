@@ -1287,6 +1287,10 @@ const Registration = () => {
               <p className="text-sm text-muted-foreground">
                 Create discount codes specific to this tournament's registration.
               </p>
+              <div className="p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-900 dark:bg-blue-950/30 dark:border-blue-900 dark:text-blue-200">
+                <strong>Promo Codes vs. Early Bird:</strong> Promo Codes (here) are manual or auto-apply codes for partner/sponsor or team-size discounts. For an automatic time-based price drop for everyone before a deadline, use the <strong>Early Registration Discount</strong> on the <em>Settings</em> tab instead. Both can be active at the same time.
+              </div>
+
 
               {promoCodes.length > 0 && (
                 <div className="space-y-4">

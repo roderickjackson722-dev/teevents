@@ -789,6 +789,15 @@ const Registration = () => {
               </div>
 
               {/* Early Registration Discount */}
+              <div className="p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-900 dark:bg-blue-950/30 dark:border-blue-900 dark:text-blue-200">
+                <strong>Heads up — two separate discount tools:</strong>
+                <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                  <li><strong>Early Registration Discount</strong> (this section): an automatic time-based price drop applied to every registration before the deadline. No code required.</li>
+                  <li><strong>Promo Codes</strong> (Promo Codes tab): manual codes golfers enter at checkout — or auto-apply codes you control by team size. Use these for partner/sponsor discounts that aren't time-based.</li>
+                </ul>
+                You can use one or both. Promo codes apply on top of whichever price (regular or early-bird) is active at checkout.
+              </div>
+
               <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -1278,6 +1287,10 @@ const Registration = () => {
               <p className="text-sm text-muted-foreground">
                 Create discount codes specific to this tournament's registration.
               </p>
+              <div className="p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-900 dark:bg-blue-950/30 dark:border-blue-900 dark:text-blue-200">
+                <strong>Promo Codes vs. Early Bird:</strong> Promo Codes (here) are manual or auto-apply codes for partner/sponsor or team-size discounts. For an automatic time-based price drop for everyone before a deadline, use the <strong>Early Registration Discount</strong> on the <em>Settings</em> tab instead. Both can be active at the same time.
+              </div>
+
 
               {promoCodes.length > 0 && (
                 <div className="space-y-4">

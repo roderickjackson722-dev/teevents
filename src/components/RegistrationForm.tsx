@@ -325,9 +325,22 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const allowGroup = maxGroupSize > 1;
   const activeFee = selectedTier
     ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
+  const allowGroup = maxGroupSize > 1;
+  const activeFee = selectedTier
+    ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
     : registrationFeeCents;
   const playerCount = allowGroup ? players.length : 1;
-  const baseRegistrationCents = activeFee ? activeFee * playerCount : 0;
+  // Early-bird team total override (only when no tier selected and total provided for this team size).
+  const teamTotalOverride = !selectedTier && earlyTeamTotalsCents
+    ? (playerCount === 4 && earlyTeamTotalsCents[4] != null
+        ? Number(earlyTeamTotalsCents[4])
+        : playerCount === 2 && earlyTeamTotalsCents[2] != null
+          ? Number(earlyTeamTotalsCents[2])
+          : null)
+    : null;
+  const baseRegistrationCents = teamTotalOverride != null
+    ? teamTotalOverride
+    : (activeFee ? activeFee * playerCount : 0);
   // Add-on totals (qty is per-golfer; total = qty * playerCount * price)
   const addonTotalCents = addons.reduce((sum, a) => {
     const qty = addonQty[a.id] || 0;

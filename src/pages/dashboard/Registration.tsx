@@ -241,6 +241,8 @@ const Registration = () => {
     if (demoGuard()) return;
     setSaving(true);
     const earlyCents = earlyPriceDisplay ? Math.round(parseFloat(earlyPriceDisplay) * 100) : null;
+    const early2Cents = earlyPrice2Display ? Math.round(parseFloat(earlyPrice2Display) * 100) : null;
+    const early4Cents = earlyPrice4Display ? Math.round(parseFloat(earlyPrice4Display) * 100) : null;
     const earlyIso = earlyExpires ? new Date(earlyExpires).toISOString() : null;
     const updates: any = {
       registration_fee_cents: feeCents,
@@ -252,6 +254,8 @@ const Registration = () => {
       captain_label: captainLabel.trim() || null,
       early_registration_enabled: earlyEnabled,
       early_registration_price_cents: earlyCents,
+      early_registration_price_2_cents: early2Cents,
+      early_registration_price_4_cents: early4Cents,
       early_registration_expires_at: earlyIso,
       allow_cash_registration: allowCash,
       registration_intro_html: registrationIntroHtml.trim() || null,

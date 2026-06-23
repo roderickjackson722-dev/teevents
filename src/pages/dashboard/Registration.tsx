@@ -51,6 +51,7 @@ interface Tournament {
   early_registration_price_4_cents?: number | null;
   early_registration_expires_at?: string | null;
   allow_cash_registration?: boolean | null;
+  show_registration_count?: boolean | null;
 }
 
 interface RegistrationTier {

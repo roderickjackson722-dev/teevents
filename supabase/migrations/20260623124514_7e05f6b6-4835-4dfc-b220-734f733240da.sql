@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS show_registration_count boolean NOT NULL DEFAULT true;

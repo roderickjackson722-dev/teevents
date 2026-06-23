@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
+import { formatTournamentDate } from "@/lib/formatDate";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import CourseDatabaseSearch, { type CourseDBResult } from "@/components/dashboard/CourseDatabaseSearch";
 

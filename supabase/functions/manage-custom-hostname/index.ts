@@ -190,9 +190,11 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
@@ -212,7 +214,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: tournament, error: tErr } = await supabase
+    const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
       .select("id, organization_id, custom_domain")
       .eq("id", tournament_id)
@@ -221,6 +223,23 @@ Deno.serve(async (req) => {
     if (tErr || !tournament) {
       return new Response(JSON.stringify({ error: "Tournament not found" }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const [{ data: isAdmin }, { data: membership }] = await Promise.all([
+      supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+      supabaseAdmin
+        .from("org_members")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("organization_id", tournament.organization_id)
+        .maybeSingle(),
+    ]);
+
+    if (!isAdmin && !membership) {
+      return new Response(JSON.stringify({ error: "Not authorized for this tournament" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -246,6 +265,7 @@ Deno.serve(async (req) => {
         const existing = listData.result[0];
         const { patchRes, patchData } = await patchCustomOrigin(CF_BASE, existing.id, CF_API_TOKEN);
         const updated = patchRes.ok && patchData.success ? patchData.result : existing;
+        const originRule = await ensureOriginRule(CF_ZONE_ID, CF_API_TOKEN, cleanHostname);
         const reachability = await checkHostnameReachability(cleanHostname);
         const hasTimeout = reachability.isCloudflareTimeout || reachability.status === 522;
 
@@ -257,6 +277,7 @@ Deno.serve(async (req) => {
             status: hasTimeout ? "origin_timeout" : updated.status,
             ssl_status: updated.ssl?.status || "unknown",
             origin: CUSTOM_DOMAIN_ORIGIN,
+            origin_rule: originRule,
             reachability,
             message: hasTimeout
               ? "Hostname is registered, but Cloudflare is still timing out while reaching TeeVents. The origin route was refreshed — wait a few minutes, then check again."
@@ -284,6 +305,8 @@ Deno.serve(async (req) => {
       }
 
       const result = createData.result;
+      const originRule = await ensureOriginRule(CF_ZONE_ID, CF_API_TOKEN, cleanHostname);
+
       return new Response(
         JSON.stringify({
           success: true,
@@ -292,6 +315,7 @@ Deno.serve(async (req) => {
           status: result.status,
           ssl_status: result.ssl?.status || "initializing",
           origin: CUSTOM_DOMAIN_ORIGIN,
+          origin_rule: originRule,
           message: "Custom hostname registered and routed to TeeVents. SSL certificate will be provisioned automatically.",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -307,6 +331,8 @@ Deno.serve(async (req) => {
       }
 
       const cleanHostname = normalizeHostname(domainToDelete);
+
+      await removeOriginRule(CF_ZONE_ID, CF_API_TOKEN, cleanHostname);
 
       const listRes = await fetch(`${CF_BASE}?hostname=${encodeURIComponent(cleanHostname)}`, {
         headers: { Authorization: `Bearer ${CF_API_TOKEN}`, "Content-Type": "application/json" },

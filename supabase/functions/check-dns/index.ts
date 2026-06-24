@@ -86,26 +86,6 @@ const ensureOriginRule = async (zoneId: string, token: string, hostname: string)
   }
 };
 
-const checkLiveHost = async (domain: string) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
-
-  try {
-    const response = await fetch(`https://${domain}/`, {
-      method: "GET",
-      redirect: "manual",
-      signal: controller.signal,
-      headers: { "User-Agent": "TeeVents-DNS-Check/1.0" },
-    });
-
-    return { status: response.status, timedOut: response.status === 522 };
-  } catch (err) {
-    return { status: null, timedOut: String(err).toLowerCase().includes("abort") };
-  } finally {
-    clearTimeout(timeout);
-  }
-};
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -152,39 +132,30 @@ Deno.serve(async (req) => {
     let originRouteRefreshed = false;
 
     if (cnameCorrect || aCorrect) {
-      let liveHost = await checkLiveHost(cleanDomain);
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+      const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
 
-      if (liveHost.timedOut) {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
-        const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+      if (supabaseUrl && serviceRoleKey && cfToken && cfZoneId) {
+        const admin = createClient(supabaseUrl, serviceRoleKey);
+        const { data: tournament } = await admin
+          .from("tournaments")
+          .select("id")
+          .eq("custom_domain", cleanDomain)
+          .eq("site_published", true)
+          .maybeSingle();
 
-        if (supabaseUrl && serviceRoleKey && cfToken && cfZoneId) {
-          const admin = createClient(supabaseUrl, serviceRoleKey);
-          const { data: tournament } = await admin
-            .from("tournaments")
-            .select("id")
-            .eq("custom_domain", cleanDomain)
-            .eq("site_published", true)
-            .maybeSingle();
-
-          if (tournament) {
-            await ensureOriginRule(cfZoneId, cfToken, cleanDomain);
-            originRouteRefreshed = true;
-          }
+        if (tournament) {
+          await ensureOriginRule(cfZoneId, cfToken, cleanDomain);
+          originRouteRefreshed = true;
         }
       }
 
-      if (liveHost.timedOut) {
-        status = "misconfigured";
-        message = originRouteRefreshed
-          ? "DNS is pointing to TeeVents and the origin route was refreshed. Cloudflare may need a few minutes to apply it, then check again."
-          : "DNS is pointing to TeeVents, but Cloudflare is timing out before the site loads. Click Register / Retry SSL to refresh the hostname route, then check again in a few minutes.";
-      } else {
-        status = "connected";
-        message = "Your domain is correctly pointing to TeeVents and the hostname is responding.";
-      }
+      status = "connected";
+      message = originRouteRefreshed
+        ? "DNS is correctly pointing to TeeVents and the hostname route was refreshed. Cloudflare may need a few minutes to apply it."
+        : "Your domain is correctly pointing to TeeVents. If the browser still shows 522, click Register / Retry SSL to refresh the hostname route.";
     } else if (aRecords.length > 0 || cnameRecords.length > 0) {
       status = "misconfigured";
       const currentValue = cnameRecords.length > 0

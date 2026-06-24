@@ -2,6 +2,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CUSTOM_DOMAIN_ORIGIN = "custom-domains.teevents.golf";
 const ORIGIN_RULE_REF_PREFIX = "teevents_custom_domain_";
+const CLOUDFLARE_PERMISSION_ERROR = "cloudflare_origin_rules_permission_required";
+const CLOUDFLARE_PERMISSION_MESSAGE =
+  "Cloudflare rejected the Origin Rules API request. Edit the TeeVents Cloudflare API token and add Zone > Origin Rules > Edit, Zone > Config Rules > Edit, Zone > Zone > Read, and Zone > SSL and Certificates > Edit for the teevents.golf zone. If the token was created under a different Cloudflare account than the one that owns teevents.golf, create a new token in the correct account and update the backend secret.";
+
+const REQUIRED_CLOUDFLARE_PERMISSIONS = [
+  "Zone > Origin Rules > Edit (or Origin Write)",
+  "Zone > Config Rules > Edit (or Config Settings Write)",
+  "Zone > Zone > Read",
+  "Zone > Zone Settings > Edit",
+  "Zone > SSL and Certificates > Edit",
+];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,11 +91,35 @@ const compactRule = (rule: any) => ({
   ...(rule.enabled === false ? { enabled: false } : {}),
 });
 
+const cloudflareErrorMessage = (data: any) =>
+  data?.errors?.map((error: any) => error.message).filter(Boolean).join("; ") || "";
+
+const isCloudflarePermissionError = (res: Response, data: any) => {
+  const message = cloudflareErrorMessage(data).toLowerCase();
+  return res.status === 401 || res.status === 403 || message.includes("not authorized") || message.includes("authentication error");
+};
+
+const throwCloudflareApiError = (res: Response, data: any, fallback: string, operation: string) => {
+  if (isCloudflarePermissionError(res, data)) {
+    const err = new Error(CLOUDFLARE_PERMISSION_ERROR);
+    (err as any).operation = operation;
+    (err as any).cloudflare = data;
+    throw err;
+  }
+
+  throw new Error(cloudflareErrorMessage(data) || fallback);
+};
+
 const getOrCreateOriginRuleset = async (zoneId: string, token: string) => {
   const base = `https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets`;
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
   const listRes = await fetch(base, { headers });
   const listData = await listRes.json();
+
+  if (!listRes.ok || listData.success === false) {
+    throwCloudflareApiError(listRes, listData, "Failed to list Cloudflare origin rulesets", "list_origin_rulesets");
+  }
+
   const existing = listData.result?.find((ruleset: any) => ruleset.phase === "http_request_origin" && ruleset.kind === "zone");
 
   if (existing) return { ruleset: existing, base, headers };
@@ -103,7 +138,7 @@ const getOrCreateOriginRuleset = async (zoneId: string, token: string) => {
   const createData = await createRes.json();
 
   if (!createRes.ok || !createData.success) {
-    throw new Error(createData.errors?.[0]?.message || "Failed to create Cloudflare origin ruleset");
+    throwCloudflareApiError(createRes, createData, "Failed to create Cloudflare origin ruleset", "create_origin_ruleset");
   }
 
   return { ruleset: createData.result, base, headers };
@@ -139,7 +174,7 @@ const ensureOriginRule = async (zoneId: string, token: string, hostname: string)
   const updateData = await updateRes.json();
 
   if (!updateRes.ok || !updateData.success) {
-    throw new Error(updateData.errors?.[0]?.message || "Failed to update Cloudflare origin routing rule");
+    throwCloudflareApiError(updateRes, updateData, "Failed to update Cloudflare origin routing rule", "update_origin_rule");
   }
 
   return { ref, success: true };
@@ -164,7 +199,7 @@ const removeOriginRule = async (zoneId: string, token: string, hostname: string)
   const updateData = await updateRes.json();
 
   if (!updateRes.ok || !updateData.success) {
-    throw new Error(updateData.errors?.[0]?.message || "Failed to remove Cloudflare origin routing rule");
+    throwCloudflareApiError(updateRes, updateData, "Failed to remove Cloudflare origin routing rule", "remove_origin_rule");
   }
 };
 
@@ -418,6 +453,20 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("manage-custom-hostname error:", err);
+    if (err instanceof Error && err.message === CLOUDFLARE_PERMISSION_ERROR) {
+      return new Response(
+        JSON.stringify({
+          status: "cloudflare_permission_error",
+          error: CLOUDFLARE_PERMISSION_MESSAGE,
+          message: CLOUDFLARE_PERMISSION_MESSAGE,
+          operation: (err as any).operation,
+          required_permissions: REQUIRED_CLOUDFLARE_PERMISSIONS,
+          details: (err as any).cloudflare,
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: "Internal error", details: String(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

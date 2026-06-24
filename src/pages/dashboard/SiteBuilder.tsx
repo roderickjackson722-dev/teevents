@@ -47,6 +47,9 @@ import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 
+const getFunctionErrorMessage = (res: { data?: any; error?: any }, fallback: string) =>
+  res.data?.message || res.data?.error || res.error?.message || fallback;
+
 const DnsStatusChecker = ({ domain }: { domain: string | null }) => {
   const [dnsStatus, setDnsStatus] = useState<"idle" | "checking" | "connected" | "misconfigured" | "not_found" | "error">("idle");
   const [dnsMessage, setDnsMessage] = useState("");
@@ -121,12 +124,20 @@ const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tou
       const res = await supabase.functions.invoke("manage-custom-hostname", {
         body: { action: "status", tournament_id: tournamentId, hostname: domain },
       });
-      if (res.error) throw res.error;
+      if (res.error) {
+        setStatusData({
+          status: res.data?.status || "error",
+          message: getFunctionErrorMessage(res, "Failed to check SSL hostname status."),
+          required_permissions: res.data?.required_permissions,
+        });
+        return;
+      }
       setStatusData(res.data);
-    } catch {
-      setStatusData({ status: "error", message: "Failed to check SSL hostname status." });
+    } catch (err: any) {
+      setStatusData({ status: "error", message: err?.message || "Failed to check SSL hostname status." });
+    } finally {
+      setCfStatus("done");
     }
-    setCfStatus("done");
   };
 
   const syncHostname = async () => {
@@ -136,18 +147,27 @@ const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tou
       const res = await supabase.functions.invoke("manage-custom-hostname", {
         body: { action: "create", tournament_id: tournamentId, hostname: domain },
       });
-      if (res.error) throw res.error;
+      if (res.error) {
+        setStatusData({
+          status: res.data?.status || "error",
+          message: getFunctionErrorMessage(res, "Failed to register this hostname. Try saving again."),
+          required_permissions: res.data?.required_permissions,
+        });
+        return;
+      }
       setStatusData(res.data);
-    } catch {
-      setStatusData({ status: "error", message: "Failed to register this hostname. Try saving again." });
+    } catch (err: any) {
+      setStatusData({ status: "error", message: err?.message || "Failed to register this hostname. Try saving again." });
+    } finally {
+      setCfStatus("done");
     }
-    setCfStatus("done");
   };
 
   const statusColors: Record<string, string> = {
     active: "text-primary",
     pending: "text-muted-foreground",
     not_registered: "text-muted-foreground",
+    cloudflare_permission_error: "text-destructive",
     error: "text-destructive",
   };
 
@@ -184,6 +204,14 @@ const CloudflareStatus = ({ domain, tournamentId }: { domain: string | null; tou
           {statusData.message}
           {statusData.ssl_status && statusData.ssl_status !== "unknown" && (
             <span className="block mt-1">SSL: {statusData.ssl_status}</span>
+          )}
+          {statusData.required_permissions?.length > 0 && (
+            <span className="block mt-2 space-y-1">
+              <span className="block font-semibold">Required Cloudflare token permissions:</span>
+              {statusData.required_permissions.map((permission: string) => (
+                <span key={permission} className="block">• {permission}</span>
+              ))}
+            </span>
           )}
         </p>
       )}
@@ -374,7 +402,7 @@ const SiteBuilder = () => {
         });
 
         if (res.error) {
-          throw res.error;
+          throw new Error(getFunctionErrorMessage(res, "Save succeeded, but the hostname could not be synced yet. Try saving again."));
         }
 
         if (res.data?.success) {
@@ -397,7 +425,10 @@ const SiteBuilder = () => {
       console.error("Cloudflare hostname error:", cfErr);
       toast({
         title: "Domain saved, but registration failed",
-        description: "Save succeeded, but the hostname could not be synced yet. Try saving again.",
+        description:
+          cfErr instanceof Error
+            ? cfErr.message
+            : "Save succeeded, but the hostname could not be synced yet. Try saving again.",
         variant: "destructive",
       });
     }

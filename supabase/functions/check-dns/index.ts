@@ -3,6 +3,26 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const checkLiveHost = async (domain: string) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const response = await fetch(`https://${domain}/`, {
+      method: "GET",
+      redirect: "manual",
+      signal: controller.signal,
+      headers: { "User-Agent": "TeeVents-DNS-Check/1.0" },
+    });
+
+    return { status: response.status, timedOut: response.status === 522 };
+  } catch (err) {
+    return { status: null, timedOut: String(err).toLowerCase().includes("abort") };
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -49,8 +69,15 @@ Deno.serve(async (req) => {
     let message: string;
 
     if (cnameCorrect || aCorrect) {
-      status = "connected";
-      message = "Your domain is correctly pointing to TeeVents! SSL will be provisioned automatically.";
+      const liveHost = await checkLiveHost(cleanDomain);
+
+      if (liveHost.timedOut) {
+        status = "misconfigured";
+        message = "DNS is pointing to TeeVents, but Cloudflare is timing out before the site loads. Click Register / Retry SSL to refresh the hostname route, then check again in a few minutes.";
+      } else {
+        status = "connected";
+        message = "Your domain is correctly pointing to TeeVents and the hostname is responding.";
+      }
     } else if (aRecords.length > 0 || cnameRecords.length > 0) {
       status = "misconfigured";
       const currentValue = cnameRecords.length > 0

@@ -311,8 +311,10 @@ const App = () => (
            <Route path="/admin/sales-hub/compare-golf-genius" element={<CompareGolfGenius />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />
-             <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
-             <Route path="/t/:slug/vendors" element={<VendorRegistration />} />
+              <Route path="/t/:slug/sponsor" element={<SponsorRegistration />} />
+              <Route path="/tournament/:slug/sponsor" element={<SponsorRegistration />} />
+              <Route path="/t/:slug/vendors" element={<VendorRegistration />} />
+              <Route path="/tournament/:slug/vendors" element={<VendorRegistration />} />
             <Route path="/dashboard/vendors" element={<DashboardLayout><Vendors /></DashboardLayout>} />
             <Route path="/dashboard/side-events" element={<DashboardLayout><SideEvents /></DashboardLayout>} />
             <Route path="/dashboard/team-performance" element={<DashboardLayout><TeamPerformance /></DashboardLayout>} />

@@ -402,7 +402,7 @@ const SiteBuilder = () => {
         });
 
         if (res.error) {
-          throw res.error;
+          throw new Error(getFunctionErrorMessage(res, "Save succeeded, but the hostname could not be synced yet. Try saving again."));
         }
 
         if (res.data?.success) {
@@ -425,7 +425,10 @@ const SiteBuilder = () => {
       console.error("Cloudflare hostname error:", cfErr);
       toast({
         title: "Domain saved, but registration failed",
-        description: "Save succeeded, but the hostname could not be synced yet. Try saving again.",
+        description:
+          cfErr instanceof Error
+            ? cfErr.message
+            : "Save succeeded, but the hostname could not be synced yet. Try saving again.",
         variant: "destructive",
       });
     }

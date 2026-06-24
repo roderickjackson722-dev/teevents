@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ status, message, originRouteRefreshed, records: { a: aRecords, cname: cnameRecords } }),
+      JSON.stringify({ status, message, originRouteRefreshed, originRouteError, records: { a: aRecords, cname: cnameRecords } }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

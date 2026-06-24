@@ -130,6 +130,7 @@ Deno.serve(async (req) => {
     let status: "connected" | "misconfigured" | "not_found";
     let message: string;
     let originRouteRefreshed = false;
+    let originRouteError: string | null = null;
 
     if (cnameCorrect || aCorrect) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -147,13 +148,19 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (tournament) {
-          await ensureOriginRule(cfZoneId, cfToken, cleanDomain);
-          originRouteRefreshed = true;
+          try {
+            await ensureOriginRule(cfZoneId, cfToken, cleanDomain);
+            originRouteRefreshed = true;
+          } catch (err) {
+            originRouteError = String(err).replace(/^Error:\s*/, "");
+          }
         }
       }
 
-      status = "connected";
-      message = originRouteRefreshed
+      status = originRouteError ? "misconfigured" : "connected";
+      message = originRouteError
+        ? `DNS is pointing to TeeVents, but the Cloudflare API token cannot refresh the required origin route (${originRouteError}). Update the Cloudflare token with Origin Rules write access, then run Register / Retry SSL again.`
+        : originRouteRefreshed
         ? "DNS is correctly pointing to TeeVents and the hostname route was refreshed. Cloudflare may need a few minutes to apply it."
         : "Your domain is correctly pointing to TeeVents. If the browser still shows 522, click Register / Retry SSL to refresh the hostname route.";
     } else if (aRecords.length > 0 || cnameRecords.length > 0) {

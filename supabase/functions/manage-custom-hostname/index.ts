@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CUSTOM_DOMAIN_ORIGIN = "custom-domains.teevents.golf";
+const ORIGIN_RULE_REF_PREFIX = "teevents_custom_domain_";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +15,7 @@ const normalizeHostname = (hostname: string) =>
 const buildHostnamePayload = (hostname: string) => ({
   hostname,
   custom_origin_server: CUSTOM_DOMAIN_ORIGIN,
+  custom_origin_sni: CUSTOM_DOMAIN_ORIGIN,
   ssl: {
     method: "http",
     type: "dv",
@@ -56,11 +58,114 @@ const patchCustomOrigin = async (baseUrl: string, hostnameId: string, token: str
   const patchRes = await fetch(`${baseUrl}/${hostnameId}`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ custom_origin_server: CUSTOM_DOMAIN_ORIGIN }),
+    body: JSON.stringify({
+      custom_origin_server: CUSTOM_DOMAIN_ORIGIN,
+      custom_origin_sni: CUSTOM_DOMAIN_ORIGIN,
+    }),
   });
 
   const patchData = await patchRes.json();
   return { patchRes, patchData };
+};
+
+const originRuleRef = (hostname: string) =>
+  `${ORIGIN_RULE_REF_PREFIX}${hostname.replace(/[^a-z0-9]/g, "_")}`.slice(0, 200);
+
+const compactRule = (rule: any) => ({
+  ref: rule.ref,
+  expression: rule.expression,
+  description: rule.description,
+  action: rule.action,
+  action_parameters: rule.action_parameters,
+  ...(rule.enabled === false ? { enabled: false } : {}),
+});
+
+const getOrCreateOriginRuleset = async (zoneId: string, token: string) => {
+  const base = `https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets`;
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const listRes = await fetch(base, { headers });
+  const listData = await listRes.json();
+  const existing = listData.result?.find((ruleset: any) => ruleset.phase === "http_request_origin" && ruleset.kind === "zone");
+
+  if (existing) return { ruleset: existing, base, headers };
+
+  const createRes = await fetch(base, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      name: "TeeVents custom domain origin routing",
+      description: "Routes verified event custom domains to the TeeVents hosting origin.",
+      kind: "zone",
+      phase: "http_request_origin",
+      rules: [],
+    }),
+  });
+  const createData = await createRes.json();
+
+  if (!createRes.ok || !createData.success) {
+    throw new Error(createData.errors?.[0]?.message || "Failed to create Cloudflare origin ruleset");
+  }
+
+  return { ruleset: createData.result, base, headers };
+};
+
+const ensureOriginRule = async (zoneId: string, token: string, hostname: string) => {
+  const { ruleset, base, headers } = await getOrCreateOriginRuleset(zoneId, token);
+  const ref = originRuleRef(hostname);
+  const existingRules = (ruleset.rules || []).map(compactRule).filter((rule: any) => rule.ref !== ref);
+  const nextRule = {
+    ref,
+    expression: `http.host eq ${JSON.stringify(hostname)}`,
+    description: `Route ${hostname} to TeeVents custom-domain origin`,
+    action: "route",
+    action_parameters: {
+      host_header: CUSTOM_DOMAIN_ORIGIN,
+      origin: { host: CUSTOM_DOMAIN_ORIGIN },
+      sni: { value: CUSTOM_DOMAIN_ORIGIN },
+    },
+  };
+
+  const updateRes = await fetch(`${base}/${ruleset.id}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({
+      name: ruleset.name || "TeeVents custom domain origin routing",
+      description: ruleset.description || "Routes verified event custom domains to the TeeVents hosting origin.",
+      kind: "zone",
+      phase: "http_request_origin",
+      rules: [...existingRules, nextRule],
+    }),
+  });
+  const updateData = await updateRes.json();
+
+  if (!updateRes.ok || !updateData.success) {
+    throw new Error(updateData.errors?.[0]?.message || "Failed to update Cloudflare origin routing rule");
+  }
+
+  return { ref, success: true };
+};
+
+const removeOriginRule = async (zoneId: string, token: string, hostname: string) => {
+  const { ruleset, base, headers } = await getOrCreateOriginRuleset(zoneId, token);
+  const ref = originRuleRef(hostname);
+  const nextRules = (ruleset.rules || []).map(compactRule).filter((rule: any) => rule.ref !== ref);
+
+  const updateRes = await fetch(`${base}/${ruleset.id}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({
+      name: ruleset.name || "TeeVents custom domain origin routing",
+      description: ruleset.description || "Routes verified event custom domains to the TeeVents hosting origin.",
+      kind: "zone",
+      phase: "http_request_origin",
+      rules: nextRules,
+    }),
+  });
+  const updateData = await updateRes.json();
+
+  if (!updateRes.ok || !updateData.success) {
+    throw new Error(updateData.errors?.[0]?.message || "Failed to remove Cloudflare origin routing rule");
+  }
 };
 
 Deno.serve(async (req) => {

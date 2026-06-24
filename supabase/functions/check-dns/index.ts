@@ -172,7 +172,6 @@ Deno.serve(async (req) => {
           if (tournament) {
             await ensureOriginRule(cfZoneId, cfToken, cleanDomain);
             originRouteRefreshed = true;
-            liveHost = await checkLiveHost(cleanDomain);
           }
         }
       }

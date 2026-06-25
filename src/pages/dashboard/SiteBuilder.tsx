@@ -31,6 +31,7 @@ import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
+import { DomainInstructions } from "@/components/dashboard/DomainInstructions";
 import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -1616,73 +1617,8 @@ const SiteBuilder = () => {
                 }}
               />
 
-              <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  🌐 Already have a website?
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  If your organization already has a website, you don't need to replace it. Here's how to connect your tournament:
-                </p>
+              <DomainInstructions currentDomain={settings.custom_domain} />
 
-                <div className="space-y-3">
-                  {/* Option 1 */}
-                  <div className="bg-background border border-border rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5">1</span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Subdomain (Recommended)</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Create a subdomain like <span className="font-mono text-foreground">golf.yourwebsite.com</span> or{" "}
-                          <span className="font-mono text-foreground">tournament.yourwebsite.com</span> and point it here.
-                          Your main website stays completely untouched — just add a "View Our Tournament" link that goes to the subdomain.
-                        </p>
-                        <p className="text-xs text-primary font-medium mt-1">
-                          ✅ Best of both worlds — branded URL + your existing site is unaffected
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Option 2 */}
-                  <div className="bg-background border border-border rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold shrink-0 mt-0.5">2</span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Link from your existing site</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          No DNS changes needed — simply add a link or button on your current website (e.g. on a{" "}
-                          <span className="font-mono text-foreground">yourwebsite.com/golf-tournament</span> page) that links to your default TeeVents URL above.
-                        </p>
-                        <p className="text-xs text-muted-foreground font-medium mt-1">
-                          ⚡ Fastest setup — zero DNS configuration required
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Option 3 */}
-                  <div className="bg-background border border-border rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold shrink-0 mt-0.5">3</span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Dedicated domain</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Purchase a separate domain (e.g. <span className="font-mono text-foreground">mycharitygolf.com</span>) and point it entirely to TeeVents.
-                          Great for annual events that deserve their own identity.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-background border border-border rounded-md p-3">
-                  <p className="text-xs text-muted-foreground">
-                    <strong>⚠️ Important:</strong> You cannot use a URL <em>path</em> like{" "}
-                    <span className="font-mono">yourwebsite.com/tournaments</span> as a custom domain — DNS works at the domain level, not the page level.
-                    Use a <strong>subdomain</strong> (Option 1) or a <strong>link</strong> (Option 2) instead.
-                  </p>
-                </div>
-              </div>
 
               {/* Custom Domain Input */}
               <div className="border border-border rounded-lg p-4 space-y-4">
@@ -1711,92 +1647,12 @@ const SiteBuilder = () => {
                 {settings.custom_domain && (
                   <div className="bg-muted/50 rounded-lg border border-border p-4 space-y-3">
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">!</span>
-                      DNS Setup Required
+                      <Globe className="h-4 w-4 text-primary" />
+                      Verify <span className="font-mono">{settings.custom_domain}</span>
                     </h4>
-                    <p className="text-sm text-muted-foreground">
-                      To connect <span className="font-mono font-semibold text-foreground">{settings.custom_domain}</span>, add this DNS record at your domain registrar:
+                    <p className="text-xs text-muted-foreground">
+                      Once you've added the DNS records from the guide above, use the checkers below to confirm propagation and SSL provisioning.
                     </p>
-
-                    {/* Determine if subdomain or root domain */}
-                    {(() => {
-                      const parts = settings.custom_domain!.replace(/^www\./, "").split(".");
-                      const isSubdomain = parts.length > 2;
-                      return (
-                        <div className="space-y-3">
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-border">
-                                  <th className="text-left py-2 pr-4 font-semibold text-foreground">Type</th>
-                                  <th className="text-left py-2 pr-4 font-semibold text-foreground">Name</th>
-                                  <th className="text-left py-2 font-semibold text-foreground">Value</th>
-                                </tr>
-                              </thead>
-                              <tbody className="font-mono text-xs">
-                                {isSubdomain ? (
-                                  <tr className="border-b border-border/50">
-                                    <td className="py-2 pr-4">CNAME</td>
-                                    <td className="py-2 pr-4">{parts[0]}</td>
-                                    <td className="py-2">custom-domains.teevents.golf</td>
-                                  </tr>
-                                ) : (
-                                  <tr className="border-b border-border/50">
-                                    <td className="py-2 pr-4">A</td>
-                                    <td className="py-2 pr-4">@</td>
-                                    <td className="py-2">185.158.133.1</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="bg-background border border-border rounded-md p-3">
-                            <p className="text-xs text-muted-foreground">
-                              {isSubdomain ? (
-                                <>
-                                  <strong>Subdomain detected.</strong> Add a <strong>CNAME</strong> record pointing{" "}
-                                  <span className="font-mono text-foreground">{parts[0]}</span> to{" "}
-                                  <span className="font-mono text-foreground">custom-domains.teevents.golf</span>.
-                                  Do <strong>not</strong> use an A record for subdomains.
-                                </>
-                              ) : (
-                                <>
-                                  <strong>Root domain detected.</strong> Add an <strong>A record</strong> pointing to{" "}
-                                  <span className="font-mono text-foreground">185.158.133.1</span>.
-                                  If you also want <span className="font-mono">www.{settings.custom_domain}</span>, add a CNAME for{" "}
-                                  <span className="font-mono">www</span> → <span className="font-mono">custom-domains.teevents.golf</span>.
-                                </>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Step-by-step instructions */}
-                    <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
-                      <h4 className="text-sm font-semibold text-foreground">📋 Step-by-Step Setup</h4>
-                      <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                        <li>
-                          <strong className="text-foreground">Log in to your domain registrar</strong> — where you purchased your domain (GoDaddy, Namecheap, Cloudflare, etc.)
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Find DNS settings</strong> — look for "DNS Management" or "Advanced DNS"
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Add the DNS record</strong> shown in the table above
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Save here</strong> — click Save above to register your domain for SSL
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes take 15 minutes to 48 hours. Use the status buttons below to verify.
-                        </li>
-                      </ol>
-                      <p className="text-xs text-muted-foreground italic">
-                        💡 SSL certificates are provisioned automatically (5–30 min). During this time you may see a browser error — this is normal, just wait.
-                      </p>
-                    </div>
 
                     {/* DNS Status Checker */}
                     <DnsStatusChecker domain={settings.custom_domain} />
@@ -1808,7 +1664,6 @@ const SiteBuilder = () => {
                       variant="outline"
                       size="sm"
                       onClick={async () => {
-                        // Remove from Cloudflare first
                         if (settings.custom_domain) {
                           try {
                             await supabase.functions.invoke("manage-custom-hostname", {
@@ -1828,6 +1683,7 @@ const SiteBuilder = () => {
                   </div>
                 )}
               </div>
+
             </>
           )}
         </div>

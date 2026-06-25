@@ -1647,92 +1647,12 @@ const SiteBuilder = () => {
                 {settings.custom_domain && (
                   <div className="bg-muted/50 rounded-lg border border-border p-4 space-y-3">
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">!</span>
-                      DNS Setup Required
+                      <Globe className="h-4 w-4 text-primary" />
+                      Verify <span className="font-mono">{settings.custom_domain}</span>
                     </h4>
-                    <p className="text-sm text-muted-foreground">
-                      To connect <span className="font-mono font-semibold text-foreground">{settings.custom_domain}</span>, add this DNS record at your domain registrar:
+                    <p className="text-xs text-muted-foreground">
+                      Once you've added the DNS records from the guide above, use the checkers below to confirm propagation and SSL provisioning.
                     </p>
-
-                    {/* Determine if subdomain or root domain */}
-                    {(() => {
-                      const parts = settings.custom_domain!.replace(/^www\./, "").split(".");
-                      const isSubdomain = parts.length > 2;
-                      return (
-                        <div className="space-y-3">
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-border">
-                                  <th className="text-left py-2 pr-4 font-semibold text-foreground">Type</th>
-                                  <th className="text-left py-2 pr-4 font-semibold text-foreground">Name</th>
-                                  <th className="text-left py-2 font-semibold text-foreground">Value</th>
-                                </tr>
-                              </thead>
-                              <tbody className="font-mono text-xs">
-                                {isSubdomain ? (
-                                  <tr className="border-b border-border/50">
-                                    <td className="py-2 pr-4">CNAME</td>
-                                    <td className="py-2 pr-4">{parts[0]}</td>
-                                    <td className="py-2">custom-domains.teevents.golf</td>
-                                  </tr>
-                                ) : (
-                                  <tr className="border-b border-border/50">
-                                    <td className="py-2 pr-4">A</td>
-                                    <td className="py-2 pr-4">@</td>
-                                    <td className="py-2">185.158.133.1</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="bg-background border border-border rounded-md p-3">
-                            <p className="text-xs text-muted-foreground">
-                              {isSubdomain ? (
-                                <>
-                                  <strong>Subdomain detected.</strong> Add a <strong>CNAME</strong> record pointing{" "}
-                                  <span className="font-mono text-foreground">{parts[0]}</span> to{" "}
-                                  <span className="font-mono text-foreground">custom-domains.teevents.golf</span>.
-                                  Do <strong>not</strong> use an A record for subdomains.
-                                </>
-                              ) : (
-                                <>
-                                  <strong>Root domain detected.</strong> Add an <strong>A record</strong> pointing to{" "}
-                                  <span className="font-mono text-foreground">185.158.133.1</span>.
-                                  If you also want <span className="font-mono">www.{settings.custom_domain}</span>, add a CNAME for{" "}
-                                  <span className="font-mono">www</span> → <span className="font-mono">custom-domains.teevents.golf</span>.
-                                </>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Step-by-step instructions */}
-                    <div className="border border-border rounded-lg p-4 space-y-3 bg-background">
-                      <h4 className="text-sm font-semibold text-foreground">📋 Step-by-Step Setup</h4>
-                      <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                        <li>
-                          <strong className="text-foreground">Log in to your domain registrar</strong> — where you purchased your domain (GoDaddy, Namecheap, Cloudflare, etc.)
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Find DNS settings</strong> — look for "DNS Management" or "Advanced DNS"
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Add the DNS record</strong> shown in the table above
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Save here</strong> — click Save above to register your domain for SSL
-                        </li>
-                        <li>
-                          <strong className="text-foreground">Wait for propagation</strong> — DNS changes take 15 minutes to 48 hours. Use the status buttons below to verify.
-                        </li>
-                      </ol>
-                      <p className="text-xs text-muted-foreground italic">
-                        💡 SSL certificates are provisioned automatically (5–30 min). During this time you may see a browser error — this is normal, just wait.
-                      </p>
-                    </div>
 
                     {/* DNS Status Checker */}
                     <DnsStatusChecker domain={settings.custom_domain} />
@@ -1744,7 +1664,6 @@ const SiteBuilder = () => {
                       variant="outline"
                       size="sm"
                       onClick={async () => {
-                        // Remove from Cloudflare first
                         if (settings.custom_domain) {
                           try {
                             await supabase.functions.invoke("manage-custom-hostname", {
@@ -1764,6 +1683,7 @@ const SiteBuilder = () => {
                   </div>
                 )}
               </div>
+
             </>
           )}
         </div>

@@ -1617,73 +1617,8 @@ const SiteBuilder = () => {
                 }}
               />
 
-              <div className="border border-primary/20 rounded-lg p-4 space-y-4 bg-primary/5">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  🌐 Already have a website?
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  If your organization already has a website, you don't need to replace it. Here's how to connect your tournament:
-                </p>
+              <DomainInstructions currentDomain={settings.custom_domain} />
 
-                <div className="space-y-3">
-                  {/* Option 1 */}
-                  <div className="bg-background border border-border rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5">1</span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Subdomain (Recommended)</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Create a subdomain like <span className="font-mono text-foreground">golf.yourwebsite.com</span> or{" "}
-                          <span className="font-mono text-foreground">tournament.yourwebsite.com</span> and point it here.
-                          Your main website stays completely untouched — just add a "View Our Tournament" link that goes to the subdomain.
-                        </p>
-                        <p className="text-xs text-primary font-medium mt-1">
-                          ✅ Best of both worlds — branded URL + your existing site is unaffected
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Option 2 */}
-                  <div className="bg-background border border-border rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold shrink-0 mt-0.5">2</span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Link from your existing site</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          No DNS changes needed — simply add a link or button on your current website (e.g. on a{" "}
-                          <span className="font-mono text-foreground">yourwebsite.com/golf-tournament</span> page) that links to your default TeeVents URL above.
-                        </p>
-                        <p className="text-xs text-muted-foreground font-medium mt-1">
-                          ⚡ Fastest setup — zero DNS configuration required
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Option 3 */}
-                  <div className="bg-background border border-border rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-secondary text-secondary-foreground text-xs font-bold shrink-0 mt-0.5">3</span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Dedicated domain</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Purchase a separate domain (e.g. <span className="font-mono text-foreground">mycharitygolf.com</span>) and point it entirely to TeeVents.
-                          Great for annual events that deserve their own identity.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-background border border-border rounded-md p-3">
-                  <p className="text-xs text-muted-foreground">
-                    <strong>⚠️ Important:</strong> You cannot use a URL <em>path</em> like{" "}
-                    <span className="font-mono">yourwebsite.com/tournaments</span> as a custom domain — DNS works at the domain level, not the page level.
-                    Use a <strong>subdomain</strong> (Option 1) or a <strong>link</strong> (Option 2) instead.
-                  </p>
-                </div>
-              </div>
 
               {/* Custom Domain Input */}
               <div className="border border-border rounded-lg p-4 space-y-4">

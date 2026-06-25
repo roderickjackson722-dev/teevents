@@ -411,6 +411,19 @@ const SiteBuilder = () => {
             description:
               res.data.message || "Hostname registered. SSL certificate provisioning may take a few minutes.",
           });
+
+          // Auto-bind the host-rewriting Cloudflare Worker so the subdomain proxies correctly.
+          try {
+            const hostnamesToBind = Array.from(new Set([
+              newDomain,
+              newDomain.startsWith("www.") ? newDomain.slice(4) : `www.${newDomain}`,
+            ]));
+            await supabase.functions.invoke("cf-deploy-host-worker", {
+              body: { hostnames: hostnamesToBind },
+            });
+          } catch (workerErr) {
+            console.warn("cf-deploy-host-worker bind failed (non-fatal):", workerErr);
+          }
         } else if (res.data?.error) {
           toast({
             title: "Domain registration issue",

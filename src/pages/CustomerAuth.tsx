@@ -242,6 +242,11 @@ const CustomerAuth = () => {
       }
 
       // Approved → create account
+      const rlSignup = await checkAuthRateLimit("signup");
+      if (!rlSignup.allowed) {
+        toast({ title: "Too many attempts", description: rlSignup.message, variant: "destructive" });
+        setLoading(false); return;
+      }
       const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,

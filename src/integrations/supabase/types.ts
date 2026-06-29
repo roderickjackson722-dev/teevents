@@ -537,6 +537,36 @@ export type Database = {
           },
         ]
       }
+      auth_rate_limits: {
+        Row: {
+          action: string
+          attempts: number
+          created_at: string
+          id: string
+          ip_address: string
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          ip_address: string
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          action?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          ip_address?: string
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       booking_categories: {
         Row: {
           color: string | null
@@ -8140,6 +8170,15 @@ export type Database = {
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
+      check_auth_rate_limit: {
+        Args: {
+          _action: string
+          _ip: string
+          _max: number
+          _window_seconds: number
+        }
+        Returns: Json
+      }
       college_tournament_accepts_registration: {
         Args: { _tournament_id: string }
         Returns: boolean

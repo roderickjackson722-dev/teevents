@@ -50,13 +50,12 @@ export function PublicAuctionsRaffles({
   const [loading, setLoading] = useState<string | null>(null);
 
   const reload = async () => {
+    // Use SECURITY DEFINER RPCs so that the public can read auctions/raffles
+    // without being granted direct SELECT on the underlying tables (which
+    // contain winner email PII that is intentionally hidden from the public).
     const [{ data: a }, { data: r }] = await Promise.all([
-      supabase.from("auctions")
-        .select("id,tournament_id,item_name,description,images,starting_bid_cents,current_bid_cents,minimum_increment_cents,buy_now_cents,status,start_time,end_time,auto_extend_minutes,winning_bidder_name,winning_bid_amount_cents,created_at,updated_at")
-        .eq("tournament_id", tournamentId).order("created_at", { ascending: false }),
-      supabase.from("raffles")
-        .select("id,tournament_id,item_name,description,images,ticket_price_cents,max_tickets,tickets_sold,draw_time,status,winner_ticket_number,winner_name,created_at,updated_at")
-        .eq("tournament_id", tournamentId).order("created_at", { ascending: false }),
+      (supabase as any).rpc("get_public_auctions", { _tournament_id: tournamentId }),
+      (supabase as any).rpc("get_public_raffles", { _tournament_id: tournamentId }),
     ]);
     setAuctions((a as AuctionRow[]) || []);
     setRaffles((r as RaffleRow[]) || []);

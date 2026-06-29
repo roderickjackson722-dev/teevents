@@ -312,13 +312,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
     // Team promoter referral tracking — if ref matches a team_promoter unique_ref_code, store it
     (async () => {
-      const { data: promoter } = await supabase
-        .from("team_promoters")
-        .select("id, tournament_id, is_active")
-        .eq("unique_ref_code", ref)
-        .eq("tournament_id", tournament.id)
-        .eq("is_active", true)
-        .maybeSingle();
+      // Use a SECURITY DEFINER RPC so anon visitors don't need direct SELECT
+      // on team_promoters (which contains promoter email/name PII).
+      const { data: rows } = await (supabase as any).rpc("validate_promoter_ref_code", {
+        _tournament_id: tournament.id,
+        _ref_code: ref,
+      });
+      const promoter = Array.isArray(rows) ? rows[0] : null;
       if (!promoter) return;
       // Store ref code for 30 days, but never overwrite existing attribution for this tournament
       const storageKey = `tv_ref_${tournament.id}`;

@@ -199,7 +199,7 @@ export default function EmailTemplateEditor() {
     const update: Record<string, any> = { [configKey]: config as any };
     const { error } = await supabase
       .from("tournaments")
-      .update(update)
+      .update(update as any)
       .eq("id", selectedTournament);
     setSaving(false);
     if (error) {

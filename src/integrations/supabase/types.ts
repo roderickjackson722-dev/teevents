@@ -8245,6 +8245,47 @@ export type Database = {
           tournament_title: string
         }[]
       }
+      get_public_auctions: {
+        Args: { _tournament_id: string }
+        Returns: {
+          auto_extend_minutes: number
+          buy_now_cents: number
+          created_at: string
+          current_bid_cents: number
+          description: string
+          end_time: string
+          id: string
+          images: string[]
+          item_name: string
+          minimum_increment_cents: number
+          start_time: string
+          starting_bid_cents: number
+          status: string
+          tournament_id: string
+          updated_at: string
+          winning_bid_amount_cents: number
+          winning_bidder_name: string
+        }[]
+      }
+      get_public_raffles: {
+        Args: { _tournament_id: string }
+        Returns: {
+          created_at: string
+          description: string
+          draw_time: string
+          id: string
+          images: string[]
+          item_name: string
+          max_tickets: number
+          status: string
+          ticket_price_cents: number
+          tickets_sold: number
+          tournament_id: string
+          updated_at: string
+          winner_name: string
+          winner_ticket_number: number
+        }[]
+      }
       get_refund_request_by_token: {
         Args: { _token: string }
         Returns: {
@@ -8366,6 +8407,14 @@ export type Database = {
       update_demo_lead_feedback: {
         Args: { _id: string; _reasons: string[]; _score: number; _text: string }
         Returns: undefined
+      }
+      validate_promoter_ref_code: {
+        Args: { _ref_code: string; _tournament_id: string }
+        Returns: {
+          id: string
+          is_active: boolean
+          tournament_id: string
+        }[]
       }
     }
     Enums: {

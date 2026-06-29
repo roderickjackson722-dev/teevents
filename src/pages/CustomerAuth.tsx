@@ -299,6 +299,11 @@ const CustomerAuth = () => {
         },
       });
     } else {
+      const rlLogin = await checkAuthRateLimit("login");
+      if (!rlLogin.allowed) {
+        toast({ title: "Too many attempts", description: rlLogin.message, variant: "destructive" });
+        setLoading(false); return;
+      }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     }

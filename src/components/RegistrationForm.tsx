@@ -528,13 +528,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           const parsed = JSON.parse(raw);
           if (parsed?.code && parsed?.ts && Date.now() - parsed.ts < 30 * 24 * 60 * 60 * 1000) {
             referralCode = parsed.code;
-            const { data: promoter } = await supabase
-              .from("team_promoters")
-              .select("id")
-              .eq("unique_ref_code", referralCode)
-              .eq("tournament_id", tournamentId)
-              .eq("is_active", true)
-              .maybeSingle();
+            const { data: rows } = await (supabase as any).rpc("validate_promoter_ref_code", {
+              _tournament_id: tournamentId,
+              _ref_code: referralCode,
+            });
+            const promoter = Array.isArray(rows) ? rows[0] : null;
             promoterId = promoter?.id || null;
           }
         }

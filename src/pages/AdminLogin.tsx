@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { checkAuthRateLimit } from "@/lib/authRateLimit";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 
 const AdminLogin = () => {
@@ -19,6 +20,13 @@ const AdminLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const rl = await checkAuthRateLimit("login");
+    if (!rl.allowed) {
+      setLoading(false);
+      toast({ title: "Too many attempts", description: rl.message, variant: "destructive" });
+      return;
+    }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 

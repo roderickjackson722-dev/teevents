@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { checkAuthRateLimit } from "@/lib/authRateLimit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -154,6 +155,12 @@ const CustomerAuth = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const rl = await checkAuthRateLimit("password_reset");
+    if (!rl.allowed) {
+      toast({ title: "Too many attempts", description: rl.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
@@ -235,6 +242,11 @@ const CustomerAuth = () => {
       }
 
       // Approved → create account
+      const rlSignup = await checkAuthRateLimit("signup");
+      if (!rlSignup.allowed) {
+        toast({ title: "Too many attempts", description: rlSignup.message, variant: "destructive" });
+        setLoading(false); return;
+      }
       const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
@@ -287,6 +299,11 @@ const CustomerAuth = () => {
         },
       });
     } else {
+      const rlLogin = await checkAuthRateLimit("login");
+      if (!rlLogin.allowed) {
+        toast({ title: "Too many attempts", description: rlLogin.message, variant: "destructive" });
+        setLoading(false); return;
+      }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     }

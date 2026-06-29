@@ -151,7 +151,7 @@ const Tournaments = () => {
 
     const { data: updated, error } = await supabase
       .from("tournaments")
-      .update(updates)
+      .update(updates as any)
       .eq("id", renameTarget.id)
       .select("id, title")
       .single();

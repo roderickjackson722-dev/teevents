@@ -21,6 +21,13 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
 
+    const rl = await checkAuthRateLimit("login");
+    if (!rl.allowed) {
+      setLoading(false);
+      toast({ title: "Too many attempts", description: rl.message, variant: "destructive" });
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {

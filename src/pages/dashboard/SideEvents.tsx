@@ -197,7 +197,7 @@ export default function SideEvents() {
 
   const toggleField = async (e: SideEvent, field: "is_active" | "show_on_public", value: boolean) => {
     if (demoGuard()) return;
-    const { error } = await supabase.from("side_events").update({ [field]: value }).eq("id", e.id);
+    const { error } = await supabase.from("side_events").update({ [field]: value } as any).eq("id", e.id);
     if (error) toast.error(error.message);
     else qc.invalidateQueries({ queryKey: ["side-events", tournamentId] });
   };

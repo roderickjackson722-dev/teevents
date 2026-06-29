@@ -461,6 +461,13 @@ export type Database = {
             referencedRelation: "auctions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "auction_bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "public_auctions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       auctions: {
@@ -4155,6 +4162,13 @@ export type Database = {
             foreignKeyName: "promoter_incentives_awarded_to_fkey"
             columns: ["awarded_to"]
             isOneToOne: false
+            referencedRelation: "public_team_promoters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promoter_incentives_awarded_to_fkey"
+            columns: ["awarded_to"]
+            isOneToOne: false
             referencedRelation: "team_promoters"
             referencedColumns: ["id"]
           },
@@ -4315,6 +4329,13 @@ export type Database = {
             foreignKeyName: "raffle_tickets_raffle_id_fkey"
             columns: ["raffle_id"]
             isOneToOne: false
+            referencedRelation: "public_raffles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "raffle_tickets_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
             referencedRelation: "raffles"
             referencedColumns: ["id"]
           },
@@ -4408,6 +4429,13 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "referral_clicks_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "public_team_promoters"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "referral_clicks_promoter_id_fkey"
             columns: ["promoter_id"]
@@ -6410,6 +6438,13 @@ export type Database = {
             foreignKeyName: "tournament_registrations_promoter_id_fkey"
             columns: ["promoter_id"]
             isOneToOne: false
+            referencedRelation: "public_team_promoters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_registrations_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
             referencedRelation: "team_promoters"
             referencedColumns: ["id"]
           },
@@ -8166,7 +8201,113 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_auctions: {
+        Row: {
+          auto_extend_minutes: number | null
+          buy_now_cents: number | null
+          created_at: string | null
+          current_bid_cents: number | null
+          description: string | null
+          end_time: string | null
+          id: string | null
+          images: string[] | null
+          item_name: string | null
+          minimum_increment_cents: number | null
+          start_time: string | null
+          starting_bid_cents: number | null
+          status: string | null
+          tournament_id: string | null
+          updated_at: string | null
+          winning_bid_amount_cents: number | null
+          winning_bidder_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_donation_totals: {
+        Row: {
+          amount_cents: number | null
+          created_at: string | null
+          id: string | null
+          status: string | null
+          tournament_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_donations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_raffles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          draw_time: string | null
+          id: string | null
+          images: string[] | null
+          item_name: string | null
+          max_tickets: number | null
+          status: string | null
+          ticket_price_cents: number | null
+          tickets_sold: number | null
+          tournament_id: string | null
+          updated_at: string | null
+          winner_name: string | null
+          winner_ticket_number: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffles_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_team_promoters: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          tournament_id: string | null
+          unique_ref_code: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          tournament_id?: string | null
+          unique_ref_code?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          tournament_id?: string | null
+          unique_ref_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_promoters_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }

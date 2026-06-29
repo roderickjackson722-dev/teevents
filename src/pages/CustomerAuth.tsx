@@ -154,6 +154,12 @@ const CustomerAuth = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const rl = await checkAuthRateLimit("password_reset");
+    if (!rl.allowed) {
+      toast({ title: "Too many attempts", description: rl.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });

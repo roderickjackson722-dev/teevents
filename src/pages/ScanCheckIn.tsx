@@ -190,14 +190,27 @@ export default function ScanCheckIn() {
         {/* Last checked in feedback */}
         {lastCheckedIn && (
           <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="pt-4 pb-4 flex items-center gap-3">
-              <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0" />
-              <div>
-                <p className="font-semibold">{lastCheckedIn.first_name} {lastCheckedIn.last_name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {lastCheckedIn.group_number ? `Group ${lastCheckedIn.group_number}` : "No group assigned"}
-                </p>
+            <CardContent className="pt-4 pb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-semibold truncate">{lastCheckedIn.first_name} {lastCheckedIn.last_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {lastCheckedIn.group_number ? `Group ${lastCheckedIn.group_number}` : "No group assigned"}
+                  </p>
+                </div>
               </div>
+              {tournament?.slug && (
+                <a
+                  href={`/day-of/${tournament.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs underline text-primary whitespace-nowrap"
+                >
+                  Day-of page →
+                </a>
+              )}
+
             </CardContent>
           </Card>
         )}

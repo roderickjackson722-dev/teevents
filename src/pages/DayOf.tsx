@@ -645,11 +645,14 @@ function DayOfInner() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Link to={`/t/${tournament.slug}/scoring`}>
-            <Button className="w-full" style={{ backgroundColor: accent, color: bg }}>Enter Scores</Button>
-          </Link>
-          <Link to={`/t/${tournament.slug}`}><Button variant="outline" className="w-full">Tournament Site</Button></Link>
+          {reg.id !== "generic" && (
+            <Link to={`/t/${tournament.slug}/scoring`}>
+              <Button className="w-full" style={{ backgroundColor: accent, color: bg }}>Enter Scores</Button>
+            </Link>
+          )}
+          <Link to={`/t/${tournament.slug}`} className={reg.id === "generic" ? "col-span-2" : ""}><Button variant="outline" className="w-full">Tournament Site</Button></Link>
         </div>
+
       </main>
       <TeeventsFooter tournament={tournament as any} />
       <BrandingBadge show={(tournament as any).show_branding_badge !== false} />

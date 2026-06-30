@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check, Minus, Plus, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { allocateStrokes } from "@/lib/handicapUtils";
+import { getFormatById } from "@/lib/scoringFormats";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle

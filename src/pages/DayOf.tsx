@@ -445,6 +445,19 @@ function DayOfInner() {
         })()}
 
 
+        {/* Generic walk-up welcome */}
+        {reg.id === "generic" && (
+          <Card className="shadow-md overflow-hidden">
+            <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
+              <CardTitle className="text-2xl">Welcome to {tournament.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-4 text-sm">
+              <p>You're at the day-of event page. Use the sections below for announcements, the live leaderboard, sponsors, and contact info.</p>
+              <p className="text-muted-foreground">If a volunteer registered you on-site, you've been checked in already — no scoring code is needed.</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Scoring availability message for walk-ups / players without scoring access */}
         {tournament.day_of_show_scores_card && !reg.group_scoring_code && !reg.scoring_code && (
           <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
@@ -452,6 +465,7 @@ function DayOfInner() {
             <p className="text-muted-foreground">Please submit your scorecard at the scoring tent.</p>
           </div>
         )}
+
 
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">

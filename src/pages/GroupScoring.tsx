@@ -288,6 +288,21 @@ export default function GroupScoring() {
           </CardContent>
         </Card>
 
+        {(() => {
+          const fmt = getFormatById(tournament?.scoring_format || "stroke_play");
+          if (fmt && fmt.teamSize > 1) {
+            return (
+              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
+                <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                <p className="text-sm">
+                  <span className="font-semibold">Team scoring:</span> Only one player per team needs to enter the score for the team. You can edit a previously entered hole at any time.
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Player rows */}
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Scores</CardTitle></CardHeader>
@@ -295,9 +310,17 @@ export default function GroupScoring() {
             {players.map((p) => {
               const sStrokes = strokesByPlayer[p.id]?.[currentHole - 1] || 0;
               const gross = scores[p.id]?.[currentHole];
+              const hasDraft = draft[p.id] != null && draft[p.id] !== "";
               const draftVal = draft[p.id] ?? (gross != null ? String(gross) : "");
               const grossNum = draftVal === "" ? undefined : parseInt(draftVal, 10);
               const net = getNet(p, currentHole, grossNum);
+              const displayNum = grossNum ?? holePar; // default to par when nothing entered
+              const setVal = (n: number) => {
+                const clamped = Math.max(1, Math.min(12, n));
+                setDraft((d) => ({ ...d, [p.id]: String(clamped) }));
+              };
+              const adjust = (delta: number) => setVal((grossNum ?? holePar) + delta);
+              const locked = editLocked || false;
               return (
                 <div key={p.id} className="flex items-center gap-3 p-2 rounded border border-border">
                   <div className="flex-1 min-w-0">
@@ -309,18 +332,41 @@ export default function GroupScoring() {
                         </span>
                       )}
                       {grossNum != null && <span>net: {net}</span>}
+                      {!hasDraft && gross == null && <span className="italic">tap +/- to enter</span>}
                     </div>
                   </div>
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    max={15}
-                    value={draftVal}
-                    disabled={editLocked || false}
-                    onChange={(e) => setDraft((d) => ({ ...d, [p.id]: e.target.value }))}
-                    className="w-16 text-center text-lg font-bold h-12"
-                  />
+                  <div className="inline-flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10"
+                      disabled={locked || displayNum <= 1}
+                      onClick={() => adjust(-1)}
+                      aria-label="Decrease score"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <div
+                      className={`w-14 h-12 rounded border text-center text-xl font-bold flex items-center justify-center ${
+                        hasDraft || gross != null ? "bg-card text-foreground" : "bg-muted/40 text-muted-foreground"
+                      }`}
+                      aria-label="Current score"
+                    >
+                      {displayNum}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10"
+                      disabled={locked || displayNum >= 12}
+                      onClick={() => adjust(1)}
+                      aria-label="Increase score"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}

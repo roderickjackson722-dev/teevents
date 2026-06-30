@@ -387,9 +387,10 @@ function DayOfInner() {
         )}
 
         {/* Welcome */}
-        {tournament.day_of_show_welcome && (() => {
+        {tournament.day_of_show_welcome && reg.id !== "generic" && (() => {
           const playerName = `${reg.first_name} ${reg.last_name}`.trim() || reg.first_name || "Player";
           const fallback = (tournament as any).day_of_placeholder_fallback || "TBD";
+
           const teeTime = reg.tee_time || fallback;
           const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : fallback;
           const fill = (s: string) => s

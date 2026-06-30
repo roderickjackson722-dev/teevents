@@ -8267,6 +8267,10 @@ export type Database = {
           winning_bidder_name: string
         }[]
       }
+      get_public_donation_total: {
+        Args: { _tournament_id: string }
+        Returns: number
+      }
       get_public_raffles: {
         Args: { _tournament_id: string }
         Returns: {

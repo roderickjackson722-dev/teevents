@@ -28,6 +28,45 @@ export default function ScanCheckIn() {
   const [search, setSearch] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [lastCheckedIn, setLastCheckedIn] = useState<Player | null>(null);
+  const [walkupOpen, setWalkupOpen] = useState(false);
+  const [walkup, setWalkup] = useState({ first_name: "", last_name: "", email: "", phone: "", group_number: "" });
+  const [walkupSaving, setWalkupSaving] = useState(false);
+
+  const addWalkUp = async () => {
+    if (!tournamentId) return;
+    if (!walkup.first_name.trim() || !walkup.last_name.trim()) {
+      toast.error("First and last name are required");
+      return;
+    }
+    setWalkupSaving(true);
+    const email = walkup.email.trim() || `walkup+${Date.now()}@teevents.local`;
+    const { data, error } = await supabase
+      .from("tournament_registrations")
+      .insert({
+        tournament_id: tournamentId,
+        first_name: walkup.first_name.trim(),
+        last_name: walkup.last_name.trim(),
+        email,
+        phone: walkup.phone.trim() || null,
+        group_number: walkup.group_number ? parseInt(walkup.group_number) : null,
+        checked_in: true,
+        check_in_time: new Date().toISOString(),
+        payment_status: "walkup",
+        payment_method: "walkup",
+      })
+      .select("id, first_name, last_name, email, group_number, checked_in, check_in_time")
+      .single();
+    setWalkupSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setPlayers((prev) => [...prev, data as Player]);
+    setLastCheckedIn(data as Player);
+    toast.success(`Walk-up ${data!.first_name} ${data!.last_name} checked in!`);
+    setWalkup({ first_name: "", last_name: "", email: "", phone: "", group_number: "" });
+    setWalkupOpen(false);
+  };
 
   useEffect(() => {
     if (!tournamentId) return;

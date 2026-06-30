@@ -22,7 +22,7 @@ interface Player {
 
 export default function ScanCheckIn() {
   const { tournamentId } = useParams<{ tournamentId: string }>();
-  const [tournament, setTournament] = useState<{ id: string; title: string } | null>(null);
+  const [tournament, setTournament] = useState<{ id: string; title: string; slug: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanInput, setScanInput] = useState("");
   const [search, setSearch] = useState("");

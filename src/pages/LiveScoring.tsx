@@ -112,8 +112,9 @@ export default function LiveScoring() {
               }
             });
         }
-      });
+    })();
   }, [slug]);
+
 
   // Auto-login via scoring code from QR
   useEffect(() => {

@@ -76,7 +76,15 @@ export default function GroupScoring() {
         live_allow_edit_past_holes: match.live_allow_edit_past_holes,
         live_require_confirm_save: match.live_require_confirm_save,
         live_leaderboard_enabled: match.live_leaderboard_enabled,
+        scoring_format: null,
       } as Tournament;
+      // Fetch scoring_format separately (lookup RPC doesn't return it)
+      const { data: tRow } = await supabase
+        .from("tournaments")
+        .select("scoring_format")
+        .eq("id", t.id)
+        .maybeSingle();
+      if (tRow?.scoring_format) t.scoring_format = tRow.scoring_format;
       setTournament(t);
 
       const { data: regs } = await supabase

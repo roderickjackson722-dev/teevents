@@ -399,9 +399,17 @@ function DayOfInner() {
         })()}
 
 
+        {/* Scoring availability message for walk-ups / players without scoring access */}
+        {tournament.day_of_show_scores_card && !reg.group_scoring_code && !reg.scoring_code && (
+          <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
+            <p className="font-semibold mb-1">Live scoring is not available for this round.</p>
+            <p className="text-muted-foreground">Please submit your scorecard at the scoring tent.</p>
+          </div>
+        )}
+
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">
-          {tournament.day_of_show_scores_card && (
+          {tournament.day_of_show_scores_card && (reg.group_scoring_code || reg.scoring_code) && (
             <ActionCard to={reg.group_scoring_code ? `/score/${tournament.slug}/${reg.group_scoring_code}` : `/t/${tournament.slug}/scoring`} icon={<PenLine className="w-5 h-5" />} title="Enter Your Scores" cta="Enter Scores" accent={accent} />
           )}
           {tournament.day_of_show_leaderboard_card && (

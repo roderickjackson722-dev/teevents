@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Search, ScanLine, Loader2, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { CheckCircle2, Search, ScanLine, Loader2, Users, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 interface Player {
@@ -26,6 +28,45 @@ export default function ScanCheckIn() {
   const [search, setSearch] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [lastCheckedIn, setLastCheckedIn] = useState<Player | null>(null);
+  const [walkupOpen, setWalkupOpen] = useState(false);
+  const [walkup, setWalkup] = useState({ first_name: "", last_name: "", email: "", phone: "", group_number: "" });
+  const [walkupSaving, setWalkupSaving] = useState(false);
+
+  const addWalkUp = async () => {
+    if (!tournamentId) return;
+    if (!walkup.first_name.trim() || !walkup.last_name.trim()) {
+      toast.error("First and last name are required");
+      return;
+    }
+    setWalkupSaving(true);
+    const email = walkup.email.trim() || `walkup+${Date.now()}@teevents.local`;
+    const { data, error } = await supabase
+      .from("tournament_registrations")
+      .insert({
+        tournament_id: tournamentId,
+        first_name: walkup.first_name.trim(),
+        last_name: walkup.last_name.trim(),
+        email,
+        phone: walkup.phone.trim() || null,
+        group_number: walkup.group_number ? parseInt(walkup.group_number) : null,
+        checked_in: true,
+        check_in_time: new Date().toISOString(),
+        payment_status: "walkup",
+        payment_method: "walkup",
+      })
+      .select("id, first_name, last_name, email, group_number, checked_in, check_in_time")
+      .single();
+    setWalkupSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setPlayers((prev) => [...prev, data as Player]);
+    setLastCheckedIn(data as Player);
+    toast.success(`Walk-up ${data!.first_name} ${data!.last_name} checked in!`);
+    setWalkup({ first_name: "", last_name: "", email: "", phone: "", group_number: "" });
+    setWalkupOpen(false);
+  };
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -161,16 +202,64 @@ export default function ScanCheckIn() {
           </Card>
         )}
 
-        {/* Manual search */}
-        <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email..."
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or email..."
+              className="pl-9"
+            />
+          </div>
+          <Button variant="outline" onClick={() => setWalkupOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-1" /> Walk-Up
+          </Button>
         </div>
+
+        <Dialog open={walkupOpen} onOpenChange={setWalkupOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Walk-Up Player</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">First name *</Label>
+                  <Input value={walkup.first_name} onChange={(e) => setWalkup({ ...walkup, first_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Last name *</Label>
+                  <Input value={walkup.last_name} onChange={(e) => setWalkup({ ...walkup, last_name: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Email</Label>
+                <Input type="email" value={walkup.email} onChange={(e) => setWalkup({ ...walkup, email: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Phone (optional)</Label>
+                  <Input value={walkup.phone} onChange={(e) => setWalkup({ ...walkup, phone: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Group / Hole #</Label>
+                  <Input type="number" min={1} value={walkup.group_number} onChange={(e) => setWalkup({ ...walkup, group_number: e.target.value })} />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                The player will be checked in immediately. If live scoring isn't available for this round, they'll see a message to submit their scorecard at the scoring tent.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setWalkupOpen(false)}>Cancel</Button>
+              <Button onClick={addWalkUp} disabled={walkupSaving}>
+                {walkupSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
+                Add &amp; Check In
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="space-y-2">
           {filtered.map((p) => (

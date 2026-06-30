@@ -1,4 +1,4 @@
-import { Clock, MapPin, Users, Eye, Megaphone, BarChart3, PenLine, FileText } from "lucide-react";
+import { Clock, MapPin, Users, Eye, Megaphone, BarChart3, PenLine } from "lucide-react";
 
 interface PreviewT {
   title: string;
@@ -70,7 +70,6 @@ export default function DayOfLivePreview({ t }: { t: PreviewT }) {
     { show: t.day_of_show_scores_card, label: "Enter Scores", icon: PenLine },
     { show: t.day_of_show_leaderboard_card, label: "Live Leaderboard", icon: BarChart3 },
     { show: t.day_of_show_coursemap_card, label: "Course Map", icon: MapPin },
-    { show: t.day_of_show_pin_sheets, label: "Pin Sheets", icon: FileText },
   ];
 
   return (

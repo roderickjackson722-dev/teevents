@@ -311,23 +311,6 @@ export default function DayOfSettings() {
             </div>
           </section>
 
-          {/* HEADER CONTENT */}
-          <section className="space-y-3 border-t pt-5">
-            <Label className="text-base">Header Content</Label>
-            <div className="flex items-center gap-3">
-              <Switch checked={t.day_of_weather_enabled} onCheckedChange={(v) => setT({ ...t, day_of_weather_enabled: v })} />
-              <Label>Show weather widget</Label>
-            </div>
-            <div>
-              <Label className="text-xs">Weather location (city, state)</Label>
-              <Input
-                value={t.day_of_weather_location || ""}
-                onChange={(e) => setT({ ...t, day_of_weather_location: e.target.value })}
-                placeholder="Pebble Beach, CA"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Leave blank to use the course location. Powered by Open-Meteo (free, no API key).</p>
-            </div>
-          </section>
 
           {/* WELCOME MESSAGE */}
           <section className="space-y-3 border-t pt-5">

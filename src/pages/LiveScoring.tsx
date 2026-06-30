@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Save, Trophy, ArrowLeft } from "lucide-react";
+import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { getFormatById } from "@/lib/scoringFormats";
 
 interface Player {
   id: string;
@@ -209,13 +210,17 @@ export default function LiveScoring() {
     }
   };
 
-  const updateScore = (regId: string, hole: number, value: string) => {
-    const num = parseInt(value);
-    if (isNaN(num) || num < 0 || num > 20) return;
+  const setScore = (regId: string, hole: number, num: number) => {
+    const clamped = Math.max(1, Math.min(12, num));
     setEditedScores((prev) => ({
       ...prev,
-      [regId]: { ...(prev[regId] || {}), [hole]: num },
+      [regId]: { ...(prev[regId] || {}), [hole]: clamped },
     }));
+  };
+
+  const adjustScore = (regId: string, hole: number, delta: number) => {
+    const current = editedScores[regId]?.[hole] ?? scores[regId]?.[hole] ?? (courseData?.hole_pars?.[hole - 1] ?? tournament?.course_par ? Math.round((tournament?.course_par || 72) / 18) : 4);
+    setScore(regId, hole, (typeof current === "number" ? current : 4) + delta);
   };
 
   const getScore = (regId: string, hole: number) => {
@@ -366,6 +371,21 @@ export default function LiveScoring() {
           )}
         </div>
 
+        {(() => {
+          const fmt = getFormatById(tournament?.scoring_format || "stroke_play");
+          if (fmt && fmt.teamSize > 1) {
+            return (
+              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
+                <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                <p className="text-sm">
+                  <span className="font-semibold">Team scoring:</span> Only one player per team needs to enter the score for the team. You can edit a hole's score at any time — tap − or + to change it.
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -433,17 +453,32 @@ export default function LiveScoring() {
                         </TableCell>
                         {holes.map((h) => {
                           const strokeDots = handicapEnabled ? getStrokesOnHole(p, h - 1) : 0;
+                          const val = getScore(p.id, h);
+                          const display = typeof val === "number" ? val : "";
                           return (
                             <TableCell key={h} className="p-0.5 text-center">
                               <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={20}
-                                  value={getScore(p.id, h)}
-                                  onChange={(e) => updateScore(p.id, h, e.target.value)}
-                                  className="w-11 h-8 text-center text-sm p-0"
-                                />
+                                <div className="inline-flex items-center gap-0.5">
+                                  <button
+                                    type="button"
+                                    aria-label="Decrease"
+                                    onClick={() => adjustScore(p.id, h, -1)}
+                                    className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </button>
+                                  <div className="w-7 h-7 rounded border bg-card text-center text-sm font-semibold flex items-center justify-center">
+                                    {display === "" ? (courseData?.hole_pars?.[h - 1] ?? "·") : display}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    aria-label="Increase"
+                                    onClick={() => adjustScore(p.id, h, +1)}
+                                    className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </button>
+                                </div>
                                 {strokeDots > 0 && (
                                   <div className="flex justify-center gap-0.5 mt-0.5">
                                     {Array.from({ length: strokeDots }, (_, i) => (

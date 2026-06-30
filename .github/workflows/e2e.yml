@@ -1,0 +1,57 @@
+name: E2E + Backend Integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  vitest:
+    name: Backend integration (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Run vitest
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          TEST_PUBLISHED_SLUG: ${{ secrets.TEST_PUBLISHED_SLUG }}
+          TEST_PUBLISHED_CUSTOM_SLUG: ${{ secrets.TEST_PUBLISHED_CUSTOM_SLUG }}
+          TEST_PUBLISHED_ID: ${{ secrets.TEST_PUBLISHED_ID }}
+        run: npm test
+
+  playwright:
+    name: Playwright e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright
+        env:
+          CI: "true"
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          TEST_PUBLISHED_SLUG: ${{ secrets.TEST_PUBLISHED_SLUG }}
+          TEST_PUBLISHED_CUSTOM_SLUG: ${{ secrets.TEST_PUBLISHED_CUSTOM_SLUG }}
+          TEST_PUBLISHED_ID: ${{ secrets.TEST_PUBLISHED_ID }}
+          TEST_PLAYER_AUTH_CODE: ${{ secrets.TEST_PLAYER_AUTH_CODE }}
+        run: npx playwright test
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14

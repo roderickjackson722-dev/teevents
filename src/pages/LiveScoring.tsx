@@ -59,16 +59,19 @@ export default function LiveScoring() {
 
   useEffect(() => {
     if (!slug) return;
-    supabase
-      .from("tournaments")
-      .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order")
-      .eq("slug", slug)
-      .eq("site_published", true)
-      .single()
-      .then(({ data }) => {
-        setTournament(data as TournamentData | null);
-        setLoading(false);
-        if (data) {
+    (async () => {
+      const { data: resolved } = await (supabase as any).rpc("resolve_public_tournament", { _slug: slug });
+      const match = Array.isArray(resolved) ? resolved[0] : null;
+      const baseQuery = supabase
+        .from("tournaments")
+        .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order");
+      const { data } = match?.id
+        ? await baseQuery.eq("id", match.id).maybeSingle()
+        : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
+      setTournament(data as TournamentData | null);
+      setLoading(false);
+      if (data) {
+
           // Load sponsors + uploaded rotating logos
           supabase
             .from("tournament_sponsors")
@@ -109,8 +112,9 @@ export default function LiveScoring() {
               }
             });
         }
-      });
+    })();
   }, [slug]);
+
 
   // Auto-login via scoring code from QR
   useEffect(() => {

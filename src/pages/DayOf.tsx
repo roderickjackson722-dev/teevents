@@ -197,15 +197,23 @@ function DayOfInner() {
       setLoading(true);
       setError(null);
 
-      // Allow slug OR tournament id in the URL (preview links use id to avoid slug mismatches).
+      // Resolve tournament via deterministic public lookup (prefers exact slug match,
+      // then custom_slug, then id) so /day-of/:slug never collides with another event.
       const isUuid = !!slug && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       let t: any = null;
       if (slug) {
-        const bySlug = await supabase.from("tournaments").select(FIELDS).eq("slug", slug).maybeSingle();
-        t = bySlug.data;
-        if (!t && isUuid) {
-          const byId = await supabase.from("tournaments").select(FIELDS).eq("id", slug).maybeSingle();
-          t = byId.data;
+        const { data: resolved } = await (supabase as any).rpc("resolve_public_tournament", { _slug: slug });
+        const match = Array.isArray(resolved) ? resolved[0] : null;
+        if (match?.id) {
+          const { data } = await supabase.from("tournaments").select(FIELDS).eq("id", match.id).maybeSingle();
+          t = data;
+        } else if (isUuid) {
+          const { data } = await supabase.from("tournaments").select(FIELDS).eq("id", slug).maybeSingle();
+          t = data;
+        } else {
+          // Fallback for unpublished previews/organizer view
+          const { data } = await supabase.from("tournaments").select(FIELDS).eq("slug", slug).maybeSingle();
+          t = data;
         }
       }
 
@@ -246,6 +254,43 @@ function DayOfInner() {
         .order("sort_order");
       setSponsors((sp as any) || []);
 
+      // Generic public Day-of for walk-ups / no code: still show event info, announcements,
+      // sponsors, contact, and (if available) the leaderboard. Skip player-specific welcome.
+      if (!code) {
+        setReg({
+          id: "generic",
+          first_name: "",
+          last_name: "",
+          group_number: null,
+          group_position: null,
+          scoring_code: null,
+          group_scoring_code: null,
+          tee_time: null,
+          hole_assignment: null,
+        });
+        setGroup([]);
+        const { data: leaderRows } = await supabase
+          .from("tournament_scores")
+          .select("strokes, tournament_registrations(first_name, last_name)")
+          .eq("tournament_id", tt.id);
+        const totals = new Map<string, number>();
+        ((leaderRows || []) as any[]).forEach((r) => {
+          const reg = r.tournament_registrations;
+          if (!reg) return;
+          const name = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
+          if (!name) return;
+          totals.set(name, (totals.get(name) || 0) + (r.strokes || 0));
+        });
+        setLeaders(
+          Array.from(totals.entries())
+            .map(([name, total]) => ({ name, total }))
+            .sort((a, b) => a.total - b.total)
+            .slice(0, 10)
+        );
+        setLoading(false);
+        return;
+      }
+
       if (isPreviewCode) {
         setReg(MOCK_REG);
         setGroup(MOCK_GROUP);
@@ -253,7 +298,6 @@ function DayOfInner() {
         return;
       }
 
-      if (!code) { setError("Missing player code. Please scan your QR code or use the link from your confirmation."); setLoading(false); return; }
       const { data: rpcData } = await supabase.rpc("get_day_of_player", {
         _tournament_id: tt.id,
         _code: code,
@@ -266,6 +310,7 @@ function DayOfInner() {
       setLoading(false);
     })();
   }, [slug, code, isOrganizerPreview, isPreviewCode]);
+
 
   if (loading) return <div className="p-8 text-center">Loading…</div>;
   if (error) return (
@@ -342,9 +387,10 @@ function DayOfInner() {
         )}
 
         {/* Welcome */}
-        {tournament.day_of_show_welcome && (() => {
+        {tournament.day_of_show_welcome && reg.id !== "generic" && (() => {
           const playerName = `${reg.first_name} ${reg.last_name}`.trim() || reg.first_name || "Player";
           const fallback = (tournament as any).day_of_placeholder_fallback || "TBD";
+
           const teeTime = reg.tee_time || fallback;
           const startingHole = reg.hole_assignment != null ? `#${reg.hole_assignment}` : fallback;
           const fill = (s: string) => s
@@ -399,6 +445,19 @@ function DayOfInner() {
         })()}
 
 
+        {/* Generic walk-up welcome */}
+        {reg.id === "generic" && (
+          <Card className="shadow-md overflow-hidden">
+            <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${bg}22, transparent)` }}>
+              <CardTitle className="text-2xl">Welcome to {tournament.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-4 text-sm">
+              <p>You're at the day-of event page. Use the sections below for announcements, the live leaderboard, sponsors, and contact info.</p>
+              <p className="text-muted-foreground">If a volunteer registered you on-site, you've been checked in already — no scoring code is needed.</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Scoring availability message for walk-ups / players without scoring access */}
         {tournament.day_of_show_scores_card && !reg.group_scoring_code && !reg.scoring_code && (
           <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
@@ -406,6 +465,7 @@ function DayOfInner() {
             <p className="text-muted-foreground">Please submit your scorecard at the scoring tent.</p>
           </div>
         )}
+
 
         {/* Quick action cards (2x2 grid) */}
         <div className="grid grid-cols-2 gap-3">
@@ -585,11 +645,14 @@ function DayOfInner() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Link to={`/t/${tournament.slug}/scoring`}>
-            <Button className="w-full" style={{ backgroundColor: accent, color: bg }}>Enter Scores</Button>
-          </Link>
-          <Link to={`/t/${tournament.slug}`}><Button variant="outline" className="w-full">Tournament Site</Button></Link>
+          {reg.id !== "generic" && (
+            <Link to={`/t/${tournament.slug}/scoring`}>
+              <Button className="w-full" style={{ backgroundColor: accent, color: bg }}>Enter Scores</Button>
+            </Link>
+          )}
+          <Link to={`/t/${tournament.slug}`} className={reg.id === "generic" ? "col-span-2" : ""}><Button variant="outline" className="w-full">Tournament Site</Button></Link>
         </div>
+
       </main>
       <TeeventsFooter tournament={tournament as any} />
       <BrandingBadge show={(tournament as any).show_branding_badge !== false} />

@@ -139,29 +139,31 @@ export default function LiveLeaderboard() {
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    supabase
-      .from("tournaments")
-      .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text")
-      .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!data) {
-          setAccessDenied(true);
-          setLoading(false);
-          return;
-        }
-        // In preview mode, bypass publish gating so organizers can preview before going live.
-        // Only block when the organizer has explicitly disabled the live display.
-        if (!isPreview && (data as any).live_display_enabled === false) {
-          setAccessDenied(true);
-          setLoading(false);
-          return;
-        }
-        setTournament(data as Tournament);
-        setDesign(mergeDesign((data as any).leaderboard_design));
+    (async () => {
+      const { data: resolved } = await (supabase as any).rpc("resolve_public_tournament", { _slug: slug });
+      const match = Array.isArray(resolved) ? resolved[0] : null;
+      const baseQuery = supabase
+        .from("tournaments")
+        .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text");
+      const { data } = match?.id
+        ? await baseQuery.eq("id", match.id).maybeSingle()
+        : await baseQuery.or(`custom_slug.eq.${slug},slug.eq.${slug}`).limit(1).maybeSingle();
+      if (!data) {
+        setAccessDenied(true);
         setLoading(false);
-      });
+        return;
+      }
+      if (!isPreview && (data as any).live_display_enabled === false) {
+        setAccessDenied(true);
+        setLoading(false);
+        return;
+      }
+      setTournament(data as Tournament);
+      setDesign(mergeDesign((data as any).leaderboard_design));
+      setLoading(false);
+    })();
   }, [slug, isPreview]);
+
 
 
   // Load related data

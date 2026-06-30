@@ -33,6 +33,7 @@ interface Tournament {
   live_allow_edit_past_holes: boolean;
   live_require_confirm_save: boolean;
   live_leaderboard_enabled: boolean;
+  scoring_format: string | null;
 }
 
 const NUM_HOLES = 18;

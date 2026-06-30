@@ -438,17 +438,32 @@ export default function LiveScoring() {
                         </TableCell>
                         {holes.map((h) => {
                           const strokeDots = handicapEnabled ? getStrokesOnHole(p, h - 1) : 0;
+                          const val = getScore(p.id, h);
+                          const display = typeof val === "number" ? val : "";
                           return (
                             <TableCell key={h} className="p-0.5 text-center">
                               <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={20}
-                                  value={getScore(p.id, h)}
-                                  onChange={(e) => updateScore(p.id, h, e.target.value)}
-                                  className="w-11 h-8 text-center text-sm p-0"
-                                />
+                                <div className="inline-flex items-center gap-0.5">
+                                  <button
+                                    type="button"
+                                    aria-label="Decrease"
+                                    onClick={() => adjustScore(p.id, h, -1)}
+                                    className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </button>
+                                  <div className="w-7 h-7 rounded border bg-card text-center text-sm font-semibold flex items-center justify-center">
+                                    {display === "" ? (courseData?.hole_pars?.[h - 1] ?? "·") : display}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    aria-label="Increase"
+                                    onClick={() => adjustScore(p.id, h, +1)}
+                                    className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </button>
+                                </div>
                                 {strokeDots > 0 && (
                                   <div className="flex justify-center gap-0.5 mt-0.5">
                                     {Array.from({ length: strokeDots }, (_, i) => (

@@ -1,4 +1,4 @@
-import { Clock, MapPin, Users, Eye, Megaphone, BarChart3, PenLine, FileText } from "lucide-react";
+import { Clock, MapPin, Users, Eye, Megaphone, BarChart3, PenLine } from "lucide-react";
 
 interface PreviewT {
   title: string;

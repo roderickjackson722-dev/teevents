@@ -71,7 +71,7 @@ export default function ScanCheckIn() {
   useEffect(() => {
     if (!tournamentId) return;
     Promise.all([
-      supabase.from("tournaments").select("id, title").eq("id", tournamentId).single(),
+      supabase.from("tournaments").select("id, title, slug").eq("id", tournamentId).single(),
       supabase.from("tournament_registrations")
         .select("id, first_name, last_name, email, group_number, checked_in, check_in_time")
         .eq("tournament_id", tournamentId)

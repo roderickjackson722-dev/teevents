@@ -8378,6 +8378,16 @@ export type Database = {
         Args: { _registration_id: string }
         Returns: string
       }
+      resolve_public_tournament: {
+        Args: { _slug: string }
+        Returns: {
+          custom_slug: string
+          id: string
+          site_published: boolean
+          slug: string
+          title: string
+        }[]
+      }
       save_group_scores: {
         Args: { _code: string; _scores: Json; _tournament_id: string }
         Returns: undefined

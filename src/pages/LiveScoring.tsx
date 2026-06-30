@@ -371,6 +371,21 @@ export default function LiveScoring() {
           )}
         </div>
 
+        {(() => {
+          const fmt = getFormatById(tournament?.scoring_format || "stroke_play");
+          if (fmt && fmt.teamSize > 1) {
+            return (
+              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
+                <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                <p className="text-sm">
+                  <span className="font-semibold">Team scoring:</span> Only one player per team needs to enter the score for the team. You can edit a hole's score at any time — tap − or + to change it.
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">

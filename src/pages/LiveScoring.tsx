@@ -210,13 +210,17 @@ export default function LiveScoring() {
     }
   };
 
-  const updateScore = (regId: string, hole: number, value: string) => {
-    const num = parseInt(value);
-    if (isNaN(num) || num < 0 || num > 20) return;
+  const setScore = (regId: string, hole: number, num: number) => {
+    const clamped = Math.max(1, Math.min(12, num));
     setEditedScores((prev) => ({
       ...prev,
-      [regId]: { ...(prev[regId] || {}), [hole]: num },
+      [regId]: { ...(prev[regId] || {}), [hole]: clamped },
     }));
+  };
+
+  const adjustScore = (regId: string, hole: number, delta: number) => {
+    const current = editedScores[regId]?.[hole] ?? scores[regId]?.[hole] ?? (courseData?.hole_pars?.[hole - 1] ?? tournament?.course_par ? Math.round((tournament?.course_par || 72) / 18) : 4);
+    setScore(regId, hole, (typeof current === "number" ? current : 4) + delta);
   };
 
   const getScore = (regId: string, hole: number) => {

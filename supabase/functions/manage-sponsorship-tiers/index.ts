@@ -66,11 +66,11 @@ async function recordManualSponsorPayment(
       tournament.organization_id,
       "notify_registration",
       `New Sponsor — ${tournament.title || "Tournament"}`,
-      buildNotificationHtml("New Sponsor (Manual Approval)", [
+      buildNotificationHtml("New Sponsor (Manual Add-On)", [
         `🏢 <strong>${reg.company_name || "Sponsor"}</strong> was recorded as a <strong>${tierName}</strong> sponsor.`,
         reg.contact_email ? `📧 ${reg.contact_email}${reg.contact_phone ? ` • 📱 ${reg.contact_phone}` : ""}` : "",
         `💰 Sponsorship amount: <strong>$${(gross / 100).toFixed(2)}</strong>`,
-        `<em>Recorded manually by the organizer (offline / cash / check).</em>`,
+        `<em>This is a <strong>manual add-on</strong>. It did not go through online checkout — <strong>payment must be collected manually</strong> by the organizer (cash, check, or invoice).</em>`,
       ].filter(Boolean) as string[]),
       tournament.id,
     );
@@ -79,13 +79,13 @@ async function recordManualSponsorPayment(
     await notifyPlatformAdmin({
       supabaseAdmin,
       type: "sponsorship",
-      subject: `[TeeVents] Manual Sponsorship — ${tournament.title || "Tournament"}`,
+      subject: `[TeeVents] Manual Sponsor Add-On — ${tournament.title || "Tournament"}`,
       htmlBody: buildNotificationHtml("Manual Sponsorship Recorded", [
         `🏢 <strong>${reg.company_name || "Sponsor"}</strong> — ${tierName}`,
         `🏌️ Tournament: <strong>${tournament.title || "Unknown"}</strong>`,
         `💰 Gross: $${(gross / 100).toFixed(2)}`,
         reg.contact_email ? `📧 ${reg.contact_email}` : "",
-        `<em>Source: manual approval (offline)</em>`,
+        `<em>Source: manual add-on by organizer. Payment must be collected manually (offline).</em>`,
       ].filter(Boolean) as string[]),
       organizationId: tournament.organization_id,
       tournamentId: tournament.id,

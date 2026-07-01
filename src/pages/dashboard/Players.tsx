@@ -334,6 +334,9 @@ const Players = () => {
     else {
       setPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
       toast({ title: "Payment marked received" });
+      supabase.functions.invoke("notify-manual-registration", {
+        body: { registration_id: id },
+      }).catch((e) => console.error("notify-manual-registration failed:", e));
     }
   };
 

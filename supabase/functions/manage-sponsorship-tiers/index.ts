@@ -79,13 +79,13 @@ async function recordManualSponsorPayment(
     await notifyPlatformAdmin({
       supabaseAdmin,
       type: "sponsorship",
-      subject: `[TeeVents] Manual Sponsorship — ${tournament.title || "Tournament"}`,
+      subject: `[TeeVents] Manual Sponsor Add-On — ${tournament.title || "Tournament"}`,
       htmlBody: buildNotificationHtml("Manual Sponsorship Recorded", [
         `🏢 <strong>${reg.company_name || "Sponsor"}</strong> — ${tierName}`,
         `🏌️ Tournament: <strong>${tournament.title || "Unknown"}</strong>`,
         `💰 Gross: $${(gross / 100).toFixed(2)}`,
         reg.contact_email ? `📧 ${reg.contact_email}` : "",
-        `<em>Source: manual approval (offline)</em>`,
+        `<em>Source: manual add-on by organizer. Payment must be collected manually (offline).</em>`,
       ].filter(Boolean) as string[]),
       organizationId: tournament.organization_id,
       tournamentId: tournament.id,

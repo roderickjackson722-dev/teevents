@@ -358,23 +358,9 @@ Deno.serve(async (req) => {
         await recordManualSponsorPayment(supabaseAdmin, registrationId);
       }
       return json({ success: true });
-
-
-    if (action === "update_registration_status") {
-      if (!registrationId) throw new Error("Registration not specified");
-      const status = String(body?.status || "").toLowerCase();
-      const allowed = ["pending", "paid", "refunded", "cancelled", "failed"];
-      if (!allowed.includes(status)) throw new Error("Invalid status");
-      const update: Record<string, unknown> = { payment_status: status };
-      if (status === "paid") update.paid_at = new Date().toISOString();
-      const { error } = await supabaseAdmin
-        .from("sponsor_registrations")
-        .update(update)
-        .eq("id", registrationId)
-        .eq("tournament_id", tournamentId);
-      if (error) throw error;
-      return json({ success: true });
     }
+
+
 
     if (action === "update_registration_visibility") {
       if (!registrationId) throw new Error("Registration not specified");

@@ -252,9 +252,21 @@ const Finances = () => {
 
   // Summary stats from platform_transactions
   const succeededTx = platformTransactions.filter((t) => t.status === "succeeded" || t.status === "paid");
+  // Manual / offline transactions (cash, check, manually approved sponsors) — these are
+  // collected by the organizer directly and never route through Stripe, so they should
+  // count toward Total Collected but NOT toward the Net-to-Stripe deposit total.
+  const isManualOffline = (t: PlatformTransaction) => {
+    const meta = (t.metadata || {}) as Record<string, any>;
+    if (meta.payment_channel === "offline") return true;
+    if (typeof meta.source === "string" && meta.source.startsWith("manual")) return true;
+    const pm = (t.payout_method || "").toLowerCase();
+    if (pm && pm !== "stripe") return true;
+    return false;
+  };
+  const stripeTx = platformTransactions.filter((t) => !isManualOffline(t));
   const totalCollected = platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
-  const totalPlatformFees = platformTransactions.reduce((sum, t) => sum + t.platform_fee_cents, 0);
-  const totalNetToOrganizer = platformTransactions.reduce((sum, t) => sum + t.net_amount_cents, 0);
+  const totalPlatformFees = stripeTx.reduce((sum, t) => sum + t.platform_fee_cents, 0);
+  const totalNetToOrganizer = stripeTx.reduce((sum, t) => sum + t.net_amount_cents, 0);
 
   // Approximate split: new Stripe Connect accounts hold funds for up to 7 days while the
   // platform clears. Charges newer than that window are shown as "pending (clearing)";

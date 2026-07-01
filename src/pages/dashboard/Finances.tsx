@@ -611,9 +611,9 @@ const Finances = () => {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           onClick={() => setBreakdown({
             title: "Net to Your Stripe",
-            description: "Net amount deposited to your connected Stripe account after platform and processing fees.",
+            description: "Net amount deposited to your connected Stripe account after platform and processing fees. Manual/offline payments (cash, check, manually approved sponsors) are excluded — those are collected directly by you.",
             column: "net_amount_cents",
-            items: platformTransactions,
+            items: stripeTx,
           })}
           className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
         >
@@ -626,7 +626,7 @@ const Finances = () => {
             </span>
           </div>
           <p className="text-2xl font-bold text-primary">${(totalNetToOrganizer / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe · click for details</p>
+          <p className="text-xs text-muted-foreground mt-1">Stripe deposits only · excludes manual/offline · click for details</p>
         </motion.button>
       </div>
 

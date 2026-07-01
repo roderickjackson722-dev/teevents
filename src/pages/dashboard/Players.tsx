@@ -317,6 +317,10 @@ const Players = () => {
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
       markChecklistTaskComplete(selectedTournament, "add_first_player");
+      // Fire organizer + platform-admin notification emails (manual add-on / offline payment).
+      supabase.functions.invoke("notify-manual-registration", {
+        body: { registration_id: (data as any).id },
+      }).catch((e) => console.error("notify-manual-registration failed:", e));
     }
   };
 

@@ -252,9 +252,21 @@ const Finances = () => {
 
   // Summary stats from platform_transactions
   const succeededTx = platformTransactions.filter((t) => t.status === "succeeded" || t.status === "paid");
+  // Manual / offline transactions (cash, check, manually approved sponsors) — these are
+  // collected by the organizer directly and never route through Stripe, so they should
+  // count toward Total Collected but NOT toward the Net-to-Stripe deposit total.
+  const isManualOffline = (t: PlatformTransaction) => {
+    const meta = (t.metadata || {}) as Record<string, any>;
+    if (meta.payment_channel === "offline") return true;
+    if (typeof meta.source === "string" && meta.source.startsWith("manual")) return true;
+    const pm = (t.payout_method || "").toLowerCase();
+    if (pm && pm !== "stripe") return true;
+    return false;
+  };
+  const stripeTx = platformTransactions.filter((t) => !isManualOffline(t));
   const totalCollected = platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
-  const totalPlatformFees = platformTransactions.reduce((sum, t) => sum + t.platform_fee_cents, 0);
-  const totalNetToOrganizer = platformTransactions.reduce((sum, t) => sum + t.net_amount_cents, 0);
+  const totalPlatformFees = stripeTx.reduce((sum, t) => sum + t.platform_fee_cents, 0);
+  const totalNetToOrganizer = stripeTx.reduce((sum, t) => sum + t.net_amount_cents, 0);
 
   // Approximate split: new Stripe Connect accounts hold funds for up to 7 days while the
   // platform clears. Charges newer than that window are shown as "pending (clearing)";
@@ -599,9 +611,9 @@ const Finances = () => {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           onClick={() => setBreakdown({
             title: "Net to Your Stripe",
-            description: "Net amount deposited to your connected Stripe account after platform and processing fees.",
+            description: "Net amount deposited to your connected Stripe account after platform and processing fees. Manual/offline payments (cash, check, manually approved sponsors) are excluded — those are collected directly by you.",
             column: "net_amount_cents",
-            items: platformTransactions,
+            items: stripeTx,
           })}
           className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
         >
@@ -614,7 +626,7 @@ const Finances = () => {
             </span>
           </div>
           <p className="text-2xl font-bold text-primary">${(totalNetToOrganizer / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Deposited to your Stripe · click for details</p>
+          <p className="text-xs text-muted-foreground mt-1">Stripe deposits only · excludes manual/offline · click for details</p>
         </motion.button>
       </div>
 

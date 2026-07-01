@@ -466,15 +466,34 @@ const Sponsors = () => {
       });
   }, [org]);
 
+  const [regStats, setRegStats] = useState<{ count: number; pledged: number; collected: number }>({
+    count: 0,
+    pledged: 0,
+    collected: 0,
+  });
+
   const fetchSponsors = async () => {
     if (!selectedTournament) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("tournament_sponsors")
-      .select("*")
-      .eq("tournament_id", selectedTournament)
-      .order("sort_order", { ascending: true });
+    const [{ data }, { data: regs }] = await Promise.all([
+      supabase
+        .from("tournament_sponsors")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("sponsor_registrations")
+        .select("amount_cents, payment_status, manually_approved")
+        .eq("tournament_id", selectedTournament),
+    ]);
     setSponsors((data as Sponsor[]) || []);
+    const rlist = (regs as any[]) || [];
+    const pledged = rlist.reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    const collected =
+      rlist
+        .filter((r) => r.payment_status === "paid" || r.manually_approved === true)
+        .reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    setRegStats({ count: rlist.length, pledged, collected });
     setLoading(false);
   };
 
@@ -639,21 +658,21 @@ const Sponsors = () => {
             <span className="text-sm text-muted-foreground">Total Sponsors</span>
             <Award className="h-5 w-5 text-secondary" />
           </div>
-          <p className="text-2xl font-display font-bold text-foreground">{sponsors.length}</p>
+          <p className="text-2xl font-display font-bold text-foreground">{Math.max(sponsors.length, regStats.count)}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="bg-card rounded-lg border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-muted-foreground">Total Pledged</span>
             <DollarSign className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-2xl font-display font-bold text-primary">{fmt(totalPledged)}</p>
+          <p className="text-2xl font-display font-bold text-primary">{fmt(totalPledged + regStats.pledged)}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} className="bg-card rounded-lg border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-muted-foreground">Collected</span>
             <DollarSign className="h-5 w-5 text-secondary" />
           </div>
-          <p className="text-2xl font-display font-bold text-secondary">{fmt(totalPaid)}</p>
+          <p className="text-2xl font-display font-bold text-secondary">{fmt(totalPaid + regStats.collected)}</p>
         </motion.div>
       </div>
 

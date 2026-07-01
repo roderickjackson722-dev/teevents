@@ -466,15 +466,34 @@ const Sponsors = () => {
       });
   }, [org]);
 
+  const [regStats, setRegStats] = useState<{ count: number; pledged: number; collected: number }>({
+    count: 0,
+    pledged: 0,
+    collected: 0,
+  });
+
   const fetchSponsors = async () => {
     if (!selectedTournament) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("tournament_sponsors")
-      .select("*")
-      .eq("tournament_id", selectedTournament)
-      .order("sort_order", { ascending: true });
+    const [{ data }, { data: regs }] = await Promise.all([
+      supabase
+        .from("tournament_sponsors")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("sponsor_registrations")
+        .select("amount_cents, payment_status, manually_approved")
+        .eq("tournament_id", selectedTournament),
+    ]);
     setSponsors((data as Sponsor[]) || []);
+    const rlist = (regs as any[]) || [];
+    const pledged = rlist.reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    const collected =
+      rlist
+        .filter((r) => r.payment_status === "paid" || r.manually_approved === true)
+        .reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    setRegStats({ count: rlist.length, pledged, collected });
     setLoading(false);
   };
 

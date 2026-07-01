@@ -307,6 +307,9 @@ Deno.serve(async (req) => {
           .select("id")
           .single();
         if (error) throw error;
+        if (status === "paid") {
+          await recordManualSponsorPayment(supabaseAdmin, data.id);
+        }
         return json({ success: true, id: data.id });
       } else {
         if (!registrationId) throw new Error("Registration not specified");
@@ -325,9 +328,37 @@ Deno.serve(async (req) => {
           .eq("id", registrationId)
           .eq("tournament_id", tournamentId);
         if (error) throw error;
+        // Fire side effects only when transitioning INTO paid.
+        if (status === "paid" && existing?.payment_status !== "paid") {
+          await recordManualSponsorPayment(supabaseAdmin, registrationId);
+        }
         return json({ success: true });
       }
     }
+
+    if (action === "update_registration_status") {
+      if (!registrationId) throw new Error("Registration not specified");
+      const status = String(body?.status || "").toLowerCase();
+      const allowed = ["pending", "paid", "refunded", "cancelled", "failed"];
+      if (!allowed.includes(status)) throw new Error("Invalid status");
+      const { data: existing } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .select("payment_status")
+        .eq("id", registrationId)
+        .maybeSingle() as any;
+      const update: Record<string, unknown> = { payment_status: status };
+      if (status === "paid") update.paid_at = new Date().toISOString();
+      const { error } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .update(update)
+        .eq("id", registrationId)
+        .eq("tournament_id", tournamentId);
+      if (error) throw error;
+      if (status === "paid" && existing?.payment_status !== "paid") {
+        await recordManualSponsorPayment(supabaseAdmin, registrationId);
+      }
+      return json({ success: true });
+
 
     if (action === "update_registration_status") {
       if (!registrationId) throw new Error("Registration not specified");

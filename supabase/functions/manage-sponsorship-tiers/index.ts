@@ -1,4 +1,100 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendNotificationEmails, notifyPlatformAdmin, buildNotificationHtml } from "../_shared/notify.ts";
+
+/**
+ * When a sponsor registration is marked "paid" outside of the Stripe checkout
+ * flow (e.g. organizer manually approves an offline/cash/check sponsor), we
+ * must still (a) record a platform_transactions row so it shows up on the
+ * organizer Finances dashboard, and (b) fire organizer + admin notification
+ * emails — matching the behavior of verify-sponsor-payment for online payments.
+ * Idempotent via the metadata->>sponsor_registration_id key.
+ */
+async function recordManualSponsorPayment(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  registrationId: string,
+) {
+  try {
+    const { data: reg } = await supabaseAdmin
+      .from("sponsor_registrations")
+      .select("*, sponsorship_tiers(name)")
+      .eq("id", registrationId)
+      .maybeSingle() as any;
+    if (!reg || reg.payment_status !== "paid") return;
+
+    const { data: tournament } = await supabaseAdmin
+      .from("tournaments")
+      .select("id, title, organization_id")
+      .eq("id", reg.tournament_id)
+      .maybeSingle() as any;
+    if (!tournament?.organization_id) return;
+
+    const gross = Number(reg.amount_cents || 0);
+    const tierName = reg.sponsorship_tiers?.name || "Sponsor";
+
+    // Idempotency: only insert if we haven't logged this registration before.
+    const { data: existingTx } = await supabaseAdmin
+      .from("platform_transactions")
+      .select("id")
+      .eq("tournament_id", tournament.id)
+      .filter("metadata->>sponsor_registration_id", "eq", registrationId)
+      .maybeSingle() as any;
+
+    if (!existingTx && gross > 0) {
+      await supabaseAdmin.from("platform_transactions").insert({
+        organization_id: tournament.organization_id,
+        tournament_id: tournament.id,
+        amount_cents: gross,
+        platform_fee_cents: 0,
+        stripe_fee_cents: 0,
+        net_amount_cents: gross,
+        type: "sponsorship",
+        status: "succeeded",
+        description: `Sponsorship (manual/offline) — ${reg.company_name || "Sponsor"}`,
+        metadata: {
+          sponsor_registration_id: registrationId,
+          company_name: reg.company_name,
+          tier_name: tierName,
+          source: "manual_approval",
+          payment_channel: "offline",
+        },
+      });
+    }
+
+    // Organizer notification (respects notification_emails + tournament.contact_email)
+    await sendNotificationEmails(
+      supabaseAdmin,
+      tournament.organization_id,
+      "notify_registration",
+      `New Sponsor — ${tournament.title || "Tournament"}`,
+      buildNotificationHtml("New Sponsor (Manual Approval)", [
+        `🏢 <strong>${reg.company_name || "Sponsor"}</strong> was recorded as a <strong>${tierName}</strong> sponsor.`,
+        reg.contact_email ? `📧 ${reg.contact_email}${reg.contact_phone ? ` • 📱 ${reg.contact_phone}` : ""}` : "",
+        `💰 Sponsorship amount: <strong>$${(gross / 100).toFixed(2)}</strong>`,
+        `<em>Recorded manually by the organizer (offline / cash / check).</em>`,
+      ].filter(Boolean) as string[]),
+      tournament.id,
+    );
+
+    // Platform-admin notification (always goes to info@teevents.golf)
+    await notifyPlatformAdmin({
+      supabaseAdmin,
+      type: "sponsorship",
+      subject: `[TeeVents] Manual Sponsorship — ${tournament.title || "Tournament"}`,
+      htmlBody: buildNotificationHtml("Manual Sponsorship Recorded", [
+        `🏢 <strong>${reg.company_name || "Sponsor"}</strong> — ${tierName}`,
+        `🏌️ Tournament: <strong>${tournament.title || "Unknown"}</strong>`,
+        `💰 Gross: $${(gross / 100).toFixed(2)}`,
+        reg.contact_email ? `📧 ${reg.contact_email}` : "",
+        `<em>Source: manual approval (offline)</em>`,
+      ].filter(Boolean) as string[]),
+      organizationId: tournament.organization_id,
+      tournamentId: tournament.id,
+    });
+  } catch (err) {
+    console.error("[recordManualSponsorPayment] failed:", err);
+  }
+}
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -211,6 +307,9 @@ Deno.serve(async (req) => {
           .select("id")
           .single();
         if (error) throw error;
+        if (status === "paid") {
+          await recordManualSponsorPayment(supabaseAdmin, data.id);
+        }
         return json({ success: true, id: data.id });
       } else {
         if (!registrationId) throw new Error("Registration not specified");
@@ -229,6 +328,10 @@ Deno.serve(async (req) => {
           .eq("id", registrationId)
           .eq("tournament_id", tournamentId);
         if (error) throw error;
+        // Fire side effects only when transitioning INTO paid.
+        if (status === "paid" && existing?.payment_status !== "paid") {
+          await recordManualSponsorPayment(supabaseAdmin, registrationId);
+        }
         return json({ success: true });
       }
     }
@@ -238,6 +341,11 @@ Deno.serve(async (req) => {
       const status = String(body?.status || "").toLowerCase();
       const allowed = ["pending", "paid", "refunded", "cancelled", "failed"];
       if (!allowed.includes(status)) throw new Error("Invalid status");
+      const { data: existing } = await supabaseAdmin
+        .from("sponsor_registrations")
+        .select("payment_status")
+        .eq("id", registrationId)
+        .maybeSingle() as any;
       const update: Record<string, unknown> = { payment_status: status };
       if (status === "paid") update.paid_at = new Date().toISOString();
       const { error } = await supabaseAdmin
@@ -246,8 +354,13 @@ Deno.serve(async (req) => {
         .eq("id", registrationId)
         .eq("tournament_id", tournamentId);
       if (error) throw error;
+      if (status === "paid" && existing?.payment_status !== "paid") {
+        await recordManualSponsorPayment(supabaseAdmin, registrationId);
+      }
       return json({ success: true });
     }
+
+
 
     if (action === "update_registration_visibility") {
       if (!registrationId) throw new Error("Registration not specified");

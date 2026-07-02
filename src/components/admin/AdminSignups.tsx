@@ -1,0 +1,214 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2, UserPlus, Users, Phone, Mail, Building2, ExternalLink } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+type SignupRow = {
+  kind: "new_organizer" | "team_invite";
+  created_at: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  organization: string | null;
+  planning_status: string | null;
+  role: string | null;
+  heard_from: string | null;
+  status: string | null;
+  tournament_title?: string | null;
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  scheduled: "Has date scheduled",
+  planning: "Planning, no date yet",
+  browsing: "Just exploring",
+};
+
+export default function AdminSignups() {
+  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<SignupRow[]>([]);
+  const [filter, setFilter] = useState<"all" | "new_organizer" | "team_invite">("all");
+  const [q, setQ] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const [{ data: vetting }, { data: invites }] = await Promise.all([
+        supabase
+          .from("signup_vetting" as any)
+          .select("email, full_name, phone, planning_status, roles, role_other, heard_from, heard_from_other, vetting_status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase
+          .from("org_invitations" as any)
+          .select("email, role, status, created_at, organization_id, organizations:organization_id(name)")
+          .order("created_at", { ascending: false })
+          .limit(500),
+      ]);
+
+      const vRows: SignupRow[] = ((vetting as any[]) || []).map((v) => ({
+        kind: "new_organizer",
+        created_at: v.created_at,
+        email: v.email,
+        full_name: v.full_name,
+        phone: v.phone,
+        organization: null,
+        planning_status: v.planning_status,
+        role: Array.isArray(v.roles) && v.roles.length ? v.roles.join(", ") : v.role_other || null,
+        heard_from: v.heard_from === "other" ? v.heard_from_other : v.heard_from,
+        status: v.vetting_status,
+      }));
+
+      const iRows: SignupRow[] = ((invites as any[]) || []).map((i) => ({
+        kind: "team_invite",
+        created_at: i.created_at,
+        email: i.email,
+        full_name: null,
+        phone: null,
+        organization: i.organizations?.name || null,
+        planning_status: null,
+        role: i.role,
+        heard_from: null,
+        status: i.status,
+      }));
+
+      const combined = [...vRows, ...iRows].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setRows(combined);
+      setLoading(false);
+    })();
+  }, []);
+
+  const filtered = rows.filter((r) => {
+    if (filter !== "all" && r.kind !== filter) return false;
+    if (q) {
+      const s = q.toLowerCase();
+      return (
+        r.email?.toLowerCase().includes(s) ||
+        r.full_name?.toLowerCase().includes(s) ||
+        r.phone?.toLowerCase().includes(s) ||
+        r.organization?.toLowerCase().includes(s)
+      );
+    }
+    return true;
+  });
+
+  const counts = {
+    all: rows.length,
+    new_organizer: rows.filter((r) => r.kind === "new_organizer").length,
+    team_invite: rows.filter((r) => r.kind === "team_invite").length,
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-2xl font-display font-bold">Signup Backlog</h2>
+        <p className="text-sm text-muted-foreground">
+          Every person who signed up on the site — see whether it's a new organizer creating their own
+          tournament or an existing team getting a granted-permission invite.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2 items-center">
+        {(["all", "new_organizer", "team_invite"] as const).map((k) => (
+          <button
+            key={k}
+            onClick={() => setFilter(k)}
+            className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+              filter === k
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card text-muted-foreground border-border hover:text-foreground"
+            }`}
+          >
+            {k === "all" ? "All" : k === "new_organizer" ? "New Organizers" : "Team Invites"}
+            <span className="ml-2 opacity-70">{counts[k]}</span>
+          </button>
+        ))}
+        <Input
+          className="max-w-xs ml-auto"
+          placeholder="Search name, email, phone, org..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No signups match this filter.</div>
+      ) : (
+        <div className="grid gap-3">
+          {filtered.map((r, idx) => (
+            <Card key={idx} className="p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+                    r.kind === "new_organizer" ? "bg-[#F5A623]/20 text-[#1a5c38]" : "bg-blue-100 text-blue-700"
+                  }`}>
+                    {r.kind === "new_organizer" ? <UserPlus className="h-5 w-5" /> : <Users className="h-5 w-5" />}
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{r.full_name || r.email}</span>
+                      <Badge variant={r.kind === "new_organizer" ? "default" : "secondary"}>
+                        {r.kind === "new_organizer" ? "New Organizer" : "Team Invite"}
+                      </Badge>
+                      {r.status && <Badge variant="outline">{r.status}</Badge>}
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" /> {r.email}
+                      </div>
+                      {r.phone && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5" />
+                          <a href={`tel:${r.phone}`} className="hover:underline">{r.phone}</a>
+                        </div>
+                      )}
+                      {r.organization && (
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="h-3.5 w-3.5" /> Joining: <strong>{r.organization}</strong>
+                        </div>
+                      )}
+                      {r.role && <div>Role: {r.role}</div>}
+                      {r.planning_status && (
+                        <div>Planning: {PLAN_LABELS[r.planning_status] || r.planning_status}</div>
+                      )}
+                      {r.heard_from && <div>Heard from: {r.heard_from}</div>}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right text-xs text-muted-foreground shrink-0">
+                  <div>{new Date(r.created_at).toLocaleString()}</div>
+                  {r.kind === "new_organizer" && r.phone && (
+                    <Button asChild size="sm" variant="outline" className="mt-2">
+                      <a href={`tel:${r.phone}`}>
+                        <Phone className="h-3.5 w-3.5 mr-1" /> Welcome Call
+                      </a>
+                    </Button>
+                  )}
+                  {r.email && (
+                    <Button asChild size="sm" variant="ghost" className="mt-1">
+                      <a href={`mailto:${r.email}`}>
+                        <ExternalLink className="h-3.5 w-3.5 mr-1" /> Email
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

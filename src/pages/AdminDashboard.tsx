@@ -773,6 +773,7 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap gap-2">
                 {([
                   ["teevents-managed", "TeeVents Managed Tournaments", Trophy],
+                  ["signups", "Signup Backlog", UserPlus],
                   ["requests", "Access Requests", Users],
                   ["emails", "Auto-Approve Emails", Mail],
                   ["college", "College Hub", School],

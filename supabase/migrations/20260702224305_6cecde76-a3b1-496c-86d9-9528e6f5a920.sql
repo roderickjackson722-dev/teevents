@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can view all invitations" ON public.org_invitations FOR SELECT USING (public.has_role(auth.uid(), 'admin'::public.app_role));

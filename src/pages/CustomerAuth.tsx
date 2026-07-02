@@ -251,7 +251,7 @@ const CustomerAuth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: { full_name: fullName.trim(), phone: phone.trim() },
         },
       });
@@ -276,7 +276,7 @@ const CustomerAuth = () => {
         });
       }
 
-      toast({ title: "Check your email", description: "We sent a confirmation link to verify your account." });
+      // Fire admin + welcome emails (non-blocking)
       supabase.functions.invoke("notify-new-signup", {
         body: {
           email,
@@ -290,15 +290,27 @@ const CustomerAuth = () => {
           vetting_status: isInviteFlow ? "approved" : "approved",
         },
       });
-      // Welcome email to the new organizer (also sends admin signup alert)
       supabase.functions.invoke("send-organizer-welcome", {
-        body: {
-          email,
-          full_name: fullName.trim(),
-          plan: "Base",
-        },
+        body: { email, full_name: fullName.trim(), plan: "Base" },
       });
-    } else {
+
+      // Auto-login: if signup didn't return a session (email confirmation required),
+      // attempt an immediate password sign-in so the user lands on the dashboard.
+      let hasSession = !!signUpData.session;
+      if (!hasSession) {
+        const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
+        hasSession = !!signInData?.session;
+      }
+      if (hasSession) {
+        toast({ title: "Welcome to TeeVents!", description: "Your account is ready." });
+        navigate("/onboarding");
+      } else {
+        toast({
+          title: "Check your email",
+          description: "Please confirm your email to finish activating your account.",
+        });
+      }
+
       const rlLogin = await checkAuthRateLimit("login");
       if (!rlLogin.allowed) {
         toast({ title: "Too many attempts", description: rlLogin.message, variant: "destructive" });

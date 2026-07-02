@@ -14,6 +14,7 @@ import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminFeatureGuide from "@/components/admin/AdminFeatureGuide";
 import AdminNotifications from "@/components/admin/AdminNotifications";
+import AdminSignups from "@/components/admin/AdminSignups";
 import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";

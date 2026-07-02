@@ -310,15 +310,16 @@ const CustomerAuth = () => {
           description: "Please confirm your email to finish activating your account.",
         });
       }
-
+    } else {
       const rlLogin = await checkAuthRateLimit("login");
       if (!rlLogin.allowed) {
         toast({ title: "Too many attempts", description: rlLogin.message, variant: "destructive" });
         setLoading(false); return;
       }
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) toast({ title: "Error", description: signInError.message, variant: "destructive" });
     }
+
     setLoading(false);
   };
 

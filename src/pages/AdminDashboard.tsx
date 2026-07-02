@@ -2034,6 +2034,7 @@ const AdminDashboard = () => {
 
           {/* Notifications & Requests Tab */}
           {activeTab === "notifications" && <AdminNotifications />}
+          {activeTab === "signups" && <AdminSignups />}
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && <AdminTransactions />}

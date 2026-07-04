@@ -694,7 +694,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <div
             className="rounded-md p-4 border-2"
             style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
-            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(appliedPromo.alert_html) }}
           />
         )}
 

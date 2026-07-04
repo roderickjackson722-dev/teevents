@@ -152,7 +152,7 @@ const Players = () => {
       .then(({ data }: any) => {
         const list = data || [];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0 && !selectedTournament) setSelectedTournament(list[0].id);
         setLoading(false);
       });
   }, [org]);

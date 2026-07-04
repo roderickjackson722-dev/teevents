@@ -238,11 +238,9 @@ export default function LiveLeaderboard() {
     if (!tournament) return;
     const seconds = Math.max(5, design.auto_refresh_seconds || tournament.live_display_refresh_seconds || 10);
     const interval = setInterval(() => {
-      supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)")
-        .eq("tournament_id", tournament.id)
-        .then(({ data }) => setScores(data || []));
+      (supabase as any)
+        .rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id })
+        .then(({ data }: any) => setScores(data || []));
     }, seconds * 1000);
     return () => clearInterval(interval);
   }, [tournament]);

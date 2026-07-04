@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
+import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 
 interface PlayerScore {
   registration_id: string;

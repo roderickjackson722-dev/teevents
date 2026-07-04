@@ -30,7 +30,7 @@ const Contests = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<{ id: string; title: string }[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);

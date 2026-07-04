@@ -632,15 +632,13 @@ export default function Leaderboard() {
                               : "";
                             return (
                               <TableCell key={h} className="p-1 text-center">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={20}
-                                  value={val}
-                                  placeholder={String(hp)}
-                                  onFocus={(e) => e.target.select()}
-                                  onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
-                                  className={`w-12 h-8 text-center text-sm p-0 ${scoreColorClass}`}
+                                <ScoreInput
+                                  value={val === "" ? "" : Number(val)}
+                                  par={hp}
+                                  ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
+                                  onChange={(raw) => updateScore(ps.registration_id, h, raw)}
+                                  onSet={(n) => setScore(ps.registration_id, h, n)}
+                                  className={scoreColorClass}
                                 />
                               </TableCell>
                             );

@@ -51,7 +51,7 @@ const Contests = () => {
       .then(({ data }) => {
         const t = data || [];
         setTournaments(t);
-        if (t.length > 0) setSelectedTournament(t[0].id);
+        if (t.length > 0 && !selectedTournament) setSelectedTournament(t[0].id);
         setLoading(false);
       });
   }, [org]);

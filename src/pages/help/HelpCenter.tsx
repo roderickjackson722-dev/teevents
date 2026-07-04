@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet, ImageUp, ListChecks } from "lucide-react";
+import { DashboardChatAssistant } from "@/components/DashboardChatAssistant";
+import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet, ImageUp, ListChecks, Bot } from "lucide-react";
 
 const helpPages = [
   { title: "How Payments Work", description: "Understand the full payment flow — how the 5% fee works, Stripe Connect, and when you get paid.", icon: DollarSign, path: "/help/how-payments-work" },

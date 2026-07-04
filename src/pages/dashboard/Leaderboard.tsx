@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
+import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 
 interface PlayerScore {
   registration_id: string;
@@ -310,24 +311,28 @@ export default function Leaderboard() {
     },
   });
 
-  const updateScore = (regId: string, hole: number, value: string) => {
-    if (value === "") {
-      setEditedScores((prev) => {
-        const next = { ...prev };
-        const holes = { ...(next[regId] || {}) };
-        delete holes[hole];
-        if (Object.keys(holes).length === 0) delete next[regId];
-        else next[regId] = holes;
-        return next;
-      });
-      return;
-    }
-    const num = parseInt(value);
-    if (isNaN(num) || num < 0) return;
+  const setScore = (regId: string, hole: number, num: number) => {
     setEditedScores((prev) => ({
       ...prev,
       [regId]: { ...(prev[regId] || {}), [hole]: num },
     }));
+  };
+
+  const clearScore = (regId: string, hole: number) => {
+    setEditedScores((prev) => {
+      const next = { ...prev };
+      const holes = { ...(next[regId] || {}) };
+      delete holes[hole];
+      if (Object.keys(holes).length === 0) delete next[regId];
+      else next[regId] = holes;
+      return next;
+    });
+  };
+
+  const updateScore = (regId: string, hole: number, value: string) => {
+    const parsed = parseScoreInput(value);
+    if (parsed.kind === "clear") clearScore(regId, hole);
+    else if (parsed.kind === "value") setScore(regId, hole, parsed.value);
   };
 
   const getScore = (ps: PlayerScore, hole: number) => {
@@ -519,15 +524,12 @@ export default function Leaderboard() {
                         const hp = getHolePar(h);
                         return (
                           <TableCell key={h} className="p-1 text-center">
-                            <Input
-                              type="number"
-                              min={0}
-                              max={20}
-                              value={val}
-                              placeholder={String(hp)}
-                              onFocus={(e) => e.target.select()}
-                              onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
-                              className="w-12 h-8 text-center text-sm p-0"
+                            <ScoreInput
+                              value={val === "" ? "" : Number(val)}
+                              par={hp}
+                              ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
+                              onChange={(raw) => updateScore(ps.registration_id, h, raw)}
+                              onSet={(n) => setScore(ps.registration_id, h, n)}
                             />
                             {renderStablefordCell(val, h)}
                           </TableCell>
@@ -630,15 +632,13 @@ export default function Leaderboard() {
                               : "";
                             return (
                               <TableCell key={h} className="p-1 text-center">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={20}
-                                  value={val}
-                                  placeholder={String(hp)}
-                                  onFocus={(e) => e.target.select()}
-                                  onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
-                                  className={`w-12 h-8 text-center text-sm p-0 ${scoreColorClass}`}
+                                <ScoreInput
+                                  value={val === "" ? "" : Number(val)}
+                                  par={hp}
+                                  ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
+                                  onChange={(raw) => updateScore(ps.registration_id, h, raw)}
+                                  onSet={(n) => setScore(ps.registration_id, h, n)}
+                                  className={scoreColorClass}
                                 />
                               </TableCell>
                             );

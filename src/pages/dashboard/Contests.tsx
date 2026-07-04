@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,7 @@ const Contests = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<{ id: string; title: string }[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,7 +51,7 @@ const Contests = () => {
       .then(({ data }) => {
         const t = data || [];
         setTournaments(t);
-        if (t.length > 0) setSelectedTournament(t[0].id);
+        if (t.length > 0 && !selectedTournament) setSelectedTournament(t[0].id);
         setLoading(false);
       });
   }, [org]);

@@ -12,14 +12,21 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
   ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
     const [searchParams] = useSearchParams();
     const adminOrg = searchParams.get("admin_org");
+    const tournamentId = searchParams.get("tournament_id");
 
-    // Preserve admin_org query param across navigation
+    // Preserve admin_org + tournament_id query params across navigation so
+    // that admins (and organizers) keep tournament context when jumping
+    // between dashboard tabs.
+    const carry: string[] = [];
+    if (adminOrg) carry.push(`admin_org=${adminOrg}`);
+    if (tournamentId) carry.push(`tournament_id=${tournamentId}`);
+
     let resolvedTo = to;
-    if (adminOrg && typeof to === "string") {
+    if (carry.length && typeof to === "string") {
       const separator = to.includes("?") ? "&" : "?";
-      resolvedTo = `${to}${separator}admin_org=${adminOrg}`;
-    } else if (adminOrg && typeof to === "object") {
-      resolvedTo = { ...to, search: `?admin_org=${adminOrg}` };
+      resolvedTo = `${to}${separator}${carry.join("&")}`;
+    } else if (carry.length && typeof to === "object") {
+      resolvedTo = { ...to, search: `?${carry.join("&")}` };
     }
 
     return (

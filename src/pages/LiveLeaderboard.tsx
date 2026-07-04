@@ -173,10 +173,7 @@ export default function LiveLeaderboard() {
   useEffect(() => {
     if (!tournament) return;
     Promise.all([
-      supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)")
-        .eq("tournament_id", tournament.id),
+      (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }),
       supabase
         .from("tournament_sponsors")
         .select("id, name, logo_url, website_url, tier, show_on_leaderboard, leaderboard_placement, display_order")
@@ -188,7 +185,7 @@ export default function LiveLeaderboard() {
         .eq("tournament_id", tournament.id)
         .order("sort_order", { ascending: true }),
     ]).then(([scRes, spRes, galRes]) => {
-      setScores(scRes.data || []);
+      setScores((scRes as any).data || []);
       setSponsors((spRes.data as Sponsor[]) || []);
       setGallery((galRes.data as GalleryItem[]) || []);
     });

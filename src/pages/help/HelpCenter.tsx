@@ -66,6 +66,7 @@ const HelpCenter = () => (
         ))}
       </div>
     </div>
+    <DashboardChatAssistant forceShow />
   </Layout>
 );
 

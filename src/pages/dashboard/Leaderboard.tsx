@@ -65,7 +65,7 @@ function computeTeamHoleScore(
 export default function Leaderboard() {
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [playerScores, setPlayerScores] = useState<PlayerScore[]>([]);
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [scoreView, setScoreView] = useState<"gross" | "net">("gross");

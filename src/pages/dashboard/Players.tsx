@@ -88,7 +88,7 @@ const Players = () => {
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [players, setPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

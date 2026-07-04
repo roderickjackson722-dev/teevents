@@ -20,7 +20,7 @@ import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSetti
 
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "links";
   const [activeTab, setActiveTab] = useState<string>(initialTab);

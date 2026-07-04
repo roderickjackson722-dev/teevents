@@ -200,11 +200,9 @@ export default function LiveLeaderboard() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
         () => {
-          supabase
-            .from("tournament_scores")
-            .select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)")
-            .eq("tournament_id", tournament.id)
-            .then(({ data }) => setScores(data || []));
+          (supabase as any)
+            .rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id })
+            .then(({ data }: any) => setScores(data || []));
         }
       )
       .subscribe();

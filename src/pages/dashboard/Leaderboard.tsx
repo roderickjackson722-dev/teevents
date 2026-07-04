@@ -516,6 +516,7 @@ export default function Leaderboard() {
                       </TableCell>
                       {holes.map((h) => {
                         const val = getScore(ps, h);
+                        const hp = getHolePar(h);
                         return (
                           <TableCell key={h} className="p-1 text-center">
                             <Input
@@ -523,6 +524,8 @@ export default function Leaderboard() {
                               min={0}
                               max={20}
                               value={val}
+                              placeholder={String(hp)}
+                              onFocus={(e) => e.target.select()}
                               onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
                               className="w-12 h-8 text-center text-sm p-0"
                             />

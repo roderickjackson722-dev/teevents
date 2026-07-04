@@ -11,6 +11,7 @@ import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, Plus, Minus, Pack
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
+import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 
 interface AddonRow {
   id: string;
@@ -663,7 +664,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <div
             className="rounded-md p-4 border-2"
             style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
-            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(appliedPromo.alert_html) }}
           />
         )}
 
@@ -693,7 +694,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           <div
             className="rounded-md p-4 border-2"
             style={{ backgroundColor: `${secondaryColor}15`, borderColor: secondaryColor }}
-            dangerouslySetInnerHTML={{ __html: appliedPromo.alert_html }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(appliedPromo.alert_html) }}
           />
         )}
 

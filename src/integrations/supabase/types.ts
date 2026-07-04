@@ -8271,6 +8271,17 @@ export type Database = {
         Args: { _tournament_id: string }
         Returns: number
       }
+      get_public_leaderboard_scores: {
+        Args: { _tournament_id: string }
+        Returns: {
+          first_name: string
+          group_number: number
+          hole_number: number
+          last_name: string
+          registration_id: string
+          strokes: number
+        }[]
+      }
       get_public_raffles: {
         Args: { _tournament_id: string }
         Returns: {

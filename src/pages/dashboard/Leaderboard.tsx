@@ -311,6 +311,17 @@ export default function Leaderboard() {
   });
 
   const updateScore = (regId: string, hole: number, value: string) => {
+    if (value === "") {
+      setEditedScores((prev) => {
+        const next = { ...prev };
+        const holes = { ...(next[regId] || {}) };
+        delete holes[hole];
+        if (Object.keys(holes).length === 0) delete next[regId];
+        else next[regId] = holes;
+        return next;
+      });
+      return;
+    }
     const num = parseInt(value);
     if (isNaN(num) || num < 0) return;
     setEditedScores((prev) => ({

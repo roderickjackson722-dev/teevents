@@ -11,6 +11,7 @@ import { Loader2, CheckCircle2, UserPlus, Trash2, Heart, Info, Plus, Minus, Pack
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
+import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 
 interface AddonRow {
   id: string;

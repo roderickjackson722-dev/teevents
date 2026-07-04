@@ -17,7 +17,7 @@ export default function CheckIn() {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [search, setSearch] = useState("");
   const [showQR, setShowQR] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);

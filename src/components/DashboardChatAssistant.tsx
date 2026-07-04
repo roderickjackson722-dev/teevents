@@ -72,8 +72,17 @@ async function streamChat({
   onDone();
 }
 
-export function DashboardChatAssistant() {
+const DISMISS_KEY = "teeventsAssistantDismissed";
+const POS_KEY = "teeventsAssistantPos";
+
+interface DashboardChatAssistantProps {
+  /** When true, ignore session dismissal (used on the Help Center). */
+  forceShow?: boolean;
+}
+
+export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssistantProps = {}) {
   const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -81,7 +90,26 @@ export function DashboardChatAssistant() {
   const [callName, setCallName] = useState("");
   const [callPhone, setCallPhone] = useState("");
   const [callSubmitted, setCallSubmitted] = useState(false);
+  const [dragOrigin, setDragOrigin] = useState<{ x: number; y: number } | null>(null);
+  const [didDrag, setDidDrag] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Hydrate dismissed + saved drag position from storage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!forceShow && sessionStorage.getItem(DISMISS_KEY) === "true") {
+      setDismissed(true);
+    }
+    try {
+      const raw = localStorage.getItem(POS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
+          setDragOrigin(parsed);
+        }
+      }
+    } catch {}
+  }, [forceShow]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -131,22 +159,62 @@ export function DashboardChatAssistant() {
     toast({ title: "Call Requested!", description: "A TeeVents team member will call you shortly." });
   };
 
+  const dismiss = () => {
+    if (!forceShow) {
+      try { sessionStorage.setItem(DISMISS_KEY, "true"); } catch {}
+      setDismissed(true);
+    }
+    setOpen(false);
+  };
+
+  if (dismissed) return null;
+
   return (
     <>
-      {/* Floating trigger button */}
+      {/* Floating trigger button — draggable */}
       <AnimatePresence>
         {!open && (
-          <motion.button
+          <motion.div
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{ scale: 1, opacity: 1, x: dragOrigin?.x ?? 0, y: dragOrigin?.y ?? 0 }}
             exit={{ scale: 0, opacity: 0 }}
-            onClick={() => setOpen(true)}
-            className="fixed bottom-6 left-6 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 flex items-center justify-center transition-colors"
+            drag
+            dragMomentum={false}
+            dragElastic={0}
+            onDragStart={() => setDidDrag(false)}
+            onDrag={() => setDidDrag(true)}
+            onDragEnd={(_, info) => {
+              const next = { x: (dragOrigin?.x ?? 0) + info.offset.x, y: (dragOrigin?.y ?? 0) + info.offset.y };
+              setDragOrigin(next);
+              try { localStorage.setItem(POS_KEY, JSON.stringify(next)); } catch {}
+            }}
+            className="fixed bottom-6 left-6 z-40 touch-none"
           >
-            <MessageCircle className="h-6 w-6" />
-          </motion.button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => { if (!didDrag) setOpen(true); }}
+                aria-label="Open TeeVents Assistant"
+                className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 flex items-center justify-center transition-colors cursor-grab active:cursor-grabbing"
+              >
+                <MessageCircle className="h-6 w-6" />
+              </button>
+              {!forceShow && (
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); dismiss(); }}
+                  aria-label="Hide assistant for this session"
+                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-background text-foreground border border-border shadow flex items-center justify-center hover:bg-muted"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* Chat panel */}
       <AnimatePresence>

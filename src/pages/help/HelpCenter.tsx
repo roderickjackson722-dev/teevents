@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet, ImageUp, ListChecks } from "lucide-react";
+import { DashboardChatAssistant } from "@/components/DashboardChatAssistant";
+import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet, ImageUp, ListChecks, Bot } from "lucide-react";
 
 const helpPages = [
   { title: "How Payments Work", description: "Understand the full payment flow — how the 5% fee works, Stripe Connect, and when you get paid.", icon: DollarSign, path: "/help/how-payments-work" },
@@ -22,7 +23,17 @@ const HelpCenter = () => (
     <SEO title="Help Center | TeeVents" description="Get help with payments, payouts, fees, and managing your golf tournament on TeeVents." />
     <div className="max-w-4xl mx-auto px-4 py-16">
       <h1 className="text-4xl font-display font-bold text-foreground mb-2">Help Center</h1>
-      <p className="text-lg text-muted-foreground mb-10">Everything you need to know about managing payments and finances on TeeVents.</p>
+      <p className="text-lg text-muted-foreground mb-6">Everything you need to know about managing payments and finances on TeeVents.</p>
+
+      <div className="mb-8 p-5 rounded-xl border-2 border-primary/30 bg-primary/5 flex items-center gap-4">
+        <div className="p-3 rounded-full bg-primary text-primary-foreground">
+          <Bot className="h-6 w-6" />
+        </div>
+        <div className="flex-1">
+          <h2 className="font-semibold text-foreground">TeeVents AI Assistant</h2>
+          <p className="text-sm text-muted-foreground">Tap the green chat bubble in the corner to ask questions anytime — it always lives here in the Help Center.</p>
+        </div>
+      </div>
 
       <Link
         to="/help/step-by-step"
@@ -55,6 +66,7 @@ const HelpCenter = () => (
         ))}
       </div>
     </div>
+    <DashboardChatAssistant forceShow />
   </Layout>
 );
 

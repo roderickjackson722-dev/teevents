@@ -635,6 +635,8 @@ export default function Leaderboard() {
                                   min={0}
                                   max={20}
                                   value={val}
+                                  placeholder={String(hp)}
+                                  onFocus={(e) => e.target.select()}
                                   onChange={(e) => updateScore(ps.registration_id, h, e.target.value)}
                                   className={`w-12 h-8 text-center text-sm p-0 ${scoreColorClass}`}
                                 />

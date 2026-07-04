@@ -311,24 +311,28 @@ export default function Leaderboard() {
     },
   });
 
-  const updateScore = (regId: string, hole: number, value: string) => {
-    if (value === "") {
-      setEditedScores((prev) => {
-        const next = { ...prev };
-        const holes = { ...(next[regId] || {}) };
-        delete holes[hole];
-        if (Object.keys(holes).length === 0) delete next[regId];
-        else next[regId] = holes;
-        return next;
-      });
-      return;
-    }
-    const num = parseInt(value);
-    if (isNaN(num) || num < 0) return;
+  const setScore = (regId: string, hole: number, num: number) => {
     setEditedScores((prev) => ({
       ...prev,
       [regId]: { ...(prev[regId] || {}), [hole]: num },
     }));
+  };
+
+  const clearScore = (regId: string, hole: number) => {
+    setEditedScores((prev) => {
+      const next = { ...prev };
+      const holes = { ...(next[regId] || {}) };
+      delete holes[hole];
+      if (Object.keys(holes).length === 0) delete next[regId];
+      else next[regId] = holes;
+      return next;
+    });
+  };
+
+  const updateScore = (regId: string, hole: number, value: string) => {
+    const parsed = parseScoreInput(value);
+    if (parsed.kind === "clear") clearScore(regId, hole);
+    else if (parsed.kind === "value") setScore(regId, hole, parsed.value);
   };
 
   const getScore = (ps: PlayerScore, hole: number) => {

@@ -35,14 +35,12 @@ export function BrandingBadge({ show = true }: BrandingBadgeProps) {
   };
 
   return (
-    <a
-      href="https://www.teevents.golf/?ref=branding-badge"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-[1000] flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-xs shadow-lg ring-1 ring-black/10 backdrop-blur transition-opacity hover:opacity-95"
-      style={{ textDecoration: "none" }}
+    <div
+      role="complementary"
+      aria-label="Powered by TeeVents"
+      className="fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-[1000] flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-xs shadow-lg ring-1 ring-black/10 backdrop-blur"
     >
-      <span className="hidden sm:inline text-[10px] uppercase tracking-wider text-muted-foreground leading-none">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground leading-none">
         Powered by
       </span>
       <img
@@ -53,13 +51,13 @@ export function BrandingBadge({ show = true }: BrandingBadgeProps) {
       />
       <button
         type="button"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleClose(); }}
+        onClick={handleClose}
         aria-label="Hide badge"
-        className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
       >
-        <X className="h-3 w-3" />
+        <X className="h-3.5 w-3.5" />
       </button>
-    </a>
+    </div>
   );
 }
 

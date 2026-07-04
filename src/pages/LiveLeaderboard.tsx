@@ -65,9 +65,12 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
     const key = s.registration_id;
     if (!playerData[key]) {
       const reg = s.tournament_registrations;
+      const first = reg?.first_name ?? s.first_name;
+      const last = reg?.last_name ?? s.last_name;
+      const grp = reg?.group_number ?? s.group_number ?? null;
       playerData[key] = {
-        name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown",
-        group: reg?.group_number ?? null,
+        name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
+        group: grp,
         holes: {},
       };
     }

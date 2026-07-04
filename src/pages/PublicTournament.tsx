@@ -1061,7 +1061,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <div
                   className="mt-4 p-5 rounded-xl border-2 prose prose-sm max-w-none"
                   style={{ borderColor: secondary, backgroundColor: secondary + "10", color: "#333" }}
-                  dangerouslySetInnerHTML={{ __html: (tournament as any).registration_promo_html }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).registration_promo_html) }}
                 />
               )}
             </motion.div>

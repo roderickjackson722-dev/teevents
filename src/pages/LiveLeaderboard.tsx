@@ -65,9 +65,12 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
     const key = s.registration_id;
     if (!playerData[key]) {
       const reg = s.tournament_registrations;
+      const first = reg?.first_name ?? s.first_name;
+      const last = reg?.last_name ?? s.last_name;
+      const grp = reg?.group_number ?? s.group_number ?? null;
       playerData[key] = {
-        name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown",
-        group: reg?.group_number ?? null,
+        name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
+        group: grp,
         holes: {},
       };
     }
@@ -170,10 +173,7 @@ export default function LiveLeaderboard() {
   useEffect(() => {
     if (!tournament) return;
     Promise.all([
-      supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)")
-        .eq("tournament_id", tournament.id),
+      (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }),
       supabase
         .from("tournament_sponsors")
         .select("id, name, logo_url, website_url, tier, show_on_leaderboard, leaderboard_placement, display_order")
@@ -185,7 +185,7 @@ export default function LiveLeaderboard() {
         .eq("tournament_id", tournament.id)
         .order("sort_order", { ascending: true }),
     ]).then(([scRes, spRes, galRes]) => {
-      setScores(scRes.data || []);
+      setScores((scRes as any).data || []);
       setSponsors((spRes.data as Sponsor[]) || []);
       setGallery((galRes.data as GalleryItem[]) || []);
     });
@@ -200,11 +200,9 @@ export default function LiveLeaderboard() {
         "postgres_changes",
         { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
         () => {
-          supabase
-            .from("tournament_scores")
-            .select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)")
-            .eq("tournament_id", tournament.id)
-            .then(({ data }) => setScores(data || []));
+          (supabase as any)
+            .rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id })
+            .then(({ data }: any) => setScores(data || []));
         }
       )
       .subscribe();
@@ -240,11 +238,9 @@ export default function LiveLeaderboard() {
     if (!tournament) return;
     const seconds = Math.max(5, design.auto_refresh_seconds || tournament.live_display_refresh_seconds || 10);
     const interval = setInterval(() => {
-      supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)")
-        .eq("tournament_id", tournament.id)
-        .then(({ data }) => setScores(data || []));
+      (supabase as any)
+        .rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id })
+        .then(({ data }: any) => setScores(data || []));
     }, seconds * 1000);
     return () => clearInterval(interval);
   }, [tournament]);

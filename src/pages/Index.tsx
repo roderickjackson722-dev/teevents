@@ -117,15 +117,15 @@ const Index = () => {
             className="h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 mx-auto mb-4 md:mb-6 object-contain"
           />
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
-            For Golf Tournament
+            The Complete Golf Tournament
             <br />
-            <span className="text-secondary">Organizers</span>
+            <span className="text-secondary">Management Platform</span>
           </h1>
           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
-            Plan, promote, and run your golf tournament – all in one place.
+            From registration to payouts – everything you need to run a professional golf tournament in one place.
           </p>
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
-            TeeVents gives you a custom website, online registration, live leaderboard, and automatic payouts.
+            No spreadsheets. No manual payments. No stress.
             <span className="block mt-2 text-secondary font-semibold">
               Built by golf tournament managers, for golf tournament managers.
             </span>

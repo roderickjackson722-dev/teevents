@@ -2677,6 +2677,41 @@ export type Database = {
           },
         ]
       }
+      manual_entry_grants: {
+        Row: {
+          additional_entries: number
+          created_at: string
+          granted_by: string | null
+          id: string
+          reason: string | null
+          tournament_id: string
+        }
+        Insert: {
+          additional_entries: number
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string | null
+          tournament_id: string
+        }
+        Update: {
+          additional_entries?: number
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_entry_grants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_payouts: {
         Row: {
           amount_cents: number
@@ -7028,6 +7063,9 @@ export type Database = {
           live_sponsor_placement: string
           location: string | null
           managed_by_teevents: boolean
+          manual_entries_admin_override: number
+          manual_entries_free_limit: number
+          manual_entries_used: number
           max_group_size: number
           max_handicap: number | null
           max_players: number | null
@@ -7038,6 +7076,7 @@ export type Database = {
           org_contact_email: string | null
           org_contact_phone: string | null
           organization_id: string
+          paid_features: Json
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
           payment_method_override: string
@@ -7245,6 +7284,9 @@ export type Database = {
           live_sponsor_placement?: string
           location?: string | null
           managed_by_teevents?: boolean
+          manual_entries_admin_override?: number
+          manual_entries_free_limit?: number
+          manual_entries_used?: number
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
@@ -7255,6 +7297,7 @@ export type Database = {
           org_contact_email?: string | null
           org_contact_phone?: string | null
           organization_id: string
+          paid_features?: Json
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
@@ -7462,6 +7505,9 @@ export type Database = {
           live_sponsor_placement?: string
           location?: string | null
           managed_by_teevents?: boolean
+          manual_entries_admin_override?: number
+          manual_entries_free_limit?: number
+          manual_entries_used?: number
           max_group_size?: number
           max_handicap?: number | null
           max_players?: number | null
@@ -7472,6 +7518,7 @@ export type Database = {
           org_contact_email?: string | null
           org_contact_phone?: string | null
           organization_id?: string
+          paid_features?: Json
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           payment_method_override?: string

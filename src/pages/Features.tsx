@@ -525,7 +525,7 @@ const Features = () => {
               Ready to run your next tournament?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Start free with one tournament up to 72 players. Upgrade to Pro for $399 per tournament when you need more.
+              Start free — the entire management platform is included. Add paid add-ons like custom domain, auction & raffle, or SMS blasts only when you need them.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">

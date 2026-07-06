@@ -1,158 +1,288 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Sparkles, Building2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Check, ArrowRight, Loader2, Sparkles, Globe, Users, Gavel, Send, Phone, Building2 } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useTournamentAddons, type AddonKey } from "@/hooks/useTournamentAddons";
 import { toast } from "sonner";
 
 interface TournamentRow {
   id: string;
   title: string;
   date: string | null;
-  is_pro: boolean;
 }
 
-const proHighlights = [
-  "Unlimited players",
-  "Live leaderboard + live scoring",
-  "Sponsor portal & sponsor sign-up page",
-  "Silent auction, 50/50 raffle, donation page",
-  "Add-on store (mulligans, merch, dinner)",
-  "Volunteer management with QR check-in",
-  "Email + SMS broadcasts",
-  "Custom domain & Flyer Studio",
-  "Budget tracking",
-  "Up to 5 team members",
-  "Dedicated account manager",
-  "Priority support",
+const ADDONS: { key: AddonKey; label: string; price: number; desc: string; icon: any }[] = [
+  { key: "custom_domain", label: "Custom Domain", price: 99, desc: "Brand your tournament URL (golf.yourclub.com)", icon: Globe },
+  { key: "unlimited_manual_entries", label: "Unlimited Manual Entries", price: 149, desc: "Free tier includes 10 — remove the cap.", icon: Users },
+  { key: "auction_raffle", label: "Auction & Raffle", price: 149, desc: "Silent auction and 50/50 raffle with auto-draw", icon: Gavel },
+  { key: "sms_email_blasts", label: "SMS & Email Blasts", price: 99, desc: "Bulk messages to players, sponsors, volunteers", icon: Send },
+  { key: "priority_support", label: "Priority Support", price: 99, desc: "Phone support, dedicated manager, 2-hr response", icon: Phone },
 ];
+const BUNDLE_PRICE = 399;
+const INDIVIDUAL_TOTAL = ADDONS.reduce((s, a) => s + a.price, 0);
 
-const UpgradePlan = () => {
+const UpgradeFeaturesPage = () => {
   const { org } = useOrgContext();
   const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<AddonKey>>(new Set());
+  const [wantsBundle, setWantsBundle] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const addons = useTournamentAddons(selectedTournamentId);
+
+  // Verify Stripe redirect
+  useEffect(() => {
+    const sid = searchParams.get("addon_session_id");
+    if (!sid) return;
+    (async () => {
+      const { data, error } = await supabase.functions.invoke("verify-addon-purchase", {
+        body: { session_id: sid },
+      });
+      if (error || !data?.verified) {
+        toast.error("Could not verify purchase. Please contact support.");
+      } else {
+        toast.success("Add-ons unlocked for this tournament!");
+      }
+      const next = new URLSearchParams(searchParams);
+      next.delete("addon_session_id");
+      next.delete("tournament_id");
+      setSearchParams(next, { replace: true });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get("addon_canceled")) {
+      toast.info("Checkout canceled");
+      const next = new URLSearchParams(searchParams);
+      next.delete("addon_canceled");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, date, is_pro")
+      .select("id, title, date")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setTournaments((data as TournamentRow[]) || []));
+      .then(({ data }) => {
+        const rows = (data as TournamentRow[]) || [];
+        setTournaments(rows);
+        if (rows.length && !selectedTournamentId) setSelectedTournamentId(rows[0].id);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [org]);
 
-  const handleUpgrade = async (tournamentId: string) => {
-    setLoadingId(tournamentId);
+  const toggle = (k: AddonKey) => {
+    const next = new Set(selected);
+    if (next.has(k)) next.delete(k);
+    else next.add(k);
+    setSelected(next);
+    if (next.size > 0) setWantsBundle(false);
+  };
+
+  const toggleBundle = () => {
+    const nb = !wantsBundle;
+    setWantsBundle(nb);
+    if (nb) setSelected(new Set());
+  };
+
+  const total = useMemo(() => {
+    if (wantsBundle) return BUNDLE_PRICE;
+    return Array.from(selected).reduce((s, k) => s + (ADDONS.find((a) => a.key === k)?.price ?? 0), 0);
+  }, [selected, wantsBundle]);
+
+  const handlePurchase = async () => {
+    if (!selectedTournamentId) return toast.error("Pick a tournament first");
+    const toPurchase = wantsBundle ? ["bundle"] : Array.from(selected);
+    if (toPurchase.length === 0) return toast.error("Select at least one add-on");
+    setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("upgrade-to-pro", {
-        body: { tournament_id: tournamentId },
+      const { data, error } = await supabase.functions.invoke("purchase-addons", {
+        body: { tournament_id: selectedTournamentId, addons: toPurchase },
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast.error(err.message || "Could not start checkout");
     } finally {
-      setLoadingId(null);
+      setLoading(false);
     }
   };
+
+  const quota = addons.manualEntries;
+  const quotaPct = quota.unlimited ? 100 : quota.totalLimit > 0 ? Math.min(100, (quota.used / quota.totalLimit) * 100) : 0;
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Upgrade to Pro</h1>
+        <h1 className="text-3xl font-display font-bold text-foreground">Upgrade Features</h1>
         <p className="text-muted-foreground mt-1">
-          Pro is a one-time <span className="font-semibold">$399 unlock per tournament</span>. No subscription, no monthly fees.
+          Buy add-ons per tournament. One-time purchase, no subscription.
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 mb-10">
-        {/* What you get */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-border bg-card p-6"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-5 w-5 text-secondary" />
-            <h2 className="text-lg font-display font-bold text-foreground">What's in Pro</h2>
-          </div>
-          <ul className="space-y-2.5">
-            {proHighlights.map((f) => (
-              <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
-                <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                {f}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-
-        {/* Enterprise */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-border bg-card p-6 flex flex-col"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Building2 className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-display font-bold text-foreground">Running 5+ tournaments / year?</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4 flex-1">
-            Enterprise gives you unlimited tournaments, white-label, dedicated account manager, custom integrations, and SLA — at a custom rate.
+      {tournaments.length === 0 ? (
+        <div className="bg-card rounded-xl border border-border p-6">
+          <p className="text-sm text-muted-foreground italic">
+            No tournaments yet. Create one first, then come back to add features.
           </p>
-          <Button asChild variant="outline" className="self-start">
-            <Link to="/enterprise-pricing">
-              Contact Enterprise Sales <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
-        </motion.div>
-      </div>
-
-      {/* Per-tournament list */}
-      <div className="bg-card rounded-xl border border-border">
-        <div className="p-5 border-b border-border">
-          <h2 className="text-lg font-display font-bold text-foreground">Your tournaments</h2>
-          <p className="text-sm text-muted-foreground">Upgrade individual tournaments to unlock Pro features.</p>
         </div>
-        {tournaments.length === 0 ? (
-          <p className="p-6 text-sm text-muted-foreground italic">
-            No tournaments yet. Create one first, then come back to upgrade it.
-          </p>
-        ) : (
-          <ul className="divide-y divide-border">
-            {tournaments.map((t) => (
-              <li key={t.id} className="p-5 flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex-1">
-                  <p className="font-semibold text-foreground">{t.title}</p>
-                  <p className="text-xs text-muted-foreground">{t.date || "No date set"}</p>
-                </div>
-                {t.is_pro ? (
-                  <span className="inline-flex items-center gap-1 bg-secondary/15 text-secondary text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-                    <Check className="h-3.5 w-3.5" /> Pro Unlocked
-                  </span>
-                ) : (
-                  <Button
-                    onClick={() => handleUpgrade(t.id)}
-                    disabled={loadingId === t.id}
-                    size="sm"
+      ) : (
+        <>
+          {/* Tournament picker */}
+          <div className="bg-card rounded-xl border border-border p-5 mb-6">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Applying add-ons to
+            </label>
+            <select
+              className="mt-2 w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+              value={selectedTournamentId ?? ""}
+              onChange={(e) => {
+                setSelectedTournamentId(e.target.value);
+                setSelected(new Set());
+                setWantsBundle(false);
+              }}
+            >
+              {tournaments.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title} {t.date ? `— ${t.date}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Manual entry usage */}
+          <div className="bg-card rounded-xl border border-border p-5 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="font-semibold text-foreground">Manual Entries</p>
+                <p className="text-xs text-muted-foreground">
+                  {quota.unlimited
+                    ? "Unlimited manual entries unlocked"
+                    : `You have used ${quota.used} of ${quota.totalLimit} free manual entries.`}
+                  {quota.adminOverride > 0 && !quota.unlimited && (
+                    <span className="ml-1">(includes {quota.adminOverride} admin-granted)</span>
+                  )}
+                </p>
+              </div>
+              {!quota.unlimited && quota.used >= quota.totalLimit && (
+                <span className="text-xs font-semibold text-orange-600">Limit reached</span>
+              )}
+            </div>
+            {!quota.unlimited && <Progress value={quotaPct} className="h-2" />}
+            {!quota.unlimited && quota.used >= quota.totalLimit && (
+              <p className="text-xs text-muted-foreground mt-3">
+                You have used your 10 free manual entries. Additional manual entries will incur a 5% platform fee.
+                Unlock unlimited entries below for a one-time $149.
+              </p>
+            )}
+          </div>
+
+          {/* Add-ons grid */}
+          <div className="bg-card rounded-xl border border-border p-6 mb-6">
+            <h2 className="text-lg font-display font-bold text-foreground mb-4">Add-on Features</h2>
+            <ul className="space-y-3">
+              {ADDONS.map((a) => {
+                const owned = addons.hasAddon(a.key);
+                const isChecked = selected.has(a.key);
+                return (
+                  <li
+                    key={a.key}
+                    className={`flex items-start gap-3 rounded-lg border p-3 ${
+                      owned ? "border-primary/40 bg-primary/5" : "border-border"
+                    }`}
                   >
-                    {loadingId === t.id ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 mr-2" />
-                    )}
-                    Upgrade — $399
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                    <Checkbox
+                      checked={owned || isChecked}
+                      disabled={owned || wantsBundle}
+                      onCheckedChange={() => toggle(a.key)}
+                      className="mt-1"
+                    />
+                    <div className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
+                      <a.icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="font-semibold text-foreground text-sm">
+                          {a.label}
+                          {owned && (
+                            <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                              <Check className="h-3 w-3" /> Unlocked
+                            </span>
+                          )}
+                        </p>
+                        <p className="font-display font-bold text-foreground">${a.price}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{a.desc}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* Bundle */}
+            <div
+              className={`mt-4 rounded-lg border-2 p-4 flex items-start gap-3 cursor-pointer ${
+                wantsBundle ? "border-secondary bg-secondary/10" : "border-secondary/40"
+              }`}
+              onClick={toggleBundle}
+            >
+              <Checkbox
+                checked={addons.flags.bundle || wantsBundle}
+                disabled={addons.flags.bundle}
+                onCheckedChange={toggleBundle}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-display font-bold text-foreground">Bundle — all add-ons</p>
+                  <p className="font-display font-bold text-secondary text-lg">${BUNDLE_PRICE}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Includes every add-on. Save ${INDIVIDUAL_TOTAL - BUNDLE_PRICE} vs. individual purchase.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+              <p className="text-sm text-muted-foreground">
+                Total: <span className="font-display font-bold text-foreground text-lg">${total}</span>
+              </p>
+              <Button onClick={handlePurchase} disabled={loading || total === 0}>
+                {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                Purchase Selected Features
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-xl border border-border p-6 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Building2 className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-semibold text-foreground">Running 5+ tournaments a year?</p>
+                <p className="text-sm text-muted-foreground">Enterprise: unlimited events, white-label, dedicated manager.</p>
+              </div>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/enterprise-pricing">
+                Enterprise <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default UpgradePlan;
+export default UpgradeFeaturesPage;

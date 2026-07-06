@@ -292,6 +292,7 @@ const App = () => (
            <Route path="/admin/sales/flyer-to-demo" element={<FlyerToDemo />} />
            <Route path="/admin/sales/prospecting" element={<SalesProspecting />} />
            <Route path="/admin/demo-leads" element={<DemoLeads />} />
+           <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/step-by-step" element={<StepByStep />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />

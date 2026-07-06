@@ -1,70 +1,57 @@
-# Five New Organizer Features
+# TeeVents Platform Repositioning & New Add-On Pricing Model
 
-## 1. Early Registration Discount
-**DB (migration):** add to `tournaments`:
-- `early_registration_enabled BOOLEAN DEFAULT FALSE`
-- `early_registration_price_cents INTEGER`
-- `early_registration_expires_at TIMESTAMPTZ`
+This is a large, multi-surface change. I'll break it into 8 phases and ship them in order. Please confirm before I start — once approved I'll execute all phases.
 
-**Dashboard:** New "Early Registration Discount" card in `src/pages/dashboard/Registration.tsx` with enable toggle, price input, and datetime picker.
+## Phase 1 — Database schema (migration, needs approval)
+Add to `tournaments` table:
+- `paid_features JSONB` (custom_domain, unlimited_manual_entries, auction_raffle, sms_email_blasts, priority_support, bundle — all default false)
+- `manual_entries_used INTEGER DEFAULT 0`
+- `manual_entries_free_limit INTEGER DEFAULT 10`
+- `manual_entries_admin_override INTEGER DEFAULT 0`
 
-**Public page:** In `PublicTournament.tsx` registration block — show early-bird price with regular price struck through, and a live countdown timer ("ends in Xd Xh Xm"). After expiration, fall back to regular price.
+Add `manual_entry_grants` audit table (tournament_id, granted_by, additional_entries, reason, created_at) with RLS + GRANTs for admin-only access.
 
-**Checkout logic:** In the registration checkout edge function(s), if `early_registration_enabled` and `now() < early_registration_expires_at`, charge `early_registration_price_cents`; otherwise charge `registration_fee_cents`.
+## Phase 2 — Feature-gating logic
+- New hook `useTournamentAddon(tournamentId, addonKey)` reading `paid_features`.
+- New hook `useManualEntryQuota(tournamentId)` returning `{ used, limit, remaining, unlimited }` where `limit = free_limit + admin_override`, `unlimited = paid_features.unlimited_manual_entries || bundle`.
+- Update `usePlanFeatures.ts`: retire org-level Pro gating for features now sold as add-ons (custom-domain, auction, sms-messaging, priority-support). Move them to per-tournament add-on checks. Live leaderboard, live scoring, volunteers, printables, flyer studio, surveys, gallery, donations, store move to **free**.
 
-## 2. Event Day Sales
-**DB (migration):** create `event_day_sales_items` table (tournament_id, item_name, description, price_cents, category enum-ish text, max_quantity, sold_quantity, show_on_public, show_qr_code, is_active). RLS: organizers manage their tournament's rows; public can SELECT active rows for published tournaments. GRANTs for authenticated, anon (select), service_role. Also a `event_day_sales_purchases` table for orders.
+## Phase 3 — Homepage & marketing pages
+- `src/pages/Index.tsx` hero → new headline + subheadline.
+- `src/pages/Features.tsx` → regroup into 6 phases (Plan & Set Up, Promote & Sell, Register & Manage, Tournament Day, Finance & Payouts, Post-Event).
+- `src/pages/Compare.tsx` → add "vs Fundraising-Only Platforms" section (GiveButter/Zeffy style comparison table).
 
-**Dashboard:** New page `src/pages/dashboard/EventDaySales.tsx` (sidebar entry + route). Table with add/edit/delete, category dropdown, QR toggle, public toggle, "Print QR Sheet" button that opens a printable layout of all enabled QRs.
+## Phase 4 — Pricing page overhaul
+- `src/pages/Plans.tsx` → new hero, single Free tier card, add-ons grid (5 items + Bundle $399), fee reference table ($50–$250 rows), remove old Pro tier copy.
 
-**Public:** New section on Day-Of page (and/or `/t/:slug/sales`) listing active items with Buy Now → Stripe Checkout (uses Connect routing like other checkouts, with 5% platform fee).
+## Phase 5 — Organizer dashboard "Upgrade Features"
+- Replace `src/pages/dashboard/UpgradePlan.tsx` with new "Upgrade Features" page: manual entry usage bar, 5 add-on checkboxes with prices, Bundle option, "Purchase Selected Features" button.
+- Update sidebar label from "Upgrade to Pro" → "Upgrade Features".
 
-**Edge function:** `create-event-day-sale-checkout` mirroring `create-sponsor-checkout` pattern (direct charge + platform fallback).
+## Phase 6 — Stripe checkout for add-ons
+- New edge function `purchase-addons` — accepts `{ tournament_id, addons: string[] }`, computes line items (or single Bundle line item), creates Checkout session.
+- Update `verify-pro-upgrade` → generalize to `verify-addon-purchase` that flips the correct `paid_features.*` keys based on session metadata. Keep old function as thin alias for back-compat.
+- Success URL returns to `/dashboard/upgrade` with confirmation toast.
 
-## 3. Cash Payment Registration
-**DB (migration):** 
-- `tournaments.allow_cash_registration BOOLEAN DEFAULT FALSE`
-- `tournament_registrations.payment_method TEXT DEFAULT 'online'` (online/cash/check)
-- `tournament_registrations.cash_payment_received BOOLEAN DEFAULT FALSE`
+## Phase 7 — Manual entry enforcement
+- Wherever manual entries are created (Players, Sponsors, Side Events, etc. — I'll grep for the insertion sites), before insert:
+  - If `unlimited` → allow, don't increment counter.
+  - Else if `used < limit` → allow, increment `manual_entries_used`.
+  - Else → block with modal: *"You have used your 10 free manual entries. Additional manual entries will incur a 5% platform fee."* + [Continue with fee] / [Upgrade to Unlimited $149] buttons.
+- "Continue with fee" records a `platform_transactions` row with 5% fee against the entry amount.
 
-**Dashboard:**
-- Registration Management: toggle "Allow cash payment registrations".
-- Players tab → "Add Player" modal gets a Payment Method select (Online/Cash/Check) when toggle is on. Cash regs created directly without Stripe, marked `payment_status='cash_pending'`.
-- Players list: show payment method + a "Mark Received" action that flips to `cash_received`.
+## Phase 8 — Admin override UI
+- New admin page `src/pages/admin/ManualEntryGrants.tsx`: search tournament, input additional free entries, optional reason, submit → increments `manual_entries_admin_override` and logs to `manual_entry_grants`.
+- Link from admin dashboard sidebar.
 
-**Finances:** Add "Cash Registrations" row/category in `Finances.tsx` summary (frontend aggregation only, no schema changes to finances).
+## Scope notes
+- I will NOT touch: any features not explicitly named, existing tournament data, existing Stripe Connect payout flow, the 5% platform fee logic on regular checkout, the org-level plan concept (I'll just stop using it for gating add-on features).
+- I will keep legacy `tournaments.is_pro` column intact for back-compat but stop reading it for feature gates.
 
-## 4. Sponsor Logo Optional + Notes
-**DB (migration):**
-- `sponsorship_tiers.require_logo BOOLEAN DEFAULT TRUE`
-- `sponsorship_tiers.show_logo_upload BOOLEAN DEFAULT TRUE`
-- `sponsorship_tiers.allow_additional_notes BOOLEAN DEFAULT FALSE`
-- `sponsor_registrations.additional_notes TEXT`
+## Technical details (skip if not relevant)
+- Migration order: table alters → new audit table → GRANTs → RLS → policies.
+- Bundle logic: purchasing Bundle flips all 5 add-on flags + `bundle=true`.
+- Idempotency: `verify-addon-purchase` keyed on Stripe session id (won't double-apply).
+- All add-ons unlock per-tournament, not per-org.
 
-**Dashboard:** Update `SponsorshipTiersManager.tsx` with three toggles per tier.
-
-**Public:** Update `SponsorRegistration.tsx` to conditionally render logo field (required/optional/hidden) and notes textarea. Pass `additional_notes` into `create-sponsor-checkout` and store on `sponsor_registrations`.
-
-## 5. Donations — Custom Text & Manual Goal
-**DB (migration):** add to `tournaments`:
-- `donations_header_text TEXT`
-- `donations_footer_text TEXT`
-- `fundraising_goal_custom BOOLEAN DEFAULT FALSE`
-- (reuse existing `donation_goal_cents` as manual amount when custom=true)
-- new table `tournament_offline_donations` (donor_name, amount_cents, received_date, notes)
-
-**Dashboard:** Extend `src/pages/dashboard/Donations.tsx`:
-- Header/footer text inputs
-- Auto vs manual goal radio
-- "Add Offline Donation" form + list, with delete
-
-**Public:** Update donation block in `PublicTournament.tsx` to render header/footer text, and progress totals = platform donations + offline donations, vs custom or auto goal.
-
-## Out of scope / not touched
-- Other dashboard sections, theming, navigation, payouts, leaderboard, scoring, etc.
-- The "Save button" issue from your previous message is not part of this prompt — say the word and I'll tackle it next.
-
-## Order of implementation
-1. One combined SQL migration with all schema changes + GRANTs + RLS.
-2. Edge function for event-day-sales checkout + sponsor checkout update for notes.
-3. Frontend: Registration page, EventDaySales page + route + sidebar, Players add-player updates, SponsorshipTiersManager, SponsorRegistration, Donations page, PublicTournament public displays.
+**Reply "go" to execute all 8 phases. This will consume significant credits — estimated a lot of tool calls given the scope. If you'd rather ship in smaller batches, tell me which phase(s) first.**

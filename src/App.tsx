@@ -57,6 +57,7 @@ import SharePromote from "./pages/dashboard/SharePromote";
 import FlyerStudio from "./pages/dashboard/FlyerStudio";
 import Contests from "./pages/dashboard/Contests";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
+import ManualEntryGrantsAdmin from "./pages/admin/ManualEntryGrants";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
 import PublicSearch from "./pages/dashboard/PublicSearch";

@@ -192,6 +192,25 @@ export default function LiveLeaderboard() {
       setSponsors((spRes.data as Sponsor[]) || []);
       setGallery((galRes.data as GalleryItem[]) || []);
     });
+
+    // Load flights + registration→flight map (public via tier RLS on published tournaments)
+    Promise.all([
+      (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name, display_order")
+        .eq("tournament_id", tournament.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true }),
+      (supabase as any)
+        .from("tournament_registrations")
+        .select("id, flight_id")
+        .eq("tournament_id", tournament.id),
+    ]).then(([fRes, rRes]: any) => {
+      setFlights(fRes.data || []);
+      const map: Record<string, string | null> = {};
+      (rRes.data || []).forEach((r: any) => { map[r.id] = r.flight_id; });
+      setRegFlights(map);
+    });
   }, [tournament]);
 
   // Realtime score updates

@@ -618,6 +618,8 @@ export default function LiveScoring() {
             </div>
           </CardContent>
         </Card>
+        )}
+
       </div>
     </div>
   );

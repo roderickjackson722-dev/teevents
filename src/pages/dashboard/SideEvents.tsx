@@ -86,6 +86,7 @@ export default function SideEvents() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SideEvent | null>(null);
   const [form, setForm] = useState({ ...empty });
+  const manualEntry = useManualEntryEnforcement(tournamentId || null);
 
   const { data: tournaments } = useQuery({
     queryKey: ["se-tournaments", org?.orgId],

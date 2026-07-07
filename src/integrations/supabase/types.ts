@@ -2685,9 +2685,12 @@ export type Database = {
           entity_id: string | null
           entity_type: string
           fee_cents: number
+          fee_payment_method: string
           id: string
           paid: boolean
+          paid_at: string | null
           platform_transaction_id: string | null
+          stripe_charge_id: string | null
           tournament_id: string
         }
         Insert: {
@@ -2697,9 +2700,12 @@ export type Database = {
           entity_id?: string | null
           entity_type: string
           fee_cents?: number
+          fee_payment_method?: string
           id?: string
           paid?: boolean
+          paid_at?: string | null
           platform_transaction_id?: string | null
+          stripe_charge_id?: string | null
           tournament_id: string
         }
         Update: {
@@ -2709,9 +2715,12 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string
           fee_cents?: number
+          fee_payment_method?: string
           id?: string
           paid?: boolean
+          paid_at?: string | null
           platform_transaction_id?: string | null
+          stripe_charge_id?: string | null
           tournament_id?: string
         }
         Relationships: [
@@ -4026,6 +4035,10 @@ export type Database = {
           golfer_email: string | null
           golfer_name: string | null
           id: string
+          manual_entry_fee_amount_cents: number | null
+          manual_entry_fee_liability: boolean
+          manual_entry_fee_settled: boolean
+          manual_entry_fee_settled_at: string | null
           metadata: Json | null
           net_amount_cents: number
           organization_id: string
@@ -4049,6 +4062,10 @@ export type Database = {
           golfer_email?: string | null
           golfer_name?: string | null
           id?: string
+          manual_entry_fee_amount_cents?: number | null
+          manual_entry_fee_liability?: boolean
+          manual_entry_fee_settled?: boolean
+          manual_entry_fee_settled_at?: string | null
           metadata?: Json | null
           net_amount_cents?: number
           organization_id: string
@@ -4072,6 +4089,10 @@ export type Database = {
           golfer_email?: string | null
           golfer_name?: string | null
           id?: string
+          manual_entry_fee_amount_cents?: number | null
+          manual_entry_fee_liability?: boolean
+          manual_entry_fee_settled?: boolean
+          manual_entry_fee_settled_at?: string | null
           metadata?: Json | null
           net_amount_cents?: number
           organization_id?: string
@@ -8479,16 +8500,28 @@ export type Database = {
         Args: { _tournament_id: string }
         Returns: undefined
       }
-      record_manual_entry: {
-        Args: {
-          _amount_cents: number
-          _confirm_fee: boolean
-          _entity_id: string
-          _entity_type: string
-          _tournament_id: string
-        }
-        Returns: Json
-      }
+      record_manual_entry:
+        | {
+            Args: {
+              _amount_cents: number
+              _confirm_fee: boolean
+              _entity_id: string
+              _entity_type: string
+              _tournament_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _amount_cents: number
+              _confirm_fee: boolean
+              _entity_id: string
+              _entity_type: string
+              _payment_method?: string
+              _tournament_id: string
+            }
+            Returns: Json
+          }
       record_org_login: {
         Args: { _organization_id: string; _user_agent?: string }
         Returns: undefined
@@ -8521,6 +8554,10 @@ export type Database = {
       save_group_scores: {
         Args: { _code: string; _scores: Json; _tournament_id: string }
         Returns: undefined
+      }
+      settle_manual_entry_liabilities: {
+        Args: { _max_deduct_cents: number; _organization_id: string }
+        Returns: number
       }
       update_college_invitation_rsvp_by_token: {
         Args: { _response: string; _token: string }

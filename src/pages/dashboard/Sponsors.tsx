@@ -436,6 +436,7 @@ const Sponsors = () => {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const manualEntry = useManualEntryEnforcement(selectedTournament || null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null);
   const [saving, setSaving] = useState(false);

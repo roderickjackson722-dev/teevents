@@ -224,6 +224,16 @@ export default function SideEvents() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <ManualEntryLimitModal
+        open={!!manualEntry.pending}
+        onOpenChange={(o) => { if (!o) manualEntry.cancelPending(); }}
+        used={manualEntry.pending?.used ?? 0}
+        freeLimit={manualEntry.pending?.limit ?? 10}
+        initialAmountCents={manualEntry.pending?.amountCents ?? 0}
+        hasStripe={manualEntry.pending?.hasStripe ?? true}
+        submitting={manualEntry.submitting}
+        onConfirm={manualEntry.confirmPending}
+      />
       <div>
         <h1 className="text-3xl font-bold">Side Events</h1>
         <p className="text-muted-foreground">

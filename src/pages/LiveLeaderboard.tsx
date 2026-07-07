@@ -337,6 +337,45 @@ export default function LiveLeaderboard() {
       <LeaderboardRenderer
         design={design}
         title={tournament.title}
+  const activeFlightName =
+    activeFlight === "__overall"
+      ? null
+      : flights.find((f) => f.id === activeFlight)?.tier_name || null;
+  const displayTitle = activeFlightName ? `${tournament.title} — ${activeFlightName}` : tournament.title;
+
+  const flightTabs = flights.length > 0 ? (
+    <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center">
+      {flights.map((f) => (
+        <button
+          key={f.id}
+          onClick={() => setActiveFlight(f.id)}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+            activeFlight === f.id
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted/70"
+          }`}
+        >
+          {f.tier_name}
+        </button>
+      ))}
+      <button
+        onClick={() => setActiveFlight("__overall")}
+        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+          activeFlight === "__overall"
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted text-muted-foreground hover:bg-muted/70"
+        }`}
+      >
+        Overall
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <>
+      <LeaderboardRenderer
+        design={design}
+        title={displayTitle}
         rows={leaderboard.map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players }))}
         isStableford={isStableford}
         bannerSponsor={bannerSponsor}
@@ -345,11 +384,14 @@ export default function LiveLeaderboard() {
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         topNotice={
-          isPreview ? (
-            <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
-              Preview Mode — this is how your leaderboard will appear to players.
-            </div>
-          ) : null
+          <>
+            {isPreview ? (
+              <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
+                Preview Mode — this is how your leaderboard will appear to players.
+              </div>
+            ) : null}
+            {flightTabs}
+          </>
         }
       />
       <BrandingBadge show={tournament.show_branding_badge !== false} />

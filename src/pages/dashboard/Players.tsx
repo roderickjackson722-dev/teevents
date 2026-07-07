@@ -41,6 +41,7 @@ import {
   ChevronUp,
   ChevronDown,
   MapPin,
+  StickyNote,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
@@ -414,31 +415,76 @@ const Players = () => {
   const [editGroupValue, setEditGroupValue] = useState<string>("");
   const [editingLocationNum, setEditingLocationNum] = useState<number | null>(null);
   const [editLocationValue, setEditLocationValue] = useState<string>("");
+  const [editingNotesNum, setEditingNotesNum] = useState<number | null>(null);
+  const [editNotesValue, setEditNotesValue] = useState<string>("");
   const locStorageKey = selectedTournament ? `teevents_hole_locations_${selectedTournament}` : "";
+  const labelsStorageKey = selectedTournament ? `teevents_hole_labels_${selectedTournament}` : "";
+  const notesStorageKey = selectedTournament ? `teevents_hole_notes_${selectedTournament}` : "";
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
+  const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
+  const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
   useEffect(() => {
     if (!locStorageKey) return;
     try {
       const raw = localStorage.getItem(locStorageKey);
       setHoleLocations(raw ? JSON.parse(raw) : {});
     } catch { setHoleLocations({}); }
-  }, [locStorageKey]);
+    try {
+      const raw = localStorage.getItem(labelsStorageKey);
+      setHoleLabels(raw ? JSON.parse(raw) : {});
+    } catch { setHoleLabels({}); }
+    try {
+      const raw = localStorage.getItem(notesStorageKey);
+      setHoleNotes(raw ? JSON.parse(raw) : {});
+    } catch { setHoleNotes({}); }
+  }, [locStorageKey, labelsStorageKey, notesStorageKey]);
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
   };
+  const saveLabels = (next: Record<number, string>) => {
+    setHoleLabels(next);
+    try { if (labelsStorageKey) localStorage.setItem(labelsStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+  const saveNotes = (next: Record<number, string>) => {
+    setHoleNotes(next);
+    try { if (notesStorageKey) localStorage.setItem(notesStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+  const saveHoleNote = (num: number, value: string) => {
+    const next = { ...holeNotes };
+    const v = value.trim();
+    if (v) next[num] = v; else delete next[num];
+    saveNotes(next);
+    setEditingNotesNum(null);
+  };
+
 
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
     toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
-  const handleRenameGroup = async (oldNum: number, newNumRaw: string) => {
-    const newNum = parseInt(newNumRaw);
+  const handleRenameGroup = async (oldNum: number, rawInput: string) => {
     setEditingGroupNum(null);
+    const trimmed = rawInput.trim();
+    if (!trimmed) return;
+
+    // Detect display-only label (contains any non-digit char, e.g. "1A", "1B", "9 Left")
+    const isLabelOnly = /\D/.test(trimmed);
+    if (isLabelOnly) {
+      // Store as a display label — the underlying group_number stays the same
+      const next = { ...holeLabels };
+      if (trimmed === String(oldNum)) delete next[oldNum];
+      else next[oldNum] = trimmed;
+      saveLabels(next);
+      toast({ title: `Hole labeled "${trimmed}"` });
+      return;
+    }
+
+    const newNum = parseInt(trimmed);
     if (!newNum || isNaN(newNum) || newNum === oldNum) return;
     if (newNum < 1 || newNum > 99) {
-      toast({ title: "Invalid hole number", description: "Use 1-99.", variant: "destructive" });
+      toast({ title: "Invalid hole number", description: "Use 1-99, or a label like 1A.", variant: "destructive" });
       return;
     }
     if (allGroupNumbers.includes(newNum)) {
@@ -461,8 +507,22 @@ const Players = () => {
       delete next[oldNum];
       saveLocations(next);
     }
+    // Migrate label + notes when renumbering
+    if (holeLabels[oldNum]) {
+      const next = { ...holeLabels };
+      next[newNum] = next[oldNum];
+      delete next[oldNum];
+      saveLabels(next);
+    }
+    if (holeNotes[oldNum]) {
+      const next = { ...holeNotes };
+      next[newNum] = next[oldNum];
+      delete next[oldNum];
+      saveNotes(next);
+    }
     toast({ title: `Renamed to Hole ${newNum}` });
   };
+
 
   const handleDeleteGroup = async (num: number) => {
     if (demoGuard()) return;
@@ -1127,8 +1187,9 @@ const Players = () => {
                         {editingGroupNum === group.number ? (
                           <div className="flex items-center gap-1">
                             <Input
-                              type="number"
-                              className="h-7 w-20 text-sm"
+                              type="text"
+                              className="h-7 w-28 text-sm"
+                              placeholder="e.g. 1, 1A, 1B"
                               value={editGroupValue}
                               onChange={(e) => setEditGroupValue(e.target.value)}
                               onKeyDown={(e) => {
@@ -1147,10 +1208,10 @@ const Players = () => {
                         ) : (
                           <button
                             className="text-sm font-bold text-foreground hover:text-primary inline-flex items-center gap-1"
-                            onClick={() => { setEditingGroupNum(group.number); setEditGroupValue(String(group.number)); }}
-                            title="Rename hole"
+                            onClick={() => { setEditingGroupNum(group.number); setEditGroupValue(holeLabels[group.number] || String(group.number)); }}
+                            title="Rename hole — accepts numbers (1) or labels (1A, 1B)"
                           >
-                            Hole {group.number}
+                            Hole {holeLabels[group.number] || group.number}
                             <Pencil className="h-3 w-3 opacity-60" />
                           </button>
                         )}
@@ -1181,7 +1242,35 @@ const Players = () => {
                             {holeLocations[group.number] || "Add location"}
                           </button>
                         )}
+                        {editingNotesNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              className="h-7 w-56 text-xs"
+                              placeholder="Notes (e.g. shotgun start, cart 12)"
+                              value={editNotesValue}
+                              onChange={(e) => setEditNotesValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleNote(group.number, editNotesValue);
+                                if (e.key === "Escape") setEditingNotesNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleNote(group.number, editNotesValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 max-w-[240px] truncate"
+                            onClick={() => { setEditingNotesNum(group.number); setEditNotesValue(holeNotes[group.number] || ""); }}
+                            title="Add or edit notes for this hole"
+                          >
+                            <StickyNote className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{holeNotes[group.number] || "Add note"}</span>
+                          </button>
+                        )}
                       </div>
+
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground mr-1">
                           {group.players.length}/{maxGroupSize}

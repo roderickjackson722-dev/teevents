@@ -71,14 +71,28 @@ export default function Leaderboard() {
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [scoreView, setScoreView] = useState<"gross" | "net">("gross");
 
-  const { data: tournaments } = useQuery({
-    queryKey: ["tournaments", org?.orgId],
+  // Detect platform admin — admins get access to ALL tournaments across every org
+  const { data: isPlatformAdmin } = useQuery({
+    queryKey: ["is-platform-admin", org?.userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!org?.userId) return false;
+      const { data } = await supabase.rpc("has_role", { _user_id: org.userId, _role: "admin" as any });
+      return !!data;
+    },
+    enabled: !!org?.userId,
+  });
+
+  const { data: tournaments } = useQuery({
+    queryKey: ["tournaments", org?.orgId, isPlatformAdmin],
+    queryFn: async () => {
+      let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled")
-        .eq("organization_id", org!.orgId)
+        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, organizations(name)")
         .order("date", { ascending: false });
+      if (!isPlatformAdmin) {
+        query = query.eq("organization_id", org!.orgId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -406,11 +420,22 @@ export default function Leaderboard() {
           <SelectTrigger className="w-[300px]">
             <SelectValue placeholder="Select a tournament" />
           </SelectTrigger>
-          <SelectContent>
-            {tournaments?.map((t) => (
-              <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+          <SelectContent className="max-h-[400px]">
+            {isPlatformAdmin && (
+              <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Platform Admin — All Tournaments
+              </div>
+            )}
+            {tournaments?.map((t: any) => (
+              <SelectItem key={t.id} value={t.id}>
+                {t.title}
+                {isPlatformAdmin && t.organizations?.name && (
+                  <span className="text-xs text-muted-foreground ml-2">· {t.organizations.name}</span>
+                )}
+              </SelectItem>
             ))}
           </SelectContent>
+
         </Select>
 
         {selectedTournamentData?.slug && selectedTournamentData?.site_published && (

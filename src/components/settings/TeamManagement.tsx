@@ -37,6 +37,7 @@ const ALL_PERMISSIONS = [
 const ROLES = [
   { value: "admin", label: "Admin", description: "Full access to everything" },
   { value: "editor", label: "Editor", description: "Can manage players, scores, sponsors" },
+  { value: "scoring_only", label: "Scoring Only", description: "Can only view players and enter/edit scores" },
   { value: "viewer", label: "Viewer", description: "Can only view, no changes" },
 ] as const;
 
@@ -48,6 +49,7 @@ const ROLE_PRESETS: Record<string, string[]> = {
     "manage_gallery", "manage_volunteers", "manage_surveys",
     "manage_donations", "manage_check_in",
   ],
+  scoring_only: ["manage_leaderboard"],
   viewer: [],
 };
 

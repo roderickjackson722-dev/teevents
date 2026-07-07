@@ -285,14 +285,38 @@ export default function Leaderboard() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
+      const editLogs: any[] = [];
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: isPlatformAdmin } = user
+        ? await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as any })
+        : { data: false };
+      // Build previous score lookup
+      const prevMap: Record<string, Record<number, number>> = {};
+      (scores || []).forEach((s: any) => {
+        if (!prevMap[s.registration_id]) prevMap[s.registration_id] = {};
+        prevMap[s.registration_id][s.hole_number] = s.strokes;
+      });
       Object.entries(editedScores).forEach(([regId, holes]) => {
         Object.entries(holes).forEach(([hole, strokes]) => {
+          const holeNum = parseInt(hole);
           upserts.push({
             tournament_id: selectedTournament,
             registration_id: regId,
-            hole_number: parseInt(hole),
+            hole_number: holeNum,
             strokes,
           });
+          const oldScore = prevMap[regId]?.[holeNum] ?? null;
+          if (oldScore !== strokes && user) {
+            editLogs.push({
+              tournament_id: selectedTournament,
+              registration_id: regId,
+              hole_number: holeNum,
+              old_score: oldScore,
+              new_score: strokes,
+              edited_by: user.id,
+              editor_type: isPlatformAdmin ? "admin" : "organizer",
+            });
+          }
         });
       });
       if (upserts.length === 0) return;
@@ -300,6 +324,9 @@ export default function Leaderboard() {
         onConflict: "registration_id,hole_number",
       });
       if (error) throw error;
+      if (editLogs.length > 0) {
+        await (supabase as any).from("score_edits").insert(editLogs);
+      }
     },
     onSuccess: () => {
       toast({ title: "Scores saved!" });

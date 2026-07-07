@@ -1032,6 +1032,13 @@ const Registration = () => {
             </motion.div>
           </TabsContent>
 
+          {/* ── Flights Tab ── */}
+          <TabsContent value="flights">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-6">
+              <FlightsManager tournamentId={selectedTournament} />
+            </motion.div>
+          </TabsContent>
+
           {/* ── Fields Tab ── */}
           <TabsContent value="fields">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">

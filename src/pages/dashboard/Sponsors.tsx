@@ -546,6 +546,11 @@ const Sponsors = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTournament || !form.name.trim() || demoGuard()) return;
+    if (!editSponsor) {
+      const amtCents = Math.round((form.amount ? parseFloat(form.amount) : 0) * 100);
+      const proceed = await manualEntry.guard("sponsor", amtCents);
+      if (!proceed) return;
+    }
     setSaving(true);
 
     const payload = {

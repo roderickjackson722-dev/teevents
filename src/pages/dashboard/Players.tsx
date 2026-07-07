@@ -175,6 +175,11 @@ const Players = () => {
       });
   }, [selectedTournament]);
 
+  useEffect(() => {
+    const t: any = tournaments.find((x: any) => x.id === selectedTournament);
+    setRegFeeCents(Number(t?.registration_fee_cents || 0));
+  }, [selectedTournament, tournaments]);
+
   const filteredPlayers = players.filter((p) => {
     const q = search.toLowerCase();
     return (

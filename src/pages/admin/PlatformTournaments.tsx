@@ -211,9 +211,14 @@ export default function PlatformTournaments() {
                               <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
                             </Button>
                             {r.organization_id && (
-                              <Button asChild variant="default" size="sm">
-                                <Link to={`/dashboard?admin_org=${r.organization_id}&tournament_id=${r.id}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Dashboard</Link>
-                              </Button>
+                              <>
+                                <Button asChild variant="secondary" size="sm">
+                                  <Link to={`/dashboard/leaderboard?admin_org=${r.organization_id}&tournament_id=${r.id}`} target="_blank"><Edit3 className="h-3.5 w-3.5 mr-1" />Edit Scores</Link>
+                                </Button>
+                                <Button asChild variant="default" size="sm">
+                                  <Link to={`/dashboard?admin_org=${r.organization_id}&tournament_id=${r.id}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Dashboard</Link>
+                                </Button>
+                              </>
                             )}
                           </div>
                         </TableCell>

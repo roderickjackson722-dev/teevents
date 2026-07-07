@@ -2677,6 +2677,60 @@ export type Database = {
           },
         ]
       }
+      manual_entry_fees: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          created_by: string | null
+          entity_id: string | null
+          entity_type: string
+          fee_cents: number
+          id: string
+          paid: boolean
+          platform_transaction_id: string | null
+          tournament_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type: string
+          fee_cents?: number
+          id?: string
+          paid?: boolean
+          platform_transaction_id?: string | null
+          tournament_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          fee_cents?: number
+          id?: string
+          paid?: boolean
+          platform_transaction_id?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_entry_fees_platform_transaction_id_fkey"
+            columns: ["platform_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "platform_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_entry_fees_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_entry_grants: {
         Row: {
           additional_entries: number
@@ -8217,6 +8271,10 @@ export type Database = {
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
+      admin_grant_manual_entries: {
+        Args: { _additional: number; _reason: string; _tournament_id: string }
+        Returns: undefined
+      }
       check_auth_rate_limit: {
         Args: {
           _action: string
@@ -8420,6 +8478,16 @@ export type Database = {
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }
         Returns: undefined
+      }
+      record_manual_entry: {
+        Args: {
+          _amount_cents: number
+          _confirm_fee: boolean
+          _entity_id: string
+          _entity_type: string
+          _tournament_id: string
+        }
+        Returns: Json
       }
       record_org_login: {
         Args: { _organization_id: string; _user_agent?: string }

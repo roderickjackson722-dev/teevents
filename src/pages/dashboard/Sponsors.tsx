@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -434,6 +436,7 @@ const Sponsors = () => {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const manualEntry = useManualEntryEnforcement(selectedTournament || null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null);
   const [saving, setSaving] = useState(false);
@@ -543,6 +546,11 @@ const Sponsors = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTournament || !form.name.trim() || demoGuard()) return;
+    if (!editSponsor) {
+      const amtCents = Math.round((form.amount ? parseFloat(form.amount) : 0) * 100);
+      const proceed = await manualEntry.guard("sponsor", amtCents);
+      if (!proceed) return;
+    }
     setSaving(true);
 
     const payload = {
@@ -616,6 +624,16 @@ const Sponsors = () => {
 
   return (
     <div>
+      <ManualEntryLimitModal
+        open={!!manualEntry.pending}
+        onOpenChange={(o) => { if (!o) manualEntry.cancelPending(); }}
+        used={manualEntry.pending?.used ?? 0}
+        freeLimit={manualEntry.pending?.limit ?? 10}
+        initialAmountCents={manualEntry.pending?.amountCents ?? 0}
+        hasStripe={manualEntry.pending?.hasStripe ?? true}
+        submitting={manualEntry.submitting}
+        onConfirm={manualEntry.confirmPending}
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

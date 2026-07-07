@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Ticket, Tag, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 
 type CustomQuestion = {
   id: string;
@@ -84,6 +86,7 @@ export default function SideEvents() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SideEvent | null>(null);
   const [form, setForm] = useState({ ...empty });
+  const manualEntry = useManualEntryEnforcement(tournamentId || null);
 
   const { data: tournaments } = useQuery({
     queryKey: ["se-tournaments", org?.orgId],
@@ -171,6 +174,10 @@ export default function SideEvents() {
       hide_ticket_count: form.hide_ticket_count,
       custom_questions: (form.custom_questions || []).filter((q) => q.label.trim()),
     };
+    if (!editing) {
+      const proceed = await manualEntry.guard("side_event", payload.price_cents);
+      if (!proceed) return;
+    }
     const { error } = editing
       ? await supabase.from("side_events").update(payload).eq("id", editing.id)
       : await supabase.from("side_events").insert(payload);
@@ -217,6 +224,16 @@ export default function SideEvents() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <ManualEntryLimitModal
+        open={!!manualEntry.pending}
+        onOpenChange={(o) => { if (!o) manualEntry.cancelPending(); }}
+        used={manualEntry.pending?.used ?? 0}
+        freeLimit={manualEntry.pending?.limit ?? 10}
+        initialAmountCents={manualEntry.pending?.amountCents ?? 0}
+        hasStripe={manualEntry.pending?.hasStripe ?? true}
+        submitting={manualEntry.submitting}
+        onConfirm={manualEntry.confirmPending}
+      />
       <div>
         <h1 className="text-3xl font-bold">Side Events</h1>
         <p className="text-muted-foreground">

@@ -17,6 +17,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 
 interface Donation { id: string; amount_cents: number; donor_email: string | null; status: string; created_at: string; }
 interface OfflineDonation { id: string; amount_cents: number; donor_name: string | null; received_date: string; notes: string | null; }
@@ -33,6 +35,7 @@ const Donations = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [offline, setOffline] = useState<OfflineDonation[]>([]);
   const [loading, setLoading] = useState(true);
+  const manualEntry = useManualEntryEnforcement(selectedTournament || null);
 
   // Settings
   const [headerText, setHeaderText] = useState("");
@@ -115,6 +118,8 @@ const Donations = () => {
     if (demoGuard()) return;
     const cents = Math.round(parseFloat(offlineForm.amount || "0") * 100);
     if (!cents || cents <= 0) { toast.error("Enter a valid amount"); return; }
+    const proceed = await manualEntry.guard("donation", cents);
+    if (!proceed) return;
     setSavingOffline(true);
     const { data, error } = await (supabase as any)
       .from("tournament_offline_donations")
@@ -153,6 +158,16 @@ const Donations = () => {
 
   return (
     <div>
+      <ManualEntryLimitModal
+        open={!!manualEntry.pending}
+        onOpenChange={(o) => { if (!o) manualEntry.cancelPending(); }}
+        used={manualEntry.pending?.used ?? 0}
+        freeLimit={manualEntry.pending?.limit ?? 10}
+        initialAmountCents={manualEntry.pending?.amountCents ?? 0}
+        hasStripe={manualEntry.pending?.hasStripe ?? true}
+        submitting={manualEntry.submitting}
+        onConfirm={manualEntry.confirmPending}
+      />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">Donations</h1>

@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +89,7 @@ export default function Vendors() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentId, setTournamentId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const manualEntry = useManualEntryEnforcement(tournamentId || null);
 
   // Form
   const [formId, setFormId] = useState<string | null>(null);
@@ -320,6 +323,9 @@ export default function Vendors() {
       toast({ title: "Missing fields", variant: "destructive" });
       return;
     }
+    const amt = boothFeeCents === "" ? 0 : Number(boothFeeCents);
+    const proceed = await manualEntry.guard("vendor", amt);
+    if (!proceed) return;
     const { error } = await supabase.from("vendor_registrations").insert({
       tournament_id: tournamentId,
       vendor_name: manualVendor.vendor_name,
@@ -658,6 +664,16 @@ export default function Vendors() {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
+      <ManualEntryLimitModal
+        open={!!manualEntry.pending}
+        onOpenChange={(o) => { if (!o) manualEntry.cancelPending(); }}
+        used={manualEntry.pending?.used ?? 0}
+        freeLimit={manualEntry.pending?.limit ?? 10}
+        initialAmountCents={manualEntry.pending?.amountCents ?? 0}
+        hasStripe={manualEntry.pending?.hasStripe ?? true}
+        submitting={manualEntry.submitting}
+        onConfirm={manualEntry.confirmPending}
+      />
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Vendors</h1>

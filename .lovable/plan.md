@@ -1,57 +1,60 @@
-# TeeVents Platform Repositioning & New Add-On Pricing Model
+# Manual Entry Enforcement & 5% Fee Recording
 
-This is a large, multi-surface change. I'll break it into 8 phases and ship them in order. Please confirm before I start — once approved I'll execute all phases.
+Completes Phase 7: blocks manual insertions at the 10-entry limit, shows a fee-confirmation modal, records the 5% fee, and gives admins a grant UI.
 
-## Phase 1 — Database schema (migration, needs approval)
-Add to `tournaments` table:
-- `paid_features JSONB` (custom_domain, unlimited_manual_entries, auction_raffle, sms_email_blasts, priority_support, bundle — all default false)
-- `manual_entries_used INTEGER DEFAULT 0`
-- `manual_entries_free_limit INTEGER DEFAULT 10`
-- `manual_entries_admin_override INTEGER DEFAULT 0`
+## 1. Database (migration)
 
-Add `manual_entry_grants` audit table (tournament_id, granted_by, additional_entries, reason, created_at) with RLS + GRANTs for admin-only access.
+Columns already exist on `tournaments` (`manual_entries_used/free_limit/admin_override`) and the `manual_entry_grants` audit table exists. Add:
 
-## Phase 2 — Feature-gating logic
-- New hook `useTournamentAddon(tournamentId, addonKey)` reading `paid_features`.
-- New hook `useManualEntryQuota(tournamentId)` returning `{ used, limit, remaining, unlimited }` where `limit = free_limit + admin_override`, `unlimited = paid_features.unlimited_manual_entries || bundle`.
-- Update `usePlanFeatures.ts`: retire org-level Pro gating for features now sold as add-ons (custom-domain, auction, sms-messaging, priority-support). Move them to per-tournament add-on checks. Live leaderboard, live scoring, volunteers, printables, flyer studio, surveys, gallery, donations, store move to **free**.
+- `public.manual_entry_fees` — one row per over-quota manual entry
+  - `tournament_id`, `entity_type` (`player|sponsor|side_event|vendor|donation`), `entity_id uuid null`, `amount_cents`, `fee_cents`, `paid boolean default false`, `platform_transaction_id uuid null`, `created_by uuid`, `created_at`
+  - Grants + RLS: org members can select/insert for their tournament; service_role full; admins full.
+- RPC `public.record_manual_entry(_tournament_id uuid, _entity_type text, _entity_id uuid, _amount_cents int, _confirm_fee bool)` — SECURITY DEFINER
+  - Increments `manual_entries_used` atomically
+  - If over the effective limit (`free_limit + admin_override`) and `_confirm_fee=false` → raises
+  - If over and confirmed → inserts `manual_entry_fees` row + a matching `platform_transactions` row (`type='manual_entry_fee'`, 5% of amount)
+  - Returns `{ used, limit, fee_cents, over_quota }`
+- RPC `public.admin_grant_manual_entries(_tournament_id uuid, _additional int, _reason text)` — admin-only, bumps `manual_entries_admin_override` and writes `manual_entry_grants` row.
 
-## Phase 3 — Homepage & marketing pages
-- `src/pages/Index.tsx` hero → new headline + subheadline.
-- `src/pages/Features.tsx` → regroup into 6 phases (Plan & Set Up, Promote & Sell, Register & Manage, Tournament Day, Finance & Payouts, Post-Event).
-- `src/pages/Compare.tsx` → add "vs Fundraising-Only Platforms" section (GiveButter/Zeffy style comparison table).
+## 2. Shared frontend
 
-## Phase 4 — Pricing page overhaul
-- `src/pages/Plans.tsx` → new hero, single Free tier card, add-ons grid (5 items + Bundle $399), fee reference table ($50–$250 rows), remove old Pro tier copy.
+- `src/hooks/useManualEntryEnforcement.ts` — wraps `useTournamentAddons` + calls the RPC. Exposes `checkAndConfirm({ entityType, amountCents })` returning `{ proceed, feeCents }`.
+- `src/components/ManualEntryLimitModal.tsx` — the "⚠️ Manual Entry Limit Reached" modal with editable amount + live 5% fee, Cancel / Confirm buttons. Skipped automatically when `unlimited_manual_entries` add-on is active.
+- Copy notes the 5% fee is deducted from the organizer's next Stripe payout; if no Stripe connected, shows the "connect Stripe to add more" message.
 
-## Phase 5 — Organizer dashboard "Upgrade Features"
-- Replace `src/pages/dashboard/UpgradePlan.tsx` with new "Upgrade Features" page: manual entry usage bar, 5 add-on checkboxes with prices, Bundle option, "Purchase Selected Features" button.
-- Update sidebar label from "Upgrade to Pro" → "Upgrade Features".
+## 3. Insertion sites to wire
 
-## Phase 6 — Stripe checkout for add-ons
-- New edge function `purchase-addons` — accepts `{ tournament_id, addons: string[] }`, computes line items (or single Bundle line item), creates Checkout session.
-- Update `verify-pro-upgrade` → generalize to `verify-addon-purchase` that flips the correct `paid_features.*` keys based on session metadata. Keep old function as thin alias for back-compat.
-- Success URL returns to `/dashboard/upgrade` with confirmation toast.
+For each, intercept the submit handler, call `checkAndConfirm` before writing, and only proceed on confirm:
 
-## Phase 7 — Manual entry enforcement
-- Wherever manual entries are created (Players, Sponsors, Side Events, etc. — I'll grep for the insertion sites), before insert:
-  - If `unlimited` → allow, don't increment counter.
-  - Else if `used < limit` → allow, increment `manual_entries_used`.
-  - Else → block with modal: *"You have used your 10 free manual entries. Additional manual entries will incur a 5% platform fee."* + [Continue with fee] / [Upgrade to Unlimited $149] buttons.
-- "Continue with fee" records a `platform_transactions` row with 5% fee against the entry amount.
+| Site | File |
+|------|------|
+| Players (manual add) | `src/pages/dashboard/Players.tsx` (+ `RegistrationForm` when used as organizer manual add) |
+| Sponsors (manual add) | `src/pages/dashboard/Sponsors.tsx` |
+| Side Events (manual ticket) | `src/pages/dashboard/SideEvents.tsx` |
+| Vendors (manual add) | `src/pages/dashboard/Vendors.tsx` |
+| Donations (manual entry) | `src/pages/dashboard/Donations.tsx` |
 
-## Phase 8 — Admin override UI
-- New admin page `src/pages/admin/ManualEntryGrants.tsx`: search tournament, input additional free entries, optional reason, submit → increments `manual_entries_admin_override` and logs to `manual_entry_grants`.
-- Link from admin dashboard sidebar.
+Each site passes its transaction amount (registration fee, sponsor tier price, ticket price, vendor tier price, donation amount) to the modal.
 
-## Scope notes
-- I will NOT touch: any features not explicitly named, existing tournament data, existing Stripe Connect payout flow, the 5% platform fee logic on regular checkout, the org-level plan concept (I'll just stop using it for gating add-on features).
-- I will keep legacy `tournaments.is_pro` column intact for back-compat but stop reading it for feature gates.
+## 4. Admin UI
 
-## Technical details (skip if not relevant)
-- Migration order: table alters → new audit table → GRANTs → RLS → policies.
-- Bundle logic: purchasing Bundle flips all 5 add-on flags + `bundle=true`.
-- Idempotency: `verify-addon-purchase` keyed on Stripe session id (won't double-apply).
-- All add-ons unlock per-tournament, not per-org.
+Extend existing `src/pages/admin/ManualEntryGrants.tsx`:
+- Tournament dropdown/search (already present)
+- Show current `used / free_limit / admin_override / remaining`
+- "Grant Additional Free Entries" form (count + reason) → calls `admin_grant_manual_entries` RPC
+- Grant history table from `manual_entry_grants`
 
-**Reply "go" to execute all 8 phases. This will consume significant credits — estimated a lot of tool calls given the scope. If you'd rather ship in smaller batches, tell me which phase(s) first.**
+Also add a compact "Manual Entry Override" section in `src/components/admin/AdminTournamentEditModal.tsx` linking to the grants page and showing counts.
+
+## 5. Fee collection
+
+The `platform_transactions` row created by the RPC (type `manual_entry_fee`, `platform_fee_cents = fee_cents`) surfaces in the existing Finances dashboard and is netted from the organizer's next Stripe Connect payout via the existing payout job — no new Stripe checkout needed. Organizers without Stripe see the "connect Stripe" message in the modal and the entry is blocked.
+
+## Out of scope
+No changes to public-facing pricing copy, other dashboards, or any feature not listed above. Existing add-on `unlimited_manual_entries` continues to bypass the modal entirely.
+
+## Verification
+1. Create tournament → add 10 manual players → 11th triggers modal → confirm → `manual_entry_fees` + `platform_transactions` rows exist with correct 5% fee.
+2. Repeat for sponsor, side event, vendor, donation paths.
+3. Admin grants +5 entries → next manual add is free again; `manual_entry_grants` row logged.
+4. Tournament with `unlimited_manual_entries` add-on → no modal ever appears.

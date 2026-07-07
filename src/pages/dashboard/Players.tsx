@@ -43,6 +43,8 @@ import {
   MapPin,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -142,11 +144,13 @@ const Players = () => {
     handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "", group_label: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [regFeeCents, setRegFeeCents] = useState(0);
+  const manualEntry = useManualEntryEnforcement(selectedTournament || null);
   useEffect(() => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, max_players, allow_cash_registration")
+      .select("id, title, max_players, allow_cash_registration, registration_fee_cents")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -170,6 +174,11 @@ const Players = () => {
         setLoading(false);
       });
   }, [selectedTournament]);
+
+  useEffect(() => {
+    const t: any = tournaments.find((x: any) => x.id === selectedTournament);
+    setRegFeeCents(Number(t?.registration_fee_cents || 0));
+  }, [selectedTournament, tournaments]);
 
   const filteredPlayers = players.filter((p) => {
     const q = search.toLowerCase();
@@ -292,6 +301,8 @@ const Players = () => {
       toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
       return;
     }
+    const proceed = await manualEntry.guard("player", regFeeCents);
+    if (!proceed) return;
     setAddingPlayer(true);
     const isCash = newPlayer.payment_method === "cash" || newPlayer.payment_method === "check";
     const insertPayload: any = {
@@ -645,6 +656,16 @@ const Players = () => {
 
   return (
     <div>
+      <ManualEntryLimitModal
+        open={!!manualEntry.pending}
+        onOpenChange={(o) => { if (!o) manualEntry.cancelPending(); }}
+        used={manualEntry.pending?.used ?? 0}
+        freeLimit={manualEntry.pending?.limit ?? 10}
+        initialAmountCents={manualEntry.pending?.amountCents ?? 0}
+        hasStripe={manualEntry.pending?.hasStripe ?? true}
+        submitting={manualEntry.submitting}
+        onConfirm={manualEntry.confirmPending}
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

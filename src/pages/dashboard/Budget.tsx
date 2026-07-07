@@ -209,7 +209,7 @@ export default function BudgetPage() {
       // Authoritative actuals: compute directly from source tables so backdated /
       // manually-approved / offline registrations & sponsorships are reflected
       // even if a platform_transactions row was never created for them.
-      const [txRes, regRes, tierRes, tournRes, spRes, donRes, seRes, vRes] = await Promise.all([
+      const [txRes, regRes, tierRes, tournRes, spRes, donRes, vRes] = await Promise.all([
         supabase
           .from("platform_transactions")
           .select("type, amount_cents, status")

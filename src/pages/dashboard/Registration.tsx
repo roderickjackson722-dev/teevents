@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";
+import FlightsManager from "@/components/dashboard/FlightsManager";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 

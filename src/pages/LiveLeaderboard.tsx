@@ -332,11 +332,6 @@ export default function LiveLeaderboard() {
   const bannerSponsor = bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)] || null;
   const isStableford = getFormatById(tournament.scoring_format)?.scoring === "stableford";
 
-  return (
-    <>
-      <LeaderboardRenderer
-        design={design}
-        title={tournament.title}
   const activeFlightName =
     activeFlight === "__overall"
       ? null

@@ -56,6 +56,9 @@ export default function LiveScoring() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [autoLogging, setAutoLogging] = useState(false);
+  const [viewMode, setViewMode] = useState<"all" | "single">("single");
+  const [focusHole, setFocusHole] = useState<number>(1);
+
 
   useEffect(() => {
     if (!slug) return;

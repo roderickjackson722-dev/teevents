@@ -323,6 +323,9 @@ export default function Vendors() {
       toast({ title: "Missing fields", variant: "destructive" });
       return;
     }
+    const amt = boothFeeCents === "" ? 0 : Number(boothFeeCents);
+    const proceed = await manualEntry.guard("vendor", amt);
+    if (!proceed) return;
     const { error } = await supabase.from("vendor_registrations").insert({
       tournament_id: tournamentId,
       vendor_name: manualVendor.vendor_name,

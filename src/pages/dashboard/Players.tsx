@@ -43,6 +43,8 @@ import {
   MapPin,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 import {
   AlertDialog,
   AlertDialogAction,

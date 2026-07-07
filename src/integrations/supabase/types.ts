@@ -8174,13 +8174,6 @@ export type Database = {
             foreignKeyName: "vendor_booth_locations_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
-            referencedRelation: "public_vendor_registrations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vendor_booth_locations_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
             referencedRelation: "vendor_registrations"
             referencedColumns: ["id"]
           },
@@ -8400,126 +8393,7 @@ export type Database = {
       }
     }
     Views: {
-      public_sponsor_registrations: {
-        Row: {
-          company_name: string | null
-          description: string | null
-          id: string | null
-          is_title_sponsor: boolean | null
-          logo_url: string | null
-          manually_approved: boolean | null
-          payment_status: string | null
-          show_on_public: boolean | null
-          tier_id: string | null
-          tournament_id: string | null
-          website_url: string | null
-        }
-        Insert: {
-          company_name?: string | null
-          description?: string | null
-          id?: string | null
-          is_title_sponsor?: boolean | null
-          logo_url?: string | null
-          manually_approved?: boolean | null
-          payment_status?: string | null
-          show_on_public?: boolean | null
-          tier_id?: string | null
-          tournament_id?: string | null
-          website_url?: string | null
-        }
-        Update: {
-          company_name?: string | null
-          description?: string | null
-          id?: string | null
-          is_title_sponsor?: boolean | null
-          logo_url?: string | null
-          manually_approved?: boolean | null
-          payment_status?: string | null
-          show_on_public?: boolean | null
-          tier_id?: string | null
-          tournament_id?: string | null
-          website_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sponsor_registrations_tier_id_fkey"
-            columns: ["tier_id"]
-            isOneToOne: false
-            referencedRelation: "sponsorship_tiers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sponsor_registrations_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      public_vendor_registrations: {
-        Row: {
-          booth_location: string | null
-          business_type: string | null
-          company_name: string | null
-          description: string | null
-          id: string | null
-          logo_url: string | null
-          manually_approved: boolean | null
-          payment_status: string | null
-          show_on_public: boolean | null
-          tier_id: string | null
-          tournament_id: string | null
-          vendor_name: string | null
-          website_url: string | null
-        }
-        Insert: {
-          booth_location?: string | null
-          business_type?: string | null
-          company_name?: string | null
-          description?: string | null
-          id?: string | null
-          logo_url?: string | null
-          manually_approved?: boolean | null
-          payment_status?: string | null
-          show_on_public?: boolean | null
-          tier_id?: string | null
-          tournament_id?: string | null
-          vendor_name?: string | null
-          website_url?: string | null
-        }
-        Update: {
-          booth_location?: string | null
-          business_type?: string | null
-          company_name?: string | null
-          description?: string | null
-          id?: string | null
-          logo_url?: string | null
-          manually_approved?: boolean | null
-          payment_status?: string | null
-          show_on_public?: boolean | null
-          tier_id?: string | null
-          tournament_id?: string | null
-          vendor_name?: string | null
-          website_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vendor_registrations_tier_id_fkey"
-            columns: ["tier_id"]
-            isOneToOne: false
-            referencedRelation: "vendor_tiers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vendor_registrations_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
@@ -8656,6 +8530,40 @@ export type Database = {
           updated_at: string
           winner_name: string
           winner_ticket_number: number
+        }[]
+      }
+      get_public_sponsor_registrations: {
+        Args: { _tournament_id: string }
+        Returns: {
+          company_name: string
+          description: string
+          id: string
+          is_title_sponsor: boolean
+          logo_url: string
+          manually_approved: boolean
+          payment_status: string
+          show_on_public: boolean
+          tier_id: string
+          tournament_id: string
+          website_url: string
+        }[]
+      }
+      get_public_vendor_registrations: {
+        Args: { _tournament_id: string }
+        Returns: {
+          booth_location: string
+          business_type: string
+          company_name: string
+          description: string
+          id: string
+          logo_url: string
+          manually_approved: boolean
+          payment_status: string
+          show_on_public: boolean
+          tier_id: string
+          tournament_id: string
+          vendor_name: string
+          website_url: string
         }[]
       }
       get_refund_request_by_token: {

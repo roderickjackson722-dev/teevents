@@ -246,6 +246,23 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [promoError, setPromoError] = useState<string | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
   const [autoPromos, setAutoPromos] = useState<any[]>([]);
+  const [flights, setFlights] = useState<{ id: string; tier_name: string; tier_description: string | null }[]>([]);
+  const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
+
+  // Load competition flights for this tournament
+  useEffect(() => {
+    let cancelled = false;
+    (supabase as any)
+      .from("tournament_tiers")
+      .select("id, tier_name, tier_description")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .order("display_order", { ascending: true })
+      .then(({ data }: any) => {
+        if (!cancelled) setFlights(data || []);
+      });
+    return () => { cancelled = true; };
+  }, [tournamentId]);
 
   // Load active add-ons for this tournament
   useEffect(() => {

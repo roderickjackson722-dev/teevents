@@ -662,9 +662,10 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-7 w-full max-w-3xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="tiers">Tiers</TabsTrigger>
+            <TabsTrigger value="flights">Flights</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
             <TabsTrigger value="addons">Add-ons</TabsTrigger>
             <TabsTrigger value="promos">Promo Codes</TabsTrigger>

@@ -652,6 +652,29 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {/* Flight Selection */}
+        {flights.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Select Your Flight *</p>
+            <div className="grid gap-2">
+              {flights.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setSelectedFlight(f.id)}
+                  className={cn(
+                    "text-left rounded-lg border-2 p-3 transition-all",
+                    selectedFlight === f.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                  )}
+                >
+                  <div className="font-semibold text-sm text-foreground">{f.tier_name}</div>
+                  {f.tier_description && <p className="text-xs text-muted-foreground mt-1">{f.tier_description}</p>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Eligibility Confirmation Dialog */}
         {showEligibility && (() => {
           const tier = tiers.find(t => t.id === showEligibility);

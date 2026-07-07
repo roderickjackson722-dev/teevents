@@ -393,7 +393,114 @@ export default function LiveScoring() {
           return null;
         })()}
 
+        {/* View mode + hole selector — gives organizers/players more space when editing one hole at a time */}
+        <div className="flex flex-wrap items-center gap-2 justify-between">
+          <div className="inline-flex rounded-md border border-border overflow-hidden text-sm">
+            <button
+              onClick={() => setViewMode("single")}
+              className={`px-3 py-1.5 ${viewMode === "single" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            >
+              Single Hole
+            </button>
+            <button
+              onClick={() => setViewMode("all")}
+              className={`px-3 py-1.5 border-l border-border ${viewMode === "all" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            >
+              All Holes
+            </button>
+          </div>
+          {viewMode === "single" && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setFocusHole((h) => Math.max(1, h - 1))}
+                disabled={focusHole <= 1}
+                className="h-9 w-9 rounded border bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
+                aria-label="Previous hole"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-muted-foreground">Hole</span>
+                <select
+                  value={focusHole}
+                  onChange={(e) => setFocusHole(parseInt(e.target.value))}
+                  className="h-9 rounded border bg-background px-2 text-sm font-semibold min-w-[64px]"
+                >
+                  {holes.map((h) => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+                {courseData?.hole_pars?.[focusHole - 1] != null && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    · Par {courseData.hole_pars[focusHole - 1]}
+                    {courseStrokeIndexes?.[focusHole - 1] ? ` · SI ${courseStrokeIndexes[focusHole - 1]}` : ""}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setFocusHole((h) => Math.min(18, h + 1))}
+                disabled={focusHole >= 18}
+                className="h-9 w-9 rounded border bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center rotate-180"
+                aria-label="Next hole"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {viewMode === "single" ? (
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              {players.map((p) => {
+                const strokeDots = handicapEnabled ? getStrokesOnHole(p, focusHole - 1) : 0;
+                const val = getScore(p.id, focusHole);
+                const display = typeof val === "number" ? val : "";
+                const par = courseData?.hole_pars?.[focusHole - 1] ?? Math.round((tournament.course_par || 72) / 18);
+                return (
+                  <div key={p.id} className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-base truncate">
+                        {p.first_name} {p.last_name}
+                        {handicapEnabled && p.playing_handicap != null && (
+                          <span className="text-xs text-muted-foreground ml-2">HCP {p.playing_handicap}</span>
+                        )}
+                      </div>
+                      {strokeDots > 0 && (
+                        <div className="flex gap-1 mt-1">
+                          {Array.from({ length: strokeDots }, (_, i) => (
+                            <div key={i} className="w-2 h-2 rounded-full bg-primary" title="Handicap stroke" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => adjustScore(p.id, focusHole, -1)}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted flex items-center justify-center"
+                        aria-label="Decrease score"
+                      >
+                        <Minus className="h-5 w-5" />
+                      </button>
+                      <div className="w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl font-bold flex items-center justify-center">
+                        {display === "" ? <span className="text-muted-foreground/60 text-xl">{par}</span> : display}
+                      </div>
+                      <button
+                        onClick={() => adjustScore(p.id, focusHole, +1)}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center"
+                        aria-label="Increase score"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        ) : (
         <Card>
+
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>

@@ -118,6 +118,8 @@ const Donations = () => {
     if (demoGuard()) return;
     const cents = Math.round(parseFloat(offlineForm.amount || "0") * 100);
     if (!cents || cents <= 0) { toast.error("Enter a valid amount"); return; }
+    const proceed = await manualEntry.guard("donation", cents);
+    if (!proceed) return;
     setSavingOffline(true);
     const { data, error } = await (supabase as any)
       .from("tournament_offline_donations")

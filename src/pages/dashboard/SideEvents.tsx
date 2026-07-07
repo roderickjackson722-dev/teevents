@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Ticket, Tag, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 
 type CustomQuestion = {
   id: string;

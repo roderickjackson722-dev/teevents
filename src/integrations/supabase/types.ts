@@ -6863,6 +6863,47 @@ export type Database = {
           },
         ]
       }
+      tournament_tiers: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          tier_description: string | null
+          tier_name: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          tier_description?: string | null
+          tier_name: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          tier_description?: string | null
+          tier_name?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_tiers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_volunteer_roles: {
         Row: {
           created_at: string | null

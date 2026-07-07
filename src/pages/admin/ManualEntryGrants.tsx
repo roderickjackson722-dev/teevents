@@ -23,6 +23,18 @@ interface Tournament {
   manual_entries_admin_override: number;
 }
 
+interface FeeRow {
+  id: string;
+  tournament_id: string;
+  entity_type: string;
+  amount_cents: number;
+  fee_cents: number;
+  fee_payment_method: string;
+  paid: boolean;
+  paid_at: string | null;
+  created_at: string;
+}
+
 const ManualEntryGrants = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [q, setQ] = useState("");
@@ -30,6 +42,7 @@ const ManualEntryGrants = () => {
   const [extra, setExtra] = useState<number>(5);
   const [reason, setReason] = useState("");
   const [grants, setGrants] = useState<Grant[]>([]);
+  const [fees, setFees] = useState<FeeRow[]>([]);
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -43,7 +56,13 @@ const ManualEntryGrants = () => {
       .order("created_at", { ascending: false })
       .limit(50);
     setGrants((g as Grant[]) || []);
+    const { data: f } = await (supabase.from("manual_entry_fees") as any)
+      .select("id, tournament_id, entity_type, amount_cents, fee_cents, fee_payment_method, paid, paid_at, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setFees((f as FeeRow[]) || []);
   };
+
 
   useEffect(() => {
     load();
@@ -142,6 +161,49 @@ const ManualEntryGrants = () => {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-6 mt-6">
+        <h2 className="text-lg font-bold mb-3">Manual entry fees (5% over quota)</h2>
+        {fees.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">No manual entry fees recorded.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b border-border">
+                  <th className="py-2 pr-3">Tournament</th>
+                  <th className="py-2 pr-3">Type</th>
+                  <th className="py-2 pr-3">Amount</th>
+                  <th className="py-2 pr-3">Fee</th>
+                  <th className="py-2 pr-3">Method</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 pr-3">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fees.map((f) => {
+                  const t = tournaments.find((tt) => tt.id === f.tournament_id);
+                  return (
+                    <tr key={f.id} className="border-b border-border/50">
+                      <td className="py-2 pr-3">{t?.title ?? f.tournament_id.slice(0, 8) + "…"}</td>
+                      <td className="py-2 pr-3 capitalize">{f.entity_type.replace("_", " ")}</td>
+                      <td className="py-2 pr-3">${(f.amount_cents / 100).toFixed(2)}</td>
+                      <td className="py-2 pr-3 font-medium">${(f.fee_cents / 100).toFixed(2)}</td>
+                      <td className="py-2 pr-3">{f.fee_payment_method === "instant" ? "Instant" : "Deduct"}</td>
+                      <td className="py-2 pr-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${f.paid ? "bg-green-500/15 text-green-700" : "bg-amber-500/15 text-amber-700"}`}>
+                          {f.paid ? "Paid" : "Pending"}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

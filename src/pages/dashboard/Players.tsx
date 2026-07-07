@@ -415,19 +415,49 @@ const Players = () => {
   const [editGroupValue, setEditGroupValue] = useState<string>("");
   const [editingLocationNum, setEditingLocationNum] = useState<number | null>(null);
   const [editLocationValue, setEditLocationValue] = useState<string>("");
+  const [editingNotesNum, setEditingNotesNum] = useState<number | null>(null);
+  const [editNotesValue, setEditNotesValue] = useState<string>("");
   const locStorageKey = selectedTournament ? `teevents_hole_locations_${selectedTournament}` : "";
+  const labelsStorageKey = selectedTournament ? `teevents_hole_labels_${selectedTournament}` : "";
+  const notesStorageKey = selectedTournament ? `teevents_hole_notes_${selectedTournament}` : "";
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
+  const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
+  const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
   useEffect(() => {
     if (!locStorageKey) return;
     try {
       const raw = localStorage.getItem(locStorageKey);
       setHoleLocations(raw ? JSON.parse(raw) : {});
     } catch { setHoleLocations({}); }
-  }, [locStorageKey]);
+    try {
+      const raw = localStorage.getItem(labelsStorageKey);
+      setHoleLabels(raw ? JSON.parse(raw) : {});
+    } catch { setHoleLabels({}); }
+    try {
+      const raw = localStorage.getItem(notesStorageKey);
+      setHoleNotes(raw ? JSON.parse(raw) : {});
+    } catch { setHoleNotes({}); }
+  }, [locStorageKey, labelsStorageKey, notesStorageKey]);
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
   };
+  const saveLabels = (next: Record<number, string>) => {
+    setHoleLabels(next);
+    try { if (labelsStorageKey) localStorage.setItem(labelsStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+  const saveNotes = (next: Record<number, string>) => {
+    setHoleNotes(next);
+    try { if (notesStorageKey) localStorage.setItem(notesStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+  const saveHoleNote = (num: number, value: string) => {
+    const next = { ...holeNotes };
+    const v = value.trim();
+    if (v) next[num] = v; else delete next[num];
+    saveNotes(next);
+    setEditingNotesNum(null);
+  };
+
 
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);

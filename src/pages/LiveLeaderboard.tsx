@@ -137,6 +137,9 @@ export default function LiveLeaderboard() {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
+  const [flights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
+  const [regFlights, setRegFlights] = useState<Record<string, string | null>>({});
+  const [activeFlight, setActiveFlight] = useState<string>("__overall");
 
   // Load tournament
   useEffect(() => {

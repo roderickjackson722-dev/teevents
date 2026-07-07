@@ -144,6 +144,8 @@ const Players = () => {
     handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "", group_label: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [regFeeCents, setRegFeeCents] = useState(0);
+  const manualEntry = useManualEntryEnforcement(selectedTournament || null);
   useEffect(() => {
     if (!org) return;
     (supabase as any)

@@ -1187,8 +1187,9 @@ const Players = () => {
                         {editingGroupNum === group.number ? (
                           <div className="flex items-center gap-1">
                             <Input
-                              type="number"
-                              className="h-7 w-20 text-sm"
+                              type="text"
+                              className="h-7 w-28 text-sm"
+                              placeholder="e.g. 1, 1A, 1B"
                               value={editGroupValue}
                               onChange={(e) => setEditGroupValue(e.target.value)}
                               onKeyDown={(e) => {
@@ -1207,10 +1208,10 @@ const Players = () => {
                         ) : (
                           <button
                             className="text-sm font-bold text-foreground hover:text-primary inline-flex items-center gap-1"
-                            onClick={() => { setEditingGroupNum(group.number); setEditGroupValue(String(group.number)); }}
-                            title="Rename hole"
+                            onClick={() => { setEditingGroupNum(group.number); setEditGroupValue(holeLabels[group.number] || String(group.number)); }}
+                            title="Rename hole — accepts numbers (1) or labels (1A, 1B)"
                           >
-                            Hole {group.number}
+                            Hole {holeLabels[group.number] || group.number}
                             <Pencil className="h-3 w-3 opacity-60" />
                           </button>
                         )}
@@ -1241,7 +1242,35 @@ const Players = () => {
                             {holeLocations[group.number] || "Add location"}
                           </button>
                         )}
+                        {editingNotesNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              className="h-7 w-56 text-xs"
+                              placeholder="Notes (e.g. shotgun start, cart 12)"
+                              value={editNotesValue}
+                              onChange={(e) => setEditNotesValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleNote(group.number, editNotesValue);
+                                if (e.key === "Escape") setEditingNotesNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleNote(group.number, editNotesValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 max-w-[240px] truncate"
+                            onClick={() => { setEditingNotesNum(group.number); setEditNotesValue(holeNotes[group.number] || ""); }}
+                            title="Add or edit notes for this hole"
+                          >
+                            <StickyNote className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{holeNotes[group.number] || "Add note"}</span>
+                          </button>
+                        )}
                       </div>
+
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground mr-1">
                           {group.players.length}/{maxGroupSize}

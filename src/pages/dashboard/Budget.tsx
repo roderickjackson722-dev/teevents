@@ -237,12 +237,10 @@ export default function BudgetPage() {
           .select("amount_cents, status")
           .eq("tournament_id", tournamentId),
         supabase
-          .from("side_event_tickets")
-          .select("payment_status, quantity, price_cents"),
-        supabase
           .from("vendor_registrations")
           .select("amount_cents, payment_status, manually_approved")
           .eq("tournament_id", tournamentId),
+
       ]);
 
       const sums: Record<string, { count: number; total: number }> = {};

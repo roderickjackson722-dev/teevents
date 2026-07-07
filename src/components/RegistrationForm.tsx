@@ -568,6 +568,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         notes: i === 0 ? groupNotes || null : null,
         referral_code_used: referralCode,
         promoter_id: promoterId,
+        flight_id: selectedFlight,
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);

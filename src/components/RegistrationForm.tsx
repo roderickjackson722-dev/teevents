@@ -246,6 +246,23 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [promoError, setPromoError] = useState<string | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
   const [autoPromos, setAutoPromos] = useState<any[]>([]);
+  const [flights, setFlights] = useState<{ id: string; tier_name: string; tier_description: string | null }[]>([]);
+  const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
+
+  // Load competition flights for this tournament
+  useEffect(() => {
+    let cancelled = false;
+    (supabase as any)
+      .from("tournament_tiers")
+      .select("id, tier_name, tier_description")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .order("display_order", { ascending: true })
+      .then(({ data }: any) => {
+        if (!cancelled) setFlights(data || []);
+      });
+    return () => { cancelled = true; };
+  }, [tournamentId]);
 
   // Load active add-ons for this tournament
   useEffect(() => {
@@ -551,6 +568,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         notes: i === 0 ? groupNotes || null : null,
         referral_code_used: referralCode,
         promoter_id: promoterId,
+        flight_id: selectedFlight,
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);
@@ -629,6 +647,29 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                       <Info className="h-3 w-3" /> Eligibility requirements apply
                     </p>
                   )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Flight Selection */}
+        {flights.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Select Your Flight *</p>
+            <div className="grid gap-2">
+              {flights.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setSelectedFlight(f.id)}
+                  className={cn(
+                    "text-left rounded-lg border-2 p-3 transition-all",
+                    selectedFlight === f.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                  )}
+                >
+                  <div className="font-semibold text-sm text-foreground">{f.tier_name}</div>
+                  {f.tier_description && <p className="text-xs text-muted-foreground mt-1">{f.tier_description}</p>}
                 </button>
               ))}
             </div>

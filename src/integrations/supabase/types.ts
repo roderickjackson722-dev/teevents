@@ -6420,6 +6420,7 @@ export type Database = {
           dietary_restrictions: string | null
           email: string
           first_name: string
+          flight_id: string | null
           group_label: string | null
           group_number: number | null
           group_position: number | null
@@ -6455,6 +6456,7 @@ export type Database = {
           dietary_restrictions?: string | null
           email: string
           first_name: string
+          flight_id?: string | null
           group_label?: string | null
           group_number?: number | null
           group_position?: number | null
@@ -6490,6 +6492,7 @@ export type Database = {
           dietary_restrictions?: string | null
           email?: string
           first_name?: string
+          flight_id?: string | null
           group_label?: string | null
           group_number?: number | null
           group_position?: number | null
@@ -6516,6 +6519,13 @@ export type Database = {
           tournament_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_tiers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_registrations_promoter_id_fkey"
             columns: ["promoter_id"]
@@ -6856,6 +6866,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournament_surveys_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_tiers: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          tier_description: string | null
+          tier_name: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          tier_description?: string | null
+          tier_name: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          tier_description?: string | null
+          tier_name?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_tiers_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"

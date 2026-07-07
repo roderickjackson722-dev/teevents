@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";
+import FlightsManager from "@/components/dashboard/FlightsManager";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
@@ -661,9 +662,10 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-7 w-full max-w-3xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="tiers">Tiers</TabsTrigger>
+            <TabsTrigger value="flights">Flights</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
             <TabsTrigger value="addons">Add-ons</TabsTrigger>
             <TabsTrigger value="promos">Promo Codes</TabsTrigger>
@@ -1027,6 +1029,13 @@ const Registration = () => {
                   </Button>
                 </div>
               </div>
+            </motion.div>
+          </TabsContent>
+
+          {/* ── Flights Tab ── */}
+          <TabsContent value="flights">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-6">
+              <FlightsManager tournamentId={selectedTournament} />
             </motion.div>
           </TabsContent>
 

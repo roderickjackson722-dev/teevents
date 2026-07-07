@@ -137,6 +137,9 @@ export default function LiveLeaderboard() {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
+  const [flights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
+  const [regFlights, setRegFlights] = useState<Record<string, string | null>>({});
+  const [activeFlight, setActiveFlight] = useState<string>("__overall");
 
   // Load tournament
   useEffect(() => {
@@ -188,6 +191,25 @@ export default function LiveLeaderboard() {
       setScores((scRes as any).data || []);
       setSponsors((spRes.data as Sponsor[]) || []);
       setGallery((galRes.data as GalleryItem[]) || []);
+    });
+
+    // Load flights + registration→flight map (public via tier RLS on published tournaments)
+    Promise.all([
+      (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name, display_order")
+        .eq("tournament_id", tournament.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true }),
+      (supabase as any)
+        .from("tournament_registrations")
+        .select("id, flight_id")
+        .eq("tournament_id", tournament.id),
+    ]).then(([fRes, rRes]: any) => {
+      setFlights(fRes.data || []);
+      const map: Record<string, string | null> = {};
+      (rRes.data || []).forEach((r: any) => { map[r.id] = r.flight_id; });
+      setRegFlights(map);
     });
   }, [tournament]);
 
@@ -272,10 +294,15 @@ export default function LiveLeaderboard() {
     return () => clearInterval(t);
   }, [gallery.length]);
 
+  const filteredScores = useMemo(() => {
+    if (flights.length === 0 || activeFlight === "__overall") return scores;
+    return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
+  }, [scores, regFlights, flights.length, activeFlight]);
+
   const leaderboard = useMemo(() => {
     if (!tournament) return [];
-    return buildLeaderboard(scores, tournament);
-  }, [scores, tournament]);
+    return buildLeaderboard(filteredScores, tournament);
+  }, [filteredScores, tournament]);
 
   if (loading) {
     return (
@@ -305,11 +332,45 @@ export default function LiveLeaderboard() {
   const bannerSponsor = bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)] || null;
   const isStableford = getFormatById(tournament.scoring_format)?.scoring === "stableford";
 
+  const activeFlightName =
+    activeFlight === "__overall"
+      ? null
+      : flights.find((f) => f.id === activeFlight)?.tier_name || null;
+  const displayTitle = activeFlightName ? `${tournament.title} — ${activeFlightName}` : tournament.title;
+
+  const flightTabs = flights.length > 0 ? (
+    <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center">
+      {flights.map((f) => (
+        <button
+          key={f.id}
+          onClick={() => setActiveFlight(f.id)}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+            activeFlight === f.id
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted/70"
+          }`}
+        >
+          {f.tier_name}
+        </button>
+      ))}
+      <button
+        onClick={() => setActiveFlight("__overall")}
+        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+          activeFlight === "__overall"
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted text-muted-foreground hover:bg-muted/70"
+        }`}
+      >
+        Overall
+      </button>
+    </div>
+  ) : null;
+
   return (
     <>
       <LeaderboardRenderer
         design={design}
-        title={tournament.title}
+        title={displayTitle}
         rows={leaderboard.map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players }))}
         isStableford={isStableford}
         bannerSponsor={bannerSponsor}
@@ -318,11 +379,14 @@ export default function LiveLeaderboard() {
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         topNotice={
-          isPreview ? (
-            <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
-              Preview Mode — this is how your leaderboard will appear to players.
-            </div>
-          ) : null
+          <>
+            {isPreview ? (
+              <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
+                Preview Mode — this is how your leaderboard will appear to players.
+              </div>
+            ) : null}
+            {flightTabs}
+          </>
         }
       />
       <BrandingBadge show={tournament.show_branding_badge !== false} />

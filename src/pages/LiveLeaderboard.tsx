@@ -294,10 +294,15 @@ export default function LiveLeaderboard() {
     return () => clearInterval(t);
   }, [gallery.length]);
 
+  const filteredScores = useMemo(() => {
+    if (flights.length === 0 || activeFlight === "__overall") return scores;
+    return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
+  }, [scores, regFlights, flights.length, activeFlight]);
+
   const leaderboard = useMemo(() => {
     if (!tournament) return [];
-    return buildLeaderboard(scores, tournament);
-  }, [scores, tournament]);
+    return buildLeaderboard(filteredScores, tournament);
+  }, [filteredScores, tournament]);
 
   if (loading) {
     return (

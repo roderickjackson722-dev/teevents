@@ -301,6 +301,8 @@ const Players = () => {
       toast({ title: "Missing fields", description: "First name, last name, and email are required.", variant: "destructive" });
       return;
     }
+    const proceed = await manualEntry.guard("player", regFeeCents);
+    if (!proceed) return;
     setAddingPlayer(true);
     const isCash = newPlayer.payment_method === "cash" || newPlayer.payment_method === "check";
     const insertPayload: any = {

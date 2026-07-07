@@ -1,0 +1,79 @@
+name: Security Policy Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Daily at 09:00 UTC — catches drift even when no PRs are merged.
+    - cron: "0 9 * * *"
+
+jobs:
+  rls-policy-tests:
+    name: RLS policy regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Run RLS + public-RPC policy tests
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        # Runs the dedicated RLS regression file. Fails CI if anon regains
+        # SELECT on the hardened tables (auction_bids, college_tournament_players,
+        # event_resources, sponsor_registrations, vendor_registrations) or if
+        # the public sponsor/vendor RPCs start returning contact PII columns.
+        run: npx vitest run src/test/integration/rls-policies.test.ts
+
+  migration-policy-lint:
+    name: Migration policy lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard against dangerous RLS patterns in new migrations
+        # Static checks over supabase/migrations/*.sql to catch the classes of
+        # issue behind the fixed findings before they re-land:
+        #   * `USING (true)` on a SELECT policy for a table that stores PII
+        #   * public/anon SELECT policies re-added to the 5 hardened tables
+        #   * new SECURITY DEFINER functions without an explicit search_path
+        run: |
+          set -euo pipefail
+          FAIL=0
+          FILES=$(git ls-files 'supabase/migrations/*.sql' || true)
+          if [ -z "$FILES" ]; then
+            echo "No migrations to lint."; exit 0
+          fi
+
+          HARDENED='auction_bids|college_tournament_players|event_resources|sponsor_registrations|vendor_registrations'
+
+          echo "Scanning for anon/public SELECT policies on hardened tables..."
+          if grep -EnI "CREATE POLICY[^;]*ON[[:space:]]+(public\.)?($HARDENED)[^;]*FOR[[:space:]]+SELECT[^;]*TO[[:space:]]+(anon|public)" $FILES; then
+            echo "::error::New SELECT policy grants anon/public access to a hardened table."
+            FAIL=1
+          fi
+
+          echo "Scanning for SECURITY DEFINER functions missing SET search_path..."
+          # Flags any CREATE FUNCTION ... SECURITY DEFINER block that doesn't
+          # include `SET search_path` before its body terminator ($$).
+          python3 - "$@" <<'PY' $FILES || FAIL=1
+          import re, sys
+          bad = []
+          for path in sys.argv[1:]:
+              with open(path) as f:
+                  sql = f.read()
+              # crude: split on function definitions
+              for m in re.finditer(r"CREATE\s+(OR\s+REPLACE\s+)?FUNCTION[\s\S]*?\$\$[\s\S]*?\$\$", sql, re.IGNORECASE):
+                  block = m.group(0)
+                  if re.search(r"SECURITY\s+DEFINER", block, re.IGNORECASE) and not re.search(r"SET\s+search_path", block, re.IGNORECASE):
+                      bad.append((path, block.splitlines()[0][:120]))
+          if bad:
+              for p, head in bad:
+                  print(f"::error file={p}::SECURITY DEFINER function without SET search_path -> {head}")
+              sys.exit(1)
+          PY
+
+          exit $FAIL

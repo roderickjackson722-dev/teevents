@@ -17,6 +17,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
+import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
 
 interface Donation { id: string; amount_cents: number; donor_email: string | null; status: string; created_at: string; }
 interface OfflineDonation { id: string; amount_cents: number; donor_name: string | null; received_date: string; notes: string | null; }

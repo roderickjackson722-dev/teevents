@@ -174,6 +174,10 @@ export default function SideEvents() {
       hide_ticket_count: form.hide_ticket_count,
       custom_questions: (form.custom_questions || []).filter((q) => q.label.trim()),
     };
+    if (!editing) {
+      const proceed = await manualEntry.guard("side_event", payload.price_cents);
+      if (!proceed) return;
+    }
     const { error } = editing
       ? await supabase.from("side_events").update(payload).eq("id", editing.id)
       : await supabase.from("side_events").insert(payload);

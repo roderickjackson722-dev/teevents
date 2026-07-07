@@ -206,19 +206,103 @@ export default function BudgetPage() {
 
   async function syncActualsFromTransactions(bId: string, tournamentId: string) {
     try {
-      const { data: txs, error } = await supabase
-        .from("platform_transactions")
-        .select("type, amount_cents, status")
-        .eq("tournament_id", tournamentId)
-        .in("status", ["succeeded", "paid", "released", "held"]);
-      if (error) { console.error("tx sync", error); return; }
+      // Authoritative actuals: compute directly from source tables so backdated /
+      // manually-approved / offline registrations & sponsorships are reflected
+      // even if a platform_transactions row was never created for them.
+      const [txRes, regRes, tierRes, tournRes, spRes, donRes, vRes] = await Promise.all([
+        supabase
+          .from("platform_transactions")
+          .select("type, amount_cents, status")
+          .eq("tournament_id", tournamentId)
+          .in("status", ["succeeded", "paid", "released", "held"]),
+        supabase
+          .from("tournament_registrations")
+          .select("id, tier_id, payment_status")
+          .eq("tournament_id", tournamentId),
+        supabase
+          .from("tournament_registration_tiers")
+          .select("id, price_cents")
+          .eq("tournament_id", tournamentId),
+        supabase
+          .from("tournaments")
+          .select("registration_fee_cents")
+          .eq("id", tournamentId)
+          .maybeSingle(),
+        supabase
+          .from("sponsor_registrations")
+          .select("id, amount_cents, payment_status, manually_approved")
+          .eq("tournament_id", tournamentId),
+        supabase
+          .from("tournament_donations")
+          .select("amount_cents, status")
+          .eq("tournament_id", tournamentId),
+        supabase
+          .from("vendor_registrations")
+          .select("amount_cents, payment_status, manually_approved")
+          .eq("tournament_id", tournamentId),
+
+      ]);
+
       const sums: Record<string, { count: number; total: number }> = {};
-      for (const t of (txs || []) as any[]) {
-        const map = TX_TO_INCOME[t.type];
-        if (!map) continue;
-        if (!sums[t.type]) sums[t.type] = { count: 0, total: 0 };
-        sums[t.type].count += 1;
-        sums[t.type].total += Number(t.amount_cents || 0);
+      const bump = (k: string, count: number, total: number) => {
+        if (!sums[k]) sums[k] = { count: 0, total: 0 };
+        sums[k].count += count;
+        sums[k].total += total;
+      };
+
+      // --- Registrations: count paid regs; amount = tier price (fallback to base fee) ---
+      const tierPrice: Record<string, number> = {};
+      for (const t of ((tierRes.data as any[]) || [])) tierPrice[t.id] = Number(t.price_cents || 0);
+      const baseFee = Number((tournRes.data as any)?.registration_fee_cents || 0);
+      let regCount = 0;
+      let regTotal = 0;
+      for (const r of ((regRes.data as any[]) || [])) {
+        if (r.payment_status !== "paid") continue;
+        regCount += 1;
+        regTotal += r.tier_id && tierPrice[r.tier_id] != null ? tierPrice[r.tier_id] : baseFee;
+      }
+      if (regCount > 0) bump("registration", regCount, regTotal);
+
+      // --- Sponsorships: paid OR manually approved ---
+      let spCount = 0;
+      let spTotal = 0;
+      for (const s of ((spRes.data as any[]) || [])) {
+        const counted = s.payment_status === "paid" || s.manually_approved === true;
+        if (!counted) continue;
+        spCount += 1;
+        spTotal += Number(s.amount_cents || 0);
+      }
+      if (spCount > 0) bump("sponsorship", spCount, spTotal);
+
+      // --- Donations (completed only) ---
+      let donCount = 0;
+      let donTotal = 0;
+      for (const d of ((donRes.data as any[]) || [])) {
+        if (d.status !== "completed") continue;
+        donCount += 1;
+        donTotal += Number(d.amount_cents || 0);
+      }
+      if (donCount > 0) bump("donation", donCount, donTotal);
+
+      // --- Vendors: paid OR manually approved ---
+      let vCount = 0;
+      let vTotal = 0;
+      for (const v of ((vRes.data as any[]) || [])) {
+        const counted = v.payment_status === "paid" || v.manually_approved === true;
+        if (!counted) continue;
+        vCount += 1;
+        vTotal += Number(v.amount_cents || 0);
+      }
+      if (vCount > 0) bump("vendor", vCount, vTotal);
+
+      // --- Side event tickets: fall back to platform_transactions if any ---
+      const seTxs = ((txRes.data as any[]) || []).filter((t) => t.type === "side_event_ticket");
+      if (seTxs.length) {
+        bump(
+          "side_event_ticket",
+          seTxs.length,
+          seTxs.reduce((a, t) => a + Number(t.amount_cents || 0), 0),
+        );
       }
 
       const { data: existingRows } = await supabase
@@ -230,6 +314,7 @@ export default function BudgetPage() {
 
       for (const [type, sum] of Object.entries(sums)) {
         const map = TX_TO_INCOME[type];
+        if (!map) continue;
         const dollars = sum.total / 100;
         const found = existing.find(
           (r: any) => r.item_name === map.item && r.category === map.category,
@@ -252,7 +337,7 @@ export default function BudgetPage() {
               quantity_actual: sum.count,
               unit_price: 0,
               is_received: true,
-              notes: "Auto-synced from platform transactions. This row updates automatically — edit other rows freely.",
+              notes: "Auto-synced from your registrations, sponsorships, and payments. This row updates automatically — edit other rows freely.",
               sort_order: updated.length,
             })
             .select()
@@ -265,6 +350,7 @@ export default function BudgetPage() {
       console.error("syncActualsFromTransactions", e);
     }
   }
+
 
   async function loadBudgetData(bId: string) {
     const [eRes, xRes, iRes] = await Promise.all([

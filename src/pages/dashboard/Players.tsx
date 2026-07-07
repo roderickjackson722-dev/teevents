@@ -464,12 +464,27 @@ const Players = () => {
     toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
-  const handleRenameGroup = async (oldNum: number, newNumRaw: string) => {
-    const newNum = parseInt(newNumRaw);
+  const handleRenameGroup = async (oldNum: number, rawInput: string) => {
     setEditingGroupNum(null);
+    const trimmed = rawInput.trim();
+    if (!trimmed) return;
+
+    // Detect display-only label (contains any non-digit char, e.g. "1A", "1B", "9 Left")
+    const isLabelOnly = /\D/.test(trimmed);
+    if (isLabelOnly) {
+      // Store as a display label — the underlying group_number stays the same
+      const next = { ...holeLabels };
+      if (trimmed === String(oldNum)) delete next[oldNum];
+      else next[oldNum] = trimmed;
+      saveLabels(next);
+      toast({ title: `Hole labeled "${trimmed}"` });
+      return;
+    }
+
+    const newNum = parseInt(trimmed);
     if (!newNum || isNaN(newNum) || newNum === oldNum) return;
     if (newNum < 1 || newNum > 99) {
-      toast({ title: "Invalid hole number", description: "Use 1-99.", variant: "destructive" });
+      toast({ title: "Invalid hole number", description: "Use 1-99, or a label like 1A.", variant: "destructive" });
       return;
     }
     if (allGroupNumbers.includes(newNum)) {
@@ -492,8 +507,22 @@ const Players = () => {
       delete next[oldNum];
       saveLocations(next);
     }
+    // Migrate label + notes when renumbering
+    if (holeLabels[oldNum]) {
+      const next = { ...holeLabels };
+      next[newNum] = next[oldNum];
+      delete next[oldNum];
+      saveLabels(next);
+    }
+    if (holeNotes[oldNum]) {
+      const next = { ...holeNotes };
+      next[newNum] = next[oldNum];
+      delete next[oldNum];
+      saveNotes(next);
+    }
     toast({ title: `Renamed to Hole ${newNum}` });
   };
+
 
   const handleDeleteGroup = async (num: number) => {
     if (demoGuard()) return;

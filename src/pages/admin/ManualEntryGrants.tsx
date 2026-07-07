@@ -163,6 +163,49 @@ const ManualEntryGrants = () => {
           </ul>
         )}
       </div>
+
+      <div className="bg-card border border-border rounded-xl p-6 mt-6">
+        <h2 className="text-lg font-bold mb-3">Manual entry fees (5% over quota)</h2>
+        {fees.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">No manual entry fees recorded.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b border-border">
+                  <th className="py-2 pr-3">Tournament</th>
+                  <th className="py-2 pr-3">Type</th>
+                  <th className="py-2 pr-3">Amount</th>
+                  <th className="py-2 pr-3">Fee</th>
+                  <th className="py-2 pr-3">Method</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 pr-3">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fees.map((f) => {
+                  const t = tournaments.find((tt) => tt.id === f.tournament_id);
+                  return (
+                    <tr key={f.id} className="border-b border-border/50">
+                      <td className="py-2 pr-3">{t?.title ?? f.tournament_id.slice(0, 8) + "…"}</td>
+                      <td className="py-2 pr-3 capitalize">{f.entity_type.replace("_", " ")}</td>
+                      <td className="py-2 pr-3">${(f.amount_cents / 100).toFixed(2)}</td>
+                      <td className="py-2 pr-3 font-medium">${(f.fee_cents / 100).toFixed(2)}</td>
+                      <td className="py-2 pr-3">{f.fee_payment_method === "instant" ? "Instant" : "Deduct"}</td>
+                      <td className="py-2 pr-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${f.paid ? "bg-green-500/15 text-green-700" : "bg-amber-500/15 text-amber-700"}`}>
+                          {f.paid ? "Paid" : "Pending"}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

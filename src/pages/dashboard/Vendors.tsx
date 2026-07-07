@@ -89,6 +89,7 @@ export default function Vendors() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentId, setTournamentId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const manualEntry = useManualEntryEnforcement(tournamentId || null);
 
   // Form
   const [formId, setFormId] = useState<string | null>(null);

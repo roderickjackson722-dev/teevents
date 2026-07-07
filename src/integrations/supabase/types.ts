@@ -8532,6 +8532,40 @@ export type Database = {
           winner_ticket_number: number
         }[]
       }
+      get_public_sponsor_registrations: {
+        Args: { _tournament_id: string }
+        Returns: {
+          company_name: string
+          description: string
+          id: string
+          is_title_sponsor: boolean
+          logo_url: string
+          manually_approved: boolean
+          payment_status: string
+          show_on_public: boolean
+          tier_id: string
+          tournament_id: string
+          website_url: string
+        }[]
+      }
+      get_public_vendor_registrations: {
+        Args: { _tournament_id: string }
+        Returns: {
+          booth_location: string
+          business_type: string
+          company_name: string
+          description: string
+          id: string
+          logo_url: string
+          manually_approved: boolean
+          payment_status: string
+          show_on_public: boolean
+          tier_id: string
+          tournament_id: string
+          vendor_name: string
+          website_url: string
+        }[]
+      }
       get_refund_request_by_token: {
         Args: { _token: string }
         Returns: {

@@ -4868,6 +4868,60 @@ export type Database = {
         }
         Relationships: []
       }
+      score_edits: {
+        Row: {
+          created_at: string
+          edited_by: string | null
+          editor_type: string
+          hole_number: number
+          id: string
+          new_score: number | null
+          notes: string | null
+          old_score: number | null
+          registration_id: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          edited_by?: string | null
+          editor_type?: string
+          hole_number: number
+          id?: string
+          new_score?: number | null
+          notes?: string | null
+          old_score?: number | null
+          registration_id: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          edited_by?: string | null
+          editor_type?: string
+          hole_number?: number
+          id?: string
+          new_score?: number | null
+          notes?: string | null
+          old_score?: number | null
+          registration_id?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_edits_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "score_edits_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       setup_checklist_tasks: {
         Row: {
           auto_complete: boolean

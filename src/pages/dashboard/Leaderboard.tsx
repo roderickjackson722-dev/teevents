@@ -420,11 +420,22 @@ export default function Leaderboard() {
           <SelectTrigger className="w-[300px]">
             <SelectValue placeholder="Select a tournament" />
           </SelectTrigger>
-          <SelectContent>
-            {tournaments?.map((t) => (
-              <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+          <SelectContent className="max-h-[400px]">
+            {isPlatformAdmin && (
+              <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Platform Admin — All Tournaments
+              </div>
+            )}
+            {tournaments?.map((t: any) => (
+              <SelectItem key={t.id} value={t.id}>
+                {t.title}
+                {isPlatformAdmin && t.organizations?.name && (
+                  <span className="text-xs text-muted-foreground ml-2">· {t.organizations.name}</span>
+                )}
+              </SelectItem>
             ))}
           </SelectContent>
+
         </Select>
 
         {selectedTournamentData?.slug && selectedTournamentData?.site_published && (

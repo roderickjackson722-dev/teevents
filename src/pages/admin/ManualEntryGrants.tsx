@@ -23,6 +23,18 @@ interface Tournament {
   manual_entries_admin_override: number;
 }
 
+interface FeeRow {
+  id: string;
+  tournament_id: string;
+  entity_type: string;
+  amount_cents: number;
+  fee_cents: number;
+  fee_payment_method: string;
+  paid: boolean;
+  paid_at: string | null;
+  created_at: string;
+}
+
 const ManualEntryGrants = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [q, setQ] = useState("");
@@ -30,6 +42,7 @@ const ManualEntryGrants = () => {
   const [extra, setExtra] = useState<number>(5);
   const [reason, setReason] = useState("");
   const [grants, setGrants] = useState<Grant[]>([]);
+  const [fees, setFees] = useState<FeeRow[]>([]);
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -43,7 +56,13 @@ const ManualEntryGrants = () => {
       .order("created_at", { ascending: false })
       .limit(50);
     setGrants((g as Grant[]) || []);
+    const { data: f } = await (supabase.from("manual_entry_fees") as any)
+      .select("id, tournament_id, entity_type, amount_cents, fee_cents, fee_payment_method, paid, paid_at, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setFees((f as FeeRow[]) || []);
   };
+
 
   useEffect(() => {
     load();

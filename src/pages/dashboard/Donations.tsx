@@ -35,6 +35,7 @@ const Donations = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [offline, setOffline] = useState<OfflineDonation[]>([]);
   const [loading, setLoading] = useState(true);
+  const manualEntry = useManualEntryEnforcement(selectedTournament || null);
 
   // Settings
   const [headerText, setHeaderText] = useState("");

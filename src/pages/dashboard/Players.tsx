@@ -41,6 +41,7 @@ import {
   ChevronUp,
   ChevronDown,
   MapPin,
+  StickyNote,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";

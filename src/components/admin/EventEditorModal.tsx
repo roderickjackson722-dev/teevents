@@ -4,9 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -105,22 +105,23 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
     }
   };
 
+  const uploadImageToStorage = async (file: File): Promise<string> => {
+    const ext = file.name.split(".").pop();
+    const path = `public-events/${crypto.randomUUID()}.${ext}`;
+    const { error, data: up } = await supabase.storage.from("event-images").upload(path, file, { upsert: false });
+    if (error) {
+      const { error: err2, data: up2 } = await supabase.storage.from("tournament-images").upload(path, file, { upsert: false });
+      if (err2) throw err2;
+      return supabase.storage.from("tournament-images").getPublicUrl(up2.path).data.publicUrl;
+    }
+    return supabase.storage.from("event-images").getPublicUrl(up.path).data.publicUrl;
+  };
+
   const handleImage = async (file: File) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `public-events/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: false });
-      if (error) {
-        // try tournament-images bucket as a fallback if event-images doesn't exist
-        const { error: err2, data: up2 } = await supabase.storage.from("tournament-images").upload(path, file, { upsert: false });
-        if (err2) throw err2;
-        const { data: pub } = supabase.storage.from("tournament-images").getPublicUrl(up2.path);
-        updateField("hero_image_url", pub.publicUrl);
-      } else {
-        const { data: pub } = supabase.storage.from("event-images").getPublicUrl(path);
-        updateField("hero_image_url", pub.publicUrl);
-      }
+      const url = await uploadImageToStorage(file);
+      updateField("hero_image_url", url);
       toast.success("Image uploaded");
     } catch (err) {
       toast.error((err as Error).message);
@@ -259,17 +260,30 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
           </div>
 
           <div>
-            <Label>Hero Image</Label>
-            <div className="flex items-center gap-3">
+            <Label>Event Photo</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              The full image is displayed on the event page (not cropped). For best results, use a landscape photo up to ~1600px wide.
+            </p>
+            <div className="flex items-start gap-3">
               <Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImage(e.target.files[0])} disabled={uploading} />
-              {data.hero_image_url && <img src={data.hero_image_url} alt="preview" className="h-12 w-20 object-cover rounded border" />}
+              {data.hero_image_url && (
+                <img src={data.hero_image_url} alt="preview" className="max-h-40 max-w-[240px] object-contain rounded border border-border bg-muted" />
+              )}
             </div>
             <Input className="mt-2" value={data.hero_image_url} onChange={(e) => updateField("hero_image_url", e.target.value)} placeholder="Or paste image URL" />
           </div>
 
           <div>
-            <Label>Description (HTML supported)</Label>
-            <Textarea rows={6} value={data.description_html} onChange={(e) => updateField("description_html", e.target.value)} placeholder="<p>Join us for the annual charity golf tournament...</p>" />
+            <Label>About This Event</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Full formatting: headings, bold/italic/underline, fonts &amp; sizes, colors, highlights, lists, alignment, links, and inline images.
+            </p>
+            <RichTextEditor
+              value={data.description_html}
+              onChange={(html) => updateField("description_html", sanitizeHtml(html))}
+              onImageUpload={uploadImageToStorage}
+              placeholder="Write about your event..."
+            />
           </div>
 
           <div className="flex items-center gap-2">

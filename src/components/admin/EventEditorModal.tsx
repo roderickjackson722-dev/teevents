@@ -202,6 +202,35 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
     }
   };
 
+  const handlePhotosUpload = async (files: FileList) => {
+    setUploadingPhotos(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        try {
+          const url = await uploadImageToStorage(file);
+          uploaded.push(url);
+        } catch (err) {
+          toast.error(`${file.name}: ${(err as Error).message}`);
+        }
+      }
+      if (uploaded.length) {
+        setPhotos((p) => [...p, ...uploaded]);
+        toast.success(`${uploaded.length} photo${uploaded.length > 1 ? "s" : ""} added`);
+      }
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+  const removePhoto = (idx: number) => setPhotos((p) => p.filter((_, i) => i !== idx));
+  const movePhoto = (idx: number, dir: -1 | 1) => setPhotos((p) => {
+    const next = [...p];
+    const j = idx + dir;
+    if (j < 0 || j >= next.length) return p;
+    [next[idx], next[j]] = [next[j], next[idx]];
+    return next;
+  });
+
   const handleSave = async () => {
     if (!data.event_title || !data.event_date || !data.event_slug) {
       toast.error("Title, date and slug are required");

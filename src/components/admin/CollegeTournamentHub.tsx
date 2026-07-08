@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, Trash2, Calendar, MapPin, Loader2, Users, Mail, Send,
-  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image, Settings, Download, Sliders,
+  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image, Settings, Download, Sliders, Archive, ArchiveRestore,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
@@ -45,6 +45,7 @@ interface CollegeTournament {
   slug: string | null;
   hero_image_url: string | null;
   hero_overlay_opacity: number | null;
+  archived_at?: string | null;
 }
 
 interface Invitation {
@@ -144,6 +145,9 @@ const CollegeTournamentHub = () => {
 
   // Delete confirmations
   const [deleteTarget, setDeleteTarget] = useState<CollegeTournament | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [archiveTarget, setArchiveTarget] = useState<CollegeTournament | null>(null);
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   const [deleteRegTarget, setDeleteRegTarget] = useState<Registration | null>(null);
   const [deletePlayerTarget, setDeletePlayerTarget] = useState<Player | null>(null);
   const [deleteInvTarget, setDeleteInvTarget] = useState<Invitation | null>(null);
@@ -253,16 +257,49 @@ const CollegeTournamentHub = () => {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
+    if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
+      toast({ title: "Confirmation required", description: 'Type DELETE to permanently remove this tournament.', variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("college_tournaments").delete().eq("id", deleteTarget.id) as any;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Deleted", description: `"${deleteTarget.title}" has been removed.` });
+      toast({ title: "Deleted", description: `"${deleteTarget.title}" has been permanently removed.` });
       if (expandedId === deleteTarget.id) setExpandedId(null);
       fetchTournaments();
     }
     setDeleteTarget(null);
+    setDeleteConfirmText("");
   };
+
+  const archiveTournament = async () => {
+    if (!archiveTarget) return;
+    const { error } = await supabase.from("college_tournaments")
+      .update({ archived_at: new Date().toISOString() } as any)
+      .eq("id", archiveTarget.id) as any;
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Archived", description: `"${archiveTarget.title}" moved to archive.` });
+      if (expandedId === archiveTarget.id) setExpandedId(null);
+      fetchTournaments();
+    }
+    setArchiveTarget(null);
+  };
+
+  const restoreTournament = async (t: CollegeTournament) => {
+    const { error } = await supabase.from("college_tournaments")
+      .update({ archived_at: null } as any)
+      .eq("id", t.id) as any;
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Restored", description: `"${t.title}" restored to active tournaments.` });
+      fetchTournaments();
+    }
+  };
+
 
   const toggleStatus = async (t: CollegeTournament) => {
     const newStatus = t.status === "active" ? "draft" : "active";
@@ -606,21 +643,33 @@ const CollegeTournamentHub = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="font-display font-bold text-lg flex items-center gap-2">
-            <School className="h-5 w-5 text-primary" />
-            College Golf Tournament Hub
+            <School className="h-5 w-5 text-primary shrink-0" />
+            <span className="truncate">College Golf Tournament Hub</span>
           </h2>
           <p className="text-sm text-muted-foreground">Create and manage college golf tournaments with invitations, RSVP tracking, and event pages.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("active")}
+              className={`px-3 py-1.5 ${viewMode === "active" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            >Active</button>
+            <button
+              type="button"
+              onClick={() => setViewMode("archived")}
+              className={`px-3 py-1.5 border-l border-border inline-flex items-center gap-1 ${viewMode === "archived" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            ><Archive className="h-3 w-3" /> Archive</button>
+          </div>
+          <Button asChild variant="outline" size="sm">
             <a href="/admin/college-hub/bookings"><Calendar className="h-4 w-4 mr-2" />Bookings</a>
           </Button>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> New College Tournament</Button>
+              <Button size="sm"><Plus className="h-4 w-4 mr-2" /> New Tournament</Button>
             </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
@@ -653,23 +702,59 @@ const CollegeTournamentHub = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={o => { if (!o) setDeleteTarget(null); }}>
+
+      {/* Delete Confirmation (typed) */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={o => { if (!o) { setDeleteTarget(null); setDeleteConfirmText(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">Delete College Tournament</AlertDialogTitle>
-            <AlertDialogDescription>
-              Permanently delete <strong>"{deleteTarget?.title}"</strong> and all associated invitations, registrations, and tab content?
+            <AlertDialogTitle className="text-destructive">Permanently Delete Tournament</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  This will <strong>permanently delete</strong> <strong>"{deleteTarget?.title}"</strong> and all associated invitations, registrations, tabs and roster data. This cannot be undone.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Prefer to keep a copy? Cancel and use <strong>Archive</strong> instead — archived tournaments are hidden from the main list but can be restored later.
+                </p>
+                <div>
+                  <label className="text-xs font-medium block mb-1">Type <span className="font-mono text-destructive">DELETE</span> to confirm:</label>
+                  <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder="DELETE" autoFocus />
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteConfirmText.trim().toUpperCase() !== "DELETE"}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" /> Permanently Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Archive Confirmation */}
+      <AlertDialog open={!!archiveTarget} onOpenChange={o => { if (!o) setArchiveTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Tournament</AlertDialogTitle>
+            <AlertDialogDescription>
+              Move <strong>"{archiveTarget?.title}"</strong> to the archive? It will be hidden from the main list but all data is preserved and you can restore it anytime from the Archive tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={archiveTournament}>
+              <Archive className="h-4 w-4 mr-2" /> Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
 
       {/* Delete Invitation Confirmation */}
       <AlertDialog open={!!deleteInvTarget} onOpenChange={o => { if (!o) setDeleteInvTarget(null); }}>
@@ -726,60 +811,97 @@ const CollegeTournamentHub = () => {
       </AlertDialog>
 
       {/* Tournament List */}
-      {tournaments.length === 0 ? (
-        <div className="text-center py-16 bg-card rounded-lg border border-border">
-          <School className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-          <h3 className="text-lg font-display font-bold mb-2">No college tournaments yet</h3>
-          <p className="text-muted-foreground mb-6">Create your first college golf tournament to get started.</p>
-          <Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-2" /> Create Tournament</Button>
-        </div>
-      ) : (
+      {(() => {
+        const visibleTournaments = tournaments.filter(t =>
+          viewMode === "archived" ? !!t.archived_at : !t.archived_at
+        );
+        if (visibleTournaments.length === 0) {
+          return (
+            <div className="text-center py-16 bg-card rounded-lg border border-border">
+              {viewMode === "archived" ? (
+                <>
+                  <Archive className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <h3 className="text-lg font-display font-bold mb-2">No archived tournaments</h3>
+                  <p className="text-muted-foreground mb-6">Archived tournaments will appear here and can be restored anytime.</p>
+                  <Button variant="outline" onClick={() => setViewMode("active")}>Back to Active</Button>
+                </>
+              ) : (
+                <>
+                  <School className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <h3 className="text-lg font-display font-bold mb-2">No college tournaments yet</h3>
+                  <p className="text-muted-foreground mb-6">Create your first college golf tournament to get started.</p>
+                  <Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-2" /> Create Tournament</Button>
+                </>
+              )}
+            </div>
+          );
+        }
+        return (
         <div className="space-y-3">
-          {tournaments.map(t => {
+          {visibleTournaments.map(t => {
             const isExpanded = expandedId === t.id;
+            const isArchived = !!t.archived_at;
             return (
-              <div key={t.id} className="bg-card rounded-lg border border-border overflow-hidden">
+              <div key={t.id} className={`bg-card rounded-lg border overflow-hidden ${isArchived ? "border-dashed border-muted-foreground/30 opacity-90" : "border-border"}`}>
                 {/* Tournament Header */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-wrap">
+                <div className="p-3 sm:p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        t.status === "active" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                      }`}>{t.status}</span>
-                      <h3 className="font-display font-semibold text-lg">{t.title}</h3>
-                      {t.course_name && <span className="text-xs text-muted-foreground">{t.course_name}</span>}
-                      {t.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{t.location}</span>}
+                        isArchived
+                          ? "bg-muted text-muted-foreground"
+                          : t.status === "active" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                      }`}>{isArchived ? "archived" : t.status}</span>
+                      <h3 className="font-display font-semibold text-base sm:text-lg break-words">{t.title}</h3>
+                      {t.course_name && <span className="text-xs text-muted-foreground w-full sm:w-auto">{t.course_name}</span>}
+                      {t.location && <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{t.location}</span>}
                       {t.start_date && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {new Date(t.start_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           {t.end_date && t.end_date !== t.start_date && ` – ${new Date(t.end_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
                         </span>
                       )}
-                      {t.registration_open && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">Registration Open</span>}
+                      {!isArchived && t.registration_open && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">Registration Open</span>}
+                      {isArchived && t.archived_at && (
+                        <span className="text-xs text-muted-foreground italic">Archived {new Date(t.archived_at).toLocaleDateString()}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      {t.status === "active" && (t as any).slug && (
+                    <div className="flex flex-wrap items-center gap-2 lg:justify-end lg:shrink-0">
+                      {!isArchived && t.status === "active" && (t as any).slug && (
                         <a href={`/college/${(t as any).slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80">
                           <Globe className="h-3.5 w-3.5" /> View Page
                         </a>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => toggleStatus(t)}>
-                        {t.status === "active" ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                        {t.status === "active" ? "Unpublish" : "Publish"}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => toggleRegistration(t)}>
-                        {t.registration_open ? "Close Reg" : "Open Reg"}
-                      </Button>
-                      <button onClick={() => setExpandedId(isExpanded ? null : t.id)} className="text-muted-foreground hover:text-foreground">
-                        {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                      </button>
-                      <button onClick={() => setDeleteTarget(t)} className="text-muted-foreground hover:text-destructive">
+                      {!isArchived && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => toggleStatus(t)}>
+                            {t.status === "active" ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+                            {t.status === "active" ? "Unpublish" : "Publish"}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => toggleRegistration(t)}>
+                            {t.registration_open ? "Close Reg" : "Open Reg"}
+                          </Button>
+                          <button onClick={() => setExpandedId(isExpanded ? null : t.id)} className="text-muted-foreground hover:text-foreground p-1" aria-label={isExpanded ? "Collapse" : "Expand"}>
+                            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                          </button>
+                          <button onClick={() => setArchiveTarget(t)} className="text-muted-foreground hover:text-foreground p-1" aria-label="Archive" title="Archive">
+                            <Archive className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      {isArchived && (
+                        <Button size="sm" variant="outline" onClick={() => restoreTournament(t)}>
+                          <ArchiveRestore className="h-3.5 w-3.5 mr-1" /> Restore
+                        </Button>
+                      )}
+                      <button onClick={() => setDeleteTarget(t)} className="text-muted-foreground hover:text-destructive p-1" aria-label="Delete permanently" title="Delete permanently">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 </div>
+
 
                 {/* Expanded Content */}
                 {isExpanded && (
@@ -1400,7 +1522,8 @@ const CollegeTournamentHub = () => {
             );
           })}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

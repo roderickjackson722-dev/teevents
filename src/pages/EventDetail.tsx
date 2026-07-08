@@ -211,6 +211,16 @@ const EventDetail = () => {
               )}
             </div>
 
+            {event.schedule_html && (
+              <div className="bg-card rounded-lg border border-border p-6 mt-6 md:col-start-1">
+                <h2 className="font-display text-xl font-bold mb-3">Schedule of Events</h2>
+                <div
+                  className="prose prose-base max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md"
+                  dangerouslySetInnerHTML={{ __html: event.schedule_html }}
+                />
+              </div>
+            )}
+
             <div className="bg-card rounded-lg border border-border p-6 h-fit md:sticky md:top-24">
               <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Ticket className="h-5 w-5" /> Get Your Tickets</h2>
 

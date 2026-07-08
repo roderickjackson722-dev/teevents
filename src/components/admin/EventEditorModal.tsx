@@ -164,6 +164,10 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const removeTier = (idx: number) => setTiers((p) => p.filter((_, i) => i !== idx));
   const updateTier = (idx: number, patch: Partial<Tier>) => setTiers((p) => p.map((t, i) => i === idx ? { ...t, ...patch } : t));
 
+  const addQuestion = () => setQuestions((p) => [...p, { label: "", type: "text", required: false }]);
+  const removeQuestion = (idx: number) => setQuestions((p) => p.filter((_, i) => i !== idx));
+  const updateQuestion = (idx: number, patch: Partial<Question>) => setQuestions((p) => p.map((q, i) => i === idx ? { ...q, ...patch } : q));
+
   const handleSave = async () => {
     if (!data.event_title || !data.event_date || !data.event_slug) {
       toast.error("Title, date and slug are required");
@@ -171,7 +175,11 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
     }
     setSaving(true);
     try {
-      const payload = {
+      const cleanedQuestions = questions
+        .filter((q) => q.label.trim())
+        .map((q) => ({ label: q.label.trim(), type: q.type, required: !!q.required, options: q.type === "select" ? (q.options || "") : undefined }));
+
+      const payload: any = {
         event_title: data.event_title,
         event_slug: slugify(data.event_slug),
         event_date: data.event_date,
@@ -182,15 +190,18 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         description_html: data.description_html || null,
         status: data.status,
         featured: data.featured,
+        purchase_questions: cleanedQuestions,
+        confirmation_email_subject: data.confirmation_email_subject || null,
+        confirmation_email_body: data.confirmation_email_body || null,
       };
 
       let eventId = data.id;
       if (eventId) {
-        const { error } = await supabase.from("public_events").update(payload).eq("id", eventId);
+        const { error } = await (supabase as any).from("public_events").update(payload).eq("id", eventId);
         if (error) throw error;
       } else {
         const { data: { session } } = await supabase.auth.getSession();
-        const { data: inserted, error } = await supabase
+        const { data: inserted, error } = await (supabase as any)
           .from("public_events")
           .insert({ ...payload, created_by: session?.user.id })
           .select("id")
@@ -198,6 +209,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         if (error) throw error;
         eventId = inserted.id;
       }
+
 
       // Sync tiers
       const { data: existingTiers } = await supabase

@@ -4523,6 +4523,7 @@ export type Database = {
           location: string | null
           purchase_questions: Json
           schedule_html: string | null
+          sponsors: Json
           status: string
           tournament_id: string | null
           updated_at: string
@@ -4544,6 +4545,7 @@ export type Database = {
           location?: string | null
           purchase_questions?: Json
           schedule_html?: string | null
+          sponsors?: Json
           status?: string
           tournament_id?: string | null
           updated_at?: string
@@ -4565,6 +4567,7 @@ export type Database = {
           location?: string | null
           purchase_questions?: Json
           schedule_html?: string | null
+          sponsors?: Json
           status?: string
           tournament_id?: string | null
           updated_at?: string

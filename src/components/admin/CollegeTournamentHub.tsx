@@ -1522,7 +1522,8 @@ const CollegeTournamentHub = () => {
             );
           })}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

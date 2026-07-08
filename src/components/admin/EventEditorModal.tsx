@@ -106,22 +106,23 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
     }
   };
 
+  const uploadImageToStorage = async (file: File): Promise<string> => {
+    const ext = file.name.split(".").pop();
+    const path = `public-events/${crypto.randomUUID()}.${ext}`;
+    const { error, data: up } = await supabase.storage.from("event-images").upload(path, file, { upsert: false });
+    if (error) {
+      const { error: err2, data: up2 } = await supabase.storage.from("tournament-images").upload(path, file, { upsert: false });
+      if (err2) throw err2;
+      return supabase.storage.from("tournament-images").getPublicUrl(up2.path).data.publicUrl;
+    }
+    return supabase.storage.from("event-images").getPublicUrl(up.path).data.publicUrl;
+  };
+
   const handleImage = async (file: File) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `public-events/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: false });
-      if (error) {
-        // try tournament-images bucket as a fallback if event-images doesn't exist
-        const { error: err2, data: up2 } = await supabase.storage.from("tournament-images").upload(path, file, { upsert: false });
-        if (err2) throw err2;
-        const { data: pub } = supabase.storage.from("tournament-images").getPublicUrl(up2.path);
-        updateField("hero_image_url", pub.publicUrl);
-      } else {
-        const { data: pub } = supabase.storage.from("event-images").getPublicUrl(path);
-        updateField("hero_image_url", pub.publicUrl);
-      }
+      const url = await uploadImageToStorage(file);
+      updateField("hero_image_url", url);
       toast.success("Image uploaded");
     } catch (err) {
       toast.error((err as Error).message);

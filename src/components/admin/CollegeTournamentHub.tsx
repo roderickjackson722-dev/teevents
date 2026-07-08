@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, Trash2, Calendar, MapPin, Loader2, Users, Mail, Send,
-  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image, Settings, Download, Sliders,
+  FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image, Settings, Download, Sliders, Archive, ArchiveRestore,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 

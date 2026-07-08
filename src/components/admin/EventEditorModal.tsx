@@ -181,6 +181,21 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const removeQuestion = (idx: number) => setQuestions((p) => p.filter((_, i) => i !== idx));
   const updateQuestion = (idx: number, patch: Partial<Question>) => setQuestions((p) => p.map((q, i) => i === idx ? { ...q, ...patch } : q));
 
+  const addSponsor = () => setSponsors((p) => [...p, { name: "", logo_url: "", website_url: "" }]);
+  const removeSponsor = (idx: number) => setSponsors((p) => p.filter((_, i) => i !== idx));
+  const updateSponsor = (idx: number, patch: Partial<Sponsor>) => setSponsors((p) => p.map((s, i) => i === idx ? { ...s, ...patch } : s));
+  const handleSponsorLogo = async (idx: number, file: File) => {
+    setUploadingSponsor(idx);
+    try {
+      const url = await uploadImageToStorage(file);
+      updateSponsor(idx, { logo_url: url });
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploadingSponsor(null);
+    }
+  };
+
   const handleSave = async () => {
     if (!data.event_title || !data.event_date || !data.event_slug) {
       toast.error("Title, date and slug are required");

@@ -57,6 +57,8 @@ const ManageEvents = () => {
   const [creating, setCreating] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [salesFor, setSalesFor] = useState<EventRow | null>(null);
+
 
   const load = async () => {
     setLoading(true);

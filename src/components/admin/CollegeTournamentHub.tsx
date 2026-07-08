@@ -145,6 +145,9 @@ const CollegeTournamentHub = () => {
 
   // Delete confirmations
   const [deleteTarget, setDeleteTarget] = useState<CollegeTournament | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [archiveTarget, setArchiveTarget] = useState<CollegeTournament | null>(null);
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   const [deleteRegTarget, setDeleteRegTarget] = useState<Registration | null>(null);
   const [deletePlayerTarget, setDeletePlayerTarget] = useState<Player | null>(null);
   const [deleteInvTarget, setDeleteInvTarget] = useState<Invitation | null>(null);

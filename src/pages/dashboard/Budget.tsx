@@ -1035,18 +1035,18 @@ function IncomeSection({
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
         </Button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[820px]">
+      <div className="overflow-x-auto -mx-px">
+        <table className="w-full text-sm min-w-[1100px]">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>
-              <th className="text-left p-2 font-medium w-1/4">Item</th>
-              <th className="text-right p-2 font-medium w-20">Est. #</th>
-              <th className="text-right p-2 font-medium w-20">Actual #</th>
-              <th className="text-right p-2 font-medium w-24">Price</th>
-              <th className="text-right p-2 font-medium w-28">Est. Income</th>
-              <th className="text-right p-2 font-medium w-28">Actual Income</th>
+              <th className="text-left p-2 font-medium min-w-[220px]">Item</th>
+              <th className="text-right p-2 font-medium w-24">Est. #</th>
+              <th className="text-right p-2 font-medium w-24">Actual #</th>
+              <th className="text-right p-2 font-medium w-28">Price</th>
+              <th className="text-right p-2 font-medium w-32">Est. Income</th>
+              <th className="text-right p-2 font-medium w-32">Actual Income</th>
               <th className="text-center p-2 font-medium w-20">Received</th>
-              <th className="text-left p-2 font-medium">Notes</th>
+              <th className="text-left p-2 font-medium min-w-[180px]">Notes</th>
               <th className="no-print w-10"></th>
             </tr>
           </thead>

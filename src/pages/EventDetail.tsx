@@ -21,6 +21,8 @@ type Tier = {
   display_order: number;
 };
 
+type Question = { label: string; type: "text" | "email" | "phone" | "select"; required: boolean; options?: string };
+
 type EventDetailRow = {
   id: string;
   event_title: string;
@@ -32,8 +34,10 @@ type EventDetailRow = {
   hero_image_url: string | null;
   description_html: string | null;
   status: string;
+  purchase_questions: Question[] | null;
   event_ticket_tiers: Tier[];
 };
+
 
 const formatTime = (t: string | null) => {
   if (!t) return "";
@@ -53,14 +57,15 @@ const EventDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("public_events")
-        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, status, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
+        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, status, purchase_questions, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
         .eq("event_slug", slug)
         .maybeSingle();
       const evt = data as EventDetailRow | null;
@@ -72,6 +77,7 @@ const EventDetail = () => {
       setLoading(false);
     })();
   }, [slug]);
+
 
   // Verify purchase on redirect
   useEffect(() => {
@@ -93,32 +99,60 @@ const EventDetail = () => {
   const total = tier ? tier.price_cents * quantity : 0;
   const remaining = tier?.max_quantity == null ? null : (tier.max_quantity - tier.sold_quantity);
 
+  const questions = event?.purchase_questions || [];
+
   const handlePurchase = async () => {
     if (!event || !tier) return;
     if (!name.trim() || !email.trim()) {
       toast.error("Please enter your name and email");
       return;
     }
+    for (const q of questions) {
+      if (q.required && !(answers[q.label] || "").trim()) {
+        toast.error(`Please answer: ${q.label}`);
+        return;
+      }
+    }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-event-ticket-checkout", {
-        body: {
-          event_id: event.id,
-          tier_id: tier.id,
-          quantity,
-          buyer_name: name.trim(),
-          buyer_email: email.trim(),
-        },
+      const isFree = tier.price_cents === 0;
+      const fnName = isFree ? "verify-event-ticket" : "create-event-ticket-checkout";
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body: isFree
+          ? {
+              free_registration: true,
+              event_id: event.id,
+              tier_id: tier.id,
+              quantity,
+              buyer_name: name.trim(),
+              buyer_email: email.trim(),
+              buyer_answers: answers,
+            }
+          : {
+              event_id: event.id,
+              tier_id: tier.id,
+              quantity,
+              buyer_name: name.trim(),
+              buyer_email: email.trim(),
+              buyer_answers: answers,
+            },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-      else throw new Error("Failed to create checkout session");
+      if (isFree) {
+        toast.success("Registration confirmed! Check your email.");
+        setName(""); setEmail(""); setAnswers({}); setQuantity(1);
+      } else if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Failed to create checkout session");
+      }
     } catch (err) {
-      toast.error((err as Error).message || "Could not start checkout");
+      toast.error((err as Error).message || "Could not complete registration");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   if (loading) return <Layout><div className="container py-16 text-center text-muted-foreground">Loading event...</div></Layout>;
   if (!event) return <Layout><div className="container py-16 text-center">Event not found. <Link to="/events" className="text-secondary underline">Back to events</Link></div></Layout>;
@@ -223,6 +257,35 @@ const EventDetail = () => {
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
                   </div>
+
+                  {questions.length > 0 && (
+                    <div className="pt-2 border-t border-border space-y-3">
+                      {questions.map((q, idx) => (
+                        <div key={idx}>
+                          <Label>{q.label}{q.required && <span className="text-destructive ml-0.5">*</span>}</Label>
+                          {q.type === "select" ? (
+                            <select
+                              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                              value={answers[q.label] || ""}
+                              onChange={(e) => setAnswers((p) => ({ ...p, [q.label]: e.target.value }))}
+                            >
+                              <option value="">Select…</option>
+                              {(q.options || "").split(",").map((o) => o.trim()).filter(Boolean).map((o) => (
+                                <option key={o} value={o}>{o}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <Input
+                              type={q.type === "email" ? "email" : q.type === "phone" ? "tel" : "text"}
+                              value={answers[q.label] || ""}
+                              onChange={(e) => setAnswers((p) => ({ ...p, [q.label]: e.target.value }))}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
 
                   <div className="flex items-center justify-between pt-2 border-t border-border">
                     <span className="text-sm text-muted-foreground">Total</span>

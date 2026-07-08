@@ -2399,6 +2399,7 @@ export type Database = {
       }
       event_ticket_purchases: {
         Row: {
+          buyer_answers: Json
           buyer_email: string | null
           buyer_name: string | null
           created_at: string
@@ -2413,6 +2414,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          buyer_answers?: Json
           buyer_email?: string | null
           buyer_name?: string | null
           created_at?: string
@@ -2427,6 +2429,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          buyer_answers?: Json
           buyer_email?: string | null
           buyer_name?: string | null
           created_at?: string
@@ -4505,6 +4508,8 @@ export type Database = {
       public_events: {
         Row: {
           address: string | null
+          confirmation_email_body: string | null
+          confirmation_email_subject: string | null
           created_at: string
           created_by: string | null
           description_html: string | null
@@ -4516,12 +4521,15 @@ export type Database = {
           hero_image_url: string | null
           id: string
           location: string | null
+          purchase_questions: Json
           status: string
           tournament_id: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          confirmation_email_body?: string | null
+          confirmation_email_subject?: string | null
           created_at?: string
           created_by?: string | null
           description_html?: string | null
@@ -4533,12 +4541,15 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           location?: string | null
+          purchase_questions?: Json
           status?: string
           tournament_id?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          confirmation_email_body?: string | null
+          confirmation_email_subject?: string | null
           created_at?: string
           created_by?: string | null
           description_html?: string | null
@@ -4550,6 +4561,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           location?: string | null
+          purchase_questions?: Json
           status?: string
           tournament_id?: string | null
           updated_at?: string

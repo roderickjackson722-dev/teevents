@@ -20,6 +20,13 @@ type Tier = {
   sold_quantity?: number;
 };
 
+type Question = {
+  label: string;
+  type: "text" | "email" | "phone" | "select";
+  required: boolean;
+  options?: string;
+};
+
 type EventInput = {
   id?: string;
   event_title: string;
@@ -32,6 +39,8 @@ type EventInput = {
   description_html: string;
   status: string;
   featured: boolean;
+  confirmation_email_subject: string;
+  confirmation_email_body: string;
 };
 
 const slugify = (s: string) =>
@@ -40,6 +49,19 @@ const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+
+const DEFAULT_EMAIL_BODY = `Hi {{buyer_name}},
+
+Thanks for your purchase! Your registration for {{event_title}} is confirmed.
+
+Tickets: {{quantity}} × {{tier_name}}
+Total: {{total}}
+When: {{event_date}}{{event_time_line}}
+Where: {{event_location}}
+
+We look forward to seeing you there.
+
+— The TeeVents Team`;
 
 const empty: EventInput = {
   event_title: "",
@@ -52,6 +74,8 @@ const empty: EventInput = {
   description_html: "",
   status: "draft",
   featured: false,
+  confirmation_email_subject: "Your ticket for {{event_title}}",
+  confirmation_email_body: DEFAULT_EMAIL_BODY,
 };
 
 interface Props {
@@ -63,13 +87,14 @@ interface Props {
 const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const [data, setData] = useState<EventInput>(empty);
   const [tiers, setTiers] = useState<Tier[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     (async () => {
       if (event?.id) {
-        const { data: full } = await supabase
+        const { data: full } = await (supabase as any)
           .from("public_events")
           .select("*, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
           .eq("id", event.id)
@@ -87,16 +112,21 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
             description_html: full.description_html || "",
             status: full.status,
             featured: full.featured,
+            confirmation_email_subject: full.confirmation_email_subject || empty.confirmation_email_subject,
+            confirmation_email_body: full.confirmation_email_body || empty.confirmation_email_body,
           });
           const sorted = ((full as any).event_ticket_tiers || []).sort((a: any, b: any) => a.display_order - b.display_order);
           setTiers(sorted);
+          setQuestions(Array.isArray(full.purchase_questions) ? full.purchase_questions : []);
         }
       } else {
         setData(empty);
         setTiers([{ tier_name: "General", description: "", price_cents: 0, max_quantity: null, display_order: 0 }]);
+        setQuestions([]);
       }
     })();
   }, [event]);
+
 
   const updateField = <K extends keyof EventInput>(k: K, v: EventInput[K]) => {
     setData((p) => ({ ...p, [k]: v }));
@@ -134,6 +164,10 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const removeTier = (idx: number) => setTiers((p) => p.filter((_, i) => i !== idx));
   const updateTier = (idx: number, patch: Partial<Tier>) => setTiers((p) => p.map((t, i) => i === idx ? { ...t, ...patch } : t));
 
+  const addQuestion = () => setQuestions((p) => [...p, { label: "", type: "text", required: false }]);
+  const removeQuestion = (idx: number) => setQuestions((p) => p.filter((_, i) => i !== idx));
+  const updateQuestion = (idx: number, patch: Partial<Question>) => setQuestions((p) => p.map((q, i) => i === idx ? { ...q, ...patch } : q));
+
   const handleSave = async () => {
     if (!data.event_title || !data.event_date || !data.event_slug) {
       toast.error("Title, date and slug are required");
@@ -141,7 +175,11 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
     }
     setSaving(true);
     try {
-      const payload = {
+      const cleanedQuestions = questions
+        .filter((q) => q.label.trim())
+        .map((q) => ({ label: q.label.trim(), type: q.type, required: !!q.required, options: q.type === "select" ? (q.options || "") : undefined }));
+
+      const payload: any = {
         event_title: data.event_title,
         event_slug: slugify(data.event_slug),
         event_date: data.event_date,
@@ -152,15 +190,18 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         description_html: data.description_html || null,
         status: data.status,
         featured: data.featured,
+        purchase_questions: cleanedQuestions,
+        confirmation_email_subject: data.confirmation_email_subject || null,
+        confirmation_email_body: data.confirmation_email_body || null,
       };
 
       let eventId = data.id;
       if (eventId) {
-        const { error } = await supabase.from("public_events").update(payload).eq("id", eventId);
+        const { error } = await (supabase as any).from("public_events").update(payload).eq("id", eventId);
         if (error) throw error;
       } else {
         const { data: { session } } = await supabase.auth.getSession();
-        const { data: inserted, error } = await supabase
+        const { data: inserted, error } = await (supabase as any)
           .from("public_events")
           .insert({ ...payload, created_by: session?.user.id })
           .select("id")
@@ -168,6 +209,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         if (error) throw error;
         eventId = inserted.id;
       }
+
 
       // Sync tiers
       const { data: existingTiers } = await supabase
@@ -312,7 +354,67 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
               {tiers.length === 0 && <p className="text-sm text-muted-foreground">No ticket tiers yet.</p>}
             </div>
           </div>
+
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Label>Purchase Questions</Label>
+              <Button size="sm" variant="outline" onClick={addQuestion}><Plus className="h-3 w-3 mr-1" /> Add Question</Button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">Extra questions asked at checkout (e.g. shirt size, dietary preferences). Answers are saved with the purchase.</p>
+            <div className="space-y-2">
+              {questions.map((q, i) => (
+                <div key={i} className="grid grid-cols-12 gap-2 items-start bg-muted/40 p-2 rounded">
+                  <Input className="col-span-5" placeholder="Question" value={q.label} onChange={(e) => updateQuestion(i, { label: e.target.value })} />
+                  <Select value={q.type} onValueChange={(v) => updateQuestion(i, { type: v as Question["type"] })}>
+                    <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Text</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="phone">Phone</SelectItem>
+                      <SelectItem value="select">Dropdown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <label className="col-span-3 flex items-center gap-2 text-sm">
+                    <Switch checked={q.required} onCheckedChange={(v) => updateQuestion(i, { required: v })} />
+                    Required
+                  </label>
+                  <Button className="col-span-1" size="icon" variant="ghost" onClick={() => removeQuestion(i)}><Trash2 className="h-4 w-4" /></Button>
+                  {q.type === "select" && (
+                    <Input className="col-span-12" placeholder="Options (comma separated, e.g. Small, Medium, Large)" value={q.options || ""} onChange={(e) => updateQuestion(i, { options: e.target.value })} />
+                  )}
+                </div>
+              ))}
+              {questions.length === 0 && <p className="text-sm text-muted-foreground">No custom questions.</p>}
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <Label>Confirmation Email</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Sent to the buyer after successful checkout. Placeholders:
+              <code className="mx-1 px-1 bg-muted rounded">{"{{buyer_name}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{event_title}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{event_date}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{event_location}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{quantity}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{tier_name}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{total}}"}</code>
+            </p>
+            <Input
+              className="mb-2"
+              placeholder="Subject line"
+              value={data.confirmation_email_subject}
+              onChange={(e) => updateField("confirmation_email_subject", e.target.value)}
+            />
+            <textarea
+              className="w-full min-h-[220px] rounded-md border border-border bg-background p-3 text-sm font-mono"
+              value={data.confirmation_email_body}
+              onChange={(e) => updateField("confirmation_email_body", e.target.value)}
+              placeholder="Email body..."
+            />
+          </div>
         </div>
+
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>

@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Calendar, MapPin, Ticket, ArrowLeft, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, MapPin, Ticket, ArrowLeft, ExternalLink, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { formatTournamentDate } from "@/lib/formatDate";
+import EventSalesDialog from "@/components/admin/EventSalesDialog";
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import EventEditorModal from "@/components/admin/EventEditorModal";
@@ -55,6 +57,8 @@ const ManageEvents = () => {
   const [creating, setCreating] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [salesFor, setSalesFor] = useState<EventRow | null>(null);
+
 
   const load = async () => {
     setLoading(true);
@@ -127,8 +131,10 @@ const ManageEvents = () => {
                       <span className="inline-flex items-center gap-1"><Ticket className="h-3.5 w-3.5" /> {priceRange(e.event_ticket_tiers)} · {soldSummary(e.event_ticket_tiers)}</span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" size="sm" onClick={() => setSalesFor(e)}><BarChart3 className="h-4 w-4 mr-1" /> Sales</Button>
                     <Button variant="outline" size="sm" onClick={() => setEditing(e)}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" size="sm" className="text-destructive"><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
@@ -164,7 +170,16 @@ const ManageEvents = () => {
           onSaved={() => { setCreating(false); setEditing(null); load(); }}
         />
       )}
+
+      {salesFor && (
+        <EventSalesDialog
+          eventId={salesFor.id}
+          eventTitle={salesFor.event_title}
+          onClose={() => setSalesFor(null)}
+        />
+      )}
     </div>
+
   );
 };
 

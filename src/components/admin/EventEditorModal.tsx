@@ -20,6 +20,13 @@ type Tier = {
   sold_quantity?: number;
 };
 
+type Question = {
+  label: string;
+  type: "text" | "email" | "phone" | "select";
+  required: boolean;
+  options?: string;
+};
+
 type EventInput = {
   id?: string;
   event_title: string;
@@ -32,6 +39,8 @@ type EventInput = {
   description_html: string;
   status: string;
   featured: boolean;
+  confirmation_email_subject: string;
+  confirmation_email_body: string;
 };
 
 const slugify = (s: string) =>
@@ -40,6 +49,19 @@ const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+
+const DEFAULT_EMAIL_BODY = `Hi {{buyer_name}},
+
+Thanks for your purchase! Your registration for {{event_title}} is confirmed.
+
+Tickets: {{quantity}} × {{tier_name}}
+Total: {{total}}
+When: {{event_date}}{{event_time_line}}
+Where: {{event_location}}
+
+We look forward to seeing you there.
+
+— The TeeVents Team`;
 
 const empty: EventInput = {
   event_title: "",
@@ -52,6 +74,8 @@ const empty: EventInput = {
   description_html: "",
   status: "draft",
   featured: false,
+  confirmation_email_subject: "Your ticket for {{event_title}}",
+  confirmation_email_body: DEFAULT_EMAIL_BODY,
 };
 
 interface Props {

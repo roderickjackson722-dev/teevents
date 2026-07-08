@@ -21,6 +21,8 @@ type Tier = {
   display_order: number;
 };
 
+type Question = { label: string; type: "text" | "email" | "phone" | "select"; required: boolean; options?: string };
+
 type EventDetailRow = {
   id: string;
   event_title: string;
@@ -32,8 +34,10 @@ type EventDetailRow = {
   hero_image_url: string | null;
   description_html: string | null;
   status: string;
+  purchase_questions: Question[] | null;
   event_ticket_tiers: Tier[];
 };
+
 
 const formatTime = (t: string | null) => {
   if (!t) return "";

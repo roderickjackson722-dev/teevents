@@ -187,9 +187,10 @@ const EventDetail = () => {
             )}
             <div className="p-6 md:p-8">
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">{event.event_title}</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-foreground leading-tight break-words hyphens-auto min-w-0 flex-1">{event.event_title}</h1>
                 {soldOut && <Badge variant="destructive">Sold Out</Badge>}
               </div>
+
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {formatTournamentDate(event.event_date, { year: "numeric", month: "long", day: "numeric" })}{event.event_time && ` · ${formatTime(event.event_time)}`}</span>
                 {event.location && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {event.location}</span>}

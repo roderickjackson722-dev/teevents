@@ -99,32 +99,60 @@ const EventDetail = () => {
   const total = tier ? tier.price_cents * quantity : 0;
   const remaining = tier?.max_quantity == null ? null : (tier.max_quantity - tier.sold_quantity);
 
+  const questions = event?.purchase_questions || [];
+
   const handlePurchase = async () => {
     if (!event || !tier) return;
     if (!name.trim() || !email.trim()) {
       toast.error("Please enter your name and email");
       return;
     }
+    for (const q of questions) {
+      if (q.required && !(answers[q.label] || "").trim()) {
+        toast.error(`Please answer: ${q.label}`);
+        return;
+      }
+    }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-event-ticket-checkout", {
-        body: {
-          event_id: event.id,
-          tier_id: tier.id,
-          quantity,
-          buyer_name: name.trim(),
-          buyer_email: email.trim(),
-        },
+      const isFree = tier.price_cents === 0;
+      const fnName = isFree ? "verify-event-ticket" : "create-event-ticket-checkout";
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body: isFree
+          ? {
+              free_registration: true,
+              event_id: event.id,
+              tier_id: tier.id,
+              quantity,
+              buyer_name: name.trim(),
+              buyer_email: email.trim(),
+              buyer_answers: answers,
+            }
+          : {
+              event_id: event.id,
+              tier_id: tier.id,
+              quantity,
+              buyer_name: name.trim(),
+              buyer_email: email.trim(),
+              buyer_answers: answers,
+            },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-      else throw new Error("Failed to create checkout session");
+      if (isFree) {
+        toast.success("Registration confirmed! Check your email.");
+        setName(""); setEmail(""); setAnswers({}); setQuantity(1);
+      } else if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Failed to create checkout session");
+      }
     } catch (err) {
-      toast.error((err as Error).message || "Could not start checkout");
+      toast.error((err as Error).message || "Could not complete registration");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   if (loading) return <Layout><div className="container py-16 text-center text-muted-foreground">Loading event...</div></Layout>;
   if (!event) return <Layout><div className="container py-16 text-center">Event not found. <Link to="/events" className="text-secondary underline">Back to events</Link></div></Layout>;

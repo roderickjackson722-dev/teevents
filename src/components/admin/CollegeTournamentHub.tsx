@@ -257,16 +257,49 @@ const CollegeTournamentHub = () => {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
+    if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
+      toast({ title: "Confirmation required", description: 'Type DELETE to permanently remove this tournament.', variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("college_tournaments").delete().eq("id", deleteTarget.id) as any;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Deleted", description: `"${deleteTarget.title}" has been removed.` });
+      toast({ title: "Deleted", description: `"${deleteTarget.title}" has been permanently removed.` });
       if (expandedId === deleteTarget.id) setExpandedId(null);
       fetchTournaments();
     }
     setDeleteTarget(null);
+    setDeleteConfirmText("");
   };
+
+  const archiveTournament = async () => {
+    if (!archiveTarget) return;
+    const { error } = await supabase.from("college_tournaments")
+      .update({ archived_at: new Date().toISOString() } as any)
+      .eq("id", archiveTarget.id) as any;
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Archived", description: `"${archiveTarget.title}" moved to archive.` });
+      if (expandedId === archiveTarget.id) setExpandedId(null);
+      fetchTournaments();
+    }
+    setArchiveTarget(null);
+  };
+
+  const restoreTournament = async (t: CollegeTournament) => {
+    const { error } = await supabase.from("college_tournaments")
+      .update({ archived_at: null } as any)
+      .eq("id", t.id) as any;
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Restored", description: `"${t.title}" restored to active tournaments.` });
+      fetchTournaments();
+    }
+  };
+
 
   const toggleStatus = async (t: CollegeTournament) => {
     const newStatus = t.status === "active" ? "draft" : "active";

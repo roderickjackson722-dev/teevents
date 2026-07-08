@@ -39,8 +39,10 @@ type EventDetailRow = {
   status: string;
   purchase_questions: Question[] | null;
   sponsors: Sponsor[] | null;
+  photos: string[] | null;
   event_ticket_tiers: Tier[];
 };
+
 
 
 const formatTime = (t: string | null) => {

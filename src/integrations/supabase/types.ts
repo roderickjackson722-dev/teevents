@@ -2213,6 +2213,7 @@ export type Database = {
           id: string
           name: string
           status: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2221,6 +2222,7 @@ export type Database = {
           id?: string
           name: string
           status?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2229,6 +2231,7 @@ export type Database = {
           id?: string
           name?: string
           status?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -8773,6 +8776,10 @@ export type Database = {
         Returns: undefined
       }
       increment_sample_view: { Args: { _slug: string }; Returns: undefined }
+      is_org_admin_or_owner: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean

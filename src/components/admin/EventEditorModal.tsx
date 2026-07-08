@@ -41,6 +41,7 @@ type EventInput = {
   featured: boolean;
   confirmation_email_subject: string;
   confirmation_email_body: string;
+  schedule_html: string;
 };
 
 const slugify = (s: string) =>

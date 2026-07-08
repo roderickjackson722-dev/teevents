@@ -354,7 +354,67 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
               {tiers.length === 0 && <p className="text-sm text-muted-foreground">No ticket tiers yet.</p>}
             </div>
           </div>
+
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Label>Purchase Questions</Label>
+              <Button size="sm" variant="outline" onClick={addQuestion}><Plus className="h-3 w-3 mr-1" /> Add Question</Button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">Extra questions asked at checkout (e.g. shirt size, dietary preferences). Answers are saved with the purchase.</p>
+            <div className="space-y-2">
+              {questions.map((q, i) => (
+                <div key={i} className="grid grid-cols-12 gap-2 items-start bg-muted/40 p-2 rounded">
+                  <Input className="col-span-5" placeholder="Question" value={q.label} onChange={(e) => updateQuestion(i, { label: e.target.value })} />
+                  <Select value={q.type} onValueChange={(v) => updateQuestion(i, { type: v as Question["type"] })}>
+                    <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Text</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="phone">Phone</SelectItem>
+                      <SelectItem value="select">Dropdown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <label className="col-span-3 flex items-center gap-2 text-sm">
+                    <Switch checked={q.required} onCheckedChange={(v) => updateQuestion(i, { required: v })} />
+                    Required
+                  </label>
+                  <Button className="col-span-1" size="icon" variant="ghost" onClick={() => removeQuestion(i)}><Trash2 className="h-4 w-4" /></Button>
+                  {q.type === "select" && (
+                    <Input className="col-span-12" placeholder="Options (comma separated, e.g. Small, Medium, Large)" value={q.options || ""} onChange={(e) => updateQuestion(i, { options: e.target.value })} />
+                  )}
+                </div>
+              ))}
+              {questions.length === 0 && <p className="text-sm text-muted-foreground">No custom questions.</p>}
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <Label>Confirmation Email</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Sent to the buyer after successful checkout. Placeholders:
+              <code className="mx-1 px-1 bg-muted rounded">{"{{buyer_name}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{event_title}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{event_date}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{event_location}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{quantity}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{tier_name}}"}</code>
+              <code className="mx-1 px-1 bg-muted rounded">{"{{total}}"}</code>
+            </p>
+            <Input
+              className="mb-2"
+              placeholder="Subject line"
+              value={data.confirmation_email_subject}
+              onChange={(e) => updateField("confirmation_email_subject", e.target.value)}
+            />
+            <textarea
+              className="w-full min-h-[220px] rounded-md border border-border bg-background p-3 text-sm font-mono"
+              value={data.confirmation_email_body}
+              onChange={(e) => updateField("confirmation_email_body", e.target.value)}
+              placeholder="Email body..."
+            />
+          </div>
         </div>
+
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>

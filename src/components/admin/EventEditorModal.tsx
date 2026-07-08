@@ -27,6 +27,12 @@ type Question = {
   options?: string;
 };
 
+type Sponsor = {
+  name: string;
+  logo_url: string;
+  website_url: string;
+};
+
 type EventInput = {
   id?: string;
   event_title: string;

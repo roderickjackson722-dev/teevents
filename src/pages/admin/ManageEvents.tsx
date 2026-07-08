@@ -131,8 +131,10 @@ const ManageEvents = () => {
                       <span className="inline-flex items-center gap-1"><Ticket className="h-3.5 w-3.5" /> {priceRange(e.event_ticket_tiers)} · {soldSummary(e.event_ticket_tiers)}</span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" size="sm" onClick={() => setSalesFor(e)}><BarChart3 className="h-4 w-4 mr-1" /> Sales</Button>
                     <Button variant="outline" size="sm" onClick={() => setEditing(e)}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" size="sm" className="text-destructive"><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>

@@ -129,11 +129,13 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
           const sorted = ((full as any).event_ticket_tiers || []).sort((a: any, b: any) => a.display_order - b.display_order);
           setTiers(sorted);
           setQuestions(Array.isArray(full.purchase_questions) ? full.purchase_questions : []);
+          setSponsors(Array.isArray((full as any).sponsors) ? (full as any).sponsors : []);
         }
       } else {
         setData(empty);
         setTiers([{ tier_name: "General", description: "", price_cents: 0, max_quantity: null, display_order: 0 }]);
         setQuestions([]);
+        setSponsors([]);
       }
     })();
   }, [event]);

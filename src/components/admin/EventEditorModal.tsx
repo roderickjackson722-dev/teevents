@@ -133,13 +133,16 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
           setTiers(sorted);
           setQuestions(Array.isArray(full.purchase_questions) ? full.purchase_questions : []);
           setSponsors(Array.isArray((full as any).sponsors) ? (full as any).sponsors : []);
+          setPhotos(Array.isArray((full as any).photos) ? (full as any).photos.filter((p: any) => typeof p === "string") : []);
         }
       } else {
         setData(empty);
         setTiers([{ tier_name: "General", description: "", price_cents: 0, max_quantity: null, display_order: 0 }]);
         setQuestions([]);
         setSponsors([]);
+        setPhotos([]);
       }
+
     })();
   }, [event]);
 

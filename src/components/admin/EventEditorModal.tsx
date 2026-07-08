@@ -266,6 +266,8 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         confirmation_email_body: data.confirmation_email_body || null,
         schedule_html: data.schedule_html || null,
         sponsors: cleanedSponsors,
+        photos: photos.filter((p) => (p || "").trim()),
+
       };
 
       let eventId = data.id;

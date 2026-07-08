@@ -16,7 +16,7 @@ export default function DemoDayOfPage() {
       const { data: d } = await supabase.from("demo_tournaments").select("*").eq("public_token", token).maybeSingle();
       if (!d) return;
       setDemo(d);
-      const { data: pl } = await supabase.from("demo_players").select("*").eq("demo_tournament_id", d.id).order("group_name");
+      const { data: pl } = await supabase.from("demo_players").select("id,demo_tournament_id,name,handicap,shirt_size,group_name,tee_time,created_at").eq("demo_tournament_id", d.id).order("group_name");
       setPlayers(pl || []);
     })();
   }, [token]);

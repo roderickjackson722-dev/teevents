@@ -33,7 +33,7 @@ export default function DemoTournamentSite() {
         setDemo(d as Demo);
         const [{ data: sp }, { data: pl }] = await Promise.all([
           supabase.from("demo_sponsors").select("*").eq("demo_tournament_id", (d as Demo).id),
-          supabase.from("demo_players").select("*").eq("demo_tournament_id", (d as Demo).id),
+          supabase.from("demo_players").select("id,demo_tournament_id,name,handicap,shirt_size,group_name,tee_time,created_at").eq("demo_tournament_id", (d as Demo).id),
         ]);
         setSponsors((sp as Sponsor[]) || []);
         setPlayers((pl as Player[]) || []);

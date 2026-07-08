@@ -1137,6 +1137,7 @@ export type Database = {
       }
       college_tournaments: {
         Row: {
+          archived_at: string | null
           contact_email: string | null
           course_name: string | null
           created_at: string
@@ -1156,6 +1157,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           contact_email?: string | null
           course_name?: string | null
           created_at?: string
@@ -1175,6 +1177,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           contact_email?: string | null
           course_name?: string | null
           created_at?: string

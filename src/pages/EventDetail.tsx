@@ -136,7 +136,13 @@ const EventDetail = () => {
 
           <div className="bg-card rounded-lg border border-border overflow-hidden mb-6">
             {event.hero_image_url && (
-              <img src={event.hero_image_url} alt={event.event_title} className="w-full h-64 md:h-80 object-cover" />
+              <div className="w-full bg-muted flex items-center justify-center">
+                <img
+                  src={event.hero_image_url}
+                  alt={event.event_title}
+                  className="w-full h-auto max-h-[720px] object-contain"
+                />
+              </div>
             )}
             <div className="p-6 md:p-8">
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">

@@ -41,6 +41,7 @@ type EventInput = {
   featured: boolean;
   confirmation_email_subject: string;
   confirmation_email_body: string;
+  schedule_html: string;
 };
 
 const slugify = (s: string) =>
@@ -76,6 +77,7 @@ const empty: EventInput = {
   featured: false,
   confirmation_email_subject: "Your ticket for {{event_title}}",
   confirmation_email_body: DEFAULT_EMAIL_BODY,
+  schedule_html: "",
 };
 
 interface Props {
@@ -114,6 +116,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
             featured: full.featured,
             confirmation_email_subject: full.confirmation_email_subject || empty.confirmation_email_subject,
             confirmation_email_body: full.confirmation_email_body || empty.confirmation_email_body,
+            schedule_html: full.schedule_html || "",
           });
           const sorted = ((full as any).event_ticket_tiers || []).sort((a: any, b: any) => a.display_order - b.display_order);
           setTiers(sorted);
@@ -193,6 +196,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         purchase_questions: cleanedQuestions,
         confirmation_email_subject: data.confirmation_email_subject || null,
         confirmation_email_body: data.confirmation_email_body || null,
+        schedule_html: data.schedule_html || null,
       };
 
       let eventId = data.id;
@@ -327,6 +331,21 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
               placeholder="Write about your event..."
             />
           </div>
+
+          <div>
+            <Label>Schedule of Events</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Full formatting toolbar: headings, bold/italic/underline, fonts &amp; sizes, colors, highlights, lists, alignment, links, and inline images. Use a table or list to lay out your day's timeline.
+            </p>
+            <RichTextEditor
+              value={data.schedule_html}
+              onChange={(html) => updateField("schedule_html", sanitizeHtml(html))}
+              onImageUpload={uploadImageToStorage}
+              placeholder="7:00 AM – Registration & Breakfast&#10;8:30 AM – Shotgun Start..."
+            />
+          </div>
+
+
 
           <div className="flex items-center gap-2">
             <Switch checked={data.featured} onCheckedChange={(v) => updateField("featured", v)} />

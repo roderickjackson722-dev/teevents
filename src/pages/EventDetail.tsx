@@ -33,6 +33,7 @@ type EventDetailRow = {
   address: string | null;
   hero_image_url: string | null;
   description_html: string | null;
+  schedule_html: string | null;
   status: string;
   purchase_questions: Question[] | null;
   event_ticket_tiers: Tier[];
@@ -65,7 +66,7 @@ const EventDetail = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("public_events")
-        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, status, purchase_questions, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
+        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
         .eq("event_slug", slug)
         .maybeSingle();
       const evt = data as EventDetailRow | null;
@@ -209,6 +210,16 @@ const EventDetail = () => {
                 </div>
               )}
             </div>
+
+            {event.schedule_html && (
+              <div className="bg-card rounded-lg border border-border p-6 mt-6 md:col-start-1">
+                <h2 className="font-display text-xl font-bold mb-3">Schedule of Events</h2>
+                <div
+                  className="prose prose-base max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md"
+                  dangerouslySetInnerHTML={{ __html: event.schedule_html }}
+                />
+              </div>
+            )}
 
             <div className="bg-card rounded-lg border border-border p-6 h-fit md:sticky md:top-24">
               <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2"><Ticket className="h-5 w-5" /> Get Your Tickets</h2>

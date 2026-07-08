@@ -4522,6 +4522,7 @@ export type Database = {
           id: string
           location: string | null
           purchase_questions: Json
+          schedule_html: string | null
           status: string
           tournament_id: string | null
           updated_at: string
@@ -4542,6 +4543,7 @@ export type Database = {
           id?: string
           location?: string | null
           purchase_questions?: Json
+          schedule_html?: string | null
           status?: string
           tournament_id?: string | null
           updated_at?: string
@@ -4562,6 +4564,7 @@ export type Database = {
           id?: string
           location?: string | null
           purchase_questions?: Json
+          schedule_html?: string | null
           status?: string
           tournament_id?: string | null
           updated_at?: string

@@ -33,6 +33,7 @@ type EventDetailRow = {
   address: string | null;
   hero_image_url: string | null;
   description_html: string | null;
+  schedule_html: string | null;
   status: string;
   purchase_questions: Question[] | null;
   event_ticket_tiers: Tier[];

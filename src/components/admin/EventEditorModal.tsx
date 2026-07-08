@@ -207,6 +207,14 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         .filter((q) => q.label.trim())
         .map((q) => ({ label: q.label.trim(), type: q.type, required: !!q.required, options: q.type === "select" ? (q.options || "") : undefined }));
 
+      const cleanedSponsors = sponsors
+        .filter((s) => (s.name || "").trim() || (s.logo_url || "").trim())
+        .map((s) => ({
+          name: (s.name || "").trim(),
+          logo_url: (s.logo_url || "").trim(),
+          website_url: (s.website_url || "").trim(),
+        }));
+
       const payload: any = {
         event_title: data.event_title,
         event_slug: slugify(data.event_slug),

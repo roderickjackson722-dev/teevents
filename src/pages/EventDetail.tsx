@@ -358,6 +358,19 @@ const EventDetail = () => {
               </div>
             </div>
           )}
+
+          {event.photos && event.photos.length > 0 && (
+            <div className="bg-card rounded-lg border border-border p-6 mt-6">
+              <h2 className="font-display text-xl font-bold mb-4 text-center">Photo Gallery</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {event.photos.map((url, i) => (
+                  <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-md border border-border bg-muted">
+                    <img src={url} alt={`${event.event_title} photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

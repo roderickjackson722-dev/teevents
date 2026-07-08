@@ -116,6 +116,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
             featured: full.featured,
             confirmation_email_subject: full.confirmation_email_subject || empty.confirmation_email_subject,
             confirmation_email_body: full.confirmation_email_body || empty.confirmation_email_body,
+            schedule_html: full.schedule_html || "",
           });
           const sorted = ((full as any).event_ticket_tiers || []).sort((a: any, b: any) => a.display_order - b.display_order);
           setTiers(sorted);

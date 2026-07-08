@@ -23,6 +23,8 @@ type Tier = {
 
 type Question = { label: string; type: "text" | "email" | "phone" | "select"; required: boolean; options?: string };
 
+type Sponsor = { name: string; logo_url: string; website_url: string };
+
 type EventDetailRow = {
   id: string;
   event_title: string;
@@ -36,6 +38,7 @@ type EventDetailRow = {
   schedule_html: string | null;
   status: string;
   purchase_questions: Question[] | null;
+  sponsors: Sponsor[] | null;
   event_ticket_tiers: Tier[];
 };
 
@@ -66,7 +69,7 @@ const EventDetail = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("public_events")
-        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
+        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, sponsors, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
         .eq("event_slug", slug)
         .maybeSingle();
       const evt = data as EventDetailRow | null;
@@ -212,10 +215,10 @@ const EventDetail = () => {
             </div>
 
             {event.schedule_html && (
-              <div className="bg-card rounded-lg border border-border p-6 mt-6 md:col-start-1">
-                <h2 className="font-display text-xl font-bold mb-3">Schedule of Events</h2>
+              <div className="bg-card rounded-lg border border-border p-4 md:p-5 mt-6 md:col-start-1 md:mt-4">
+                <h2 className="font-display text-lg font-bold mb-2">Schedule of Events</h2>
                 <div
-                  className="prose prose-base max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md"
+                  className="prose prose-sm max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md prose-img:my-2"
                   dangerouslySetInnerHTML={{ __html: event.schedule_html }}
                 />
               </div>
@@ -310,7 +313,49 @@ const EventDetail = () => {
               )}
             </div>
           </div>
+
+          {event.sponsors && event.sponsors.length > 0 && (
+            <div className="bg-card rounded-lg border border-border p-6 mt-6">
+              <h2 className="font-display text-xl font-bold mb-1 text-center">Thank You to Our Sponsors</h2>
+              <p className="text-sm text-muted-foreground text-center mb-5">
+                These sponsors make this event possible — click a logo to visit their site.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                {event.sponsors.map((s, i) => {
+                  const logo = s.logo_url ? (
+                    <img
+                      src={s.logo_url}
+                      alt={s.name || `Sponsor ${i + 1}`}
+                      className="max-h-20 md:max-h-24 max-w-[180px] object-contain transition-opacity hover:opacity-80"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-foreground">{s.name}</span>
+                  );
+                  return s.website_url ? (
+                    <a
+                      key={i}
+                      href={s.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                      title={s.name}
+                      className="inline-flex flex-col items-center gap-1"
+                    >
+                      {logo}
+                      {s.name && s.logo_url && <span className="text-xs text-muted-foreground">{s.name}</span>}
+                    </a>
+                  ) : (
+                    <div key={i} className="inline-flex flex-col items-center gap-1">
+                      {logo}
+                      {s.name && s.logo_url && <span className="text-xs text-muted-foreground">{s.name}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
+
       </div>
     </Layout>
   );

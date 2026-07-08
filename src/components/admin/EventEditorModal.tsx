@@ -27,6 +27,12 @@ type Question = {
   options?: string;
 };
 
+type Sponsor = {
+  name: string;
+  logo_url: string;
+  website_url: string;
+};
+
 type EventInput = {
   id?: string;
   event_title: string;
@@ -92,6 +98,8 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [uploadingSponsor, setUploadingSponsor] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -121,11 +129,13 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
           const sorted = ((full as any).event_ticket_tiers || []).sort((a: any, b: any) => a.display_order - b.display_order);
           setTiers(sorted);
           setQuestions(Array.isArray(full.purchase_questions) ? full.purchase_questions : []);
+          setSponsors(Array.isArray((full as any).sponsors) ? (full as any).sponsors : []);
         }
       } else {
         setData(empty);
         setTiers([{ tier_name: "General", description: "", price_cents: 0, max_quantity: null, display_order: 0 }]);
         setQuestions([]);
+        setSponsors([]);
       }
     })();
   }, [event]);
@@ -171,6 +181,21 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const removeQuestion = (idx: number) => setQuestions((p) => p.filter((_, i) => i !== idx));
   const updateQuestion = (idx: number, patch: Partial<Question>) => setQuestions((p) => p.map((q, i) => i === idx ? { ...q, ...patch } : q));
 
+  const addSponsor = () => setSponsors((p) => [...p, { name: "", logo_url: "", website_url: "" }]);
+  const removeSponsor = (idx: number) => setSponsors((p) => p.filter((_, i) => i !== idx));
+  const updateSponsor = (idx: number, patch: Partial<Sponsor>) => setSponsors((p) => p.map((s, i) => i === idx ? { ...s, ...patch } : s));
+  const handleSponsorLogo = async (idx: number, file: File) => {
+    setUploadingSponsor(idx);
+    try {
+      const url = await uploadImageToStorage(file);
+      updateSponsor(idx, { logo_url: url });
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploadingSponsor(null);
+    }
+  };
+
   const handleSave = async () => {
     if (!data.event_title || !data.event_date || !data.event_slug) {
       toast.error("Title, date and slug are required");
@@ -181,6 +206,14 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
       const cleanedQuestions = questions
         .filter((q) => q.label.trim())
         .map((q) => ({ label: q.label.trim(), type: q.type, required: !!q.required, options: q.type === "select" ? (q.options || "") : undefined }));
+
+      const cleanedSponsors = sponsors
+        .filter((s) => (s.name || "").trim() || (s.logo_url || "").trim())
+        .map((s) => ({
+          name: (s.name || "").trim(),
+          logo_url: (s.logo_url || "").trim(),
+          website_url: (s.website_url || "").trim(),
+        }));
 
       const payload: any = {
         event_title: data.event_title,
@@ -197,6 +230,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         confirmation_email_subject: data.confirmation_email_subject || null,
         confirmation_email_body: data.confirmation_email_body || null,
         schedule_html: data.schedule_html || null,
+        sponsors: cleanedSponsors,
       };
 
       let eventId = data.id;
@@ -406,6 +440,35 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
               {questions.length === 0 && <p className="text-sm text-muted-foreground">No custom questions.</p>}
             </div>
           </div>
+
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Label>Event Sponsors</Label>
+              <Button size="sm" variant="outline" onClick={addSponsor}><Plus className="h-3 w-3 mr-1" /> Add Sponsor</Button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">
+              Upload each sponsor's logo and add their website URL. Logos appear at the bottom of the public event page and link to the sponsor's site.
+            </p>
+            <div className="space-y-2">
+              {sponsors.map((s, i) => (
+                <div key={i} className="grid grid-cols-12 gap-2 items-start bg-muted/40 p-2 rounded">
+                  <div className="col-span-11 grid grid-cols-12 gap-2">
+                    <Input className="col-span-4" placeholder="Sponsor name" value={s.name} onChange={(e) => updateSponsor(i, { name: e.target.value })} />
+                    <Input className="col-span-4" placeholder="https://sponsor.com" value={s.website_url} onChange={(e) => updateSponsor(i, { website_url: e.target.value })} />
+                    <div className="col-span-4 flex items-center gap-2">
+                      <Input type="file" accept="image/*" disabled={uploadingSponsor === i} onChange={(e) => e.target.files?.[0] && handleSponsorLogo(i, e.target.files[0])} />
+                      {s.logo_url && <img src={s.logo_url} alt={s.name} className="h-10 w-10 object-contain rounded border border-border bg-background" />}
+                    </div>
+                    <Input className="col-span-12" placeholder="Or paste logo image URL" value={s.logo_url} onChange={(e) => updateSponsor(i, { logo_url: e.target.value })} />
+                  </div>
+                  <Button className="col-span-1" size="icon" variant="ghost" onClick={() => removeSponsor(i)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              ))}
+              {sponsors.length === 0 && <p className="text-sm text-muted-foreground">No sponsors added yet.</p>}
+            </div>
+          </div>
+
+
 
           <div className="border-t border-border pt-4">
             <Label>Confirmation Email</Label>

@@ -7,6 +7,8 @@ import CustomDomainRouter from "./components/CustomDomainRouter";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
+import ManageEvents from "./pages/admin/ManageEvents";
 import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
@@ -174,6 +176,7 @@ const App = () => (
           <Route path="/services" element={<Services />} />
           <Route path="/platform" element={<Navigate to="/plans" replace />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/:slug" element={<EventDetail />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
@@ -284,6 +287,7 @@ const App = () => (
              <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />
+            <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/ai-sales-agent" element={<AiSalesAgent />} />
              <Route path="/college-hub/bookings" element={<CollegeHubBookingsPublic />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />

@@ -953,16 +953,17 @@ function ExpenseSection({
         </Button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[720px]">
+      <div className="overflow-x-auto -mx-px">
+        <table className="w-full text-sm min-w-[900px]">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>
-              <th className="text-left p-2 font-medium w-1/3">Item</th>
+              <th className="text-left p-2 font-medium min-w-[220px]">Item</th>
               <th className="text-right p-2 font-medium w-28">Estimated</th>
               <th className="text-right p-2 font-medium w-28">Actual</th>
               <th className="text-right p-2 font-medium w-28">Variance</th>
               <th className="text-center p-2 font-medium w-20">Paid</th>
-              <th className="text-left p-2 font-medium w-36">Date Paid</th>
-              <th className="text-left p-2 font-medium">Notes</th>
+              <th className="text-left p-2 font-medium w-40">Date Paid</th>
+              <th className="text-left p-2 font-medium min-w-[180px]">Notes</th>
               <th className="no-print w-10"></th>
             </tr>
           </thead>

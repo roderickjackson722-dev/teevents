@@ -813,9 +813,9 @@ function SummaryCard({ label, value, tint, border }: { label: string; value: str
 
 function KpiPill({ label, value, input }: { label: string; value?: string; input?: React.ReactNode }) {
   return (
-    <div className="bg-muted/40 rounded-md px-3 py-2 flex items-center justify-between gap-2">
-      <span className="text-muted-foreground">{label}</span>
-      {input ? input : <span className="font-mono font-semibold">{value}</span>}
+    <div className="bg-muted/40 rounded-md px-3 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 min-w-0">
+      <span className="text-muted-foreground whitespace-nowrap">{label}</span>
+      {input ? input : <span className="font-mono font-semibold whitespace-nowrap">{value}</span>}
     </div>
   );
 }

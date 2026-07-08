@@ -77,6 +77,7 @@ const empty: EventInput = {
   featured: false,
   confirmation_email_subject: "Your ticket for {{event_title}}",
   confirmation_email_body: DEFAULT_EMAIL_BODY,
+  schedule_html: "",
 };
 
 interface Props {

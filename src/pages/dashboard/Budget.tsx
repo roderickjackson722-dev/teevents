@@ -952,8 +952,8 @@ function ExpenseSection({
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
         </Button>
       </div>
-      <div className="overflow-x-auto">
       <div className="overflow-x-auto -mx-px">
+
         <table className="w-full text-sm min-w-[900px]">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>

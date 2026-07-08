@@ -643,21 +643,33 @@ const CollegeTournamentHub = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="font-display font-bold text-lg flex items-center gap-2">
-            <School className="h-5 w-5 text-primary" />
-            College Golf Tournament Hub
+            <School className="h-5 w-5 text-primary shrink-0" />
+            <span className="truncate">College Golf Tournament Hub</span>
           </h2>
           <p className="text-sm text-muted-foreground">Create and manage college golf tournaments with invitations, RSVP tracking, and event pages.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("active")}
+              className={`px-3 py-1.5 ${viewMode === "active" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            >Active</button>
+            <button
+              type="button"
+              onClick={() => setViewMode("archived")}
+              className={`px-3 py-1.5 border-l border-border inline-flex items-center gap-1 ${viewMode === "archived" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            ><Archive className="h-3 w-3" /> Archive</button>
+          </div>
+          <Button asChild variant="outline" size="sm">
             <a href="/admin/college-hub/bookings"><Calendar className="h-4 w-4 mr-2" />Bookings</a>
           </Button>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> New College Tournament</Button>
+              <Button size="sm"><Plus className="h-4 w-4 mr-2" /> New Tournament</Button>
             </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
@@ -689,6 +701,7 @@ const CollegeTournamentHub = () => {
           </Dialog>
         </div>
       </div>
+
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={o => { if (!o) setDeleteTarget(null); }}>

@@ -87,13 +87,14 @@ interface Props {
 const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const [data, setData] = useState<EventInput>(empty);
   const [tiers, setTiers] = useState<Tier[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     (async () => {
       if (event?.id) {
-        const { data: full } = await supabase
+        const { data: full } = await (supabase as any)
           .from("public_events")
           .select("*, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
           .eq("id", event.id)
@@ -111,16 +112,21 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
             description_html: full.description_html || "",
             status: full.status,
             featured: full.featured,
+            confirmation_email_subject: full.confirmation_email_subject || empty.confirmation_email_subject,
+            confirmation_email_body: full.confirmation_email_body || empty.confirmation_email_body,
           });
           const sorted = ((full as any).event_ticket_tiers || []).sort((a: any, b: any) => a.display_order - b.display_order);
           setTiers(sorted);
+          setQuestions(Array.isArray(full.purchase_questions) ? full.purchase_questions : []);
         }
       } else {
         setData(empty);
         setTiers([{ tier_name: "General", description: "", price_cents: 0, max_quantity: null, display_order: 0 }]);
+        setQuestions([]);
       }
     })();
   }, [event]);
+
 
   const updateField = <K extends keyof EventInput>(k: K, v: EventInput[K]) => {
     setData((p) => ({ ...p, [k]: v }));

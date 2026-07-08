@@ -102,3 +102,10 @@ verify_jwt = false
 
 [functions.send-organizer-welcome]
 verify_jwt = false
+
+[functions.create-event-ticket-checkout]
+verify_jwt = false
+
+[functions.verify-event-ticket]
+verify_jwt = false
+

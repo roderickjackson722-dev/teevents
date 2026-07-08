@@ -313,7 +313,49 @@ const EventDetail = () => {
               )}
             </div>
           </div>
+
+          {event.sponsors && event.sponsors.length > 0 && (
+            <div className="bg-card rounded-lg border border-border p-6 mt-6">
+              <h2 className="font-display text-xl font-bold mb-1 text-center">Thank You to Our Sponsors</h2>
+              <p className="text-sm text-muted-foreground text-center mb-5">
+                These sponsors make this event possible — click a logo to visit their site.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                {event.sponsors.map((s, i) => {
+                  const logo = s.logo_url ? (
+                    <img
+                      src={s.logo_url}
+                      alt={s.name || `Sponsor ${i + 1}`}
+                      className="max-h-20 md:max-h-24 max-w-[180px] object-contain transition-opacity hover:opacity-80"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-foreground">{s.name}</span>
+                  );
+                  return s.website_url ? (
+                    <a
+                      key={i}
+                      href={s.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer sponsored"
+                      title={s.name}
+                      className="inline-flex flex-col items-center gap-1"
+                    >
+                      {logo}
+                      {s.name && s.logo_url && <span className="text-xs text-muted-foreground">{s.name}</span>}
+                    </a>
+                  ) : (
+                    <div key={i} className="inline-flex flex-col items-center gap-1">
+                      {logo}
+                      {s.name && s.logo_url && <span className="text-xs text-muted-foreground">{s.name}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
+
       </div>
     </Layout>
   );

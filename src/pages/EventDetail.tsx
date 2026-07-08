@@ -57,14 +57,15 @@ const EventDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("public_events")
-        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, status, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
+        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, status, purchase_questions, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
         .eq("event_slug", slug)
         .maybeSingle();
       const evt = data as EventDetailRow | null;
@@ -76,6 +77,7 @@ const EventDetail = () => {
       setLoading(false);
     })();
   }, [slug]);
+
 
   // Verify purchase on redirect
   useEffect(() => {

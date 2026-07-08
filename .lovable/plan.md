@@ -1,60 +1,86 @@
-# Manual Entry Enforcement & 5% Fee Recording
+# Public Events + Ticketing
 
-Completes Phase 7: blocks manual insertions at the 10-entry limit, shows a fee-confirmation modal, records the 5% fee, and gives admins a grant UI.
+An Eventbrite-style events system with admin management, public browsing, and Stripe-powered ticket purchases. Existing `/events` page (which reads from `tournaments`) will be replaced by the new system.
 
-## 1. Database (migration)
+## Scope
 
-Columns already exist on `tournaments` (`manual_entries_used/free_limit/admin_override`) and the `manual_entry_grants` audit table exists. Add:
+### 1. Database (new migration)
+Three new tables in `public`:
+- **`public_events`** — id, tournament_id (nullable FK), event_title, event_slug (unique), event_date, event_time, location, address, hero_image_url, description_html, status (`draft|published|archived|sold_out`), featured, created_by, created_at, updated_at.
+- **`event_ticket_tiers`** — id, event_id (FK cascade), tier_name, description, price_cents, max_quantity, sold_quantity, display_order.
+- **`event_ticket_purchases`** — id, event_id, tier_id, buyer_name, buyer_email, quantity, total_cents, stripe_session_id, stripe_payment_intent_id, payment_status (`pending|paid|refunded`).
 
-- `public.manual_entry_fees` — one row per over-quota manual entry
-  - `tournament_id`, `entity_type` (`player|sponsor|side_event|vendor|donation`), `entity_id uuid null`, `amount_cents`, `fee_cents`, `paid boolean default false`, `platform_transaction_id uuid null`, `created_by uuid`, `created_at`
-  - Grants + RLS: org members can select/insert for their tournament; service_role full; admins full.
-- RPC `public.record_manual_entry(_tournament_id uuid, _entity_type text, _entity_id uuid, _amount_cents int, _confirm_fee bool)` — SECURITY DEFINER
-  - Increments `manual_entries_used` atomically
-  - If over the effective limit (`free_limit + admin_override`) and `_confirm_fee=false` → raises
-  - If over and confirmed → inserts `manual_entry_fees` row + a matching `platform_transactions` row (`type='manual_entry_fee'`, 5% of amount)
-  - Returns `{ used, limit, fee_cents, over_quota }`
-- RPC `public.admin_grant_manual_entries(_tournament_id uuid, _additional int, _reason text)` — admin-only, bumps `manual_entries_admin_override` and writes `manual_entry_grants` row.
+RLS + GRANTs:
+- Public `SELECT` on `public_events` where `status='published'|'sold_out'|'archived'` and on their tiers.
+- Admin-only insert/update/delete (via `has_role(auth.uid(),'admin')`).
+- `event_ticket_purchases` — insert via edge function (service role), select by admin only.
 
-## 2. Shared frontend
+### 2. Admin dashboard — "Manage Events"
+New route under admin: `/admin/manage-events` linked from the existing **Admin → Platform Tournaments** sidebar area (added as a sibling section "TeeVents Managed Events").
 
-- `src/hooks/useManualEntryEnforcement.ts` — wraps `useTournamentAddons` + calls the RPC. Exposes `checkAndConfirm({ entityType, amountCents })` returning `{ proceed, feeCents }`.
-- `src/components/ManualEntryLimitModal.tsx` — the "⚠️ Manual Entry Limit Reached" modal with editable amount + live 5% fee, Cancel / Confirm buttons. Skipped automatically when `unlimited_manual_entries` add-on is active.
-- Copy notes the 5% fee is deducted from the organizer's next Stripe payout; if no Stripe connected, shows the "connect Stripe to add more" message.
+Features:
+- List view with title, date/time, location, price range, tickets sold/available, status badge, Edit/Delete.
+- Add/Edit modal: title, date, time, location, address, hero image upload (existing storage), rich-text description (simple textarea + basic formatting via `react-quill`-lite — will use a lightweight contentEditable to avoid heavy deps; falls back to plain textarea with markdown), ticket tiers editor (repeatable rows), status select, featured toggle.
+- Typed "DELETE" confirmation to remove.
+- Auto-generate slug from title (editable).
 
-## 3. Insertion sites to wire
+### 3. Public `/events` page (replaces current one)
+Eventbrite-style grid:
+- Header: "Upcoming Events" + search input, location filter (state dropdown), date filter (Today / This Week / This Month / All), price range filter.
+- Cards: hero image (left on desktop, top on mobile), title, date/time, location, price range, "X sold · Y remaining" or Sold Out badge, "Register Now" button linking to `/events/{slug}`.
+- Sections: Upcoming (published) then Past (archived, collapsed).
 
-For each, intercept the submit handler, call `checkAndConfirm` before writing, and only proceed on confirm:
+Note: existing `/events` currently reads from `tournaments` where `managed_by_teevents=true`. We will keep those visible by also merging them into the list (read-only), OR migrate — plan: **merge**. Managed tournaments appear alongside new `public_events`, but only `public_events` support ticketing. Managed tournaments keep their existing external links.
 
-| Site | File |
-|------|------|
-| Players (manual add) | `src/pages/dashboard/Players.tsx` (+ `RegistrationForm` when used as organizer manual add) |
-| Sponsors (manual add) | `src/pages/dashboard/Sponsors.tsx` |
-| Side Events (manual ticket) | `src/pages/dashboard/SideEvents.tsx` |
-| Vendors (manual add) | `src/pages/dashboard/Vendors.tsx` |
-| Donations (manual entry) | `src/pages/dashboard/Donations.tsx` |
+### 4. `/events/{slug}` detail page
+- Hero image full width, title, date/time, location.
+- Left: description HTML. Right: ticket picker card — tier radio, quantity, live total, "Register Now" button.
+- Event Details section.
+- SEO tags per event.
 
-Each site passes its transaction amount (registration fee, sponsor tier price, ticket price, vendor tier price, donation amount) to the modal.
+### 5. Ticket checkout (Stripe)
+New edge function `create-event-ticket-checkout`:
+- Input: event_id, tier_id, quantity, buyer name/email (guest OK).
+- Validates remaining inventory (`max_quantity - sold_quantity >= quantity`).
+- Creates Stripe Checkout session on the **platform account** (these are TeeVents-managed events, not organizer events — no Connect routing needed). Uses `mode: 'payment'`, `customer_email`, `metadata` with event_id/tier_id/quantity, success/cancel URLs pointing to `/events/{slug}?purchase=success|cancel`.
+- Inserts `event_ticket_purchases` row with `payment_status='pending'` and `stripe_session_id`.
 
-## 4. Admin UI
+New edge function `verify-event-ticket`:
+- Called from success page with session_id.
+- Retrieves session, if `payment_status='paid'`, updates purchase row to `paid` and increments `event_ticket_tiers.sold_quantity` atomically (via a security-definer RPC).
+- Sends confirmation email via existing Resend integration.
 
-Extend existing `src/pages/admin/ManualEntryGrants.tsx`:
-- Tournament dropdown/search (already present)
-- Show current `used / free_limit / admin_override / remaining`
-- "Grant Additional Free Entries" form (count + reason) → calls `admin_grant_manual_entries` RPC
-- Grant history table from `manual_entry_grants`
+Both functions listed in `supabase/config.toml` with `verify_jwt = false`.
 
-Also add a compact "Manual Entry Override" section in `src/components/admin/AdminTournamentEditModal.tsx` linking to the grants page and showing counts.
+### 6. Files (new / edited)
 
-## 5. Fee collection
+**New**
+- `supabase/migrations/<ts>_public_events.sql`
+- `src/pages/admin/ManageEvents.tsx`
+- `src/components/admin/EventEditorModal.tsx`
+- `src/components/admin/EventTicketTiersEditor.tsx`
+- `src/pages/EventDetail.tsx`
+- `src/components/events/EventCard.tsx`
+- `src/components/events/EventFilters.tsx`
+- `supabase/functions/create-event-ticket-checkout/index.ts`
+- `supabase/functions/verify-event-ticket/index.ts`
 
-The `platform_transactions` row created by the RPC (type `manual_entry_fee`, `platform_fee_cents = fee_cents`) surfaces in the existing Finances dashboard and is netted from the organizer's next Stripe Connect payout via the existing payout job — no new Stripe checkout needed. Organizers without Stripe see the "connect Stripe" message in the modal and the entry is blocked.
+**Edited**
+- `src/pages/Events.tsx` — replace with new grid + filters.
+- `src/App.tsx` — add `/events/:slug` and `/admin/manage-events` routes.
+- Admin sidebar (wherever Platform Tournaments lives) — add "Manage Events" link.
+- `supabase/config.toml` — register the two new edge functions.
 
-## Out of scope
-No changes to public-facing pricing copy, other dashboards, or any feature not listed above. Existing add-on `unlimited_manual_entries` continues to bypass the modal entirely.
+### 7. Out of scope (explicit)
+- Payouts / Connect routing — TeeVents-managed events run on the platform account.
+- Refund UI (admin can refund from Stripe dashboard); refund status column supports future work.
+- Rich-text WYSIWYG beyond a simple toolbar (bold/italic/links). If a fuller editor is needed, we can add it in a follow-up.
 
-## Verification
-1. Create tournament → add 10 manual players → 11th triggers modal → confirm → `manual_entry_fees` + `platform_transactions` rows exist with correct 5% fee.
-2. Repeat for sponsor, side event, vendor, donation paths.
-3. Admin grants +5 entries → next manual add is free again; `manual_entry_grants` row logged.
-4. Tournament with `unlimited_manual_entries` add-on → no modal ever appears.
+## Technical notes
+- Slugs: `kebab-case(title)` with 6-char random suffix on collision.
+- Rich text stored as sanitized HTML (`DOMPurify` on render).
+- Inventory increment uses a Postgres RPC `increment_ticket_sold(tier_id uuid, qty int)` with `SECURITY DEFINER` to avoid race conditions.
+- Ticket price range on cards = `min(price_cents)`–`max(price_cents)` across tiers.
+- Auto-flip status to `sold_out` when every tier is at capacity (trigger on `event_ticket_tiers` after update).
+
+Approve to proceed and I'll ship it as a single migration + code drop.

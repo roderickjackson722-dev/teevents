@@ -811,60 +811,97 @@ const CollegeTournamentHub = () => {
       </AlertDialog>
 
       {/* Tournament List */}
-      {tournaments.length === 0 ? (
-        <div className="text-center py-16 bg-card rounded-lg border border-border">
-          <School className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-          <h3 className="text-lg font-display font-bold mb-2">No college tournaments yet</h3>
-          <p className="text-muted-foreground mb-6">Create your first college golf tournament to get started.</p>
-          <Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-2" /> Create Tournament</Button>
-        </div>
-      ) : (
+      {(() => {
+        const visibleTournaments = tournaments.filter(t =>
+          viewMode === "archived" ? !!t.archived_at : !t.archived_at
+        );
+        if (visibleTournaments.length === 0) {
+          return (
+            <div className="text-center py-16 bg-card rounded-lg border border-border">
+              {viewMode === "archived" ? (
+                <>
+                  <Archive className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <h3 className="text-lg font-display font-bold mb-2">No archived tournaments</h3>
+                  <p className="text-muted-foreground mb-6">Archived tournaments will appear here and can be restored anytime.</p>
+                  <Button variant="outline" onClick={() => setViewMode("active")}>Back to Active</Button>
+                </>
+              ) : (
+                <>
+                  <School className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+                  <h3 className="text-lg font-display font-bold mb-2">No college tournaments yet</h3>
+                  <p className="text-muted-foreground mb-6">Create your first college golf tournament to get started.</p>
+                  <Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-2" /> Create Tournament</Button>
+                </>
+              )}
+            </div>
+          );
+        }
+        return (
         <div className="space-y-3">
-          {tournaments.map(t => {
+          {visibleTournaments.map(t => {
             const isExpanded = expandedId === t.id;
+            const isArchived = !!t.archived_at;
             return (
-              <div key={t.id} className="bg-card rounded-lg border border-border overflow-hidden">
+              <div key={t.id} className={`bg-card rounded-lg border overflow-hidden ${isArchived ? "border-dashed border-muted-foreground/30 opacity-90" : "border-border"}`}>
                 {/* Tournament Header */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-wrap">
+                <div className="p-3 sm:p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        t.status === "active" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                      }`}>{t.status}</span>
-                      <h3 className="font-display font-semibold text-lg">{t.title}</h3>
-                      {t.course_name && <span className="text-xs text-muted-foreground">{t.course_name}</span>}
-                      {t.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{t.location}</span>}
+                        isArchived
+                          ? "bg-muted text-muted-foreground"
+                          : t.status === "active" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                      }`}>{isArchived ? "archived" : t.status}</span>
+                      <h3 className="font-display font-semibold text-base sm:text-lg break-words">{t.title}</h3>
+                      {t.course_name && <span className="text-xs text-muted-foreground w-full sm:w-auto">{t.course_name}</span>}
+                      {t.location && <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{t.location}</span>}
                       {t.start_date && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {new Date(t.start_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           {t.end_date && t.end_date !== t.start_date && ` – ${new Date(t.end_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
                         </span>
                       )}
-                      {t.registration_open && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">Registration Open</span>}
+                      {!isArchived && t.registration_open && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">Registration Open</span>}
+                      {isArchived && t.archived_at && (
+                        <span className="text-xs text-muted-foreground italic">Archived {new Date(t.archived_at).toLocaleDateString()}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      {t.status === "active" && (t as any).slug && (
+                    <div className="flex flex-wrap items-center gap-2 lg:justify-end lg:shrink-0">
+                      {!isArchived && t.status === "active" && (t as any).slug && (
                         <a href={`/college/${(t as any).slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80">
                           <Globe className="h-3.5 w-3.5" /> View Page
                         </a>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => toggleStatus(t)}>
-                        {t.status === "active" ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                        {t.status === "active" ? "Unpublish" : "Publish"}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => toggleRegistration(t)}>
-                        {t.registration_open ? "Close Reg" : "Open Reg"}
-                      </Button>
-                      <button onClick={() => setExpandedId(isExpanded ? null : t.id)} className="text-muted-foreground hover:text-foreground">
-                        {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                      </button>
-                      <button onClick={() => setDeleteTarget(t)} className="text-muted-foreground hover:text-destructive">
+                      {!isArchived && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => toggleStatus(t)}>
+                            {t.status === "active" ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+                            {t.status === "active" ? "Unpublish" : "Publish"}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => toggleRegistration(t)}>
+                            {t.registration_open ? "Close Reg" : "Open Reg"}
+                          </Button>
+                          <button onClick={() => setExpandedId(isExpanded ? null : t.id)} className="text-muted-foreground hover:text-foreground p-1" aria-label={isExpanded ? "Collapse" : "Expand"}>
+                            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                          </button>
+                          <button onClick={() => setArchiveTarget(t)} className="text-muted-foreground hover:text-foreground p-1" aria-label="Archive" title="Archive">
+                            <Archive className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      {isArchived && (
+                        <Button size="sm" variant="outline" onClick={() => restoreTournament(t)}>
+                          <ArchiveRestore className="h-3.5 w-3.5 mr-1" /> Restore
+                        </Button>
+                      )}
+                      <button onClick={() => setDeleteTarget(t)} className="text-muted-foreground hover:text-destructive p-1" aria-label="Delete permanently" title="Delete permanently">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 </div>
+
 
                 {/* Expanded Content */}
                 {isExpanded && (

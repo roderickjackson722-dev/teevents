@@ -258,6 +258,35 @@ const EventDetail = () => {
                     <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
                   </div>
 
+                  {questions.length > 0 && (
+                    <div className="pt-2 border-t border-border space-y-3">
+                      {questions.map((q, idx) => (
+                        <div key={idx}>
+                          <Label>{q.label}{q.required && <span className="text-destructive ml-0.5">*</span>}</Label>
+                          {q.type === "select" ? (
+                            <select
+                              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                              value={answers[q.label] || ""}
+                              onChange={(e) => setAnswers((p) => ({ ...p, [q.label]: e.target.value }))}
+                            >
+                              <option value="">Select…</option>
+                              {(q.options || "").split(",").map((o) => o.trim()).filter(Boolean).map((o) => (
+                                <option key={o} value={o}>{o}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <Input
+                              type={q.type === "email" ? "email" : q.type === "phone" ? "tel" : "text"}
+                              value={answers[q.label] || ""}
+                              onChange={(e) => setAnswers((p) => ({ ...p, [q.label]: e.target.value }))}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+
                   <div className="flex items-center justify-between pt-2 border-t border-border">
                     <span className="text-sm text-muted-foreground">Total</span>
                     <span className="text-xl font-bold">${(total / 100).toFixed(2)}</span>

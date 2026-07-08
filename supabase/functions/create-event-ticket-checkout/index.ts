@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { event_id, tier_id, quantity, buyer_name, buyer_email } = await req.json();
+    const { event_id, tier_id, quantity, buyer_name, buyer_email, buyer_answers } = await req.json();
     const qty = Math.max(1, Math.min(20, Number(quantity) || 1));
 
     if (!event_id || !tier_id || !buyer_email) {
@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (tierErr || !tier) throw new Error("Ticket tier not found");
+    if (tier.price_cents <= 0) throw new Error("Free tickets should use the free registration flow");
 
     const remaining =
       tier.max_quantity == null ? Infinity : tier.max_quantity - (tier.sold_quantity || 0);
@@ -88,6 +89,7 @@ Deno.serve(async (req) => {
       total_cents: totalCents,
       stripe_session_id: session.id,
       payment_status: "pending",
+      buyer_answers: buyer_answers || {},
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

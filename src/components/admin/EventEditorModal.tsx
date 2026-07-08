@@ -261,17 +261,30 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
           </div>
 
           <div>
-            <Label>Hero Image</Label>
-            <div className="flex items-center gap-3">
+            <Label>Event Photo</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              The full image is displayed on the event page (not cropped). For best results, use a landscape photo up to ~1600px wide.
+            </p>
+            <div className="flex items-start gap-3">
               <Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleImage(e.target.files[0])} disabled={uploading} />
-              {data.hero_image_url && <img src={data.hero_image_url} alt="preview" className="h-12 w-20 object-cover rounded border" />}
+              {data.hero_image_url && (
+                <img src={data.hero_image_url} alt="preview" className="max-h-40 max-w-[240px] object-contain rounded border border-border bg-muted" />
+              )}
             </div>
             <Input className="mt-2" value={data.hero_image_url} onChange={(e) => updateField("hero_image_url", e.target.value)} placeholder="Or paste image URL" />
           </div>
 
           <div>
-            <Label>Description (HTML supported)</Label>
-            <Textarea rows={6} value={data.description_html} onChange={(e) => updateField("description_html", e.target.value)} placeholder="<p>Join us for the annual charity golf tournament...</p>" />
+            <Label>About This Event</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Full formatting: headings, bold/italic/underline, fonts &amp; sizes, colors, highlights, lists, alignment, links, and inline images.
+            </p>
+            <RichTextEditor
+              value={data.description_html}
+              onChange={(html) => updateField("description_html", sanitizeHtml(html))}
+              onImageUpload={uploadImageToStorage}
+              placeholder="Write about your event..."
+            />
           </div>
 
           <div className="flex items-center gap-2">

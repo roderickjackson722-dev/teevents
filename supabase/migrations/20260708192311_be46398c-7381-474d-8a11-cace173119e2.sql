@@ -1,0 +1,1 @@
+ALTER TABLE public.public_events ADD COLUMN IF NOT EXISTS schedule_html text;

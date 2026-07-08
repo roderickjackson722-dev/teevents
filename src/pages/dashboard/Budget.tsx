@@ -813,9 +813,9 @@ function SummaryCard({ label, value, tint, border }: { label: string; value: str
 
 function KpiPill({ label, value, input }: { label: string; value?: string; input?: React.ReactNode }) {
   return (
-    <div className="bg-muted/40 rounded-md px-3 py-2 flex items-center justify-between gap-2">
-      <span className="text-muted-foreground">{label}</span>
-      {input ? input : <span className="font-mono font-semibold">{value}</span>}
+    <div className="bg-muted/40 rounded-md px-3 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 min-w-0">
+      <span className="text-muted-foreground whitespace-nowrap">{label}</span>
+      {input ? input : <span className="font-mono font-semibold whitespace-nowrap">{value}</span>}
     </div>
   );
 }
@@ -952,17 +952,18 @@ function ExpenseSection({
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
         </Button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[720px]">
+      <div className="overflow-x-auto -mx-px">
+
+        <table className="w-full text-sm min-w-[900px]">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>
-              <th className="text-left p-2 font-medium w-1/3">Item</th>
+              <th className="text-left p-2 font-medium min-w-[220px]">Item</th>
               <th className="text-right p-2 font-medium w-28">Estimated</th>
               <th className="text-right p-2 font-medium w-28">Actual</th>
               <th className="text-right p-2 font-medium w-28">Variance</th>
               <th className="text-center p-2 font-medium w-20">Paid</th>
-              <th className="text-left p-2 font-medium w-36">Date Paid</th>
-              <th className="text-left p-2 font-medium">Notes</th>
+              <th className="text-left p-2 font-medium w-40">Date Paid</th>
+              <th className="text-left p-2 font-medium min-w-[180px]">Notes</th>
               <th className="no-print w-10"></th>
             </tr>
           </thead>
@@ -1035,18 +1036,18 @@ function IncomeSection({
           <Plus className="h-3.5 w-3.5 mr-1" /> Add line
         </Button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[820px]">
+      <div className="overflow-x-auto -mx-px">
+        <table className="w-full text-sm min-w-[1100px]">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>
-              <th className="text-left p-2 font-medium w-1/4">Item</th>
-              <th className="text-right p-2 font-medium w-20">Est. #</th>
-              <th className="text-right p-2 font-medium w-20">Actual #</th>
-              <th className="text-right p-2 font-medium w-24">Price</th>
-              <th className="text-right p-2 font-medium w-28">Est. Income</th>
-              <th className="text-right p-2 font-medium w-28">Actual Income</th>
+              <th className="text-left p-2 font-medium min-w-[220px]">Item</th>
+              <th className="text-right p-2 font-medium w-24">Est. #</th>
+              <th className="text-right p-2 font-medium w-24">Actual #</th>
+              <th className="text-right p-2 font-medium w-28">Price</th>
+              <th className="text-right p-2 font-medium w-32">Est. Income</th>
+              <th className="text-right p-2 font-medium w-32">Actual Income</th>
               <th className="text-center p-2 font-medium w-20">Received</th>
-              <th className="text-left p-2 font-medium">Notes</th>
+              <th className="text-left p-2 font-medium min-w-[180px]">Notes</th>
               <th className="no-print w-10"></th>
             </tr>
           </thead>

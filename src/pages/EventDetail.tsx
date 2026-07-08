@@ -39,8 +39,10 @@ type EventDetailRow = {
   status: string;
   purchase_questions: Question[] | null;
   sponsors: Sponsor[] | null;
+  photos: string[] | null;
   event_ticket_tiers: Tier[];
 };
+
 
 
 const formatTime = (t: string | null) => {
@@ -69,9 +71,10 @@ const EventDetail = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("public_events")
-        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, sponsors, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
+        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, sponsors, photos, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
         .eq("event_slug", slug)
         .maybeSingle();
+
       const evt = data as EventDetailRow | null;
       if (evt?.event_ticket_tiers) {
         evt.event_ticket_tiers.sort((a, b) => a.display_order - b.display_order);
@@ -184,9 +187,10 @@ const EventDetail = () => {
             )}
             <div className="p-6 md:p-8">
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">{event.event_title}</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-foreground leading-tight break-words hyphens-auto min-w-0 flex-1">{event.event_title}</h1>
                 {soldOut && <Badge variant="destructive">Sold Out</Badge>}
               </div>
+
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {formatTournamentDate(event.event_date, { year: "numeric", month: "long", day: "numeric" })}{event.event_time && ` · ${formatTime(event.event_time)}`}</span>
                 {event.location && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {event.location}</span>}
@@ -351,6 +355,19 @@ const EventDetail = () => {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {event.photos && event.photos.length > 0 && (
+            <div className="bg-card rounded-lg border border-border p-6 mt-6">
+              <h2 className="font-display text-xl font-bold mb-4 text-center">Photo Gallery</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {event.photos.map((url, i) => (
+                  <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-md border border-border bg-muted">
+                    <img src={url} alt={`${event.event_title} photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                  </a>
+                ))}
               </div>
             </div>
           )}

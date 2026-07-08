@@ -100,6 +100,9 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const [uploading, setUploading] = useState(false);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [uploadingSponsor, setUploadingSponsor] = useState<number | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
 
   useEffect(() => {
     (async () => {
@@ -130,13 +133,16 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
           setTiers(sorted);
           setQuestions(Array.isArray(full.purchase_questions) ? full.purchase_questions : []);
           setSponsors(Array.isArray((full as any).sponsors) ? (full as any).sponsors : []);
+          setPhotos(Array.isArray((full as any).photos) ? (full as any).photos.filter((p: any) => typeof p === "string") : []);
         }
       } else {
         setData(empty);
         setTiers([{ tier_name: "General", description: "", price_cents: 0, max_quantity: null, display_order: 0 }]);
         setQuestions([]);
         setSponsors([]);
+        setPhotos([]);
       }
+
     })();
   }, [event]);
 
@@ -196,6 +202,35 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
     }
   };
 
+  const handlePhotosUpload = async (files: FileList) => {
+    setUploadingPhotos(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        try {
+          const url = await uploadImageToStorage(file);
+          uploaded.push(url);
+        } catch (err) {
+          toast.error(`${file.name}: ${(err as Error).message}`);
+        }
+      }
+      if (uploaded.length) {
+        setPhotos((p) => [...p, ...uploaded]);
+        toast.success(`${uploaded.length} photo${uploaded.length > 1 ? "s" : ""} added`);
+      }
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+  const removePhoto = (idx: number) => setPhotos((p) => p.filter((_, i) => i !== idx));
+  const movePhoto = (idx: number, dir: -1 | 1) => setPhotos((p) => {
+    const next = [...p];
+    const j = idx + dir;
+    if (j < 0 || j >= next.length) return p;
+    [next[idx], next[j]] = [next[j], next[idx]];
+    return next;
+  });
+
   const handleSave = async () => {
     if (!data.event_title || !data.event_date || !data.event_slug) {
       toast.error("Title, date and slug are required");
@@ -231,6 +266,8 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         confirmation_email_body: data.confirmation_email_body || null,
         schedule_html: data.schedule_html || null,
         sponsors: cleanedSponsors,
+        photos: photos.filter((p) => (p || "").trim()),
+
       };
 
       let eventId = data.id;
@@ -468,6 +505,45 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
             </div>
           </div>
 
+
+          <div className="border-t border-border pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Label>Photo Gallery</Label>
+              <div>
+                <input
+                  id="photo-gallery-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  disabled={uploadingPhotos}
+                  onChange={(e) => e.target.files && e.target.files.length && handlePhotosUpload(e.target.files)}
+                />
+                <Button size="sm" variant="outline" disabled={uploadingPhotos} onClick={() => document.getElementById("photo-gallery-upload")?.click()}>
+                  <Plus className="h-3 w-3 mr-1" /> {uploadingPhotos ? "Uploading..." : "Add Photos"}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">
+              Upload multiple photos to display in a gallery at the bottom of the public event page. Click a thumbnail to remove or reorder.
+            </p>
+            {photos.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No photos yet.</p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                {photos.map((url, i) => (
+                  <div key={i} className="relative group aspect-square rounded border border-border overflow-hidden bg-muted">
+                    <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => movePhoto(i, -1)} disabled={i === 0} title="Move left">←</Button>
+                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1} title="Move right">→</Button>
+                      <Button size="icon" variant="destructive" className="h-7 w-7" onClick={() => removePhoto(i)} title="Remove"><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
 
           <div className="border-t border-border pt-4">

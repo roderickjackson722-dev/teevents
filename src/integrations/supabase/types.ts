@@ -4521,6 +4521,7 @@ export type Database = {
           hero_image_url: string | null
           id: string
           location: string | null
+          photos: Json
           purchase_questions: Json
           schedule_html: string | null
           sponsors: Json
@@ -4543,6 +4544,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           location?: string | null
+          photos?: Json
           purchase_questions?: Json
           schedule_html?: string | null
           sponsors?: Json
@@ -4565,6 +4567,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           location?: string | null
+          photos?: Json
           purchase_questions?: Json
           schedule_html?: string | null
           sponsors?: Json

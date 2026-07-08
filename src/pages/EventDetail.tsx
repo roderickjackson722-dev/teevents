@@ -23,6 +23,8 @@ type Tier = {
 
 type Question = { label: string; type: "text" | "email" | "phone" | "select"; required: boolean; options?: string };
 
+type Sponsor = { name: string; logo_url: string; website_url: string };
+
 type EventDetailRow = {
   id: string;
   event_title: string;
@@ -36,6 +38,7 @@ type EventDetailRow = {
   schedule_html: string | null;
   status: string;
   purchase_questions: Question[] | null;
+  sponsors: Sponsor[] | null;
   event_ticket_tiers: Tier[];
 };
 

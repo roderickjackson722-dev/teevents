@@ -343,6 +343,9 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
               onImageUpload={uploadImageToStorage}
               placeholder="7:00 AM – Registration & Breakfast&#10;8:30 AM – Shotgun Start..."
             />
+          </div>
+
+
 
           <div className="flex items-center gap-2">
             <Switch checked={data.featured} onCheckedChange={(v) => updateField("featured", v)} />

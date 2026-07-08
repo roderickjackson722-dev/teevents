@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Calendar, MapPin, Ticket, ArrowLeft, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, MapPin, Ticket, ArrowLeft, ExternalLink, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { formatTournamentDate } from "@/lib/formatDate";
+import EventSalesDialog from "@/components/admin/EventSalesDialog";
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import EventEditorModal from "@/components/admin/EventEditorModal";

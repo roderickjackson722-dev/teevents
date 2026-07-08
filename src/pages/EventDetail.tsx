@@ -71,9 +71,10 @@ const EventDetail = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("public_events")
-        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, sponsors, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
+        .select("id, event_title, event_slug, event_date, event_time, location, address, hero_image_url, description_html, schedule_html, status, purchase_questions, sponsors, photos, event_ticket_tiers(id, tier_name, description, price_cents, max_quantity, sold_quantity, display_order)")
         .eq("event_slug", slug)
         .maybeSingle();
+
       const evt = data as EventDetailRow | null;
       if (evt?.event_ticket_tiers) {
         evt.event_ticket_tiers.sort((a, b) => a.display_order - b.display_order);

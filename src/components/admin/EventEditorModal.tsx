@@ -98,6 +98,8 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [uploadingSponsor, setUploadingSponsor] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {

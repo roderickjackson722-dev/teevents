@@ -170,7 +170,16 @@ const ManageEvents = () => {
           onSaved={() => { setCreating(false); setEditing(null); load(); }}
         />
       )}
+
+      {salesFor && (
+        <EventSalesDialog
+          eventId={salesFor.id}
+          eventTitle={salesFor.event_title}
+          onClose={() => setSalesFor(null)}
+        />
+      )}
     </div>
+
   );
 };
 

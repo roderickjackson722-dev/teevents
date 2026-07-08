@@ -332,6 +332,18 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
             />
           </div>
 
+          <div>
+            <Label>Schedule of Events</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Full formatting toolbar: headings, bold/italic/underline, fonts &amp; sizes, colors, highlights, lists, alignment, links, and inline images. Use a table or list to lay out your day's timeline.
+            </p>
+            <RichTextEditor
+              value={data.schedule_html}
+              onChange={(html) => updateField("schedule_html", sanitizeHtml(html))}
+              onImageUpload={uploadImageToStorage}
+              placeholder="7:00 AM – Registration & Breakfast&#10;8:30 AM – Shotgun Start..."
+            />
+
           <div className="flex items-center gap-2">
             <Switch checked={data.featured} onCheckedChange={(v) => updateField("featured", v)} />
             <Label>Featured</Label>

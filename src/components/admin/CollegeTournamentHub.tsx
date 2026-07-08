@@ -45,6 +45,7 @@ interface CollegeTournament {
   slug: string | null;
   hero_image_url: string | null;
   hero_overlay_opacity: number | null;
+  archived_at?: string | null;
 }
 
 interface Invitation {

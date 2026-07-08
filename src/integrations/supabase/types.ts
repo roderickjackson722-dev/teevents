@@ -2394,6 +2394,113 @@ export type Database = {
           },
         ]
       }
+      event_ticket_purchases: {
+        Row: {
+          buyer_email: string | null
+          buyer_name: string | null
+          created_at: string
+          event_id: string
+          id: string
+          payment_status: string
+          quantity: number
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tier_id: string
+          total_cents: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          payment_status?: string
+          quantity?: number
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier_id: string
+          total_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          payment_status?: string
+          quantity?: number
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier_id?: string
+          total_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_purchases_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_ticket_purchases_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "event_ticket_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_ticket_tiers: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          event_id: string
+          id: string
+          max_quantity: number | null
+          price_cents: number
+          sold_quantity: number
+          tier_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          event_id: string
+          id?: string
+          max_quantity?: number | null
+          price_cents: number
+          sold_quantity?: number
+          tier_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          event_id?: string
+          id?: string
+          max_quantity?: number | null
+          price_cents?: number
+          sold_quantity?: number
+          tier_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_tiers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
@@ -4388,6 +4495,68 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_events: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          description_html: string | null
+          event_date: string
+          event_slug: string
+          event_time: string | null
+          event_title: string
+          featured: boolean
+          hero_image_url: string | null
+          id: string
+          location: string | null
+          status: string
+          tournament_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          description_html?: string | null
+          event_date: string
+          event_slug: string
+          event_time?: string | null
+          event_title: string
+          featured?: boolean
+          hero_image_url?: string | null
+          id?: string
+          location?: string | null
+          status?: string
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          description_html?: string | null
+          event_date?: string
+          event_slug?: string
+          event_time?: string | null
+          event_title?: string
+          featured?: boolean
+          hero_image_url?: string | null
+          id?: string
+          location?: string | null
+          status?: string
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_events_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
         ]
@@ -8598,6 +8767,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_event_ticket_sold: {
+        Args: { _qty: number; _tier_id: string }
+        Returns: undefined
       }
       increment_sample_view: { Args: { _slug: string }; Returns: undefined }
       is_org_member: {

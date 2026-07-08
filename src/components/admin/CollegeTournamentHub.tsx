@@ -703,23 +703,58 @@ const CollegeTournamentHub = () => {
       </div>
 
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={o => { if (!o) setDeleteTarget(null); }}>
+      {/* Delete Confirmation (typed) */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={o => { if (!o) { setDeleteTarget(null); setDeleteConfirmText(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">Delete College Tournament</AlertDialogTitle>
-            <AlertDialogDescription>
-              Permanently delete <strong>"{deleteTarget?.title}"</strong> and all associated invitations, registrations, and tab content?
+            <AlertDialogTitle className="text-destructive">Permanently Delete Tournament</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  This will <strong>permanently delete</strong> <strong>"{deleteTarget?.title}"</strong> and all associated invitations, registrations, tabs and roster data. This cannot be undone.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Prefer to keep a copy? Cancel and use <strong>Archive</strong> instead — archived tournaments are hidden from the main list but can be restored later.
+                </p>
+                <div>
+                  <label className="text-xs font-medium block mb-1">Type <span className="font-mono text-destructive">DELETE</span> to confirm:</label>
+                  <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder="DELETE" autoFocus />
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteConfirmText.trim().toUpperCase() !== "DELETE"}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" /> Permanently Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Archive Confirmation */}
+      <AlertDialog open={!!archiveTarget} onOpenChange={o => { if (!o) setArchiveTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Tournament</AlertDialogTitle>
+            <AlertDialogDescription>
+              Move <strong>"{archiveTarget?.title}"</strong> to the archive? It will be hidden from the main list but all data is preserved and you can restore it anytime from the Archive tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={archiveTournament}>
+              <Archive className="h-4 w-4 mr-2" /> Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
 
       {/* Delete Invitation Confirmation */}
       <AlertDialog open={!!deleteInvTarget} onOpenChange={o => { if (!o) setDeleteInvTarget(null); }}>

@@ -215,10 +215,10 @@ const EventDetail = () => {
             </div>
 
             {event.schedule_html && (
-              <div className="bg-card rounded-lg border border-border p-6 mt-6 md:col-start-1">
-                <h2 className="font-display text-xl font-bold mb-3">Schedule of Events</h2>
+              <div className="bg-card rounded-lg border border-border p-4 md:p-5 mt-6 md:col-start-1 md:mt-4">
+                <h2 className="font-display text-lg font-bold mb-2">Schedule of Events</h2>
                 <div
-                  className="prose prose-base max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md"
+                  className="prose prose-sm max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-headings:mt-3 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md prose-img:my-2"
                   dangerouslySetInnerHTML={{ __html: event.schedule_html }}
                 />
               </div>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 

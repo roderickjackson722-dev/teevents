@@ -100,6 +100,9 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
   const [uploading, setUploading] = useState(false);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [uploadingSponsor, setUploadingSponsor] = useState<number | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
 
   useEffect(() => {
     (async () => {

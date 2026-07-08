@@ -230,6 +230,7 @@ const EventEditorModal = ({ event, onClose, onSaved }: Props) => {
         confirmation_email_subject: data.confirmation_email_subject || null,
         confirmation_email_body: data.confirmation_email_body || null,
         schedule_html: data.schedule_html || null,
+        sponsors: cleanedSponsors,
       };
 
       let eventId = data.id;

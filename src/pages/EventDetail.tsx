@@ -160,7 +160,10 @@ const EventDetail = () => {
             <div className="bg-card rounded-lg border border-border p-6">
               <h2 className="font-display text-xl font-bold mb-3">About This Event</h2>
               {event.description_html ? (
-                <div className="prose prose-sm max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: event.description_html }} />
+                <div
+                  className="prose prose-base max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-a:text-secondary prose-a:underline prose-strong:text-foreground prose-img:rounded-md"
+                  dangerouslySetInnerHTML={{ __html: event.description_html }}
+                />
               ) : (
                 <p className="text-muted-foreground">No description provided.</p>
               )}

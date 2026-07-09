@@ -7446,6 +7446,7 @@ export type Database = {
           max_handicap: number | null
           max_players: number | null
           max_waitlist_slots: number | null
+          media_position: string
           media_tab_title: string | null
           mission_statement: string | null
           org_address: string | null
@@ -7667,6 +7668,7 @@ export type Database = {
           max_handicap?: number | null
           max_players?: number | null
           max_waitlist_slots?: number | null
+          media_position?: string
           media_tab_title?: string | null
           mission_statement?: string | null
           org_address?: string | null
@@ -7888,6 +7890,7 @@ export type Database = {
           max_handicap?: number | null
           max_players?: number | null
           max_waitlist_slots?: number | null
+          media_position?: string
           media_tab_title?: string | null
           mission_statement?: string | null
           org_address?: string | null

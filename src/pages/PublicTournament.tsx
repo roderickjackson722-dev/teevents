@@ -1478,6 +1478,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
 
       {galleryPosition === "top" && galleryNode}
+      {mediaPosition === "top" && mediaNode}
 
       {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
       {isTabVisible("sponsors") && allSponsors.length > 0 && (
@@ -2019,6 +2020,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {galleryPosition === "after_sponsors" && galleryNode}
+      {mediaPosition === "after_sponsors" && mediaNode}
 
       {/* ===== EVENT DAY CONTESTS ===== */}
       {isTabVisible("contests") && contests.length > 0 && (
@@ -2071,6 +2073,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </div>
         </section>
       )}
+
+      {mediaPosition === "after_schedule" && mediaNode}
+
 
       {/* ===== LOCATION ===== */}
       {(isTabVisible("travel") || isTabVisible("course_details")) && (
@@ -2201,6 +2206,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       })()}
 
       {galleryPosition === "after_leaderboard" && galleryNode}
+      {mediaPosition === "after_leaderboard" && mediaNode}
 
       {!golfersFirst && registrationSection}
 
@@ -2573,6 +2579,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {galleryPosition === "after_donations" && galleryNode}
+      {mediaPosition === "after_donations" && mediaNode}
 
       {/* ===== ABOUT THE ORGANIZER ===== */}
       {isTabVisible("about_organizer") && (
@@ -2703,7 +2710,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {mediaPosition === "after_lodging" && mediaNode}
+
       {galleryPosition === "bottom" && galleryNode}
+      {mediaPosition === "bottom" && mediaNode}
 
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>

@@ -64,6 +64,7 @@ interface TournamentSite {
   site_button_radius?: number | null;
   site_button_hover_effect?: string | null;
   gallery_position?: string | null;
+  media_position?: string | null;
   // Organizer-controlled public page tabs (visibility + order)
   public_tabs?: Record<string, boolean> | null;
   public_tabs_order?: string[] | null;

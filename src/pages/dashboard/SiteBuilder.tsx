@@ -380,6 +380,7 @@ const SiteBuilder = () => {
         site_button_radius: settings.site_button_radius ?? 8,
         site_button_hover_effect: settings.site_button_hover_effect || "darken",
         gallery_position: settings.gallery_position || "default",
+        media_position: settings.media_position || "default",
         site_logo_color_mode: settings.site_logo_color_mode || "original",
         site_logo_color_value: settings.site_logo_color_value || null,
       } as any)

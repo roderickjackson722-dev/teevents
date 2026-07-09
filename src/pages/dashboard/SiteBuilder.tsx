@@ -1158,6 +1158,28 @@ const SiteBuilder = () => {
                       <option value="bottom">Bottom — just before Contact</option>
                     </select>
                   </div>
+
+                  <div className="pt-4 border-t border-border">
+                    <Label className="text-sm font-bold">Media Clips Position</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Choose where the Media Clips section appears on your public tournament page. Add or edit clips under <strong>Dashboard → Media Clips</strong>.
+                    </p>
+                    <select
+                      value={settings.media_position || "default"}
+                      onChange={(e) => updateField("media_position" as any, e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="top">Top — right under the hero</option>
+                      <option value="after_sponsors">After Sponsors</option>
+                      <option value="after_leaderboard">After Leaderboard</option>
+                      <option value="after_schedule">After Schedule of Events</option>
+                      <option value="default">Default — after Photo Gallery</option>
+                      <option value="after_donations">After Donations</option>
+                      <option value="after_lodging">After Lodging</option>
+                      <option value="bottom">Bottom — just before Contact</option>
+                    </select>
+                  </div>
+
                 </>
               )}
             </>

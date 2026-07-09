@@ -64,6 +64,7 @@ interface TournamentSite {
   site_button_radius?: number | null;
   site_button_hover_effect?: string | null;
   gallery_position?: string | null;
+  media_position?: string | null;
   // Organizer-controlled public page tabs (visibility + order)
   public_tabs?: Record<string, boolean> | null;
   public_tabs_order?: string[] | null;
@@ -926,6 +927,71 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </section>
   ) : null;
 
+  // Media clips — rendered in the position the organizer picks.
+  // Shown whenever active clips exist (independent of the "Media" tab-visibility toggle,
+  // since adding a clip is itself an explicit publish action).
+  const mediaPosition = (tournament as any).media_position || "default";
+  const mediaNode = mediaClips.length > 0 ? (
+    <section id="media" className="py-16" style={{ backgroundColor: "#fff" }}>
+      <div className="max-w-6xl mx-auto px-4">
+        <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
+          {((tournament as any).media_tab_title || "MEDIA").toUpperCase()}
+        </h2>
+        <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {mediaClips.map((clip) => (
+            <button
+              key={clip.id}
+              onClick={() => setMediaClipOpen(clip.id)}
+              className="group relative aspect-video rounded-lg overflow-hidden bg-muted border hover:shadow-lg transition-shadow"
+            >
+              {clip.thumbnail_url ? (
+                <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-sm">No thumbnail</div>
+              )}
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="black"><path d="M8 5v14l11-7z" /></svg>
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-sm font-medium text-left">
+                {clip.title}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {mediaClipOpen && (() => {
+        const clip = mediaClips.find((c) => c.id === mediaClipOpen);
+        if (!clip) return null;
+        const url = clip.video_url;
+        let embed: string | null = null;
+        const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+        if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1`;
+        const vm = url.match(/vimeo\.com\/(\d+)/);
+        if (!embed && vm) embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1`;
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            onClick={() => setMediaClipOpen(null)}
+          >
+            <div className="w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
+              {embed ? (
+                <iframe src={embed} className="w-full h-full rounded-lg" allow="autoplay; encrypted-media; fullscreen" allowFullScreen />
+              ) : (
+                <video src={url} controls autoPlay className="w-full h-full rounded-lg bg-black" />
+              )}
+              {clip.description && <p className="text-white text-sm mt-3">{clip.description}</p>}
+            </div>
+          </div>
+        );
+      })()}
+    </section>
+  ) : null;
+
+
+
 
   const golfersFirst = (tournament as any).golfers_register_first === true;
 
@@ -1412,6 +1478,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
 
       {galleryPosition === "top" && galleryNode}
+      {mediaPosition === "top" && mediaNode}
 
       {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
       {isTabVisible("sponsors") && allSponsors.length > 0 && (
@@ -1953,6 +2020,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {galleryPosition === "after_sponsors" && galleryNode}
+      {mediaPosition === "after_sponsors" && mediaNode}
 
       {/* ===== EVENT DAY CONTESTS ===== */}
       {isTabVisible("contests") && contests.length > 0 && (
@@ -2005,6 +2073,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </div>
         </section>
       )}
+
+      {mediaPosition === "after_schedule" && mediaNode}
+
 
       {/* ===== LOCATION ===== */}
       {(isTabVisible("travel") || isTabVisible("course_details")) && (
@@ -2135,6 +2206,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       })()}
 
       {galleryPosition === "after_leaderboard" && galleryNode}
+      {mediaPosition === "after_leaderboard" && mediaNode}
 
       {!golfersFirst && registrationSection}
 
@@ -2263,65 +2335,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {/* ===== PHOTO GALLERY ===== */}
       {(tournament.gallery_position || "default") === "default" && galleryNode}
 
-      {/* ===== MEDIA CLIPS ===== */}
-      {isTabVisible("media") && mediaClips.length > 0 && (
-        <section id="media" className="py-16" style={{ backgroundColor: "#fff" }}>
-          <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-              {((tournament as any).media_tab_title || "MEDIA").toUpperCase()}
-            </h2>
-            <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {mediaClips.map((clip) => (
-                <button
-                  key={clip.id}
-                  onClick={() => setMediaClipOpen(clip.id)}
-                  className="group relative aspect-video rounded-lg overflow-hidden bg-muted border hover:shadow-lg transition-shadow"
-                >
-                  {clip.thumbnail_url ? (
-                    <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-sm">No thumbnail</div>
-                  )}
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="black"><path d="M8 5v14l11-7z" /></svg>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-sm font-medium text-left">
-                    {clip.title}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-          {mediaClipOpen && (() => {
-            const clip = mediaClips.find((c) => c.id === mediaClipOpen);
-            if (!clip) return null;
-            const url = clip.video_url;
-            let embed: string | null = null;
-            const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-            if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1`;
-            const vm = url.match(/vimeo\.com\/(\d+)/);
-            if (!embed && vm) embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1`;
-            return (
-              <div
-                className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-                onClick={() => setMediaClipOpen(null)}
-              >
-                <div className="w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
-                  {embed ? (
-                    <iframe src={embed} className="w-full h-full rounded-lg" allow="autoplay; encrypted-media; fullscreen" allowFullScreen />
-                  ) : (
-                    <video src={url} controls autoPlay className="w-full h-full rounded-lg bg-black" />
-                  )}
-                  {clip.description && <p className="text-white text-sm mt-3">{clip.description}</p>}
-                </div>
-              </div>
-            );
-          })()}
-        </section>
-      )}
+      {/* ===== MEDIA CLIPS (default position) ===== */}
+      {mediaPosition === "default" && mediaNode}
+
 
       {/* ===== VOLUNTEER SIGNUP ===== */}
       {isTabVisible("volunteers") && volunteerRoles.length > 0 && (
@@ -2563,6 +2579,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {galleryPosition === "after_donations" && galleryNode}
+      {mediaPosition === "after_donations" && mediaNode}
 
       {/* ===== ABOUT THE ORGANIZER ===== */}
       {isTabVisible("about_organizer") && (
@@ -2693,7 +2710,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
+      {mediaPosition === "after_lodging" && mediaNode}
+
       {galleryPosition === "bottom" && galleryNode}
+      {mediaPosition === "bottom" && mediaNode}
 
       {/* ===== CONTACT US ===== */}
       <section id="contact" className="py-16" style={{ backgroundColor: "#fafafa" }}>

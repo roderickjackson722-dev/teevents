@@ -277,6 +277,7 @@ interface SiteSettings {
   site_button_radius: number | null;
   site_button_hover_effect: string | null;
   gallery_position: string | null;
+  media_position: string | null;
 }
 
 const SiteBuilder = () => {

@@ -32,6 +32,7 @@ interface CollegeTournament {
   id: string;
   title: string;
   description: string | null;
+  hero_tagline: string | null;
   start_date: string | null;
   end_date: string | null;
   location: string | null;

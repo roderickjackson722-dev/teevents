@@ -1149,6 +1149,7 @@ export type Database = {
           hero_tagline: string | null
           id: string
           location: string | null
+          overview_visible: boolean
           registration_fields: Json | null
           registration_open: boolean | null
           slug: string | null
@@ -1170,6 +1171,7 @@ export type Database = {
           hero_tagline?: string | null
           id?: string
           location?: string | null
+          overview_visible?: boolean
           registration_fields?: Json | null
           registration_open?: boolean | null
           slug?: string | null
@@ -1191,6 +1193,7 @@ export type Database = {
           hero_tagline?: string | null
           id?: string
           location?: string | null
+          overview_visible?: boolean
           registration_fields?: Json | null
           registration_open?: boolean | null
           slug?: string | null

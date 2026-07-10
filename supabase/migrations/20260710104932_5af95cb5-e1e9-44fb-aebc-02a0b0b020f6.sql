@@ -1,0 +1,1 @@
+ALTER TABLE public.college_tournaments ADD COLUMN IF NOT EXISTS overview_visible boolean NOT NULL DEFAULT true;

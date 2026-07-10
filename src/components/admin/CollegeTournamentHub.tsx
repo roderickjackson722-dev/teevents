@@ -969,6 +969,7 @@ const CollegeTournamentHub = () => {
                                   placeholder="Full event overview — supports headings, lists, links, colors, images..."
                                 />
                               </div>
+                              <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <label className="text-xs text-muted-foreground mb-1 block">Start Date</label>
                                   <Input type="date" value={editTournamentForm.start_date} onChange={e => setEditTournamentForm({ ...editTournamentForm, start_date: e.target.value })} />

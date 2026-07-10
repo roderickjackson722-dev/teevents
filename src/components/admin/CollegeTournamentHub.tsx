@@ -46,6 +46,7 @@ interface CollegeTournament {
   slug: string | null;
   hero_image_url: string | null;
   hero_overlay_opacity: number | null;
+  overview_visible?: boolean | null;
   archived_at?: string | null;
 }
 
@@ -129,6 +130,10 @@ const CollegeTournamentHub = () => {
   // Tab editing
   const [editingTab, setEditingTab] = useState<string | null>(null);
   const [editTabContent, setEditTabContent] = useState("");
+
+  // Overview tab editing (built-in, edits tournament.description)
+  const [editingOverview, setEditingOverview] = useState(false);
+  const [editOverviewContent, setEditOverviewContent] = useState("");
 
   // Add tab form
   const [newTabTitle, setNewTabTitle] = useState("");
@@ -484,7 +489,28 @@ const CollegeTournamentHub = () => {
     toast({ title: "Player removed" });
   };
 
+  // Overview tab (built-in) actions
+  const currentTournament = () => tournaments.find(t => t.id === expandedId);
+
+  const saveOverviewContent = async () => {
+    if (!expandedId) return;
+    await supabase.from("college_tournaments").update({ description: editOverviewContent } as any).eq("id", expandedId);
+    setEditingOverview(false);
+    await fetchTournaments();
+    toast({ title: "Overview saved" });
+  };
+
+  const toggleOverviewVisibility = async () => {
+    const t = currentTournament();
+    if (!t) return;
+    const next = !(t.overview_visible ?? true);
+    await supabase.from("college_tournaments").update({ overview_visible: next } as any).eq("id", t.id);
+    await fetchTournaments();
+    toast({ title: next ? "Overview tab shown" : "Overview tab hidden" });
+  };
+
   // Tabs
+
   const addTab = async () => {
     if (!expandedId || !newTabTitle.trim()) return;
     const isBookings = newTabType === "bookings";
@@ -1322,6 +1348,67 @@ const CollegeTournamentHub = () => {
 
                       {/* Event Tabs Management */}
                       <TabsContent value="tabs" className="space-y-4">
+                        {/* Built-in Overview tab management */}
+                        {(() => {
+                          const ct = currentTournament();
+                          const visible = ct?.overview_visible ?? true;
+                          return (
+                            <div className="bg-card rounded-lg border border-primary/40 p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold text-sm">Overview</h4>
+                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Built-in</span>
+                                  {!visible && <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Hidden</span>}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button onClick={toggleOverviewVisibility} className="text-muted-foreground hover:text-foreground" title={visible ? "Hide tab" : "Show tab"}>
+                                    {visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-2">Shown as the first tab on your public page along with course, location, dates, and contact.</p>
+                              {editingOverview ? (
+                                <div className="space-y-2">
+                                  <RichTextEditor
+                                    value={editOverviewContent}
+                                    onChange={(html) => setEditOverviewContent(html)}
+                                    placeholder="Enter overview content..."
+                                    onImageUpload={async (file) => {
+                                      const ext = file.name.split(".").pop() || "png";
+                                      const path = `college/${expandedId}/overview-${Date.now()}.${ext}`;
+                                      const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+                                      if (upErr) {
+                                        toast({ title: "Image upload failed", description: upErr.message, variant: "destructive" });
+                                        throw upErr;
+                                      }
+                                      const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+                                      return publicUrl;
+                                    }}
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button size="sm" onClick={saveOverviewContent}><Save className="h-3.5 w-3.5 mr-1" /> Save</Button>
+                                    <Button size="sm" variant="outline" onClick={() => setEditingOverview(false)}><X className="h-3.5 w-3.5 mr-1" /> Cancel</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div>
+                                  {ct?.description ? (
+                                    <div
+                                      className="prose prose-sm max-w-none text-muted-foreground line-clamp-4"
+                                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(ct.description) }}
+                                    />
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground italic">No overview content yet.</p>
+                                  )}
+                                  <Button size="sm" variant="outline" className="mt-2" onClick={() => { setEditingOverview(true); setEditOverviewContent(ct?.description || ""); }}>
+                                    Edit Content
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+
                         {tabs.map(tab => (
                           <div key={tab.id} className="bg-card rounded-lg border border-border p-4">
                             <div className="flex items-center justify-between mb-2">

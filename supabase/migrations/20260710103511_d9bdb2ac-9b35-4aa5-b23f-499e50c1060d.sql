@@ -1,0 +1,1 @@
+ALTER TABLE public.college_tournaments ADD COLUMN IF NOT EXISTS hero_tagline text;

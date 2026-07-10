@@ -162,7 +162,7 @@ const CollegeTournamentHub = () => {
   // Inline tournament editing
   const [editingTournament, setEditingTournament] = useState<string | null>(null);
   const [editTournamentForm, setEditTournamentForm] = useState({
-    title: "", description: "", start_date: "", end_date: "",
+    title: "", description: "", hero_tagline: "", start_date: "", end_date: "",
     location: "", course_name: "", contact_email: "", slug: "",
   });
   const [uploadingHero, setUploadingHero] = useState(false);

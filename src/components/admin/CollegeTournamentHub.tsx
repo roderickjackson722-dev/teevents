@@ -489,7 +489,28 @@ const CollegeTournamentHub = () => {
     toast({ title: "Player removed" });
   };
 
+  // Overview tab (built-in) actions
+  const currentTournament = () => tournaments.find(t => t.id === expandedId);
+
+  const saveOverviewContent = async () => {
+    if (!expandedId) return;
+    await supabase.from("college_tournaments").update({ description: editOverviewContent } as any).eq("id", expandedId);
+    setEditingOverview(false);
+    await fetchTournaments();
+    toast({ title: "Overview saved" });
+  };
+
+  const toggleOverviewVisibility = async () => {
+    const t = currentTournament();
+    if (!t) return;
+    const next = !(t.overview_visible ?? true);
+    await supabase.from("college_tournaments").update({ overview_visible: next } as any).eq("id", t.id);
+    await fetchTournaments();
+    toast({ title: next ? "Overview tab shown" : "Overview tab hidden" });
+  };
+
   // Tabs
+
   const addTab = async () => {
     if (!expandedId || !newTabTitle.trim()) return;
     const isBookings = newTabType === "bookings";

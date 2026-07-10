@@ -481,46 +481,50 @@ const CollegeTournament = () => {
         )}
 
         {/* Event Tabs */}
-        {tabs.length > 0 && (
+        {(tabs.length > 0 || tournament.overview_visible !== false) && (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="flex flex-wrap h-auto gap-1">
-              <TabsTrigger value="info">Overview</TabsTrigger>
+              {tournament.overview_visible !== false && (
+                <TabsTrigger value="info">Overview</TabsTrigger>
+              )}
               {tabs.map(tab => (
                 <TabsTrigger key={tab.id} value={tab.id}>{tab.title}</TabsTrigger>
               ))}
             </TabsList>
 
-            <TabsContent value="info" className="mt-6">
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h3 className="font-display font-bold text-lg mb-4">Tournament Information</h3>
-                {tournament.description && <div className="prose prose-sm max-w-none mb-4 text-muted-foreground" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.description) }} />}
-                <div className="grid sm:grid-cols-2 gap-4 text-sm">
-                  {tournament.course_name && (
-                    <div className="flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /><span><strong>Course:</strong> {tournament.course_name}</span></div>
-                  )}
-                  {tournament.location && (
-                    <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /><span><strong>Location:</strong> {tournament.location}</span></div>
-                  )}
-                  {tournament.start_date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      <span>
-                        <strong>Dates:</strong>{" "}
-                        {new Date(tournament.start_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                        {tournament.end_date && tournament.end_date !== tournament.start_date && (
-                          <> – {new Date(tournament.end_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</>
-                        )}
-                      </span>
-                    </div>
-                  )}
-                  {tournament.contact_email && (
-                    <div className="flex items-center gap-2">
-                      <span><strong>Contact:</strong> <a href={`mailto:${tournament.contact_email}`} className="text-primary hover:underline">{tournament.contact_email}</a></span>
-                    </div>
-                  )}
+            {tournament.overview_visible !== false && (
+              <TabsContent value="info" className="mt-6">
+                <div className="bg-card rounded-lg border border-border p-6">
+                  <h3 className="font-display font-bold text-lg mb-4">Tournament Information</h3>
+                  {tournament.description && <div className="prose prose-sm max-w-none mb-4 text-muted-foreground" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.description) }} />}
+                  <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                    {tournament.course_name && (
+                      <div className="flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /><span><strong>Course:</strong> {tournament.course_name}</span></div>
+                    )}
+                    {tournament.location && (
+                      <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /><span><strong>Location:</strong> {tournament.location}</span></div>
+                    )}
+                    {tournament.start_date && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span>
+                          <strong>Dates:</strong>{" "}
+                          {new Date(tournament.start_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                          {tournament.end_date && tournament.end_date !== tournament.start_date && (
+                            <> – {new Date(tournament.end_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {tournament.contact_email && (
+                      <div className="flex items-center gap-2">
+                        <span><strong>Contact:</strong> <a href={`mailto:${tournament.contact_email}`} className="text-primary hover:underline">{tournament.contact_email}</a></span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
+              </TabsContent>
+            )}
 
             {tabs.map(tab => (
               <TabsContent key={tab.id} value={tab.id} className="mt-6">

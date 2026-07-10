@@ -115,6 +115,9 @@ const CollegeTournament = () => {
         .eq("is_visible", true)
         .order("sort_order", { ascending: true }) as any;
       setTabs(tabData || []);
+      if (t.overview_visible === false && (tabData || []).length > 0) {
+        setActiveTab(tabData[0].id);
+      }
 
       // Check RSVP token
       if (rsvpToken) {

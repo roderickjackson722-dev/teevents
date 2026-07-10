@@ -1002,7 +1002,8 @@ const CollegeTournamentHub = () => {
                               <div><span className="text-muted-foreground">Contact:</span> {t.contact_email || "—"}</div>
                               <div><span className="text-muted-foreground">Start:</span> {t.start_date || "—"}</div>
                               <div><span className="text-muted-foreground">End:</span> {t.end_date || "—"}</div>
-                              {t.description && <div className="sm:col-span-2"><span className="text-muted-foreground">Description:</span> {t.description}</div>}
+                              {t.hero_tagline && <div className="sm:col-span-2"><span className="text-muted-foreground">Hero tagline:</span> {t.hero_tagline}</div>}
+                              {t.description && <div className="sm:col-span-2"><span className="text-muted-foreground">Overview:</span> <div className="prose prose-sm max-w-none mt-1" dangerouslySetInnerHTML={{ __html: sanitizeHtml(t.description) }} /></div>}
                             </div>
                           )}
                         </div>

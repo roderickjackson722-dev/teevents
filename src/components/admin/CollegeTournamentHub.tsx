@@ -32,6 +32,7 @@ interface CollegeTournament {
   id: string;
   title: string;
   description: string | null;
+  hero_tagline: string | null;
   start_date: string | null;
   end_date: string | null;
   location: string | null;
@@ -161,7 +162,7 @@ const CollegeTournamentHub = () => {
   // Inline tournament editing
   const [editingTournament, setEditingTournament] = useState<string | null>(null);
   const [editTournamentForm, setEditTournamentForm] = useState({
-    title: "", description: "", start_date: "", end_date: "",
+    title: "", description: "", hero_tagline: "", start_date: "", end_date: "",
     location: "", course_name: "", contact_email: "", slug: "",
   });
   const [uploadingHero, setUploadingHero] = useState(false);
@@ -583,7 +584,8 @@ const CollegeTournamentHub = () => {
   const startEditTournament = (t: CollegeTournament) => {
     setEditingTournament(t.id);
     setEditTournamentForm({
-      title: t.title, description: t.description || "", start_date: t.start_date || "",
+      title: t.title, description: t.description || "", hero_tagline: (t as any).hero_tagline || "",
+      start_date: t.start_date || "",
       end_date: t.end_date || "", location: t.location || "", course_name: t.course_name || "",
       contact_email: t.contact_email || "", slug: (t as any).slug || "",
     });
@@ -594,6 +596,7 @@ const CollegeTournamentHub = () => {
     const { error } = await supabase.from("college_tournaments").update({
       title: editTournamentForm.title,
       description: editTournamentForm.description || null,
+      hero_tagline: editTournamentForm.hero_tagline || null,
       start_date: editTournamentForm.start_date || null,
       end_date: editTournamentForm.end_date || null,
       location: editTournamentForm.location || null,
@@ -949,8 +952,22 @@ const CollegeTournamentHub = () => {
                                 <Input value={editTournamentForm.title} onChange={e => setEditTournamentForm({ ...editTournamentForm, title: e.target.value })} />
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Description</label>
-                                <Textarea value={editTournamentForm.description} onChange={e => setEditTournamentForm({ ...editTournamentForm, description: e.target.value })} className="min-h-[100px]" />
+                                <label className="text-xs text-muted-foreground mb-1 block">Hero Tagline (short — shown on hero image)</label>
+                                <Input
+                                  value={editTournamentForm.hero_tagline}
+                                  onChange={e => setEditTournamentForm({ ...editTournamentForm, hero_tagline: e.target.value })}
+                                  placeholder="e.g. Fall Invitational · Oct 12–13"
+                                  maxLength={140}
+                                />
+                                <p className="text-[11px] text-muted-foreground mt-1">Keep it short. This appears under the title on the hero banner. Leave blank to show nothing.</p>
+                              </div>
+                              <div>
+                                <label className="text-xs text-muted-foreground mb-1 block">Overview (full description, shown in the Overview tab)</label>
+                                <RichTextEditor
+                                  value={editTournamentForm.description}
+                                  onChange={html => setEditTournamentForm({ ...editTournamentForm, description: html })}
+                                  placeholder="Full event overview — supports headings, lists, links, colors, images..."
+                                />
                               </div>
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
@@ -985,7 +1002,8 @@ const CollegeTournamentHub = () => {
                               <div><span className="text-muted-foreground">Contact:</span> {t.contact_email || "—"}</div>
                               <div><span className="text-muted-foreground">Start:</span> {t.start_date || "—"}</div>
                               <div><span className="text-muted-foreground">End:</span> {t.end_date || "—"}</div>
-                              {t.description && <div className="sm:col-span-2"><span className="text-muted-foreground">Description:</span> {t.description}</div>}
+                              {t.hero_tagline && <div className="sm:col-span-2"><span className="text-muted-foreground">Hero tagline:</span> {t.hero_tagline}</div>}
+                              {t.description && <div className="sm:col-span-2"><span className="text-muted-foreground">Overview:</span> <div className="prose prose-sm max-w-none mt-1" dangerouslySetInnerHTML={{ __html: sanitizeHtml(t.description) }} /></div>}
                             </div>
                           )}
                         </div>

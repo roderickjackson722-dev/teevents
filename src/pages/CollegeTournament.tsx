@@ -41,6 +41,7 @@ interface Tournament {
   flyer_url: string | null;
   hero_image_url: string | null;
   hero_overlay_opacity: number | null;
+  overview_visible: boolean | null;
 }
 
 interface TournamentTab {

@@ -952,10 +952,23 @@ const CollegeTournamentHub = () => {
                                 <Input value={editTournamentForm.title} onChange={e => setEditTournamentForm({ ...editTournamentForm, title: e.target.value })} />
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Description</label>
-                                <Textarea value={editTournamentForm.description} onChange={e => setEditTournamentForm({ ...editTournamentForm, description: e.target.value })} className="min-h-[100px]" />
+                                <label className="text-xs text-muted-foreground mb-1 block">Hero Tagline (short — shown on hero image)</label>
+                                <Input
+                                  value={editTournamentForm.hero_tagline}
+                                  onChange={e => setEditTournamentForm({ ...editTournamentForm, hero_tagline: e.target.value })}
+                                  placeholder="e.g. Fall Invitational · Oct 12–13"
+                                  maxLength={140}
+                                />
+                                <p className="text-[11px] text-muted-foreground mt-1">Keep it short. This appears under the title on the hero banner. Leave blank to show nothing.</p>
                               </div>
-                              <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs text-muted-foreground mb-1 block">Overview (full description, shown in the Overview tab)</label>
+                                <RichTextEditor
+                                  value={editTournamentForm.description}
+                                  onChange={html => setEditTournamentForm({ ...editTournamentForm, description: html })}
+                                  placeholder="Full event overview — supports headings, lists, links, colors, images..."
+                                />
+                              </div>
                                 <div>
                                   <label className="text-xs text-muted-foreground mb-1 block">Start Date</label>
                                   <Input type="date" value={editTournamentForm.start_date} onChange={e => setEditTournamentForm({ ...editTournamentForm, start_date: e.target.value })} />

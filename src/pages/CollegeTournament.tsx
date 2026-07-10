@@ -492,7 +492,7 @@ const CollegeTournament = () => {
             <TabsContent value="info" className="mt-6">
               <div className="bg-card rounded-lg border border-border p-6">
                 <h3 className="font-display font-bold text-lg mb-4">Tournament Information</h3>
-                {tournament.description && <p className="text-muted-foreground mb-4">{tournament.description}</p>}
+                {tournament.description && <div className="prose prose-sm max-w-none mb-4 text-muted-foreground" dangerouslySetInnerHTML={{ __html: sanitizeHtml(tournament.description) }} />}
                 <div className="grid sm:grid-cols-2 gap-4 text-sm">
                   {tournament.course_name && (
                     <div className="flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /><span><strong>Course:</strong> {tournament.course_name}</span></div>

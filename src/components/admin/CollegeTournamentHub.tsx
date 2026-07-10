@@ -584,7 +584,8 @@ const CollegeTournamentHub = () => {
   const startEditTournament = (t: CollegeTournament) => {
     setEditingTournament(t.id);
     setEditTournamentForm({
-      title: t.title, description: t.description || "", start_date: t.start_date || "",
+      title: t.title, description: t.description || "", hero_tagline: (t as any).hero_tagline || "",
+      start_date: t.start_date || "",
       end_date: t.end_date || "", location: t.location || "", course_name: t.course_name || "",
       contact_email: t.contact_email || "", slug: (t as any).slug || "",
     });
@@ -595,6 +596,7 @@ const CollegeTournamentHub = () => {
     const { error } = await supabase.from("college_tournaments").update({
       title: editTournamentForm.title,
       description: editTournamentForm.description || null,
+      hero_tagline: editTournamentForm.hero_tagline || null,
       start_date: editTournamentForm.start_date || null,
       end_date: editTournamentForm.end_date || null,
       location: editTournamentForm.location || null,

@@ -131,6 +131,10 @@ const CollegeTournamentHub = () => {
   const [editingTab, setEditingTab] = useState<string | null>(null);
   const [editTabContent, setEditTabContent] = useState("");
 
+  // Overview tab editing (built-in, edits tournament.description)
+  const [editingOverview, setEditingOverview] = useState(false);
+  const [editOverviewContent, setEditOverviewContent] = useState("");
+
   // Add tab form
   const [newTabTitle, setNewTabTitle] = useState("");
   const [newTabType, setNewTabType] = useState("rich_text");

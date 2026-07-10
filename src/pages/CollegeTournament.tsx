@@ -281,7 +281,7 @@ const CollegeTournament = () => {
             <span className="text-sm font-medium opacity-80 uppercase tracking-wider">College Golf Tournament</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-shadow-hero">{tournament.title}</h1>
-          {tournament.description && <p className="text-lg opacity-90 max-w-2xl mx-auto">{tournament.description}</p>}
+          {tournament.hero_tagline && <p className="text-lg opacity-90 max-w-2xl mx-auto">{tournament.hero_tagline}</p>}
           <div className="flex items-center justify-center gap-6 mt-6 flex-wrap">
             {tournament.course_name && (
               <span className="flex items-center gap-2 text-sm"><Trophy className="h-4 w-4" />{tournament.course_name}</span>

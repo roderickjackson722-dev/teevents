@@ -73,10 +73,12 @@ export const PublicTabsManager = ({
   return (
     <div className="border border-border rounded-lg p-4 bg-card space-y-4">
       <div>
-        <h3 className="text-base font-bold text-foreground">Public Page Tabs</h3>
+        <h3 className="text-base font-bold text-foreground">Page Layout</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Choose which tabs appear on your public tournament page and drag to reorder them.
-          Overview is always shown.
+          Drag to reorder sections and use the toggle to show or hide each one.
+          The order controls both your public page's navigation tabs and the order
+          of the matching sections on the page. Hidden sections are removed from
+          both the page and the nav. Home, Registration, and Contact always appear.
         </p>
       </div>
 

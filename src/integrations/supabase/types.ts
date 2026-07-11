@@ -7504,6 +7504,7 @@ export type Database = {
       tournaments: {
         Row: {
           about_us: string | null
+          admin_invitation_sent_at: string | null
           admin_notes: string | null
           allow_cash_registration: boolean
           allow_cover_fees: boolean
@@ -7728,6 +7729,7 @@ export type Database = {
         }
         Insert: {
           about_us?: string | null
+          admin_invitation_sent_at?: string | null
           admin_notes?: string | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
@@ -7952,6 +7954,7 @@ export type Database = {
         }
         Update: {
           about_us?: string | null
+          admin_invitation_sent_at?: string | null
           admin_notes?: string | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean

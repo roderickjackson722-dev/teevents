@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck } from "lucide-react";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
+import { toast } from "sonner";
 
 type Row = {
   id: string;
@@ -25,6 +26,8 @@ type Row = {
   managed_by_teevents: boolean | null;
   created_at: string;
   registration_fee_cents: number | null;
+  created_by_admin_id: string | null;
+  admin_invitation_sent_at: string | null;
   org_name?: string | null;
   registrations_count?: number;
   paid_count?: number;
@@ -41,6 +44,7 @@ export default function PlatformTournaments() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "live" | "demo" | "pro" | "managed">("all");
   const [createOpen, setCreateOpen] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -57,7 +61,7 @@ export default function PlatformTournaments() {
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -92,6 +96,24 @@ export default function PlatformTournaments() {
       sponsors_count: sponsorCount[t.id] || 0,
     })));
     setLoading(false);
+  }
+
+  async function sendInvitation(t: Row) {
+    if (!confirm(`Send the invitation email for "${t.title}" to the organizer now?`)) return;
+    setSendingInvite(t.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-send-tournament-invitation", {
+        body: { tournament_id: t.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`Invitation sent to ${(data as any).email}`);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally {
+      setSendingInvite(null);
+    }
   }
 
   const filtered = useMemo(() => {
@@ -209,6 +231,12 @@ export default function PlatformTournaments() {
                         <TableCell>
                           {r.site_published ? <Badge>Published</Badge> : <Badge variant="outline">Draft</Badge>}
                           {r.registration_open && <Badge variant="secondary" className="ml-1">Reg Open</Badge>}
+                          {r.created_by_admin_id && !r.admin_invitation_sent_at && (
+                            <Badge variant="destructive" className="ml-1">Invite Pending</Badge>
+                          )}
+                          {r.created_by_admin_id && r.admin_invitation_sent_at && (
+                            <Badge variant="secondary" className="ml-1"><MailCheck className="h-3 w-3 mr-1" />Invited</Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-sm">
                           {r.date ? new Date(r.date + "T00:00:00").toLocaleDateString() : <span className="text-muted-foreground">—</span>}
@@ -223,6 +251,19 @@ export default function PlatformTournaments() {
                             <Button asChild variant="outline" size="sm">
                               <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
                             </Button>
+                            {r.created_by_admin_id && !r.admin_invitation_sent_at && (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => sendInvitation(r)}
+                                disabled={sendingInvite === r.id}
+                              >
+                                {sendingInvite === r.id
+                                  ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                  : <Send className="h-3.5 w-3.5 mr-1" />}
+                                Send Invitation
+                              </Button>
+                            )}
                             {r.organization_id && (
                               <>
                                 <Button asChild variant="secondary" size="sm">

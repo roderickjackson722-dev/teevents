@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, UserPlus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   open: boolean;
@@ -35,11 +36,12 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
   const [email, setEmail] = useState("");
   const [orgName, setOrgName] = useState("");
   const [notes, setNotes] = useState("");
+  const [sendInvitation, setSendInvitation] = useState(true);
 
   function reset() {
     setTitle(""); setDate(""); setLocation(""); setCourseName("");
     setFeeDollars(""); setScoringFormat("Scramble"); setMode("invite");
-    setEmail(""); setOrgName(""); setNotes("");
+    setEmail(""); setOrgName(""); setNotes(""); setSendInvitation(true);
   }
 
   async function submit() {
@@ -60,15 +62,18 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
           mode,
           email: email.trim(),
           organization_name: orgName.trim() || null,
+          send_invitation: sendInvitation,
         },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
 
       toast.success(
-        (data as any).created_user
-          ? "Tournament created and invitation sent"
-          : "Tournament created and assigned"
+        !sendInvitation
+          ? "Tournament created. Invitation not sent yet — send it from the tournaments list when you're ready."
+          : (data as any).created_user
+            ? "Tournament created and invitation sent"
+            : "Tournament created and assigned"
       );
       onCreated?.({
         tournament_id: (data as any).tournament_id,
@@ -165,13 +170,33 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
             <Label htmlFor="notes">Admin Notes (internal)</Label>
             <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Internal note visible only to platform admins" />
           </div>
+
+          <div className="border-t pt-4">
+            <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3">
+              <Checkbox
+                id="sendInvitation"
+                checked={sendInvitation}
+                onCheckedChange={(v) => setSendInvitation(v === true)}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <Label htmlFor="sendInvitation" className="font-medium cursor-pointer">
+                  Send invitation email now
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Uncheck to set up the event first without notifying the client. You can send the
+                  invitation from the tournaments list whenever you're ready.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button onClick={submit} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Create Tournament & Assign Organizer
+            {sendInvitation ? "Create Tournament & Send Invitation" : "Create Tournament (Don't Send Yet)"}
           </Button>
         </DialogFooter>
       </DialogContent>

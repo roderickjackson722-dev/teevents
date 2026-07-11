@@ -54,8 +54,9 @@ serve(async (req) => {
     const body = await req.json();
     const {
       title, date, location, course_name, registration_fee_cents, scoring_format,
-      admin_notes, mode, email, organization_name,
+      admin_notes, mode, email, organization_name, send_invitation,
     } = body || {};
+    const shouldSendInvitation = send_invitation !== false; // default true
 
     if (!title || typeof title !== "string") throw new Error("Title is required");
     if (!email || typeof email !== "string") throw new Error("Organizer email is required");
@@ -188,7 +189,8 @@ serve(async (req) => {
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (RESEND_API_KEY) {
+    let invitationSent = false;
+    if (shouldSendInvitation && RESEND_API_KEY) {
       const messageId = crypto.randomUUID();
       await logEmailSend(admin, {
         messageId, templateName: didCreateUser ? "admin-created-tournament-invite" : "admin-created-tournament-assign",
@@ -204,6 +206,7 @@ serve(async (req) => {
           }),
         });
         const data = await res.json().catch(() => ({}));
+        invitationSent = res.ok;
         await logEmailSend(admin, {
           messageId, templateName: didCreateUser ? "admin-created-tournament-invite" : "admin-created-tournament-assign",
           recipientEmail: emailLc, subject,
@@ -218,6 +221,10 @@ serve(async (req) => {
       }
     }
 
+    if (invitationSent) {
+      await admin.from("tournaments").update({ admin_invitation_sent_at: new Date().toISOString() }).eq("id", newT.id);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       tournament_id: newT.id,
@@ -226,6 +233,8 @@ serve(async (req) => {
       organization_name: orgName,
       user_id: clientUserId,
       created_user: didCreateUser,
+      invitation_sent: invitationSent,
+      invitation_deferred: !shouldSendInvitation,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err: any) {
     console.error("admin-create-tournament-for-client error:", err);

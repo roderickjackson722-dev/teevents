@@ -99,11 +99,26 @@ export default function PlatformTournaments() {
   }
 
   async function sendInvitation(t: Row) {
-    if (!confirm(`Send the invitation email for "${t.title}" to the organizer now?`)) return;
+    // If no organizer was assigned at creation, prompt for email now.
+    let emailInput: string | null = null;
+    if (!t.org_name || /\(unassigned\)/i.test(t.org_name)) {
+      emailInput = window.prompt(
+        `Enter the organizer's email address for "${t.title}".\n\nWe'll create an account (if needed), assign them as the organizer, and email them a temporary password.`,
+        ""
+      );
+      if (!emailInput) return;
+      emailInput = emailInput.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+    } else {
+      if (!confirm(`Send the invitation email for "${t.title}" to the organizer now?`)) return;
+    }
     setSendingInvite(t.id);
     try {
       const { data, error } = await supabase.functions.invoke("admin-send-tournament-invitation", {
-        body: { tournament_id: t.id },
+        body: { tournament_id: t.id, ...(emailInput ? { email: emailInput } : {}) },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);

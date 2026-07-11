@@ -6237,6 +6237,186 @@ export type Database = {
           },
         ]
       }
+      tournament_invoice_line_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          invoice_id: string
+          quantity: number
+          total_cents: number | null
+          unit_price_cents: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description: string
+          display_order?: number
+          id?: string
+          invoice_id: string
+          quantity?: number
+          total_cents?: number | null
+          unit_price_cents?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          total_cents?: number | null
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_invoice_payment_allocations: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          invoice_id: string
+          payee_amount_cents: number
+          payee_name: string
+          payment_details: string | null
+          payment_method: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          invoice_id: string
+          payee_amount_cents?: number
+          payee_name: string
+          payment_details?: string | null
+          payment_method?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          invoice_id?: string
+          payee_amount_cents?: number
+          payee_name?: string
+          payment_details?: string | null
+          payment_method?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_invoice_payment_allocations_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_invoice_service_breakdowns: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          invoice_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          display_order?: number
+          id?: string
+          invoice_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          invoice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_invoice_service_breakdowns_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_invoices: {
+        Row: {
+          client_email: string | null
+          client_name: string
+          client_org: string | null
+          client_phone: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          event_name: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          notes: string | null
+          payment_terms: string | null
+          service_period_end: string | null
+          service_period_start: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_email?: string | null
+          client_name: string
+          client_org?: string | null
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          event_name: string
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          notes?: string | null
+          payment_terms?: string | null
+          service_period_end?: string | null
+          service_period_start?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string | null
+          client_name?: string
+          client_org?: string | null
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          event_name?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          notes?: string | null
+          payment_terms?: string | null
+          service_period_end?: string | null
+          service_period_start?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tournament_messages: {
         Row: {
           body: string

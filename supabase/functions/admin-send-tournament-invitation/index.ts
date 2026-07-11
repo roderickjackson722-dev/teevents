@@ -41,7 +41,7 @@ serve(async (req) => {
     });
     if (!isPlatformAdmin) throw new Error("Platform admin access required");
 
-    const { tournament_id, reset_password } = await req.json();
+    const { tournament_id, reset_password, email: emailInput, organization_name } = await req.json();
     if (!tournament_id) throw new Error("tournament_id is required");
 
     // Load tournament
@@ -51,29 +51,98 @@ serve(async (req) => {
       .eq("id", tournament_id).single();
     if (terr || !t) throw new Error("Tournament not found");
 
-    // Find org owner
+    // Find current org owner
     const { data: owners, error: oerr } = await admin
       .from("org_members")
       .select("user_id")
       .eq("organization_id", t.organization_id)
       .eq("role", "owner")
       .limit(1);
-    if (oerr || !owners || owners.length === 0) throw new Error("No organizer found for this tournament");
-    const ownerUserId = owners[0].user_id;
+    if (oerr) throw new Error(oerr.message);
+    const currentOwnerId = owners && owners.length > 0 ? owners[0].user_id : null;
 
-    // Look up email + created_at from auth users
-    const { data: usersList } = await admin.auth.admin.listUsers();
-    const ownerAuth = usersList?.users?.find((u: any) => u.id === ownerUserId);
+    // If the current owner is the admin themselves (defer flow), an email is required
+    // to assign the real client. Otherwise, use the owner already on the org.
+    const needsAssignment = !currentOwnerId || currentOwnerId === adminUser.id;
+    if (needsAssignment && !emailInput) {
+      throw new Error("This tournament has no organizer assigned yet. Provide an email to assign the organizer.");
+    }
+
+    let ownerUserId: string;
+    let didCreateUser = false;
+    let tempPassword: string | null = null;
+    let emailLc: string;
+
+    if (emailInput) {
+      emailLc = String(emailInput).toLowerCase().trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLc)) throw new Error("Invalid email address");
+
+      const { data: usersList } = await admin.auth.admin.listUsers();
+      const existing = usersList?.users?.find((u: any) => u.email?.toLowerCase() === emailLc);
+
+      if (existing) {
+        ownerUserId = existing.id;
+      } else {
+        tempPassword = generateTempPassword();
+        const { data: created, error: cerr } = await admin.auth.admin.createUser({
+          email: emailLc,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: { force_password_change: true },
+        });
+        if (cerr || !created?.user) throw new Error(cerr?.message || "Failed to create user");
+        ownerUserId = created.user.id;
+        didCreateUser = true;
+      }
+
+      if (needsAssignment) {
+        // Make the client the owner of this org
+        const { error: upErr } = await admin.from("org_members").upsert({
+          organization_id: t.organization_id, user_id: ownerUserId, role: "owner",
+        }, { onConflict: "organization_id,user_id" });
+        if (upErr) throw new Error("Failed to assign organizer: " + upErr.message);
+
+        // Remove the placeholder admin owner (keep admin access via platform admin role)
+        if (currentOwnerId && currentOwnerId !== ownerUserId) {
+          await admin.from("org_members")
+            .delete()
+            .eq("organization_id", t.organization_id)
+            .eq("user_id", currentOwnerId);
+        }
+
+        // Optionally rename the placeholder org
+        if (organization_name && String(organization_name).trim()) {
+          await admin.from("organizations")
+            .update({ name: String(organization_name).trim() })
+            .eq("id", t.organization_id);
+        } else {
+          // Rename the "(unassigned)" placeholder to something meaningful
+          const { data: orgRow } = await admin.from("organizations")
+            .select("name").eq("id", t.organization_id).single();
+          if (orgRow?.name?.includes("(unassigned)")) {
+            await admin.from("organizations")
+              .update({ name: `${emailLc.split("@")[0]}'s Tournaments` })
+              .eq("id", t.organization_id);
+          }
+        }
+      } else if (ownerUserId !== currentOwnerId) {
+        throw new Error("An organizer is already assigned. Cannot change organizer here.");
+      }
+    } else {
+      ownerUserId = currentOwnerId as string;
+    }
+
+    // Look up auth user
+    const { data: usersList2 } = await admin.auth.admin.listUsers();
+    const ownerAuth = usersList2?.users?.find((u: any) => u.id === ownerUserId);
     if (!ownerAuth?.email) throw new Error("Organizer email not found");
-    const emailLc = ownerAuth.email.toLowerCase();
+    emailLc = ownerAuth.email.toLowerCase();
     const clientName = (ownerAuth.user_metadata?.full_name as string) || null;
     const greeting = clientName ? `Hi ${clientName},` : "Hi,";
 
     // Decide if this is a "new user" invite (needs temp password) or existing user
-    // Heuristic: user has never signed in OR reset_password requested
     const neverSignedIn = !ownerAuth.last_sign_in_at;
-    let tempPassword: string | null = null;
-    if (neverSignedIn || reset_password) {
+    if (!tempPassword && (neverSignedIn || reset_password)) {
       tempPassword = generateTempPassword();
       const { error: perr } = await admin.auth.admin.updateUserById(ownerUserId, {
         password: tempPassword,

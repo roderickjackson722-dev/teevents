@@ -59,56 +59,79 @@ serve(async (req) => {
     const shouldSendInvitation = send_invitation !== false; // default true
 
     if (!title || typeof title !== "string") throw new Error("Title is required");
-    if (!email || typeof email !== "string") throw new Error("Organizer email is required");
-    const emailLc = email.toLowerCase().trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLc)) throw new Error("Invalid email address");
-    if (mode !== "existing" && mode !== "invite") throw new Error("Invalid assignment mode");
+    const isDefer = mode === "defer";
+    let emailLc = "";
+    if (!isDefer) {
+      if (!email || typeof email !== "string") throw new Error("Organizer email is required");
+      emailLc = email.toLowerCase().trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLc)) throw new Error("Invalid email address");
+      if (mode !== "existing" && mode !== "invite") throw new Error("Invalid assignment mode");
+    }
 
-    // 1) Resolve/create the target user
-    const { data: usersList } = await admin.auth.admin.listUsers();
-    const existing = usersList?.users?.find((u: any) => u.email?.toLowerCase() === emailLc);
-
-    let clientUserId: string;
+    // 1) Resolve/create the target user (skipped for defer)
+    let clientUserId: string = adminUser.id; // fallback owner for defer mode
     let clientName: string | null = null;
     let didCreateUser = false;
     let tempPassword: string | null = null;
 
-    if (existing) {
-      clientUserId = existing.id;
-      clientName = (existing.user_metadata?.full_name as string) || null;
-    } else {
-      if (mode === "existing") {
-        throw new Error("No account found for that email. Switch to 'Invite new organizer'.");
+    if (!isDefer) {
+      const { data: usersList } = await admin.auth.admin.listUsers();
+      const existing = usersList?.users?.find((u: any) => u.email?.toLowerCase() === emailLc);
+      if (existing) {
+        clientUserId = existing.id;
+        clientName = (existing.user_metadata?.full_name as string) || null;
+      } else {
+        if (mode === "existing") {
+          throw new Error("No account found for that email. Switch to 'Invite new organizer'.");
+        }
+        tempPassword = generateTempPassword();
+        const { data: created, error: cerr } = await admin.auth.admin.createUser({
+          email: emailLc,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: { force_password_change: true },
+        });
+        if (cerr || !created?.user) throw new Error(cerr?.message || "Failed to create user");
+        clientUserId = created.user.id;
+        didCreateUser = true;
       }
-      tempPassword = generateTempPassword();
-      const { data: created, error: cerr } = await admin.auth.admin.createUser({
-        email: emailLc,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: { force_password_change: true },
-      });
-      if (cerr || !created?.user) throw new Error(cerr?.message || "Failed to create user");
-      clientUserId = created.user.id;
-      didCreateUser = true;
     }
 
-    // 2) Resolve/create organization for the client
+    // 2) Resolve/create organization for the client (or a placeholder for defer)
     let orgId: string | null = null;
     let orgName: string;
 
-    const { data: ownedOrgs } = await admin
-      .from("org_members")
-      .select("organization_id, role, organizations(id,name)")
-      .eq("user_id", clientUserId)
-      .eq("role", "owner")
-      .limit(1);
+    if (!isDefer) {
+      const { data: ownedOrgs } = await admin
+        .from("org_members")
+        .select("organization_id, role, organizations(id,name)")
+        .eq("user_id", clientUserId)
+        .eq("role", "owner")
+        .limit(1);
 
-    if (ownedOrgs && ownedOrgs.length > 0) {
-      orgId = (ownedOrgs[0] as any).organization_id;
-      orgName = ((ownedOrgs[0] as any).organizations?.name) || "Organization";
+      if (ownedOrgs && ownedOrgs.length > 0) {
+        orgId = (ownedOrgs[0] as any).organization_id;
+        orgName = ((ownedOrgs[0] as any).organizations?.name) || "Organization";
+      } else {
+        orgName = (organization_name && String(organization_name).trim())
+          || `${emailLc.split("@")[0]}'s Tournaments`;
+        const subdomain = slugify(orgName) + "-" + Math.random().toString(36).slice(2, 6);
+        orgId = crypto.randomUUID();
+        const { error: oerr } = await admin.from("organizations").insert({
+          id: orgId, name: orgName, subdomain, plan: "free",
+        });
+        if (oerr) throw new Error("Failed to create organization: " + oerr.message);
+        const { error: merr } = await admin.from("org_members").insert({
+          organization_id: orgId, user_id: clientUserId, role: "owner",
+        });
+        if (merr) throw new Error("Failed to add owner: " + merr.message);
+      }
     } else {
+      // Defer: create a placeholder org owned by the admin. When an organizer
+      // is later assigned via admin-send-tournament-invitation, they become
+      // the owner and the org may be renamed.
       orgName = (organization_name && String(organization_name).trim())
-        || `${emailLc.split("@")[0]}'s Tournaments`;
+        || `${String(title).trim()} (unassigned)`;
       const subdomain = slugify(orgName) + "-" + Math.random().toString(36).slice(2, 6);
       orgId = crypto.randomUUID();
       const { error: oerr } = await admin.from("organizations").insert({
@@ -116,9 +139,9 @@ serve(async (req) => {
       });
       if (oerr) throw new Error("Failed to create organization: " + oerr.message);
       const { error: merr } = await admin.from("org_members").insert({
-        organization_id: orgId, user_id: clientUserId, role: "owner",
+        organization_id: orgId, user_id: adminUser.id, role: "owner",
       });
-      if (merr) throw new Error("Failed to add owner: " + merr.message);
+      if (merr) throw new Error("Failed to add admin as temporary owner: " + merr.message);
     }
 
     // 3) Create the tournament

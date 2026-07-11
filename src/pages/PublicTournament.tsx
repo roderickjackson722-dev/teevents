@@ -2055,19 +2055,25 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>SCHEDULE</h2>
               <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
               <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#e5e5e5" }}>
-                {(tournament as any).schedule_info_html && (tournament as any).schedule_info_html.replace(/<[^>]*>/g, "").trim() ? (
-                  <div
-                    className="prose prose-sm max-w-none font-body text-sm leading-relaxed [&_p]:my-0 [&_p+p]:mt-5 [&_strong]:font-bold [&_strong]:text-foreground [&_strong]:block"
-                    style={{ color: "#444" }}
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml((tournament as any).schedule_info_html) }}
-                  />
-                ) : (
-                  <div
-                    className="prose prose-sm max-w-none font-body text-sm leading-relaxed [&_p]:my-0 [&_p+p]:mt-5 [&_strong]:font-bold [&_strong]:text-foreground [&_strong]:block"
-                    style={{ color: "#444" }}
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(autoFormatAgenda(tournament.schedule_info || "")) }}
-                  />
-                )}
+                {(() => {
+                  const rawHtml = (tournament as any).schedule_info_html as string | null | undefined;
+                  const hasHtmlText = rawHtml && rawHtml.replace(/<[^>]*>/g, "").trim();
+                  // If stored HTML still contains raw flyer separators/bullets,
+                  // regenerate from the plain-text source so formatting matches
+                  // the organizer editor.
+                  const looksUnformatted = rawHtml && (/[━─]{3,}/.test(rawHtml) || /•/.test(rawHtml));
+                  const html =
+                    hasHtmlText && !looksUnformatted
+                      ? rawHtml!
+                      : autoFormatAgenda(tournament.schedule_info || "");
+                  return (
+                    <div
+                      className="prose prose-sm max-w-none font-body text-sm leading-relaxed [&_p]:my-0 [&_p+p]:mt-5 [&_strong]:font-bold [&_strong]:text-foreground [&_h2]:font-bold [&_h2]:text-lg [&_h2]:mt-0 [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:text-base [&_h3]:mt-0 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_section]:mb-6 [&_section]:pb-6 [&_section]:border-b [&_section]:border-border [&_section:last-child]:border-0 [&_section:last-child]:mb-0 [&_section:last-child]:pb-0"
+                      style={{ color: "#444" }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
+                    />
+                  );
+                })()}
               </div>
             </motion.div>
           </div>

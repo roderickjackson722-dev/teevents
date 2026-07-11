@@ -26,6 +26,8 @@ type Row = {
   managed_by_teevents: boolean | null;
   created_at: string;
   registration_fee_cents: number | null;
+  created_by_admin_id: string | null;
+  admin_invitation_sent_at: string | null;
   org_name?: string | null;
   registrations_count?: number;
   paid_count?: number;

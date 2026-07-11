@@ -130,8 +130,19 @@ export default function PlatformTournaments() {
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4 mr-1" /> Admin</Button>
           <h1 className="text-xl font-semibold">Platform Tournaments</h1>
           <Badge variant="secondary" className="ml-2">All tournaments using TeeVents</Badge>
+          <div className="ml-auto">
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Create Tournament for Client
+            </Button>
+          </div>
         </div>
       </div>
+
+      <AdminCreateTournamentDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => load()}
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

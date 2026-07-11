@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus } from "lucide-react";
+import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
 
 type Row = {
   id: string;
@@ -39,6 +40,7 @@ export default function PlatformTournaments() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "live" | "demo" | "pro" | "managed">("all");
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -128,8 +130,19 @@ export default function PlatformTournaments() {
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4 mr-1" /> Admin</Button>
           <h1 className="text-xl font-semibold">Platform Tournaments</h1>
           <Badge variant="secondary" className="ml-2">All tournaments using TeeVents</Badge>
+          <div className="ml-auto">
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Create Tournament for Client
+            </Button>
+          </div>
         </div>
       </div>
+
+      <AdminCreateTournamentDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => load()}
+      />
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

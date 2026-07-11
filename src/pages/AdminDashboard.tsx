@@ -31,6 +31,7 @@ import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import AdminSetupChecklist from "@/components/admin/AdminSetupChecklist";
 import SampleGenerator from "@/components/admin/SampleGenerator";
 import AdminInvoices from "@/components/admin/AdminInvoices";
+import TournamentInvoices from "@/components/admin/TournamentInvoices";
 import AdminDemoRequests from "@/components/admin/AdminDemoRequests";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
@@ -57,7 +58,7 @@ const AdminDashboard = () => {
     if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "demo-requests" | "feature-update-emails" | "signups">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "demo-requests" | "feature-update-emails" | "signups">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -896,6 +897,7 @@ const AdminDashboard = () => {
                    ["feature-guide", "Feature Guide PDF", FileText],
                    ["setup-checklist", "Setup Checklist", ClipboardList],
                    ["invoices", "Invoices", Receipt],
+                   ["tournament-invoices", "Tournament Invoices", Receipt],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -2058,6 +2060,7 @@ const AdminDashboard = () => {
           {activeTab === "group-trips" && <AdminGroupTrips />}
          {activeTab === "setup-checklist" && <AdminSetupChecklist />}
          {activeTab === "invoices" && <AdminInvoices />}
+         {activeTab === "tournament-invoices" && <TournamentInvoices />}
           {activeTab === "mockup-outreach" && <SampleGenerator />}
           {activeTab === "demo-requests" && <AdminDemoRequests />}
         </div>

@@ -189,7 +189,8 @@ serve(async (req) => {
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (RESEND_API_KEY) {
+    let invitationSent = false;
+    if (shouldSendInvitation && RESEND_API_KEY) {
       const messageId = crypto.randomUUID();
       await logEmailSend(admin, {
         messageId, templateName: didCreateUser ? "admin-created-tournament-invite" : "admin-created-tournament-assign",
@@ -205,6 +206,7 @@ serve(async (req) => {
           }),
         });
         const data = await res.json().catch(() => ({}));
+        invitationSent = res.ok;
         await logEmailSend(admin, {
           messageId, templateName: didCreateUser ? "admin-created-tournament-invite" : "admin-created-tournament-assign",
           recipientEmail: emailLc, subject,
@@ -219,6 +221,10 @@ serve(async (req) => {
       }
     }
 
+    if (invitationSent) {
+      await admin.from("tournaments").update({ admin_invitation_sent_at: new Date().toISOString() }).eq("id", newT.id);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       tournament_id: newT.id,
@@ -227,6 +233,8 @@ serve(async (req) => {
       organization_name: orgName,
       user_id: clientUserId,
       created_user: didCreateUser,
+      invitation_sent: invitationSent,
+      invitation_deferred: !shouldSendInvitation,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err: any) {
     console.error("admin-create-tournament-for-client error:", err);

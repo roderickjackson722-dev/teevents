@@ -170,13 +170,33 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
             <Label htmlFor="notes">Admin Notes (internal)</Label>
             <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Internal note visible only to platform admins" />
           </div>
+
+          <div className="border-t pt-4">
+            <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3">
+              <Checkbox
+                id="sendInvitation"
+                checked={sendInvitation}
+                onCheckedChange={(v) => setSendInvitation(v === true)}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <Label htmlFor="sendInvitation" className="font-medium cursor-pointer">
+                  Send invitation email now
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Uncheck to set up the event first without notifying the client. You can send the
+                  invitation from the tournaments list whenever you're ready.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button onClick={submit} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Create Tournament & Assign Organizer
+            {sendInvitation ? "Create Tournament & Send Invitation" : "Create Tournament (Don't Send Yet)"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -58,7 +58,7 @@ const AdminDashboard = () => {
     if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "demo-requests" | "feature-update-emails" | "signups">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "demo-requests" | "feature-update-emails" | "signups">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state

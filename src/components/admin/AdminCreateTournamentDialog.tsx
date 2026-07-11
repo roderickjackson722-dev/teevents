@@ -139,7 +139,14 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
 
           <div className="border-t pt-4">
             <Label className="text-base font-semibold">Assign Organizer</Label>
-            <RadioGroup value={mode} onValueChange={(v) => setMode(v as "existing" | "invite")} className="mt-2 space-y-2">
+            <RadioGroup value={mode} onValueChange={(v) => setMode(v as "existing" | "invite" | "defer")} className="mt-2 space-y-2">
+              <div className="flex items-start gap-2">
+                <RadioGroupItem value="defer" id="mode-defer" className="mt-1" />
+                <div className="flex-1">
+                  <Label htmlFor="mode-defer" className="font-normal">Skip for now — assign later</Label>
+                  <p className="text-xs text-muted-foreground">Create the event now with no organizer. You can add and email the client from the tournaments list at any time.</p>
+                </div>
+              </div>
               <div className="flex items-start gap-2">
                 <RadioGroupItem value="existing" id="mode-existing" className="mt-1" />
                 <div className="flex-1">
@@ -156,18 +163,20 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
               </div>
             </RadioGroup>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-              <div className={mode === "invite" ? "" : "md:col-span-2"}>
-                <Label htmlFor="email">Organizer Email *</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="client@example.com" />
-              </div>
-              {mode === "invite" && (
-                <div>
-                  <Label htmlFor="orgName">Organization Name (optional)</Label>
-                  <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Auto-generated if blank" />
+            {!isDefer && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div className={mode === "invite" ? "" : "md:col-span-2"}>
+                  <Label htmlFor="email">Organizer Email *</Label>
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="client@example.com" />
                 </div>
-              )}
-            </div>
+                {mode === "invite" && (
+                  <div>
+                    <Label htmlFor="orgName">Organization Name (optional)</Label>
+                    <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="Auto-generated if blank" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
@@ -175,32 +184,38 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
             <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Internal note visible only to platform admins" />
           </div>
 
-          <div className="border-t pt-4">
-            <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3">
-              <Checkbox
-                id="sendInvitation"
-                checked={sendInvitation}
-                onCheckedChange={(v) => setSendInvitation(v === true)}
-                className="mt-0.5"
-              />
-              <div className="flex-1">
-                <Label htmlFor="sendInvitation" className="font-medium cursor-pointer">
-                  Send invitation email now
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Uncheck to set up the event first without notifying the client. You can send the
-                  invitation from the tournaments list whenever you're ready.
-                </p>
+          {!isDefer && (
+            <div className="border-t pt-4">
+              <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3">
+                <Checkbox
+                  id="sendInvitation"
+                  checked={sendInvitation}
+                  onCheckedChange={(v) => setSendInvitation(v === true)}
+                  className="mt-0.5"
+                />
+                <div className="flex-1">
+                  <Label htmlFor="sendInvitation" className="font-medium cursor-pointer">
+                    Send invitation email now
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Uncheck to set up the event first without notifying the client. You can send the
+                    invitation from the tournaments list whenever you're ready.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button onClick={submit} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            {sendInvitation ? "Create Tournament & Send Invitation" : "Create Tournament (Don't Send Yet)"}
+            {isDefer
+              ? "Create Tournament (assign later)"
+              : sendInvitation
+                ? "Create Tournament & Send Invitation"
+                : "Create Tournament (Don't Send Yet)"}
           </Button>
         </DialogFooter>
       </DialogContent>

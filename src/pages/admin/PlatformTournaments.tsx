@@ -98,6 +98,24 @@ export default function PlatformTournaments() {
     setLoading(false);
   }
 
+  async function sendInvitation(t: Row) {
+    if (!confirm(`Send the invitation email for "${t.title}" to the organizer now?`)) return;
+    setSendingInvite(t.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-send-tournament-invitation", {
+        body: { tournament_id: t.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`Invitation sent to ${(data as any).email}`);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally {
+      setSendingInvite(null);
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {

@@ -2060,6 +2060,7 @@ const AdminDashboard = () => {
           {activeTab === "group-trips" && <AdminGroupTrips />}
          {activeTab === "setup-checklist" && <AdminSetupChecklist />}
          {activeTab === "invoices" && <AdminInvoices />}
+         {activeTab === "tournament-invoices" && <TournamentInvoices />}
           {activeTab === "mockup-outreach" && <SampleGenerator />}
           {activeTab === "demo-requests" && <AdminDemoRequests />}
         </div>

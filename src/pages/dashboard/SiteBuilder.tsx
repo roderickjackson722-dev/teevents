@@ -315,8 +315,15 @@ const SiteBuilder = () => {
       .single()
       .then(({ data }) => {
         if (data) {
-          setSettings(data as unknown as SiteSettings);
-          setOriginalDomain((data as any).custom_domain || null);
+          const seeded = { ...(data as any) };
+          // Backfill the rich-text schedule from legacy plain text so the editor
+          // shows exactly what the public page renders (which auto-formats plain text).
+          const existingHtml = (seeded.schedule_info_html || "").replace(/<[^>]*>/g, "").trim();
+          if (!existingHtml && seeded.schedule_info) {
+            seeded.schedule_info_html = autoFormatAgenda(seeded.schedule_info);
+          }
+          setSettings(seeded as SiteSettings);
+          setOriginalDomain(seeded.custom_domain || null);
         }
         setLoading(false);
       });

@@ -7504,6 +7504,7 @@ export type Database = {
       tournaments: {
         Row: {
           about_us: string | null
+          admin_notes: string | null
           allow_cash_registration: boolean
           allow_cover_fees: boolean
           auction_tab_title: string | null
@@ -7519,6 +7520,7 @@ export type Database = {
           course_name: string | null
           course_par: number | null
           created_at: string
+          created_by_admin_id: string | null
           custom_domain: string | null
           custom_org_sections: Json
           custom_slug: string | null
@@ -7726,6 +7728,7 @@ export type Database = {
         }
         Insert: {
           about_us?: string | null
+          admin_notes?: string | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
@@ -7741,6 +7744,7 @@ export type Database = {
           course_name?: string | null
           course_par?: number | null
           created_at?: string
+          created_by_admin_id?: string | null
           custom_domain?: string | null
           custom_org_sections?: Json
           custom_slug?: string | null
@@ -7948,6 +7952,7 @@ export type Database = {
         }
         Update: {
           about_us?: string | null
+          admin_notes?: string | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           auction_tab_title?: string | null
@@ -7963,6 +7968,7 @@ export type Database = {
           course_name?: string | null
           course_par?: number | null
           created_at?: string
+          created_by_admin_id?: string | null
           custom_domain?: string | null
           custom_org_sections?: Json
           custom_slug?: string | null

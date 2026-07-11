@@ -44,6 +44,7 @@ export default function PlatformTournaments() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "live" | "demo" | "pro" | "managed">("all");
   const [createOpen, setCreateOpen] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {

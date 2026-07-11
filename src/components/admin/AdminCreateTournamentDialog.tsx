@@ -32,21 +32,23 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
   const [courseName, setCourseName] = useState("");
   const [feeDollars, setFeeDollars] = useState("");
   const [scoringFormat, setScoringFormat] = useState("Scramble");
-  const [mode, setMode] = useState<"existing" | "invite">("invite");
+  const [mode, setMode] = useState<"existing" | "invite" | "defer">("defer");
   const [email, setEmail] = useState("");
   const [orgName, setOrgName] = useState("");
   const [notes, setNotes] = useState("");
   const [sendInvitation, setSendInvitation] = useState(true);
 
+  const isDefer = mode === "defer";
+
   function reset() {
     setTitle(""); setDate(""); setLocation(""); setCourseName("");
-    setFeeDollars(""); setScoringFormat("Scramble"); setMode("invite");
+    setFeeDollars(""); setScoringFormat("Scramble"); setMode("defer");
     setEmail(""); setOrgName(""); setNotes(""); setSendInvitation(true);
   }
 
   async function submit() {
     if (!title.trim()) return toast.error("Tournament name is required");
-    if (!email.trim()) return toast.error("Organizer email is required");
+    if (!isDefer && !email.trim()) return toast.error("Organizer email is required");
     setSaving(true);
     try {
       const feeCents = feeDollars.trim() ? Math.round(parseFloat(feeDollars) * 100) : null;
@@ -60,20 +62,22 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
           scoring_format: scoringFormat,
           admin_notes: notes.trim() || null,
           mode,
-          email: email.trim(),
+          email: isDefer ? null : email.trim(),
           organization_name: orgName.trim() || null,
-          send_invitation: sendInvitation,
+          send_invitation: !isDefer && sendInvitation,
         },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
 
       toast.success(
-        !sendInvitation
-          ? "Tournament created. Invitation not sent yet — send it from the tournaments list when you're ready."
-          : (data as any).created_user
-            ? "Tournament created and invitation sent"
-            : "Tournament created and assigned"
+        isDefer
+          ? "Tournament created. Add an organizer email from the tournaments list whenever you're ready."
+          : !sendInvitation
+            ? "Tournament created. Invitation not sent yet — send it from the tournaments list when you're ready."
+            : (data as any).created_user
+              ? "Tournament created and invitation sent"
+              : "Tournament created and assigned"
       );
       onCreated?.({
         tournament_id: (data as any).tournament_id,

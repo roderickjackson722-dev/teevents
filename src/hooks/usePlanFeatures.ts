@@ -34,26 +34,26 @@ const FREE_FEATURES = [
   "sponsors",
   "advanced-pairings",
   "auto-payouts",
+  // Included in the free website / management platform:
+  "leaderboard",
+  "live-scoring",
+  "volunteers",
+  "gallery",
+  "flyer-studio",
+  "surveys",
+  "donations",
+  "store",
+  "featured-search",
+  "team-management-5",
+  "all-templates",
 ];
 
 const PRO_FEATURES = [
-  // Everything in Free PLUS:
-  "leaderboard",
-  "live-scoring",
-  "auction",
-  "donations",
-  "store",
-  "volunteers",
-  "sms-messaging",
+  // Paid per-tournament add-ons:
   "custom-domain",
-  "flyer-studio",
-  "surveys",
-  "gallery",
-  "budget",
-  "featured-search",
-  "team-management-5",
+  "auction",
+  "sms-messaging",
   "priority-support",
-  "all-templates",
   "hole-in-one-insurance",
 ];
 

@@ -316,10 +316,14 @@ const SiteBuilder = () => {
       .then(({ data }) => {
         if (data) {
           const seeded = { ...(data as any) };
-          // Backfill the rich-text schedule from legacy plain text so the editor
-          // shows exactly what the public page renders (which auto-formats plain text).
-          const existingHtml = (seeded.schedule_info_html || "").replace(/<[^>]*>/g, "").trim();
-          if (!existingHtml && seeded.schedule_info) {
+          // Backfill / refresh the rich-text schedule from legacy plain text so
+          // the editor shows exactly what the public page renders. Regenerate if
+          // the stored HTML is empty OR still contains raw flyer separators
+          // ("━"/"─") or bullet markers ("•") that indicate it was never
+          // properly structured into headings + lists.
+          const existingHtmlText = (seeded.schedule_info_html || "").replace(/<[^>]*>/g, "").trim();
+          const looksUnformatted = /[━─]{3,}/.test(seeded.schedule_info_html || "") || /•/.test(seeded.schedule_info_html || "");
+          if (seeded.schedule_info && (!existingHtmlText || looksUnformatted)) {
             seeded.schedule_info_html = autoFormatAgenda(seeded.schedule_info);
           }
           setSettings(seeded as SiteSettings);

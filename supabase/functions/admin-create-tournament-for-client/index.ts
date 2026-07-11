@@ -54,8 +54,9 @@ serve(async (req) => {
     const body = await req.json();
     const {
       title, date, location, course_name, registration_fee_cents, scoring_format,
-      admin_notes, mode, email, organization_name,
+      admin_notes, mode, email, organization_name, send_invitation,
     } = body || {};
+    const shouldSendInvitation = send_invitation !== false; // default true
 
     if (!title || typeof title !== "string") throw new Error("Title is required");
     if (!email || typeof email !== "string") throw new Error("Organizer email is required");

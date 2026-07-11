@@ -327,7 +327,7 @@ export default function TournamentInvoices() {
     y += 10;
 
     // Line items table
-    doc.setFillColor(240); doc.rect(M, y, W - 2 * M, 18, "F");
+    doc.setFillColor(240, 240, 240); doc.rect(M, y, W - 2 * M, 18, "F");
     doc.setFont("helvetica", "bold"); doc.setFontSize(10);
     doc.text("Description", M + 6, y + 12);
     doc.text("Qty", W - M - 160, y + 12, { align: "right" });

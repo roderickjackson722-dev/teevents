@@ -62,15 +62,18 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
           mode,
           email: email.trim(),
           organization_name: orgName.trim() || null,
+          send_invitation: sendInvitation,
         },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
 
       toast.success(
-        (data as any).created_user
-          ? "Tournament created and invitation sent"
-          : "Tournament created and assigned"
+        !sendInvitation
+          ? "Tournament created. Invitation not sent yet — send it from the tournaments list when you're ready."
+          : (data as any).created_user
+            ? "Tournament created and invitation sent"
+            : "Tournament created and assigned"
       );
       onCreated?.({
         tournament_id: (data as any).tournament_id,

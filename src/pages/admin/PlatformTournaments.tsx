@@ -231,6 +231,12 @@ export default function PlatformTournaments() {
                         <TableCell>
                           {r.site_published ? <Badge>Published</Badge> : <Badge variant="outline">Draft</Badge>}
                           {r.registration_open && <Badge variant="secondary" className="ml-1">Reg Open</Badge>}
+                          {r.created_by_admin_id && !r.admin_invitation_sent_at && (
+                            <Badge variant="destructive" className="ml-1">Invite Pending</Badge>
+                          )}
+                          {r.created_by_admin_id && r.admin_invitation_sent_at && (
+                            <Badge variant="secondary" className="ml-1"><MailCheck className="h-3 w-3 mr-1" />Invited</Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-sm">
                           {r.date ? new Date(r.date + "T00:00:00").toLocaleDateString() : <span className="text-muted-foreground">—</span>}

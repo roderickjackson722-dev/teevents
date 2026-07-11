@@ -897,6 +897,7 @@ const AdminDashboard = () => {
                    ["feature-guide", "Feature Guide PDF", FileText],
                    ["setup-checklist", "Setup Checklist", ClipboardList],
                    ["invoices", "Invoices", Receipt],
+                   ["tournament-invoices", "Tournament Invoices", Receipt],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}

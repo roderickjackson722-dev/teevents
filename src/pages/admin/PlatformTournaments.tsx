@@ -251,6 +251,19 @@ export default function PlatformTournaments() {
                             <Button asChild variant="outline" size="sm">
                               <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
                             </Button>
+                            {r.created_by_admin_id && !r.admin_invitation_sent_at && (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => sendInvitation(r)}
+                                disabled={sendingInvite === r.id}
+                              >
+                                {sendingInvite === r.id
+                                  ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                  : <Send className="h-3.5 w-3.5 mr-1" />}
+                                Send Invitation
+                              </Button>
+                            )}
                             {r.organization_id && (
                               <>
                                 <Button asChild variant="secondary" size="sm">

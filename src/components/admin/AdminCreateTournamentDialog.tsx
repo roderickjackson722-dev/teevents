@@ -36,11 +36,12 @@ export default function AdminCreateTournamentDialog({ open, onOpenChange, onCrea
   const [email, setEmail] = useState("");
   const [orgName, setOrgName] = useState("");
   const [notes, setNotes] = useState("");
+  const [sendInvitation, setSendInvitation] = useState(true);
 
   function reset() {
     setTitle(""); setDate(""); setLocation(""); setCourseName("");
     setFeeDollars(""); setScoringFormat("Scramble"); setMode("invite");
-    setEmail(""); setOrgName(""); setNotes("");
+    setEmail(""); setOrgName(""); setNotes(""); setSendInvitation(true);
   }
 
   async function submit() {

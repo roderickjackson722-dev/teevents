@@ -360,9 +360,25 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                     {inv.role}
                   </Badge>
                   {canManage && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => handleResendInvite(inv)}
+                        disabled={resendingId === inv.id}
+                        title="Resend invitation with a new temporary password"
+                      >
+                        {resendingId === inv.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <><Send className="h-3.5 w-3.5 mr-1" />Resend</>
+                        )}
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

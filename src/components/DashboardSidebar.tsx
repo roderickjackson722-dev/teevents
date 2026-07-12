@@ -5,7 +5,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound,
+  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";

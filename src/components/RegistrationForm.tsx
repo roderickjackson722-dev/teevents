@@ -391,12 +391,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       )
     : 0;
   const baseTotalCents = Math.max(0, subtotalBeforeDiscount - discountCents);
-  const hasFee = baseTotalCents > 0;
-  const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
+  // Donation is charged separately (not discounted, not fee-bearing at organizer level — but
+  // fees are still computed on the full charge so we treat it as part of the fee-bearing base).
+  const totalWithDonationCents = baseTotalCents + donationCents;
+  const hasFee = totalWithDonationCents > 0;
+  const platformFeeCents = Math.round(totalWithDonationCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
-  const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
+  const stripeFee = totalWithDonationCents > 0 ? Math.round((totalWithDonationCents + platformFeeCents) * 0.029 + 30) : 0;
   const coverageAmount = stripeFee + platformFeeCents;
-  const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
+  const totalWithCoveredFees = coverFees ? totalWithDonationCents + coverageAmount : totalWithDonationCents;
   const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 

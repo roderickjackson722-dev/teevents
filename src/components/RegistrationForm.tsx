@@ -57,6 +57,7 @@ interface RegistrationFormProps {
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
   captainLabel?: string | null;
+  showPromoCodeInput?: boolean;
   /** Donation prompt config */
   donationPrompt?: {
     enabled: boolean;

@@ -771,7 +771,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
 
         {/* Promo Code */}
-        {subtotalBeforeDiscount > 0 && (
+        {showPromoCodeInput !== false && subtotalBeforeDiscount > 0 && (
           <div className="space-y-1.5">
             <Label htmlFor="promo_code">Promo Code</Label>
             {appliedPromo ? (

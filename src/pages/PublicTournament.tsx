@@ -743,6 +743,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     customOrgSections.some((s) => (s.title?.trim() || s.content?.trim()));
 
   const tabHasData: Record<PublicTabKey, boolean> = {
+    about_event: !!(tournament as any).description_html?.replace(/<[^>]*>/g, "").trim() || !!tournament.description,
     leaderboard: leaderboard.length > 0,
     sponsors: sponsors.length > 0 || sponsorshipTiers.length > 0,
     gallery: photos.length > 0,
@@ -761,6 +762,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const isTabVisible = (key: PublicTabKey) => tabVisibility[key] && tabHasData[key];
 
   const tabHrefByKey: Record<PublicTabKey, string> = {
+    about_event: "#about",
     leaderboard: "#leaderboard",
     sponsors: "#sponsors",
     gallery: "#photos",
@@ -776,6 +778,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     lodging: "#lodging",
   };
   const tabLabelByKey: Record<PublicTabKey, string> = {
+    about_event: "About",
     leaderboard: "Leaderboard",
     sponsors: "Sponsors",
     gallery: "Photos",

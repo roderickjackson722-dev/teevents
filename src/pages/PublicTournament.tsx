@@ -1119,6 +1119,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     fields={regFields}
                     addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
                     captainLabel={(tournament as any).captain_label || null}
+                    donationPrompt={(tournament as any).donation_prompt_enabled ? {
+                      enabled: true,
+                      title: (tournament as any).donation_prompt_title || "Support Our Mission",
+                      description: (tournament as any).donation_prompt_description || null,
+                      presetsCents: Array.isArray((tournament as any).donation_preset_amounts)
+                        ? ((tournament as any).donation_preset_amounts as number[])
+                        : [1000, 2500, 5000, 10000, 25000, 50000],
+                      allowCustom: (tournament as any).donation_allow_custom !== false,
+                      customLabel: (tournament as any).donation_custom_label || "Enter your own amount",
+                    } : null}
                   />
                 </div>
               )}

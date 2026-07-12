@@ -218,6 +218,7 @@ const Registration = () => {
       setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
       setAllowCash(!!tournament.allow_cash_registration);
       setShowRegCount((tournament as any).show_registration_count !== false);
+      setShowPromoCodeInput((tournament as any).show_promo_code_input !== false);
       setRegistrationIntroHtml(((tournament as any).registration_intro_html as string) || "");
       setRegistrationPromoHtml(((tournament as any).registration_promo_html as string) || "");
       setDonationEnabled(!!(tournament as any).donation_prompt_enabled);

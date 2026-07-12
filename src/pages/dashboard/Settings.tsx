@@ -79,6 +79,7 @@ const Settings = () => {
   useEffect(() => {
     if (org) {
       setDashboardName(org.dashboardName || "");
+      setDisplayName(org.orgName || null);
       supabase
         .from("tournaments")
         .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy, show_branding_badge, show_branding_footer")

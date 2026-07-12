@@ -1166,7 +1166,212 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
+  const sponsorsBeforeRegistration =
+    tabOrder.indexOf("sponsors" as PublicTabKey) < tabOrder.indexOf("registration" as PublicTabKey);
+
+  const sponsorsBlock = (
+    <>
+      {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
+      {isTabVisible("sponsors") && allSponsors.length > 0 && (
+        <section id="sponsors" className="py-16 bg-white">
+          <div className="max-w-5xl mx-auto px-4">
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
+              THANK YOU SPONSORS
+            </h2>
+            <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
+
+            <div className="relative flex items-center justify-center gap-2 sm:gap-8">
+              {sponsorPages > 1 && (
+                <button
+                  onClick={() => setSponsorIndex((prev) => (prev - 1 + sponsorPages) % sponsorPages)}
+                  className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Previous sponsors"
+                >
+                  <ChevronLeft className="h-6 w-6 text-gray-400" />
+                </button>
+              )}
+
+              <div className="flex-1 flex flex-wrap items-center justify-center gap-x-8 gap-y-8 sm:gap-x-12 min-h-[120px] py-4">
+                {visibleSponsors.map((s) => {
+                  const sponsorUrl = s.website_url
+                    ? (s.website_url.startsWith("http://") || s.website_url.startsWith("https://") ? s.website_url : `https://${s.website_url}`)
+                    : null;
+                  const isFeatured = s.tier === "title" || s.tier === "presenting" || s.tier === "platinum";
+                  const imgClass = isFeatured
+                    ? "h-28 sm:h-36 w-auto max-w-[240px] sm:max-w-[320px] object-contain"
+                    : "h-20 sm:h-24 w-auto max-w-[160px] sm:max-w-[200px] object-contain";
+                  return (
+                  <div key={s.id} className="flex flex-col items-center">
+                    {sponsorUrl ? (
+                      <a href={sponsorUrl} target="_blank" rel="noopener noreferrer" className="group">
+                        {s.logo_url ? (
+                          <img src={s.logo_url} alt={s.name} className={`${imgClass} group-hover:scale-105 transition-transform`} />
+                        ) : (
+                          <span className="text-lg font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{s.name}</span>
+                        )}
+                      </a>
+                    ) : s.logo_url ? (
+                      <img src={s.logo_url} alt={s.name} className={imgClass} />
+                    ) : (
+                      <span className="text-lg font-bold text-gray-700">{s.name}</span>
+                    )}
+                    {(s.tier === "presenting" || s.tier === "title") && (
+                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-2 text-center">
+                        {s.tier === "title" ? "Title Sponsor" : "Thanks to Our Presenting Sponsor"}
+                      </span>
+                    )}
+                  </div>
+                  );
+                })}
+              </div>
+
+              {sponsorPages > 1 && (
+                <button
+                  onClick={() => setSponsorIndex((prev) => (prev + 1) % sponsorPages)}
+                  className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Next sponsors"
+                >
+                  <ChevronRight className="h-6 w-6 text-gray-400" />
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===== DIVIDER BETWEEN SPONSORS AND BECOME A SPONSOR ===== */}
+      {isTabVisible("sponsors") && (
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
+            <Award className="h-5 w-5" style={{ color: secondary }} />
+            <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
+          </div>
+        </div>
+      )}
+
+      {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
+      {isTabVisible("sponsors") && (
+      <section id="become-a-sponsor" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
+                BECOME A SPONSOR
+              </h2>
+              <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+              <p className="text-center text-sm mb-10" style={{ color: "#888" }}>
+                Partner with us to make this event a success. Choose a sponsorship level below.
+              </p>
+
+              {sponsorSuccess && (
+                <div className="max-w-md mx-auto mb-10 bg-white rounded-xl border-2 p-8 text-center" style={{ borderColor: `${secondary}40` }}>
+                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
+                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>Thank You!</h3>
+                  <p style={{ color: "#666" }}>
+                    Your sponsorship has been confirmed. The tournament organizer will reach out with next steps.
+                  </p>
+                </div>
+              )}
+
+              {sponsorVerifying && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} />
+                  <p style={{ color: "#666" }}>Verifying your sponsorship payment...</p>
+                </div>
+              )}
+
+              {sponsorshipTiers.length > 0 ? (
+                <>
+                  <div className={`grid gap-6 ${sponsorshipTiers.length === 1 ? "max-w-md mx-auto" : sponsorshipTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                    {sponsorshipTiers.map((tier, i) => {
+                      const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
+                      const soldOut = remaining === 0;
+                      const packageLabel = tier.custom_package_label?.trim() || null;
+                      return (
+                      <motion.div
+                        key={tier.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${soldOut ? "opacity-70" : ""}`}
+                        style={{ borderColor: "#e5e5e5" }}
+                      >
+                        <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
+                          <Award className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
+                          {packageLabel && (
+                            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider mb-1 px-2 py-0.5 rounded" style={{ backgroundColor: secondary + "20", color: "#555" }}>
+                              {packageLabel}
+                            </span>
+                          )}
+                          <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
+                          {soldOut && (tier as any).hide_price_when_sold_out !== false ? (
+                            <p className="text-2xl font-bold mt-1 uppercase tracking-wider" style={{ color: "#999" }}>Sold Out</p>
+                          ) : (
+                            <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
+                              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
+                            </p>
+                          )}
+                          {tier.description && (
+                            <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
+                          )}
+                          {remaining != null && !soldOut && (
+                            <p className="text-xs mt-2 font-semibold text-emerald-700">
+                              {`${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
+                            </p>
+                          )}
+                        </div>
+
+                        {tier.benefits && (
+                          <div className="flex-1 px-6 py-4 border-t" style={{ borderColor: "#f0f0f0" }}>
+                            <div className="text-sm whitespace-pre-line" style={{ color: "#555" }}>
+                              {tier.benefits}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="p-6 pt-2">
+                          {soldOut ? (
+                            <button
+                              type="button"
+                              disabled
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase bg-gray-200 text-gray-500 cursor-not-allowed"
+                            >
+                              Sold Out
+                            </button>
+                          ) : (
+                            <a
+                              href={`/t/${slug}/sponsor?tier=${tier.id}`}
+                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
+                              style={{ backgroundColor: secondary, color: primary }}
+                            >
+                              Select
+                            </a>
+                          )}
+                        </div>
+                      </motion.div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="max-w-2xl mx-auto bg-white rounded-xl border p-8 text-center" style={{ borderColor: "#e5e5e5" }}>
+                  <Heart className="h-10 w-10 mx-auto mb-4" style={{ color: secondary }} />
+                  <h3 className="text-xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>Sponsorship opportunities coming soon</h3>
+                  <p className="text-sm" style={{ color: "#666" }}>
+                    Contact the tournament organizer for details{tournament.contact_email ? ` at ${tournament.contact_email}` : "."}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+
   return (
+
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
@@ -1495,204 +1700,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {galleryPosition === "top" && galleryNode}
       {mediaPosition === "top" && mediaNode}
 
-      {/* ===== THANK YOU SPONSORS CAROUSEL ===== */}
-      {isTabVisible("sponsors") && allSponsors.length > 0 && (
-        <section id="sponsors" className="py-16 bg-white">
-          <div className="max-w-5xl mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-              THANK YOU SPONSORS
-            </h2>
-            <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
+      {sponsorsBeforeRegistration && sponsorsBlock}
 
-            <div className="relative flex items-center justify-center gap-2 sm:gap-8">
-              {sponsorPages > 1 && (
-                <button
-                  onClick={() => setSponsorIndex((prev) => (prev - 1 + sponsorPages) % sponsorPages)}
-                  className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Previous sponsors"
-                >
-                  <ChevronLeft className="h-6 w-6 text-gray-400" />
-                </button>
-              )}
-
-              <div className="flex-1 flex flex-wrap items-center justify-center gap-x-8 gap-y-8 sm:gap-x-12 min-h-[120px] py-4">
-                {visibleSponsors.map((s) => {
-                  const sponsorUrl = s.website_url
-                    ? (s.website_url.startsWith("http://") || s.website_url.startsWith("https://") ? s.website_url : `https://${s.website_url}`)
-                    : null;
-                  const isFeatured = s.tier === "title" || s.tier === "presenting" || s.tier === "platinum";
-                  const imgClass = isFeatured
-                    ? "h-28 sm:h-36 w-auto max-w-[240px] sm:max-w-[320px] object-contain"
-                    : "h-20 sm:h-24 w-auto max-w-[160px] sm:max-w-[200px] object-contain";
-                  return (
-                  <div key={s.id} className="flex flex-col items-center">
-                    {sponsorUrl ? (
-                      <a href={sponsorUrl} target="_blank" rel="noopener noreferrer" className="group">
-                        {s.logo_url ? (
-                          <img src={s.logo_url} alt={s.name} className={`${imgClass} group-hover:scale-105 transition-transform`} />
-                        ) : (
-                          <span className="text-lg font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{s.name}</span>
-                        )}
-                      </a>
-                    ) : s.logo_url ? (
-                      <img src={s.logo_url} alt={s.name} className={imgClass} />
-                    ) : (
-                      <span className="text-lg font-bold text-gray-700">{s.name}</span>
-                    )}
-                    {(s.tier === "presenting" || s.tier === "title") && (
-                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-2 text-center">
-                        {s.tier === "title" ? "Title Sponsor" : "Thanks to Our Presenting Sponsor"}
-                      </span>
-                    )}
-                  </div>
-                  );
-                })}
-              </div>
-
-              {sponsorPages > 1 && (
-                <button
-                  onClick={() => setSponsorIndex((prev) => (prev + 1) % sponsorPages)}
-                  className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Next sponsors"
-                >
-                  <ChevronRight className="h-6 w-6 text-gray-400" />
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ===== DIVIDER BETWEEN SPONSORS AND BECOME A SPONSOR ===== */}
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
-          <Award className="h-5 w-5" style={{ color: secondary }} />
-          <div className="flex-1 h-px" style={{ backgroundColor: "#e0e0e0" }} />
-        </div>
-      </div>
-
-      {/* Registration section is now placed via public_tabs_order (see below) */}
-
-      {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
-      {isTabVisible("sponsors") && (
-      <section id="become-a-sponsor" className="py-16" style={{ backgroundColor: "#fafafa" }}>
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-                BECOME A SPONSOR
-              </h2>
-              <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-10" style={{ color: "#888" }}>
-                Partner with us to make this event a success. Choose a sponsorship level below.
-              </p>
-
-              {/* Sponsor success confirmation */}
-              {sponsorSuccess && (
-                <div className="max-w-md mx-auto mb-10 bg-white rounded-xl border-2 p-8 text-center" style={{ borderColor: `${secondary}40` }}>
-                  <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
-                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>Thank You!</h3>
-                  <p style={{ color: "#666" }}>
-                    Your sponsorship has been confirmed. The tournament organizer will reach out with next steps.
-                  </p>
-                </div>
-              )}
-
-              {sponsorVerifying && (
-                <div className="flex items-center justify-center gap-2 mb-8">
-                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} />
-                  <p style={{ color: "#666" }}>Verifying your sponsorship payment...</p>
-                </div>
-              )}
-
-              {sponsorshipTiers.length > 0 ? (
-                <>
-                  <div className={`grid gap-6 ${sponsorshipTiers.length === 1 ? "max-w-md mx-auto" : sponsorshipTiers.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-                    {sponsorshipTiers.map((tier, i) => {
-                      const remaining = tier.total_spots != null ? Math.max(0, tier.total_spots - (tier.spots_used || 0)) : null;
-                      const soldOut = remaining === 0;
-                      const packageLabel = tier.custom_package_label?.trim() || null;
-                      return (
-                      <motion.div
-                        key={tier.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
-                        className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${soldOut ? "opacity-70" : ""}`}
-                        style={{ borderColor: "#e5e5e5" }}
-                      >
-                        <div className="p-6 text-center" style={{ backgroundColor: primary + "08" }}>
-                          <Award className="h-8 w-8 mx-auto mb-2" style={{ color: secondary }} />
-                          {packageLabel && (
-                            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider mb-1 px-2 py-0.5 rounded" style={{ backgroundColor: secondary + "20", color: "#555" }}>
-                              {packageLabel}
-                            </span>
-                          )}
-                          <h3 className="text-xl font-display font-bold" style={{ color: "#1a1a1a" }}>{tier.name}</h3>
-                          {soldOut && (tier as any).hide_price_when_sold_out !== false ? (
-                            <p className="text-2xl font-bold mt-1 uppercase tracking-wider" style={{ color: "#999" }}>Sold Out</p>
-                          ) : (
-                            <p className="text-2xl font-bold mt-1" style={{ color: primary }}>
-                              {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tier.price_cents / 100)}
-                            </p>
-                          )}
-                          {tier.description && (
-                            <p className="text-sm mt-2" style={{ color: "#666" }}>{tier.description}</p>
-                          )}
-                          {remaining != null && !soldOut && (
-                            <p className="text-xs mt-2 font-semibold text-emerald-700">
-                              {`${remaining} of ${tier.total_spots} ${remaining === 1 ? "spot" : "spots"} left`}
-                            </p>
-                          )}
-                        </div>
-
-                        {tier.benefits && (
-                          <div className="flex-1 px-6 py-4 border-t" style={{ borderColor: "#f0f0f0" }}>
-                            <div className="text-sm whitespace-pre-line" style={{ color: "#555" }}>
-                              {tier.benefits}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="p-6 pt-2">
-                          {soldOut ? (
-                            <button
-                              type="button"
-                              disabled
-                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase bg-gray-200 text-gray-500 cursor-not-allowed"
-                            >
-                              Sold Out
-                            </button>
-                          ) : (
-                            <a
-                              href={`/t/${slug}/sponsor?tier=${tier.id}`}
-                              className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
-                              style={{ backgroundColor: secondary, color: primary }}
-                            >
-                              Select
-                            </a>
-                          )}
-                        </div>
-                      </motion.div>
-                      );
-                    })}
-                  </div>
-
-                </>
-              ) : (
-                <div className="max-w-2xl mx-auto bg-white rounded-xl border p-8 text-center" style={{ borderColor: "#e5e5e5" }}>
-                  <Heart className="h-10 w-10 mx-auto mb-4" style={{ color: secondary }} />
-                  <h3 className="text-xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>Sponsorship opportunities coming soon</h3>
-                  <p className="text-sm" style={{ color: "#666" }}>
-                    Contact the tournament organizer for details{tournament.contact_email ? ` at ${tournament.contact_email}` : "."}
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        </section>
-      )}
 
       {/* Side Events / Tickets */}
       {sideEvents.length > 0 && (
@@ -2230,6 +2239,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {mediaPosition === "after_leaderboard" && mediaNode}
 
       {showRegistrationSection && registrationSection}
+      {!sponsorsBeforeRegistration && sponsorsBlock}
+
 
       {/* ===== AUCTION & RAFFLE ===== */}
       {isTabVisible("auction") && auctionItems.length > 0 && (

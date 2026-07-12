@@ -77,10 +77,10 @@ export async function requireConnectedAccount(
   }
 }
 
-/** Stripe SDK second-arg options. Empty when platform fallback. */
-export function stripeAccountOpts(account: ConnectedAccount): Record<string, string> {
+/** Stripe SDK second-arg options. Undefined when platform fallback so stripe-node doesn't reject an empty options object. */
+export function stripeAccountOpts(account: ConnectedAccount): Record<string, string> | undefined {
   return account.isPlatformFallback || !account.stripeAccountId
-    ? {}
+    ? undefined
     : { stripeAccount: account.stripeAccountId };
 }
 

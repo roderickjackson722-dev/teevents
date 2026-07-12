@@ -1883,6 +1883,18 @@ const AdminDashboard = () => {
                                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 : <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />}
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Issue a temporary password"
+                              onClick={() => handleSetTempPassword(t.organization_id)}
+                              disabled={tempPwdOrgId === t.organization_id}
+                            >
+                              {tempPwdOrgId === t.organization_id
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <span className="text-[10px] font-semibold text-muted-foreground">TMP</span>}
+                            </Button>
+
                             {deletingTournament === t.id && deleteConfirmStep > 0 ? (
                               <div className="flex items-center gap-1">
                                 <Button

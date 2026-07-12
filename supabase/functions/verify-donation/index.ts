@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
         });
       } catch (e) { console.error("[verify-donation] admin notify failed:", e); }
 
+      await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, { context: "donation" });
 
       return new Response(
         JSON.stringify({ verified: true, status: "completed" }),

@@ -934,6 +934,80 @@ const Registration = () => {
                 </div>
               </div>
 
+              {/* Donation Prompt */}
+              <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      Donation Prompt
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Ask registrants to add a donation during checkout. They can pick a preset amount or enter their own.
+                    </p>
+                  </div>
+                  <Switch checked={donationEnabled} onCheckedChange={setDonationEnabled} />
+                </div>
+
+                {donationEnabled && (
+                  <div className="space-y-4 pt-1">
+                    <div>
+                      <Label className="text-xs">Prompt Title</Label>
+                      <Input
+                        value={donationTitle}
+                        onChange={(e) => setDonationTitle(e.target.value)}
+                        placeholder="Support Our Mission"
+                        maxLength={120}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Prompt Description</Label>
+                      <Textarea
+                        value={donationDescription}
+                        onChange={(e) => setDonationDescription(e.target.value)}
+                        rows={3}
+                        maxLength={500}
+                        placeholder="Help us provide scholarships to deserving students. Your donation makes a direct impact."
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Preset Donation Amounts (comma-separated dollar values)</Label>
+                      <Input
+                        value={donationPresetsDisplay}
+                        onChange={(e) => setDonationPresetsDisplay(e.target.value)}
+                        placeholder="10, 25, 50, 100, 250, 500"
+                      />
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        These appear as one-tap buttons in the donation prompt.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Switch checked={donationAllowCustom} onCheckedChange={setDonationAllowCustom} />
+                      <div className="flex-1">
+                        <Label className="text-sm font-semibold cursor-pointer block">Allow custom donation amount</Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Registrants can type in their own amount in addition to the presets.
+                        </p>
+                      </div>
+                    </div>
+                    {donationAllowCustom && (
+                      <div>
+                        <Label className="text-xs">Custom Amount Label</Label>
+                        <Input
+                          value={donationCustomLabel}
+                          onChange={(e) => setDonationCustomLabel(e.target.value)}
+                          placeholder="Enter your own amount"
+                          maxLength={80}
+                        />
+                      </div>
+                    )}
+                    <div className="rounded-md border border-dashed border-border p-3 bg-background/60 text-xs text-muted-foreground">
+                      <strong className="text-foreground">💡 Recommended description:</strong> "Help us provide scholarships to deserving students. Every dollar supports a student's future — tuition, books, and mentorship programs."
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Settings

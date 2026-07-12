@@ -744,6 +744,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   const tabHasData: Record<PublicTabKey, boolean> = {
     about_event: !!(tournament as any).description_html?.replace(/<[^>]*>/g, "").trim() || !!tournament.description,
+    registration: !!tournament.registration_open,
     leaderboard: leaderboard.length > 0,
     sponsors: sponsors.length > 0 || sponsorshipTiers.length > 0,
     gallery: photos.length > 0,
@@ -763,6 +764,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   const tabHrefByKey: Record<PublicTabKey, string> = {
     about_event: "#about",
+    registration: "#register",
     leaderboard: "#leaderboard",
     sponsors: "#sponsors",
     gallery: "#photos",
@@ -779,6 +781,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   };
   const tabLabelByKey: Record<PublicTabKey, string> = {
     about_event: "About",
+    registration: "Registration",
     leaderboard: "Leaderboard",
     sponsors: "Sponsors",
     gallery: "Photos",
@@ -803,7 +806,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   const navLinks: { label: string; href: string }[] = [
     { label: "Home", href: "#top" },
-    { label: "Registration", href: "#register" },
     ...orderedOptionalLinks,
     { label: "Contact Us", href: "#contact" },
   ];
@@ -996,7 +998,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
 
 
-  const golfersFirst = (tournament as any).golfers_register_first === true;
+  const showRegistrationSection = isTabVisible("registration");
 
   const formatCountdown = () => {
     if (!earlyExpiresAt) return "";
@@ -1560,7 +1562,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </div>
       </div>
 
-      {golfersFirst && registrationSection}
+      {/* Registration section is now placed via public_tabs_order (see below) */}
 
       {/* ===== SPONSORSHIP TIERS (Become a Sponsor) ===== */}
       {isTabVisible("sponsors") && (
@@ -2217,7 +2219,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {galleryPosition === "after_leaderboard" && galleryNode}
       {mediaPosition === "after_leaderboard" && mediaNode}
 
-      {!golfersFirst && registrationSection}
+      {showRegistrationSection && registrationSection}
 
       {/* ===== AUCTION & RAFFLE ===== */}
       {isTabVisible("auction") && auctionItems.length > 0 && (

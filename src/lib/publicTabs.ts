@@ -3,6 +3,7 @@
 
 export type PublicTabKey =
   | "about_event"
+  | "registration"
   | "leaderboard"
   | "sponsors"
   | "gallery"
@@ -28,6 +29,7 @@ export interface PublicTabMeta {
 
 export const PUBLIC_TABS: PublicTabMeta[] = [
   { key: "about_event",    label: "About the Event", href: "#about",            helper: "Event description / overview shown on the public page" },
+  { key: "registration",   label: "Registration",   href: "#register",          helper: "Public registration form / sign-up section" },
   { key: "leaderboard",    label: "Leaderboard",    href: "#leaderboard",       helper: "Live leaderboard" },
   { key: "sponsors",       label: "Sponsors",       href: "#sponsors",          helper: "Sponsor showcase" },
   { key: "auction",        label: "Auction / Raffle", href: "#auction",         helper: "Silent auction & raffle items" },
@@ -45,6 +47,7 @@ export const PUBLIC_TABS: PublicTabMeta[] = [
 
 export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
   about_event: true,
+  registration: true,
   leaderboard: true,
   sponsors: true,
   gallery: false,
@@ -61,9 +64,9 @@ export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
 };
 
 export const PUBLIC_TABS_DEFAULT_ORDER: PublicTabKey[] = [
-  "about_event", "about_organizer", "leaderboard", "sponsors", "auction",
-  "donations", "course_details", "schedule", "lodging", "gallery", "media",
-  "volunteers", "contests", "travel",
+  "about_event", "about_organizer", "schedule", "registration", "sponsors",
+  "leaderboard", "gallery", "auction", "donations", "course_details",
+  "lodging", "media", "volunteers", "contests", "travel",
 ];
 
 /** Merge a stored visibility map with defaults so missing keys still resolve. */

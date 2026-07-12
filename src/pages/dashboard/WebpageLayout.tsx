@@ -109,7 +109,6 @@ export default function WebpageLayout() {
           tournamentId={tournament.id}
           initialVisibility={(tournament as any).public_tabs}
           initialOrder={(tournament as any).public_tabs_order}
-          initialGolfersFirst={(tournament as any).golfers_register_first}
         />
       )}
     </div>

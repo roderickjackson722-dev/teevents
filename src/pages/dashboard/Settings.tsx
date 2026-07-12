@@ -103,9 +103,7 @@ const Settings = () => {
     if (error) toast.error(error.message);
     else {
       toast.success("Organization name updated!");
-      // Reflect immediately in the "Name" row above without a full reload
-      if (trimmed && org) (org as any).orgName = trimmed;
-      if (org) (org as any).dashboardName = trimmed || null;
+      if (trimmed) setDisplayName(trimmed);
     }
     setSavingDashboardName(false);
   };

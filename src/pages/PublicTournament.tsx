@@ -1166,6 +1166,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
+  const sponsorsBeforeRegistration =
+    tabOrder.indexOf("sponsors" as PublicTabKey) < tabOrder.indexOf("registration" as PublicTabKey);
+
+
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}

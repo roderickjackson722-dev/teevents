@@ -69,6 +69,7 @@ const Settings = () => {
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
   const [savingFeeToggle, setSavingFeeToggle] = useState<string | null>(null);
   const [dashboardName, setDashboardName] = useState("");
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [savingDashboardName, setSavingDashboardName] = useState(false);
 
   // Policy editing state
@@ -78,6 +79,7 @@ const Settings = () => {
   useEffect(() => {
     if (org) {
       setDashboardName(org.dashboardName || "");
+      setDisplayName(org.orgName || null);
       supabase
         .from("tournaments")
         .select("id, title, scoring_format, pass_fees_to_participants, refund_policy_type, refund_policy, rain_date_policy_type, rain_date_policy, show_branding_badge, show_branding_footer")
@@ -90,12 +92,19 @@ const Settings = () => {
   const handleSaveDashboardName = async () => {
     if (demoGuard() || !org) return;
     setSavingDashboardName(true);
+    const trimmed = dashboardName.trim();
+    const update: Record<string, unknown> = { dashboard_name: trimmed || null };
+    // Keep the organization Name in sync with the Dashboard Display Name
+    if (trimmed) update.name = trimmed;
     const { error } = await supabase
       .from("organizations")
-      .update({ dashboard_name: dashboardName.trim() || null } as any)
+      .update(update as any)
       .eq("id", org.orgId);
     if (error) toast.error(error.message);
-    else toast.success("Dashboard name updated!");
+    else {
+      toast.success("Organization name updated!");
+      if (trimmed) setDisplayName(trimmed);
+    }
     setSavingDashboardName(false);
   };
 
@@ -489,7 +498,7 @@ const Settings = () => {
         <div className="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-sm text-muted-foreground">Name</span>
-            <p className="font-medium text-foreground">{org?.orgName || "—"}</p>
+            <p className="font-medium text-foreground">{displayName || org?.orgName || "—"}</p>
           </div>
           <div>
             <span className="text-sm text-muted-foreground">Plan</span>

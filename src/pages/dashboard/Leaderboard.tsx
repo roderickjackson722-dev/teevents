@@ -716,6 +716,10 @@ export default function Leaderboard() {
       )}
 
       {selectedTournament && (
+        <ScoreEditHistory tournamentId={selectedTournament} />
+      )}
+
+      {selectedTournament && (
         <LiveDisplayShareCard
           tournamentId={selectedTournament}
           tournamentSlug={selectedTournamentData?.slug || null}

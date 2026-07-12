@@ -186,6 +186,35 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     }
   };
 
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  const handleResendInvite = async (inv: InviteRow) => {
+    setResendingId(inv.id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("invite-member", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {
+          organization_id: orgId,
+          email: inv.email,
+          name: inv.name,
+          role: inv.role,
+          permissions: inv.permissions || [],
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitation resent to ${inv.name || inv.email} with a new temporary password`);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend invitation");
+    } finally {
+      setResendingId(null);
+    }
+  };
+
   const handleRevokeInvite = async (inviteId: string) => {
     const { error } = await supabase.from("org_invitations").delete().eq("id", inviteId);
     if (error) toast.error(error.message);

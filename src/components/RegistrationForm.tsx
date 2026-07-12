@@ -257,6 +257,16 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [autoPromos, setAutoPromos] = useState<any[]>([]);
   const [flights, setFlights] = useState<{ id: string; tier_name: string; tier_description: string | null }[]>([]);
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
+  // Donation state
+  const [donationSelectedCents, setDonationSelectedCents] = useState<number | null>(null);
+  const [donationCustomDisplay, setDonationCustomDisplay] = useState<string>("");
+  const donationCustomCents = (() => {
+    const n = parseFloat(donationCustomDisplay);
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
+  })();
+  const donationCents = donationSelectedCents === -1
+    ? donationCustomCents
+    : (donationSelectedCents || 0);
 
   // Load competition flights for this tournament
   useEffect(() => {

@@ -42,7 +42,9 @@ export default function PlatformTournaments() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "live" | "demo" | "pro" | "managed">("all");
+  const [filter, setFilter] = useState<"all" | "live" | "draft" | "ended" | "demo" | "pro" | "managed">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
 
@@ -133,16 +135,26 @@ export default function PlatformTournaments() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const today = new Date().toISOString().slice(0, 10);
+    const from = dateFrom || null;
+    const to = dateTo || null;
     return rows.filter((r) => {
-      if (filter === "live" && r.is_demo) return false;
+      // Status pill filters
+      if (filter === "live" && !(r.site_published && (r.date ? r.date >= today : true))) return false;
+      if (filter === "draft" && r.site_published) return false;
+      if (filter === "ended" && !(r.date && r.date < today)) return false;
       if (filter === "demo" && !r.is_demo) return false;
       if (filter === "pro" && !r.is_pro) return false;
       if (filter === "managed" && !r.managed_by_teevents) return false;
+      // Date range on tournament date
+      if (from && (!r.date || r.date < from)) return false;
+      if (to && (!r.date || r.date > to)) return false;
+      // Search across organizer name, title, course, location, slug
       if (!q) return true;
       return [r.title, r.org_name, r.location, r.course_name, r.slug, r.custom_slug]
         .some((v) => (v || "").toLowerCase().includes(q));
     });
-  }, [rows, search, filter]);
+  }, [rows, search, filter, dateFrom, dateTo]);
 
   const summary = useMemo(() => {
     const t = filtered;
@@ -198,11 +210,20 @@ export default function PlatformTournaments() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[220px]">
                 <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Search title, organizer, course…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
+                <Input placeholder="Search organizer, title, course…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
               </div>
-              {(["all", "live", "demo", "pro", "managed"] as const).map((f) => (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span>From</span>
+                <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9 w-[150px]" />
+                <span>To</span>
+                <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 w-[150px]" />
+              </div>
+              {(["all", "live", "draft", "ended", "demo", "pro", "managed"] as const).map((f) => (
                 <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)} className="capitalize">{f}</Button>
               ))}
+              {(search || dateFrom || dateTo || filter !== "all") && (
+                <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); setFilter("all"); }}>Reset</Button>
+              )}
               <Button size="sm" variant="outline" onClick={load} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
             </div>
 
@@ -282,7 +303,7 @@ export default function PlatformTournaments() {
                             {r.organization_id && (
                               <>
                                 <Button asChild variant="secondary" size="sm">
-                                  <Link to={`/dashboard/leaderboard?admin_org=${r.organization_id}&tournament_id=${r.id}`} target="_blank"><Edit3 className="h-3.5 w-3.5 mr-1" />Edit Scores</Link>
+                                  <Link to={`/admin/scoring/${r.id}`} target="_blank"><Edit3 className="h-3.5 w-3.5 mr-1" />Edit Scores</Link>
                                 </Button>
                                 <Button asChild variant="default" size="sm">
                                   <Link to={`/dashboard?admin_org=${r.organization_id}&tournament_id=${r.id}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Dashboard</Link>

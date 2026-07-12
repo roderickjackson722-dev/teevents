@@ -26,6 +26,12 @@ Deno.serve(async (req) => {
       ? body.addons.filter((a: any) => a && typeof a.addon_id === "string" && Number.isFinite(Number(a.qty_per_player)) && Number(a.qty_per_player) > 0)
         .map((a: any) => ({ addon_id: String(a.addon_id), qty_per_player: Math.floor(Number(a.qty_per_player)) }))
       : [];
+    // Optional donation amount, in cents. Clamp to non-negative int, cap at $10,000.
+    const donationAmountCents = (() => {
+      const n = Number(body.donation_amount_cents);
+      if (!Number.isFinite(n) || n <= 0) return 0;
+      return Math.min(Math.floor(n), 1_000_000);
+    })();
 
     const players = isFoursome
       ? body.players
@@ -186,6 +192,9 @@ Deno.serve(async (req) => {
       baseTotalCents = Math.max(0, baseTotalCents - discountCents);
     }
 
+    // Donation adds to charge but is NOT subject to promo discounts.
+    baseTotalCents = baseTotalCents + donationAmountCents;
+
     const hasAnyCharge = baseTotalCents > 0;
 
     // Resolve promoter from referral code (if any)
@@ -204,8 +213,8 @@ Deno.serve(async (req) => {
       promoterId = promoter?.id ?? null;
     }
 
-    // Insert registration records
-    const registrationInserts = players.map((p: any) => ({
+    // Insert registration records. Donation is attached to the first (captain) row.
+    const registrationInserts = players.map((p: any, i: number) => ({
       tournament_id,
       first_name: (p.first_name || "").trim(),
       last_name: (p.last_name || "").trim(),
@@ -220,6 +229,7 @@ Deno.serve(async (req) => {
       covered_fees: coverFees,
       referral_code_used: referralCode,
       promoter_id: promoterId,
+      donation_amount_cents: i === 0 ? donationAmountCents : 0,
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin

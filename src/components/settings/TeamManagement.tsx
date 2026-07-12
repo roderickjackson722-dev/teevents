@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle } from "lucide-react";
+import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -186,6 +186,35 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     }
   };
 
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  const handleResendInvite = async (inv: InviteRow) => {
+    setResendingId(inv.id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("invite-member", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {
+          organization_id: orgId,
+          email: inv.email,
+          name: inv.name,
+          role: inv.role,
+          permissions: inv.permissions || [],
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitation resent to ${inv.name || inv.email} with a new temporary password`);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend invitation");
+    } finally {
+      setResendingId(null);
+    }
+  };
+
   const handleRevokeInvite = async (inviteId: string) => {
     const { error } = await supabase.from("org_invitations").delete().eq("id", inviteId);
     if (error) toast.error(error.message);
@@ -331,9 +360,25 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                     {inv.role}
                   </Badge>
                   {canManage && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => handleResendInvite(inv)}
+                        disabled={resendingId === inv.id}
+                        title="Resend invitation with a new temporary password"
+                      >
+                        {resendingId === inv.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <><Send className="h-3.5 w-3.5 mr-1" />Resend</>
+                        )}
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleRevokeInvite(inv.id)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

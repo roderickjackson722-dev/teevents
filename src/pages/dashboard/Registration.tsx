@@ -160,6 +160,8 @@ const Registration = () => {
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
   const [showRegCount, setShowRegCount] = useState<boolean>(true);
+  /* Promo code input visibility */
+  const [showPromoCodeInput, setShowPromoCodeInput] = useState<boolean>(true);
   /* Public registration page custom content */
   const [registrationIntroHtml, setRegistrationIntroHtml] = useState<string>("");
   const [registrationPromoHtml, setRegistrationPromoHtml] = useState<string>("");

@@ -2239,6 +2239,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {mediaPosition === "after_leaderboard" && mediaNode}
 
       {showRegistrationSection && registrationSection}
+      {!sponsorsBeforeRegistration && sponsorsBlock}
+
 
       {/* ===== AUCTION & RAFFLE ===== */}
       {isTabVisible("auction") && auctionItems.length > 0 && (

@@ -421,6 +421,12 @@ Deno.serve(async (req) => {
         console.error("Confirmation/receipt error:", e);
       }
 
+      // If this session ran on the platform fallback account, notify admin now
+      // that the payment is actually captured (never at checkout creation).
+      await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, {
+        context: "registration",
+      });
+
       return new Response(
         JSON.stringify({ verified: true, status: "paid" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

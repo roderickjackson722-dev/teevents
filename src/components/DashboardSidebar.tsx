@@ -5,7 +5,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound,
+  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -88,6 +88,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-emerald-400 bg-emerald-400/5",
     items: [
       // "View Live Tournament Page" injected dynamically when a tournament slug exists
+      { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
       { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null, description: "About us, mission, history, contact" },
       { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },

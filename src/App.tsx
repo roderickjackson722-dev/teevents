@@ -26,6 +26,7 @@ import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
 import Printables from "./pages/dashboard/Printables";
 import ComingSoon from "./pages/dashboard/ComingSoon";
 import SiteBuilder from "./pages/dashboard/SiteBuilder";
+import WebpageLayout from "./pages/dashboard/WebpageLayout";
 import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
@@ -190,6 +191,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
+          <Route path="/dashboard/webpage-layout" element={<DashboardLayout><WebpageLayout /></DashboardLayout>} />
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />
           <Route path="/dashboard/setup-checklist" element={<DashboardLayout><SetupChecklistPage /></DashboardLayout>} />
           <Route path="/dashboard/printables" element={<DashboardLayout><Printables /></DashboardLayout>} />

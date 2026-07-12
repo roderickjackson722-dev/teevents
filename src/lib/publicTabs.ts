@@ -2,6 +2,7 @@
 // The Overview/Hero is always shown and is not part of this list.
 
 export type PublicTabKey =
+  | "about_event"
   | "leaderboard"
   | "sponsors"
   | "gallery"
@@ -26,6 +27,7 @@ export interface PublicTabMeta {
 }
 
 export const PUBLIC_TABS: PublicTabMeta[] = [
+  { key: "about_event",    label: "About the Event", href: "#about",            helper: "Event description / overview shown on the public page" },
   { key: "leaderboard",    label: "Leaderboard",    href: "#leaderboard",       helper: "Live leaderboard" },
   { key: "sponsors",       label: "Sponsors",       href: "#sponsors",          helper: "Sponsor showcase" },
   { key: "auction",        label: "Auction / Raffle", href: "#auction",         helper: "Silent auction & raffle items" },
@@ -42,6 +44,7 @@ export const PUBLIC_TABS: PublicTabMeta[] = [
 ];
 
 export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
+  about_event: true,
   leaderboard: true,
   sponsors: true,
   gallery: false,
@@ -58,9 +61,9 @@ export const PUBLIC_TABS_DEFAULT_VISIBILITY: Record<PublicTabKey, boolean> = {
 };
 
 export const PUBLIC_TABS_DEFAULT_ORDER: PublicTabKey[] = [
-  "about_organizer", "leaderboard", "sponsors", "auction", "donations",
-  "course_details", "schedule", "lodging", "gallery", "media", "volunteers",
-  "contests", "travel",
+  "about_event", "about_organizer", "leaderboard", "sponsors", "auction",
+  "donations", "course_details", "schedule", "lodging", "gallery", "media",
+  "volunteers", "contests", "travel",
 ];
 
 /** Merge a stored visibility map with defaults so missing keys still resolve. */

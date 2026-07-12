@@ -128,32 +128,19 @@ serve(async (req) => {
         .update({ status: "accepted" })
         .eq("id", invite.id);
 
-      // Check if they belong to any OTHER org — if so, they already have a working password.
-      const { data: otherMemberships } = await supabaseAdmin
-        .from("org_members")
-        .select("id")
-        .eq("user_id", invitedUser.id)
-        .neq("organization_id", organization_id)
-        .limit(1);
-
-      const hasOtherOrgs = (otherMemberships?.length || 0) > 0;
-
-      if (hasOtherOrgs) {
-        await sendInvitationEmail(email.toLowerCase(), memberName, orgName, invite.token, true, memberRole, null);
-      } else {
-        // Dormant account — reset to a temp password and force change on first login
-        const tempPasswordExisting = generateTempPassword();
-        await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
-          password: tempPasswordExisting,
-          user_metadata: {
-            ...(invitedUser.user_metadata || {}),
-            full_name: memberName || invitedUser.user_metadata?.full_name,
-            force_password_change: true,
-            invited_org_id: organization_id,
-          },
-        });
-        await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
-      }
+      // Always issue a fresh temporary password so the invitee has
+      // credentials they can use immediately from the invitation email.
+      const tempPasswordExisting = generateTempPassword();
+      await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
+        password: tempPasswordExisting,
+        user_metadata: {
+          ...(invitedUser.user_metadata || {}),
+          full_name: memberName || invitedUser.user_metadata?.full_name,
+          force_password_change: true,
+          invited_org_id: organization_id,
+        },
+      });
+      await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
 
       return new Response(
         JSON.stringify({ success: true, auto_accepted: true }),

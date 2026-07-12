@@ -20,6 +20,7 @@ import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
+import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 
 interface PlayerScore {
   registration_id: string;

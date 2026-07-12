@@ -43,7 +43,7 @@ export default function WebpageLayout() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, public_tabs, public_tabs_order, golfers_register_first")
+        .select("id, public_tabs, public_tabs_order")
         .eq("id", selected)
         .maybeSingle();
       return data;

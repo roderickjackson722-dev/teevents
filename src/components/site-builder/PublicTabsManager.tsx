@@ -17,6 +17,7 @@ interface PublicTabsManagerProps {
   tournamentId: string;
   initialVisibility: Partial<Record<string, boolean>> | null | undefined;
   initialOrder: string[] | null | undefined;
+  /** @deprecated no longer used — Registration is now a reorderable section */
   initialGolfersFirst?: boolean | null;
 }
 
@@ -24,14 +25,12 @@ export const PublicTabsManager = ({
   tournamentId,
   initialVisibility,
   initialOrder,
-  initialGolfersFirst,
 }: PublicTabsManagerProps) => {
   const { toast } = useToast();
   const [visibility, setVisibility] = useState<Record<PublicTabKey, boolean>>(
     normalizeVisibility(initialVisibility),
   );
   const [order, setOrder] = useState<PublicTabKey[]>(normalizeOrder(initialOrder));
-  const [golfersFirst, setGolfersFirst] = useState<boolean>(!!initialGolfersFirst);
   const [saving, setSaving] = useState(false);
 
   const tabMeta = (key: PublicTabKey) =>
@@ -56,7 +55,6 @@ export const PublicTabsManager = ({
       .update({
         public_tabs: visibility as any,
         public_tabs_order: order,
-        golfers_register_first: golfersFirst,
       } as any)
       .eq("id", tournamentId);
     setSaving(false);
@@ -65,7 +63,7 @@ export const PublicTabsManager = ({
       return;
     }
     toast({
-      title: "Public page tabs saved",
+      title: "Page layout saved",
       description: "Your changes are live on the public tournament page.",
     });
   };
@@ -78,7 +76,7 @@ export const PublicTabsManager = ({
           Drag to reorder sections and use the toggle to show or hide each one.
           The order controls both your public page's navigation tabs and the order
           of the matching sections on the page. Hidden sections are removed from
-          both the page and the nav. Home, Registration, and Contact always appear.
+          both the page and the nav. Home and Contact always appear.
         </p>
       </div>
 
@@ -142,33 +140,13 @@ export const PublicTabsManager = ({
         </Droppable>
       </DragDropContext>
 
-      <div className="border-t border-border pt-3">
-        <div className="flex items-start gap-3">
-          <Switch
-            checked={golfersFirst}
-            onCheckedChange={setGolfersFirst}
-            aria-label="Show golfer registration before sponsors"
-          />
-          <div className="flex-1 min-w-0">
-            <Label className="text-sm font-semibold cursor-pointer block">
-              Show golfer registration before sponsors
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              When on, the player registration section appears above "Become a Sponsor" on your public page.
-            </p>
-          </div>
-        </div>
-      </div>
-
-
-
       <div className="flex items-center justify-between gap-3 pt-1">
         <p className="text-xs text-muted-foreground">
           Tip: a tab with no data (e.g. Sponsors with no sponsors yet) is hidden automatically.
         </p>
         <Button onClick={handleSave} disabled={saving} size="sm">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          <span className="ml-1.5">Save Tabs</span>
+          <span className="ml-1.5">Save Layout</span>
         </Button>
       </div>
     </div>

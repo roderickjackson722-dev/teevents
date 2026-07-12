@@ -6854,6 +6854,7 @@ export type Database = {
           covered_fees: boolean
           created_at: string
           dietary_restrictions: string | null
+          donation_amount_cents: number
           email: string
           first_name: string
           flight_id: string | null
@@ -6890,6 +6891,7 @@ export type Database = {
           covered_fees?: boolean
           created_at?: string
           dietary_restrictions?: string | null
+          donation_amount_cents?: number
           email: string
           first_name: string
           flight_id?: string | null
@@ -6926,6 +6928,7 @@ export type Database = {
           covered_fees?: boolean
           created_at?: string
           dietary_restrictions?: string | null
+          donation_amount_cents?: number
           email?: string
           first_name?: string
           flight_id?: string | null
@@ -7583,7 +7586,13 @@ export type Database = {
           description: string | null
           description_html: string | null
           display_order: number
+          donation_allow_custom: boolean
+          donation_custom_label: string | null
           donation_goal_cents: number | null
+          donation_preset_amounts: number[]
+          donation_prompt_description: string | null
+          donation_prompt_enabled: boolean
+          donation_prompt_title: string | null
           donations_footer_text: string | null
           donations_header_text: string | null
           early_registration_enabled: boolean
@@ -7808,7 +7817,13 @@ export type Database = {
           description?: string | null
           description_html?: string | null
           display_order?: number
+          donation_allow_custom?: boolean
+          donation_custom_label?: string | null
           donation_goal_cents?: number | null
+          donation_preset_amounts?: number[]
+          donation_prompt_description?: string | null
+          donation_prompt_enabled?: boolean
+          donation_prompt_title?: string | null
           donations_footer_text?: string | null
           donations_header_text?: string | null
           early_registration_enabled?: boolean
@@ -8033,7 +8048,13 @@ export type Database = {
           description?: string | null
           description_html?: string | null
           display_order?: number
+          donation_allow_custom?: boolean
+          donation_custom_label?: string | null
           donation_goal_cents?: number | null
+          donation_preset_amounts?: number[]
+          donation_prompt_description?: string | null
+          donation_prompt_enabled?: boolean
+          donation_prompt_title?: string | null
           donations_footer_text?: string | null
           donations_header_text?: string | null
           early_registration_enabled?: boolean

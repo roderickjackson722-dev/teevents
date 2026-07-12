@@ -57,6 +57,15 @@ interface RegistrationFormProps {
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
   captainLabel?: string | null;
+  /** Donation prompt config */
+  donationPrompt?: {
+    enabled: boolean;
+    title: string;
+    description: string | null;
+    presetsCents: number[];
+    allowCustom: boolean;
+    customLabel: string;
+  } | null;
 }
 
 const emptyPlayer = () => ({
@@ -230,7 +239,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, donationPrompt = null }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -248,6 +257,16 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [autoPromos, setAutoPromos] = useState<any[]>([]);
   const [flights, setFlights] = useState<{ id: string; tier_name: string; tier_description: string | null }[]>([]);
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
+  // Donation state
+  const [donationSelectedCents, setDonationSelectedCents] = useState<number | null>(null);
+  const [donationCustomDisplay, setDonationCustomDisplay] = useState<string>("");
+  const donationCustomCents = (() => {
+    const n = parseFloat(donationCustomDisplay);
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
+  })();
+  const donationCents = donationSelectedCents === -1
+    ? donationCustomCents
+    : (donationSelectedCents || 0);
 
   // Load competition flights for this tournament
   useEffect(() => {
@@ -372,12 +391,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       )
     : 0;
   const baseTotalCents = Math.max(0, subtotalBeforeDiscount - discountCents);
-  const hasFee = baseTotalCents > 0;
-  const platformFeeCents = Math.round(baseTotalCents * platformFeeRate);
+  // Donation is charged separately (not discounted, not fee-bearing at organizer level — but
+  // fees are still computed on the full charge so we treat it as part of the fee-bearing base).
+  const totalWithDonationCents = baseTotalCents + donationCents;
+  const hasFee = totalWithDonationCents > 0;
+  const platformFeeCents = Math.round(totalWithDonationCents * platformFeeRate);
   // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
-  const stripeFee = baseTotalCents > 0 ? Math.round((baseTotalCents + platformFeeCents) * 0.029 + 30) : 0;
+  const stripeFee = totalWithDonationCents > 0 ? Math.round((totalWithDonationCents + platformFeeCents) * 0.029 + 30) : 0;
   const coverageAmount = stripeFee + platformFeeCents;
-  const totalWithCoveredFees = coverFees ? baseTotalCents + coverageAmount : baseTotalCents;
+  const totalWithCoveredFees = coverFees ? totalWithDonationCents + coverageAmount : totalWithDonationCents;
   const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
 
@@ -526,8 +548,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         const promoCodeToSend = appliedPromo?.code || null;
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
@@ -569,6 +591,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         referral_code_used: referralCode,
         promoter_id: promoterId,
         flight_id: selectedFlight,
+        // Attach the donation to the first (captain) registration row only
+        donation_amount_cents: i === 0 ? donationCents : 0,
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);
@@ -720,6 +744,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             {discountCents > 0 && (
               <span className="block text-xs mt-1 opacity-80 text-green-700">
                 Promo {appliedPromo?.code}: −${(discountCents / 100).toFixed(2)}
+              </span>
+            )}
+            {donationCents > 0 && (
+              <span className="block text-xs mt-1 opacity-80">
+                Donation: +${(donationCents / 100).toFixed(2)}
               </span>
             )}
             {totalDisplay && (
@@ -921,6 +950,84 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               rows={3}
               maxLength={1000}
             />
+          </div>
+        )}
+
+        {/* Donation Prompt */}
+        {donationPrompt?.enabled && (donationPrompt.presetsCents.length > 0 || donationPrompt.allowCustom) && (
+          <div className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: `${secondaryColor}60`, backgroundColor: `${secondaryColor}08` }}>
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4" style={{ color: secondaryColor }} />
+              <p className="text-sm font-semibold text-foreground">{donationPrompt.title || "Support Our Mission"}</p>
+            </div>
+            {donationPrompt.description && (
+              <p className="text-xs text-muted-foreground">{donationPrompt.description}</p>
+            )}
+            {donationPrompt.presetsCents.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {donationPrompt.presetsCents.map((cents) => {
+                  const active = donationSelectedCents === cents;
+                  return (
+                    <button
+                      key={cents}
+                      type="button"
+                      onClick={() => {
+                        setDonationSelectedCents(active ? null : cents);
+                        setDonationCustomDisplay("");
+                      }}
+                      className={cn(
+                        "px-3 py-2 rounded-md border-2 text-sm font-semibold transition-colors",
+                        active ? "text-white" : "bg-background text-foreground hover:bg-muted",
+                      )}
+                      style={active
+                        ? { borderColor: secondaryColor, backgroundColor: secondaryColor }
+                        : { borderColor: `${secondaryColor}40` }}
+                    >
+                      ${(cents / 100).toFixed(0)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {donationPrompt.allowCustom && (
+              <div className="flex items-center gap-2">
+                <Label htmlFor="donation_custom" className="text-xs whitespace-nowrap">
+                  {donationPrompt.customLabel || "Enter your own amount"}
+                </Label>
+                <div className="relative flex-1 max-w-[160px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <Input
+                    id="donation_custom"
+                    type="text"
+                    inputMode="decimal"
+                    value={donationCustomDisplay}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "" || /^\d*\.?\d{0,2}$/.test(raw)) {
+                        setDonationCustomDisplay(raw);
+                        setDonationSelectedCents(raw ? -1 : null);
+                      }
+                    }}
+                    placeholder="0.00"
+                    className="pl-6"
+                  />
+                </div>
+                {donationCents > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => { setDonationSelectedCents(null); setDonationCustomDisplay(""); }}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
+            {donationCents > 0 && (
+              <p className="text-xs font-semibold" style={{ color: secondaryColor }}>
+                ✓ Adding ${(donationCents / 100).toFixed(2)} donation to your registration
+              </p>
+            )}
           </div>
         )}
 

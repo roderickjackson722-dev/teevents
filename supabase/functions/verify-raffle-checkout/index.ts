@@ -104,6 +104,8 @@ Deno.serve(async (req) => {
       }).catch((e) => console.error("[verify-raffle-checkout] email error:", e));
     }
 
+    await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session_id, { context: "raffle" });
+
     return new Response(JSON.stringify({ ok: true, tickets: ticketNumbers }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
     });

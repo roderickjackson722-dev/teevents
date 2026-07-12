@@ -163,13 +163,20 @@ const Registration = () => {
   /* Public registration page custom content */
   const [registrationIntroHtml, setRegistrationIntroHtml] = useState<string>("");
   const [registrationPromoHtml, setRegistrationPromoHtml] = useState<string>("");
+  /* Donation prompt */
+  const [donationEnabled, setDonationEnabled] = useState<boolean>(false);
+  const [donationTitle, setDonationTitle] = useState<string>("Support Our Mission");
+  const [donationDescription, setDonationDescription] = useState<string>("");
+  const [donationPresetsDisplay, setDonationPresetsDisplay] = useState<string>("10, 25, 50, 100, 250, 500");
+  const [donationAllowCustom, setDonationAllowCustom] = useState<boolean>(true);
+  const [donationCustomLabel, setDonationCustomLabel] = useState<string>("Enter your own amount");
 
   /* fetch tournaments */
   useEffect(() => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -211,6 +218,17 @@ const Registration = () => {
       setShowRegCount((tournament as any).show_registration_count !== false);
       setRegistrationIntroHtml(((tournament as any).registration_intro_html as string) || "");
       setRegistrationPromoHtml(((tournament as any).registration_promo_html as string) || "");
+      setDonationEnabled(!!(tournament as any).donation_prompt_enabled);
+      setDonationTitle(((tournament as any).donation_prompt_title as string) || "Support Our Mission");
+      setDonationDescription(((tournament as any).donation_prompt_description as string) || "");
+      const presets = (tournament as any).donation_preset_amounts as number[] | null;
+      setDonationPresetsDisplay(
+        Array.isArray(presets) && presets.length > 0
+          ? presets.map((c) => (c / 100).toString()).join(", ")
+          : "10, 25, 50, 100, 250, 500",
+      );
+      setDonationAllowCustom((tournament as any).donation_allow_custom !== false);
+      setDonationCustomLabel(((tournament as any).donation_custom_label as string) || "Enter your own amount");
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([
@@ -265,6 +283,16 @@ const Registration = () => {
       show_registration_count: showRegCount,
       registration_intro_html: registrationIntroHtml.trim() || null,
       registration_promo_html: registrationPromoHtml.trim() || null,
+      donation_prompt_enabled: donationEnabled,
+      donation_prompt_title: donationTitle.trim() || "Support Our Mission",
+      donation_prompt_description: donationDescription.trim() || null,
+      donation_preset_amounts: donationPresetsDisplay
+        .split(",")
+        .map((s) => parseFloat(s.trim()))
+        .filter((n) => Number.isFinite(n) && n > 0)
+        .map((n) => Math.round(n * 100)),
+      donation_allow_custom: donationAllowCustom,
+      donation_custom_label: donationCustomLabel.trim() || "Enter your own amount",
     };
     const { error } = await supabase.from("tournaments").update(updates).eq("id", selectedTournament);
     if (error) toast.error(error.message);

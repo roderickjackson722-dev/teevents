@@ -808,6 +808,16 @@ const Registration = () => {
                 <Switch checked={allowCoverFees} onCheckedChange={setAllowCoverFees} />
               </div>
 
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">Promo Code Box</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Show the promo code input on the public registration form. Disable this if you do not want participants to enter promo codes.
+                  </p>
+                </div>
+                <Switch checked={showPromoCodeInput} onCheckedChange={setShowPromoCodeInput} />
+              </div>
+
               <div className="p-4 rounded-lg border border-border bg-muted/20">
                 <Label className="text-sm font-semibold">Captain Label (group registrations)</Label>
                 <p className="text-xs text-muted-foreground mt-0.5 mb-2">

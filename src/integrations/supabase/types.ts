@@ -9007,6 +9007,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_score_edit_history: {
+        Args: { _limit?: number; _tournament_id: string }
+        Returns: {
+          created_at: string
+          edited_by: string
+          editor_email: string
+          editor_type: string
+          hole_number: number
+          id: string
+          new_score: number
+          notes: string
+          old_score: number
+          player_first_name: string
+          player_last_name: string
+          registration_id: string
+          tournament_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

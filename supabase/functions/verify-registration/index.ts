@@ -1,6 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
+import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 
@@ -419,6 +420,12 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.error("Confirmation/receipt error:", e);
       }
+
+      // If this session ran on the platform fallback account, notify admin now
+      // that the payment is actually captured (never at checkout creation).
+      await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, {
+        context: "registration",
+      });
 
       return new Response(
         JSON.stringify({ verified: true, status: "paid" }),

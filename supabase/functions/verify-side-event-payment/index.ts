@@ -4,6 +4,7 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05;
 
@@ -176,6 +177,8 @@ Deno.serve(async (req) => {
         console.error("[verify-side-event-payment] email failed:", e);
       }
     }
+
+    await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, { context: "side_event" });
 
     return new Response(
       JSON.stringify({ verified: true, status: "paid", ticket_code: (paid as any)?.ticket_code }),

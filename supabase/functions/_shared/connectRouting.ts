@@ -97,7 +97,11 @@ export function applicationFeeBlock(account: ConnectedAccount, applicationFeeAmo
   return { payment_intent_data: { application_fee_amount: applicationFeeAmount } };
 }
 
-/** Fire-and-forget admin email when checkout was routed to the platform. */
+/** Fire-and-forget admin email when checkout was routed to the platform.
+ *  IMPORTANT: only sends when `confirmed: true` — i.e. after Stripe has
+ *  actually captured the payment. Calls without `confirmed` are a no-op so
+ *  that create-checkout code paths don't send premature "manual payout
+ *  required" emails for sessions the customer may abandon. */
 export async function notifyPlatformFallback(params: {
   context: string;
   organizationId: string | null;
@@ -107,7 +111,9 @@ export async function notifyPlatformFallback(params: {
   grossCents: number;
   buyerEmail?: string | null;
   stripeSessionId?: string | null;
+  confirmed?: boolean;
 }) {
+  if (!params.confirmed) return; // Do not email until payment is captured.
   try {
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) return;
@@ -115,7 +121,7 @@ export async function notifyPlatformFallback(params: {
     const subject = `[Manual payout required] ${params.context} charged on platform account — $${dollars}`;
     const html = `
       <h2>Platform fallback charge — manual payout required</h2>
-      <p>A <b>${params.context}</b> checkout just ran on the TeeVents platform Stripe account
+      <p>A <b>${params.context}</b> checkout was captured on the TeeVents platform Stripe account
       because the organizer has not connected (or completed) Stripe onboarding.</p>
       <ul>
         <li><b>Amount:</b> $${dollars}</li>
@@ -140,6 +146,50 @@ export async function notifyPlatformFallback(params: {
     });
   } catch (e) {
     console.error("[notifyPlatformFallback] failed:", e);
+  }
+}
+
+/** Look up a completed session's routing log; if it ran on the platform
+ *  fallback account, send the admin "manual payout required" email. Safe to
+ *  call unconditionally from verify-* functions after payment_status==="paid". */
+export async function notifyPlatformFallbackForConfirmedSession(
+  supabaseAdmin: any,
+  stripeSessionId: string | null | undefined,
+  fallbackMeta?: {
+    context?: string;
+    tournamentTitle?: string | null;
+    buyerEmail?: string | null;
+  },
+) {
+  if (!stripeSessionId) return;
+  try {
+    const { data: log } = await supabaseAdmin
+      .from("payment_routing_logs")
+      .select("context, organization_id, tournament_id, gross_cents, buyer_email, routing_decision")
+      .eq("stripe_session_id", stripeSessionId)
+      .maybeSingle();
+    if (!log || log.routing_decision !== "platform_fallback") return;
+
+    let orgName: string | null = null;
+    if (log.organization_id) {
+      const { data: org } = await supabaseAdmin
+        .from("organizations").select("name").eq("id", log.organization_id).maybeSingle();
+      orgName = org?.name ?? null;
+    }
+
+    await notifyPlatformFallback({
+      context: log.context || fallbackMeta?.context || "payment",
+      organizationId: log.organization_id ?? null,
+      organizationName: orgName,
+      tournamentId: log.tournament_id ?? null,
+      tournamentTitle: fallbackMeta?.tournamentTitle ?? null,
+      grossCents: Number(log.gross_cents) || 0,
+      buyerEmail: log.buyer_email ?? fallbackMeta?.buyerEmail ?? null,
+      stripeSessionId,
+      confirmed: true,
+    });
+  } catch (e) {
+    console.error("[notifyPlatformFallbackForConfirmedSession] failed:", e);
   }
 }
 

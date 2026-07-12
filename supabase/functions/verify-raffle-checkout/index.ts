@@ -1,6 +1,7 @@
 // Verify a raffle Stripe Checkout session and issue ticket numbers.
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +103,8 @@ Deno.serve(async (req) => {
         }),
       }).catch((e) => console.error("[verify-raffle-checkout] email error:", e));
     }
+
+    await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session_id, { context: "raffle" });
 
     return new Response(JSON.stringify({ ok: true, tickets: ticketNumbers }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

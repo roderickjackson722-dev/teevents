@@ -498,7 +498,7 @@ const Settings = () => {
         <div className="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
             <span className="text-sm text-muted-foreground">Name</span>
-            <p className="font-medium text-foreground">{org?.orgName || "—"}</p>
+            <p className="font-medium text-foreground">{displayName || org?.orgName || "—"}</p>
           </div>
           <div>
             <span className="text-sm text-muted-foreground">Plan</span>

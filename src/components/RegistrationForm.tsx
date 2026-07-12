@@ -746,6 +746,11 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                 Promo {appliedPromo?.code}: −${(discountCents / 100).toFixed(2)}
               </span>
             )}
+            {donationCents > 0 && (
+              <span className="block text-xs mt-1 opacity-80">
+                Donation: +${(donationCents / 100).toFixed(2)}
+              </span>
+            )}
             {totalDisplay && (
               <span className="block text-xs mt-1 opacity-80 font-semibold">
                 Total: {totalDisplay}

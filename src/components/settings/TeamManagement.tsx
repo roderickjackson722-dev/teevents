@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle } from "lucide-react";
+import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

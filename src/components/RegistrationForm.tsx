@@ -548,8 +548,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         const promoCodeToSend = appliedPromo?.code || null;
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents, ...singleData };
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
@@ -591,6 +591,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         referral_code_used: referralCode,
         promoter_id: promoterId,
         flight_id: selectedFlight,
+        // Attach the donation to the first (captain) registration row only
+        donation_amount_cents: i === 0 ? donationCents : 0,
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);

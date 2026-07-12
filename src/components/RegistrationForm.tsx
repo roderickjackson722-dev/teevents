@@ -953,6 +953,84 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {/* Donation Prompt */}
+        {donationPrompt?.enabled && (donationPrompt.presetsCents.length > 0 || donationPrompt.allowCustom) && (
+          <div className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: `${secondaryColor}60`, backgroundColor: `${secondaryColor}08` }}>
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4" style={{ color: secondaryColor }} />
+              <p className="text-sm font-semibold text-foreground">{donationPrompt.title || "Support Our Mission"}</p>
+            </div>
+            {donationPrompt.description && (
+              <p className="text-xs text-muted-foreground">{donationPrompt.description}</p>
+            )}
+            {donationPrompt.presetsCents.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {donationPrompt.presetsCents.map((cents) => {
+                  const active = donationSelectedCents === cents;
+                  return (
+                    <button
+                      key={cents}
+                      type="button"
+                      onClick={() => {
+                        setDonationSelectedCents(active ? null : cents);
+                        setDonationCustomDisplay("");
+                      }}
+                      className={cn(
+                        "px-3 py-2 rounded-md border-2 text-sm font-semibold transition-colors",
+                        active ? "text-white" : "bg-background text-foreground hover:bg-muted",
+                      )}
+                      style={active
+                        ? { borderColor: secondaryColor, backgroundColor: secondaryColor }
+                        : { borderColor: `${secondaryColor}40` }}
+                    >
+                      ${(cents / 100).toFixed(0)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {donationPrompt.allowCustom && (
+              <div className="flex items-center gap-2">
+                <Label htmlFor="donation_custom" className="text-xs whitespace-nowrap">
+                  {donationPrompt.customLabel || "Enter your own amount"}
+                </Label>
+                <div className="relative flex-1 max-w-[160px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <Input
+                    id="donation_custom"
+                    type="text"
+                    inputMode="decimal"
+                    value={donationCustomDisplay}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "" || /^\d*\.?\d{0,2}$/.test(raw)) {
+                        setDonationCustomDisplay(raw);
+                        setDonationSelectedCents(raw ? -1 : null);
+                      }
+                    }}
+                    placeholder="0.00"
+                    className="pl-6"
+                  />
+                </div>
+                {donationCents > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => { setDonationSelectedCents(null); setDonationCustomDisplay(""); }}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
+            {donationCents > 0 && (
+              <p className="text-xs font-semibold" style={{ color: secondaryColor }}>
+                ✓ Adding ${(donationCents / 100).toFixed(2)} donation to your registration
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Tax-Exempt Notice */}
         {isNonprofit && (
           <p className="text-xs text-muted-foreground text-center">

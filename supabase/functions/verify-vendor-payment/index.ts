@@ -160,6 +160,8 @@ Deno.serve(async (req) => {
       }
     }
 
+    await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, { context: "vendor" });
+
     return new Response(
       JSON.stringify({ verified: true, status: "paid" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

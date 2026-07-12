@@ -1,6 +1,7 @@
 // Verify a raffle Stripe Checkout session and issue ticket numbers.
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

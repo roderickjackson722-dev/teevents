@@ -90,12 +90,21 @@ const Settings = () => {
   const handleSaveDashboardName = async () => {
     if (demoGuard() || !org) return;
     setSavingDashboardName(true);
+    const trimmed = dashboardName.trim();
+    const update: Record<string, unknown> = { dashboard_name: trimmed || null };
+    // Keep the organization Name in sync with the Dashboard Display Name
+    if (trimmed) update.name = trimmed;
     const { error } = await supabase
       .from("organizations")
-      .update({ dashboard_name: dashboardName.trim() || null } as any)
+      .update(update as any)
       .eq("id", org.orgId);
     if (error) toast.error(error.message);
-    else toast.success("Dashboard name updated!");
+    else {
+      toast.success("Organization name updated!");
+      // Reflect immediately in the "Name" row above without a full reload
+      if (trimmed && org) (org as any).orgName = trimmed;
+      if (org) (org as any).dashboardName = trimmed || null;
+    }
     setSavingDashboardName(false);
   };
 

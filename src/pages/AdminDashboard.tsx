@@ -184,6 +184,36 @@ const AdminDashboard = () => {
     setResettingPassword(null);
   };
 
+  const [tempPwdOrgId, setTempPwdOrgId] = useState<string | null>(null);
+  const handleSetTempPassword = async (_orgId: string) => {
+    const email = prompt("Enter the email address to issue a temporary password for:");
+    if (!email) return;
+    const sendChoice = confirm(
+      "Click OK to email the temporary password to the user, or Cancel to just display it here (you'll share it manually).",
+    );
+    setTempPwdOrgId(_orgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-set-temp-password", {
+        body: { email: email.trim().toLowerCase(), send_email: sendChoice },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (sendChoice) {
+        toast({ title: "Temporary password issued", description: `Sent to ${email}. They will be prompted to change it on first login.` });
+      } else {
+        window.prompt(
+          `Temporary password for ${email} (copy now — will not be shown again):`,
+          data.temp_password,
+        );
+        toast({ title: "Temporary password issued", description: "User must change it on first login." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setTempPwdOrgId(null);
+  };
+
+
   useEffect(() => {
     checkAdmin();
   }, []);

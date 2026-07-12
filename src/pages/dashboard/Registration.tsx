@@ -178,7 +178,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {

@@ -109,8 +109,29 @@ serve(async (req) => {
         .maybeSingle();
 
       if (alreadyMember) {
+        // Already a member — treat this as a resend: rotate a fresh temp
+        // password and re-send the credentials email so the invitee has
+        // usable login details right now.
+        const tempPasswordResend = generateTempPassword();
+        await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
+          password: tempPasswordResend,
+          user_metadata: {
+            ...(invitedUser.user_metadata || {}),
+            full_name: memberName || invitedUser.user_metadata?.full_name,
+            force_password_change: true,
+            invited_org_id: organization_id,
+          },
+        });
+        await sendTempPasswordEmail(
+          email.toLowerCase(),
+          memberName,
+          orgName,
+          tempPasswordResend,
+          membership?.role || memberRole,
+          baseUrl,
+        );
         return new Response(
-          JSON.stringify({ success: true, already_member: true }),
+          JSON.stringify({ success: true, already_member: true, temp_password_sent: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -131,6 +152,7 @@ serve(async (req) => {
       // Always issue a fresh temporary password so the invitee has
       // credentials they can use immediately from the invitation email.
       const tempPasswordExisting = generateTempPassword();
+
       await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
         password: tempPasswordExisting,
         user_metadata: {

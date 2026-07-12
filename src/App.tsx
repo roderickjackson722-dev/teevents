@@ -114,6 +114,7 @@ import AdminCompetitors from "./pages/admin/Competitors";
 import AdminBrandingFooter from "./pages/admin/BrandingFooter";
 import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
+import AdminScoring from "./pages/admin/AdminScoring";
 import AiSalesAgent from "./pages/admin/AiSalesAgent";
 import CollegeHubBookingsPublic from "./pages/CollegeHubBookings";
 import DemoPrepShare from "./pages/DemoPrepShare";
@@ -289,6 +290,7 @@ const App = () => (
              <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />
+            <Route path="/admin/scoring/:tournamentId" element={<AdminScoring />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/ai-sales-agent" element={<AiSalesAgent />} />
              <Route path="/college-hub/bookings" element={<CollegeHubBookingsPublic />} />

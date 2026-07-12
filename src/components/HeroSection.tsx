@@ -12,7 +12,7 @@ interface HeroSectionProps {
 const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min-h-[85vh]" }: HeroSectionProps) => {
   return (
     <section
-      className={`relative ${height} flex items-center justify-center overflow-hidden py-12 md:py-0`}
+      className={`relative ${height} flex items-center justify-center overflow-hidden py-12 md:py-0 bg-black`}
     >
       <img
         src={backgroundImage}
@@ -20,9 +20,10 @@ const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min
         aria-hidden="true"
         fetchPriority="high"
         decoding="async"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain object-center md:object-cover"
       />
       <div className="absolute inset-0 bg-overlay-dark" />
+
 
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
         <motion.h1

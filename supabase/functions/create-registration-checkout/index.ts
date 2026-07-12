@@ -326,7 +326,8 @@ Deno.serve(async (req) => {
     // separately as before. The Fees line is always a separate item so the
     // coupon math never touches it.
     if (discountCents > 0) {
-      const subtotalCents = baseTotalCents; // already discounted
+      // subtotal excludes donation (donation is added as its own line below).
+      const subtotalCents = baseTotalCents - donationAmountCents;
       if (subtotalCents > 0) {
         const addonNames = resolvedAddons.length > 0
           ? ` + ${resolvedAddons.map(a => a.name).join(", ")}`
@@ -388,6 +389,18 @@ Deno.serve(async (req) => {
           quantity: totalQty,
         });
       }
+    }
+
+    // Donation line item (separate so it's visible on the receipt).
+    if (donationAmountCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: { name: "Donation" },
+          unit_amount: donationAmountCents,
+        },
+        quantity: 1,
+      });
     }
 
     if (golferPaysFees && combinedFeesCents > 0) {

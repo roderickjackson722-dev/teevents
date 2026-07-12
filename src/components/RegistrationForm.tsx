@@ -57,6 +57,7 @@ interface RegistrationFormProps {
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
   captainLabel?: string | null;
+  showPromoCodeInput?: boolean;
   /** Donation prompt config */
   donationPrompt?: {
     enabled: boolean;
@@ -239,7 +240,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, donationPrompt = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
   const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -770,7 +771,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
 
         {/* Promo Code */}
-        {subtotalBeforeDiscount > 0 && (
+        {showPromoCodeInput !== false && subtotalBeforeDiscount > 0 && (
           <div className="space-y-1.5">
             <Label htmlFor="promo_code">Promo Code</Label>
             {appliedPromo ? (
@@ -866,38 +867,40 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             </div>
 
             {/* Promo Code (Add-ons) — applies the same discount to your order */}
-            <div className="pt-2">
-              <Label htmlFor="promo_code_addons" className="text-xs text-muted-foreground">Promo Code</Label>
-              {appliedPromo ? (
-                <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/30 mt-1">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  <span className="font-mono font-bold text-sm">{appliedPromo.code}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {appliedPromo.discount_type === "percent"
-                      ? `${appliedPromo.discount_value}% off`
-                      : `$${appliedPromo.discount_value} off`}
-                  </span>
-                  <Button type="button" variant="ghost" size="sm" onClick={clearPromo} className="h-7 px-2 text-xs ml-auto">
-                    Remove
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    id="promo_code_addons"
-                    value={promoInput}
-                    onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
-                    placeholder="Enter code"
-                    maxLength={50}
-                    className="font-mono text-sm"
-                  />
-                  <Button type="button" variant="outline" onClick={applyPromo} disabled={!promoInput.trim() || validatingPromo}>
-                    {validatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
-                  </Button>
-                </div>
-              )}
-              {promoError && <p className="text-xs text-destructive mt-1">{promoError}</p>}
-            </div>
+            {showPromoCodeInput !== false && (
+              <div className="pt-2">
+                <Label htmlFor="promo_code_addons" className="text-xs text-muted-foreground">Promo Code</Label>
+                {appliedPromo ? (
+                  <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/30 mt-1">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span className="font-mono font-bold text-sm">{appliedPromo.code}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {appliedPromo.discount_type === "percent"
+                        ? `${appliedPromo.discount_value}% off`
+                        : `$${appliedPromo.discount_value} off`}
+                    </span>
+                    <Button type="button" variant="ghost" size="sm" onClick={clearPromo} className="h-7 px-2 text-xs ml-auto">
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      id="promo_code_addons"
+                      value={promoInput}
+                      onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                      placeholder="Enter code"
+                      maxLength={50}
+                      className="font-mono text-sm"
+                    />
+                    <Button type="button" variant="outline" onClick={applyPromo} disabled={!promoInput.trim() || validatingPromo}>
+                      {validatingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                    </Button>
+                  </div>
+                )}
+                {promoError && <p className="text-xs text-destructive mt-1">{promoError}</p>}
+              </div>
+            )}
           </div>
         )}
 

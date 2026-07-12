@@ -160,6 +160,8 @@ const Registration = () => {
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
   const [showRegCount, setShowRegCount] = useState<boolean>(true);
+  /* Promo code input visibility */
+  const [showPromoCodeInput, setShowPromoCodeInput] = useState<boolean>(true);
   /* Public registration page custom content */
   const [registrationIntroHtml, setRegistrationIntroHtml] = useState<string>("");
   const [registrationPromoHtml, setRegistrationPromoHtml] = useState<string>("");
@@ -176,7 +178,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -216,6 +218,7 @@ const Registration = () => {
       setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
       setAllowCash(!!tournament.allow_cash_registration);
       setShowRegCount((tournament as any).show_registration_count !== false);
+      setShowPromoCodeInput((tournament as any).show_promo_code_input !== false);
       setRegistrationIntroHtml(((tournament as any).registration_intro_html as string) || "");
       setRegistrationPromoHtml(((tournament as any).registration_promo_html as string) || "");
       setDonationEnabled(!!(tournament as any).donation_prompt_enabled);
@@ -281,6 +284,7 @@ const Registration = () => {
       early_registration_expires_at: earlyIso,
       allow_cash_registration: allowCash,
       show_registration_count: showRegCount,
+      show_promo_code_input: showPromoCodeInput,
       registration_intro_html: registrationIntroHtml.trim() || null,
       registration_promo_html: registrationPromoHtml.trim() || null,
       donation_prompt_enabled: donationEnabled,
@@ -802,6 +806,16 @@ const Registration = () => {
                   </p>
                 </div>
                 <Switch checked={allowCoverFees} onCheckedChange={setAllowCoverFees} />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <Label className="text-sm font-semibold">Promo Code Box</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Show the promo code input on the public registration form. Disable this if you do not want participants to enter promo codes.
+                  </p>
+                </div>
+                <Switch checked={showPromoCodeInput} onCheckedChange={setShowPromoCodeInput} />
               </div>
 
               <div className="p-4 rounded-lg border border-border bg-muted/20">

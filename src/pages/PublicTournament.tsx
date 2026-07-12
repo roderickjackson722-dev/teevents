@@ -1119,6 +1119,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     fields={regFields}
                     addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
                     captainLabel={(tournament as any).captain_label || null}
+                    showPromoCodeInput={(tournament as any).show_promo_code_input !== false}
                     donationPrompt={(tournament as any).donation_prompt_enabled ? {
                       enabled: true,
                       title: (tournament as any).donation_prompt_title || "Support Our Mission",

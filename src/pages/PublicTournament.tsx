@@ -1996,7 +1996,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         </section>
       )}
 
-      {(((tournament as any).description_html && (tournament as any).description_html.replace(/<[^>]*>/g, "").trim()) || tournament.description) && (
+      {isTabVisible("about_event") && (((tournament as any).description_html && (tournament as any).description_html.replace(/<[^>]*>/g, "").trim()) || tournament.description) && (
         <section id="about" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>

@@ -21,9 +21,14 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !user) throw new Error("Not authenticated");
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Your login session has expired. Please sign in again and retry the invitation." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const { organization_id, email, name, role, permissions } = await req.json();
 
@@ -34,7 +39,7 @@ serve(async (req) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) throw new Error("Invalid email address");
 
-    const validRoles = ["admin", "editor", "viewer"];
+    const validRoles = ["admin", "editor", "viewer", "scoring_only"];
     const memberRole = validRoles.includes(role) ? role : "editor";
 
     const supabaseAdmin = createClient(
@@ -103,7 +108,7 @@ serve(async (req) => {
       // Existing user — check if already a member of THIS org
       const { data: alreadyMember } = await supabaseAdmin
         .from("org_members")
-        .select("id")
+        .select("id, role")
         .eq("organization_id", organization_id)
         .eq("user_id", invitedUser.id)
         .maybeSingle();
@@ -127,7 +132,7 @@ serve(async (req) => {
           memberName,
           orgName,
           tempPasswordResend,
-          membership?.role || memberRole,
+          alreadyMember?.role || memberRole,
           baseUrl,
         );
         return new Response(

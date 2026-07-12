@@ -16,6 +16,7 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +59,26 @@ const AdminLogin = () => {
     toast({ title: "Welcome, Admin!", description: "You've been logged in successfully." });
   };
 
+  const handlePasswordReset = async () => {
+    if (!email.trim()) {
+      toast({ title: "Email required", description: "Enter your admin email first.", variant: "destructive" });
+      return;
+    }
+
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetLoading(false);
+
+    if (error) {
+      toast({ title: "Reset Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Password reset sent", description: "Check your email for the secure reset link." });
+  };
+
   return (
     <Layout>
       <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -90,6 +111,9 @@ const AdminLogin = () => {
               </div>
               <Button type="submit" disabled={loading} className="w-full">
                 {loading ? "Signing in..." : "Sign In"}
+              </Button>
+              <Button type="button" variant="link" disabled={resetLoading || loading} onClick={handlePasswordReset} className="w-full text-secondary">
+                {resetLoading ? "Sending reset..." : "Forgot or changed password?"}
               </Button>
             </form>
           </div>

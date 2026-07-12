@@ -12,6 +12,7 @@ const SetupAdmin = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [setupSecret, setSetupSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -20,7 +21,7 @@ const SetupAdmin = () => {
     setLoading(true);
 
     const { data, error } = await supabase.functions.invoke("setup-admin", {
-      body: { email, password },
+      body: { email, password, setup_secret: setupSecret },
     });
 
     setLoading(false);
@@ -31,7 +32,7 @@ const SetupAdmin = () => {
     }
 
     setDone(true);
-    toast({ title: "Admin created!", description: "You can now log in at /admin-login" });
+    toast({ title: "Admin ready!", description: "You can now log in at /admin-login" });
   };
 
   return (
@@ -44,12 +45,16 @@ const SetupAdmin = () => {
             <div className="text-center mb-8">
               <Shield className="h-14 w-14 text-secondary mx-auto mb-4" />
               <h1 className="text-2xl font-display font-bold text-foreground">Setup Admin Account</h1>
-              <p className="text-muted-foreground text-sm mt-2">One-time setup for the first admin</p>
+              <p className="text-muted-foreground text-sm mt-2">Create or recover a platform admin login</p>
             </div>
             {done ? (
-              <p className="text-center text-foreground">✅ Admin account created! Go to <a href="/admin-login" className="text-secondary underline">/admin-login</a> to sign in.</p>
+              <p className="text-center text-foreground">✅ Admin account ready! Go to <a href="/admin-login" className="text-secondary underline">/admin-login</a> to sign in.</p>
             ) : (
               <form onSubmit={handleSetup} className="space-y-4">
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input type="password" placeholder="Setup secret" className="pl-10" value={setupSecret} onChange={e => setSetupSecret(e.target.value)} required />
+                </div>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input type="email" placeholder="Admin email" className="pl-10" value={email} onChange={e => setEmail(e.target.value)} required />

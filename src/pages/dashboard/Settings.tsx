@@ -69,6 +69,7 @@ const Settings = () => {
   const [savingFormat, setSavingFormat] = useState<string | null>(null);
   const [savingFeeToggle, setSavingFeeToggle] = useState<string | null>(null);
   const [dashboardName, setDashboardName] = useState("");
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [savingDashboardName, setSavingDashboardName] = useState(false);
 
   // Policy editing state

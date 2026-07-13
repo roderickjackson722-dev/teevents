@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
-const BASE_URL = "https://teevents.golf";
-const DEFAULT_OG_IMAGE = "https://teevents.golf/og-image.png";
-const SITE_NAME = "TeeVents Golf";
+const BASE_URL = "https://www.teevents.golf";
+const DEFAULT_OG_IMAGE = "https://www.teevents.golf/og-image.png";
+const SITE_NAME = "TeeVents Golf Tournaments";
 
 interface SEOProps {
   title: string;
@@ -13,7 +13,7 @@ interface SEOProps {
 }
 
 const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noIndex = false }: SEOProps) => {
-  const fullTitle = title === "Home" ? `${SITE_NAME} — Tournament Planning & Management` : `${title} | ${SITE_NAME}`;
+  const fullTitle = title === "Home" ? SITE_NAME : `${title} | ${SITE_NAME}`;
   const url = `${BASE_URL}${path}`;
 
   useEffect(() => {

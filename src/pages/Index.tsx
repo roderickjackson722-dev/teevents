@@ -77,7 +77,7 @@ const fadeUp = {
 const Index = () => {
   return (
     <Layout>
-      <SEO title="Home" description="All-in-one golf tournament management software — registration, payments, live scoring, sponsors, and pairings from one dashboard." path="/" />
+      <SEO title="Home" description="All-in-one platform to plan, manage, and run golf tournaments — registration, sponsors, live scoring, and payments." path="/" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

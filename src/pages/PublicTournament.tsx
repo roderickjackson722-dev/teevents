@@ -31,6 +31,8 @@ interface PublicProduct {
 interface TournamentSite {
   id: string; title: string; slug: string | null; description: string | null; date: string | null;
   end_date: string | null;
+  custom_slug?: string | null;
+  image_url?: string | null;
   location: string | null; course_name: string | null; site_logo_url: string | null;
   site_logo_color_mode?: string | null;
   site_logo_color_value?: string | null;
@@ -1372,10 +1374,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
-  const ogImage = tournament.site_hero_image_url || tournament.site_logo_url || "https://teevents.golf/og-image.png";
+  const ogImage = tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url || "https://www.teevents.golf/og-image.png";
   const ogTitle = `${tournament.title} – TeeVents Golf Tournaments`;
   const ogDescription = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
-  const ogUrl = `https://teevents.golf/t/${tournament.slug || slug || ""}`;
+  const ogUrl = `https://www.teevents.golf/t/${tournament.custom_slug || tournament.slug || slug || ""}`;
 
   return (
 
@@ -1386,6 +1388,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <meta property="og:title" content={ogTitle} />
         <meta property="og:description" content={ogDescription} />
         <meta property="og:image" content={ogImage} />
+        <meta property="og:image:secure_url" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={tournament.title} />
         <meta property="og:url" content={ogUrl} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="TeeVents Golf" />
@@ -1393,6 +1399,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <meta name="twitter:title" content={ogTitle} />
         <meta name="twitter:description" content={ogDescription} />
         <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={tournament.title} />
         <link rel="canonical" href={ogUrl} />
       </Helmet>
       {/* Design-system button hover effect (organizer-controlled) */}

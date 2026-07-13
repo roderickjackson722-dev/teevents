@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { BrandingBadge } from "@/components/BrandingBadge";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { Helmet } from "react-helmet-async";
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;

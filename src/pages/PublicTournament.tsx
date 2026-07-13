@@ -654,6 +654,30 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return () => clearInterval(id);
   }, [earlyActive, earlyExpiresAt]);
 
+  useEffect(() => {
+    if (!tournament || loading) return;
+
+    const meta = tournamentShareMeta(tournament, slug);
+    document.title = meta.pageTitle;
+    upsertSingleMeta("name", "description", meta.description);
+    upsertSingleMeta("property", "og:title", meta.shareTitle);
+    upsertSingleMeta("property", "og:description", meta.description);
+    upsertSingleMeta("property", "og:image", meta.imageUrl);
+    upsertSingleMeta("property", "og:image:secure_url", meta.imageUrl);
+    upsertSingleMeta("property", "og:image:width", "1200");
+    upsertSingleMeta("property", "og:image:height", "630");
+    upsertSingleMeta("property", "og:image:alt", meta.shareTitle);
+    upsertSingleMeta("property", "og:url", meta.pageUrl);
+    upsertSingleMeta("property", "og:type", "website");
+    upsertSingleMeta("property", "og:site_name", SHARE_SITE_NAME);
+    upsertSingleMeta("name", "twitter:card", "summary_large_image");
+    upsertSingleMeta("name", "twitter:title", meta.shareTitle);
+    upsertSingleMeta("name", "twitter:description", meta.description);
+    upsertSingleMeta("name", "twitter:image", meta.imageUrl);
+    upsertSingleMeta("name", "twitter:image:alt", meta.shareTitle);
+    upsertSingleCanonical(meta.pageUrl);
+  }, [loading, slug, tournament]);
+
   const handlePlaceBid = async () => {
     if (!bidForm) return;
     const amount = parseFloat(bidForm.amount);
@@ -1427,41 +1451,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
-  const toAbsoluteShareUrl = (url: string | null | undefined) => {
-    if (!url) return "https://www.teevents.golf/og-image.png";
-    if (/^https?:\/\//i.test(url)) return url;
-    if (url.startsWith("//")) return `https:${url}`;
-    return `https://www.teevents.golf${url.startsWith("/") ? "" : "/"}${url}`;
-  };
-  const ogImage = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
-  const pageTitle = `${tournament.title} – TeeVents Golf Tournaments`;
-  const shareTitle = tournament.title;
-  const ogDescription = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
-  const ogUrl = `https://www.teevents.golf/t/${tournament.custom_slug || tournament.slug || slug || ""}`;
-
   return (
 
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={ogDescription} />
-        <meta property="og:title" content={shareTitle} />
-        <meta property="og:description" content={ogDescription} />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:image:secure_url" content={ogImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={tournament.title} />
-        <meta property="og:url" content={ogUrl} />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="TeeVents Golf Tournaments" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={shareTitle} />
-        <meta name="twitter:description" content={ogDescription} />
-        <meta name="twitter:image" content={ogImage} />
-        <meta name="twitter:image:alt" content={tournament.title} />
-        <link rel="canonical" href={ogUrl} />
-      </Helmet>
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}

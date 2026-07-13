@@ -20,7 +20,7 @@ const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min
         aria-hidden="true"
         fetchPriority="high"
         decoding="async"
-        className="absolute inset-0 w-full h-full object-contain object-center md:object-cover"
+        className="absolute inset-0 w-full h-full object-cover object-center"
       />
       <div className="absolute inset-0 bg-overlay-dark" />
 

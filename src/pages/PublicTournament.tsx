@@ -1374,8 +1374,15 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
-  const ogImage = tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url || "https://www.teevents.golf/og-image.png";
-  const ogTitle = `${tournament.title} – TeeVents Golf Tournaments`;
+  const toAbsoluteShareUrl = (url: string | null | undefined) => {
+    if (!url) return "https://www.teevents.golf/og-image.png";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith("//")) return `https:${url}`;
+    return `https://www.teevents.golf${url.startsWith("/") ? "" : "/"}${url}`;
+  };
+  const ogImage = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
+  const pageTitle = `${tournament.title} – TeeVents Golf Tournaments`;
+  const shareTitle = tournament.title;
   const ogDescription = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
   const ogUrl = `https://www.teevents.golf/t/${tournament.custom_slug || tournament.slug || slug || ""}`;
 
@@ -1383,9 +1390,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       <Helmet>
-        <title>{ogTitle}</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={ogDescription} />
-        <meta property="og:title" content={ogTitle} />
+        <meta property="og:title" content={shareTitle} />
         <meta property="og:description" content={ogDescription} />
         <meta property="og:image" content={ogImage} />
         <meta property="og:image:secure_url" content={ogImage} />
@@ -1394,9 +1401,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <meta property="og:image:alt" content={tournament.title} />
         <meta property="og:url" content={ogUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="TeeVents Golf" />
+        <meta property="og:site_name" content="TeeVents Golf Tournaments" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:title" content={shareTitle} />
         <meta name="twitter:description" content={ogDescription} />
         <meta name="twitter:image" content={ogImage} />
         <meta name="twitter:image:alt" content={tournament.title} />

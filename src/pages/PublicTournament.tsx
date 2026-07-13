@@ -1373,7 +1373,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   );
 
   const ogImage = tournament.site_hero_image_url || tournament.site_logo_url || "https://teevents.golf/og-image.png";
-  const ogTitle = `${tournament.title} – TeeVents Golf Tournament`;
+  const ogTitle = `${tournament.title} – TeeVents Golf Tournaments`;
   const ogDescription = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
   const ogUrl = `https://teevents.golf/t/${tournament.slug || slug || ""}`;
 

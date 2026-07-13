@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { BrandingBadge } from "@/components/BrandingBadge";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
-import { Helmet } from "react-helmet-async";
+
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -80,6 +80,59 @@ interface TierPublic {
   id: string; name: string; description: string | null; eligibility_description: string | null;
   price_cents: number; max_registrants: number | null;
 }
+
+const SHARE_BASE_URL = "https://www.teevents.golf";
+const DEFAULT_SHARE_IMAGE = `${SHARE_BASE_URL}/og-image.png`;
+const SHARE_SITE_NAME = "TeeVents Golf Tournaments";
+
+const toAbsoluteShareUrl = (url: string | null | undefined) => {
+  if (!url) return DEFAULT_SHARE_IMAGE;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("//")) return `https:${url}`;
+  return `${SHARE_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+const tournamentShareMeta = (tournament: TournamentSite, fallbackSlug?: string) => {
+  const publicSlug = tournament.custom_slug || tournament.slug || fallbackSlug || "";
+  const pageUrl = `${SHARE_BASE_URL}/t/${publicSlug}`;
+  const imageUrl = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
+  const description = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
+
+  return {
+    pageTitle: `${tournament.title} – ${SHARE_SITE_NAME}`,
+    shareTitle: tournament.title,
+    description,
+    imageUrl,
+    pageUrl,
+  };
+};
+
+const upsertSingleMeta = (attr: "name" | "property", key: string, content: string) => {
+  const selector = `meta[${attr}="${key}"]`;
+  const matches = Array.from(document.head.querySelectorAll(selector)) as HTMLMetaElement[];
+  const primary = matches[0] || document.createElement("meta");
+
+  if (!matches[0]) {
+    primary.setAttribute(attr, key);
+    document.head.appendChild(primary);
+  }
+
+  primary.setAttribute("content", content);
+  matches.slice(1).forEach((duplicate) => duplicate.remove());
+};
+
+const upsertSingleCanonical = (href: string) => {
+  const matches = Array.from(document.head.querySelectorAll('link[rel="canonical"]')) as HTMLLinkElement[];
+  const primary = matches[0] || document.createElement("link");
+
+  if (!matches[0]) {
+    primary.setAttribute("rel", "canonical");
+    document.head.appendChild(primary);
+  }
+
+  primary.setAttribute("href", href);
+  matches.slice(1).forEach((duplicate) => duplicate.remove());
+};
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
 interface AuctionItem {

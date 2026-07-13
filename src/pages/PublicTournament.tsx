@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { BrandingBadge } from "@/components/BrandingBadge";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
-import { Helmet } from "react-helmet-async";
+
 
 interface PublicSponsor {
   id: string; name: string; tier: string; logo_url: string | null; website_url: string | null; show_on_leaderboard: boolean;
@@ -80,6 +80,59 @@ interface TierPublic {
   id: string; name: string; description: string | null; eligibility_description: string | null;
   price_cents: number; max_registrants: number | null;
 }
+
+const SHARE_BASE_URL = "https://www.teevents.golf";
+const DEFAULT_SHARE_IMAGE = `${SHARE_BASE_URL}/og-image.png`;
+const SHARE_SITE_NAME = "TeeVents Golf Tournaments";
+
+const toAbsoluteShareUrl = (url: string | null | undefined) => {
+  if (!url) return DEFAULT_SHARE_IMAGE;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("//")) return `https:${url}`;
+  return `${SHARE_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+const tournamentShareMeta = (tournament: TournamentSite, fallbackSlug?: string) => {
+  const publicSlug = tournament.custom_slug || tournament.slug || fallbackSlug || "";
+  const pageUrl = `${SHARE_BASE_URL}/t/${publicSlug}`;
+  const imageUrl = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
+  const description = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
+
+  return {
+    pageTitle: `${tournament.title} – ${SHARE_SITE_NAME}`,
+    shareTitle: tournament.title,
+    description,
+    imageUrl,
+    pageUrl,
+  };
+};
+
+const upsertSingleMeta = (attr: "name" | "property", key: string, content: string) => {
+  const selector = `meta[${attr}="${key}"]`;
+  const matches = Array.from(document.head.querySelectorAll(selector)) as HTMLMetaElement[];
+  const primary = matches[0] || document.createElement("meta");
+
+  if (!matches[0]) {
+    primary.setAttribute(attr, key);
+    document.head.appendChild(primary);
+  }
+
+  primary.setAttribute("content", content);
+  matches.slice(1).forEach((duplicate) => duplicate.remove());
+};
+
+const upsertSingleCanonical = (href: string) => {
+  const matches = Array.from(document.head.querySelectorAll('link[rel="canonical"]')) as HTMLLinkElement[];
+  const primary = matches[0] || document.createElement("link");
+
+  if (!matches[0]) {
+    primary.setAttribute("rel", "canonical");
+    document.head.appendChild(primary);
+  }
+
+  primary.setAttribute("href", href);
+  matches.slice(1).forEach((duplicate) => duplicate.remove());
+};
 
 interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
 interface AuctionItem {
@@ -600,6 +653,30 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     const id = setInterval(() => setEarlyNow(Date.now()), 60000);
     return () => clearInterval(id);
   }, [earlyActive, earlyExpiresAt]);
+
+  useEffect(() => {
+    if (!tournament || loading) return;
+
+    const meta = tournamentShareMeta(tournament, slug);
+    document.title = meta.pageTitle;
+    upsertSingleMeta("name", "description", meta.description);
+    upsertSingleMeta("property", "og:title", meta.shareTitle);
+    upsertSingleMeta("property", "og:description", meta.description);
+    upsertSingleMeta("property", "og:image", meta.imageUrl);
+    upsertSingleMeta("property", "og:image:secure_url", meta.imageUrl);
+    upsertSingleMeta("property", "og:image:width", "1200");
+    upsertSingleMeta("property", "og:image:height", "630");
+    upsertSingleMeta("property", "og:image:alt", meta.shareTitle);
+    upsertSingleMeta("property", "og:url", meta.pageUrl);
+    upsertSingleMeta("property", "og:type", "website");
+    upsertSingleMeta("property", "og:site_name", SHARE_SITE_NAME);
+    upsertSingleMeta("name", "twitter:card", "summary_large_image");
+    upsertSingleMeta("name", "twitter:title", meta.shareTitle);
+    upsertSingleMeta("name", "twitter:description", meta.description);
+    upsertSingleMeta("name", "twitter:image", meta.imageUrl);
+    upsertSingleMeta("name", "twitter:image:alt", meta.shareTitle);
+    upsertSingleCanonical(meta.pageUrl);
+  }, [loading, slug, tournament]);
 
   const handlePlaceBid = async () => {
     if (!bidForm) return;
@@ -1374,41 +1451,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
-  const toAbsoluteShareUrl = (url: string | null | undefined) => {
-    if (!url) return "https://www.teevents.golf/og-image.png";
-    if (/^https?:\/\//i.test(url)) return url;
-    if (url.startsWith("//")) return `https:${url}`;
-    return `https://www.teevents.golf${url.startsWith("/") ? "" : "/"}${url}`;
-  };
-  const ogImage = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
-  const pageTitle = `${tournament.title} – TeeVents Golf Tournaments`;
-  const shareTitle = tournament.title;
-  const ogDescription = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
-  const ogUrl = `https://www.teevents.golf/t/${tournament.custom_slug || tournament.slug || slug || ""}`;
-
   return (
 
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={ogDescription} />
-        <meta property="og:title" content={shareTitle} />
-        <meta property="og:description" content={ogDescription} />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:image:secure_url" content={ogImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={tournament.title} />
-        <meta property="og:url" content={ogUrl} />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="TeeVents Golf Tournaments" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={shareTitle} />
-        <meta name="twitter:description" content={ogDescription} />
-        <meta name="twitter:image" content={ogImage} />
-        <meta name="twitter:image:alt" content={tournament.title} />
-        <link rel="canonical" href={ogUrl} />
-      </Helmet>
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}

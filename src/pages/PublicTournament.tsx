@@ -1372,9 +1372,29 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     </>
   );
 
+  const ogImage = tournament.site_hero_image_url || tournament.site_logo_url || "https://teevents.golf/og-image.png";
+  const ogTitle = `${tournament.title} – TeeVents Golf Tournament`;
+  const ogDescription = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
+  const ogUrl = `https://teevents.golf/t/${tournament.slug || slug || ""}`;
+
   return (
 
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
+      <Helmet>
+        <title>{ogTitle}</title>
+        <meta name="description" content={ogDescription} />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="TeeVents Golf" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        <link rel="canonical" href={ogUrl} />
+      </Helmet>
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}

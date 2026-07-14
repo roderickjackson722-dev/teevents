@@ -833,12 +833,6 @@ const AdminDashboard = () => {
                   </button>
                 ))}
                 <button
-                  onClick={() => navigate("/admin/platform-tournaments")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Trophy className="h-4 w-4" /> Platform Tournaments (Detailed)
-                </button>
-                <button
                   onClick={() => navigate("/admin/manage-events")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >

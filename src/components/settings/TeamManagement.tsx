@@ -343,6 +343,20 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   </Badge>
                   {canManage && m.role !== "owner" && m.user_id !== userId && (
                     <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => handleResendMemberCredentials(m)}
+                        disabled={resendingMemberId === m.id}
+                        title="Send this member a new temporary password"
+                      >
+                        {resendingMemberId === m.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <><Send className="h-3.5 w-3.5 mr-1" />Resend</>
+                        )}
+                      </Button>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditDialog(m)}>
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>

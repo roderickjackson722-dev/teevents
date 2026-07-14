@@ -19,7 +19,7 @@ function replaceVars(text: string, vars: Record<string, string>): string {
     .replace(/\{\{event_location\}\}/g, vars.event_location || "");
 }
 
-function buildCustomHtml(config: any, vars: Record<string, string>): string {
+function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string }): string {
   const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
   const body = replaceVars(config.body_text || "", vars);
   const closing = replaceVars(config.closing_text || "", vars);
@@ -29,6 +29,7 @@ function buildCustomHtml(config: any, vars: Record<string, string>): string {
   const bgColor = config.secondary_color || "#ffffff";
   const primaryColor = config.primary_color || "#1a5c38";
   const fontFamily = config.font_family || "Arial, sans-serif";
+  const align = config.logo_alignment || "center";
 
   const eventDetailsHtml = config.show_event_details !== false && (vars.event_date || vars.event_location)
     ? `<div style="margin:16px 0;">
@@ -38,7 +39,7 @@ function buildCustomHtml(config: any, vars: Record<string, string>): string {
     : "";
 
   const logoHtml = config.show_logo && config.logo_url
-    ? `<img src="${config.logo_url}" alt="Logo" style="max-height:50px;margin-bottom:12px;" />`
+    ? `<div style="text-align:${align};margin-bottom:12px;"><img src="${config.logo_url}" alt="Logo" style="max-height:60px;display:inline-block;" /></div>`
     : "";
 
   const buttonHtml = config.show_button && config.button_text
@@ -46,6 +47,17 @@ function buildCustomHtml(config: any, vars: Record<string, string>): string {
         <a href="${config.button_url || '#'}" style="display:inline-block;padding:12px 28px;background:${primaryColor};color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:6px;">${config.button_text}</a>
        </div>`
     : "";
+
+  const hubUrl = opts?.hubUrl || "";
+  const qrImg = hubUrl ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(hubUrl)}` : "";
+  const hubBlock = opts?.includePlayerHub && hubUrl ? `
+        <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #e5e7eb;background:#f9fafb;">
+          <p style="margin:0 0 6px;color:${primaryColor};font-size:16px;font-weight:700;">📱 Your Personal Player Hub</p>
+          <p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">Scan or tap on event day for live scoring, leaderboard, schedule &amp; more — no login needed.</p>
+          <a href="${hubUrl}" style="text-decoration:none;"><img src="${qrImg}" width="180" height="180" alt="Player Hub QR Code" style="display:block;margin:0 auto 12px;border:6px solid #ffffff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08);"/></a>
+          <a href="${hubUrl}" style="display:inline-block;padding:10px 22px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:14px;font-weight:700;">Open My Player Hub</a>
+          <p style="margin:12px 0 0;color:#9ca3af;font-size:11px;">Bookmark this link on your phone — it's your personal pass for the entire tournament.</p>
+        </td></tr>` : "";
 
   return `
 <!DOCTYPE html>
@@ -57,7 +69,6 @@ function buildCustomHtml(config: any, vars: Record<string, string>): string {
       <table width="560" cellpadding="0" cellspacing="0" style="background:${bgColor};border-radius:8px;overflow:hidden;">
         <tr><td style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <p style="margin:0 0 8px;font-size:32px;">⛳</p>
           <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Registration Confirmed!</h1>
         </td></tr>
         <tr><td style="padding:32px;">
@@ -67,7 +78,7 @@ function buildCustomHtml(config: any, vars: Record<string, string>): string {
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</p>
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
-        </td></tr>
+        </td></tr>${hubBlock}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${primaryColor};">teevents.golf</a></p>
         </td></tr>

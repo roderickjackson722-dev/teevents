@@ -106,16 +106,18 @@ Deno.serve(async (req) => {
     let tournamentDate: string | null = null;
     let tournamentLocation: string | null = null;
 
+    let tournamentSlug: string | null = null;
     if (tournament_id) {
       const { data: t } = await supabaseAdmin
         .from("tournaments")
-        .select("title, date, location, organization_id")
+        .select("title, date, location, organization_id, slug")
         .eq("id", tournament_id)
         .maybeSingle();
       if (t) {
         tournamentTitle = (t as any).title || tournamentTitle;
         tournamentDate = (t as any).date || null;
         tournamentLocation = (t as any).location || null;
+        tournamentSlug = (t as any).slug || null;
         // Authorize: must be admin or org member
         const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
         const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: user.id, _org_id: (t as any).organization_id });
@@ -144,8 +146,15 @@ Deno.serve(async (req) => {
     };
     const headerText = headers[template_kind] || "Registration Confirmed!";
 
+    const hubUrl = tournamentSlug
+      ? `https://www.teevents.golf/player/${tournamentSlug}/preview-token`
+      : "https://www.teevents.golf/player/sample/preview";
+
     const subject = `[TEST] ${replaceVars(config.subject || "You're Registered — {{event_name}}", vars)}`;
-    const html = buildHtml(config, vars, headerText);
+    const html = buildHtml(config, vars, headerText, {
+      includePlayerHub: template_kind === "confirmation",
+      hubUrl,
+    });
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email service not configured");

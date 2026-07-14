@@ -86,6 +86,23 @@ Deno.serve(async (req) => {
         });
       } catch (e) { console.error("[verify-donation] admin notify failed:", e); }
 
+      // Notify the organizer of every donation (uses notify_donation opt-ins plus tournament contact_email fallback).
+      if (organizationId) {
+        try {
+          await sendNotificationEmails(
+            supabaseAdmin,
+            organizationId,
+            "notify_donation",
+            `💚 New donation received — $${(amountCents / 100).toFixed(2)}`,
+            buildNotificationHtml("New Donation Received", [
+              `A donation of <strong>$${(amountCents / 100).toFixed(2)}</strong> was just received for your tournament.`,
+              `💳 <strong>Stripe Session:</strong> ${session_id}`,
+            ]),
+            tournamentId || null,
+          );
+        } catch (e) { console.error("[verify-donation] organizer notify failed:", e); }
+      }
+
       await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, { context: "donation" });
 
       return new Response(

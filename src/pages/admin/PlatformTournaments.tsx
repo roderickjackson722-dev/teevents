@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye } from "lucide-react";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
+import SampleModePanel from "@/components/admin/SampleModePanel";
 import { toast } from "sonner";
 
 type Row = {
@@ -33,6 +34,7 @@ type Row = {
   paid_count?: number;
   revenue_cents?: number;
   sponsors_count?: number;
+  is_sample?: boolean | null;
 };
 
 export default function PlatformTournaments() {
@@ -48,6 +50,7 @@ export default function PlatformTournaments() {
   const [createOpen, setCreateOpen] = useState(false);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
   const [attaching, setAttaching] = useState<string | null>(null);
+  const [sampleFor, setSampleFor] = useState<Row | null>(null);
 
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export default function PlatformTournaments() {
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];

@@ -178,7 +178,10 @@ Deno.serve(async (req) => {
             event_location: tournament.location || "",
           };
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
-          const html = buildCustomHtml(emailConfig, vars);
+          const slug = (tournament as any).slug;
+          const qrToken = (reg as any).qr_token;
+          const hubUrl = slug && qrToken ? `https://www.teevents.golf/player/${slug}/${qrToken}` : "";
+          const html = buildCustomHtml(emailConfig, vars, { includePlayerHub: !!hubUrl, hubUrl });
 
           const res = await fetch("https://api.resend.com/emails", {
             method: "POST",

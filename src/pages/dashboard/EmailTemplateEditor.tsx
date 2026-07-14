@@ -619,8 +619,32 @@ export default function EmailTemplateEditor() {
         </TabsContent>
 
         {/* Preview Tab */}
-        <TabsContent value="preview">
+        <TabsContent value="preview" className="space-y-4">
+          <div className="bg-card rounded-lg border p-4 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+            <div className="flex-1">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Send className="h-4 w-4 text-primary" /> Send a test email to yourself
+              </Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                See exactly how this confirmation email will look in your inbox — no participants are contacted.
+              </p>
+              <Input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="mt-2"
+              />
+            </div>
+            <Button onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()} className="gap-2">
+              {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Test Email
+            </Button>
+          </div>
           <div className="bg-muted rounded-lg p-4">
+            <div className="text-xs text-muted-foreground text-center mb-3">
+              Live preview — updates as you edit design and content
+            </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
               __html: renderEmailHtml(config, {
                 first_name: "John",
@@ -634,6 +658,7 @@ export default function EmailTemplateEditor() {
             }} />
           </div>
         </TabsContent>
+
 
         {/* Send Tab */}
         <TabsContent value="send" className="space-y-4">

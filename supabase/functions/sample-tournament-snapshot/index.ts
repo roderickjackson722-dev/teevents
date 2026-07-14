@@ -57,9 +57,6 @@ Deno.serve(async (req) => {
       is_sample: t.is_sample,
       sample_view_count: t.sample_view_count,
       sample_last_viewed: t.sample_last_viewed,
-      logo_url: t.logo_url,
-      hero_image_url: t.hero_image_url,
-      format: t.tournament_format,
     };
 
     return json({

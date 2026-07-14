@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye } from "lucide-react";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
+import SampleModePanel from "@/components/admin/SampleModePanel";
 import { toast } from "sonner";
 
 type Row = {
@@ -33,6 +34,7 @@ type Row = {
   paid_count?: number;
   revenue_cents?: number;
   sponsors_count?: number;
+  is_sample?: boolean | null;
 };
 
 export default function PlatformTournaments() {
@@ -48,6 +50,7 @@ export default function PlatformTournaments() {
   const [createOpen, setCreateOpen] = useState(false);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
   const [attaching, setAttaching] = useState<string | null>(null);
+  const [sampleFor, setSampleFor] = useState<Row | null>(null);
 
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export default function PlatformTournaments() {
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -244,6 +247,16 @@ export default function PlatformTournaments() {
         onCreated={() => load()}
       />
 
+      {sampleFor && (
+        <SampleModePanel
+          open={!!sampleFor}
+          onOpenChange={(o) => !o && setSampleFor(null)}
+          tournamentId={sampleFor.id}
+          tournamentTitle={sampleFor.title}
+          onChanged={() => load()}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard icon={<Trophy className="h-4 w-4" />} label="Tournaments" value={summary.tournaments.toLocaleString()} />
@@ -318,6 +331,7 @@ export default function PlatformTournaments() {
                         <TableCell>
                           {r.site_published ? <Badge>Published</Badge> : <Badge variant="outline">Draft</Badge>}
                           {r.registration_open && <Badge variant="secondary" className="ml-1">Reg Open</Badge>}
+                          {r.is_sample && <Badge variant="secondary" className="ml-1 bg-amber-500/20 text-amber-700 border-amber-500/40"><Eye className="h-3 w-3 mr-0.5" />Sample</Badge>}
                           {r.created_by_admin_id && !r.admin_invitation_sent_at && (
                             <Badge variant="destructive" className="ml-1">Invite Pending</Badge>
                           )}
@@ -334,9 +348,12 @@ export default function PlatformTournaments() {
                         <TableCell className="text-right">{money(r.revenue_cents || 0)}</TableCell>
                         <TableCell className="text-right">{r.sponsors_count}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-1 flex-wrap">
                             <Button asChild variant="outline" size="sm">
                               <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
+                            </Button>
+                            <Button variant={r.is_sample ? "secondary" : "outline"} size="sm" onClick={() => setSampleFor(r)}>
+                              <Eye className="h-3.5 w-3.5 mr-1" />{r.is_sample ? "Sample On" : "Sample Mode"}
                             </Button>
                             {r.created_by_admin_id && !r.admin_invitation_sent_at && (
                               <Button

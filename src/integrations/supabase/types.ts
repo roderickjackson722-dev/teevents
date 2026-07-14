@@ -7616,8 +7616,10 @@ export type Database = {
           hole_pars: Json | null
           id: string
           image_url: string | null
+          is_converted_from_sample: boolean
           is_demo: boolean
           is_pro: boolean
+          is_sample: boolean
           leaderboard_design: Json
           leaderboard_rotating_logos: Json
           leaderboard_sponsor_banner_enabled: boolean
@@ -7685,6 +7687,12 @@ export type Database = {
           registration_url: string | null
           reserve_percentage: number | null
           results_url: string | null
+          sample_converted_at: string | null
+          sample_converted_to: string | null
+          sample_created_by: string | null
+          sample_last_viewed: string | null
+          sample_token: string | null
+          sample_view_count: number
           saved_course_id: string | null
           schedule_info: string | null
           schedule_info_html: string | null
@@ -7848,8 +7856,10 @@ export type Database = {
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
+          is_converted_from_sample?: boolean
           is_demo?: boolean
           is_pro?: boolean
+          is_sample?: boolean
           leaderboard_design?: Json
           leaderboard_rotating_logos?: Json
           leaderboard_sponsor_banner_enabled?: boolean
@@ -7917,6 +7927,12 @@ export type Database = {
           registration_url?: string | null
           reserve_percentage?: number | null
           results_url?: string | null
+          sample_converted_at?: string | null
+          sample_converted_to?: string | null
+          sample_created_by?: string | null
+          sample_last_viewed?: string | null
+          sample_token?: string | null
+          sample_view_count?: number
           saved_course_id?: string | null
           schedule_info?: string | null
           schedule_info_html?: string | null
@@ -8080,8 +8096,10 @@ export type Database = {
           hole_pars?: Json | null
           id?: string
           image_url?: string | null
+          is_converted_from_sample?: boolean
           is_demo?: boolean
           is_pro?: boolean
+          is_sample?: boolean
           leaderboard_design?: Json
           leaderboard_rotating_logos?: Json
           leaderboard_sponsor_banner_enabled?: boolean
@@ -8149,6 +8167,12 @@ export type Database = {
           registration_url?: string | null
           reserve_percentage?: number | null
           results_url?: string | null
+          sample_converted_at?: string | null
+          sample_converted_to?: string | null
+          sample_created_by?: string | null
+          sample_last_viewed?: string | null
+          sample_token?: string | null
+          sample_view_count?: number
           saved_course_id?: string | null
           schedule_info?: string | null
           schedule_info_html?: string | null
@@ -8819,6 +8843,7 @@ export type Database = {
         Args: { _additional: number; _reason: string; _tournament_id: string }
         Returns: undefined
       }
+      bump_sample_view: { Args: { _token: string }; Returns: string }
       check_auth_rate_limit: {
         Args: {
           _action: string
@@ -9078,6 +9103,15 @@ export type Database = {
       mark_demo_lead_started: {
         Args: { _id: string; _role: string; _user_agent: string }
         Returns: undefined
+      }
+      notify_sample_upgrade_interest: {
+        Args: {
+          _email?: string
+          _message?: string
+          _name?: string
+          _token: string
+        }
+        Returns: boolean
       }
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }

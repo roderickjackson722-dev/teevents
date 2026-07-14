@@ -558,6 +558,17 @@ export default function EmailTemplateEditor() {
                         }}
                       />
                     </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Logo Alignment</Label>
+                      <Select value={config.logo_alignment || "center"} onValueChange={(v) => setConfig(p => ({ ...p, logo_alignment: v as "left" | "center" | "right" }))}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="left">Left</SelectItem>
+                          <SelectItem value="center">Center</SelectItem>
+                          <SelectItem value="right">Right</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
@@ -657,7 +668,7 @@ export default function EmailTemplateEditor() {
                   ? formatTournamentDate(tournaments.find(t => t.id === selectedTournament).date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
                   : "Saturday, June 15, 2026",
                 event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
-              }, TEMPLATE_HEADERS[templateKind])
+              }, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
             }} />
           </div>
         </TabsContent>

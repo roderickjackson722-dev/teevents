@@ -1,65 +1,54 @@
-## Sample Dashboard Mode — Implementation Plan
+## Goal
+When someone opens the Bolton Invitational sample link, they should see the **actual organizer dashboard** — same sidebar, same tabs, same pages a real organizer sees after signup — but every Save/Delete/Publish button is disabled until you turn Sample Mode off from the admin dashboard.
 
-Build a read-only preview mode for tournaments so admins can share a no-login dashboard link with prospects, then convert to a live tournament and hand off to an organizer.
+## What the current `/sample/dashboard/:token` page does (wrong)
+It renders a custom simplified page with a handful of tabs. That's not what you want.
 
-### 1. Database migration
-Add to `tournaments`:
-- `is_sample boolean default false`
-- `sample_token uuid default gen_random_uuid() unique`
-- `sample_view_count integer default 0`
-- `sample_last_viewed timestamptz`
-- `sample_created_by uuid references auth.users(id)`
-- `sample_converted_at timestamptz`
-- `sample_converted_to uuid references auth.users(id)`
-- `is_converted_from_sample boolean default false`
+## What it should do
+Reuse `DashboardLayout` + `DashboardSidebar` + the real dashboard page components (Tournaments, Registration, Sponsors, Leaderboard, Scoring, Finances, etc.), pointed at the sample tournament's organization, with saves blocked.
 
-RLS: add a policy `Anyone can view sample tournaments` — `for select using (is_sample = true)`. Add a `bump_sample_view(_token uuid)` security-definer RPC that increments count + updates `sample_last_viewed` and returns the tournament id. Add `notify_sample_upgrade_interest(_token uuid, _email text, _name text, _message text)` that inserts into `admin_notifications`.
+## Approach
 
-### 2. Admin UI — Sample Mode panel
-In `src/pages/admin/PlatformTournaments.tsx`, add a "Sample Mode" section per tournament row (drawer/dialog):
-- Toggle **Enable Sample Mode** (updates `is_sample`, ensures `sample_token` exists, sets `sample_created_by`)
-- Copyable link: `https://teevents.golf/sample/{token}` + Copy button
-- Stats: views + last viewed
-- **Convert to Live**: email input → calls new edge function `admin-convert-sample-tournament` which:
-  1. Sets `is_sample=false`, `is_converted_from_sample=true`, `sample_converted_at=now()`, `sample_converted_to=<user_id>`
-  2. Creates the auth user (if missing) with a temp password, invites as owner on the tournament's organization (reuses existing `admin-attach-organizer` logic — but must NOT touch the platform admin password guard already in place)
-  3. Sends login email via existing invite email flow
+### 1. Sample auth without exposing data
+Create a dedicated shared **"Sample Viewer" auth user** that is added as a `viewer`-role member to the organization that owns the Bolton Invitational (and any other sample). RLS already respects org membership, so this user can *read* the org's dashboard data but has no write permissions.
 
-### 3. Public sample route
-- New route `/sample/:token` → `src/pages/sample/SampleTournamentDashboard.tsx`
-- Loads tournament by token via anon select (RLS allows), calls `bump_sample_view` RPC
-- Wraps children in a `SampleModeContext` (`{ isSample: true, tournamentId, orgId }`)
-- Renders the existing dashboard layout/sidebar/pages inside a read-only shell with:
-  - Top banner: "🔍 SAMPLE MODE — This is a preview…" + **Upgrade Now** button (opens modal → calls `notify_sample_upgrade_interest`)
-  - CSS class on `<main>` that disables pointer events on form inputs/buttons flagged as mutating (`[data-mutating]` or a global overlay approach)
-- Sub-routes for tabs: `/sample/:token/players`, `/leaderboard`, `/sponsors`, `/finances`, `/checkin`, `/scoring`, `/day-of`, etc. Reuse the existing dashboard tab components, passing `orgId`/`tournamentId` from context instead of from `useOrgContext`.
+- Edge function `sample-session-mint`: verifies the `:token` maps to a tournament with `is_sample = true`, then returns a short-lived Supabase session for the shared viewer account (`sample-viewer@teevents.internal`).
+- The sample dashboard page calls this function on mount, calls `supabase.auth.setSession(...)`, then redirects the browser to `/dashboard?sample=1&admin_org=<orgId>`.
 
-### 4. Read-only enforcement
-Add a lightweight `useIsSampleMode()` hook. In existing dashboard pages that support sample viewing, gate save/submit handlers:
-```ts
-if (isSample) { toast("This is a sample dashboard. Upgrade to a live tournament to make changes."); return; }
-```
-Only touch the handful of top-level tab pages listed in the request (Overview, Players, Leaderboard, Sponsors, Finances, PayoutSettings, CheckIn, Scoring, DayOf). No changes to unrelated dashboard pages.
+### 2. Sample mode context
+- New hook `useSampleMode()` reads `?sample=1` from the URL and persists a `sessionStorage` flag so it survives sidebar navigation.
+- `DashboardLayout` shows a persistent yellow "SAMPLE MODE — no changes will be saved" banner + "Upgrade Now" button (opens existing lead-capture modal) when sample mode is active.
 
-### 5. Enable for the Bolton Invitational
-After the migration is approved, run an insert to set `is_sample=true` on the Bolton Invitational tournament and return its `sample_token` so the admin can share the link immediately.
+### 3. Save-blocking
+A single utility `guardSampleWrite()` used by shared save helpers:
+- Wrap the Supabase client in a `sampleSafeClient` proxy: when sample mode is active, `.insert() / .update() / .delete() / .upsert() / .rpc()` intercept and show a toast "Sample mode — saves are disabled. Ask the admin to convert to a live tournament." instead of hitting the DB.
+- Read operations (`.select()`) pass through untouched so the dashboard still shows real data.
+- File uploads and storage writes are similarly blocked.
 
-### 6. Files to create
-- `supabase/migrations/<new>.sql`
-- `supabase/functions/admin-convert-sample-tournament/index.ts`
-- `src/pages/sample/SampleTournamentDashboard.tsx`
-- `src/context/SampleModeContext.tsx`
-- `src/hooks/useIsSampleMode.ts`
-- `src/components/admin/SampleModePanel.tsx`
+This means we do NOT have to touch every dashboard page — the interception happens at the client layer, and the shared viewer account's RLS prevents writes as a second line of defense.
 
-### 7. Files to edit
-- `src/App.tsx` — register `/sample/:token/*` route (public)
-- `src/pages/admin/PlatformTournaments.tsx` — add "Sample Mode" button per row opening the panel
-- Selected dashboard tab pages — guard mutating actions with `useIsSampleMode()`
+### 4. Admin toggle stays as-is
+Your existing `SampleModePanel` in `PlatformTournaments.tsx` continues to toggle `is_sample` on the tournament. When you turn it off, `sample-session-mint` refuses to issue sessions and the link stops working. Existing browsers hitting `/dashboard?sample=1` are logged out on next navigation.
 
-### Notes
-- Reuses existing `admin-attach-organizer` and invite/email plumbing — no changes to platform-admin password guard.
-- Anon read policy is scoped only to rows where `is_sample=true`; other tournaments remain protected.
-- No changes to organizer login, existing tournaments, or unrelated dashboard pages.
+## Files
 
-Confirm and I'll implement. Want me to also expose the sample link on the tournament card in the admin list (quick copy) or keep it only inside the panel?
+**New**
+- `supabase/functions/sample-session-mint/index.ts` — validates token, returns session tokens for shared viewer account
+- `src/lib/sampleSafeClient.ts` — proxy that intercepts writes when sample mode active
+- `src/hooks/useSampleMode.ts` — reads `?sample=1` / sessionStorage
+- `src/pages/sample/SampleSessionBootstrap.tsx` — replaces current `SampleTournamentDashboard.tsx`; mints session, redirects to `/dashboard?sample=1`
+
+**Edit**
+- `src/integrations/supabase/client.ts` is auto-gen and off-limits — instead we export a wrapped client from `@/integrations/supabase/safe` and update the shared save utility hooks. If a page imports `supabase` directly (most do), we swap them at build time via a small codemod pass, OR simpler: expose the guard through a `useSupabase()` hook and update the ~10 heaviest write pages to use it. Reads via the raw `supabase` client stay fine.
+- `src/components/DashboardLayout.tsx` — add sample banner + skip the "no memberships → onboarding" redirect when in sample mode (viewer account is a member so this should just work)
+- `src/App.tsx` — swap `/sample/dashboard/:token` to `SampleSessionBootstrap`
+
+**Migration**
+- Create shared `sample-viewer@teevents.internal` auth user, add as `viewer` (read-only permissions array) member of the Bolton Invitational org.
+
+## Trade-offs / things to confirm
+1. **Shared viewer account approach**: every sample visitor shares one Supabase session in their browser. Session tokens are short-lived (5 min) and scoped to viewer role. Alternative is a much bigger snapshot-based approach that reimplements every dashboard page in read-only — 10x the code and drift risk.
+2. **Save interception at client**: it's a UX guard, not the security guard. RLS + viewer role is the real guard. A determined visitor can't write regardless.
+3. **This is a sizable change** touching auth, layout, and shared client wiring. Estimated 4–6 files created + 2–3 edited. If you want, I can scope it to Bolton only first and expand later.
+
+Approve and I'll build it.

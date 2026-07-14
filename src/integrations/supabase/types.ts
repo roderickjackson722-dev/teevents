@@ -7731,6 +7731,7 @@ export type Database = {
           site_text_color: string | null
           site_title_position: string | null
           slug: string | null
+          sponsor_email_config: Json | null
           state: string | null
           status: string
           store_section_title: string | null
@@ -7741,6 +7742,7 @@ export type Database = {
           url_edit_count: number
           url_edited_at: string | null
           vendor_booth_fee_cents: number | null
+          vendor_email_config: Json | null
           vision_statement: string | null
           waitlist_deposit_cents: number | null
           waitlist_enabled: boolean
@@ -7971,6 +7973,7 @@ export type Database = {
           site_text_color?: string | null
           site_title_position?: string | null
           slug?: string | null
+          sponsor_email_config?: Json | null
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -7981,6 +7984,7 @@ export type Database = {
           url_edit_count?: number
           url_edited_at?: string | null
           vendor_booth_fee_cents?: number | null
+          vendor_email_config?: Json | null
           vision_statement?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
@@ -8211,6 +8215,7 @@ export type Database = {
           site_text_color?: string | null
           site_title_position?: string | null
           slug?: string | null
+          sponsor_email_config?: Json | null
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -8221,6 +8226,7 @@ export type Database = {
           url_edit_count?: number
           url_edited_at?: string | null
           vendor_booth_fee_cents?: number | null
+          vendor_email_config?: Json | null
           vision_statement?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean

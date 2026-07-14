@@ -174,18 +174,23 @@ serve(async (req) => {
           user_metadata: {
             ...(invitedUser.user_metadata || {}),
             full_name: memberName || invitedUser.user_metadata?.full_name,
-
-          force_password_change: true,
-          invited_org_id: organization_id,
-        },
-      });
-      await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
+            force_password_change: true,
+            invited_org_id: organization_id,
+          },
+        });
+        await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
+      }
 
       return new Response(
-        JSON.stringify({ success: true, auto_accepted: true }),
+        JSON.stringify({
+          success: true,
+          auto_accepted: true,
+          skipped_platform_admin: !canRotatePassword,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
 
     // New user — create the auth account with a temporary password.
     const tempPassword = generateTempPassword();

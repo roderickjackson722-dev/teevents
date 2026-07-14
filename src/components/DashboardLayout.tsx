@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardChatAssistant } from "./DashboardChatAssistant";
-import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { useSampleMode, setSampleModeActive } from "@/hooks/useSampleMode";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -23,6 +24,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isDemoMode } = useDemoMode();
+  const { isSampleMode } = useSampleMode();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -131,7 +133,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Link>
           </div>
         )}
-        {isDemoMode && (
+        {isDemoMode && !isSampleMode && (
           <div className="bg-secondary text-secondary-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
             <Eye className="h-4 w-4 flex-shrink-0" />
             <span>You're viewing a sample dashboard — changes will not be saved.</span>
@@ -141,6 +143,30 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             >
               Get Started <ArrowRight className="h-3 w-3" />
             </Link>
+          </div>
+        )}
+        {isSampleMode && (
+          <div className="bg-amber-400 text-amber-950 px-4 py-2.5 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold z-50">
+            <Sparkles className="h-4 w-4 flex-shrink-0" />
+            <span>
+              SAMPLE MODE — This is a preview of the organizer dashboard. Changes are not saved.
+            </span>
+            <Link
+              to="/book"
+              className="inline-flex items-center gap-1 bg-amber-950/15 hover:bg-amber-950/25 px-3 py-1 rounded-md text-xs uppercase tracking-wider transition-colors"
+            >
+              Upgrade to Live <ArrowRight className="h-3 w-3" />
+            </Link>
+            <button
+              onClick={async () => {
+                setSampleModeActive(false);
+                await supabase.auth.signOut();
+                navigate("/");
+              }}
+              className="inline-flex items-center gap-1 bg-amber-950/10 hover:bg-amber-950/20 px-3 py-1 rounded-md text-xs uppercase tracking-wider transition-colors"
+            >
+              Exit
+            </button>
           </div>
         )}
         <div className="flex flex-1 min-w-0 w-full overflow-hidden">

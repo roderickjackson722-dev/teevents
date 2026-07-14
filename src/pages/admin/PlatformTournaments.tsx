@@ -182,7 +182,7 @@ export default function PlatformTournaments() {
     }
   }
 
-  }
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

@@ -321,6 +321,7 @@ export default function PlatformTournaments() {
                         <TableCell>
                           {r.site_published ? <Badge>Published</Badge> : <Badge variant="outline">Draft</Badge>}
                           {r.registration_open && <Badge variant="secondary" className="ml-1">Reg Open</Badge>}
+                          {r.is_sample && <Badge variant="secondary" className="ml-1 bg-amber-500/20 text-amber-700 border-amber-500/40"><Eye className="h-3 w-3 mr-0.5" />Sample</Badge>}
                           {r.created_by_admin_id && !r.admin_invitation_sent_at && (
                             <Badge variant="destructive" className="ml-1">Invite Pending</Badge>
                           )}
@@ -337,9 +338,12 @@ export default function PlatformTournaments() {
                         <TableCell className="text-right">{money(r.revenue_cents || 0)}</TableCell>
                         <TableCell className="text-right">{r.sponsors_count}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-1 flex-wrap">
                             <Button asChild variant="outline" size="sm">
                               <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
+                            </Button>
+                            <Button variant={r.is_sample ? "secondary" : "outline"} size="sm" onClick={() => setSampleFor(r)}>
+                              <Eye className="h-3.5 w-3.5 mr-1" />{r.is_sample ? "Sample On" : "Sample Mode"}
                             </Button>
                             {r.created_by_admin_id && !r.admin_invitation_sent_at && (
                               <Button

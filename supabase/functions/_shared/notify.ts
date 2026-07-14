@@ -269,7 +269,7 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
 }
 
 // HTML email template for registrant confirmations (friendlier design)
-function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl: string | null = null, refundUrl: string | null = null, hubUrl: string | null = null, qrImg: string | null = null): string {
+function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl: string | null = null, refundUrl: string | null = null, hubUrl: string | null = null, qrImg: string | null = null, logoUrl: string | null = null): string {
   const tournamentBlock = tournamentPageUrl ? `
         <tr><td style="padding:20px 32px;text-align:center;border-top:1px solid #e5e7eb;">
           <a href="${tournamentPageUrl}" style="display:inline-block;padding:12px 28px;background-color:#1a5c38;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">View Tournament Page</a>
@@ -288,6 +288,10 @@ function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl
     ? ` | <a href="${refundUrl}" style="color:#9ca3af;text-decoration:underline;">Request a refund</a>`
     : "";
 
+  const logoBlock = logoUrl
+    ? `<img src="${logoUrl}" alt="Tournament logo" style="max-height:64px;max-width:220px;display:block;margin:0 auto 10px;background:#ffffff;padding:6px;border-radius:6px;" />`
+    : `<p style="margin:0 0 8px;font-size:32px;">⛳</p>`;
+
   return `
 <!DOCTYPE html>
 <html>
@@ -297,7 +301,7 @@ function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
         <tr><td style="background:#1a5c38;padding:28px 32px;text-align:center;">
-          <p style="margin:0 0 8px;font-size:32px;">⛳</p>
+          ${logoBlock}
           <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${title}</h1>
         </td></tr>
         <tr><td style="padding:32px;">
@@ -312,3 +316,4 @@ function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl
 </body>
 </html>`;
 }
+

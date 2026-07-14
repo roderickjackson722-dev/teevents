@@ -161,6 +161,7 @@ import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
 import SampleTournament from "./pages/sample/SampleTournament";
 import SampleDashboardPreview from "./pages/sample/SampleDashboardPreview";
 import SampleLive from "./pages/sample/SampleLive";
+import SampleTournamentDashboard from "./pages/sample/SampleTournamentDashboard";
 import EventDaySales from "./pages/dashboard/EventDaySales";
 
 const queryClient = new QueryClient();
@@ -247,6 +248,7 @@ const App = () => (
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
           <Route path="/score/:slug" element={<ScoreLogin />} />
           <Route path="/score/:slug/:code" element={<GroupScoring />} />
+          <Route path="/sample/dashboard/:token" element={<SampleTournamentDashboard />} />
           <Route path="/sample/:slug" element={<SampleTournament />} />
           <Route path="/sample/:slug/dashboard" element={<SampleDashboardPreview />} />
           <Route path="/sample/:slug/live" element={<SampleLive />} />

@@ -247,6 +247,16 @@ export default function PlatformTournaments() {
         onCreated={() => load()}
       />
 
+      {sampleFor && (
+        <SampleModePanel
+          open={!!sampleFor}
+          onOpenChange={(o) => !o && setSampleFor(null)}
+          tournamentId={sampleFor.id}
+          tournamentTitle={sampleFor.title}
+          onChanged={() => load()}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard icon={<Trophy className="h-4 w-4" />} label="Tournaments" value={summary.tournaments.toLocaleString()} />

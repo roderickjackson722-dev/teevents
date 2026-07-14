@@ -142,7 +142,12 @@ serve(async (req) => {
 
     // Decide if this is a "new user" invite (needs temp password) or existing user
     const neverSignedIn = !ownerAuth.last_sign_in_at;
-    if (!tempPassword && (neverSignedIn || reset_password)) {
+    // SAFETY: never rotate the password of another platform admin — that
+    // would lock a TeeVents team member out of their own account.
+    const { data: ownerIsPlatformAdmin } = await admin.rpc("has_role", {
+      _user_id: ownerUserId, _role: "admin",
+    });
+    if (!tempPassword && (neverSignedIn || reset_password) && ownerIsPlatformAdmin !== true) {
       tempPassword = generateTempPassword();
       const { error: perr } = await admin.auth.admin.updateUserById(ownerUserId, {
         password: tempPassword,
@@ -150,6 +155,7 @@ serve(async (req) => {
       });
       if (perr) throw new Error("Failed to reset password: " + perr.message);
     }
+
 
     const dashboardUrl = `${BASE_URL}/dashboard`;
     let subject: string;

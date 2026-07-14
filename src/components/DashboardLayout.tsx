@@ -64,16 +64,29 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         }
       }
 
-      const { data: membership } = await supabase
+      const { data: memberships } = await supabase
         .from("org_members")
-        .select("organization_id")
+        .select("organization_id, created_at")
         .eq("user_id", session.user.id)
-        .limit(1)
-        .single();
+        .order("created_at", { ascending: true });
 
-      if (!membership) {
+      if (!memberships || memberships.length === 0) {
         navigate("/onboarding");
         return;
+      }
+
+      // Prefer an org that actually owns at least one tournament,
+      // so users who belong to multiple orgs don't land on an empty placeholder.
+      let membership = memberships[0];
+      if (memberships.length > 1) {
+        const orgIds = memberships.map((m: any) => m.organization_id);
+        const { data: tRows } = await supabase
+          .from("tournaments")
+          .select("organization_id")
+          .in("organization_id", orgIds);
+        const withT = new Set((tRows || []).map((r: any) => r.organization_id));
+        const preferred = memberships.find((m: any) => withT.has(m.organization_id));
+        if (preferred) membership = preferred;
       }
 
       const { data: org } = await supabase

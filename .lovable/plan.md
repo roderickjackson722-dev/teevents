@@ -1,62 +1,65 @@
+## Sample Dashboard Mode — Implementation Plan
 
-This request spans four related but independent pieces. Each is scoped below so you can approve all, or tell me which to skip / reorder.
+Build a read-only preview mode for tournaments so admins can share a no-login dashboard link with prospects, then convert to a live tournament and hand off to an organizer.
 
-## 1. Edit History panel in the scoring UI
+### 1. Database migration
+Add to `tournaments`:
+- `is_sample boolean default false`
+- `sample_token uuid default gen_random_uuid() unique`
+- `sample_view_count integer default 0`
+- `sample_last_viewed timestamptz`
+- `sample_created_by uuid references auth.users(id)`
+- `sample_converted_at timestamptz`
+- `sample_converted_to uuid references auth.users(id)`
+- `is_converted_from_sample boolean default false`
 
-Add a collapsible "Edit History" panel to the scoring screen (`src/pages/dashboard/Leaderboard.tsx`, which is where `score_edits` are already written).
+RLS: add a policy `Anyone can view sample tournaments` — `for select using (is_sample = true)`. Add a `bump_sample_view(_token uuid)` security-definer RPC that increments count + updates `sample_last_viewed` and returns the tournament id. Add `notify_sample_upgrade_interest(_token uuid, _email text, _name text, _message text)` that inserts into `admin_notifications`.
 
-Panel contents, newest first, for the selected tournament:
-- Player (from `tournament_registrations`)
-- Hole number
-- Old score → New score
-- Editor name/email (from `edited_by` → `auth.users` via a lookup helper, since we can't join `auth.users` from RLS)
-- Timestamp
-- Notes (if present)
+### 2. Admin UI — Sample Mode panel
+In `src/pages/admin/PlatformTournaments.tsx`, add a "Sample Mode" section per tournament row (drawer/dialog):
+- Toggle **Enable Sample Mode** (updates `is_sample`, ensures `sample_token` exists, sets `sample_created_by`)
+- Copyable link: `https://teevents.golf/sample/{token}` + Copy button
+- Stats: views + last viewed
+- **Convert to Live**: email input → calls new edge function `admin-convert-sample-tournament` which:
+  1. Sets `is_sample=false`, `is_converted_from_sample=true`, `sample_converted_at=now()`, `sample_converted_to=<user_id>`
+  2. Creates the auth user (if missing) with a temp password, invites as owner on the tournament's organization (reuses existing `admin-attach-organizer` logic — but must NOT touch the platform admin password guard already in place)
+  3. Sends login email via existing invite email flow
 
-Filters at the top of the panel: hole number, player, editor. Default view shows last 50, "Load more" pagination.
+### 3. Public sample route
+- New route `/sample/:token` → `src/pages/sample/SampleTournamentDashboard.tsx`
+- Loads tournament by token via anon select (RLS allows), calls `bump_sample_view` RPC
+- Wraps children in a `SampleModeContext` (`{ isSample: true, tournamentId, orgId }`)
+- Renders the existing dashboard layout/sidebar/pages inside a read-only shell with:
+  - Top banner: "🔍 SAMPLE MODE — This is a preview…" + **Upgrade Now** button (opens modal → calls `notify_sample_upgrade_interest`)
+  - CSS class on `<main>` that disables pointer events on form inputs/buttons flagged as mutating (`[data-mutating]` or a global overlay approach)
+- Sub-routes for tabs: `/sample/:token/players`, `/leaderboard`, `/sponsors`, `/finances`, `/checkin`, `/scoring`, `/day-of`, etc. Reuse the existing dashboard tab components, passing `orgId`/`tournamentId` from context instead of from `useOrgContext`.
 
-New RPC `get_score_edit_history(_tournament_id uuid)` (SECURITY DEFINER, org-member gated) so we can safely return the editor email without exposing `auth.users` broadly.
+### 4. Read-only enforcement
+Add a lightweight `useIsSampleMode()` hook. In existing dashboard pages that support sample viewing, gate save/submit handlers:
+```ts
+if (isSample) { toast("This is a sample dashboard. Upgrade to a live tournament to make changes."); return; }
+```
+Only touch the handful of top-level tab pages listed in the request (Overview, Players, Leaderboard, Sponsors, Finances, PayoutSettings, CheckIn, Scoring, DayOf). No changes to unrelated dashboard pages.
 
-## 2. Admin scoring URL confirmation
+### 5. Enable for the Bolton Invitational
+After the migration is approved, run an insert to set `is_sample=true` on the Bolton Invitational tournament and return its `sample_token` so the admin can share the link immediately.
 
-Today there is **no** `/admin/scoring/{tournament_id}` route. Scoring lives at the organizer route (`/dashboard/.../leaderboard`). Two options:
+### 6. Files to create
+- `supabase/migrations/<new>.sql`
+- `supabase/functions/admin-convert-sample-tournament/index.ts`
+- `src/pages/sample/SampleTournamentDashboard.tsx`
+- `src/context/SampleModeContext.tsx`
+- `src/hooks/useIsSampleMode.ts`
+- `src/components/admin/SampleModePanel.tsx`
 
-- **A (recommended):** Add `/admin/scoring/:tournamentId` that renders the existing scoring UI inside the admin shell, so admin nav stays intact. Impersonation continues to work through `useAdminLink`.
-- **B:** Leave scoring only in the organizer dashboard and document the correct URL.
+### 7. Files to edit
+- `src/App.tsx` — register `/sample/:token/*` route (public)
+- `src/pages/admin/PlatformTournaments.tsx` — add "Sample Mode" button per row opening the panel
+- Selected dashboard tab pages — guard mutating actions with `useIsSampleMode()`
 
-I'll go with **A** unless you say otherwise. I'll also audit the scoring page for any `navigate("/dashboard/...")` that would kick an admin back into the organizer shell and switch them to preserve `/admin/...` when the referrer is admin.
+### Notes
+- Reuses existing `admin-attach-organizer` and invite/email plumbing — no changes to platform-admin password guard.
+- Anon read policy is scoped only to rows where `is_sample=true`; other tournaments remain protected.
+- No changes to organizer login, existing tournaments, or unrelated dashboard pages.
 
-## 3. Admin Platform Tournaments filters
-
-In `src/pages/admin/PlatformTournaments.tsx`:
-- Text search: organizer name / tournament title.
-- Date range: tournament `date` (from / to).
-- Status pills: **Live** (`site_published = true AND date >= today`), **Draft** (`site_published = false`), **Ended** (`date < today`).
-- Filters combine (AND), reset button, and preserve state in the URL query string so admins can share a filtered view.
-
-## 4. Scoring-only role: enforced RLS verification
-
-Add integration tests under `src/test/integration/rls-scoring-role.test.ts` that, using the Supabase JS client with a real JWT for a seeded `role = 'scorer'` org member, verify:
-- CAN `select` / `insert` / `update` on `tournament_scores` and `score_edits` for their org's tournaments.
-- CANNOT `select` `budget_estimates`, `budget_expenses`, `budget_income`, `platform_transactions`, `organization_payout_methods`, `tournament_invoices` (finances).
-- CANNOT `update` `tournaments` (settings) or `tournament_registrations` fee/payment fields.
-
-If any existing RLS policy is missing a "scorer excluded" clause, I'll patch it via migration to gate on a new `public.has_org_scope(user_id, org_id, scope)` helper (backed by `org_members.role`), so scoring stays green and finances/settings stay red.
-
-Note: the test suite runs locally; it needs a Supabase URL + service key to seed users. I'll wire it into `vitest` behind an env flag so CI won't fail without those secrets.
-
----
-
-## Technical details
-
-- Migration: `get_score_edit_history` RPC + `has_org_scope` helper.
-- New route: `<Route path="/admin/scoring/:tournamentId" element={<AdminScoring />} />` wrapping the existing scoring component with an admin layout.
-- Filters: extend the existing `useMemo`/`filter` chain in `PlatformTournaments.tsx`; add `URLSearchParams` sync.
-- Tests: `@supabase/supabase-js` service client seeds an org, a `scorer` member, a tournament; a second client uses the scorer's JWT for the assertions.
-
----
-
-Please confirm:
-1. Add the admin scoring route (option A)?
-2. OK to add a `has_org_scope` helper and adjust any RLS gaps found during test authoring?
-3. Any status labels other than **Live / Draft / Ended** you want on the admin table?
+Confirm and I'll implement. Want me to also expose the sample link on the tournament card in the admin list (quick copy) or keep it only inside the panel?

@@ -231,16 +231,40 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
 
   const confirmRemoveMember = async () => {
     if (!deletingMember) return;
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("org_members")
       .delete()
-      .eq("id", deletingMember.id);
+      .eq("id", deletingMember.id)
+      .select("id");
     if (error) {
       toast.error(error.message);
+    } else if (!data || data.length === 0) {
+      toast.error("Could not remove this member — you may not have permission. Ask the organization owner or a TeeVents admin.");
     } else {
       toast.success("Team member removed");
       setDeletingMember(null);
       fetchData();
+    }
+  };
+
+  const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
+
+  const handleResendMemberCredentials = async (member: MemberRow) => {
+    setResendingMemberId(member.id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const { data, error } = await supabase.functions.invoke("resend-member-credentials", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { organization_id: orgId, member_id: member.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`New temporary password sent to ${member.name || data?.email || "team member"}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend credentials");
+    } finally {
+      setResendingMemberId(null);
     }
   };
 
@@ -319,6 +343,20 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   </Badge>
                   {canManage && m.role !== "owner" && m.user_id !== userId && (
                     <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => handleResendMemberCredentials(m)}
+                        disabled={resendingMemberId === m.id}
+                        title="Send this member a new temporary password"
+                      >
+                        {resendingMemberId === m.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <><Send className="h-3.5 w-3.5 mr-1" />Resend</>
+                        )}
+                      </Button>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditDialog(m)}>
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>

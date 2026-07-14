@@ -353,6 +353,18 @@ export default function PlatformTournaments() {
                             )}
                             {r.organization_id && (
                               <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => attachOrganizer(r)}
+                                  disabled={attaching === r.id}
+                                  title="Add an organizer as owner of this tournament's organization"
+                                >
+                                  {attaching === r.id
+                                    ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                    : <UserPlus className="h-3.5 w-3.5 mr-1" />}
+                                  Attach Organizer
+                                </Button>
                                 <Button asChild variant="secondary" size="sm">
                                   <Link to={`/admin/scoring/${r.id}`} target="_blank"><Edit3 className="h-3.5 w-3.5 mr-1" />Edit Scores</Link>
                                 </Button>
@@ -361,6 +373,7 @@ export default function PlatformTournaments() {
                                 </Button>
                               </>
                             )}
+
                           </div>
                         </TableCell>
                       </TableRow>

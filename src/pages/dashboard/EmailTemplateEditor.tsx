@@ -40,7 +40,7 @@ interface EmailConfig {
   font_family: string;
 }
 
-type TemplateKind = "confirmation" | "post_event";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event";
 
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",
@@ -59,6 +59,28 @@ const DEFAULT_CONFIG: EmailConfig = {
   button_url: "",
   show_button: false,
   font_family: "Arial, sans-serif",
+};
+
+const DEFAULT_SPONSOR_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Thank you for sponsoring {{event_name}}!",
+  greeting: "Hi {{first_name}},",
+  body_text: "Thank you for your generous sponsorship of {{event_name}}. Your support makes this event possible and helps us deliver a memorable experience for every participant.",
+  closing_text: "Our team will be in touch shortly with next steps, including logo submission and on-site benefits. In the meantime, please don't hesitate to reach out with any questions.",
+  footer_text: "Thank you for partnering with us! ⛳",
+  button_text: "View Sponsorship Details",
+  show_event_details: true,
+};
+
+const DEFAULT_VENDOR_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Vendor Registration Confirmed — {{event_name}}",
+  greeting: "Hi {{first_name}},",
+  body_text: "Your vendor booth is confirmed for {{event_name}}. Thank you for being part of the event.",
+  closing_text: "Details on setup times, booth location, and load-in instructions will follow closer to the event date. Please reach out with any questions.",
+  footer_text: "See you at the event! ⛳",
+  button_text: "View Event Details",
+  show_event_details: true,
 };
 
 const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
@@ -83,13 +105,24 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
 };
 
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
-  confirmation: "Registration Confirmation",
-  post_event: "Post-Event Thank You & Next Event",
+  confirmation: "Player / Registrant Confirmation",
+  sponsor: "Sponsor Confirmation",
+  vendor: "Vendor Confirmation",
+  post_event: "Post-Event Thank You",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   confirmation: "Registration Confirmed!",
+  sponsor: "Thank You for Sponsoring!",
+  vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
+};
+
+const CONFIG_KEY: Record<TemplateKind, string> = {
+  confirmation: "confirmation_email_config",
+  sponsor: "sponsor_email_config",
+  vendor: "vendor_email_config",
+  post_event: "post_event_email_config",
 };
 
 const FONT_OPTIONS = [

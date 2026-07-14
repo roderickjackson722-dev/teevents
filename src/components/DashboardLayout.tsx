@@ -77,10 +77,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         return;
       }
 
-      // Prefer an org that actually owns at least one tournament,
-      // so users who belong to multiple orgs don't land on an empty placeholder.
       let membership = memberships[0];
-      if (memberships.length > 1) {
+      const sampleOrgId = searchParams.get("sample_org");
+      if (sampleOrgId) {
+        const pinned = memberships.find((m: any) => m.organization_id === sampleOrgId);
+        if (pinned) membership = pinned;
+      } else if (memberships.length > 1) {
+        // Prefer an org that actually owns at least one tournament,
+        // so users who belong to multiple orgs don't land on an empty placeholder.
         const orgIds = memberships.map((m: any) => m.organization_id);
         const { data: tRows } = await supabase
           .from("tournaments")

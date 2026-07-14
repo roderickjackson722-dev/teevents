@@ -34,6 +34,7 @@ interface EmailConfig {
   show_event_details: boolean;
   show_logo: boolean;
   logo_url: string;
+  logo_alignment: "left" | "center" | "right";
   button_text: string;
   button_url: string;
   show_button: boolean;

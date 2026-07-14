@@ -132,7 +132,10 @@ export default function PlatformTournaments() {
       toast.error(err.message || "Failed to send invitation");
     } finally {
       setSendingInvite(null);
+    }
   }
+
+
 
   async function attachOrganizer(t: Row) {
     const email = window.prompt(

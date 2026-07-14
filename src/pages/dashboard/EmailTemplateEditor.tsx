@@ -166,6 +166,38 @@ export default function EmailTemplateEditor() {
   const [editingReg, setEditingReg] = useState<any>(null);
   const [editEmail, setEditEmail] = useState("");
   const [resendingSingle, setResendingSingle] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+
+  // Prefill test email with the current user's email
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setTestEmail(data.user.email);
+    });
+  }, []);
+
+  const sendTestEmail = async () => {
+    if (!testEmail.trim()) {
+      toast.error("Enter an email address");
+      return;
+    }
+    setSendingTest(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-confirmation-test", {
+        body: {
+          recipient_email: testEmail.trim(),
+          config,
+          tournament_id: selectedTournament || null,
+          template_kind: templateKind,
+        },
+      });
+      if (error) throw error;
+      toast.success(`Test email sent to ${testEmail.trim()}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send test email");
+    }
+    setSendingTest(false);
+  };
 
   const configKey = CONFIG_KEY[templateKind];
   const defaultsForKind = (k: TemplateKind): EmailConfig => {

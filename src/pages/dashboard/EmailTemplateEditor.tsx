@@ -366,9 +366,43 @@ export default function EmailTemplateEditor() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="confirmation">{TEMPLATE_LABELS.confirmation}</SelectItem>
+              <SelectItem value="sponsor">{TEMPLATE_LABELS.sponsor}</SelectItem>
+              <SelectItem value="vendor">{TEMPLATE_LABELS.vendor}</SelectItem>
               <SelectItem value="post_event">{TEMPLATE_LABELS.post_event}</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!selectedTournament) return;
+              if (!confirm(`Apply this ${TEMPLATE_LABELS[templateKind]} design (colors, fonts, logo) to all confirmation emails for this tournament?`)) return;
+              const shared = {
+                primary_color: config.primary_color,
+                secondary_color: config.secondary_color,
+                header_bg_color: config.header_bg_color,
+                text_color: config.text_color,
+                font_family: config.font_family,
+                show_logo: config.show_logo,
+                logo_url: config.logo_url,
+              };
+              const t: any = tournaments.find(x => x.id === selectedTournament) || {};
+              const merge = (existing: any, fallback: EmailConfig) => ({ ...fallback, ...(existing || {}), ...shared });
+              const update: any = {
+                confirmation_email_config: merge(t.confirmation_email_config, DEFAULT_CONFIG),
+                sponsor_email_config: merge(t.sponsor_email_config, DEFAULT_SPONSOR_CONFIG),
+                vendor_email_config: merge(t.vendor_email_config, DEFAULT_VENDOR_CONFIG),
+              };
+              const { error } = await supabase.from("tournaments").update(update).eq("id", selectedTournament);
+              if (error) toast.error("Failed to apply to all");
+              else {
+                toast.success("Design applied to all confirmation emails");
+                setTournaments(prev => prev.map(x => x.id === selectedTournament ? { ...x, ...update } : x));
+              }
+            }}
+          >
+            <Copy className="h-4 w-4 mr-1" /> Apply design to all
+          </Button>
           <Select value={selectedTournament} onValueChange={handleTournamentChange}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select tournament" />

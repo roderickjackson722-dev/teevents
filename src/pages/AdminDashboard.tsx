@@ -796,8 +796,15 @@ const AdminDashboard = () => {
                     <Icon className="h-4 w-4" /> {label}
                   </button>
                 ))}
+                <button
+                  onClick={() => navigate("/admin/platform-tournaments")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Trophy className="h-4 w-4" /> Platform Tournaments (Detailed)
+                </button>
               </div>
             </div>
+
 
             <div>
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>

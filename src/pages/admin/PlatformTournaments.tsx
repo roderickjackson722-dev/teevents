@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus } from "lucide-react";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
 import { toast } from "sonner";
 
@@ -47,6 +47,8 @@ export default function PlatformTournaments() {
   const [dateTo, setDateTo] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
+  const [attaching, setAttaching] = useState<string | null>(null);
+
 
   useEffect(() => {
     (async () => {
@@ -132,6 +134,55 @@ export default function PlatformTournaments() {
       setSendingInvite(null);
     }
   }
+
+
+
+  async function attachOrganizer(t: Row) {
+    const email = window.prompt(
+      `Attach an organizer to "${t.title}".\n\nEnter the organizer's email. They'll be added as OWNER of the organization that already owns this tournament, so it appears on their dashboard immediately.\n\nNo password will be changed for existing users.`,
+      ""
+    );
+    if (!email) return;
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setAttaching(t.id);
+    try {
+      let { data, error } = await supabase.functions.invoke("admin-attach-organizer", {
+        body: { tournament_id: t.id, email: trimmed, role: "owner" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error === "no_user") {
+        if (!confirm(`No account exists for ${trimmed}. Create one now and attach as owner? A temporary password will be shown to you (nothing is emailed).`)) {
+          setAttaching(null);
+          return;
+        }
+        const retry = await supabase.functions.invoke("admin-attach-organizer", {
+          body: { tournament_id: t.id, email: trimmed, role: "owner", create_if_missing: true },
+        });
+        if (retry.error) throw retry.error;
+        data = retry.data;
+      }
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const res = data as any;
+      if (res.temp_password) {
+        window.prompt(
+          `Account created for ${trimmed}. Copy the temporary password below and share it with the organizer:`,
+          res.temp_password
+        );
+      }
+      toast.success(`${trimmed} is now an owner of this tournament's organization.`);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to attach organizer");
+    } finally {
+      setAttaching(null);
+    }
+  }
+
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -302,6 +353,18 @@ export default function PlatformTournaments() {
                             )}
                             {r.organization_id && (
                               <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => attachOrganizer(r)}
+                                  disabled={attaching === r.id}
+                                  title="Add an organizer as owner of this tournament's organization"
+                                >
+                                  {attaching === r.id
+                                    ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                    : <UserPlus className="h-3.5 w-3.5 mr-1" />}
+                                  Attach Organizer
+                                </Button>
                                 <Button asChild variant="secondary" size="sm">
                                   <Link to={`/admin/scoring/${r.id}`} target="_blank"><Edit3 className="h-3.5 w-3.5 mr-1" />Edit Scores</Link>
                                 </Button>
@@ -310,6 +373,7 @@ export default function PlatformTournaments() {
                                 </Button>
                               </>
                             )}
+
                           </div>
                         </TableCell>
                       </TableRow>

@@ -105,6 +105,14 @@ serve(async (req) => {
     const baseUrl = Deno.env.get("SITE_URL") || "https://www.teevents.golf";
 
     if (invitedUser) {
+      // SAFETY: never rotate the password of a platform admin — that would
+      // lock the TeeVents team out of their own account.
+      const { data: inviteeIsPlatformAdmin } = await supabaseAdmin.rpc("has_role", {
+        _user_id: invitedUser.id,
+        _role: "admin",
+      });
+      const canRotatePassword = inviteeIsPlatformAdmin !== true;
+
       // Existing user — check if already a member of THIS org
       const { data: alreadyMember } = await supabaseAdmin
         .from("org_members")
@@ -114,29 +122,34 @@ serve(async (req) => {
         .maybeSingle();
 
       if (alreadyMember) {
-        // Already a member — treat this as a resend: rotate a fresh temp
-        // password and re-send the credentials email so the invitee has
-        // usable login details right now.
-        const tempPasswordResend = generateTempPassword();
-        await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
-          password: tempPasswordResend,
-          user_metadata: {
-            ...(invitedUser.user_metadata || {}),
-            full_name: memberName || invitedUser.user_metadata?.full_name,
-            force_password_change: true,
-            invited_org_id: organization_id,
-          },
-        });
-        await sendTempPasswordEmail(
-          email.toLowerCase(),
-          memberName,
-          orgName,
-          tempPasswordResend,
-          alreadyMember?.role || memberRole,
-          baseUrl,
-        );
+        // Already a member — treat this as a resend.
+        if (canRotatePassword) {
+          const tempPasswordResend = generateTempPassword();
+          await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
+            password: tempPasswordResend,
+            user_metadata: {
+              ...(invitedUser.user_metadata || {}),
+              full_name: memberName || invitedUser.user_metadata?.full_name,
+              force_password_change: true,
+              invited_org_id: organization_id,
+            },
+          });
+          await sendTempPasswordEmail(
+            email.toLowerCase(),
+            memberName,
+            orgName,
+            tempPasswordResend,
+            alreadyMember?.role || memberRole,
+            baseUrl,
+          );
+        }
         return new Response(
-          JSON.stringify({ success: true, already_member: true, temp_password_sent: true }),
+          JSON.stringify({
+            success: true,
+            already_member: true,
+            temp_password_sent: canRotatePassword,
+            skipped_platform_admin: !canRotatePassword,
+          }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -154,26 +167,30 @@ serve(async (req) => {
         .update({ status: "accepted" })
         .eq("id", invite.id);
 
-      // Always issue a fresh temporary password so the invitee has
-      // credentials they can use immediately from the invitation email.
-      const tempPasswordExisting = generateTempPassword();
-
-      await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
-        password: tempPasswordExisting,
-        user_metadata: {
-          ...(invitedUser.user_metadata || {}),
-          full_name: memberName || invitedUser.user_metadata?.full_name,
-          force_password_change: true,
-          invited_org_id: organization_id,
-        },
-      });
-      await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
+      if (canRotatePassword) {
+        const tempPasswordExisting = generateTempPassword();
+        await supabaseAdmin.auth.admin.updateUserById(invitedUser.id, {
+          password: tempPasswordExisting,
+          user_metadata: {
+            ...(invitedUser.user_metadata || {}),
+            full_name: memberName || invitedUser.user_metadata?.full_name,
+            force_password_change: true,
+            invited_org_id: organization_id,
+          },
+        });
+        await sendTempPasswordEmail(email.toLowerCase(), memberName, orgName, tempPasswordExisting, memberRole, baseUrl);
+      }
 
       return new Response(
-        JSON.stringify({ success: true, auto_accepted: true }),
+        JSON.stringify({
+          success: true,
+          auto_accepted: true,
+          skipped_platform_admin: !canRotatePassword,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
 
     // New user — create the auth account with a temporary password.
     const tempPassword = generateTempPassword();

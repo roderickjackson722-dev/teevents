@@ -605,6 +605,13 @@ export default function EmailTemplateEditor() {
 
         {/* Send Tab */}
         <TabsContent value="send" className="space-y-4">
+          {(templateKind === "sponsor" || templateKind === "vendor") && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4 text-sm">
+              <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
+            </div>
+          )}
+          {templateKind === "confirmation" && (
+          <>
           <div className="bg-card rounded-lg border p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -648,6 +655,8 @@ export default function EmailTemplateEditor() {
               Send {TEMPLATE_LABELS[templateKind]}{selectedRecipients.length > 1 ? "s" : ""}
             </Button>
           </div>
+          </>
+          )}
         </TabsContent>
       </Tabs>
 

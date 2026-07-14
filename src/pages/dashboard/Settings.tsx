@@ -552,6 +552,9 @@ const Settings = () => {
       {/* Email Notifications */}
       {org && <NotificationSettings orgId={org.orgId} />}
 
+      {/* Change Password */}
+      <ChangePasswordCard />
+
       {/* TeeVents Branding */}
       {tournaments.length > 0 && (
         <motion.div

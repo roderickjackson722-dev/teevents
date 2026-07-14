@@ -81,6 +81,7 @@ const categories: SidebarCategory[] = [
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
       { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
+      { title: "Confirmation Emails", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize the confirmation email sent to registrants, sponsors, and vendors" },
     ],
   },
   {

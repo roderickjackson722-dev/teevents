@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, PenLine, BarChart3, Calendar, ImageIcon, MessageCircle, MapPin } from "lucide-react";
+import { Loader2, PenLine, BarChart3, Globe, MessageCircle, MapPin } from "lucide-react";
 import SEO from "@/components/SEO";
 
 interface PlayerHubData {
@@ -92,16 +92,10 @@ export default function PlayerHub() {
       to: `/live/${data.tournament_slug}`,
     },
     {
-      title: "Schedule & Details",
-      description: "Tee times, format, contests, and event flow.",
-      icon: Calendar,
-      to: `/t/${data.tournament_slug}#schedule`,
-    },
-    {
-      title: "Photo Gallery",
-      description: "Browse and share photos from the event.",
-      icon: ImageIcon,
-      to: `/t/${data.tournament_slug}#gallery`,
+      title: "View Tournament Website",
+      description: "Schedule, format, photos, and full event details.",
+      icon: Globe,
+      to: `/t/${data.tournament_slug}`,
     },
     {
       title: "Contact Organizer",

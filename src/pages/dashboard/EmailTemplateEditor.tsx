@@ -40,7 +40,7 @@ interface EmailConfig {
   font_family: string;
 }
 
-type TemplateKind = "confirmation" | "post_event";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event";
 
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",
@@ -59,6 +59,28 @@ const DEFAULT_CONFIG: EmailConfig = {
   button_url: "",
   show_button: false,
   font_family: "Arial, sans-serif",
+};
+
+const DEFAULT_SPONSOR_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Thank you for sponsoring {{event_name}}!",
+  greeting: "Hi {{first_name}},",
+  body_text: "Thank you for your generous sponsorship of {{event_name}}. Your support makes this event possible and helps us deliver a memorable experience for every participant.",
+  closing_text: "Our team will be in touch shortly with next steps, including logo submission and on-site benefits. In the meantime, please don't hesitate to reach out with any questions.",
+  footer_text: "Thank you for partnering with us! ⛳",
+  button_text: "View Sponsorship Details",
+  show_event_details: true,
+};
+
+const DEFAULT_VENDOR_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Vendor Registration Confirmed — {{event_name}}",
+  greeting: "Hi {{first_name}},",
+  body_text: "Your vendor booth is confirmed for {{event_name}}. Thank you for being part of the event.",
+  closing_text: "Details on setup times, booth location, and load-in instructions will follow closer to the event date. Please reach out with any questions.",
+  footer_text: "See you at the event! ⛳",
+  button_text: "View Event Details",
+  show_event_details: true,
 };
 
 const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
@@ -83,13 +105,24 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
 };
 
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
-  confirmation: "Registration Confirmation",
-  post_event: "Post-Event Thank You & Next Event",
+  confirmation: "Player / Registrant Confirmation",
+  sponsor: "Sponsor Confirmation",
+  vendor: "Vendor Confirmation",
+  post_event: "Post-Event Thank You",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   confirmation: "Registration Confirmed!",
+  sponsor: "Thank You for Sponsoring!",
+  vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
+};
+
+const CONFIG_KEY: Record<TemplateKind, string> = {
+  confirmation: "confirmation_email_config",
+  sponsor: "sponsor_email_config",
+  vendor: "vendor_email_config",
+  post_event: "post_event_email_config",
 };
 
 const FONT_OPTIONS = [
@@ -134,15 +167,20 @@ export default function EmailTemplateEditor() {
   const [editEmail, setEditEmail] = useState("");
   const [resendingSingle, setResendingSingle] = useState(false);
 
-  const configKey = templateKind === "post_event" ? "post_event_email_config" : "confirmation_email_config";
-  const defaultsForKind = (k: TemplateKind) =>
-    k === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG;
+  const configKey = CONFIG_KEY[templateKind];
+  const defaultsForKind = (k: TemplateKind): EmailConfig => {
+    if (k === "post_event") return DEFAULT_POST_EVENT_CONFIG;
+    if (k === "sponsor") return DEFAULT_SPONSOR_CONFIG;
+    if (k === "vendor") return DEFAULT_VENDOR_CONFIG;
+    return DEFAULT_CONFIG;
+  };
 
   const loadConfigFor = (t: any, kind: TemplateKind) => {
-    const stored = t?.[kind === "post_event" ? "post_event_email_config" : "confirmation_email_config"];
+    const stored = t?.[CONFIG_KEY[kind]];
     if (stored) setConfig({ ...defaultsForKind(kind), ...(stored as any) });
     else setConfig(defaultsForKind(kind));
   };
+
 
   // Load tournaments
   useEffect(() => {
@@ -150,7 +188,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, confirmation_email_config, post_event_email_config, site_logo_url")
+        .select("id, title, date, location, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -328,9 +366,43 @@ export default function EmailTemplateEditor() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="confirmation">{TEMPLATE_LABELS.confirmation}</SelectItem>
+              <SelectItem value="sponsor">{TEMPLATE_LABELS.sponsor}</SelectItem>
+              <SelectItem value="vendor">{TEMPLATE_LABELS.vendor}</SelectItem>
               <SelectItem value="post_event">{TEMPLATE_LABELS.post_event}</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!selectedTournament) return;
+              if (!confirm(`Apply this ${TEMPLATE_LABELS[templateKind]} design (colors, fonts, logo) to all confirmation emails for this tournament?`)) return;
+              const shared = {
+                primary_color: config.primary_color,
+                secondary_color: config.secondary_color,
+                header_bg_color: config.header_bg_color,
+                text_color: config.text_color,
+                font_family: config.font_family,
+                show_logo: config.show_logo,
+                logo_url: config.logo_url,
+              };
+              const t: any = tournaments.find(x => x.id === selectedTournament) || {};
+              const merge = (existing: any, fallback: EmailConfig) => ({ ...fallback, ...(existing || {}), ...shared });
+              const update: any = {
+                confirmation_email_config: merge(t.confirmation_email_config, DEFAULT_CONFIG),
+                sponsor_email_config: merge(t.sponsor_email_config, DEFAULT_SPONSOR_CONFIG),
+                vendor_email_config: merge(t.vendor_email_config, DEFAULT_VENDOR_CONFIG),
+              };
+              const { error } = await supabase.from("tournaments").update(update).eq("id", selectedTournament);
+              if (error) toast.error("Failed to apply to all");
+              else {
+                toast.success("Design applied to all confirmation emails");
+                setTournaments(prev => prev.map(x => x.id === selectedTournament ? { ...x, ...update } : x));
+              }
+            }}
+          >
+            <Copy className="h-4 w-4 mr-1" /> Apply design to all
+          </Button>
           <Select value={selectedTournament} onValueChange={handleTournamentChange}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select tournament" />
@@ -533,6 +605,13 @@ export default function EmailTemplateEditor() {
 
         {/* Send Tab */}
         <TabsContent value="send" className="space-y-4">
+          {(templateKind === "sponsor" || templateKind === "vendor") && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4 text-sm">
+              <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
+            </div>
+          )}
+          {templateKind === "confirmation" && (
+          <>
           <div className="bg-card rounded-lg border p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -576,6 +655,8 @@ export default function EmailTemplateEditor() {
               Send {TEMPLATE_LABELS[templateKind]}{selectedRecipients.length > 1 ? "s" : ""}
             </Button>
           </div>
+          </>
+          )}
         </TabsContent>
       </Tabs>
 

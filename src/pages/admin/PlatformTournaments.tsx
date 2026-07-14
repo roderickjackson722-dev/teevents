@@ -132,7 +132,53 @@ export default function PlatformTournaments() {
       toast.error(err.message || "Failed to send invitation");
     } finally {
       setSendingInvite(null);
+  }
+
+  async function attachOrganizer(t: Row) {
+    const email = window.prompt(
+      `Attach an organizer to "${t.title}".\n\nEnter the organizer's email. They'll be added as OWNER of the organization that already owns this tournament, so it appears on their dashboard immediately.\n\nNo password will be changed for existing users.`,
+      ""
+    );
+    if (!email) return;
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Please enter a valid email address");
+      return;
     }
+    setAttaching(t.id);
+    try {
+      let { data, error } = await supabase.functions.invoke("admin-attach-organizer", {
+        body: { tournament_id: t.id, email: trimmed, role: "owner" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error === "no_user") {
+        if (!confirm(`No account exists for ${trimmed}. Create one now and attach as owner? A temporary password will be shown to you (nothing is emailed).`)) {
+          setAttaching(null);
+          return;
+        }
+        const retry = await supabase.functions.invoke("admin-attach-organizer", {
+          body: { tournament_id: t.id, email: trimmed, role: "owner", create_if_missing: true },
+        });
+        if (retry.error) throw retry.error;
+        data = retry.data;
+      }
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const res = data as any;
+      if (res.temp_password) {
+        window.prompt(
+          `Account created for ${trimmed}. Copy the temporary password below and share it with the organizer:`,
+          res.temp_password
+        );
+      }
+      toast.success(`${trimmed} is now an owner of this tournament's organization.`);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to attach organizer");
+    } finally {
+      setAttaching(null);
+    }
+  }
+
   }
 
   const filtered = useMemo(() => {

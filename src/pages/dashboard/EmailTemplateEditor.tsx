@@ -167,15 +167,20 @@ export default function EmailTemplateEditor() {
   const [editEmail, setEditEmail] = useState("");
   const [resendingSingle, setResendingSingle] = useState(false);
 
-  const configKey = templateKind === "post_event" ? "post_event_email_config" : "confirmation_email_config";
-  const defaultsForKind = (k: TemplateKind) =>
-    k === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG;
+  const configKey = CONFIG_KEY[templateKind];
+  const defaultsForKind = (k: TemplateKind): EmailConfig => {
+    if (k === "post_event") return DEFAULT_POST_EVENT_CONFIG;
+    if (k === "sponsor") return DEFAULT_SPONSOR_CONFIG;
+    if (k === "vendor") return DEFAULT_VENDOR_CONFIG;
+    return DEFAULT_CONFIG;
+  };
 
   const loadConfigFor = (t: any, kind: TemplateKind) => {
-    const stored = t?.[kind === "post_event" ? "post_event_email_config" : "confirmation_email_config"];
+    const stored = t?.[CONFIG_KEY[kind]];
     if (stored) setConfig({ ...defaultsForKind(kind), ...(stored as any) });
     else setConfig(defaultsForKind(kind));
   };
+
 
   // Load tournaments
   useEffect(() => {

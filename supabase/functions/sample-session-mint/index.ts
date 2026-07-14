@@ -89,8 +89,9 @@ Deno.serve(async (req) => {
       return json(500, { error: sErr?.message || "Failed to mint session" });
     }
 
-    // 5. Bump view count
-    await admin.rpc("bump_sample_view", { _token: token }).catch(() => null);
+    // 5. Bump view count (non-blocking for dashboard access)
+    const { error: bumpErr } = await admin.rpc("bump_sample_view", { _token: token });
+    if (bumpErr) console.warn("bump_sample_view failed", bumpErr.message);
 
     return json(200, {
       access_token: signIn.session.access_token,

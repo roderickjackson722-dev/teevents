@@ -175,6 +175,30 @@ export async function sendRegistrantConfirmationEmail(
       ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(hubUrl)}`
       : null;
 
+    // Fetch organizer/tournament logo (falls back to org logo)
+    let logoUrl: string | null = null;
+    if (tournamentId) {
+      try {
+        const admin = getAdminClient();
+        const { data: t } = await admin
+          .from("tournaments")
+          .select("logo_url, organization_id")
+          .eq("id", tournamentId)
+          .maybeSingle();
+        logoUrl = (t as any)?.logo_url || null;
+        if (!logoUrl && (t as any)?.organization_id) {
+          const { data: org } = await admin
+            .from("organizations")
+            .select("logo_url")
+            .eq("id", (t as any).organization_id)
+            .maybeSingle();
+          logoUrl = (org as any)?.logo_url || null;
+        }
+      } catch (e) {
+        console.warn("[Confirmation] logo lookup failed", e);
+      }
+    }
+
     const lines = [
       `Hi <strong>${firstName}</strong>,`,
       `We've received your registration for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
@@ -184,7 +208,8 @@ export async function sendRegistrantConfirmationEmail(
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg);
+    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg, logoUrl);
+
 
     console.log(`[Confirmation] Sending registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 

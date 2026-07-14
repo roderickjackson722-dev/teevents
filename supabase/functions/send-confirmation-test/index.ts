@@ -146,9 +146,23 @@ Deno.serve(async (req) => {
     };
     const headerText = headers[template_kind] || "Registration Confirmed!";
 
-    const hubUrl = tournamentSlug
-      ? `https://www.teevents.golf/player/${tournamentSlug}/preview-token`
-      : "https://www.teevents.golf/player/sample/preview";
+    // Use a real registrant's qr_token so the Player Hub link actually works in test emails.
+    let sampleToken: string | null = null;
+    if (tournament_id) {
+      const { data: reg } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("qr_token")
+        .eq("tournament_id", tournament_id)
+        .not("qr_token", "is", null)
+        .limit(1)
+        .maybeSingle();
+      sampleToken = (reg as any)?.qr_token || null;
+    }
+    const hubUrl = tournamentSlug && sampleToken
+      ? `https://www.teevents.golf/player/${tournamentSlug}/${sampleToken}`
+      : tournamentSlug
+        ? `https://www.teevents.golf/t/${tournamentSlug}`
+        : "https://www.teevents.golf";
 
     const subject = `[TEST] ${replaceVars(config.subject || "You're Registered — {{event_name}}", vars)}`;
     const html = buildHtml(config, vars, headerText, {

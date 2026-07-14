@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { notifyPlatformAdmin, buildNotificationHtml } from "../_shared/notify.ts";
+import { notifyPlatformAdmin, buildNotificationHtml, sendNotificationEmails } from "../_shared/notify.ts";
 import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
@@ -85,6 +85,23 @@ Deno.serve(async (req) => {
           tournamentId: tournamentId || null,
         });
       } catch (e) { console.error("[verify-donation] admin notify failed:", e); }
+
+      // Notify the organizer of every donation (uses notify_donation opt-ins plus tournament contact_email fallback).
+      if (organizationId) {
+        try {
+          await sendNotificationEmails(
+            supabaseAdmin,
+            organizationId,
+            "notify_donation",
+            `💚 New donation received — $${(amountCents / 100).toFixed(2)}`,
+            buildNotificationHtml("New Donation Received", [
+              `A donation of <strong>$${(amountCents / 100).toFixed(2)}</strong> was just received for your tournament.`,
+              `💳 <strong>Stripe Session:</strong> ${session_id}`,
+            ]),
+            tournamentId || null,
+          );
+        } catch (e) { console.error("[verify-donation] organizer notify failed:", e); }
+      }
 
       await notifyPlatformFallbackForConfirmedSession(supabaseAdmin, session.id, { context: "donation" });
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, PenLine, BarChart3, Calendar, ImageIcon, MessageCircle, MapPin } from "lucide-react";
+import { Loader2, PenLine, BarChart3, Globe, MessageCircle, MapPin } from "lucide-react";
 import SEO from "@/components/SEO";
 
 interface PlayerHubData {

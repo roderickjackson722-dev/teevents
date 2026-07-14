@@ -126,11 +126,11 @@ Deno.serve(async (req) => {
     if (RESEND_API_KEY && existing) {
       const { data: tournament } = await supabaseAdmin
         .from("tournaments")
-        .select("title, slug")
+        .select("title, slug, contact_email")
         .eq("id", (existing as any).tournament_id)
         .single();
+      const tName = (tournament as any)?.title || "the tournament";
       try {
-        const tName = (tournament as any)?.title || "the tournament";
         const html = `
 <!DOCTYPE html><html><body style="font-family:-apple-system,sans-serif;background:#f4f4f5;padding:24px;">
   <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;margin:auto;">
@@ -156,7 +156,40 @@ Deno.serve(async (req) => {
           }),
         });
       } catch (e) {
-        console.error("[verify-vendor-payment] confirmation email failed:", e);
+        console.error("[verify-vendor-payment] vendor confirmation email failed:", e);
+      }
+
+      // Notify organizer + platform admin that a vendor paid.
+      try {
+        const organizerEmail = (tournament as any)?.contact_email;
+        if (organizerEmail) {
+          const orgHtml = `
+<!DOCTYPE html><html><body style="font-family:-apple-system,sans-serif;background:#f4f4f5;padding:24px;">
+  <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;margin:auto;">
+    <tr><td style="background:#1a5c38;padding:24px;text-align:center;color:#fff;">
+      <h2 style="margin:0;">New Vendor Payment</h2>
+    </td></tr>
+    <tr><td style="padding:24px;color:#374151;line-height:1.6;">
+      <p><strong>${(existing as any).vendor_name || (existing as any).contact_name}</strong> just paid their booth fee for <strong>${tName}</strong>.</p>
+      <p><strong>Contact:</strong> ${(existing as any).contact_name} &lt;${(existing as any).contact_email}&gt;</p>
+      ${(existing as any).booth_location ? `<p><strong>Booth:</strong> ${(existing as any).booth_location}</p>` : ""}
+    </td></tr>
+  </table>
+</body></html>`;
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+            body: JSON.stringify({
+              from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+              to: [organizerEmail],
+              bcc: "info@teevents.golf",
+              subject: `New vendor payment — ${tName}`,
+              html: orgHtml,
+            }),
+          });
+        }
+      } catch (e) {
+        console.error("[verify-vendor-payment] organizer notification failed:", e);
       }
     }
 

@@ -47,6 +47,8 @@ export default function PlatformTournaments() {
   const [dateTo, setDateTo] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
+  const [attaching, setAttaching] = useState<string | null>(null);
+
 
   useEffect(() => {
     (async () => {

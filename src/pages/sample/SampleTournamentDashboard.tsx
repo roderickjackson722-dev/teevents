@@ -36,9 +36,10 @@ export default function SampleTournamentDashboard() {
         if (error) throw error;
         if ((data as any)?.error) throw new Error((data as any).error);
 
-        const { access_token, refresh_token } = data as {
+        const { access_token, refresh_token, organization_id } = data as {
           access_token: string;
           refresh_token: string;
+          organization_id: string;
         };
         if (!access_token || !refresh_token) throw new Error("Missing session tokens");
 
@@ -49,7 +50,7 @@ export default function SampleTournamentDashboard() {
         if (setErr) throw setErr;
 
         setSampleModeActive(true);
-        navigate("/dashboard?sample=1", { replace: true });
+        navigate(`/dashboard?sample=1&sample_org=${organization_id}`, { replace: true });
       } catch (e: any) {
         setError(e?.message || "Sample link unavailable");
       }

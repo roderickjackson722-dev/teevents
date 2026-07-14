@@ -62,7 +62,13 @@ export function useOrgContext() {
       if (!memberships || memberships.length === 0) { setLoading(false); return; }
 
       let membership: any = memberships[0];
-      if (memberships.length > 1) {
+
+      // Sample-mode: pin to the org that matches ?sample_org=
+      const sampleOrgId = searchParams.get("sample_org");
+      if (sampleOrgId) {
+        const pinned = memberships.find((m: any) => m.organization_id === sampleOrgId);
+        if (pinned) membership = pinned;
+      } else if (memberships.length > 1) {
         const orgIds = memberships.map((m: any) => m.organization_id);
         const { data: tRows } = await supabase
           .from("tournaments")

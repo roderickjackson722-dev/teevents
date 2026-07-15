@@ -194,7 +194,7 @@ const Players = () => {
       .eq("tournament_id", selectedTournament)
       .order("created_at", { ascending: true })
       .then(({ data }) => {
-        setPlayers((data as Registration[]) || []);
+        setPlayers((data as unknown as Registration[]) || []);
         setLoading(false);
       });
   }, [selectedTournament]);
@@ -815,7 +815,7 @@ const Players = () => {
                   .select("*")
                   .eq("tournament_id", selectedTournament)
                   .order("created_at", { ascending: true })
-                  .then(({ data }) => setPlayers((data as Registration[]) || []));
+                  .then(({ data }) => setPlayers((data as unknown as Registration[]) || []));
               }}
             />
           )}

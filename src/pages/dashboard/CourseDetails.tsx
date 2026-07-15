@@ -669,13 +669,13 @@ export default function CourseDetails() {
               </Table>
             )}
 
-            <Dialog open={teeSetDialogOpen} onOpenChange={setTeeSetDialogOpen}>
+            <Dialog open={teeSetDialogOpen} onOpenChange={(open) => { setTeeSetDialogOpen(open); if (!open) resetTeeSetForm(); }}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm"><Plus className="h-4 w-4 mr-1" /> Add Tee Set</Button>
+                <Button variant="outline" size="sm" onClick={openAddTeeSet}><Plus className="h-4 w-4 mr-1" /> Add Tee Set</Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Add Tee Set</DialogTitle>
+                  <DialogTitle>{editingTeeSetId ? "Edit Tee Set" : "Add Tee Set"}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -685,8 +685,17 @@ export default function CourseDetails() {
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {TEE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                          <SelectItem value="Custom">Custom…</SelectItem>
                         </SelectContent>
                       </Select>
+                      {newTeeName === "Custom" && (
+                        <Input
+                          className="mt-2"
+                          placeholder="Enter custom tee name"
+                          value={customTeeName}
+                          onChange={e => setCustomTeeName(e.target.value)}
+                        />
+                      )}
                     </div>
                     <div>
                       <Label>Par Total</Label>

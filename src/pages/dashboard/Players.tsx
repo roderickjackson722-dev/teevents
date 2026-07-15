@@ -1142,67 +1142,88 @@ const Players = () => {
                     transition={{ delay: i * 0.02 }}
                     className="border-b border-border last:border-0 hover:bg-muted/20"
                   >
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {p.first_name} {p.last_name}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{p.phone || "—"}</td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">
-                      {p.handicap !== null ? p.handicap : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
-                    <td className="px-4 py-3 text-center">
-                      {(p.group_label || p.group_number) ? (
-                        <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                          #{p.group_label || p.group_number}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {editingScoringCode === p.id ? (
-                        <div className="flex items-center gap-1 justify-center">
-                          <Input
-                            value={scoringCodeInput}
-                            onChange={(e) => setScoringCodeInput(e.target.value.toUpperCase())}
-                            className="w-20 h-7 text-xs text-center font-mono uppercase"
-                            maxLength={8}
-                            onKeyDown={(e) => e.key === "Enter" && handleSaveScoringCode(p.id)}
-                          />
-                          <button onClick={() => handleSaveScoringCode(p.id)} className="text-primary hover:text-primary/80">
-                            <Check className="h-3.5 w-3.5" />
+                    {rosterCols.name !== false && (
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        {p.first_name} {p.last_name}
+                      </td>
+                    )}
+                    {rosterCols.email !== false && (
+                      <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
+                    )}
+                    {rosterCols.phone !== false && (
+                      <td className="px-4 py-3 text-muted-foreground">{p.phone || "—"}</td>
+                    )}
+                    {rosterCols.hcp !== false && (
+                      <td className="px-4 py-3 text-center text-muted-foreground">
+                        {p.handicap !== null ? p.handicap : "—"}
+                      </td>
+                    )}
+                    {rosterCols.shirt !== false && (
+                      <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
+                    )}
+                    {rosterCols.hole !== false && (
+                      <td className="px-4 py-3 text-center">
+                        {(p.group_label || p.group_number) ? (
+                          <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
+                            #{p.group_label || p.group_number}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
+                    )}
+                    {rosterCols.code !== false && (
+                      <td className="px-4 py-3 text-center">
+                        {editingScoringCode === p.id ? (
+                          <div className="flex items-center gap-1 justify-center">
+                            <Input
+                              value={scoringCodeInput}
+                              onChange={(e) => setScoringCodeInput(e.target.value.toUpperCase())}
+                              className="w-20 h-7 text-xs text-center font-mono uppercase"
+                              maxLength={8}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveScoringCode(p.id)}
+                            />
+                            <button onClick={() => handleSaveScoringCode(p.id)} className="text-primary hover:text-primary/80">
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={() => setEditingScoringCode(null)} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
+                            className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                            title="Click to edit scoring code"
+                          >
+                            {p.scoring_code || "—"}
+                            <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
                           </button>
-                          <button onClick={() => setEditingScoringCode(null)} className="text-muted-foreground hover:text-foreground">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
+                        )}
+                      </td>
+                    )}
+                    {rosterCols.payment !== false && (
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
+                            {p.payment_status}
+                          </span>
+                          {(p as any).payment_method && (p as any).payment_method !== "online" && (
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
+                          )}
+                          {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
+                            <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
+                              Mark Received
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
-                          className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-                          title="Click to edit scoring code"
-                        >
-                          {p.scoring_code || "—"}
-                          <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
-                          {p.payment_status}
-                        </span>
-                        {(p as any).payment_method && (p as any).payment_method !== "online" && (
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
-                        )}
-                        {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
-                          <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
-                            Mark Received
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                      </td>
+                    )}
+                    {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
+                      <td key={f.id} className="px-4 py-3 text-muted-foreground max-w-[220px] break-words">
+                        {getCustomAnswer(p, f.id) || "—"}
+                      </td>
+                    ))}
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button

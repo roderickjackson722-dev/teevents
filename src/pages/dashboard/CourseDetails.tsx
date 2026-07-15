@@ -260,33 +260,82 @@ export default function CourseDetails() {
     },
   });
 
-  const addTeeSetMutation = useMutation({
+  const resetTeeSetForm = () => {
+    setEditingTeeSetId(null);
+    setNewTeeName("White");
+    setCustomTeeName("");
+    setNewTeePar("72");
+    setNewTeeCR("72.0");
+    setNewTeeSR("113");
+    setNewTeeHoles(DEFAULT_HOLES);
+  };
+
+  const openEditTeeSet = (ts: any) => {
+    setEditingTeeSetId(ts.id);
+    if (TEE_OPTIONS.includes(ts.tee_name)) {
+      setNewTeeName(ts.tee_name);
+      setCustomTeeName("");
+    } else {
+      setNewTeeName("Custom");
+      setCustomTeeName(ts.tee_name || "");
+    }
+    setNewTeePar(String(ts.par_total ?? 72));
+    setNewTeeCR(String(ts.course_rating ?? 72.0));
+    setNewTeeSR(String(ts.slope_rating ?? 113));
+    const pars: number[] = ts.hole_pars || [];
+    const sis: number[] = ts.hole_stroke_indexes || [];
+    const dists: number[] = ts.hole_distances || [];
+    setNewTeeHoles(
+      Array.from({ length: 18 }, (_, i) => ({
+        par: String(pars[i] ?? 4),
+        si: sis[i] ? String(sis[i]) : "",
+        distance: dists[i] ? String(dists[i]) : "",
+      }))
+    );
+    setTeeSetDialogOpen(true);
+  };
+
+  const openAddTeeSet = () => {
+    resetTeeSetForm();
+    setTeeSetDialogOpen(true);
+  };
+
+  const saveTeeSetMutation = useMutation({
     mutationFn: async () => {
+      const finalName = newTeeName === "Custom" ? customTeeName.trim() : newTeeName;
+      if (!finalName) throw new Error("Please enter a tee name");
       const holePars = newTeeHoles.map(h => parseInt(h.par) || 4);
       const holeSIs = newTeeHoles.map(h => parseInt(h.si) || 0);
       const holeDists = newTeeHoles.map(h => parseInt(h.distance) || 0);
       const hasDistances = holeDists.some(d => d > 0);
 
-      const { error } = await supabase.from("course_tee_sets").insert({
+      const payload = {
         tournament_id: tournamentId!,
-        tee_name: newTeeName,
+        tee_name: finalName,
         par_total: parseInt(newTeePar) || 72,
         course_rating: parseFloat(newTeeCR) || 72.0,
         slope_rating: parseInt(newTeeSR) || 113,
         hole_pars: holePars,
         hole_stroke_indexes: holeSIs,
         hole_distances: hasDistances ? holeDists : null,
-      });
-      if (error) throw error;
+      };
+
+      if (editingTeeSetId) {
+        const { error } = await supabase.from("course_tee_sets").update(payload).eq("id", editingTeeSetId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("course_tee_sets").insert(payload);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast({ title: "Tee set added!" });
+      toast({ title: editingTeeSetId ? "Tee set updated!" : "Tee set added!" });
       setTeeSetDialogOpen(false);
-      setNewTeeHoles(DEFAULT_HOLES);
+      resetTeeSetForm();
       queryClient.invalidateQueries({ queryKey: ["course-tee-sets", tournamentId] });
     },
     onError: (e: Error) => {
-      toast({ title: "Error adding tee set", description: e.message, variant: "destructive" });
+      toast({ title: "Error saving tee set", description: e.message, variant: "destructive" });
     },
   });
 

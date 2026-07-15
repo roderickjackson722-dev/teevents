@@ -170,6 +170,48 @@ const Players = () => {
   const [savingEdit, setSavingEdit] = useState(false);
   const [regFeeCents, setRegFeeCents] = useState(0);
   const manualEntry = useManualEntryEnforcement(selectedTournament || null);
+
+  // Registration field definitions for this tournament (used to expose custom answers as roster columns)
+  const [regFieldDefs, setRegFieldDefs] = useState<RegFieldDef[]>([]);
+
+  // Roster column visibility (base + custom_<fieldId>) + sort state — persisted per tournament
+  const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
+  const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
+  const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
+    name: true, email: true, phone: true, hcp: true, shirt: true, hole: true, code: true, payment: true,
+  });
+  const [sortKey, setSortKey] = useState<string>("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  useEffect(() => {
+    if (!rosterColsKey) return;
+    try {
+      const raw = localStorage.getItem(rosterColsKey);
+      if (raw) setRosterCols((prev) => ({ ...prev, ...JSON.parse(raw) }));
+    } catch { /* noop */ }
+    try {
+      const raw = localStorage.getItem(rosterSortKey);
+      if (raw) { const p = JSON.parse(raw); if (p?.key) { setSortKey(p.key); setSortDir(p.dir === "desc" ? "desc" : "asc"); } }
+    } catch { /* noop */ }
+  }, [rosterColsKey, rosterSortKey]);
+  const toggleRosterCol = (key: string) => {
+    setRosterCols((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { if (rosterColsKey) localStorage.setItem(rosterColsKey, JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
+  const changeSort = (key: string) => {
+    setSortKey((prevKey) => {
+      const nextKey = key;
+      setSortDir((prevDir) => {
+        const nextDir: "asc" | "desc" = prevKey === key ? (prevDir === "asc" ? "desc" : "asc") : "asc";
+        try { if (rosterSortKey) localStorage.setItem(rosterSortKey, JSON.stringify({ key: nextKey, dir: nextDir })); } catch { /* noop */ }
+        return nextDir;
+      });
+      return nextKey;
+    });
+  };
+
   useEffect(() => {
     if (!org) return;
     (supabase as any)
@@ -188,15 +230,14 @@ const Players = () => {
   useEffect(() => {
     if (!selectedTournament) return;
     setLoading(true);
-    supabase
-      .from("tournament_registrations")
-      .select("*")
-      .eq("tournament_id", selectedTournament)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        setPlayers((data as unknown as Registration[]) || []);
-        setLoading(false);
-      });
+    Promise.all([
+      supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
+      supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
+    ]).then(([regsRes, fieldsRes]) => {
+      setPlayers((regsRes.data as unknown as Registration[]) || []);
+      setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
+      setLoading(false);
+    });
   }, [selectedTournament]);
 
   useEffect(() => {
@@ -204,14 +245,55 @@ const Players = () => {
     setRegFeeCents(Number(t?.registration_fee_cents || 0));
   }, [selectedTournament, tournaments]);
 
-  const filteredPlayers = players.filter((p) => {
-    const q = search.toLowerCase();
-    return (
-      p.first_name.toLowerCase().includes(q) ||
-      p.last_name.toLowerCase().includes(q) ||
-      p.email.toLowerCase().includes(q)
-    );
-  });
+  // Custom field columns exposed in the roster (organizer-added registration questions)
+  const customFieldCols = regFieldDefs
+    .filter((f) => !f.is_default && f.is_enabled)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  const getCustomAnswer = (p: Registration, fieldId: string): string => {
+    const match = (p.custom_answers || []).find((a) => a.field_id === fieldId);
+    const v = match?.answer;
+    if (v === null || v === undefined || v === "") return "";
+    if (typeof v === "boolean") return v ? "Yes" : "No";
+    if (Array.isArray(v)) return v.join(", ");
+    return String(v);
+  };
+
+  const getSortValue = (p: Registration, key: string): string | number => {
+    switch (key) {
+      case "name": return `${p.first_name} ${p.last_name}`.toLowerCase();
+      case "email": return (p.email || "").toLowerCase();
+      case "phone": return (p.phone || "").toLowerCase();
+      case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
+      case "shirt": return (p.shirt_size || "").toLowerCase();
+      case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
+      case "code": return (p.scoring_code || "").toLowerCase();
+      case "payment": return (p.payment_status || "").toLowerCase();
+      default:
+        if (key.startsWith("custom_")) return getCustomAnswer(p, key.slice("custom_".length)).toLowerCase();
+        return "";
+    }
+  };
+
+  const filteredPlayers = players
+    .filter((p) => {
+      const q = search.toLowerCase();
+      if (!q) return true;
+      return (
+        p.first_name.toLowerCase().includes(q) ||
+        p.last_name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const av = getSortValue(a, sortKey);
+      const bv = getSortValue(b, sortKey);
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
+    });
+
+
 
   const handleDeletePlayer = async (id: string) => {
     if (demoGuard()) return;

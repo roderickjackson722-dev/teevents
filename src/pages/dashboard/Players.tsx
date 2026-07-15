@@ -1097,19 +1097,41 @@ const Players = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left font-semibold px-4 py-3">Name</th>
-                  <th className="text-left font-semibold px-4 py-3">Email</th>
-                  <th className="text-left font-semibold px-4 py-3">Phone</th>
-                  <th className="text-center font-semibold px-4 py-3">HCP</th>
-                  <th className="text-center font-semibold px-4 py-3">Shirt</th>
-                  <th className="text-center font-semibold px-4 py-3">Hole</th>
-                  <th className="text-center font-semibold px-4 py-3">
-                    <span className="flex items-center justify-center gap-1"><QrCode className="h-3.5 w-3.5" /> Code</span>
-                  </th>
-                  <th className="text-center font-semibold px-4 py-3">Payment</th>
-                  <th className="text-center font-semibold px-4 py-3 w-12"></th>
-                </tr>
+                {(() => {
+                  const SortableTh = ({ colKey, align = "left", children }: { colKey: string; align?: "left" | "center"; children: React.ReactNode }) => (
+                    <th
+                      className={`${align === "center" ? "text-center" : "text-left"} font-semibold px-4 py-3 cursor-pointer select-none`}
+                      onClick={() => changeSort(colKey)}
+                    >
+                      <span className={`inline-flex items-center gap-1 ${align === "center" ? "justify-center" : ""}`}>
+                        {children}
+                        {sortKey === colKey
+                          ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)
+                          : <span className="h-3 w-3 opacity-30">⇅</span>}
+                      </span>
+                    </th>
+                  );
+                  return (
+                    <tr className="border-b border-border bg-muted/30">
+                      {rosterCols.name !== false && <SortableTh colKey="name">Name</SortableTh>}
+                      {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
+                      {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
+                      {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
+                      {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
+                      {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
+                      {rosterCols.code !== false && (
+                        <SortableTh colKey="code" align="center">
+                          <QrCode className="h-3.5 w-3.5" /> Code
+                        </SortableTh>
+                      )}
+                      {rosterCols.payment !== false && <SortableTh colKey="payment" align="center">Payment</SortableTh>}
+                      {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
+                        <SortableTh key={f.id} colKey={`custom_${f.id}`}>{f.label}</SortableTh>
+                      ))}
+                      <th className="text-center font-semibold px-4 py-3 w-12"></th>
+                    </tr>
+                  );
+                })()}
               </thead>
               <tbody>
                 {filteredPlayers.map((p, i) => (

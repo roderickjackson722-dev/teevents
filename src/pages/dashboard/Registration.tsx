@@ -1606,6 +1606,17 @@ const Registration = () => {
             </motion.div>
           </TabsContent>
 
+          {/* ── Submissions Tab ── */}
+          <TabsContent value="submissions">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+              {selectedTournament ? (
+                <RegistrationSubmissions tournamentId={selectedTournament} fields={fields as any} />
+              ) : (
+                <p className="text-muted-foreground">Select a tournament to view submissions.</p>
+              )}
+            </motion.div>
+          </TabsContent>
+
           {/* ── Refunds Tab ── */}
           <TabsContent value="refunds">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">

@@ -33,6 +33,7 @@ import {
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";
 import FlightsManager from "@/components/dashboard/FlightsManager";
+import RegistrationSubmissions from "@/components/dashboard/RegistrationSubmissions";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
@@ -694,13 +695,14 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-7 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-8 w-full max-w-4xl">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="tiers">Tiers</TabsTrigger>
             <TabsTrigger value="flights">Flights</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
             <TabsTrigger value="addons">Add-ons</TabsTrigger>
             <TabsTrigger value="promos">Promo Codes</TabsTrigger>
+            <TabsTrigger value="submissions">Submissions</TabsTrigger>
             <TabsTrigger value="refunds" className="flex items-center gap-1">
               <RotateCcw className="h-3.5 w-3.5" />
               Refunds
@@ -1601,6 +1603,17 @@ const Registration = () => {
                   <Plus className="h-4 w-4 mr-1" /> Create Code
                 </Button>
               </div>
+            </motion.div>
+          </TabsContent>
+
+          {/* ── Submissions Tab ── */}
+          <TabsContent value="submissions">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+              {selectedTournament ? (
+                <RegistrationSubmissions tournamentId={selectedTournament} fields={fields as any} />
+              ) : (
+                <p className="text-muted-foreground">Select a tournament to view submissions.</p>
+              )}
             </motion.div>
           </TabsContent>
 

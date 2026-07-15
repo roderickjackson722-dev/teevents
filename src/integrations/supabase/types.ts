@@ -6853,6 +6853,7 @@ export type Database = {
           course_handicap: number | null
           covered_fees: boolean
           created_at: string
+          custom_answers: Json
           dietary_restrictions: string | null
           donation_amount_cents: number
           email: string
@@ -6890,6 +6891,7 @@ export type Database = {
           course_handicap?: number | null
           covered_fees?: boolean
           created_at?: string
+          custom_answers?: Json
           dietary_restrictions?: string | null
           donation_amount_cents?: number
           email: string
@@ -6927,6 +6929,7 @@ export type Database = {
           course_handicap?: number | null
           covered_fees?: boolean
           created_at?: string
+          custom_answers?: Json
           dietary_restrictions?: string | null
           donation_amount_cents?: number
           email?: string

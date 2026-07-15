@@ -504,6 +504,18 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     setSubmitting(true);
 
+    // Build a labelled custom_answers array from any organizer-added registration fields
+    const buildCustomAnswers = (playerIdx: number) => {
+      const customFieldDefs = (fields || []).filter((f) => !f.is_default && f.is_enabled);
+      const raw = players[playerIdx] as any;
+      return customFieldDefs.map((cf) => ({
+        field_id: cf.id,
+        label: cf.label,
+        field_type: cf.field_type,
+        answer: raw[`custom_${cf.id}`] ?? "",
+      }));
+    };
+
     if (hasFee) {
       try {
         const playerData = allowGroup
@@ -516,6 +528,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               shirt_size: players[i].shirt_size || null,
               dietary_restrictions: players[i].dietary_restrictions || null,
               notes: i === 0 ? groupNotes || null : null,
+              custom_answers: buildCustomAnswers(i),
             }))
           : null;
 
@@ -528,6 +541,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           shirt_size: players[0].shirt_size || null,
           dietary_restrictions: players[0].dietary_restrictions || null,
           notes: groupNotes || players[0].notes || null,
+          custom_answers: buildCustomAnswers(0),
         } : null;
 
         const addonSelections = Object.entries(addonQty)
@@ -594,6 +608,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         flight_id: selectedFlight,
         // Attach the donation to the first (captain) registration row only
         donation_amount_cents: i === 0 ? donationCents : 0,
+        custom_answers: buildCustomAnswers(i),
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);

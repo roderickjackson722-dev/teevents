@@ -77,6 +77,7 @@ interface Registration {
   created_at: string;
   scoring_code: string | null;
   tier_id: string | null;
+  custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null;
 }
 
 interface Tournament {
@@ -85,6 +86,28 @@ interface Tournament {
   max_players: number | null;
   allow_cash_registration?: boolean | null;
 }
+
+interface RegFieldDef {
+  id: string;
+  label: string;
+  field_type: string;
+  is_default: boolean;
+  is_enabled: boolean;
+  sort_order: number;
+}
+
+// Base column keys shown in the roster
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "code" | "payment";
+const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
+  { key: "name", label: "Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "hcp", label: "Handicap" },
+  { key: "shirt", label: "Shirt" },
+  { key: "hole", label: "Hole" },
+  { key: "code", label: "Scoring Code" },
+  { key: "payment", label: "Payment" },
+];
 
 const Players = () => {
   const { org } = useOrgContext();
@@ -147,6 +170,48 @@ const Players = () => {
   const [savingEdit, setSavingEdit] = useState(false);
   const [regFeeCents, setRegFeeCents] = useState(0);
   const manualEntry = useManualEntryEnforcement(selectedTournament || null);
+
+  // Registration field definitions for this tournament (used to expose custom answers as roster columns)
+  const [regFieldDefs, setRegFieldDefs] = useState<RegFieldDef[]>([]);
+
+  // Roster column visibility (base + custom_<fieldId>) + sort state — persisted per tournament
+  const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
+  const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
+  const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
+    name: true, email: true, phone: true, hcp: true, shirt: true, hole: true, code: true, payment: true,
+  });
+  const [sortKey, setSortKey] = useState<string>("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  useEffect(() => {
+    if (!rosterColsKey) return;
+    try {
+      const raw = localStorage.getItem(rosterColsKey);
+      if (raw) setRosterCols((prev) => ({ ...prev, ...JSON.parse(raw) }));
+    } catch { /* noop */ }
+    try {
+      const raw = localStorage.getItem(rosterSortKey);
+      if (raw) { const p = JSON.parse(raw); if (p?.key) { setSortKey(p.key); setSortDir(p.dir === "desc" ? "desc" : "asc"); } }
+    } catch { /* noop */ }
+  }, [rosterColsKey, rosterSortKey]);
+  const toggleRosterCol = (key: string) => {
+    setRosterCols((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { if (rosterColsKey) localStorage.setItem(rosterColsKey, JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
+  const changeSort = (key: string) => {
+    setSortKey((prevKey) => {
+      const nextKey = key;
+      setSortDir((prevDir) => {
+        const nextDir: "asc" | "desc" = prevKey === key ? (prevDir === "asc" ? "desc" : "asc") : "asc";
+        try { if (rosterSortKey) localStorage.setItem(rosterSortKey, JSON.stringify({ key: nextKey, dir: nextDir })); } catch { /* noop */ }
+        return nextDir;
+      });
+      return nextKey;
+    });
+  };
+
   useEffect(() => {
     if (!org) return;
     (supabase as any)
@@ -165,15 +230,14 @@ const Players = () => {
   useEffect(() => {
     if (!selectedTournament) return;
     setLoading(true);
-    supabase
-      .from("tournament_registrations")
-      .select("*")
-      .eq("tournament_id", selectedTournament)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        setPlayers((data as Registration[]) || []);
-        setLoading(false);
-      });
+    Promise.all([
+      supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
+      supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
+    ]).then(([regsRes, fieldsRes]) => {
+      setPlayers((regsRes.data as unknown as Registration[]) || []);
+      setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
+      setLoading(false);
+    });
   }, [selectedTournament]);
 
   useEffect(() => {
@@ -181,14 +245,55 @@ const Players = () => {
     setRegFeeCents(Number(t?.registration_fee_cents || 0));
   }, [selectedTournament, tournaments]);
 
-  const filteredPlayers = players.filter((p) => {
-    const q = search.toLowerCase();
-    return (
-      p.first_name.toLowerCase().includes(q) ||
-      p.last_name.toLowerCase().includes(q) ||
-      p.email.toLowerCase().includes(q)
-    );
-  });
+  // Custom field columns exposed in the roster (organizer-added registration questions)
+  const customFieldCols = regFieldDefs
+    .filter((f) => !f.is_default && f.is_enabled)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  const getCustomAnswer = (p: Registration, fieldId: string): string => {
+    const match = (p.custom_answers || []).find((a) => a.field_id === fieldId);
+    const v = match?.answer;
+    if (v === null || v === undefined || v === "") return "";
+    if (typeof v === "boolean") return v ? "Yes" : "No";
+    if (Array.isArray(v)) return v.join(", ");
+    return String(v);
+  };
+
+  const getSortValue = (p: Registration, key: string): string | number => {
+    switch (key) {
+      case "name": return `${p.first_name} ${p.last_name}`.toLowerCase();
+      case "email": return (p.email || "").toLowerCase();
+      case "phone": return (p.phone || "").toLowerCase();
+      case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
+      case "shirt": return (p.shirt_size || "").toLowerCase();
+      case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
+      case "code": return (p.scoring_code || "").toLowerCase();
+      case "payment": return (p.payment_status || "").toLowerCase();
+      default:
+        if (key.startsWith("custom_")) return getCustomAnswer(p, key.slice("custom_".length)).toLowerCase();
+        return "";
+    }
+  };
+
+  const filteredPlayers = players
+    .filter((p) => {
+      const q = search.toLowerCase();
+      if (!q) return true;
+      return (
+        p.first_name.toLowerCase().includes(q) ||
+        p.last_name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const av = getSortValue(a, sortKey);
+      const bv = getSortValue(b, sortKey);
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
+    });
+
+
 
   const handleDeletePlayer = async (id: string) => {
     if (demoGuard()) return;
@@ -325,7 +430,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
-      setPlayers((prev) => [...prev, data as Registration]);
+      setPlayers((prev) => [...prev, data as unknown as Registration]);
       setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
@@ -773,15 +878,60 @@ const Players = () => {
         </div>
         <div className="flex items-center gap-3">
           {view === "roster" && (
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search players..."
-                className="pl-9 w-[200px] bg-card"
-              />
-            </div>
+            <>
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search players..."
+                  className="pl-9 w-[200px] bg-card"
+                />
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Settings2 className="h-4 w-4 mr-1.5" />
+                    Columns
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64">
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">Standard columns</p>
+                  <div className="space-y-2 mb-3">
+                    {BASE_ROSTER_COLS.map((c) => (
+                      <label key={c.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <Checkbox
+                          checked={rosterCols[c.key] !== false}
+                          onCheckedChange={() => toggleRosterCol(c.key)}
+                          disabled={c.key === "name"}
+                        />
+                        {c.label}
+                      </label>
+                    ))}
+                  </div>
+                  {customFieldCols.length > 0 && (
+                    <>
+                      <p className="text-xs font-medium mb-2 text-muted-foreground">Your custom questions</p>
+                      <div className="space-y-2">
+                        {customFieldCols.map((f) => {
+                          const key = `custom_${f.id}`;
+                          return (
+                            <label key={f.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                              <Checkbox
+                                checked={!!rosterCols[key]}
+                                onCheckedChange={() => toggleRosterCol(key)}
+                              />
+                              {f.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-3">Click any column header to sort by it.</p>
+                </PopoverContent>
+              </Popover>
+            </>
           )}
           {selectedTournament && (
             <PlayerImport
@@ -792,7 +942,7 @@ const Players = () => {
                   .select("*")
                   .eq("tournament_id", selectedTournament)
                   .order("created_at", { ascending: true })
-                  .then(({ data }) => setPlayers((data as Registration[]) || []));
+                  .then(({ data }) => setPlayers((data as unknown as Registration[]) || []));
               }}
             />
           )}
@@ -947,19 +1097,41 @@ const Players = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left font-semibold px-4 py-3">Name</th>
-                  <th className="text-left font-semibold px-4 py-3">Email</th>
-                  <th className="text-left font-semibold px-4 py-3">Phone</th>
-                  <th className="text-center font-semibold px-4 py-3">HCP</th>
-                  <th className="text-center font-semibold px-4 py-3">Shirt</th>
-                  <th className="text-center font-semibold px-4 py-3">Hole</th>
-                  <th className="text-center font-semibold px-4 py-3">
-                    <span className="flex items-center justify-center gap-1"><QrCode className="h-3.5 w-3.5" /> Code</span>
-                  </th>
-                  <th className="text-center font-semibold px-4 py-3">Payment</th>
-                  <th className="text-center font-semibold px-4 py-3 w-12"></th>
-                </tr>
+                {(() => {
+                  const SortableTh = ({ colKey, align = "left", children }: { colKey: string; align?: "left" | "center"; children: React.ReactNode }) => (
+                    <th
+                      className={`${align === "center" ? "text-center" : "text-left"} font-semibold px-4 py-3 cursor-pointer select-none`}
+                      onClick={() => changeSort(colKey)}
+                    >
+                      <span className={`inline-flex items-center gap-1 ${align === "center" ? "justify-center" : ""}`}>
+                        {children}
+                        {sortKey === colKey
+                          ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)
+                          : <span className="h-3 w-3 opacity-30">⇅</span>}
+                      </span>
+                    </th>
+                  );
+                  return (
+                    <tr className="border-b border-border bg-muted/30">
+                      {rosterCols.name !== false && <SortableTh colKey="name">Name</SortableTh>}
+                      {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
+                      {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
+                      {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
+                      {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
+                      {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
+                      {rosterCols.code !== false && (
+                        <SortableTh colKey="code" align="center">
+                          <QrCode className="h-3.5 w-3.5" /> Code
+                        </SortableTh>
+                      )}
+                      {rosterCols.payment !== false && <SortableTh colKey="payment" align="center">Payment</SortableTh>}
+                      {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
+                        <SortableTh key={f.id} colKey={`custom_${f.id}`}>{f.label}</SortableTh>
+                      ))}
+                      <th className="text-center font-semibold px-4 py-3 w-12"></th>
+                    </tr>
+                  );
+                })()}
               </thead>
               <tbody>
                 {filteredPlayers.map((p, i) => (
@@ -970,67 +1142,88 @@ const Players = () => {
                     transition={{ delay: i * 0.02 }}
                     className="border-b border-border last:border-0 hover:bg-muted/20"
                   >
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {p.first_name} {p.last_name}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{p.phone || "—"}</td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">
-                      {p.handicap !== null ? p.handicap : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
-                    <td className="px-4 py-3 text-center">
-                      {(p.group_label || p.group_number) ? (
-                        <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                          #{p.group_label || p.group_number}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {editingScoringCode === p.id ? (
-                        <div className="flex items-center gap-1 justify-center">
-                          <Input
-                            value={scoringCodeInput}
-                            onChange={(e) => setScoringCodeInput(e.target.value.toUpperCase())}
-                            className="w-20 h-7 text-xs text-center font-mono uppercase"
-                            maxLength={8}
-                            onKeyDown={(e) => e.key === "Enter" && handleSaveScoringCode(p.id)}
-                          />
-                          <button onClick={() => handleSaveScoringCode(p.id)} className="text-primary hover:text-primary/80">
-                            <Check className="h-3.5 w-3.5" />
+                    {rosterCols.name !== false && (
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        {p.first_name} {p.last_name}
+                      </td>
+                    )}
+                    {rosterCols.email !== false && (
+                      <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
+                    )}
+                    {rosterCols.phone !== false && (
+                      <td className="px-4 py-3 text-muted-foreground">{p.phone || "—"}</td>
+                    )}
+                    {rosterCols.hcp !== false && (
+                      <td className="px-4 py-3 text-center text-muted-foreground">
+                        {p.handicap !== null ? p.handicap : "—"}
+                      </td>
+                    )}
+                    {rosterCols.shirt !== false && (
+                      <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
+                    )}
+                    {rosterCols.hole !== false && (
+                      <td className="px-4 py-3 text-center">
+                        {(p.group_label || p.group_number) ? (
+                          <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
+                            #{p.group_label || p.group_number}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
+                    )}
+                    {rosterCols.code !== false && (
+                      <td className="px-4 py-3 text-center">
+                        {editingScoringCode === p.id ? (
+                          <div className="flex items-center gap-1 justify-center">
+                            <Input
+                              value={scoringCodeInput}
+                              onChange={(e) => setScoringCodeInput(e.target.value.toUpperCase())}
+                              className="w-20 h-7 text-xs text-center font-mono uppercase"
+                              maxLength={8}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveScoringCode(p.id)}
+                            />
+                            <button onClick={() => handleSaveScoringCode(p.id)} className="text-primary hover:text-primary/80">
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={() => setEditingScoringCode(null)} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
+                            className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                            title="Click to edit scoring code"
+                          >
+                            {p.scoring_code || "—"}
+                            <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
                           </button>
-                          <button onClick={() => setEditingScoringCode(null)} className="text-muted-foreground hover:text-foreground">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
+                        )}
+                      </td>
+                    )}
+                    {rosterCols.payment !== false && (
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
+                            {p.payment_status}
+                          </span>
+                          {(p as any).payment_method && (p as any).payment_method !== "online" && (
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
+                          )}
+                          {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
+                            <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
+                              Mark Received
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
-                          className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-                          title="Click to edit scoring code"
-                        >
-                          {p.scoring_code || "—"}
-                          <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
-                          {p.payment_status}
-                        </span>
-                        {(p as any).payment_method && (p as any).payment_method !== "online" && (
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
-                        )}
-                        {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
-                          <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
-                            Mark Received
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                      </td>
+                    )}
+                    {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
+                      <td key={f.id} className="px-4 py-3 text-muted-foreground max-w-[220px] break-words">
+                        {getCustomAnswer(p, f.id) || "—"}
+                      </td>
+                    ))}
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button

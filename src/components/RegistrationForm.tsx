@@ -608,6 +608,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         flight_id: selectedFlight,
         // Attach the donation to the first (captain) registration row only
         donation_amount_cents: i === 0 ? donationCents : 0,
+        custom_answers: buildCustomAnswers(i),
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);

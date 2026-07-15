@@ -878,15 +878,60 @@ const Players = () => {
         </div>
         <div className="flex items-center gap-3">
           {view === "roster" && (
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search players..."
-                className="pl-9 w-[200px] bg-card"
-              />
-            </div>
+            <>
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search players..."
+                  className="pl-9 w-[200px] bg-card"
+                />
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Settings2 className="h-4 w-4 mr-1.5" />
+                    Columns
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64">
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">Standard columns</p>
+                  <div className="space-y-2 mb-3">
+                    {BASE_ROSTER_COLS.map((c) => (
+                      <label key={c.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <Checkbox
+                          checked={rosterCols[c.key] !== false}
+                          onCheckedChange={() => toggleRosterCol(c.key)}
+                          disabled={c.key === "name"}
+                        />
+                        {c.label}
+                      </label>
+                    ))}
+                  </div>
+                  {customFieldCols.length > 0 && (
+                    <>
+                      <p className="text-xs font-medium mb-2 text-muted-foreground">Your custom questions</p>
+                      <div className="space-y-2">
+                        {customFieldCols.map((f) => {
+                          const key = `custom_${f.id}`;
+                          return (
+                            <label key={f.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                              <Checkbox
+                                checked={!!rosterCols[key]}
+                                onCheckedChange={() => toggleRosterCol(key)}
+                              />
+                              {f.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-3">Click any column header to sort by it.</p>
+                </PopoverContent>
+              </Popover>
+            </>
           )}
           {selectedTournament && (
             <PlayerImport

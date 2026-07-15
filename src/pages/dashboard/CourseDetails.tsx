@@ -739,9 +739,9 @@ export default function CourseDetails() {
                       }} className="h-8 text-center" placeholder="-" />
                     </div>
                   ))}
-                  <Button onClick={() => addTeeSetMutation.mutate()} disabled={addTeeSetMutation.isPending} className="w-full">
-                    {addTeeSetMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
-                    Save Tee Set
+                  <Button onClick={() => saveTeeSetMutation.mutate()} disabled={saveTeeSetMutation.isPending} className="w-full">
+                    {saveTeeSetMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+                    {editingTeeSetId ? "Update Tee Set" : "Save Tee Set"}
                   </Button>
                 </div>
               </DialogContent>

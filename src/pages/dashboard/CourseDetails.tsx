@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2, Trophy } from "lucide-react";
+import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2, Trophy, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import { useOrgContext } from "@/hooks/useOrgContext";

@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
           shirt_size: body.shirt_size,
           dietary_restrictions: body.dietary_restrictions,
           notes: body.notes,
+          custom_answers: body.custom_answers,
         }];
 
     const tournament_id = body.tournament_id;

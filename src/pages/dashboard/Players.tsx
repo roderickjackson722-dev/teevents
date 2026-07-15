@@ -430,7 +430,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
-      setPlayers((prev) => [...prev, data as Registration]);
+      setPlayers((prev) => [...prev, data as unknown as Registration]);
       setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });

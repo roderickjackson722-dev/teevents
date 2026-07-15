@@ -106,10 +106,12 @@ export default function CourseDetails() {
 
   // Tee set form
   const [newTeeName, setNewTeeName] = useState("White");
+  const [customTeeName, setCustomTeeName] = useState("");
   const [newTeePar, setNewTeePar] = useState("72");
   const [newTeeCR, setNewTeeCR] = useState("72.0");
   const [newTeeSR, setNewTeeSR] = useState("113");
   const [newTeeHoles, setNewTeeHoles] = useState<HoleData[]>(DEFAULT_HOLES);
+  const [editingTeeSetId, setEditingTeeSetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (course) {

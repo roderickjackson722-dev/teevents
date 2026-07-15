@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2, Trophy } from "lucide-react";
+import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2, Trophy, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -106,10 +106,12 @@ export default function CourseDetails() {
 
   // Tee set form
   const [newTeeName, setNewTeeName] = useState("White");
+  const [customTeeName, setCustomTeeName] = useState("");
   const [newTeePar, setNewTeePar] = useState("72");
   const [newTeeCR, setNewTeeCR] = useState("72.0");
   const [newTeeSR, setNewTeeSR] = useState("113");
   const [newTeeHoles, setNewTeeHoles] = useState<HoleData[]>(DEFAULT_HOLES);
+  const [editingTeeSetId, setEditingTeeSetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (course) {
@@ -258,33 +260,82 @@ export default function CourseDetails() {
     },
   });
 
-  const addTeeSetMutation = useMutation({
+  const resetTeeSetForm = () => {
+    setEditingTeeSetId(null);
+    setNewTeeName("White");
+    setCustomTeeName("");
+    setNewTeePar("72");
+    setNewTeeCR("72.0");
+    setNewTeeSR("113");
+    setNewTeeHoles(DEFAULT_HOLES);
+  };
+
+  const openEditTeeSet = (ts: any) => {
+    setEditingTeeSetId(ts.id);
+    if (TEE_OPTIONS.includes(ts.tee_name)) {
+      setNewTeeName(ts.tee_name);
+      setCustomTeeName("");
+    } else {
+      setNewTeeName("Custom");
+      setCustomTeeName(ts.tee_name || "");
+    }
+    setNewTeePar(String(ts.par_total ?? 72));
+    setNewTeeCR(String(ts.course_rating ?? 72.0));
+    setNewTeeSR(String(ts.slope_rating ?? 113));
+    const pars: number[] = ts.hole_pars || [];
+    const sis: number[] = ts.hole_stroke_indexes || [];
+    const dists: number[] = ts.hole_distances || [];
+    setNewTeeHoles(
+      Array.from({ length: 18 }, (_, i) => ({
+        par: String(pars[i] ?? 4),
+        si: sis[i] ? String(sis[i]) : "",
+        distance: dists[i] ? String(dists[i]) : "",
+      }))
+    );
+    setTeeSetDialogOpen(true);
+  };
+
+  const openAddTeeSet = () => {
+    resetTeeSetForm();
+    setTeeSetDialogOpen(true);
+  };
+
+  const saveTeeSetMutation = useMutation({
     mutationFn: async () => {
+      const finalName = newTeeName === "Custom" ? customTeeName.trim() : newTeeName;
+      if (!finalName) throw new Error("Please enter a tee name");
       const holePars = newTeeHoles.map(h => parseInt(h.par) || 4);
       const holeSIs = newTeeHoles.map(h => parseInt(h.si) || 0);
       const holeDists = newTeeHoles.map(h => parseInt(h.distance) || 0);
       const hasDistances = holeDists.some(d => d > 0);
 
-      const { error } = await supabase.from("course_tee_sets").insert({
+      const payload = {
         tournament_id: tournamentId!,
-        tee_name: newTeeName,
+        tee_name: finalName,
         par_total: parseInt(newTeePar) || 72,
         course_rating: parseFloat(newTeeCR) || 72.0,
         slope_rating: parseInt(newTeeSR) || 113,
         hole_pars: holePars,
         hole_stroke_indexes: holeSIs,
         hole_distances: hasDistances ? holeDists : null,
-      });
-      if (error) throw error;
+      };
+
+      if (editingTeeSetId) {
+        const { error } = await supabase.from("course_tee_sets").update(payload).eq("id", editingTeeSetId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("course_tee_sets").insert(payload);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast({ title: "Tee set added!" });
+      toast({ title: editingTeeSetId ? "Tee set updated!" : "Tee set added!" });
       setTeeSetDialogOpen(false);
-      setNewTeeHoles(DEFAULT_HOLES);
+      resetTeeSetForm();
       queryClient.invalidateQueries({ queryKey: ["course-tee-sets", tournamentId] });
     },
     onError: (e: Error) => {
-      toast({ title: "Error adding tee set", description: e.message, variant: "destructive" });
+      toast({ title: "Error saving tee set", description: e.message, variant: "destructive" });
     },
   });
 
@@ -604,8 +655,11 @@ export default function CourseDetails() {
                       <TableCell className="text-center">
                         {ts.is_default && <Star className="h-4 w-4 text-yellow-500 mx-auto" />}
                       </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => deleteTeeSetMutation.mutate(ts.id)}>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => openEditTeeSet(ts)} aria-label="Edit tee set">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteTeeSetMutation.mutate(ts.id)} aria-label="Delete tee set">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
@@ -615,13 +669,13 @@ export default function CourseDetails() {
               </Table>
             )}
 
-            <Dialog open={teeSetDialogOpen} onOpenChange={setTeeSetDialogOpen}>
+            <Dialog open={teeSetDialogOpen} onOpenChange={(open) => { setTeeSetDialogOpen(open); if (!open) resetTeeSetForm(); }}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm"><Plus className="h-4 w-4 mr-1" /> Add Tee Set</Button>
+                <Button variant="outline" size="sm" onClick={openAddTeeSet}><Plus className="h-4 w-4 mr-1" /> Add Tee Set</Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Add Tee Set</DialogTitle>
+                  <DialogTitle>{editingTeeSetId ? "Edit Tee Set" : "Add Tee Set"}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -631,8 +685,17 @@ export default function CourseDetails() {
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {TEE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                          <SelectItem value="Custom">Custom…</SelectItem>
                         </SelectContent>
                       </Select>
+                      {newTeeName === "Custom" && (
+                        <Input
+                          className="mt-2"
+                          placeholder="Enter custom tee name"
+                          value={customTeeName}
+                          onChange={e => setCustomTeeName(e.target.value)}
+                        />
+                      )}
                     </div>
                     <div>
                       <Label>Par Total</Label>
@@ -676,9 +739,9 @@ export default function CourseDetails() {
                       }} className="h-8 text-center" placeholder="-" />
                     </div>
                   ))}
-                  <Button onClick={() => addTeeSetMutation.mutate()} disabled={addTeeSetMutation.isPending} className="w-full">
-                    {addTeeSetMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
-                    Save Tee Set
+                  <Button onClick={() => saveTeeSetMutation.mutate()} disabled={saveTeeSetMutation.isPending} className="w-full">
+                    {saveTeeSetMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+                    {editingTeeSetId ? "Update Tee Set" : "Save Tee Set"}
                   </Button>
                 </div>
               </DialogContent>

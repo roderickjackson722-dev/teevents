@@ -655,8 +655,11 @@ export default function CourseDetails() {
                       <TableCell className="text-center">
                         {ts.is_default && <Star className="h-4 w-4 text-yellow-500 mx-auto" />}
                       </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => deleteTeeSetMutation.mutate(ts.id)}>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => openEditTeeSet(ts)} aria-label="Edit tee set">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteTeeSetMutation.mutate(ts.id)} aria-label="Delete tee set">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>

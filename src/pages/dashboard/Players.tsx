@@ -77,6 +77,7 @@ interface Registration {
   created_at: string;
   scoring_code: string | null;
   tier_id: string | null;
+  custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null;
 }
 
 interface Tournament {
@@ -85,6 +86,28 @@ interface Tournament {
   max_players: number | null;
   allow_cash_registration?: boolean | null;
 }
+
+interface RegFieldDef {
+  id: string;
+  label: string;
+  field_type: string;
+  is_default: boolean;
+  is_enabled: boolean;
+  sort_order: number;
+}
+
+// Base column keys shown in the roster
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "code" | "payment";
+const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
+  { key: "name", label: "Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "hcp", label: "Handicap" },
+  { key: "shirt", label: "Shirt" },
+  { key: "hole", label: "Hole" },
+  { key: "code", label: "Scoring Code" },
+  { key: "payment", label: "Payment" },
+];
 
 const Players = () => {
   const { org } = useOrgContext();

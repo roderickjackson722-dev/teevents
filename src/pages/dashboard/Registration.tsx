@@ -807,6 +807,39 @@ const Registration = () => {
                   </Select>
                 </div>
                 {maxGroupSize > 1 && (
+                  <div className="rounded-md border border-border bg-background p-3 space-y-2">
+                    <Label className="text-sm font-semibold">Group Sizes Shown on Public Form</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Choose which group-size buttons appear to registrants. Leave all checked to show every option, or uncheck any you don't want (for example, show only Individual and Foursome).
+                    </p>
+                    <div className="flex flex-wrap gap-3 pt-1">
+                      {Array.from({ length: maxGroupSize }, (_, i) => i + 1).map((n) => {
+                        const labels: Record<number, string> = { 1: "Individual", 2: "Twosome", 3: "Threesome", 4: "Foursome" };
+                        const current = allowedGroupSizes ?? Array.from({ length: maxGroupSize }, (_, i) => i + 1);
+                        const checked = current.includes(n);
+                        return (
+                          <label key={n} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const base = new Set(current);
+                                if (e.target.checked) base.add(n);
+                                else base.delete(n);
+                                // Always keep at least one selection
+                                const next = Array.from(base).sort((a, b) => a - b);
+                                setAllowedGroupSizes(next.length > 0 ? next : [n]);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span>{labels[n] || `${n} Players`}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {maxGroupSize > 1 && (
                   <div className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-md p-2">
                     <strong className="text-foreground">Tip:</strong> To control which fields
                     (Phone, Handicap, Shirt Size, Company, etc.) are required for <em>each</em> teammate,

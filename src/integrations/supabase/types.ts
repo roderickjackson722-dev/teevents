@@ -2674,6 +2674,68 @@ export type Database = {
           },
         ]
       }
+      golf_leagues: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          is_public: boolean
+          league_name: string
+          league_slug: string
+          logo_url: string | null
+          organization_id: string
+          season_year: number | null
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          league_name: string
+          league_slug: string
+          logo_url?: string | null
+          organization_id: string
+          season_year?: number | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          league_name?: string
+          league_slug?: string
+          logo_url?: string | null
+          organization_id?: string
+          season_year?: number | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "golf_leagues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       golf_trips: {
         Row: {
           created_at: string
@@ -2795,6 +2857,443 @@ export type Database = {
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_event_registrations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          member_id: string
+          paid_at: string | null
+          pairing_group: number | null
+          pairing_position: number | null
+          registration_fee_paid: boolean
+          team_name: string | null
+          tee_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          member_id: string
+          paid_at?: string | null
+          pairing_group?: number | null
+          pairing_position?: number | null
+          registration_fee_paid?: boolean
+          team_name?: string | null
+          tee_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          member_id?: string
+          paid_at?: string | null
+          pairing_group?: number | null
+          pairing_position?: number | null
+          registration_fee_paid?: boolean
+          team_name?: string | null
+          tee_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_event_registrations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_event_scores: {
+        Row: {
+          entered_at: string
+          entered_by: string | null
+          event_id: string
+          gross_score: number | null
+          hole_number: number
+          id: string
+          member_id: string
+          net_score: number | null
+          points_earned: number
+        }
+        Insert: {
+          entered_at?: string
+          entered_by?: string | null
+          event_id: string
+          gross_score?: number | null
+          hole_number: number
+          id?: string
+          member_id: string
+          net_score?: number | null
+          points_earned?: number
+        }
+        Update: {
+          entered_at?: string
+          entered_by?: string | null
+          event_id?: string
+          gross_score?: number | null
+          hole_number?: number
+          id?: string
+          member_id?: string
+          net_score?: number | null
+          points_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_event_scores_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_event_scores_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_events: {
+        Row: {
+          course_id: string | null
+          course_name: string | null
+          created_at: string
+          event_date: string
+          event_name: string
+          format_type: string
+          id: string
+          is_completed: boolean
+          league_id: string
+          max_players: number | null
+          registration_deadline: string | null
+          registration_fee_cents: number
+          season_id: string | null
+          start_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          course_id?: string | null
+          course_name?: string | null
+          created_at?: string
+          event_date: string
+          event_name: string
+          format_type?: string
+          id?: string
+          is_completed?: boolean
+          league_id: string
+          max_players?: number | null
+          registration_deadline?: string | null
+          registration_fee_cents?: number
+          season_id?: string | null
+          start_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string | null
+          course_name?: string | null
+          created_at?: string
+          event_date?: string
+          event_name?: string
+          format_type?: string
+          id?: string
+          is_completed?: boolean
+          league_id?: string
+          max_players?: number | null
+          registration_deadline?: string | null
+          registration_fee_cents?: number
+          season_id?: string | null
+          start_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_events_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "golf_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_events_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "league_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_members: {
+        Row: {
+          created_at: string
+          email: string
+          handicap_index: number | null
+          id: string
+          join_date: string
+          league_id: string
+          member_name: string
+          membership_fee_cents: number | null
+          membership_fee_paid: boolean
+          membership_status: string
+          notes: string | null
+          phone: string | null
+          scoring_code: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          handicap_index?: number | null
+          id?: string
+          join_date?: string
+          league_id: string
+          member_name: string
+          membership_fee_cents?: number | null
+          membership_fee_paid?: boolean
+          membership_status?: string
+          notes?: string | null
+          phone?: string | null
+          scoring_code?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          handicap_index?: number | null
+          id?: string
+          join_date?: string
+          league_id?: string
+          member_name?: string
+          membership_fee_cents?: number | null
+          membership_fee_paid?: boolean
+          membership_status?: string
+          notes?: string | null
+          phone?: string | null
+          scoring_code?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_point_systems: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          loss_points: number
+          position_points: Json
+          tie_points: number
+          updated_at: string
+          win_points: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          loss_points?: number
+          position_points?: Json
+          tie_points?: number
+          updated_at?: string
+          win_points?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          loss_points?: number
+          position_points?: Json
+          tie_points?: number
+          updated_at?: string
+          win_points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_point_systems_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: true
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_seasons: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          is_current: boolean
+          league_id: string
+          season_name: string
+          start_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_current?: boolean
+          league_id: string
+          season_name: string
+          start_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_current?: boolean
+          league_id?: string
+          season_name?: string
+          start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_seasons_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_skins: {
+        Row: {
+          created_at: string
+          event_id: string
+          hole_number: number
+          id: string
+          is_gross: boolean
+          skin_amount_cents: number | null
+          winner_member_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          hole_number: number
+          id?: string
+          is_gross?: boolean
+          skin_amount_cents?: number | null
+          winner_member_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          hole_number?: number
+          id?: string
+          is_gross?: boolean
+          skin_amount_cents?: number | null
+          winner_member_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_skins_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_skins_winner_member_id_fkey"
+            columns: ["winner_member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_standings: {
+        Row: {
+          handicap_differential: number | null
+          id: string
+          league_id: string
+          losses: number
+          matches_played: number
+          member_id: string
+          points: number
+          season_id: string | null
+          ties: number
+          total_gross: number
+          total_net: number
+          updated_at: string
+          wins: number
+        }
+        Insert: {
+          handicap_differential?: number | null
+          id?: string
+          league_id: string
+          losses?: number
+          matches_played?: number
+          member_id: string
+          points?: number
+          season_id?: string | null
+          ties?: number
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+          wins?: number
+        }
+        Update: {
+          handicap_differential?: number | null
+          id?: string
+          league_id?: string
+          losses?: number
+          matches_played?: number
+          member_id?: string
+          points?: number
+          season_id?: string | null
+          ties?: number
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_standings_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_standings_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_standings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "league_seasons"
             referencedColumns: ["id"]
           },
         ]

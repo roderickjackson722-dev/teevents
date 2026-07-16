@@ -36,10 +36,25 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, site_published")
+      .select("id, title, slug, organization_id, site_published, sponsor_form_config")
       .eq("id", tournament_id)
       .single();
     if (tErr || !tournament) throw new Error("Tournament not found");
+
+    // Enforce required fields per organizer configuration.
+    const cfg: any = tournament.sponsor_form_config || {};
+    const check = (key: string, value: any, label: string) => {
+      if (cfg[key] === "required" && (!value || !String(value).trim())) {
+        throw new Error(`${label} is required`);
+      }
+    };
+    check("contact_name", contact_name, "Contact name");
+    check("contact_email", contact_email, "Contact email");
+    check("contact_phone", contact_phone, "Contact phone");
+    check("website_url", website_url, "Website");
+    check("address", address, "Address");
+    check("description", description, "Company description");
+    check("additional_notes", additional_notes, "Additional notes");
 
     const { data: tier, error: tierErr } = await supabaseAdmin
       .from("sponsorship_tiers")

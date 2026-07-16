@@ -392,71 +392,102 @@ const SponsorRegistrationPage = () => {
           </div>
 
           {/* Company Information */}
+          {(isVisible("company_name") || isVisible("contact_name") || isVisible("contact_email") ||
+            isVisible("contact_phone") || isVisible("website_url") || isVisible("address") || isVisible("description")) && (
           <div className="bg-card border border-border rounded-xl p-6">
             <h2 className="text-lg font-display font-bold text-foreground mb-4">Company Information</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Company Name *</Label>
-                <Input
-                  value={form.company_name}
-                  onChange={e => setForm({ ...form, company_name: e.target.value })}
-                  placeholder="ABC Corporation"
-                  required
-                  maxLength={200}
-                />
-              </div>
-              <div>
-                <Label>Contact Name *</Label>
-                <Input
-                  value={form.contact_name}
-                  onChange={e => setForm({ ...form, contact_name: e.target.value })}
-                  placeholder="John Smith"
-                  required
-                  maxLength={200}
-                />
-              </div>
-              <div>
-                <Label>Email *</Label>
-                <Input
-                  type="email"
-                  value={form.contact_email}
-                  onChange={e => setForm({ ...form, contact_email: e.target.value })}
-                  placeholder="john@abccorp.com"
-                  required
-                  maxLength={255}
-                />
-              </div>
-              <div>
-                <Label>Phone</Label>
-                <Input
-                  type="tel"
-                  value={form.contact_phone}
-                  onChange={e => setForm({ ...form, contact_phone: e.target.value })}
-                  placeholder="(555) 123-4567"
-                  maxLength={20}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Website</Label>
-                <Input
-                  value={form.website_url}
-                  onChange={e => setForm({ ...form, website_url: e.target.value })}
-                  placeholder="https://www.abccorp.com"
-                  maxLength={500}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Tell us about your company (optional)</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="Brief description of your company..."
-                  rows={3}
-                  maxLength={500}
-                />
-              </div>
+              {isVisible("company_name") && (
+                <div>
+                  <Label>Company Name{isRequired("company_name") ? " *" : ""}</Label>
+                  <Input
+                    value={form.company_name}
+                    onChange={e => setForm({ ...form, company_name: e.target.value })}
+                    placeholder="ABC Corporation"
+                    required={isRequired("company_name")}
+                    maxLength={200}
+                  />
+                </div>
+              )}
+              {isVisible("contact_name") && (
+                <div>
+                  <Label>Contact Name{isRequired("contact_name") ? " *" : ""}</Label>
+                  <Input
+                    value={form.contact_name}
+                    onChange={e => setForm({ ...form, contact_name: e.target.value })}
+                    placeholder="John Smith"
+                    required={isRequired("contact_name")}
+                    maxLength={200}
+                  />
+                </div>
+              )}
+              {isVisible("contact_email") && (
+                <div>
+                  <Label>Email{isRequired("contact_email") ? " *" : ""}</Label>
+                  <Input
+                    type="email"
+                    value={form.contact_email}
+                    onChange={e => setForm({ ...form, contact_email: e.target.value })}
+                    placeholder="john@abccorp.com"
+                    required={isRequired("contact_email")}
+                    maxLength={255}
+                  />
+                </div>
+              )}
+              {isVisible("contact_phone") && (
+                <div>
+                  <Label>Phone{isRequired("contact_phone") ? " *" : ""}</Label>
+                  <Input
+                    type="tel"
+                    value={form.contact_phone}
+                    onChange={e => setForm({ ...form, contact_phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                    required={isRequired("contact_phone")}
+                    maxLength={20}
+                  />
+                </div>
+              )}
+              {isVisible("website_url") && (
+                <div className="sm:col-span-2">
+                  <Label>Website{isRequired("website_url") ? " *" : ""}</Label>
+                  <Input
+                    value={form.website_url}
+                    onChange={e => setForm({ ...form, website_url: e.target.value })}
+                    placeholder="https://www.abccorp.com"
+                    required={isRequired("website_url")}
+                    maxLength={500}
+                  />
+                </div>
+              )}
+              {isVisible("address") && (
+                <div className="sm:col-span-2">
+                  <Label>Mailing Address{isRequired("address") ? " *" : ""}</Label>
+                  <Textarea
+                    value={form.address}
+                    onChange={e => setForm({ ...form, address: e.target.value })}
+                    placeholder="123 Main St, City, ST 00000"
+                    rows={2}
+                    required={isRequired("address")}
+                    maxLength={500}
+                  />
+                </div>
+              )}
+              {isVisible("description") && (
+                <div className="sm:col-span-2">
+                  <Label>Tell us about your company{isRequired("description") ? " *" : ""}</Label>
+                  <Textarea
+                    value={form.description}
+                    onChange={e => setForm({ ...form, description: e.target.value })}
+                    placeholder="Brief description of your company..."
+                    rows={3}
+                    required={isRequired("description")}
+                    maxLength={500}
+                  />
+                </div>
+              )}
             </div>
           </div>
+          )}
 
           {/* Logo Upload (only if this tier wants it) */}
           {showLogoUpload && (

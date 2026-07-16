@@ -18,11 +18,14 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const {
       tournament_id, tier_id, company_name, contact_name, contact_email,
-      contact_phone, website_url, description, logo_url, logo_base64, logo_filename,
+      contact_phone, website_url, description, address, logo_url, logo_base64, logo_filename,
       additional_notes,
     } = body;
 
-    if (!tournament_id || !tier_id || !company_name?.trim() || !contact_name?.trim() || !contact_email?.trim()) {
+    // Server-side required-field enforcement uses the tournament's sponsor_form_config
+    // (loaded below). We only hard-require tournament_id + tier_id + company_name here;
+    // other fields are validated after we know the config.
+    if (!tournament_id || !tier_id || !company_name?.trim()) {
       throw new Error("Missing required fields");
     }
 

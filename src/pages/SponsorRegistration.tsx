@@ -31,6 +31,28 @@ interface TournamentInfo {
   organization_id: string;
 }
 
+type FieldMode = "required" | "optional" | "hidden";
+type SponsorFormConfig = {
+  company_name: FieldMode;
+  contact_name: FieldMode;
+  contact_email: FieldMode;
+  contact_phone: FieldMode;
+  website_url: FieldMode;
+  description: FieldMode;
+  address: FieldMode;
+  additional_notes: FieldMode;
+};
+const DEFAULT_FORM_CONFIG: SponsorFormConfig = {
+  company_name: "required",
+  contact_name: "required",
+  contact_email: "required",
+  contact_phone: "optional",
+  website_url: "optional",
+  description: "optional",
+  address: "hidden",
+  additional_notes: "hidden",
+};
+
 const fmt = (cents: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 
@@ -39,6 +61,7 @@ const SponsorRegistrationPage = () => {
   const [searchParams] = useSearchParams();
   const [tournament, setTournament] = useState<TournamentInfo | null>(null);
   const [tiers, setTiers] = useState<Tier[]>([]);
+  const [formConfig, setFormConfig] = useState<SponsorFormConfig>(DEFAULT_FORM_CONFIG);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -53,6 +76,7 @@ const SponsorRegistrationPage = () => {
     contact_email: "",
     contact_phone: "",
     website_url: "",
+    address: "",
     description: "",
     additional_notes: "",
   });

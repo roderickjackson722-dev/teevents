@@ -196,6 +196,10 @@ const App = () => (
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/webpage-layout" element={<DashboardLayout><WebpageLayout /></DashboardLayout>} />
+          <Route path="/dashboard/leagues" element={<DashboardLayout><Leagues /></DashboardLayout>} />
+          <Route path="/dashboard/leagues/:leagueId" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
+          <Route path="/dashboard/leagues/:leagueId/manage" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
+
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />
           <Route path="/dashboard/setup-checklist" element={<DashboardLayout><SetupChecklistPage /></DashboardLayout>} />
           <Route path="/dashboard/printables" element={<DashboardLayout><Printables /></DashboardLayout>} />

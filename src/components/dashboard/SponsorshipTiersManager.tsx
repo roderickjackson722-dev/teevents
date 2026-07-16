@@ -231,6 +231,20 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     );
     setTiers((tiersRes.data as SponsorshipTier[]) || []);
     setRegistrations(merged);
+
+    // Load sponsor form field config from the tournament
+    const { data: tRow } = await supabase
+      .from("tournaments")
+      .select("sponsor_form_config")
+      .eq("id", selectedTournament)
+      .maybeSingle();
+    const cfg = (tRow as any)?.sponsor_form_config;
+    if (cfg && typeof cfg === "object") {
+      setSponsorFormConfig({ ...DEFAULT_SPONSOR_FORM_CONFIG, ...cfg });
+    } else {
+      setSponsorFormConfig(DEFAULT_SPONSOR_FORM_CONFIG);
+    }
+
     setLoading(false);
   }, [selectedTournament]);
 

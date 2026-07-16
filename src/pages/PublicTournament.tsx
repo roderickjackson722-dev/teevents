@@ -1189,6 +1189,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     earlyTeamTotalsCents={earlyTeamTotals}
                     foursomeMode={tournament.foursome_registration}
                     maxGroupSize={(tournament as any).max_group_size || (tournament.foursome_registration ? 4 : 1)}
+                    allowedGroupSizes={Array.isArray((tournament as any).allowed_group_sizes) && (tournament as any).allowed_group_sizes.length > 0 ? (tournament as any).allowed_group_sizes as number[] : null}
                     isNonprofit={nonprofitInfo.isNonprofit}
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}

@@ -829,7 +829,13 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             <p className="font-semibold text-foreground">How many players are you registering?</p>
             <p className="text-xs text-muted-foreground mt-0.5">Choose your group size (up to {maxGroupSize}). The captain fills in each player's details.</p>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {Array.from({ length: maxGroupSize }, (_, i) => i + 1).map((n) => {
+              {(() => {
+                const all = Array.from({ length: maxGroupSize }, (_, i) => i + 1);
+                const filtered = Array.isArray(allowedGroupSizes) && allowedGroupSizes.length > 0
+                  ? all.filter((n) => allowedGroupSizes.includes(n))
+                  : all;
+                return filtered;
+              })().map((n) => {
                 const labels: Record<number, string> = { 1: "Individual", 2: "Twosome (2)", 3: "Threesome (3)", 4: "Foursome (4)" };
                 const active = players.length === n;
                 return (

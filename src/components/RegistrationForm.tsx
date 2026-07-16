@@ -47,6 +47,8 @@ interface RegistrationFormProps {
   earlyTeamTotalsCents?: { 2?: number | null; 4?: number | null } | null;
   foursomeMode?: boolean;
   maxGroupSize?: number;
+  /** Explicit list of allowed group sizes to display (e.g. [1, 4] for individual + foursome only). If null/undefined, all sizes 1..maxGroupSize are shown. */
+  allowedGroupSizes?: number[] | null;
   isNonprofit?: boolean;
   nonprofitName?: string;
   ein?: string;

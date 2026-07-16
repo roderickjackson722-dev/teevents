@@ -470,12 +470,75 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     setSavingReg(false);
   };
 
+  const saveSponsorFormConfig = async () => {
+    if (!selectedTournament || demoGuard()) return;
+    setSavingFormConfig(true);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ sponsor_form_config: sponsorFormConfig as any })
+      .eq("id", selectedTournament);
+    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Sponsor form updated" });
+    setSavingFormConfig(false);
+  };
+
+  const SPONSOR_FIELD_DEFS: { key: keyof SponsorFormConfig; label: string; help?: string }[] = [
+    { key: "company_name", label: "Company / Organization Name" },
+    { key: "contact_name", label: "Contact Name" },
+    { key: "contact_email", label: "Contact Email" },
+    { key: "contact_phone", label: "Contact Phone" },
+    { key: "website_url", label: "Website URL" },
+    { key: "address", label: "Mailing Address" },
+    { key: "description", label: "Company Description" },
+    { key: "additional_notes", label: "Additional Notes", help: "Free-form note box (e.g. \"Please put our logo on hole 5\")." },
+  ];
+
   if (loading) {
     return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;
   }
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
+      {/* Sponsor Registration Form Fields */}
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Pencil className="h-4 w-4" /> Sponsor Registration Form Fields
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Choose which fields appear on the public sponsor sign-up form, and whether each one is required.
+            (Logo upload is configured per tier below.)
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {SPONSOR_FIELD_DEFS.map(({ key, label, help }) => (
+            <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md border border-border bg-background">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium">{label}</Label>
+                {help && <p className="text-xs text-muted-foreground mt-0.5">{help}</p>}
+              </div>
+              <Select
+                value={sponsorFormConfig[key]}
+                onValueChange={(v) => setSponsorFormConfig(prev => ({ ...prev, [key]: v as FieldMode }))}
+              >
+                <SelectTrigger className="w-full sm:w-[160px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="required">Required</SelectItem>
+                  <SelectItem value="optional">Optional</SelectItem>
+                  <SelectItem value="hidden">Hidden</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ))}
+          <div className="flex justify-end pt-1">
+            <Button size="sm" onClick={saveSponsorFormConfig} disabled={savingFormConfig}>
+              {savingFormConfig && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+              Save Form Settings
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Sponsorship Tiers */}
       <Card className="min-w-0 overflow-hidden">
         <CardHeader>

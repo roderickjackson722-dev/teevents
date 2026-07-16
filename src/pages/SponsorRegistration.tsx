@@ -166,12 +166,33 @@ const SponsorRegistrationPage = () => {
   const selectedTierObj = tiers.find((t) => t.id === selectedTier);
   const showLogoUpload = selectedTierObj ? selectedTierObj.show_logo_upload !== false : true;
   const requireLogo = selectedTierObj ? (selectedTierObj.require_logo !== false && showLogoUpload) : true;
-  const allowNotes = !!selectedTierObj?.allow_additional_notes;
+  // Notes: show if the tier allows it OR the org enabled Additional Notes globally on the form.
+  const allowNotes = !!selectedTierObj?.allow_additional_notes || formConfig.additional_notes !== "hidden";
+  const notesRequired = formConfig.additional_notes === "required";
+
+  const isVisible = (k: keyof SponsorFormConfig) => formConfig[k] !== "hidden";
+  const isRequired = (k: keyof SponsorFormConfig) => formConfig[k] === "required";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tournament || !selectedTier || !form.company_name.trim() || !form.contact_name.trim() || !form.contact_email.trim()) {
-      toast({ title: "Please fill in all required fields", variant: "destructive" });
+    if (!tournament || !selectedTier) {
+      toast({ title: "Please select a sponsorship level", variant: "destructive" });
+      return;
+    }
+    const missing: string[] = [];
+    const check = (k: keyof SponsorFormConfig, label: string, value: string) => {
+      if (isVisible(k) && isRequired(k) && !value.trim()) missing.push(label);
+    };
+    check("company_name", "Company Name", form.company_name);
+    check("contact_name", "Contact Name", form.contact_name);
+    check("contact_email", "Contact Email", form.contact_email);
+    check("contact_phone", "Contact Phone", form.contact_phone);
+    check("website_url", "Website", form.website_url);
+    check("address", "Address", form.address);
+    check("description", "Company Description", form.description);
+    if (notesRequired) check("additional_notes", "Additional Notes", form.additional_notes);
+    if (missing.length > 0) {
+      toast({ title: "Please fill in required fields", description: missing.join(", "), variant: "destructive" });
       return;
     }
     if (requireLogo && !logoFile) {

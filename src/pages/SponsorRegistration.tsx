@@ -526,7 +526,7 @@ const SponsorRegistrationPage = () => {
           {/* Additional Notes */}
           {allowNotes && (
             <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-lg font-display font-bold text-foreground mb-3">Additional Notes (optional)</h2>
+              <h2 className="text-lg font-display font-bold text-foreground mb-3">Additional Notes{notesRequired ? " *" : " (optional)"}</h2>
               <Textarea
                 value={form.additional_notes}
                 onChange={e => setForm({ ...form, additional_notes: e.target.value })}

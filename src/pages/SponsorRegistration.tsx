@@ -243,6 +243,7 @@ const SponsorRegistrationPage = () => {
           contact_phone: form.contact_phone || null,
           website_url: form.website_url || null,
           description: form.description || null,
+          address: form.address || null,
           logo_base64: logoBase64,
           logo_filename: logoFilename,
           additional_notes: form.additional_notes || null,

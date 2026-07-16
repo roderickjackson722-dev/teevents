@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
     }
 
     const checkoutParams: any = {
-      customer_email: contact_email.trim(),
+      ...(contact_email?.trim() ? { customer_email: contact_email.trim() } : {}),
       line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/t/${tournament.slug}?sponsor_success=true&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,

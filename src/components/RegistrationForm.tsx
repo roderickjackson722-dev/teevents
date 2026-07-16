@@ -824,8 +824,34 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         {allowGroup && (
           <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
-            <p className="font-semibold text-foreground">Group Registration</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Register up to {maxGroupSize} players. At least 1 player is required.</p>
+            <p className="font-semibold text-foreground">How many players are you registering?</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Choose your group size (up to {maxGroupSize}). The captain fills in each player's details.</p>
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {Array.from({ length: maxGroupSize }, (_, i) => i + 1).map((n) => {
+                const labels: Record<number, string> = { 1: "Individual", 2: "Twosome (2)", 3: "Threesome (3)", 4: "Foursome (4)" };
+                const active = players.length === n;
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => {
+                      setPlayers((prev) => {
+                        if (prev.length === n) return prev;
+                        if (prev.length < n) {
+                          const add = Array.from({ length: n - prev.length }, () => emptyPlayer());
+                          return [...prev, ...add];
+                        }
+                        return prev.slice(0, n);
+                      });
+                    }}
+                    className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-muted"}`}
+                    aria-pressed={active}
+                  >
+                    {labels[n] || `${n} Players`}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 

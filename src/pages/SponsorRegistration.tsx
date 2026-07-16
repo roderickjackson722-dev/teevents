@@ -31,6 +31,28 @@ interface TournamentInfo {
   organization_id: string;
 }
 
+type FieldMode = "required" | "optional" | "hidden";
+type SponsorFormConfig = {
+  company_name: FieldMode;
+  contact_name: FieldMode;
+  contact_email: FieldMode;
+  contact_phone: FieldMode;
+  website_url: FieldMode;
+  description: FieldMode;
+  address: FieldMode;
+  additional_notes: FieldMode;
+};
+const DEFAULT_FORM_CONFIG: SponsorFormConfig = {
+  company_name: "required",
+  contact_name: "required",
+  contact_email: "required",
+  contact_phone: "optional",
+  website_url: "optional",
+  description: "optional",
+  address: "hidden",
+  additional_notes: "hidden",
+};
+
 const fmt = (cents: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 
@@ -39,6 +61,7 @@ const SponsorRegistrationPage = () => {
   const [searchParams] = useSearchParams();
   const [tournament, setTournament] = useState<TournamentInfo | null>(null);
   const [tiers, setTiers] = useState<Tier[]>([]);
+  const [formConfig, setFormConfig] = useState<SponsorFormConfig>(DEFAULT_FORM_CONFIG);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -53,6 +76,7 @@ const SponsorRegistrationPage = () => {
     contact_email: "",
     contact_phone: "",
     website_url: "",
+    address: "",
     description: "",
     additional_notes: "",
   });
@@ -82,12 +106,16 @@ const SponsorRegistrationPage = () => {
     const fetchData = async () => {
       const { data: t } = await supabase
         .from("tournaments")
-        .select("id, title, slug, organization_id")
+        .select("id, title, slug, organization_id, sponsor_form_config")
         .eq("slug", slug)
         .single();
 
       if (!t) { setLoading(false); return; }
-      setTournament(t);
+      setTournament(t as any);
+      const cfg = (t as any).sponsor_form_config;
+      if (cfg && typeof cfg === "object") {
+        setFormConfig({ ...DEFAULT_FORM_CONFIG, ...cfg });
+      }
 
       const { data: tierData } = await (supabase as any)
         .from("sponsorship_tiers")
@@ -138,12 +166,33 @@ const SponsorRegistrationPage = () => {
   const selectedTierObj = tiers.find((t) => t.id === selectedTier);
   const showLogoUpload = selectedTierObj ? selectedTierObj.show_logo_upload !== false : true;
   const requireLogo = selectedTierObj ? (selectedTierObj.require_logo !== false && showLogoUpload) : true;
-  const allowNotes = !!selectedTierObj?.allow_additional_notes;
+  // Notes: show if the tier allows it OR the org enabled Additional Notes globally on the form.
+  const allowNotes = !!selectedTierObj?.allow_additional_notes || formConfig.additional_notes !== "hidden";
+  const notesRequired = formConfig.additional_notes === "required";
+
+  const isVisible = (k: keyof SponsorFormConfig) => formConfig[k] !== "hidden";
+  const isRequired = (k: keyof SponsorFormConfig) => formConfig[k] === "required";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tournament || !selectedTier || !form.company_name.trim() || !form.contact_name.trim() || !form.contact_email.trim()) {
-      toast({ title: "Please fill in all required fields", variant: "destructive" });
+    if (!tournament || !selectedTier) {
+      toast({ title: "Please select a sponsorship level", variant: "destructive" });
+      return;
+    }
+    const missing: string[] = [];
+    const check = (k: keyof SponsorFormConfig, label: string, value: string) => {
+      if (isVisible(k) && isRequired(k) && !value.trim()) missing.push(label);
+    };
+    check("company_name", "Company Name", form.company_name);
+    check("contact_name", "Contact Name", form.contact_name);
+    check("contact_email", "Contact Email", form.contact_email);
+    check("contact_phone", "Contact Phone", form.contact_phone);
+    check("website_url", "Website", form.website_url);
+    check("address", "Address", form.address);
+    check("description", "Company Description", form.description);
+    if (notesRequired) check("additional_notes", "Additional Notes", form.additional_notes);
+    if (missing.length > 0) {
+      toast({ title: "Please fill in required fields", description: missing.join(", "), variant: "destructive" });
       return;
     }
     if (requireLogo && !logoFile) {
@@ -194,6 +243,7 @@ const SponsorRegistrationPage = () => {
           contact_phone: form.contact_phone || null,
           website_url: form.website_url || null,
           description: form.description || null,
+          address: form.address || null,
           logo_base64: logoBase64,
           logo_filename: logoFilename,
           additional_notes: form.additional_notes || null,
@@ -342,71 +392,102 @@ const SponsorRegistrationPage = () => {
           </div>
 
           {/* Company Information */}
+          {(isVisible("company_name") || isVisible("contact_name") || isVisible("contact_email") ||
+            isVisible("contact_phone") || isVisible("website_url") || isVisible("address") || isVisible("description")) && (
           <div className="bg-card border border-border rounded-xl p-6">
             <h2 className="text-lg font-display font-bold text-foreground mb-4">Company Information</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Company Name *</Label>
-                <Input
-                  value={form.company_name}
-                  onChange={e => setForm({ ...form, company_name: e.target.value })}
-                  placeholder="ABC Corporation"
-                  required
-                  maxLength={200}
-                />
-              </div>
-              <div>
-                <Label>Contact Name *</Label>
-                <Input
-                  value={form.contact_name}
-                  onChange={e => setForm({ ...form, contact_name: e.target.value })}
-                  placeholder="John Smith"
-                  required
-                  maxLength={200}
-                />
-              </div>
-              <div>
-                <Label>Email *</Label>
-                <Input
-                  type="email"
-                  value={form.contact_email}
-                  onChange={e => setForm({ ...form, contact_email: e.target.value })}
-                  placeholder="john@abccorp.com"
-                  required
-                  maxLength={255}
-                />
-              </div>
-              <div>
-                <Label>Phone</Label>
-                <Input
-                  type="tel"
-                  value={form.contact_phone}
-                  onChange={e => setForm({ ...form, contact_phone: e.target.value })}
-                  placeholder="(555) 123-4567"
-                  maxLength={20}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Website</Label>
-                <Input
-                  value={form.website_url}
-                  onChange={e => setForm({ ...form, website_url: e.target.value })}
-                  placeholder="https://www.abccorp.com"
-                  maxLength={500}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Tell us about your company (optional)</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="Brief description of your company..."
-                  rows={3}
-                  maxLength={500}
-                />
-              </div>
+              {isVisible("company_name") && (
+                <div>
+                  <Label>Company Name{isRequired("company_name") ? " *" : ""}</Label>
+                  <Input
+                    value={form.company_name}
+                    onChange={e => setForm({ ...form, company_name: e.target.value })}
+                    placeholder="ABC Corporation"
+                    required={isRequired("company_name")}
+                    maxLength={200}
+                  />
+                </div>
+              )}
+              {isVisible("contact_name") && (
+                <div>
+                  <Label>Contact Name{isRequired("contact_name") ? " *" : ""}</Label>
+                  <Input
+                    value={form.contact_name}
+                    onChange={e => setForm({ ...form, contact_name: e.target.value })}
+                    placeholder="John Smith"
+                    required={isRequired("contact_name")}
+                    maxLength={200}
+                  />
+                </div>
+              )}
+              {isVisible("contact_email") && (
+                <div>
+                  <Label>Email{isRequired("contact_email") ? " *" : ""}</Label>
+                  <Input
+                    type="email"
+                    value={form.contact_email}
+                    onChange={e => setForm({ ...form, contact_email: e.target.value })}
+                    placeholder="john@abccorp.com"
+                    required={isRequired("contact_email")}
+                    maxLength={255}
+                  />
+                </div>
+              )}
+              {isVisible("contact_phone") && (
+                <div>
+                  <Label>Phone{isRequired("contact_phone") ? " *" : ""}</Label>
+                  <Input
+                    type="tel"
+                    value={form.contact_phone}
+                    onChange={e => setForm({ ...form, contact_phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                    required={isRequired("contact_phone")}
+                    maxLength={20}
+                  />
+                </div>
+              )}
+              {isVisible("website_url") && (
+                <div className="sm:col-span-2">
+                  <Label>Website{isRequired("website_url") ? " *" : ""}</Label>
+                  <Input
+                    value={form.website_url}
+                    onChange={e => setForm({ ...form, website_url: e.target.value })}
+                    placeholder="https://www.abccorp.com"
+                    required={isRequired("website_url")}
+                    maxLength={500}
+                  />
+                </div>
+              )}
+              {isVisible("address") && (
+                <div className="sm:col-span-2">
+                  <Label>Mailing Address{isRequired("address") ? " *" : ""}</Label>
+                  <Textarea
+                    value={form.address}
+                    onChange={e => setForm({ ...form, address: e.target.value })}
+                    placeholder="123 Main St, City, ST 00000"
+                    rows={2}
+                    required={isRequired("address")}
+                    maxLength={500}
+                  />
+                </div>
+              )}
+              {isVisible("description") && (
+                <div className="sm:col-span-2">
+                  <Label>Tell us about your company{isRequired("description") ? " *" : ""}</Label>
+                  <Textarea
+                    value={form.description}
+                    onChange={e => setForm({ ...form, description: e.target.value })}
+                    placeholder="Brief description of your company..."
+                    rows={3}
+                    required={isRequired("description")}
+                    maxLength={500}
+                  />
+                </div>
+              )}
             </div>
           </div>
+          )}
 
           {/* Logo Upload (only if this tier wants it) */}
           {showLogoUpload && (
@@ -445,7 +526,7 @@ const SponsorRegistrationPage = () => {
           {/* Additional Notes */}
           {allowNotes && (
             <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-lg font-display font-bold text-foreground mb-3">Additional Notes (optional)</h2>
+              <h2 className="text-lg font-display font-bold text-foreground mb-3">Additional Notes{notesRequired ? " *" : " (optional)"}</h2>
               <Textarea
                 value={form.additional_notes}
                 onChange={e => setForm({ ...form, additional_notes: e.target.value })}

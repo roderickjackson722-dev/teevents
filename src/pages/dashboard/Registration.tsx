@@ -770,12 +770,15 @@ const Registration = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
-                <div>
-                  <Label className="text-sm font-semibold">Group Registration</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">Allow players to register multiple players at once</p>
-                </div>
-                <div className="flex items-center gap-3">
+              <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <Label className="text-sm font-semibold">Team / Group Registration</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Let one person sign up a twosome, threesome, or foursome in a single checkout.
+                      Price is per player × team size.
+                    </p>
+                  </div>
                   <Select
                     value={String(maxGroupSize)}
                     onValueChange={(v) => {
@@ -784,19 +787,27 @@ const Registration = () => {
                       setFoursomeReg(val > 1);
                     }}
                   >
-                    <SelectTrigger className="w-[140px]">
+                    <SelectTrigger className="w-[180px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Individual Only</SelectItem>
-                      <SelectItem value="2">Up to 2</SelectItem>
-                      <SelectItem value="3">Up to 3</SelectItem>
+                      <SelectItem value="1">Individual only</SelectItem>
+                      <SelectItem value="2">Up to 2 (Twosome)</SelectItem>
+                      <SelectItem value="3">Up to 3 (Threesome)</SelectItem>
                       <SelectItem value="4">Up to 4 (Foursome)</SelectItem>
                       <SelectItem value="5">Up to 5</SelectItem>
                       <SelectItem value="6">Up to 6</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                {maxGroupSize > 1 && (
+                  <div className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-md p-2">
+                    <strong className="text-foreground">Tip:</strong> To control which fields
+                    (Phone, Handicap, Shirt Size, Company, etc.) are required for <em>each</em> teammate,
+                    open the <strong>Registration Form Fields</strong> tab above — every toggle applies to
+                    every player on the team.
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">

@@ -160,6 +160,31 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
     allow_additional_notes: false,
   });
 
+  // Sponsor Registration Form field controls (required / optional / hidden)
+  type FieldMode = "required" | "optional" | "hidden";
+  type SponsorFormConfig = {
+    company_name: FieldMode;
+    contact_name: FieldMode;
+    contact_email: FieldMode;
+    contact_phone: FieldMode;
+    website_url: FieldMode;
+    description: FieldMode;
+    address: FieldMode;
+    additional_notes: FieldMode;
+  };
+  const DEFAULT_SPONSOR_FORM_CONFIG: SponsorFormConfig = {
+    company_name: "required",
+    contact_name: "required",
+    contact_email: "required",
+    contact_phone: "optional",
+    website_url: "optional",
+    description: "optional",
+    address: "hidden",
+    additional_notes: "hidden",
+  };
+  const [sponsorFormConfig, setSponsorFormConfig] = useState<SponsorFormConfig>(DEFAULT_SPONSOR_FORM_CONFIG);
+  const [savingFormConfig, setSavingFormConfig] = useState(false);
+
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
 
   const fetchData = useCallback(async () => {

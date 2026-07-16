@@ -207,6 +207,8 @@ const Registration = () => {
       setMaxPlayersDisplay(String(mp));
       setFoursomeReg(tournament.foursome_registration || false);
       setMaxGroupSize(tournament.max_group_size || 1);
+      const ags = (tournament as any).allowed_group_sizes;
+      setAllowedGroupSizes(Array.isArray(ags) && ags.length > 0 ? ags : null);
       setAllowCoverFees(tournament.allow_cover_fees !== false);
       setCaptainLabel(((tournament as any).captain_label as string) || "");
       setEarlyEnabled(!!tournament.early_registration_enabled);

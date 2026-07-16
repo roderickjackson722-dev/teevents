@@ -1,0 +1,2 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS allowed_group_sizes integer[] DEFAULT NULL;
+COMMENT ON COLUMN public.tournaments.allowed_group_sizes IS 'Which group-size options (1=individual, 2=twosome, 3=threesome, 4=foursome, ...) are shown on the public registration form. NULL = show all sizes from 1 to max_group_size.';

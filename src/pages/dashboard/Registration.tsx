@@ -150,6 +150,7 @@ const Registration = () => {
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
   const [maxGroupSize, setMaxGroupSize] = useState<number>(1);
+  const [allowedGroupSizes, setAllowedGroupSizes] = useState<number[] | null>(null);
   const [allowCoverFees, setAllowCoverFees] = useState<boolean>(true);
   const [captainLabel, setCaptainLabel] = useState<string>("");
   /* Early registration discount */
@@ -179,7 +180,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -206,6 +207,8 @@ const Registration = () => {
       setMaxPlayersDisplay(String(mp));
       setFoursomeReg(tournament.foursome_registration || false);
       setMaxGroupSize(tournament.max_group_size || 1);
+      const ags = (tournament as any).allowed_group_sizes;
+      setAllowedGroupSizes(Array.isArray(ags) && ags.length > 0 ? ags : null);
       setAllowCoverFees(tournament.allow_cover_fees !== false);
       setCaptainLabel(((tournament as any).captain_label as string) || "");
       setEarlyEnabled(!!tournament.early_registration_enabled);
@@ -276,6 +279,9 @@ const Registration = () => {
       max_players: maxPlayers,
       foursome_registration: foursomeReg,
       max_group_size: maxGroupSize,
+      allowed_group_sizes: allowedGroupSizes && allowedGroupSizes.length > 0
+        ? [...allowedGroupSizes].filter((n) => n >= 1 && n <= maxGroupSize).sort((a, b) => a - b)
+        : null,
       allow_cover_fees: allowCoverFees,
       captain_label: captainLabel.trim() || null,
       early_registration_enabled: earlyEnabled,
@@ -800,6 +806,39 @@ const Registration = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {maxGroupSize > 1 && (
+                  <div className="rounded-md border border-border bg-background p-3 space-y-2">
+                    <Label className="text-sm font-semibold">Group Sizes Shown on Public Form</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Choose which group-size buttons appear to registrants. Leave all checked to show every option, or uncheck any you don't want (for example, show only Individual and Foursome).
+                    </p>
+                    <div className="flex flex-wrap gap-3 pt-1">
+                      {Array.from({ length: maxGroupSize }, (_, i) => i + 1).map((n) => {
+                        const labels: Record<number, string> = { 1: "Individual", 2: "Twosome", 3: "Threesome", 4: "Foursome" };
+                        const current = allowedGroupSizes ?? Array.from({ length: maxGroupSize }, (_, i) => i + 1);
+                        const checked = current.includes(n);
+                        return (
+                          <label key={n} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const base = new Set(current);
+                                if (e.target.checked) base.add(n);
+                                else base.delete(n);
+                                // Always keep at least one selection
+                                const next = Array.from(base).sort((a, b) => a - b);
+                                setAllowedGroupSizes(next.length > 0 ? next : [n]);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span>{labels[n] || `${n} Players`}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {maxGroupSize > 1 && (
                   <div className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-md p-2">
                     <strong className="text-foreground">Tip:</strong> To control which fields

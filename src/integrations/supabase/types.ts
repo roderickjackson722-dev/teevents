@@ -7517,6 +7517,7 @@ export type Database = {
           admin_notes: string | null
           allow_cash_registration: boolean
           allow_cover_fees: boolean
+          allowed_group_sizes: number[] | null
           auction_tab_title: string | null
           branding_footer_admin_override: boolean
           branding_footer_admin_show: boolean
@@ -7760,6 +7761,7 @@ export type Database = {
           admin_notes?: string | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
+          allowed_group_sizes?: number[] | null
           auction_tab_title?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
@@ -8003,6 +8005,7 @@ export type Database = {
           admin_notes?: string | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
+          allowed_group_sizes?: number[] | null
           auction_tab_title?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean

@@ -21,6 +21,8 @@ import DashboardLayout from "./components/DashboardLayout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import Tournaments from "./pages/dashboard/Tournaments";
+import Leagues from "./pages/dashboard/Leagues";
+import LeagueManage from "./pages/dashboard/LeagueManage";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
 import Printables from "./pages/dashboard/Printables";

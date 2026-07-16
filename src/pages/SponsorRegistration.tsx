@@ -106,12 +106,16 @@ const SponsorRegistrationPage = () => {
     const fetchData = async () => {
       const { data: t } = await supabase
         .from("tournaments")
-        .select("id, title, slug, organization_id")
+        .select("id, title, slug, organization_id, sponsor_form_config")
         .eq("slug", slug)
         .single();
 
       if (!t) { setLoading(false); return; }
-      setTournament(t);
+      setTournament(t as any);
+      const cfg = (t as any).sponsor_form_config;
+      if (cfg && typeof cfg === "object") {
+        setFormConfig({ ...DEFAULT_FORM_CONFIG, ...cfg });
+      }
 
       const { data: tierData } = await (supabase as any)
         .from("sponsorship_tiers")

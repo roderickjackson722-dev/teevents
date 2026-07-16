@@ -5435,6 +5435,7 @@ export type Database = {
       sponsor_registrations: {
         Row: {
           additional_notes: string | null
+          address: string | null
           amount_cents: number
           company_name: string
           contact_email: string
@@ -5457,6 +5458,7 @@ export type Database = {
         }
         Insert: {
           additional_notes?: string | null
+          address?: string | null
           amount_cents: number
           company_name: string
           contact_email: string
@@ -5479,6 +5481,7 @@ export type Database = {
         }
         Update: {
           additional_notes?: string | null
+          address?: string | null
           amount_cents?: number
           company_name?: string
           contact_email?: string
@@ -7735,6 +7738,7 @@ export type Database = {
           site_title_position: string | null
           slug: string | null
           sponsor_email_config: Json | null
+          sponsor_form_config: Json
           state: string | null
           status: string
           store_section_title: string | null
@@ -7977,6 +7981,7 @@ export type Database = {
           site_title_position?: string | null
           slug?: string | null
           sponsor_email_config?: Json | null
+          sponsor_form_config?: Json
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -8219,6 +8224,7 @@ export type Database = {
           site_title_position?: string | null
           slug?: string | null
           sponsor_email_config?: Json | null
+          sponsor_form_config?: Json
           state?: string | null
           status?: string
           store_section_title?: string | null

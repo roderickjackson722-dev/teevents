@@ -279,6 +279,9 @@ const Registration = () => {
       max_players: maxPlayers,
       foursome_registration: foursomeReg,
       max_group_size: maxGroupSize,
+      allowed_group_sizes: allowedGroupSizes && allowedGroupSizes.length > 0
+        ? [...allowedGroupSizes].filter((n) => n >= 1 && n <= maxGroupSize).sort((a, b) => a - b)
+        : null,
       allow_cover_fees: allowCoverFees,
       captain_label: captainLabel.trim() || null,
       early_registration_enabled: earlyEnabled,

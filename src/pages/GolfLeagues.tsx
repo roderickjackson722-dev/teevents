@@ -9,6 +9,9 @@ import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import heroImg from "@/assets/golf-league-hero.jpg";
+import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
+import { DEFAULT_DESIGN } from "@/components/dashboard/LeaderboardDesignCard";
 
 const FEATURES = [
   { icon: BarChart3, text: "Real-time scoring and live leaderboards" },
@@ -17,6 +20,17 @@ const FEATURES = [
   { icon: Users, text: "Skins tracking with automatic payout calculations" },
   { icon: Calendar, text: "Season schedule and player statistics" },
   { icon: Smartphone, text: "Mobile-responsive scoring on the course" },
+];
+
+const SAMPLE_STANDINGS = [
+  { name: "Team Eagle Eyes", total: 428, thru: "8 events", players: ["M. Rivera", "J. Chen"] },
+  { name: "Fairway Kings", total: 412, thru: "8 events", players: ["D. Patel", "T. Brooks"] },
+  { name: "Birdie Brigade", total: 397, thru: "8 events", players: ["S. Okafor", "L. Nguyen"] },
+  { name: "Green Jackets", total: 384, thru: "7 events", players: ["A. Morales", "K. Reid"] },
+  { name: "Bogey Busters", total: 371, thru: "8 events", players: ["R. Johnson", "P. Alvarez"] },
+  { name: "The Sandbaggers", total: 356, thru: "7 events", players: ["C. Whitman", "E. Park"] },
+  { name: "Mulligan Crew", total: 342, thru: "8 events", players: ["B. Thompson", "N. Rossi"] },
+  { name: "Pin Seekers", total: 328, thru: "6 events", players: ["V. Ahmed", "J. Kelly"] },
 ];
 
 export default function GolfLeagues() {

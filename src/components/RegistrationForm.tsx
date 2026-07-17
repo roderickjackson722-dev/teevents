@@ -506,16 +506,29 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     setSubmitting(true);
 
-    // Build a labelled custom_answers array from any organizer-added registration fields
+    // Build a labelled answers array for every organizer-configured field so
+    // the dashboard can show the exact registration submission later.
     const buildCustomAnswers = (playerIdx: number) => {
-      const customFieldDefs = (fields || []).filter((f) => !f.is_default && f.is_enabled);
+      const fieldDefs = (fields || []).filter((f) => f.is_enabled);
       const raw = players[playerIdx] as any;
-      return customFieldDefs.map((cf) => ({
+      const defaultFieldMap: Record<string, string> = {
+        "phone": "phone",
+        "handicap": "handicap",
+        "shirt size": "shirt_size",
+        "dietary restrictions": "dietary_restrictions",
+        "company / organization": "company",
+        "skill level": "skill_level",
+      };
+      return fieldDefs.map((cf) => {
+        const mappedKey = defaultFieldMap[cf.label.toLowerCase()];
+        const answer = mappedKey ? raw[mappedKey] : raw[`custom_${cf.id}`];
+        return ({
         field_id: cf.id,
         label: cf.label,
         field_type: cf.field_type,
-        answer: raw[`custom_${cf.id}`] ?? "",
-      }));
+        answer: answer ?? "",
+        });
+      });
     };
 
     if (hasFee) {
@@ -529,6 +542,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               handicap: players[i].handicap ? parseInt(players[i].handicap) : null,
               shirt_size: players[i].shirt_size || null,
               dietary_restrictions: players[i].dietary_restrictions || null,
+              company: players[i].company || null,
+              skill_level: players[i].skill_level || null,
               notes: i === 0 ? groupNotes || null : null,
               custom_answers: buildCustomAnswers(i),
             }))
@@ -542,6 +557,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           handicap: players[0].handicap ? parseInt(players[0].handicap) : null,
           shirt_size: players[0].shirt_size || null,
           dietary_restrictions: players[0].dietary_restrictions || null,
+          company: players[0].company || null,
+          skill_level: players[0].skill_level || null,
           notes: groupNotes || players[0].notes || null,
           custom_answers: buildCustomAnswers(0),
         } : null;

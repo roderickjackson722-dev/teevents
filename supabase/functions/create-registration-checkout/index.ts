@@ -43,6 +43,8 @@ Deno.serve(async (req) => {
           handicap: body.handicap,
           shirt_size: body.shirt_size,
           dietary_restrictions: body.dietary_restrictions,
+          company: body.company,
+          skill_level: body.skill_level,
           notes: body.notes,
           custom_answers: body.custom_answers,
         }];
@@ -71,6 +73,60 @@ Deno.serve(async (req) => {
     if (!tournament.registration_open || !tournament.site_published) {
       throw new Error("Registration is not open for this tournament");
     }
+
+    const { data: registrationFields, error: fieldsErr } = await supabaseAdmin
+      .from("tournament_registration_fields")
+      .select("id, label, field_type, is_required, is_enabled, is_default")
+      .eq("tournament_id", tournament_id)
+      .eq("is_enabled", true)
+      .order("sort_order", { ascending: true });
+    if (fieldsErr) throw new Error("Failed to validate registration fields: " + fieldsErr.message);
+
+    const defaultFieldKey = (label: string) => {
+      const normalized = label.trim().toLowerCase();
+      const map: Record<string, string> = {
+        "phone": "phone",
+        "handicap": "handicap",
+        "shirt size": "shirt_size",
+        "dietary restrictions": "dietary_restrictions",
+        "company / organization": "company",
+        "skill level": "skill_level",
+      };
+      return map[normalized] || null;
+    };
+
+    const readSubmittedAnswer = (player: any, field: any) => {
+      const mappedKey = defaultFieldKey(String(field.label || ""));
+      if (mappedKey && player[mappedKey] !== undefined && player[mappedKey] !== null) {
+        return player[mappedKey];
+      }
+
+      const submitted = Array.isArray(player.custom_answers) ? player.custom_answers : [];
+      const found = submitted.find((a: any) => {
+        const sameId = a?.field_id === field.id || a?.id === field.id;
+        const sameLabel = String(a?.label || "").trim().toLowerCase() === String(field.label || "").trim().toLowerCase();
+        return sameId || sameLabel;
+      });
+      return found?.answer ?? found?.value ?? "";
+    };
+
+    const buildCanonicalAnswers = (player: any, playerIndex: number) => {
+      return ((registrationFields || []) as any[]).map((field) => {
+        const answer = readSubmittedAnswer(player, field);
+        const missing = answer === undefined || answer === null || (typeof answer === "string" && answer.trim() === "");
+        if (field.is_required && missing) {
+          throw new Error(`Missing required field: ${field.label}${players.length > 1 ? ` for Player ${playerIndex + 1}` : ""}`);
+        }
+        return {
+          field_id: field.id,
+          label: field.label,
+          field_type: field.field_type,
+          answer: answer ?? "",
+        };
+      });
+    };
+
+    const canonicalPlayerAnswers = players.map((p: any, i: number) => buildCanonicalAnswers(p, i));
 
     // Determine effective default fee (early-bird if enabled and not expired)
     const earlyActive =
@@ -231,7 +287,7 @@ Deno.serve(async (req) => {
       referral_code_used: referralCode,
       promoter_id: promoterId,
       donation_amount_cents: i === 0 ? donationAmountCents : 0,
-      custom_answers: Array.isArray(p.custom_answers) ? p.custom_answers : [],
+      custom_answers: canonicalPlayerAnswers[i] || [],
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin

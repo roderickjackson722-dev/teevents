@@ -301,6 +301,35 @@ const Plans = () => {
             </Link>
           </motion.div>
 
+          {/* Golf Leagues */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-10 rounded-xl border-2 border-primary/40 bg-card p-6 max-w-3xl mx-auto"
+          >
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="flex-1 min-w-[240px]">
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase mb-2">
+                  <Trophy className="h-3.5 w-3.5" /> Golf Leagues
+                </div>
+                <h4 className="font-display font-bold text-foreground text-lg">Run a season-long golf league</h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Real-time scoring, live leaderboards, skins, handicaps, and season stats.
+                </p>
+                <p className="text-sm mt-2">
+                  <strong>$199/year</strong> flat fee (unlimited golfers) or <strong>$10/golfer/year</strong>.
+                </p>
+              </div>
+              <Link
+                to="/golf-leagues"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-md font-semibold text-sm hover:opacity-90 transition whitespace-nowrap"
+              >
+                Learn More <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </motion.div>
+
           {/* Secure Payments */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -89,6 +89,20 @@ export default function Leagues() {
     window.location.href = data.url;
   };
 
+  const adminInvoiceUnlock = async (leagueId: string) => {
+    if (!window.confirm("Unlock this league without payment and queue it for manual invoicing?")) return;
+    const notes = window.prompt("Optional invoice notes (customer name, PO#, etc.):") || "";
+    const { data, error } = await (supabase as any).functions.invoke("create-league-access-checkout", {
+      body: { league_id: leagueId, admin_invoice: true, invoice_notes: notes.trim() || undefined },
+    });
+    if (error || !data?.invoice) {
+      return toast({ title: "Unlock failed", description: error?.message || data?.error || "Please try again", variant: "destructive" });
+    }
+    toast({ title: "League unlocked", description: "Added to admin invoice queue." });
+    load();
+  };
+
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">

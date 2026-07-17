@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
+import { sendNotificationEmails, buildNotificationHtml, buildSponsorAnswersHtml } from "../_shared/notify.ts";
 import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05;
@@ -157,6 +157,7 @@ Deno.serve(async (req) => {
               .eq("id", tournamentId)
               .single();
 
+            const sponsorAnswersHtml = await buildSponsorAnswersHtml(supabaseAdmin, sponsorRegistrationId);
             await sendNotificationEmails(
               supabaseAdmin,
               organizationId,
@@ -168,7 +169,7 @@ Deno.serve(async (req) => {
                 `💰 Sponsorship amount: <strong>$${(grossAmountCents / 100).toFixed(2)}</strong>`,
                 `🏷️ Platform fee: <strong>$${(platformFeeCents / 100).toFixed(2)}</strong>`,
                 `💵 Net to organizer: <strong>$${(netAmountCents / 100).toFixed(2)}</strong>`,
-              ]),
+              ], sponsorAnswersHtml),
               tournamentId,
             );
           }
@@ -186,6 +187,7 @@ Deno.serve(async (req) => {
               .eq("id", tournamentId)
               .single();
 
+            const sponsorAnswersHtmlAdmin = await buildSponsorAnswersHtml(supabaseAdmin, sponsorRegistrationId);
             const adminHtml = buildNotificationHtml("New Sponsorship Transaction", [
               `🏢 <strong>${reg.company_name}</strong> — ${tierName}`,
               `🏌️ Tournament: <strong>${tournament?.title || "Unknown"}</strong>`,
@@ -193,7 +195,7 @@ Deno.serve(async (req) => {
               `🏷️ Platform Fee (5%): $${(platformFeeCents / 100).toFixed(2)}`,
               `💵 Net to Organizer: $${(netAmountCents / 100).toFixed(2)}`,
               `📧 ${reg.contact_email}`,
-            ]);
+            ], sponsorAnswersHtmlAdmin);
 
             await fetch("https://api.resend.com/emails", {
               method: "POST",

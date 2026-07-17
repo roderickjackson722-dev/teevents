@@ -345,6 +345,115 @@ export async function buildRegistrationAnswersHtml(
   }
 }
 
+const _esc = (s: any) =>
+  String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+const _fmt = (v: any) => {
+  if (v === null || v === undefined || v === "") return "<em style='color:#9ca3af'>Not provided</em>";
+  if (Array.isArray(v)) return _esc(v.join(", "));
+  if (typeof v === "object") return _esc(JSON.stringify(v));
+  return _esc(v);
+};
+function _renderRows(rows: Array<[string, any]>): string {
+  return rows.map(([label, value]) => `
+    <tr>
+      <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;white-space:nowrap;">${_esc(label)}</td>
+      <td style="padding:6px 0;color:#111827;font-size:14px;vertical-align:top;">${_fmt(value)}</td>
+    </tr>`).join("");
+}
+function _wrapSection(title: string, subtitle: string, innerHtml: string): string {
+  return `
+    <div style="margin:18px 0 6px;">
+      <p style="margin:0 0 4px;color:#111827;font-size:15px;font-weight:700;">${_esc(title)}</p>
+      <p style="margin:0 0 10px;color:#6b7280;font-size:13px;">${_esc(subtitle)}</p>
+      <div style="margin:14px 0;padding:14px 16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+        <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">${innerHtml}</table>
+      </div>
+    </div>`;
+}
+
+/** Renders every field submitted on a sponsor registration. */
+export async function buildSponsorAnswersHtml(supabaseAdmin: any, sponsorRegId: string): Promise<string> {
+  try {
+    const { data: r } = await supabaseAdmin
+      .from("sponsor_registrations")
+      .select("*, sponsorship_tiers(name)")
+      .eq("id", sponsorRegId).maybeSingle();
+    if (!r) return "";
+    const tierName = (r as any).sponsorship_tiers?.name || "Custom";
+    const rows: Array<[string, any]> = [
+      ["Company", r.company_name],
+      ["Sponsorship Tier", tierName],
+      ["Amount", r.amount_cents != null ? `$${(r.amount_cents/100).toFixed(2)}` : ""],
+      ["Contact Name", r.contact_name],
+      ["Email", r.contact_email],
+      ["Phone", r.contact_phone],
+      ["Website", r.website_url],
+      ["Address", r.address],
+      ["Description", r.description],
+      ["Logo URL", r.logo_url],
+      ["Additional Notes", r.additional_notes],
+      ["Show on Public Page", r.show_on_public ? "Yes" : "No"],
+    ];
+    return _wrapSection("🏢 Full Sponsor Submission", "Every field submitted by the sponsor:", _renderRows(rows));
+  } catch (err) {
+    console.error("[buildSponsorAnswersHtml]", err); return "";
+  }
+}
+
+/** Renders every field + custom answer submitted on a vendor registration. */
+export async function buildVendorAnswersHtml(supabaseAdmin: any, vendorRegId: string): Promise<string> {
+  try {
+    const { data: r } = await supabaseAdmin
+      .from("vendor_registrations")
+      .select("*, vendor_tiers(name)")
+      .eq("id", vendorRegId).maybeSingle();
+    if (!r) return "";
+    const rows: Array<[string, any]> = [
+      ["Vendor / Business Name", r.vendor_name],
+      ["Business Type", r.business_type],
+      ["Tier", (r as any).vendor_tiers?.name || null],
+      ["Booth Fee", r.booth_fee_cents != null ? `$${(r.booth_fee_cents/100).toFixed(2)}` : ""],
+      ["Booth Location", r.booth_location],
+      ["Contact Name", r.contact_name],
+      ["Email", r.contact_email],
+      ["Phone", r.contact_phone],
+      ["Website", r.website_url],
+      ["Description", r.description],
+      ["Logo URL", r.logo_url],
+      ["Notes", r.notes],
+    ];
+    // Merge custom form answers
+    try {
+      const { data: form } = await supabaseAdmin
+        .from("vendor_forms").select("questions").eq("tournament_id", r.tournament_id).maybeSingle();
+      const questions: any[] = Array.isArray(form?.questions) ? form.questions : [];
+      const answers: any = r.answers || {};
+      const seen = new Set(rows.map(([l]) => l.toLowerCase()));
+      // If answers are keyed by id, resolve labels via questions
+      for (const q of questions) {
+        const label = String(q?.label || q?.question || q?.id || "").trim();
+        if (!label || seen.has(label.toLowerCase())) continue;
+        const key = q?.id || q?.key || label;
+        const val = (answers && typeof answers === "object") ? (answers[key] ?? answers[label]) : "";
+        rows.push([label, val]);
+        seen.add(label.toLowerCase());
+      }
+      // Also drop any raw answer keys not mapped above
+      if (answers && typeof answers === "object" && !Array.isArray(answers)) {
+        for (const [k, v] of Object.entries(answers)) {
+          if (seen.has(String(k).toLowerCase())) continue;
+          if (questions.some((q: any) => (q?.id || q?.key) === k)) continue;
+          rows.push([k, v]);
+          seen.add(String(k).toLowerCase());
+        }
+      }
+    } catch (e) { console.warn("[buildVendorAnswersHtml] questions merge failed", e); }
+    return _wrapSection("🛍️ Full Vendor Submission", "Every field submitted by the vendor:", _renderRows(rows));
+  } catch (err) {
+    console.error("[buildVendorAnswersHtml]", err); return "";
+  }
+}
+
 // HTML email template helper for admin notifications
 export function buildNotificationHtml(title: string, lines: string[], extraHtml: string = ""): string {
   return `

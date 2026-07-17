@@ -76,13 +76,19 @@ const categories: SidebarCategory[] = [
     color: "border-l-blue-400 bg-blue-400/5",
     items: [
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Name, date, location, fees, add‑ons" },
-      { title: "Golf Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "Run season-long leagues with members, events, pairings, and scoring" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
       { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
       { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
       { title: "Confirmation Emails", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize the confirmation email sent to registrants, sponsors, and vendors" },
+    ],
+  },
+  {
+    label: "Golf Leagues",
+    color: "border-l-teal-400 bg-teal-400/5",
+    items: [
+      { title: "Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "Create and manage season-long golf leagues" },
     ],
   },
   {

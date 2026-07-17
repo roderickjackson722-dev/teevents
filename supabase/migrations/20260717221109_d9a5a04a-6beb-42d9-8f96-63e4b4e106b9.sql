@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS sponsor_logo_display_size text NOT NULL DEFAULT 'medium';

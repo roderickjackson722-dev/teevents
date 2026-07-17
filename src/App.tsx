@@ -76,6 +76,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
+import SlugResolver from "./pages/SlugResolver";
 import PlanGate from "./components/PlanGate";
 import LiveScoring from "./pages/LiveScoring";
 import ScanCheckIn from "./pages/ScanCheckIn";
@@ -360,8 +361,10 @@ const App = () => (
              <Route path="/trips/:id" element={<TripDetail />} />
              <Route path="/golf-tournament-software" element={<GolfTournamentSoftware />} />
              <Route path="/charity-golf-tournament-planning" element={<CharityGolfTournamentPlanning />} />
-             <Route path="/golf-fundraiser-management" element={<GolfFundraiserManagement />} />
-           <Route path="*" element={<NotFound />} />
+              <Route path="/golf-fundraiser-management" element={<GolfFundraiserManagement />} />
+            <Route path="/:slug" element={<SlugResolver />} />
+            <Route path="*" element={<NotFound />} />
+
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

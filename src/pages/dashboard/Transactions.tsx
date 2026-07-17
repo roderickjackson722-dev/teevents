@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Download, RefreshCw, ChevronDown, ChevronRight, Receipt, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertTriangle, Download, Eye, RefreshCw, ChevronDown, ChevronRight, Receipt, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface Tx {
@@ -125,6 +126,7 @@ const Transactions = () => {
   const [donations, setDonations] = useState<Map<string, Donation>>(new Map());
   const [addons, setAddons] = useState<Map<string, Addon[]>>(new Map());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
   // filters
   const [tournamentFilter, setTournamentFilter] = useState("all");
@@ -132,6 +134,7 @@ const Transactions = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [missingFilter, setMissingFilter] = useState("all");
 
   const fetchAll = useCallback(async () => {
     if (!org) return;
@@ -162,6 +165,7 @@ const Transactions = () => {
     const sideTicketIds = new Set<string>();
     for (const t of allTx) {
       const m = t.metadata || {};
+        if (t.registration_id) regIds.add(t.registration_id);
       const registrationIds = Array.isArray(m.registration_ids)
         ? m.registration_ids
         : typeof m.registration_ids === "string"
@@ -247,6 +251,13 @@ const Transactions = () => {
   const fieldsForTournament = (tournId: string) =>
     customFields.filter(f => f.tournament_id === tournId);
 
+  const isBlank = (value: unknown) => {
+    if (value === undefined || value === null) return true;
+    if (typeof value === "string") return value.trim() === "";
+    if (Array.isArray(value)) return value.length === 0;
+    return false;
+  };
+
   const answerFor = (reg: Registration | undefined, field: CustomField): string => {
     if (!reg) return "";
     const directByLabel: Record<string, string> = {
@@ -267,6 +278,50 @@ const Transactions = () => {
     return found ? String(found.value ?? found.answer ?? "") : "";
   };
 
+  const missingRequiredForReg = (reg: Registration | undefined): CustomField[] => {
+    if (!reg) return [];
+    return fieldsForTournament(reg.tournament_id)
+      .filter(f => f.is_enabled !== false && f.is_required)
+      .filter(f => isBlank(answerFor(reg, f)));
+  };
+
+  const registrationsForTx = (t: Tx): Registration[] => {
+    const ids = new Set<string>();
+    if (t.registration_id) ids.add(t.registration_id);
+    const m = t.metadata || {};
+    const registrationIds = Array.isArray(m.registration_ids)
+      ? m.registration_ids
+      : typeof m.registration_ids === "string"
+        ? m.registration_ids.split(",").map((id: string) => id.trim()).filter(Boolean)
+        : [];
+    registrationIds.forEach((id: string) => ids.add(id));
+    if (m.manual_registration_id) ids.add(m.manual_registration_id);
+    return Array.from(ids).map(id => regs.get(id)).filter(Boolean) as Registration[];
+  };
+
+  const missingRequiredForTx = (t: Tx): CustomField[] => {
+    const byId = new Map<string, CustomField>();
+    registrationsForTx(t).forEach(reg => missingRequiredForReg(reg).forEach(field => byId.set(field.id, field)));
+    return Array.from(byId.values());
+  };
+
+  const registrationSearchText = (t: Tx) => {
+    const regText = registrationsForTx(t)
+      .map(r => [r.first_name, r.last_name, r.email, r.phone, r.custom_answers ? JSON.stringify(r.custom_answers) : ""].filter(Boolean).join(" "))
+      .join(" ");
+    return [t.golfer_name, t.golfer_email, t.description, t.type, t.stripe_payment_intent_id, t.stripe_session_id, regText]
+      .filter(Boolean).join(" ").toLowerCase();
+  };
+
+  const missingRegistrationRows = useMemo(() => {
+    return Array.from(regs.values())
+      .map(reg => ({ reg, missing: missingRequiredForReg(reg) }))
+      .filter(row => row.missing.length > 0)
+      .sort((a, b) => new Date(b.reg.created_at).getTime() - new Date(a.reg.created_at).getTime());
+  }, [regs, customFields]);
+
+  const hasAtlMissingRows = missingRegistrationRows.some(row => tournamentTitle(row.reg.tournament_id).toLowerCase().includes("atl"));
+
   const filtered = useMemo(() => {
     const now = Date.now();
     const cutoff = dateFilter === "all" ? 0 : now - parseInt(dateFilter) * 86400000;
@@ -276,14 +331,15 @@ const Transactions = () => {
       if (typeFilter !== "all" && t.type !== typeFilter) return false;
       if (statusFilter !== "all" && t.status !== statusFilter) return false;
       if (cutoff && new Date(t.created_at).getTime() < cutoff) return false;
+      if (missingFilter === "missing" && missingRequiredForTx(t).length === 0) return false;
+      if (missingFilter === "complete" && missingRequiredForTx(t).length > 0) return false;
       if (q) {
-        const hay = [t.golfer_name, t.golfer_email, t.description, t.type, t.stripe_payment_intent_id]
-          .filter(Boolean).join(" ").toLowerCase();
+        const hay = registrationSearchText(t);
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [txs, tournamentFilter, typeFilter, statusFilter, dateFilter, search]);
+  }, [txs, tournamentFilter, typeFilter, statusFilter, dateFilter, search, missingFilter, regs, customFields]);
 
   const totalGross = filtered.reduce((s, t) => s + t.amount_cents, 0);
   const totalFees = filtered.reduce((s, t) => s + t.platform_fee_cents + (t.stripe_fee_cents || 0), 0);
@@ -294,28 +350,43 @@ const Transactions = () => {
   const getEntityRows = (t: Tx): { entityType: string; entityId: string }[] => {
     const m = t.metadata || {};
     const rows: { entityType: string; entityId: string }[] = [];
+    const seen = new Set<string>();
+    const addRow = (entityType: string, entityId: string | null | undefined) => {
+      if (!entityId) return;
+      const key = `${entityType}:${entityId}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({ entityType, entityId });
+    };
+    addRow("registration", t.registration_id);
     const registrationIds = Array.isArray(m.registration_ids)
       ? m.registration_ids
       : typeof m.registration_ids === "string"
         ? m.registration_ids.split(",").map((id: string) => id.trim()).filter(Boolean)
         : [];
-    registrationIds.forEach((id: string) => rows.push({ entityType: "registration", entityId: id }));
-    if (m.manual_registration_id) rows.push({ entityType: "registration", entityId: m.manual_registration_id });
-    if (m.sponsor_registration_id) rows.push({ entityType: "sponsor", entityId: m.sponsor_registration_id });
-    if (m.vendor_registration_id) rows.push({ entityType: "vendor", entityId: m.vendor_registration_id });
-    if (m.side_event_ticket_id) rows.push({ entityType: "side_ticket", entityId: m.side_event_ticket_id });
+    registrationIds.forEach((id: string) => addRow("registration", id));
+    addRow("registration", m.manual_registration_id);
+    addRow("sponsor", m.sponsor_registration_id);
+    addRow("vendor", m.vendor_registration_id);
+    addRow("side_ticket", m.side_event_ticket_id);
     return rows;
   };
 
   const exportCSV = () => {
-    // Collect superset of custom field labels across filtered tournaments
+    // Collect superset of registration field definitions across filtered tournaments.
     const activeTournIds = new Set(filtered.map(t => t.tournament_id).filter(Boolean) as string[]);
     const relevantFields = customFields.filter(f => activeTournIds.has(f.tournament_id));
-    const fieldLabels = Array.from(new Set(relevantFields.map(f => f.label)));
+    const fieldColumns = relevantFields.map(f => ({
+      ...f,
+      header: `Q: ${tournamentTitle(f.tournament_id)} — ${f.label}`,
+      missingHeader: `Missing Required: ${tournamentTitle(f.tournament_id)} — ${f.label}`,
+    }));
+    const requiredFieldColumns = fieldColumns.filter(f => f.is_required && f.is_enabled !== false);
 
     const baseHeaders = [
       "Date", "Tournament", "Transaction Type", "Status",
       "Golfer/Contact Name", "Email", "Phone",
+      "Missing Required Fields",
       "Gross ($)", "Platform Fee ($)", "Stripe Fee ($)", "Net ($)",
       "Description",
       "First Name", "Last Name", "Handicap", "Shirt Size", "Dietary", "Group",
@@ -326,7 +397,11 @@ const Transactions = () => {
       "Add-Ons",
       "Stripe Payment Intent", "Stripe Session",
     ];
-    const headers = [...baseHeaders, ...fieldLabels.map(l => `Q: ${l}`)];
+    const headers = [
+      ...baseHeaders,
+      ...fieldColumns.map(f => f.header),
+      ...requiredFieldColumns.map(f => f.missingHeader),
+    ];
 
     const rows: string[][] = [];
     for (const t of filtered) {
@@ -349,7 +424,7 @@ const Transactions = () => {
       if (entities.length === 0) {
         rows.push([
           ...commonHead,
-          t.golfer_name || "", t.golfer_email || "", "",
+          t.golfer_name || "", t.golfer_email || "", "", "",
           ...commonMoney,
           "", "", "", "", "", "",
           "", "", "", "",
@@ -358,7 +433,8 @@ const Transactions = () => {
           t.type === "donation" ? (donations.get(t.stripe_session_id || "")?.donor_email || "") : "",
           "",
           ...stripeIds,
-          ...fieldLabels.map(() => ""),
+          ...fieldColumns.map(() => ""),
+          ...requiredFieldColumns.map(() => ""),
         ]);
         continue;
       }
@@ -370,7 +446,9 @@ const Transactions = () => {
         let vendorBooth = "", vendorType = "", vendorNotes = "";
         let sideAtt = "", sideQty = "";
         let addonStr = "";
+        let missingRequired = "";
         const answersMap: Record<string, string> = {};
+        const missingMap: Record<string, string> = {};
 
         if (ent.entityType === "registration") {
           const r = regs.get(ent.entityId);
@@ -384,8 +462,11 @@ const Transactions = () => {
             diet = r.dietary_restrictions || "";
             groupL = r.group_label || "";
             for (const f of fieldsForTournament(r.tournament_id)) {
-              answersMap[f.label] = answerFor(r, f);
+              answersMap[f.id] = answerFor(r, f);
             }
+            const missing = missingRequiredForReg(r);
+            missingRequired = missing.map(f => f.label).join("; ");
+            missing.forEach(f => { missingMap[f.id] = "Yes"; });
             const ax = addons.get(r.id) || [];
             addonStr = ax.map(a => `${a.addon_name} x${a.quantity} ($${(a.unit_price_cents / 100).toFixed(2)})`).join("; ");
           }
@@ -429,7 +510,7 @@ const Transactions = () => {
 
         rows.push([
           ...commonHead,
-          name, email, phone,
+          name, email, phone, missingRequired,
           ...commonMoney,
           first, last, handicap, shirt, diet, groupL,
           company, website, address, sponsorNotes,
@@ -438,7 +519,8 @@ const Transactions = () => {
           "",
           addonStr,
           ...stripeIds,
-          ...fieldLabels.map(l => answersMap[l] || ""),
+          ...fieldColumns.map(f => answersMap[f.id] || ""),
+          ...requiredFieldColumns.map(f => missingMap[f.id] || "No"),
         ]);
       }
     }
@@ -481,12 +563,19 @@ const Transactions = () => {
             const r = regs.get(ent.entityId);
             if (!r) return <div key={i} className="text-xs text-muted-foreground">Registration {ent.entityId} not found.</div>;
             const fields = fieldsForTournament(r.tournament_id);
+            const missing = missingRequiredForReg(r);
             const ax = addons.get(r.id) || [];
             return (
               <div key={i} className="border rounded-md p-3 bg-background">
-                <div className="font-semibold mb-2 flex items-center gap-2">
-                  <Badge variant="outline">Player Registration</Badge>
-                  {r.first_name} {r.last_name}
+                <div className="font-semibold mb-2 flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline">Player Registration</Badge>
+                    {r.first_name} {r.last_name}
+                    {missing.length > 0 && <Badge variant="destructive">Missing {missing.length} required</Badge>}
+                  </div>
+                  <Button size="sm" variant="outline" onClick={(event) => { event.stopPropagation(); setSelectedRegistration(r); }}>
+                    <Eye className="h-4 w-4 mr-1" /> Details
+                  </Button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                   <div><span className="text-muted-foreground">Email:</span> {r.email || "—"}</div>
@@ -503,6 +592,7 @@ const Transactions = () => {
                       {fields.map(f => (
                         <div key={f.id}>
                           <span className="text-muted-foreground">{f.label}:</span> {answerFor(r, f) || <span className="text-muted-foreground italic">Not captured</span>}
+                          {f.is_required && isBlank(answerFor(r, f)) && <Badge variant="destructive" className="ml-2 text-[10px]">Required missing</Badge>}
                         </div>
                       ))}
                     </div>
@@ -606,6 +696,28 @@ const Transactions = () => {
 
   const uniqueTypes = Array.from(new Set(txs.map(t => t.type)));
 
+  const selectedFields = selectedRegistration ? fieldsForTournament(selectedRegistration.tournament_id) : [];
+  const selectedMissing = selectedRegistration ? missingRequiredForReg(selectedRegistration) : [];
+  const selectedAnswers = selectedRegistration ? selectedFields.map(field => ({
+    field_id: field.id,
+    label: field.label,
+    field_type: field.field_type,
+    required: !!field.is_required,
+    enabled: field.is_enabled !== false,
+    answer: answerFor(selectedRegistration, field),
+    missing_required: !!field.is_required && isBlank(answerFor(selectedRegistration, field)),
+  })) : [];
+  const selectedRawPayload = selectedRegistration ? {
+    registration: selectedRegistration,
+    tournament: tournamentTitle(selectedRegistration.tournament_id),
+    formatted_answers: selectedAnswers,
+    missing_required_fields: selectedMissing.map(field => field.label),
+    add_ons: addons.get(selectedRegistration.id) || [],
+    related_transactions: txs
+      .filter(t => registrationsForTx(t).some(reg => reg.id === selectedRegistration.id))
+      .map(t => ({ id: t.id, created_at: t.created_at, type: t.type, status: t.status, amount_cents: t.amount_cents, metadata: t.metadata })),
+  } : null;
+
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -630,14 +742,38 @@ const Transactions = () => {
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Net to You</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-primary">${(totalNet / 100).toFixed(2)}</div></CardContent></Card>
       </div>
 
+      {missingRegistrationRows.length > 0 && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
+              <div className="space-y-2 flex-1">
+                <div className="font-semibold text-destructive">{missingRegistrationRows.length} registration{missingRegistrationRows.length !== 1 ? "s" : ""} missing required fields</div>
+                <p className="text-sm text-muted-foreground">
+                  Required answers like Age and City & State Traveling From are blank on these stored registrations. {hasAtlMissingRows ? "The older ATL submissions were not stored with those custom question answers, so the dashboard can flag them but cannot reconstruct the missing values from the current records." : "Older submissions may show as not captured if those answers were not stored when the transaction was created."}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {missingRegistrationRows.slice(0, 8).map(({ reg, missing }) => (
+                    <Button key={reg.id} type="button" size="sm" variant="outline" onClick={() => setSelectedRegistration(reg)}>
+                      {reg.first_name} {reg.last_name} · {missing.map(f => f.label).join(", ")}
+                    </Button>
+                  ))}
+                  {missingRegistrationRows.length > 8 && <Badge variant="secondary">+{missingRegistrationRows.length - 8} more</Badge>}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="pt-4">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[220px]">
-              <label className="text-xs text-muted-foreground mb-1 block">Search</label>
+              <label className="text-xs text-muted-foreground mb-1 block">Registrant Name or Email</label>
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
-                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Name, email, description, payment intent…" className="pl-8" />
+                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, phone, payment ID…" className="pl-8" />
               </div>
             </div>
             <div>
@@ -687,6 +823,17 @@ const Transactions = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Required Fields</label>
+              <Select value={missingFilter} onValueChange={setMissingFilter}>
+                <SelectTrigger className="w-[190px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All submissions</SelectItem>
+                  <SelectItem value="missing">Missing required</SelectItem>
+                  <SelectItem value="complete">No required missing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -705,6 +852,7 @@ const Transactions = () => {
                   <TableHead>Type</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Required Fields</TableHead>
                   <TableHead className="text-right">Gross</TableHead>
                   <TableHead className="text-right">Net</TableHead>
                   <TableHead>Status</TableHead>
@@ -713,6 +861,7 @@ const Transactions = () => {
               <TableBody>
                 {filtered.map(t => {
                   const open = expanded.has(t.id);
+                  const missing = missingRequiredForTx(t);
                   return (
                     <Fragment key={t.id}>
                       <TableRow className="cursor-pointer" onClick={() => toggleRow(t.id)}>
@@ -722,6 +871,13 @@ const Transactions = () => {
                         <TableCell><Badge variant="outline" className="capitalize">{typeLabel(t.type)}</Badge></TableCell>
                         <TableCell className="text-sm">{t.golfer_name || "—"}</TableCell>
                         <TableCell className="text-sm">{t.golfer_email || "—"}</TableCell>
+                        <TableCell>
+                          {missing.length > 0 ? (
+                            <Badge variant="destructive" className="whitespace-nowrap">Missing {missing.length}</Badge>
+                          ) : (
+                            <Badge variant="secondary" className="whitespace-nowrap">Complete</Badge>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right text-sm">${(t.amount_cents / 100).toFixed(2)}</TableCell>
                         <TableCell className="text-right text-sm font-medium">${(t.net_amount_cents / 100).toFixed(2)}</TableCell>
                         <TableCell>
@@ -732,7 +888,7 @@ const Transactions = () => {
                       </TableRow>
                       {open && (
                         <TableRow className="bg-muted/30">
-                          <TableCell colSpan={9} className="p-4">{renderDetails(t)}</TableCell>
+                          <TableCell colSpan={10} className="p-4">{renderDetails(t)}</TableCell>
                         </TableRow>
                       )}
                     </Fragment>
@@ -740,7 +896,7 @@ const Transactions = () => {
                 })}
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">No transactions match the current filters.</TableCell>
+                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">No transactions match the current filters.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -752,6 +908,57 @@ const Transactions = () => {
       <p className="text-xs text-muted-foreground">
         Note: any older registrations that show blank custom question answers were submitted before those answers were being stored. New submissions now capture and display every question response here and in the CSV export.
       </p>
+
+      <Dialog open={!!selectedRegistration} onOpenChange={(open) => !open && setSelectedRegistration(null)}>
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Registration Details{selectedRegistration ? ` — ${selectedRegistration.first_name} ${selectedRegistration.last_name}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedRegistration && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <div><span className="text-muted-foreground">Tournament:</span> {tournamentTitle(selectedRegistration.tournament_id)}</div>
+                <div><span className="text-muted-foreground">Email:</span> {selectedRegistration.email || "—"}</div>
+                <div><span className="text-muted-foreground">Phone:</span> {selectedRegistration.phone || "—"}</div>
+                <div><span className="text-muted-foreground">Submitted:</span> {new Date(selectedRegistration.created_at).toLocaleString()}</div>
+                <div><span className="text-muted-foreground">Payment:</span> <Badge variant="outline">{selectedRegistration.payment_status}</Badge></div>
+                <div><span className="text-muted-foreground">Registration ID:</span> <code className="text-xs">{selectedRegistration.id}</code></div>
+              </div>
+
+              {selectedMissing.length > 0 && (
+                <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                  <div className="font-medium text-destructive mb-1">Missing required fields</div>
+                  <div className="text-muted-foreground">{selectedMissing.map(field => field.label).join(", ")}</div>
+                </div>
+              )}
+
+              <div>
+                <div className="text-sm font-semibold mb-2">Formatted Answers</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                  {selectedAnswers.map(answer => (
+                    <div key={answer.field_id} className="rounded-md border p-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium">{answer.label}</span>
+                        {answer.missing_required && <Badge variant="destructive" className="text-[10px]">Required missing</Badge>}
+                      </div>
+                      <div className="text-muted-foreground break-words">{answer.answer || <span className="italic">Not captured</span>}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm font-semibold mb-2">Raw Submission Payload</div>
+                <pre className="max-h-[360px] overflow-auto rounded-md bg-muted p-3 text-xs whitespace-pre-wrap break-words">
+                  {JSON.stringify(selectedRawPayload, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

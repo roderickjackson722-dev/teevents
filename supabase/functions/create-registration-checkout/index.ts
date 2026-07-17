@@ -231,6 +231,7 @@ Deno.serve(async (req) => {
       referral_code_used: referralCode,
       promoter_id: promoterId,
       donation_amount_cents: i === 0 ? donationAmountCents : 0,
+      custom_answers: Array.isArray(p.custom_answers) ? p.custom_answers : [],
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin

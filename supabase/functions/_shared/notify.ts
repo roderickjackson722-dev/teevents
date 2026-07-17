@@ -346,7 +346,7 @@ export async function buildRegistrationAnswersHtml(
 }
 
 // HTML email template helper for admin notifications
-export function buildNotificationHtml(title: string, lines: string[]): string {
+export function buildNotificationHtml(title: string, lines: string[], extraHtml: string = ""): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -360,6 +360,7 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
         </td></tr>
         <tr><td style="padding:32px;">
           ${lines.map(l => `<p style="margin:0 0 12px;color:#374151;font-size:15px;line-height:1.6;">${l}</p>`).join("")}
+          ${extraHtml || ""}
         </td></tr>
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;">Sent by TeeVents • <a href="https://teevents.golf" style="color:#1a5c38;">teevents.golf</a></p>
@@ -370,6 +371,7 @@ export function buildNotificationHtml(title: string, lines: string[]): string {
 </body>
 </html>`;
 }
+
 
 // HTML email template for registrant confirmations (friendlier design)
 function buildConfirmationHtml(title: string, lines: string[], tournamentPageUrl: string | null = null, refundUrl: string | null = null, hubUrl: string | null = null, qrImg: string | null = null, logoUrl: string | null = null): string {

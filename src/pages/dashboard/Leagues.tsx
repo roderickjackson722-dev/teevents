@@ -30,6 +30,7 @@ export default function Leagues() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -39,6 +40,14 @@ export default function Leagues() {
       setIsAdmin(!!data);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (!org?.orgId) return;
+      const { data } = await (supabase as any).rpc("org_has_active_league_subscription", { _org_id: org.orgId });
+      setHasSubscription(!!data);
+    })();
+  }, [org?.orgId]);
 
   const load = async () => {
     if (!org) return;

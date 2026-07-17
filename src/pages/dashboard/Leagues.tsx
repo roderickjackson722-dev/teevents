@@ -29,9 +29,20 @@ export default function Leagues() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+      setIsAdmin(!!data);
+    })();
+  }, []);
 
   const load = async () => {
     if (!org) return;
+
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("golf_leagues")

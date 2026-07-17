@@ -5,9 +5,10 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trophy, Users, Calendar, Loader2 } from "lucide-react";
+import { Plus, Trophy, Users, Calendar, Loader2, Lock, CreditCard } from "lucide-react";
 import LeagueForm from "@/components/leagues/LeagueForm";
 import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 interface League {
   id: string;
@@ -18,6 +19,7 @@ interface League {
   is_public: boolean;
   start_date: string | null;
   end_date: string | null;
+  access_status?: string;
   member_count?: number;
   event_count?: number;
 }
@@ -33,7 +35,7 @@ export default function Leagues() {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("golf_leagues")
-      .select("id, league_name, league_slug, season_year, is_active, is_public, start_date, end_date")
+      .select("id, league_name, league_slug, season_year, is_active, is_public, start_date, end_date, access_status")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false });
     if (error) {

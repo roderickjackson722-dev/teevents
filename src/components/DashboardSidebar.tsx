@@ -76,7 +76,6 @@ const categories: SidebarCategory[] = [
     color: "border-l-blue-400 bg-blue-400/5",
     items: [
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Name, date, location, fees, add‑ons" },
-      { title: "Golf Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "Run season-long leagues with members, events, pairings, and scoring" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },

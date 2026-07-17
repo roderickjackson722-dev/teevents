@@ -97,12 +97,13 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "code" | "payment";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "code" | "payment" | "tier";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "hcp", label: "Handicap" },
+  { key: "tier", label: "Division / Tier" },
   { key: "shirt", label: "Shirt" },
   { key: "hole", label: "Hole" },
   { key: "code", label: "Scoring Code" },
@@ -178,8 +179,10 @@ const Players = () => {
   const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
   const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
   const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
-    name: true, email: true, phone: true, hcp: true, shirt: true, hole: true, code: true, payment: true,
+    name: true, email: true, phone: true, hcp: true, tier: true, shirt: true, hole: true, code: true, payment: true,
   });
+  const [tiers, setTiers] = useState<Array<{ id: string; name: string }>>([]);
+  const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   useEffect(() => {
@@ -233,9 +236,11 @@ const Players = () => {
     Promise.all([
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
-    ]).then(([regsRes, fieldsRes]) => {
+      (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
+    ]).then(([regsRes, fieldsRes, tiersRes]: any) => {
       setPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
+      setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
       setLoading(false);
     });
   }, [selectedTournament]);
@@ -265,6 +270,7 @@ const Players = () => {
       case "email": return (p.email || "").toLowerCase();
       case "phone": return (p.phone || "").toLowerCase();
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
+      case "tier": return tierName(p.tier_id).toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
       case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
       case "code": return (p.scoring_code || "").toLowerCase();
@@ -379,13 +385,14 @@ const Players = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Shirt Size", "Hole", "Payment", "Scoring Code"];
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Division / Tier", "Shirt Size", "Hole", "Payment", "Scoring Code"];
     const rows = players.map((p) => [
       p.first_name,
       p.last_name,
       p.email,
       p.phone || "",
       p.handicap?.toString() || "",
+      tierName(p.tier_id),
       p.shirt_size || "",
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
@@ -1117,6 +1124,7 @@ const Players = () => {
                       {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
                       {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
                       {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
+                      {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
                       {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
                       {rosterCols.code !== false && (
@@ -1156,6 +1164,17 @@ const Players = () => {
                     {rosterCols.hcp !== false && (
                       <td className="px-4 py-3 text-center text-muted-foreground">
                         {p.handicap !== null ? p.handicap : "—"}
+                      </td>
+                    )}
+                    {rosterCols.tier !== false && (
+                      <td className="px-4 py-3">
+                        {p.tier_id ? (
+                          <span className="inline-flex items-center bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            {tierName(p.tier_id)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
                       </td>
                     )}
                     {rosterCols.shirt !== false && (
@@ -1594,6 +1613,10 @@ const Players = () => {
                     {viewingPlayer.payment_status}
                   </span>
                 </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Division / Tier</p>
+                <p className="text-sm text-foreground">{tierName(viewingPlayer.tier_id)}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

@@ -8522,6 +8522,7 @@ export type Database = {
           slug: string | null
           sponsor_email_config: Json | null
           sponsor_form_config: Json
+          sponsor_logo_display_size: string
           state: string | null
           status: string
           store_section_title: string | null
@@ -8766,6 +8767,7 @@ export type Database = {
           slug?: string | null
           sponsor_email_config?: Json | null
           sponsor_form_config?: Json
+          sponsor_logo_display_size?: string
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -9010,6 +9012,7 @@ export type Database = {
           slug?: string | null
           sponsor_email_config?: Json | null
           sponsor_form_config?: Json
+          sponsor_logo_display_size?: string
           state?: string | null
           status?: string
           store_section_title?: string | null

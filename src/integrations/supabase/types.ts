@@ -2919,10 +2919,16 @@ export type Database = {
         Row: {
           amount_cents: number
           created_at: string
+          created_by_admin: string | null
           discount_cents: number
           id: string
+          invoice_notes: string | null
+          invoice_paid_at: string | null
+          invoice_status: string | null
+          invoiced_at: string | null
           league_id: string | null
           organization_id: string
+          payment_method: string
           promo_code: string | null
           purchased_by: string | null
           status: string
@@ -2933,10 +2939,16 @@ export type Database = {
         Insert: {
           amount_cents: number
           created_at?: string
+          created_by_admin?: string | null
           discount_cents?: number
           id?: string
+          invoice_notes?: string | null
+          invoice_paid_at?: string | null
+          invoice_status?: string | null
+          invoiced_at?: string | null
           league_id?: string | null
           organization_id: string
+          payment_method?: string
           promo_code?: string | null
           purchased_by?: string | null
           status?: string
@@ -2947,10 +2959,16 @@ export type Database = {
         Update: {
           amount_cents?: number
           created_at?: string
+          created_by_admin?: string | null
           discount_cents?: number
           id?: string
+          invoice_notes?: string | null
+          invoice_paid_at?: string | null
+          invoice_status?: string | null
+          invoiced_at?: string | null
           league_id?: string | null
           organization_id?: string
+          payment_method?: string
           promo_code?: string | null
           purchased_by?: string | null
           status?: string

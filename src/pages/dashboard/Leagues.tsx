@@ -29,9 +29,20 @@ export default function Leagues() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+      setIsAdmin(!!data);
+    })();
+  }, []);
 
   const load = async () => {
     if (!org) return;
+
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("golf_leagues")
@@ -77,6 +88,20 @@ export default function Leagues() {
     }
     window.location.href = data.url;
   };
+
+  const adminInvoiceUnlock = async (leagueId: string) => {
+    if (!window.confirm("Unlock this league without payment and queue it for manual invoicing?")) return;
+    const notes = window.prompt("Optional invoice notes (customer name, PO#, etc.):") || "";
+    const { data, error } = await (supabase as any).functions.invoke("create-league-access-checkout", {
+      body: { league_id: leagueId, admin_invoice: true, invoice_notes: notes.trim() || undefined },
+    });
+    if (error || !data?.invoice) {
+      return toast({ title: "Unlock failed", description: error?.message || data?.error || "Please try again", variant: "destructive" });
+    }
+    toast({ title: "League unlocked", description: "Added to admin invoice queue." });
+    load();
+  };
+
 
   return (
     <div className="p-6 space-y-6">
@@ -133,12 +158,18 @@ export default function Leagues() {
                 </div>
                 <div className="flex gap-2">
                   {l.access_status !== "paid" && (
-                    <Button
-                      onClick={() => unlockLeague(l.id)}
-                    >
-                      <CreditCard className="h-4 w-4 mr-2" /> Unlock $299
-                    </Button>
+                    <>
+                      <Button onClick={() => unlockLeague(l.id)}>
+                        <CreditCard className="h-4 w-4 mr-2" /> Unlock $299
+                      </Button>
+                      {isAdmin && (
+                        <Button variant="secondary" onClick={() => adminInvoiceUnlock(l.id)}>
+                          Unlock (Invoice)
+                        </Button>
+                      )}
+                    </>
                   )}
+
                   <Button asChild variant="outline">
                     <Link to={`/dashboard/leagues/${l.id}`}>Manage</Link>
                   </Button>

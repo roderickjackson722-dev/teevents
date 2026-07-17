@@ -130,8 +130,34 @@ export default function GolfLeagues() {
               />
             </div>
             <p className="text-center text-xs text-muted-foreground mt-3">Sample data — your league's standings will appear here automatically.</p>
+
+            <div className="mt-12 grid md:grid-cols-5 gap-6 items-center">
+              <div className="md:col-span-3 rounded-lg overflow-hidden shadow-xl border border-border">
+                <img
+                  src={seasonBoardImg}
+                  alt="Season standings dashboard showing ranked teams, events played, points and trend indicators"
+                  width={1600}
+                  height={1008}
+                  loading="lazy"
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <h3 className="text-xl font-display font-bold mb-2">Your own branded season hub</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Players, points, trends, and next event — all in one place. Share a single custom URL with your league all season long:
+                </p>
+                <div className="bg-card border border-border rounded-md px-3 py-2 font-mono text-sm">
+                  teevents.golf/<span className="text-primary font-semibold">your-league</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Pick any slug when you create your league — the short URL routes straight to your public standings page.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
+
 
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">

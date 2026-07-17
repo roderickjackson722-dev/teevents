@@ -242,6 +242,109 @@ export async function sendRegistrantConfirmationEmail(
   }
 }
 
+/**
+ * Build an HTML block that renders every registration field & answer captured
+ * for the given registration IDs. Used inside both organizer and platform-admin
+ * confirmation emails so recipients see the full submission (name, email,
+ * phone, plus every custom question/answer) for each player in the transaction.
+ * Returns an empty string if no registrations are found.
+ */
+export async function buildRegistrationAnswersHtml(
+  supabaseAdmin: any,
+  registrationIds: string[],
+): Promise<string> {
+  try {
+    if (!registrationIds || registrationIds.length === 0) return "";
+    const { data: regs } = await supabaseAdmin
+      .from("tournament_registrations")
+      .select("id, tournament_id, first_name, last_name, email, phone, handicap, shirt_size, dietary_restrictions, company, skill_level, custom_answers, created_at")
+      .in("id", registrationIds);
+    if (!regs || regs.length === 0) return "";
+
+    const tournamentId = (regs[0] as any).tournament_id;
+    const { data: fields } = await supabaseAdmin
+      .from("tournament_registration_fields")
+      .select("id, label, field_type, is_enabled, sort_order")
+      .eq("tournament_id", tournamentId)
+      .order("sort_order", { ascending: true });
+
+    const escape = (s: any) =>
+      String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+    const fmt = (v: any) => {
+      if (v === null || v === undefined || v === "") return "<em style='color:#9ca3af'>Not provided</em>";
+      if (Array.isArray(v)) return escape(v.join(", "));
+      if (typeof v === "object") return escape(JSON.stringify(v));
+      return escape(v);
+    };
+
+    const sections = regs.map((r: any, idx: number) => {
+      const rows: Array<[string, any]> = [];
+      rows.push(["Name", `${r.first_name || ""} ${r.last_name || ""}`.trim()]);
+      rows.push(["Email", r.email]);
+      if (r.phone) rows.push(["Phone", r.phone]);
+
+      const answers: any[] = Array.isArray(r.custom_answers) ? r.custom_answers : [];
+      const seenLabels = new Set(rows.map(([l]) => l.toLowerCase()));
+
+      // Prefer the canonical answers array (order matches the org's field setup)
+      for (const a of answers) {
+        const label = String(a?.label || "").trim();
+        if (!label) continue;
+        if (seenLabels.has(label.toLowerCase())) continue;
+        rows.push([label, a?.answer ?? a?.value ?? ""]);
+        seenLabels.add(label.toLowerCase());
+      }
+
+      // Backfill from tournament field defs so recipients always see every configured
+      // question — even ones with no answer stored (rendered as "Not provided").
+      for (const f of (fields || []) as any[]) {
+        const label = String(f.label || "").trim();
+        if (!label || seenLabels.has(label.toLowerCase())) continue;
+        // Look up matching native column for default fields
+        const nativeMap: Record<string, string> = {
+          "handicap": "handicap",
+          "shirt size": "shirt_size",
+          "dietary restrictions": "dietary_restrictions",
+          "company / organization": "company",
+          "skill level": "skill_level",
+        };
+        const nativeKey = nativeMap[label.toLowerCase()];
+        const val = nativeKey ? (r as any)[nativeKey] : "";
+        rows.push([label, val]);
+        seenLabels.add(label.toLowerCase());
+      }
+
+      const rowsHtml = rows
+        .map(
+          ([label, value]) => `
+        <tr>
+          <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;white-space:nowrap;">${escape(label)}</td>
+          <td style="padding:6px 0;color:#111827;font-size:14px;vertical-align:top;">${fmt(value)}</td>
+        </tr>`,
+        )
+        .join("");
+
+      return `
+      <div style="margin:14px 0;padding:14px 16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+        <p style="margin:0 0 8px;color:#1a5c38;font-size:14px;font-weight:700;">
+          🏌️ Player ${regs.length > 1 ? idx + 1 + " of " + regs.length : ""} — ${escape(`${r.first_name || ""} ${r.last_name || ""}`.trim())}
+        </p>
+        <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">${rowsHtml}</table>
+      </div>`;
+    });
+
+    return `
+    <div style="margin:18px 0 6px;">
+      <p style="margin:0 0 4px;color:#111827;font-size:15px;font-weight:700;">📝 Full Registration Submission</p>
+      <p style="margin:0 0 10px;color:#6b7280;font-size:13px;">Every question shown to the registrant and their submitted answer:</p>
+      ${sections.join("")}
+    </div>`;
+  } catch (err) {
+    console.error("[buildRegistrationAnswersHtml] failed:", err);
+    return "";
+  }
+}
+
 // HTML email template helper for admin notifications
 export function buildNotificationHtml(title: string, lines: string[]): string {
   return `

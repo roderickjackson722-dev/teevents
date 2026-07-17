@@ -10,6 +10,7 @@ import SEO from "@/components/SEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import heroImg from "@/assets/golf-league-hero.jpg";
+import seasonBoardImg from "@/assets/season-leaderboard-preview.jpg";
 import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
 import { DEFAULT_DESIGN } from "@/components/dashboard/LeaderboardDesignCard";
 

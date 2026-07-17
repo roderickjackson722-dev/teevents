@@ -34,6 +34,9 @@ interface CustomField {
   label: string;
   field_type: string;
   tournament_id: string;
+  is_default?: boolean;
+  is_required?: boolean;
+  is_enabled?: boolean;
 }
 
 interface Registration {
@@ -159,7 +162,13 @@ const Transactions = () => {
     const sideTicketIds = new Set<string>();
     for (const t of allTx) {
       const m = t.metadata || {};
-      (m.registration_ids || []).forEach((id: string) => regIds.add(id));
+      const registrationIds = Array.isArray(m.registration_ids)
+        ? m.registration_ids
+        : typeof m.registration_ids === "string"
+          ? m.registration_ids.split(",").map((id: string) => id.trim()).filter(Boolean)
+          : [];
+      registrationIds.forEach((id: string) => regIds.add(id));
+      if (m.manual_registration_id) regIds.add(m.manual_registration_id);
       if (m.sponsor_registration_id) sponsorIds.add(m.sponsor_registration_id);
       if (m.vendor_registration_id) vendorIds.add(m.vendor_registration_id);
       if (m.side_event_ticket_id) sideTicketIds.add(m.side_event_ticket_id);
@@ -167,7 +176,7 @@ const Transactions = () => {
 
     const [fieldsRes, regRes, sponsorRes, vendorRes, sideRes, donationRes, addonRes] = await Promise.all([
       supabase.from("tournament_registration_fields")
-        .select("id, label, field_type, tournament_id")
+        .select("id, label, field_type, tournament_id, is_default, is_required, is_enabled")
         .in("tournament_id", tournIds),
       regIds.size > 0
         ? supabase.from("tournament_registrations")
@@ -238,10 +247,23 @@ const Transactions = () => {
   const fieldsForTournament = (tournId: string) =>
     customFields.filter(f => f.tournament_id === tournId);
 
-  const answerFor = (reg: Registration | undefined, fieldId: string): string => {
-    if (!reg?.custom_answers) return "";
+  const answerFor = (reg: Registration | undefined, field: CustomField): string => {
+    if (!reg) return "";
+    const directByLabel: Record<string, string> = {
+      "phone": reg.phone || "",
+      "handicap": reg.handicap != null ? String(reg.handicap) : "",
+      "shirt size": reg.shirt_size || "",
+      "dietary restrictions": reg.dietary_restrictions || "",
+    };
+    const direct = directByLabel[field.label.trim().toLowerCase()];
+    if (direct) return direct;
+
     const arr = Array.isArray(reg.custom_answers) ? reg.custom_answers : [];
-    const found = arr.find((a: any) => a?.field_id === fieldId || a?.id === fieldId);
+    const found = arr.find((a: any) => {
+      const sameId = a?.field_id === field.id || a?.id === field.id;
+      const sameLabel = String(a?.label || "").trim().toLowerCase() === field.label.trim().toLowerCase();
+      return sameId || sameLabel;
+    });
     return found ? String(found.value ?? found.answer ?? "") : "";
   };
 
@@ -272,7 +294,13 @@ const Transactions = () => {
   const getEntityRows = (t: Tx): { entityType: string; entityId: string }[] => {
     const m = t.metadata || {};
     const rows: { entityType: string; entityId: string }[] = [];
-    (m.registration_ids || []).forEach((id: string) => rows.push({ entityType: "registration", entityId: id }));
+    const registrationIds = Array.isArray(m.registration_ids)
+      ? m.registration_ids
+      : typeof m.registration_ids === "string"
+        ? m.registration_ids.split(",").map((id: string) => id.trim()).filter(Boolean)
+        : [];
+    registrationIds.forEach((id: string) => rows.push({ entityType: "registration", entityId: id }));
+    if (m.manual_registration_id) rows.push({ entityType: "registration", entityId: m.manual_registration_id });
     if (m.sponsor_registration_id) rows.push({ entityType: "sponsor", entityId: m.sponsor_registration_id });
     if (m.vendor_registration_id) rows.push({ entityType: "vendor", entityId: m.vendor_registration_id });
     if (m.side_event_ticket_id) rows.push({ entityType: "side_ticket", entityId: m.side_event_ticket_id });
@@ -356,7 +384,7 @@ const Transactions = () => {
             diet = r.dietary_restrictions || "";
             groupL = r.group_label || "";
             for (const f of fieldsForTournament(r.tournament_id)) {
-              answersMap[f.label] = answerFor(r, f.id);
+              answersMap[f.label] = answerFor(r, f);
             }
             const ax = addons.get(r.id) || [];
             addonStr = ax.map(a => `${a.addon_name} x${a.quantity} ($${(a.unit_price_cents / 100).toFixed(2)})`).join("; ");
@@ -470,11 +498,11 @@ const Transactions = () => {
                 </div>
                 {fields.length > 0 && (
                   <div className="mt-3">
-                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Custom Questions</div>
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Registration Form Answers</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                       {fields.map(f => (
                         <div key={f.id}>
-                          <span className="text-muted-foreground">{f.label}:</span> {answerFor(r, f.id) || <span className="text-muted-foreground italic">—</span>}
+                          <span className="text-muted-foreground">{f.label}:</span> {answerFor(r, f) || <span className="text-muted-foreground italic">Not captured</span>}
                         </div>
                       ))}
                     </div>

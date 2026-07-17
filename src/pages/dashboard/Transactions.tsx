@@ -28,6 +28,7 @@ interface Tx {
   golfer_name: string | null;
   golfer_email: string | null;
   payout_method: string | null;
+  registration_id: string | null;
 }
 
 interface CustomField {

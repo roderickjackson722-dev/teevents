@@ -18,7 +18,7 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { event_id, member_id, scoring_code } = await req.json();
+    const { event_id, member_id, scoring_code, return_url } = await req.json();
     if (!event_id || !member_id || !scoring_code) throw new Error("Missing event_id, member_id, or scoring_code");
 
     const supabaseAdmin = createClient(
@@ -112,8 +112,8 @@ Deno.serve(async (req) => {
           },
         ],
         ...applicationFeeBlock(account, feeCents),
-        success_url: `${origin}/league-portal?code=${scoring_code}&pay=success${acctQuerySuffix(account)}`,
-        cancel_url: `${origin}/league-portal?code=${scoring_code}&pay=cancelled`,
+        success_url: `${return_url || origin}?pay=success`,
+        cancel_url: `${return_url || origin}?pay=cancelled`,
         metadata: {
           kind: "league_event",
           payment_id: payment!.id,

@@ -78,17 +78,57 @@ export default function GolfLeagues() {
       />
       <Navbar />
       <main className="min-h-screen bg-background">
-        <section className="bg-gradient-to-b from-primary/5 to-background py-16 px-4">
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase mb-4">
-              <Trophy className="h-3.5 w-3.5" /> New — Golf League Management
+        <section className="relative overflow-hidden">
+          <img
+            src={heroImg}
+            alt="Golfers celebrating a league win at sunset"
+            width={1600}
+            height={912}
+            fetchPriority="high"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" />
+          <div className="relative max-w-6xl mx-auto px-4 py-24 md:py-32">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 bg-primary/20 text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase mb-4 backdrop-blur">
+                <Trophy className="h-3.5 w-3.5" /> New — Golf League Management
+              </div>
+              <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-4 leading-tight">
+                Run your season. Crown your champions.
+              </h1>
+              <p className="text-lg md:text-xl text-white/90 mb-8">
+                Real-time scoring, live leaderboards, skins, and season-long standings — the same tools TeeVents customers use, purpose-built for leagues.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button size="lg" onClick={subscribe} disabled={loading}>
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Start your league — $199/year
+                </Button>
+                <Button size="lg" variant="secondary" asChild>
+                  <a href="#standings">See season standings</a>
+                </Button>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-4">
-              Golf League Management with TeeVents
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Manage your season-long golf league with real-time scoring, live leaderboards, skins, and full player stats — all in one place.
-            </p>
+          </div>
+        </section>
+
+        <section id="standings" className="py-16 px-4 bg-muted/30">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">Season-long standings, live all year</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Every league gets the same seasonal leaderboard experience as our tournament customers — consistent, branded, and updated in real time.
+              </p>
+            </div>
+            <div className="shadow-xl rounded-lg overflow-hidden">
+              <LeaderboardRenderer
+                design={DEFAULT_DESIGN}
+                title="2026 Season Standings"
+                rows={SAMPLE_STANDINGS}
+                compact
+              />
+            </div>
+            <p className="text-center text-xs text-muted-foreground mt-3">Sample data — your league's standings will appear here automatically.</p>
           </div>
         </section>
 

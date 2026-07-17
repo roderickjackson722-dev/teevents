@@ -54,23 +54,25 @@ export default function LeagueMemberPortal() {
   const save = async () => {
     if (!eventId || !member) return;
     setSaving(true);
-    const rows: any[] = [];
+    let count = 0;
+    let lastError: any = null;
     for (let h = 1; h <= 18; h++) {
       const g = scores[h];
       if (g !== "" && g != null && !isNaN(Number(g))) {
-        rows.push({
-          event_id: eventId,
-          member_id: member.id,
-          hole_number: h,
-          gross_score: Number(g),
-          net_score: member.handicap_index != null ? Math.max(1, Number(g) - Math.round(member.handicap_index / 18)) : null,
+        const { error } = await (supabase as any).rpc("member_submit_score", {
+          _code: code?.toUpperCase(),
+          _league_slug: slug,
+          _event_id: eventId,
+          _hole: h,
+          _gross: Number(g),
         });
+        if (error) lastError = error;
+        else count++;
       }
     }
-    if (rows.length === 0) { toast({ title: "Enter at least one score" }); setSaving(false); return; }
-    const { error } = await (supabase as any).from("league_event_scores").upsert(rows, { onConflict: "event_id,member_id,hole_number" });
-    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: `Saved ${rows.length} scores` });
+    if (count === 0) { toast({ title: "Enter at least one score" }); setSaving(false); return; }
+    if (lastError) toast({ title: "Some scores failed", description: lastError.message, variant: "destructive" });
+    else toast({ title: `Saved ${count} scores` });
     setSaving(false);
   };
 

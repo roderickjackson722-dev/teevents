@@ -131,21 +131,15 @@ Deno.serve(async (req) => {
         .eq("id", (existing as any).tournament_id)
         .single();
       const tName = (tournament as any)?.title || "the tournament";
+      const vendorAnswersHtml = await buildVendorAnswersHtml(supabaseAdmin, vendorRegId);
+
       try {
-        const html = `
-<!DOCTYPE html><html><body style="font-family:-apple-system,sans-serif;background:#f4f4f5;padding:24px;">
-  <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;margin:auto;">
-    <tr><td style="background:#1a5c38;padding:24px;text-align:center;color:#fff;">
-      <h2 style="margin:0;">Booth Fee Received</h2>
-    </td></tr>
-    <tr><td style="padding:24px;color:#374151;line-height:1.6;">
-      <p>Hi ${(existing as any).contact_name},</p>
-      <p>We've received your booth fee for <strong>${tName}</strong>. Your spot is confirmed.</p>
-      ${(existing as any).booth_location ? `<p><strong>Booth location:</strong> ${(existing as any).booth_location}</p>` : ""}
-      <p>Thanks!<br/>— The TeeVents Team</p>
-    </td></tr>
-  </table>
-</body></html>`;
+        const html = buildNotificationHtml("Booth Fee Received", [
+          `Hi <strong>${(existing as any).contact_name}</strong>,`,
+          `We've received your booth fee for <strong>${tName}</strong>. Your spot is confirmed.`,
+          (existing as any).booth_location ? `<strong>Booth location:</strong> ${(existing as any).booth_location}` : "",
+          `Thanks!<br/>— The TeeVents Team`,
+        ].filter(Boolean) as string[], vendorAnswersHtml);
         await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
@@ -164,19 +158,11 @@ Deno.serve(async (req) => {
       try {
         const organizerEmail = (tournament as any)?.contact_email;
         if (organizerEmail) {
-          const orgHtml = `
-<!DOCTYPE html><html><body style="font-family:-apple-system,sans-serif;background:#f4f4f5;padding:24px;">
-  <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;margin:auto;">
-    <tr><td style="background:#1a5c38;padding:24px;text-align:center;color:#fff;">
-      <h2 style="margin:0;">New Vendor Payment</h2>
-    </td></tr>
-    <tr><td style="padding:24px;color:#374151;line-height:1.6;">
-      <p><strong>${(existing as any).vendor_name || (existing as any).contact_name}</strong> just paid their booth fee for <strong>${tName}</strong>.</p>
-      <p><strong>Contact:</strong> ${(existing as any).contact_name} &lt;${(existing as any).contact_email}&gt;</p>
-      ${(existing as any).booth_location ? `<p><strong>Booth:</strong> ${(existing as any).booth_location}</p>` : ""}
-    </td></tr>
-  </table>
-</body></html>`;
+          const orgHtml = buildNotificationHtml("New Vendor Payment", [
+            `<strong>${(existing as any).vendor_name || (existing as any).contact_name}</strong> just paid their booth fee for <strong>${tName}</strong>.`,
+            `<strong>Contact:</strong> ${(existing as any).contact_name} &lt;${(existing as any).contact_email}&gt;`,
+            (existing as any).booth_location ? `<strong>Booth:</strong> ${(existing as any).booth_location}` : "",
+          ].filter(Boolean) as string[], vendorAnswersHtml);
           await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },

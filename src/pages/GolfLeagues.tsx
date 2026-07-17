@@ -65,7 +65,7 @@ export default function GolfLeagues() {
       <SEO
         title="Golf League Management Software | TeeVents"
         description="Run your golf league with real-time scoring, live leaderboards, skins, handicap tracking, and season stats. From $199/year."
-        url="/golf-leagues"
+        
       />
       <Navbar />
       <main className="min-h-screen bg-background">

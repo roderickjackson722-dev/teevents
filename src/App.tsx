@@ -23,6 +23,9 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import Tournaments from "./pages/dashboard/Tournaments";
 import Leagues from "./pages/dashboard/Leagues";
 import LeagueManage from "./pages/dashboard/LeagueManage";
+import PublicLeague from "./pages/PublicLeague";
+import LeagueMemberLogin from "./pages/LeagueMemberLogin";
+import LeagueMemberPortal from "./pages/LeagueMemberPortal";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
 import Printables from "./pages/dashboard/Printables";
@@ -199,6 +202,10 @@ const App = () => (
           <Route path="/dashboard/leagues" element={<DashboardLayout><Leagues /></DashboardLayout>} />
           <Route path="/dashboard/leagues/:leagueId" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
           <Route path="/dashboard/leagues/:leagueId/manage" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
+          <Route path="/league/:slug" element={<PublicLeague />} />
+          <Route path="/league/:slug/score" element={<LeagueMemberLogin />} />
+          <Route path="/league/:slug/me/:code" element={<LeagueMemberPortal />} />
+
 
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />
           <Route path="/dashboard/setup-checklist" element={<DashboardLayout><SetupChecklistPage /></DashboardLayout>} />

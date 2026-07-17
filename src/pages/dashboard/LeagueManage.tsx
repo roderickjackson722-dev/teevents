@@ -8,6 +8,8 @@ import LeagueMembersTab from "@/components/leagues/LeagueMembersTab";
 import LeagueEventsTab from "@/components/leagues/LeagueEventsTab";
 import LeaguePairingsTab from "@/components/leagues/LeaguePairingsTab";
 import LeagueScoringTab from "@/components/leagues/LeagueScoringTab";
+import LeagueStandingsTab from "@/components/leagues/LeagueStandingsTab";
+import LeagueSkinsTab from "@/components/leagues/LeagueSkinsTab";
 import LeagueSettingsTab from "@/components/leagues/LeagueSettingsTab";
 
 export default function LeagueManage() {
@@ -54,19 +56,26 @@ export default function LeagueManage() {
       </div>
 
       <Tabs defaultValue="members">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
           <TabsTrigger value="scoring">Scoring</TabsTrigger>
+          <TabsTrigger value="standings">Standings</TabsTrigger>
+          <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
         <TabsContent value="events" className="mt-4"><LeagueEventsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="pairings" className="mt-4"><LeaguePairingsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="scoring" className="mt-4"><LeagueScoringTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="standings" className="mt-4"><LeagueStandingsTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="skins" className="mt-4"><LeagueSkinsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="settings" className="mt-4"><LeagueSettingsTab league={league} onSaved={load} /></TabsContent>
       </Tabs>
+      {league.is_public && league.league_slug && (
+        <p className="text-xs text-muted-foreground">Public page: <a className="underline" href={`/league/${league.league_slug}`} target="_blank" rel="noreferrer">/league/{league.league_slug}</a></p>
+      )}
     </div>
   );
 }

@@ -1274,38 +1274,54 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               )}
 
               <div className="flex-1 flex flex-wrap items-center justify-center gap-x-8 gap-y-8 sm:gap-x-12 min-h-[120px] py-4">
-                {visibleSponsors.map((s) => {
-                  const sponsorUrl = s.website_url
-                    ? (s.website_url.startsWith("http://") || s.website_url.startsWith("https://") ? s.website_url : `https://${s.website_url}`)
-                    : null;
-                  const isFeatured = s.tier === "title" || s.tier === "presenting" || s.tier === "platinum";
-                  const imgClass = isFeatured
-                    ? "h-28 sm:h-36 w-auto max-w-[240px] sm:max-w-[320px] object-contain"
-                    : "h-20 sm:h-24 w-auto max-w-[160px] sm:max-w-[200px] object-contain";
-                  return (
-                  <div key={s.id} className="flex flex-col items-center">
-                    {sponsorUrl ? (
-                      <a href={sponsorUrl} target="_blank" rel="noopener noreferrer" className="group">
-                        {s.logo_url ? (
-                          <img src={s.logo_url} alt={s.name} className={`${imgClass} group-hover:scale-105 transition-transform`} />
-                        ) : (
-                          <span className="text-lg font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{s.name}</span>
-                        )}
-                      </a>
-                    ) : s.logo_url ? (
-                      <img src={s.logo_url} alt={s.name} className={imgClass} />
-                    ) : (
-                      <span className="text-lg font-bold text-gray-700">{s.name}</span>
-                    )}
-                    {(s.tier === "presenting" || s.tier === "title") && (
-                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-2 text-center">
-                        {s.tier === "title" ? "Title Sponsor" : "Thanks to Our Presenting Sponsor"}
-                      </span>
-                    )}
-                  </div>
-                  );
-                })}
+                {(() => {
+                  const size = (tournament as any).sponsor_logo_display_size || "medium";
+                  const sizeMap: Record<string, { box: string; featured: string }> = {
+                    small:  { box: "h-16 sm:h-20 w-[140px] sm:w-[170px]", featured: "h-20 sm:h-24 w-[180px] sm:w-[220px]" },
+                    medium: { box: "h-24 sm:h-28 w-[180px] sm:w-[220px]", featured: "h-28 sm:h-36 w-[220px] sm:w-[280px]" },
+                    large:  { box: "h-32 sm:h-40 w-[220px] sm:w-[280px]", featured: "h-40 sm:h-48 w-[260px] sm:w-[340px]" },
+                    xlarge: { box: "h-40 sm:h-52 w-[260px] sm:w-[340px]", featured: "h-48 sm:h-64 w-[300px] sm:w-[400px]" },
+                  };
+                  const dims = sizeMap[size] || sizeMap.medium;
+                  return visibleSponsors.map((s) => {
+                    const sponsorUrl = s.website_url
+                      ? (s.website_url.startsWith("http://") || s.website_url.startsWith("https://") ? s.website_url : `https://${s.website_url}`)
+                      : null;
+                    const isFeatured = s.tier === "title" || s.tier === "presenting" || s.tier === "platinum";
+                    const boxClass = `${isFeatured ? dims.featured : dims.box} flex items-center justify-center`;
+                    const imgClass = "max-h-full max-w-full object-contain";
+                    return (
+                    <div key={s.id} className="flex flex-col items-center">
+                      {sponsorUrl ? (
+                        <a href={sponsorUrl} target="_blank" rel="noopener noreferrer" className="group">
+                          <div className={boxClass}>
+                            {s.logo_url ? (
+                              <img src={s.logo_url} alt={s.name} className={`${imgClass} group-hover:scale-105 transition-transform`} />
+                            ) : (
+                              <span className="text-lg font-bold text-gray-700 group-hover:text-gray-900 transition-colors text-center">{s.name}</span>
+                            )}
+                          </div>
+                        </a>
+                      ) : (
+                        <div className={boxClass}>
+                          {s.logo_url ? (
+                            <img src={s.logo_url} alt={s.name} className={imgClass} />
+                          ) : (
+                            <span className="text-lg font-bold text-gray-700 text-center">{s.name}</span>
+                          )}
+                        </div>
+                      )}
+                      {(s.tier === "presenting" || s.tier === "title") && (
+                        <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-2 text-center">
+                          {s.tier === "title" ? "Title Sponsor" : "Thanks to Our Presenting Sponsor"}
+                        </span>
+                      )}
+                    </div>
+                    );
+                  });
+                })()}
               </div>
+
 
               {sponsorPages > 1 && (
                 <button

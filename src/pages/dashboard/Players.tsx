@@ -1095,12 +1095,12 @@ const Players = () => {
         /* Roster View */
         <div className="bg-card rounded-lg border border-border overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="min-w-full w-max text-sm">
               <thead>
                 {(() => {
                   const SortableTh = ({ colKey, align = "left", children }: { colKey: string; align?: "left" | "center"; children: React.ReactNode }) => (
                     <th
-                      className={`${align === "center" ? "text-center" : "text-left"} font-semibold px-4 py-3 cursor-pointer select-none`}
+                      className={`${align === "center" ? "text-center" : "text-left"} font-semibold px-4 py-3 cursor-pointer select-none whitespace-nowrap`}
                       onClick={() => changeSort(colKey)}
                     >
                       <span className={`inline-flex items-center gap-1 ${align === "center" ? "justify-center" : ""}`}>

@@ -141,6 +141,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-yellow-400 bg-yellow-400/5",
     items: [
       { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, expenses" },
+      { title: "Transactions", url: "/dashboard/transactions", icon: Receipt, feature: null, description: "Full transaction list with all submission answers + CSV export" },
       { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, PayPal, check" },
       { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
       { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, extras" },

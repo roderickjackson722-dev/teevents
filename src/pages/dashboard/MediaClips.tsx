@@ -262,6 +262,7 @@ export default function MediaClipsPage() {
                     <p className="text-xs text-muted-foreground truncate">{c.video_url}</p>
                   </div>
                   <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => setPreviewing(c)} title="Preview"><Play className="w-4 h-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={() => setEditing(c)}><Pencil className="w-4 h-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={() => remove(c.id)}><Trash2 className="w-4 h-4" /></Button>
                   </div>

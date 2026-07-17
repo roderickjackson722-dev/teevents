@@ -3513,6 +3513,74 @@ export type Database = {
           },
         ]
       }
+      league_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          created_by: string | null
+          current_golfers: number
+          current_period_end: string | null
+          current_period_start: string | null
+          flat_fee_price_cents: number
+          id: string
+          max_golfers: number
+          organization_id: string
+          per_golfer_price_cents: number
+          status: string
+          stripe_customer_id: string | null
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
+          subscription_type: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          created_by?: string | null
+          current_golfers?: number
+          current_period_end?: string | null
+          current_period_start?: string | null
+          flat_fee_price_cents?: number
+          id?: string
+          max_golfers?: number
+          organization_id: string
+          per_golfer_price_cents?: number
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_type: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          created_by?: string | null
+          current_golfers?: number
+          current_period_end?: string | null
+          current_period_start?: string | null
+          flat_fee_price_cents?: number
+          id?: string
+          max_golfers?: number
+          organization_id?: string
+          per_golfer_price_cents?: number
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_entry_fees: {
         Row: {
           amount_cents: number
@@ -9853,6 +9921,10 @@ export type Database = {
           _name?: string
           _token: string
         }
+        Returns: boolean
+      }
+      org_has_active_league_subscription: {
+        Args: { _org_id: string }
         Returns: boolean
       }
       recompute_tournament_setup_progress: {

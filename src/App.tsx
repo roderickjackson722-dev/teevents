@@ -308,6 +308,8 @@ const App = () => (
              <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />
+            <Route path="/admin/league-invoices" element={<LeagueInvoices />} />
+
             <Route path="/admin/scoring/:tournamentId" element={<AdminScoring />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/ai-sales-agent" element={<AiSalesAgent />} />

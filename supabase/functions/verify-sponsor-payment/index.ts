@@ -187,6 +187,7 @@ Deno.serve(async (req) => {
               .eq("id", tournamentId)
               .single();
 
+            const sponsorAnswersHtmlAdmin = await buildSponsorAnswersHtml(supabaseAdmin, sponsorRegistrationId);
             const adminHtml = buildNotificationHtml("New Sponsorship Transaction", [
               `🏢 <strong>${reg.company_name}</strong> — ${tierName}`,
               `🏌️ Tournament: <strong>${tournament?.title || "Unknown"}</strong>`,
@@ -194,7 +195,7 @@ Deno.serve(async (req) => {
               `🏷️ Platform Fee (5%): $${(platformFeeCents / 100).toFixed(2)}`,
               `💵 Net to Organizer: $${(netAmountCents / 100).toFixed(2)}`,
               `📧 ${reg.contact_email}`,
-            ]);
+            ], sponsorAnswersHtmlAdmin);
 
             await fetch("https://api.resend.com/emails", {
               method: "POST",

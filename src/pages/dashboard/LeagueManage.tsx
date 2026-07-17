@@ -18,6 +18,7 @@ export default function LeagueManage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const [league, setLeague] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const load = async () => {
     if (!leagueId) return;
@@ -25,6 +26,17 @@ export default function LeagueManage() {
     setLeague(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+        setIsAdmin(!!data);
+      }
+    })();
+  }, []);
+
 
   useEffect(() => {
     load();

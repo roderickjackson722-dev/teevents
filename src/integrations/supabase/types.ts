@@ -9621,6 +9621,16 @@ export type Database = {
         Args: { _id: string; _role: string; _user_agent: string }
         Returns: undefined
       }
+      member_submit_score: {
+        Args: {
+          _code: string
+          _event_id: string
+          _gross: number
+          _hole: number
+          _league_slug: string
+        }
+        Returns: undefined
+      }
       notify_sample_upgrade_interest: {
         Args: {
           _email?: string

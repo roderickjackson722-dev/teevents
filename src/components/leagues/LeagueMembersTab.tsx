@@ -11,7 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Users } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download } from "lucide-react";
+import { useRef } from "react";
 
 interface Member {
   id: string;
@@ -94,17 +95,66 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     else load();
   };
 
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const handleCsvImport = async (file: File) => {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return toast({ title: "CSV appears empty", variant: "destructive" });
+    const header = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const idx = (name: string) => header.indexOf(name);
+    const nameIdx = idx("name") >= 0 ? idx("name") : idx("member_name");
+    const emailIdx = idx("email");
+    if (nameIdx < 0 || emailIdx < 0) return toast({ title: "CSV must have 'name' and 'email' columns", variant: "destructive" });
+    const phoneIdx = idx("phone");
+    const hcpIdx = idx("handicap") >= 0 ? idx("handicap") : idx("handicap_index");
+    const rows = lines.slice(1).map(l => {
+      const cells = l.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+      return {
+        league_id: leagueId,
+        member_name: cells[nameIdx],
+        email: cells[emailIdx],
+        phone: phoneIdx >= 0 ? (cells[phoneIdx] || null) : null,
+        handicap_index: hcpIdx >= 0 && cells[hcpIdx] ? Number(cells[hcpIdx]) : null,
+        membership_status: "active",
+      };
+    }).filter(r => r.member_name && r.email);
+    if (rows.length === 0) return toast({ title: "No valid rows found", variant: "destructive" });
+    const { error } = await (supabase as any).from("league_members").insert(rows);
+    if (error) toast({ title: "Import failed", description: error.message, variant: "destructive" });
+    else { toast({ title: `Imported ${rows.length} members` }); load(); }
+  };
+
+  const exportCsv = () => {
+    const rows = [["Name", "Email", "Phone", "Handicap", "Status", "Fee Paid", "Scoring Code"]];
+    members.forEach(m => rows.push([
+      m.member_name, m.email, m.phone || "", String(m.handicap_index ?? ""),
+      m.membership_status, m.membership_fee_paid ? "Yes" : "No", m.scoring_code || "",
+    ]));
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `league-members-${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
       <CardContent className="pt-6 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Users className="h-5 w-5" /> Members ({members.length})
           </h2>
-          <Button onClick={() => setEditing({ ...emptyMember })}>
-            <Plus className="h-4 w-4 mr-2" /> Add Member
-          </Button>
+          <div className="flex gap-2">
+            <input ref={fileInput} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvImport(f); e.target.value = ""; }} />
+            <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}><Upload className="h-4 w-4 mr-2" /> Import CSV</Button>
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={members.length === 0}><Download className="h-4 w-4 mr-2" /> Export</Button>
+            <Button onClick={() => setEditing({ ...emptyMember })}>
+              <Plus className="h-4 w-4 mr-2" /> Add Member
+            </Button>
+          </div>
         </div>
+
 
         {loading ? (
           <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>

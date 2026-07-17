@@ -127,6 +127,22 @@ export default function Leagues() {
         </Button>
       </div>
 
+      {!hasSubscription && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="pt-6 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="font-semibold flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /> Golf Leagues Subscription Required</p>
+              <p className="text-sm text-muted-foreground">
+                Subscribe once for your organization — $199/year (unlimited golfers) or $10/golfer/year — to unlock League Management for every league you create.
+              </p>
+            </div>
+            <Button asChild>
+              <Link to="/golf-leagues">View Plans</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -155,7 +171,7 @@ export default function Leagues() {
                       <Badge variant="secondary">Inactive</Badge>
                     )}
                     {l.is_public && <Badge variant="outline">Public</Badge>}
-                    {l.access_status === "paid"
+                    {l.access_status === "paid" || hasSubscription
                       ? <Badge className="bg-green-600 hover:bg-green-600">Unlocked</Badge>
                       : <Badge variant="destructive" className="gap-1"><Lock className="h-3 w-3" /> Locked</Badge>}
                   </CardTitle>

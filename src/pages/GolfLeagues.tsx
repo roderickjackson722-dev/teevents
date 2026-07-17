@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Check, Trophy, Users, BarChart3, Smartphone, Award, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { toast } from "@/hooks/use-toast";
@@ -24,10 +22,9 @@ const FEATURES = [
 export default function GolfLeagues() {
   const { org } = useOrgContext();
   const navigate = useNavigate();
-  const [golferCount, setGolferCount] = useState<number>(10);
-  const [loading, setLoading] = useState<null | "flat_fee" | "per_golfer">(null);
+  const [loading, setLoading] = useState(false);
 
-  const subscribe = async (type: "flat_fee" | "per_golfer") => {
+  const subscribe = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate(`/login?next=${encodeURIComponent("/golf-leagues")}`);
@@ -41,15 +38,14 @@ export default function GolfLeagues() {
       navigate("/onboarding");
       return;
     }
-    setLoading(type);
+    setLoading(true);
     const { data, error } = await (supabase as any).functions.invoke("create-league-subscription", {
       body: {
         organization_id: org.orgId,
-        subscription_type: type,
-        golfer_count: type === "per_golfer" ? golferCount : undefined,
+        subscription_type: "flat_fee",
       },
     });
-    setLoading(null);
+    setLoading(false);
     if (error || !data?.url) {
       return toast({
         title: "Checkout failed",
@@ -64,12 +60,10 @@ export default function GolfLeagues() {
     <>
       <SEO
         title="Golf League Management Software | TeeVents"
-        description="Run your golf league with real-time scoring, live leaderboards, skins, handicap tracking, and season stats. From $199/year."
-        
+        description="Run your golf league with real-time scoring, live leaderboards, skins, handicap tracking, and season stats. $199/year, unlimited golfers."
       />
       <Navbar />
       <main className="min-h-screen bg-background">
-        {/* Hero */}
         <section className="bg-gradient-to-b from-primary/5 to-background py-16 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase mb-4">
@@ -84,7 +78,6 @@ export default function GolfLeagues() {
           </div>
         </section>
 
-        {/* Features */}
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-10">Everything you need to run a league</h2>
@@ -99,69 +92,30 @@ export default function GolfLeagues() {
           </div>
         </section>
 
-        {/* Pricing */}
         <section id="pricing" className="py-16 px-4 bg-muted/30">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-10">Simple annual pricing</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="border-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">Flat Fee</CardTitle>
-                  <div className="mt-2">
-                    <span className="text-4xl font-bold">$199</span>
-                    <span className="text-muted-foreground">/year</span>
+            <Card className="border-2 border-primary">
+              <CardHeader>
+                <CardTitle>Golf League — Annual</CardTitle>
+                <div className="mt-2">
+                  <span className="text-4xl font-bold">$199</span>
+                  <span className="text-muted-foreground">/year</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {["Unlimited golfers", "All league features included", "Real-time scoring & leaderboards", "Skins, standings & season stats"].map((f) => (
+                  <div key={f} className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    <span className="text-sm">{f}</span>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {["Unlimited golfers", "All league features included", "Best for larger leagues (20+)"].map((f) => (
-                    <div key={f} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm">{f}</span>
-                    </div>
-                  ))}
-                  <Button className="w-full mt-4" onClick={() => subscribe("flat_fee")} disabled={loading === "flat_fee"}>
-                    {loading === "flat_fee" && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Subscribe — Flat Fee
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-primary">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">Per-Golfer</CardTitle>
-                  <div className="mt-2">
-                    <span className="text-4xl font-bold">$10</span>
-                    <span className="text-muted-foreground">/golfer/year</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {["Pay only for active golfers", "All league features included", "Best for small leagues (5–20)"].map((f) => (
-                    <div key={f} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm">{f}</span>
-                    </div>
-                  ))}
-                  <div className="pt-2">
-                    <Label htmlFor="gc" className="text-xs">Number of golfers</Label>
-                    <Input
-                      id="gc"
-                      type="number"
-                      min={1}
-                      value={golferCount}
-                      onChange={(e) => setGolferCount(Math.max(1, Number(e.target.value) || 1))}
-                      className="mt-1"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Total: <strong>${(golferCount * 10).toLocaleString()}/year</strong>
-                    </p>
-                  </div>
-                  <Button className="w-full mt-2" onClick={() => subscribe("per_golfer")} disabled={loading === "per_golfer"}>
-                    {loading === "per_golfer" && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Subscribe — Per Golfer
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+                ))}
+                <Button className="w-full mt-4" onClick={subscribe} disabled={loading}>
+                  {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Subscribe — $199/year
+                </Button>
+              </CardContent>
+            </Card>
 
             <p className="text-center text-sm text-muted-foreground mt-8">
               Already have a TeeVents account?{" "}

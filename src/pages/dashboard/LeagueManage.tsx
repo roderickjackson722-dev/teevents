@@ -43,6 +43,14 @@ export default function LeagueManage() {
     load();
   }, [leagueId]);
 
+  useEffect(() => {
+    (async () => {
+      if (!league?.organization_id) return;
+      const { data } = await (supabase as any).rpc("org_has_active_league_subscription", { _org_id: league.organization_id });
+      setHasSubscription(!!data);
+    })();
+  }, [league?.organization_id]);
+
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center">
@@ -70,7 +78,7 @@ export default function LeagueManage() {
         {league.season_year && <p className="text-muted-foreground">Season: {league.season_year}</p>}
       </div>
 
-      {league.access_status !== "paid" && (
+      {league.access_status !== "paid" && !hasSubscription && (
         <Card className="border-destructive/40 bg-destructive/5">
           <CardContent className="pt-6 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-3">

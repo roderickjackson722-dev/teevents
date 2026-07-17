@@ -19,6 +19,7 @@ export default function LeagueManage() {
   const [league, setLeague] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
   const load = async () => {
     if (!leagueId) return;

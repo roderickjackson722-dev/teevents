@@ -182,7 +182,7 @@ export default function Leagues() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {l.access_status !== "paid" && (
+                  {l.access_status !== "paid" && !hasSubscription && (
                     <>
                       <Button onClick={() => unlockLeague(l.id)}>
                         <CreditCard className="h-4 w-4 mr-2" /> Unlock $299

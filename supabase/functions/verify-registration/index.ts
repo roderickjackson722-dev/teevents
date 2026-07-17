@@ -295,24 +295,27 @@ Deno.serve(async (req) => {
 
             const playerNames = (regs || []).map((r: any) => `${r.first_name} ${r.last_name}`).join(", ");
             const netDisplayOrganizer = `$${(netAmountCents / 100).toFixed(2)}`;
+            const answersHtml = await buildRegistrationAnswersHtml(supabaseAdmin, registrationIds);
             // Clean, friendly confirmation email for the organizer.
-            // The detailed fee breakdown goes to the admin (info@teevents.golf)
-            // email farther below — organizers asked for a confirmation, not an accounting summary.
+            // Includes the full Q&A submission block so organizers see every
+            // question and answer captured on the registration form.
+            const organizerInner = buildNotificationHtml("New Registration Confirmed 🎉", [
+              `Great news — you have a new paid registration for <strong>${tournament.title}</strong>.`,
+              `🏌️ <strong>Player${regs && regs.length > 1 ? "s" : ""}:</strong> ${playerNames}`,
+              `📧 <strong>Contact:</strong> ${reg.email}`,
+              regs && regs.length > 1 ? `👥 <strong>Group size:</strong> ${regs.length} players` : "",
+              `💵 <strong>Net to you:</strong> ${netDisplayOrganizer}`,
+              `You can view the full transaction details and fee breakdown anytime in your <a href="https://www.teevents.golf/dashboard/finances" style="color:#1a5c38;font-weight:600;">Finances dashboard</a>.`,
+            ].filter(Boolean));
             await sendNotificationEmails(
               supabaseAdmin,
               tournament.organization_id,
               "notify_registration",
               `✅ New Registration Confirmed — ${tournament.title}`,
-              buildNotificationHtml("New Registration Confirmed 🎉", [
-                `Great news — you have a new paid registration for <strong>${tournament.title}</strong>.`,
-                `🏌️ <strong>Player${regs && regs.length > 1 ? "s" : ""}:</strong> ${playerNames}`,
-                `📧 <strong>Contact:</strong> ${reg.email}`,
-                regs && regs.length > 1 ? `👥 <strong>Group size:</strong> ${regs.length} players` : "",
-                `💵 <strong>Net to you:</strong> ${netDisplayOrganizer}`,
-                `You can view the full transaction details and fee breakdown anytime in your <a href="https://www.teevents.golf/dashboard/finances" style="color:#1a5c38;font-weight:600;">Finances dashboard</a>.`,
-              ].filter(Boolean)),
+              organizerInner.replace("</table>\n</td></tr>", `</table>${answersHtml}\n</td></tr>`),
               reg.tournament_id,
             );
+
 
             const { data: orgData } = await supabaseAdmin
               .from("organizations")

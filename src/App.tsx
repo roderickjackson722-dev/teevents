@@ -119,6 +119,8 @@ import AdminCompetitors from "./pages/admin/Competitors";
 import AdminBrandingFooter from "./pages/admin/BrandingFooter";
 import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
+import LeagueInvoices from "./pages/admin/LeagueInvoices";
+
 import AdminScoring from "./pages/admin/AdminScoring";
 import LeaguePromoCodes from "./pages/admin/LeaguePromoCodes";
 import AiSalesAgent from "./pages/admin/AiSalesAgent";

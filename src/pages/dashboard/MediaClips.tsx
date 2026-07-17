@@ -68,6 +68,16 @@ async function captureFrameFromVideo(videoUrl: string): Promise<Blob | null> {
   });
 }
 
+function toEmbedUrl(url: string): { type: "iframe" | "video" | "unknown"; src: string } {
+  if (!url) return { type: "unknown", src: "" };
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) return { type: "iframe", src: `https://www.youtube.com/embed/${yt[1]}?autoplay=1` };
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) return { type: "iframe", src: `https://player.vimeo.com/video/${vm[1]}?autoplay=1` };
+  if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) return { type: "video", src: url };
+  return { type: "unknown", src: url };
+}
+
 export default function MediaClipsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
@@ -75,6 +85,7 @@ export default function MediaClipsPage() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Partial<Clip> | null>(null);
+  const [previewing, setPreviewing] = useState<Clip | null>(null);
   const [uploading, setUploading] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -251,6 +262,7 @@ export default function MediaClipsPage() {
                     <p className="text-xs text-muted-foreground truncate">{c.video_url}</p>
                   </div>
                   <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => setPreviewing(c)} title="Preview"><Play className="w-4 h-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={() => setEditing(c)}><Pencil className="w-4 h-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={() => remove(c.id)}><Trash2 className="w-4 h-4" /></Button>
                   </div>
@@ -330,10 +342,45 @@ export default function MediaClipsPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            {editing?.video_url && (
+              <Button variant="secondary" onClick={() => setPreviewing({ ...(editing as Clip) })}>
+                <Play className="w-4 h-4 mr-1" /> Preview
+              </Button>
+            )}
             <Button onClick={save}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader><DialogTitle>{previewing?.title || "Preview"}</DialogTitle></DialogHeader>
+          {previewing && (() => {
+            const { type, src } = toEmbedUrl(previewing.video_url);
+            if (type === "iframe") {
+              return (
+                <div className="aspect-video w-full bg-black rounded overflow-hidden">
+                  <iframe src={src} className="w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                </div>
+              );
+            }
+            if (type === "video") {
+              return (
+                <div className="aspect-video w-full bg-black rounded overflow-hidden">
+                  <video src={src} controls autoPlay className="w-full h-full" />
+                </div>
+              );
+            }
+            return (
+              <div className="p-4 text-sm">
+                Unable to embed this URL. <a href={src} target="_blank" rel="noreferrer" className="underline">Open in new tab</a>.
+              </div>
+            );
+          })()}
+          {previewing?.description && <p className="text-sm text-muted-foreground">{previewing.description}</p>}
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }

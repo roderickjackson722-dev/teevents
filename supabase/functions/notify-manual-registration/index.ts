@@ -88,6 +88,8 @@ Deno.serve(async (req) => {
       ? `💰 Amount marked received: <strong>$${(gross / 100).toFixed(2)}</strong> (${paymentLabel})`
       : `💰 Payment status: <strong>Pending</strong> — <strong>payment must be collected manually</strong> by the organizer.`;
 
+    const answersHtml = await buildRegistrationAnswersHtml(supabaseAdmin, [registration_id]);
+
     // Organizer notification
     await sendNotificationEmails(
       supabaseAdmin,
@@ -99,7 +101,7 @@ Deno.serve(async (req) => {
         reg.email ? `📧 ${reg.email}${reg.phone ? ` • 📱 ${reg.phone}` : ""}` : "",
         paymentLine,
         `<em>This entry did not go through online checkout. Payment is being handled offline (cash, check, or invoice) and must be collected manually.</em>`,
-      ].filter(Boolean) as string[]),
+      ].filter(Boolean) as string[], answersHtml),
       tournament.id,
     );
 
@@ -113,7 +115,7 @@ Deno.serve(async (req) => {
         `🏆 Tournament: <strong>${tournament.title || "Unknown"}</strong>`,
         paymentLine,
         `<em>Source: manual add-on by organizer. Payment collected manually (offline).</em>`,
-      ]),
+      ], answersHtml),
       organizationId: tournament.organization_id,
       tournamentId: tournament.id,
     });

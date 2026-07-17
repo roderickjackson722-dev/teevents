@@ -68,6 +68,16 @@ async function captureFrameFromVideo(videoUrl: string): Promise<Blob | null> {
   });
 }
 
+function toEmbedUrl(url: string): { type: "iframe" | "video" | "unknown"; src: string } {
+  if (!url) return { type: "unknown", src: "" };
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) return { type: "iframe", src: `https://www.youtube.com/embed/${yt[1]}?autoplay=1` };
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) return { type: "iframe", src: `https://player.vimeo.com/video/${vm[1]}?autoplay=1` };
+  if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) return { type: "video", src: url };
+  return { type: "unknown", src: url };
+}
+
 export default function MediaClipsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
@@ -75,6 +85,7 @@ export default function MediaClipsPage() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Partial<Clip> | null>(null);
+  const [previewing, setPreviewing] = useState<Clip | null>(null);
   const [uploading, setUploading] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);

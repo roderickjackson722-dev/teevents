@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
+import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
 import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
@@ -295,9 +295,9 @@ Deno.serve(async (req) => {
 
             const playerNames = (regs || []).map((r: any) => `${r.first_name} ${r.last_name}`).join(", ");
             const netDisplayOrganizer = `$${(netAmountCents / 100).toFixed(2)}`;
-            // Clean, friendly confirmation email for the organizer.
-            // The detailed fee breakdown goes to the admin (info@teevents.golf)
-            // email farther below — organizers asked for a confirmation, not an accounting summary.
+            const answersHtml = await buildRegistrationAnswersHtml(supabaseAdmin, registrationIds);
+            // Organizer confirmation — includes the full Q&A submission block so
+            // organizers can see every question and answer captured on the form.
             await sendNotificationEmails(
               supabaseAdmin,
               tournament.organization_id,
@@ -310,9 +310,11 @@ Deno.serve(async (req) => {
                 regs && regs.length > 1 ? `👥 <strong>Group size:</strong> ${regs.length} players` : "",
                 `💵 <strong>Net to you:</strong> ${netDisplayOrganizer}`,
                 `You can view the full transaction details and fee breakdown anytime in your <a href="https://www.teevents.golf/dashboard/finances" style="color:#1a5c38;font-weight:600;">Finances dashboard</a>.`,
-              ].filter(Boolean)),
+              ].filter(Boolean), answersHtml),
               reg.tournament_id,
             );
+
+
 
             const { data: orgData } = await supabaseAdmin
               .from("organizations")
@@ -397,7 +399,8 @@ Deno.serve(async (req) => {
                   `• <strong>Destination:</strong> ${destinationLine}`,
                   `• <strong>Status:</strong> ${statusLine}`,
                   `• <strong>Action needed:</strong> ${actionRequired ? "YES — process this payout manually" : "No"}`,
-                ]);
+                ], answersHtml);
+
 
                 const adminHtml = banner + adminInner;
 

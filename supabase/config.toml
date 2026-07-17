@@ -112,3 +112,6 @@ verify_jwt = false
 
 [functions.league-subscription-webhook]
 verify_jwt = false
+
+[functions.send-atl-qa-preview]
+verify_jwt = false

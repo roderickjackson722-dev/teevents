@@ -5,7 +5,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate,
+  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -141,6 +141,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-yellow-400 bg-yellow-400/5",
     items: [
       { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, expenses" },
+      { title: "Transactions", url: "/dashboard/transactions", icon: Receipt, feature: null, description: "Full transaction list with all submission answers + CSV export" },
       { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, PayPal, check" },
       { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
       { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, extras" },

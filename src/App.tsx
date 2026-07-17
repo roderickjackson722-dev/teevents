@@ -54,6 +54,7 @@ import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
 import Finances from "./pages/dashboard/Finances";
+import Transactions from "./pages/dashboard/Transactions";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
 import Registration from "./pages/dashboard/Registration";
 import Settings from "./pages/dashboard/Settings";
@@ -242,6 +243,7 @@ const App = () => (
           <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/donations" element={<DashboardLayout><PlanGate feature="donations"><Donations /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
+          <Route path="/dashboard/transactions" element={<DashboardLayout><Transactions /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />

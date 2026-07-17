@@ -428,7 +428,78 @@ function SponsorPageShareCard({
   );
 }
 
+function SponsorLogoSizeCard({ tournamentId }: { tournamentId: string }) {
+  const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
+  const [size, setSize] = useState<string>("medium");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    supabase
+      .from("tournaments")
+      .select("sponsor_logo_display_size")
+      .eq("id", tournamentId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setSize(((data as any)?.sponsor_logo_display_size as string) || "medium");
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [tournamentId]);
+
+  const save = async (newSize: string) => {
+    if (demoGuard()) return;
+    setSize(newSize);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ sponsor_logo_display_size: newSize } as any)
+      .eq("id", tournamentId);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else toast({ title: "Sponsor logo size updated", description: "Refresh the public page to see the change." });
+  };
+
+  const options = [
+    { value: "small", label: "Small" },
+    { value: "medium", label: "Medium" },
+    { value: "large", label: "Large" },
+    { value: "xlarge", label: "Extra Large" },
+  ];
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Image className="h-4 w-4 text-primary" />
+          Sponsor Logo Display Size
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-3">
+          Controls how large sponsor logos appear in the "Thank You Sponsors" section on your public tournament page. All logos render at a uniform size for a consistent look.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {options.map((o) => (
+            <Button
+              key={o.value}
+              size="sm"
+              variant={size === o.value ? "default" : "outline"}
+              disabled={loading}
+              onClick={() => save(o.value)}
+            >
+              {o.label}
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 const Sponsors = () => {
+
   const { org } = useOrgContext();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();

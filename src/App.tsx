@@ -120,6 +120,7 @@ import AdminBrandingFooter from "./pages/admin/BrandingFooter";
 import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
 import AdminScoring from "./pages/admin/AdminScoring";
+import LeaguePromoCodes from "./pages/admin/LeaguePromoCodes";
 import AiSalesAgent from "./pages/admin/AiSalesAgent";
 import CollegeHubBookingsPublic from "./pages/CollegeHubBookings";
 import DemoPrepShare from "./pages/DemoPrepShare";
@@ -317,6 +318,7 @@ const App = () => (
            <Route path="/admin/sales/prospecting" element={<SalesProspecting />} />
            <Route path="/admin/demo-leads" element={<DemoLeads />} />
            <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
+           <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/step-by-step" element={<StepByStep />} />
            <Route path="/help/connect-stripe" element={<ConnectStripe />} />

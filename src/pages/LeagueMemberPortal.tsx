@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Save, User, Trophy, ArrowLeft } from "lucide-react";
+import { Loader2, Save, User, Trophy, ArrowLeft, CreditCard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 
@@ -31,7 +31,7 @@ export default function LeagueMemberPortal() {
       setLeague(lg); setMember(m);
 
       const [{ data: ev }, { data: st }] = await Promise.all([
-        (supabase as any).from("league_events").select("id, event_name, event_date").eq("league_id", lg.id).order("event_date"),
+        (supabase as any).from("league_events").select("id, event_name, event_date, registration_fee_cents").eq("league_id", lg.id).order("event_date"),
         (supabase as any).from("league_standings").select("*").eq("league_id", lg.id).eq("member_id", m.id).maybeSingle(),
       ]);
       setEvents(ev || []);
@@ -112,6 +112,57 @@ export default function LeagueMemberPortal() {
             )}
           </CardContent>
         </Card>
+
+        {/* Membership fee payment */}
+        {member.membership_fee_cents > 0 && !member.membership_fee_paid && (
+          <Card className="border-primary/40 bg-primary/5">
+            <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <p className="font-semibold">Season Membership Fee</p>
+                <p className="text-sm text-muted-foreground">${(member.membership_fee_cents/100).toFixed(2)} — pay to activate your membership.</p>
+              </div>
+              <Button
+                onClick={async () => {
+                  const { data, error } = await (supabase as any).functions.invoke("create-league-member-checkout", {
+                    body: { member_id: member.id, scoring_code: code?.toUpperCase(), return_url: window.location.href },
+                  });
+                  if (error || !data?.url) return toast({ title: "Checkout failed", description: error?.message || data?.error, variant: "destructive" });
+                  window.location.href = data.url;
+                }}
+              >
+                <CreditCard className="h-4 w-4 mr-2" /> Pay Membership
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Event fee payment for selected event */}
+        {eventId && (() => {
+          const ev = events.find(e => e.id === eventId) as any;
+          if (!ev?.registration_fee_cents) return null;
+          return (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="font-semibold">{ev.event_name} — Entry Fee</p>
+                  <p className="text-sm text-muted-foreground">${(ev.registration_fee_cents/100).toFixed(2)} to register.</p>
+                </div>
+                <Button
+                  onClick={async () => {
+                    const { data, error } = await (supabase as any).functions.invoke("create-league-event-checkout", {
+                      body: { event_id: ev.id, member_id: member.id, scoring_code: code?.toUpperCase(), return_url: window.location.href },
+                    });
+                    if (error || !data?.url) return toast({ title: "Checkout failed", description: error?.message || data?.error, variant: "destructive" });
+                    window.location.href = data.url;
+                  }}
+                >
+                  <CreditCard className="h-4 w-4 mr-2" /> Pay Entry Fee
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
 
         <Card>
           <CardContent className="pt-6 space-y-4">

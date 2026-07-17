@@ -5,9 +5,10 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trophy, Users, Calendar, Loader2 } from "lucide-react";
+import { Plus, Trophy, Users, Calendar, Loader2, Lock, CreditCard } from "lucide-react";
 import LeagueForm from "@/components/leagues/LeagueForm";
 import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 interface League {
   id: string;
@@ -18,6 +19,7 @@ interface League {
   is_public: boolean;
   start_date: string | null;
   end_date: string | null;
+  access_status?: string;
   member_count?: number;
   event_count?: number;
 }
@@ -33,7 +35,7 @@ export default function Leagues() {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("golf_leagues")
-      .select("id, league_name, league_slug, season_year, is_active, is_public, start_date, end_date")
+      .select("id, league_name, league_slug, season_year, is_active, is_public, start_date, end_date, access_status")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false });
     if (error) {
@@ -59,6 +61,22 @@ export default function Leagues() {
   useEffect(() => {
     load();
   }, [org?.orgId]);
+
+  const unlockLeague = async (leagueId: string) => {
+    const promo = window.prompt("Enter a promo code (optional) or leave blank:") || "";
+    const { data, error } = await (supabase as any).functions.invoke("create-league-access-checkout", {
+      body: { league_id: leagueId, promo_code: promo.trim() || undefined },
+    });
+    if (error || (!data?.url && !data?.free)) {
+      return toast({ title: "Checkout failed", description: error?.message || data?.error || "Please try again", variant: "destructive" });
+    }
+    if (data.free) {
+      toast({ title: "League unlocked (100% off)" });
+      load();
+      return;
+    }
+    window.location.href = data.url;
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -103,6 +121,9 @@ export default function Leagues() {
                       <Badge variant="secondary">Inactive</Badge>
                     )}
                     {l.is_public && <Badge variant="outline">Public</Badge>}
+                    {l.access_status === "paid"
+                      ? <Badge className="bg-green-600 hover:bg-green-600">Unlocked</Badge>
+                      : <Badge variant="destructive" className="gap-1"><Lock className="h-3 w-3" /> Locked</Badge>}
                   </CardTitle>
                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{l.member_count} members</span>
@@ -110,9 +131,19 @@ export default function Leagues() {
                     {l.season_year && <span>Season: {l.season_year}</span>}
                   </div>
                 </div>
-                <Button asChild variant="outline">
-                  <Link to={`/dashboard/leagues/${l.id}`}>Manage</Link>
-                </Button>
+                <div className="flex gap-2">
+                  {l.access_status !== "paid" && (
+                    <Button
+                      onClick={() => unlockLeague(l.id)}
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" /> Unlock $299
+                    </Button>
+                  )}
+                  <Button asChild variant="outline">
+                    <Link to={`/dashboard/leagues/${l.id}`}>Manage</Link>
+                  </Button>
+                </div>
+
               </CardHeader>
             </Card>
           ))}

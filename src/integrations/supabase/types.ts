@@ -2676,6 +2676,9 @@ export type Database = {
       }
       golf_leagues: {
         Row: {
+          access_amount_cents: number | null
+          access_paid_at: string | null
+          access_status: string
           banner_url: string | null
           created_at: string
           created_by: string | null
@@ -2693,6 +2696,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_amount_cents?: number | null
+          access_paid_at?: string | null
+          access_status?: string
           banner_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -2710,6 +2716,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_amount_cents?: number | null
+          access_paid_at?: string | null
+          access_status?: string
           banner_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -2857,6 +2866,111 @@ export type Database = {
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_access_promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          notes: string | null
+          times_used: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          notes?: string | null
+          times_used?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          notes?: string | null
+          times_used?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      league_access_purchases: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          discount_cents: number
+          id: string
+          league_id: string | null
+          organization_id: string
+          promo_code: string | null
+          purchased_by: string | null
+          status: string
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          discount_cents?: number
+          id?: string
+          league_id?: string | null
+          organization_id: string
+          promo_code?: string | null
+          purchased_by?: string | null
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          discount_cents?: number
+          id?: string
+          league_id?: string | null
+          organization_id?: string
+          promo_code?: string | null
+          purchased_by?: string | null
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_access_purchases_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_access_purchases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -3100,6 +3214,89 @@ export type Database = {
             columns: ["league_id"]
             isOneToOne: false
             referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          event_id: string | null
+          id: string
+          kind: string
+          league_id: string
+          member_id: string | null
+          payer_email: string | null
+          platform_fee_cents: number
+          registration_id: string | null
+          status: string
+          stripe_account_id: string | null
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          kind: string
+          league_id: string
+          member_id?: string | null
+          payer_email?: string | null
+          platform_fee_cents?: number
+          registration_id?: string | null
+          status?: string
+          stripe_account_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          kind?: string
+          league_id?: string
+          member_id?: string | null
+          payer_email?: string | null
+          platform_fee_cents?: number
+          registration_id?: string | null
+          status?: string
+          stripe_account_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_payments_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_payments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_payments_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "league_event_registrations"
             referencedColumns: ["id"]
           },
         ]
@@ -9728,6 +9925,10 @@ export type Database = {
       update_demo_lead_feedback: {
         Args: { _id: string; _reasons: string[]; _score: number; _text: string }
         Returns: undefined
+      }
+      validate_league_promo_code: {
+        Args: { _base_cents: number; _code: string }
+        Returns: Json
       }
       validate_promoter_ref_code: {
         Args: { _ref_code: string; _tournament_id: string }

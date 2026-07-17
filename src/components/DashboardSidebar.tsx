@@ -85,13 +85,7 @@ const categories: SidebarCategory[] = [
     ],
   },
   {
-    label: "Golf Leagues",
-    color: "border-l-teal-400 bg-teal-400/5",
-    items: [
-      { title: "Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "Create and manage season-long golf leagues" },
-    ],
-  },
-  {
+
     label: "Public Webpage",
     color: "border-l-emerald-400 bg-emerald-400/5",
     items: [

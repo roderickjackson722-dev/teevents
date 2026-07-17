@@ -79,21 +79,43 @@ export default function LeagueManage() {
                 <p className="text-sm text-muted-foreground">Pay the one-time $299 League Manager Access fee to activate members, events, pairings, scoring, standings, skins, and public/member portals.</p>
               </div>
             </div>
-            <Button
-              onClick={async () => {
-                const promo = window.prompt("Enter a promo code (optional) or leave blank:") || "";
-                const { data, error } = await (supabase as any).functions.invoke("create-league-access-checkout", {
-                  body: { league_id: league.id, promo_code: promo.trim() || undefined },
-                });
-                if (error || (!data?.url && !data?.free)) {
-                  return toast({ title: "Checkout failed", description: error?.message || data?.error, variant: "destructive" });
-                }
-                if (data.free) { toast({ title: "League unlocked" }); load(); return; }
-                window.location.href = data.url;
-              }}
-            >
-              <CreditCard className="h-4 w-4 mr-2" /> Unlock League — $299
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={async () => {
+                  const promo = window.prompt("Enter a promo code (optional) or leave blank:") || "";
+                  const { data, error } = await (supabase as any).functions.invoke("create-league-access-checkout", {
+                    body: { league_id: league.id, promo_code: promo.trim() || undefined },
+                  });
+                  if (error || (!data?.url && !data?.free)) {
+                    return toast({ title: "Checkout failed", description: error?.message || data?.error, variant: "destructive" });
+                  }
+                  if (data.free) { toast({ title: "League unlocked" }); load(); return; }
+                  window.location.href = data.url;
+                }}
+              >
+                <CreditCard className="h-4 w-4 mr-2" /> Unlock League — $299
+              </Button>
+              {isAdmin && (
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    if (!window.confirm("Unlock without payment and queue for manual invoicing?")) return;
+                    const notes = window.prompt("Optional invoice notes:") || "";
+                    const { data, error } = await (supabase as any).functions.invoke("create-league-access-checkout", {
+                      body: { league_id: league.id, admin_invoice: true, invoice_notes: notes.trim() || undefined },
+                    });
+                    if (error || !data?.invoice) {
+                      return toast({ title: "Unlock failed", description: error?.message || data?.error, variant: "destructive" });
+                    }
+                    toast({ title: "League unlocked", description: "Added to admin invoice queue." });
+                    load();
+                  }}
+                >
+                  Unlock (Invoice)
+                </Button>
+              )}
+            </div>
+
           </CardContent>
         </Card>
       )}

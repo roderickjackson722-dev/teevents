@@ -158,12 +158,18 @@ export default function Leagues() {
                 </div>
                 <div className="flex gap-2">
                   {l.access_status !== "paid" && (
-                    <Button
-                      onClick={() => unlockLeague(l.id)}
-                    >
-                      <CreditCard className="h-4 w-4 mr-2" /> Unlock $299
-                    </Button>
+                    <>
+                      <Button onClick={() => unlockLeague(l.id)}>
+                        <CreditCard className="h-4 w-4 mr-2" /> Unlock $299
+                      </Button>
+                      {isAdmin && (
+                        <Button variant="secondary" onClick={() => adminInvoiceUnlock(l.id)}>
+                          Unlock (Invoice)
+                        </Button>
+                      )}
+                    </>
                   )}
+
                   <Button asChild variant="outline">
                     <Link to={`/dashboard/leagues/${l.id}`}>Manage</Link>
                   </Button>

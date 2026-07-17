@@ -85,6 +85,7 @@ import AcceptInvitation from "./pages/AcceptInvitation";
 import ForcePasswordChange from "./pages/ForcePasswordChange";
 import Nonprofits from "./pages/Nonprofits";
 import Plans from "./pages/Plans";
+import GolfLeagues from "./pages/GolfLeagues";
 import EnterprisePricing from "./pages/EnterprisePricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import SampleDashboard from "./pages/SampleDashboard";
@@ -277,7 +278,8 @@ const App = () => (
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/force-password-change" element={<ForcePasswordChange />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
-           <Route path="/plans" element={<Plans />} />
+          <Route path="/plans" element={<Plans />} />
+          <Route path="/golf-leagues" element={<GolfLeagues />} />
            <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />
            <Route path="/pricing" element={<Navigate to="/plans" replace />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />

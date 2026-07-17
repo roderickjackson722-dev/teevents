@@ -109,3 +109,6 @@ verify_jwt = false
 [functions.verify-event-ticket]
 verify_jwt = false
 
+
+[functions.league-subscription-webhook]
+verify_jwt = false

@@ -342,10 +342,45 @@ export default function MediaClipsPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            {editing?.video_url && (
+              <Button variant="secondary" onClick={() => setPreviewing({ ...(editing as Clip) })}>
+                <Play className="w-4 h-4 mr-1" /> Preview
+              </Button>
+            )}
             <Button onClick={save}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader><DialogTitle>{previewing?.title || "Preview"}</DialogTitle></DialogHeader>
+          {previewing && (() => {
+            const { type, src } = toEmbedUrl(previewing.video_url);
+            if (type === "iframe") {
+              return (
+                <div className="aspect-video w-full bg-black rounded overflow-hidden">
+                  <iframe src={src} className="w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                </div>
+              );
+            }
+            if (type === "video") {
+              return (
+                <div className="aspect-video w-full bg-black rounded overflow-hidden">
+                  <video src={src} controls autoPlay className="w-full h-full" />
+                </div>
+              );
+            }
+            return (
+              <div className="p-4 text-sm">
+                Unable to embed this URL. <a href={src} target="_blank" rel="noreferrer" className="underline">Open in new tab</a>.
+              </div>
+            );
+          })()}
+          {previewing?.description && <p className="text-sm text-muted-foreground">{previewing.description}</p>}
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }

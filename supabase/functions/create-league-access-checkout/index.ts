@@ -14,7 +14,7 @@ const LEAGUE_ACCESS_BASE_CENTS = 29900;
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { league_id, promo_code } = await req.json();
+    const { league_id, promo_code, admin_invoice, invoice_notes } = await req.json();
     if (!league_id) throw new Error("Missing league_id");
 
     const authHeader = req.headers.get("Authorization") || "";
@@ -35,12 +35,53 @@ Deno.serve(async (req) => {
     if (lErr || !league) throw new Error("League not found");
     if (league.access_status === "paid") throw new Error("League is already unlocked");
 
-    // authorize: caller must be org member
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: user.id,
+      _role: "admin",
+    });
+
+    // Admin invoice bypass: unlock without payment; record for later invoicing.
+    if (admin_invoice) {
+      if (!isAdmin) throw new Error("Only platform admins can bypass payment");
+      const { data: purchase, error: pErr } = await supabaseAdmin
+        .from("league_access_purchases")
+        .insert({
+          organization_id: league.organization_id,
+          league_id: league.id,
+          amount_cents: LEAGUE_ACCESS_BASE_CENTS,
+          discount_cents: 0,
+          status: "paid",
+          payment_method: "invoice",
+          invoice_status: "pending",
+          invoice_notes: invoice_notes || null,
+          purchased_by: user.id,
+          created_by_admin: user.id,
+        })
+        .select()
+        .single();
+      if (pErr) throw pErr;
+      await supabaseAdmin
+        .from("golf_leagues")
+        .update({
+          access_status: "paid",
+          access_paid_at: new Date().toISOString(),
+          access_amount_cents: LEAGUE_ACCESS_BASE_CENTS,
+        })
+        .eq("id", league.id);
+      const origin = req.headers.get("origin") || "https://teevents.golf";
+      return new Response(
+        JSON.stringify({ invoice: true, purchase_id: purchase.id, url: `${origin}/dashboard/leagues/${league.id}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // authorize: caller must be org member (non-admin path)
     const { data: isMember } = await supabaseAdmin.rpc("is_org_member", {
       _user_id: user.id,
       _org_id: league.organization_id,
     });
-    if (!isMember) throw new Error("Not authorized");
+    if (!isMember && !isAdmin) throw new Error("Not authorized");
+
 
     // apply promo code
     let discountCents = 0;

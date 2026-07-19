@@ -35,6 +35,7 @@ export default function ScanCheckIn() {
   const [search, setSearch] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [lastCheckedIn, setLastCheckedIn] = useState<Player | null>(null);
+  const [fallback, setFallback] = useState<ScanFallback | null>(null);
   const [walkupOpen, setWalkupOpen] = useState(false);
   const [walkup, setWalkup] = useState({ first_name: "", last_name: "", email: "", phone: "", group_number: "" });
   const [walkupSaving, setWalkupSaving] = useState(false);

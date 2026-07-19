@@ -120,7 +120,7 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-golf-green-dark border-t border-primary/20 overflow-hidden"
+            className="lg:hidden bg-golf-green-dark border-t border-primary/20 overflow-hidden"
           >
             <div className="flex flex-col p-4 gap-3">
               {navLinks.map((link) => (

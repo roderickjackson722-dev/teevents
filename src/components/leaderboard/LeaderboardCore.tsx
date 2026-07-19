@@ -133,11 +133,14 @@ export function LeaderboardRenderer({
               <img src={logoUrl} alt="" className={`${compact ? "h-6 w-6" : "h-12 w-12"} object-contain rounded`} />
             )}
             <div>
-              <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl"} font-bold leading-tight`} style={{ color: textColor }}>
+              <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl md:text-4xl"} font-bold leading-tight tracking-tight`} style={{ color: textColor }}>
                 {design.title || title}
               </h1>
+              {!compact && subtitle && (
+                <p className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</p>
+              )}
               {!compact && (
-                <p className="text-xs sm:text-sm flex items-center gap-2 opacity-80">
+                <p className="text-xs sm:text-sm flex items-center gap-2 opacity-80 mt-1">
                   <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
                 </p>
               )}
@@ -145,6 +148,17 @@ export function LeaderboardRenderer({
           </div>
           <Trophy className={compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"} style={{ color: accent }} />
         </div>
+        {!compact && presentedBy && (
+          <div className="mt-4 flex items-center justify-center gap-4 rounded-md py-3 px-4 border" style={{ borderColor: `${accent}55`, backgroundColor: `${accent}12` }}>
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-semibold opacity-80" style={{ color: textColor }}>
+              {presentedBy.label}
+            </span>
+            {presentedBy.logoUrl ? (
+              <img src={presentedBy.logoUrl} alt={presentedBy.name} className="h-8 sm:h-12 max-w-[220px] object-contain" />
+            ) : null}
+            <span className="text-sm sm:text-lg font-bold" style={{ color: textColor }}>{presentedBy.name}</span>
+          </div>
+        )}
       </header>
 
       <main className={`flex-1 ${compact ? "p-2" : "px-4 sm:px-6 py-6"}`}>

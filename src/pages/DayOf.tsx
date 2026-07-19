@@ -307,6 +307,18 @@ function DayOfInner() {
       setReg(payload.player as Reg);
       setGroup((payload.group || []) as Reg[]);
       setLeaders((payload.leaders || []) as { name: string; total: number }[]);
+
+      // Auto check-in: when a player opens their personal Day-of link
+      // (e.g. from the roster QR scan), silently mark them as checked in.
+      try {
+        await (supabase as any).rpc("mark_day_of_check_in", {
+          _tournament_id: tt.id,
+          _code: code,
+        });
+      } catch (_e) {
+        // Non-blocking — Day-of page still renders even if check-in write fails.
+      }
+
       setLoading(false);
     })();
   }, [slug, code, isOrganizerPreview, isPreviewCode]);

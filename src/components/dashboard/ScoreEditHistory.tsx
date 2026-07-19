@@ -4,7 +4,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, History, RefreshCw } from "lucide-react";
+import { Loader2, History, RefreshCw, Download } from "lucide-react";
+
+function toCsv(rows: Edit[]): string {
+  const headers = [
+    "timestamp",
+    "player_first_name",
+    "player_last_name",
+    "hole_number",
+    "old_score",
+    "new_score",
+    "editor_email",
+    "editor_type",
+    "notes",
+  ];
+  const esc = (v: unknown) => {
+    const s = v == null ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = rows.map((r) =>
+    [
+      new Date(r.created_at).toISOString(),
+      r.player_first_name || "",
+      r.player_last_name || "",
+      r.hole_number,
+      r.old_score ?? "",
+      r.new_score ?? "",
+      r.editor_email || "",
+      r.editor_type || "",
+      r.notes || "",
+    ].map(esc).join(",")
+  );
+  return [headers.join(","), ...lines].join("\n");
+}
 
 type Edit = {
   id: string;

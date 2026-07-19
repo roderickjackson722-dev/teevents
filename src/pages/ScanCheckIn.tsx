@@ -18,6 +18,7 @@ interface Player {
   group_number: number | null;
   checked_in: boolean | null;
   check_in_time: string | null;
+  scoring_code?: string | null;
 }
 
 export default function ScanCheckIn() {

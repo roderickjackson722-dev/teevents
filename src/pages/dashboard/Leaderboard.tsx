@@ -306,10 +306,13 @@ export default function Leaderboard() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (!canEditScores) {
+        throw new Error("You don't have permission to submit scores. Ask your tournament owner to grant a scoring role.");
+      }
       const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
       const editLogs: any[] = [];
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: isPlatformAdmin } = user
+      const { data: isPlatformAdminUser } = user
         ? await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as any })
         : { data: false };
       // Build previous score lookup

@@ -898,6 +898,15 @@ export default function Leaderboard() {
       )}
 
       {selectedTournament && (
+        <LeaderboardFreezeCard
+          tournamentId={selectedTournament}
+          frozenAt={frozenAt}
+          canManage={canManageFreeze}
+          onChange={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
+        />
+      )}
+
+      {selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />
       )}
 

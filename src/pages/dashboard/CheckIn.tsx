@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Progress } from "@/components/ui/progress";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,6 +90,24 @@ export default function CheckIn() {
     },
     enabled: !!selectedTournament,
   });
+
+  // Real-time: keep the roster progress fresh without manual refresh.
+  useEffect(() => {
+    if (!selectedTournament) return;
+    const channel = supabase
+      .channel(`checkin-${selectedTournament}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${selectedTournament}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["checkin-players", selectedTournament] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedTournament, queryClient]);
 
   const playerDayOfUrl = (scoring_code: string | null) => {
     const slug = currentTournament?.slug;
@@ -250,9 +269,19 @@ export default function CheckIn() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="rounded-lg bg-primary/10 p-2"><Users className="h-5 w-5 text-primary" /></div>
-                <div>
-                  <p className="text-2xl font-bold">{checkedInCount}/{totalCount}</p>
-                  <p className="text-xs text-muted-foreground">Checked In</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold">{checkedInCount}/{totalCount}</p>
+                    <Badge variant="outline" className="text-[10px] gap-1">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                      </span>
+                      LIVE
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">Checked In — updates in real time</p>
+                  <Progress value={totalCount ? (checkedInCount / totalCount) * 100 : 0} className="h-2" />
                 </div>
               </div>
             </CardContent>

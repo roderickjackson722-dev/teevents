@@ -7,8 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Search, ScanLine, Loader2, Users, UserPlus } from "lucide-react";
+import { CheckCircle2, Search, ScanLine, Loader2, Users, UserPlus, AlertTriangle, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+
+type ScanFallback =
+  | { kind: "invalid_format"; raw: string }
+  | { kind: "not_found"; code: string }
+  | { kind: "already_checked_in"; player: Player; dayOfUrl: string | null }
+  | { kind: "no_day_of"; player: Player };
 
 interface Player {
   id: string;
@@ -29,6 +35,7 @@ export default function ScanCheckIn() {
   const [search, setSearch] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [lastCheckedIn, setLastCheckedIn] = useState<Player | null>(null);
+  const [fallback, setFallback] = useState<ScanFallback | null>(null);
   const [walkupOpen, setWalkupOpen] = useState(false);
   const [walkup, setWalkup] = useState({ first_name: "", last_name: "", email: "", phone: "", group_number: "" });
   const [walkupSaving, setWalkupSaving] = useState(false);
@@ -84,16 +91,25 @@ export default function ScanCheckIn() {
     });
   }, [tournamentId]);
 
+  const buildDayOfUrl = (p: Player, override: string | null) =>
+    override
+    || (tournament?.slug && p.scoring_code
+      ? `${window.location.origin}/day-of/${tournament.slug}/${p.scoring_code}`
+      : null);
+
   const handleScan = async () => {
     const raw = scanInput.trim();
     if (!raw) return;
+    setFallback(null);
 
     // Accept full URLs like https://…/day-of/<slug>/<CODE> or bare codes/ids.
     let id = raw;
     let scoringCode: string | null = null;
     let dayOfUrl: string | null = null;
+    let looksLikeUrl = false;
     try {
       const asUrl = new URL(raw);
+      looksLikeUrl = true;
       const parts = asUrl.pathname.split("/").filter(Boolean);
       const doIdx = parts.indexOf("day-of");
       if (doIdx >= 0 && parts[doIdx + 2]) {
@@ -106,14 +122,22 @@ export default function ScanCheckIn() {
       if (/^[A-Za-z0-9]{6}$/.test(raw)) scoringCode = raw.toUpperCase();
     }
 
+    // Reject inputs that don't look like any known code shape
+    const looksLikeUuid = /^[0-9a-f-]{20,}$/i.test(raw);
+    if (!scoringCode && !looksLikeUuid && !looksLikeUrl) {
+      setFallback({ kind: "invalid_format", raw });
+      toast.error("That doesn't look like a valid QR / player code.");
+      setScanInput("");
+      return;
+    }
+
     // Try scoring_code match first (roster QR codes use this)
     if (scoringCode) {
-      const player = players.find((p) => (p as any).scoring_code?.toUpperCase() === scoringCode);
+      const player = players.find((p) => (p.scoring_code || "").toUpperCase() === scoringCode);
       if (player) {
         await checkInAndRedirect(player, dayOfUrl);
         return;
       }
-      // Fetch by scoring_code in case not in local list
       const { data: match } = await supabase
         .from("tournament_registrations")
         .select("id, first_name, last_name, email, group_number, checked_in, check_in_time, scoring_code")
@@ -137,7 +161,8 @@ export default function ScanCheckIn() {
       body: id.length === 6 ? { code: id, tournament_id: tournamentId } : { vendor_registration_id: id, tournament_id: tournamentId },
     });
     if (error || (data as any)?.error) {
-      toast.error((data as any)?.error || "Not found — check the code");
+      setFallback({ kind: "not_found", code: scoringCode || raw });
+      toast.error("Code not found or expired. Try manual search below.");
     } else {
       const v = (data as any).vendor;
       if ((data as any).already) toast.info(`Vendor ${v.vendor_name} was already checked in.`);
@@ -148,30 +173,35 @@ export default function ScanCheckIn() {
 
   const checkInAndRedirect = async (player: Player, dayOfUrl: string | null) => {
     const alreadyIn = !!player.checked_in;
-    if (!alreadyIn) {
-      const { error } = await supabase
-        .from("tournament_registrations")
-        .update({ checked_in: true, check_in_time: new Date().toISOString() })
-        .eq("id", player.id);
-      if (error) {
-        toast.error(error.message);
-        setScanInput("");
-        return;
-      }
+    const targetUrl = buildDayOfUrl(player, dayOfUrl);
+
+    if (alreadyIn) {
+      setFallback({ kind: "already_checked_in", player, dayOfUrl: targetUrl });
+      toast.info(`${player.first_name} ${player.last_name} was already checked in.`);
+      if (targetUrl) window.open(targetUrl, "_blank", "noopener");
+      setLastCheckedIn(player);
+      setScanInput("");
+      return;
     }
-    const updated = { ...player, checked_in: true, check_in_time: player.check_in_time || new Date().toISOString() };
+
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ checked_in: true, check_in_time: new Date().toISOString() })
+      .eq("id", player.id);
+    if (error) {
+      toast.error(error.message);
+      setScanInput("");
+      return;
+    }
+
+    const updated = { ...player, checked_in: true, check_in_time: new Date().toISOString() };
     setPlayers((prev) => prev.map((p) => (p.id === player.id ? updated : p)));
     setLastCheckedIn(updated);
-    toast.success(alreadyIn
-      ? `${player.first_name} ${player.last_name} was already checked in — opening Day-of page…`
-      : `${player.first_name} ${player.last_name} checked in!`);
+    toast.success(`${player.first_name} ${player.last_name} checked in!`);
 
-    const targetUrl = dayOfUrl
-      || (tournament?.slug && (player as any).scoring_code
-        ? `${window.location.origin}/day-of/${tournament.slug}/${(player as any).scoring_code}`
-        : null);
-    if (targetUrl) {
-      // Open the player's personal Day-of page in a new tab so the scan station stays open.
+    if (!targetUrl) {
+      setFallback({ kind: "no_day_of", player: updated });
+    } else {
       window.open(targetUrl, "_blank", "noopener");
     }
     setScanInput("");
@@ -273,6 +303,68 @@ export default function ScanCheckIn() {
             </CardContent>
           </Card>
         )}
+
+        {/* Fallback flows for scans that need attention */}
+        {fallback && (
+          <Card className="border-amber-500/40 bg-amber-500/10">
+            <CardContent className="pt-4 pb-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0 text-sm">
+                  {fallback.kind === "invalid_format" && (
+                    <>
+                      <p className="font-semibold">That doesn't look like a valid QR code.</p>
+                      <p className="text-muted-foreground text-xs mt-1 break-all">
+                        Received: <span className="font-mono">{fallback.raw.slice(0, 60)}</span>
+                      </p>
+                      <p className="text-xs mt-1">Ask the player to reopen the QR from their confirmation email, or find them by name below.</p>
+                    </>
+                  )}
+                  {fallback.kind === "not_found" && (
+                    <>
+                      <p className="font-semibold">Code <span className="font-mono">{fallback.code}</span> was not recognized.</p>
+                      <p className="text-xs mt-1">
+                        It may be for a different tournament, or the registration was cancelled/expired.
+                        Search by name below, or add a Walk-Up.
+                      </p>
+                    </>
+                  )}
+                  {fallback.kind === "already_checked_in" && (
+                    <>
+                      <p className="font-semibold">
+                        {fallback.player.first_name} {fallback.player.last_name} is already checked in.
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Checked in {fallback.player.check_in_time ? new Date(fallback.player.check_in_time).toLocaleTimeString() : "earlier"}.
+                      </p>
+                      {fallback.dayOfUrl && (
+                        <a
+                          href={fallback.dayOfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary underline mt-2"
+                        >
+                          Open their Day-of page <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </>
+                  )}
+                  {fallback.kind === "no_day_of" && (
+                    <>
+                      <p className="font-semibold">Checked in — but no Day-of page is available.</p>
+                      <p className="text-xs mt-1">
+                        This tournament has no published slug or the player has no scoring code yet.
+                        Direct {fallback.player.first_name} to the scoring tent.
+                      </p>
+                    </>
+                  )}
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setFallback(null)}>Dismiss</Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
 
         <div className="flex items-center gap-2">
           <div className="relative flex-1">

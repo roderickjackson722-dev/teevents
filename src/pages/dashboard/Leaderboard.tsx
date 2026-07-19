@@ -84,6 +84,12 @@ export default function Leaderboard() {
     enabled: !!org?.userId,
   });
 
+  // Role-based gating: only owners/admins/editors/scoring_only + platform admins may write scores.
+  const SCORING_ROLES = new Set(["owner", "admin", "editor", "scoring_only"]);
+  const canEditScores =
+    !!isPlatformAdmin ||
+    (!!org && (SCORING_ROLES.has(org.role) || (org.permissions || []).includes("scoring")));
+
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId, isPlatformAdmin],
     queryFn: async () => {
@@ -300,10 +306,13 @@ export default function Leaderboard() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (!canEditScores) {
+        throw new Error("You don't have permission to submit scores. Ask your tournament owner to grant a scoring role.");
+      }
       const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
       const editLogs: any[] = [];
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: isPlatformAdmin } = user
+      const { data: isPlatformAdminUser } = user
         ? await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as any })
         : { data: false };
       // Build previous score lookup
@@ -409,13 +418,20 @@ export default function Leaderboard() {
           <h1 className="text-2xl font-bold tracking-tight">Live Leaderboard & Scoring</h1>
           <p className="text-muted-foreground">Enter scores and track the leaderboard in real-time.</p>
         </div>
-        {hasEdits && (
+        {hasEdits && canEditScores && (
           <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
             <Save className="mr-2 h-4 w-4" />
             {saveMutation.isPending ? "Saving..." : "Save Scores"}
           </Button>
         )}
       </div>
+
+      {selectedTournament && !canEditScores && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm">
+          <strong>View-only:</strong> Your role ({org?.role || "viewer"}) can view the leaderboard but cannot submit or edit scores.
+          Ask an organization owner or admin to grant you a scoring role (Owner, Admin, Editor, or Scoring Only).
+        </div>
+      )}
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>

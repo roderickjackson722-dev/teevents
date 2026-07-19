@@ -93,16 +93,23 @@ Deno.serve(async (req) => {
       : "your tournament day";
     const directorName = t.day_of_director_name || "Your Tournament Organizer";
 
-    const buildHtml = (firstName: string, link: string) => `
+    const buildHtml = (firstName: string, link: string) => {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=${encodeURIComponent(link)}`;
+      return `
 <!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f4f4f5;padding:24px;color:#1f2937;">
   <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;margin:auto;overflow:hidden;">
     <tr><td style="padding:24px;line-height:1.6;">
       <h2 style="margin:0 0 12px;color:#1a5c38;">${escapeHtml(t.title)} – Your Day-of Event Page</h2>
       <p>Hello ${escapeHtml(firstName || "Player")},</p>
-      <p>Your tournament day is almost here! Use the link below to access your personalized day-of page on <strong>${escapeHtml(eventDate)}</strong>.</p>
+      <p>Your tournament day is almost here! Use the link or QR code below to access your personalized Day-of page on <strong>${escapeHtml(eventDate)}</strong>.</p>
       <p style="text-align:center;margin:24px 0;">
         <a href="${link}" style="background:#F5A623;color:#1a5c38;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Open My Day-of Page</a>
       </p>
+      <div style="text-align:center;margin:20px 0;padding:16px;background:#f8fafc;border-radius:8px;">
+        <p style="margin:0 0 8px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Scan to Re-Enter</p>
+        <img src="${qrUrl}" alt="QR Code for your Day-of page" width="180" height="180" style="display:inline-block;border:6px solid #fff;border-radius:8px;" />
+        <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;">Save this email — scan the QR anytime during play to reopen your page.</p>
+      </div>
       <p>On this page you can:</p>
       <ul>
         <li>See your tee time and starting hole</li>
@@ -110,12 +117,13 @@ Deno.serve(async (req) => {
         <li>Follow the leaderboard</li>
         <li>View announcements and sponsor messages</li>
       </ul>
-      <p>No login required — just tap the link.</p>
+      <p>No login required — just tap the link or scan the QR code.</p>
       <p>Best of luck,<br/>${escapeHtml(directorName)}</p>
       <p style="font-size:11px;color:#9ca3af;word-break:break-all;">If the button doesn't work, copy this link: ${link}</p>
     </td></tr>
   </table>
 </body></html>`;
+    };
 
     const subject = `${t.title} – Your Day-of Event Page`;
 

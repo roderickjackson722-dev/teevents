@@ -33,11 +33,18 @@ interface Tournament {
   slug: string | null;
   scoring_format: string;
   course_par: number | null;
+  course_name?: string | null;
+  date?: string | null;
   site_logo_url: string | null;
   site_primary_color: string | null;
   live_display_enabled: boolean;
   live_display_refresh_seconds: number;
   show_branding_badge?: boolean | null;
+  leaderboard_show_sponsor?: boolean | null;
+  leaderboard_sponsor_name?: string | null;
+  leaderboard_sponsor_logo_url?: string | null;
+  leaderboard_sponsor_label?: string | null;
+  leaderboard_title?: string | null;
 }
 
 interface LeaderboardRow {
@@ -150,7 +157,7 @@ export default function LiveLeaderboard() {
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, slug, scoring_format, course_par, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text");
+        .select("id, title, slug, scoring_format, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.or(`custom_slug.eq.${slug},slug.eq.${slug}`).limit(1).maybeSingle();
@@ -336,7 +343,25 @@ export default function LiveLeaderboard() {
     activeFlight === "__overall"
       ? null
       : flights.find((f) => f.id === activeFlight)?.tier_name || null;
-  const displayTitle = activeFlightName ? `${tournament.title} — ${activeFlightName}` : tournament.title;
+  const baseTitle = tournament.leaderboard_title || tournament.title;
+  const displayTitle = activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+
+  const subtitleParts: string[] = [];
+  if (tournament.course_name) subtitleParts.push(tournament.course_name);
+  if (tournament.date) {
+    try {
+      subtitleParts.push(new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+    } catch { /* ignore */ }
+  }
+  const subtitle = subtitleParts.join(" · ");
+
+  const presentedBy = tournament.leaderboard_show_sponsor && tournament.leaderboard_sponsor_name
+    ? {
+        label: tournament.leaderboard_sponsor_label || "Presented by",
+        name: tournament.leaderboard_sponsor_name,
+        logoUrl: tournament.leaderboard_sponsor_logo_url || null,
+      }
+    : null;
 
   const flightTabs = flights.length > 0 ? (
     <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center">
@@ -378,6 +403,8 @@ export default function LiveLeaderboard() {
         footerSponsors={footerSponsors}
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
+        subtitle={subtitle}
+        presentedBy={presentedBy}
         topNotice={
           <>
             {isPreview ? (

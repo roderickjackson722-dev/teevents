@@ -8411,10 +8411,15 @@ export type Database = {
           is_sample: boolean
           leaderboard_design: Json
           leaderboard_rotating_logos: Json
+          leaderboard_show_sponsor: boolean
           leaderboard_sponsor_banner_enabled: boolean
           leaderboard_sponsor_interval_ms: number
+          leaderboard_sponsor_label: string
+          leaderboard_sponsor_logo_url: string | null
+          leaderboard_sponsor_name: string | null
           leaderboard_sponsor_rotation_order: string
           leaderboard_sponsor_style: string
+          leaderboard_title: string | null
           live_allow_edit_past_holes: boolean
           live_default_view: string
           live_display_enabled: boolean
@@ -8656,10 +8661,15 @@ export type Database = {
           is_sample?: boolean
           leaderboard_design?: Json
           leaderboard_rotating_logos?: Json
+          leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean
           leaderboard_sponsor_interval_ms?: number
+          leaderboard_sponsor_label?: string
+          leaderboard_sponsor_logo_url?: string | null
+          leaderboard_sponsor_name?: string | null
           leaderboard_sponsor_rotation_order?: string
           leaderboard_sponsor_style?: string
+          leaderboard_title?: string | null
           live_allow_edit_past_holes?: boolean
           live_default_view?: string
           live_display_enabled?: boolean
@@ -8901,10 +8911,15 @@ export type Database = {
           is_sample?: boolean
           leaderboard_design?: Json
           leaderboard_rotating_logos?: Json
+          leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean
           leaderboard_sponsor_interval_ms?: number
+          leaderboard_sponsor_label?: string
+          leaderboard_sponsor_logo_url?: string | null
+          leaderboard_sponsor_name?: string | null
           leaderboard_sponsor_rotation_order?: string
           leaderboard_sponsor_style?: string
+          leaderboard_title?: string | null
           live_allow_edit_past_holes?: boolean
           live_default_view?: string
           live_display_enabled?: boolean

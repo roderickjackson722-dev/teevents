@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, Award, BadgeCheck } from "lucide-react";
+import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, Award, BadgeCheck, QrCode } from "lucide-react";
 import type { Tournament, Registration, Sponsor } from "@/components/printables/types";
 import CartSignsTab from "@/components/printables/CartSignsTab";
 import AlphaListTab from "@/components/printables/AlphaListTab";
 import HoleAssignmentsTab from "@/components/printables/HoleAssignmentsTab";
 import ScorecardsTab from "@/components/printables/ScorecardsTab";
+import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
 import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 
@@ -57,7 +58,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, group_number, group_position, scoring_code")
+        .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, checked_in, created_at")
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase
@@ -137,7 +138,12 @@ const Printables = () => {
           <TabsTrigger value="sponsor-signs" className="gap-2"><Award className="h-4 w-4" /> Sponsor Signs</TabsTrigger>
           <TabsTrigger value="alpha-list" className="gap-2"><List className="h-4 w-4" /> Alpha List</TabsTrigger>
           <TabsTrigger value="hole-assignments" className="gap-2"><MapPin className="h-4 w-4" /> Hole Assignments</TabsTrigger>
+          <TabsTrigger value="check-in-roster" className="gap-2"><QrCode className="h-4 w-4" /> Check-In Roster</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="check-in-roster">
+          <CheckInRosterTab tournament={tournament} registrations={registrations as any} loading={loading} />
+        </TabsContent>
 
         <TabsContent value="cart-signs">
           <CartSignsTab tournament={tournament} registrations={registrations} loading={loading} />

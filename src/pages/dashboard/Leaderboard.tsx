@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
+import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 
@@ -731,6 +732,10 @@ export default function Leaderboard() {
           tournamentId={selectedTournament}
           tournamentSlug={selectedTournamentData?.slug || null}
         />
+      )}
+
+      {selectedTournament && org && (
+        <LeaderboardSponsorCard tournamentId={selectedTournament} orgId={org.orgId} />
       )}
 
       {selectedTournament && org && (

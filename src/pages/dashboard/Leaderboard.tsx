@@ -747,6 +747,7 @@ export default function Leaderboard() {
                       {holes.map((h) => {
                         const val = getScore(ps, h);
                         const hp = getHolePar(h);
+                        const err = getScoreError(ps.registration_id, h);
                         return (
                           <TableCell key={h} className="p-1 text-center">
                             <ScoreInput
@@ -755,8 +756,13 @@ export default function Leaderboard() {
                               ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                               onChange={(raw) => updateScore(ps.registration_id, h, raw)}
                               onSet={(n) => setScore(ps.registration_id, h, n)}
+                              className={err ? "border-destructive ring-1 ring-destructive" : undefined}
                             />
-                            {renderStablefordCell(val, h)}
+                            {err ? (
+                              <span className="text-[10px] block mt-0.5 font-semibold text-destructive">{err}</span>
+                            ) : (
+                              renderStablefordCell(val, h)
+                            )}
                           </TableCell>
                         );
                       })}

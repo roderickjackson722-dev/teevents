@@ -304,6 +304,68 @@ export default function ScanCheckIn() {
           </Card>
         )}
 
+        {/* Fallback flows for scans that need attention */}
+        {fallback && (
+          <Card className="border-amber-500/40 bg-amber-500/10">
+            <CardContent className="pt-4 pb-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0 text-sm">
+                  {fallback.kind === "invalid_format" && (
+                    <>
+                      <p className="font-semibold">That doesn't look like a valid QR code.</p>
+                      <p className="text-muted-foreground text-xs mt-1 break-all">
+                        Received: <span className="font-mono">{fallback.raw.slice(0, 60)}</span>
+                      </p>
+                      <p className="text-xs mt-1">Ask the player to reopen the QR from their confirmation email, or find them by name below.</p>
+                    </>
+                  )}
+                  {fallback.kind === "not_found" && (
+                    <>
+                      <p className="font-semibold">Code <span className="font-mono">{fallback.code}</span> was not recognized.</p>
+                      <p className="text-xs mt-1">
+                        It may be for a different tournament, or the registration was cancelled/expired.
+                        Search by name below, or add a Walk-Up.
+                      </p>
+                    </>
+                  )}
+                  {fallback.kind === "already_checked_in" && (
+                    <>
+                      <p className="font-semibold">
+                        {fallback.player.first_name} {fallback.player.last_name} is already checked in.
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Checked in {fallback.player.check_in_time ? new Date(fallback.player.check_in_time).toLocaleTimeString() : "earlier"}.
+                      </p>
+                      {fallback.dayOfUrl && (
+                        <a
+                          href={fallback.dayOfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary underline mt-2"
+                        >
+                          Open their Day-of page <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </>
+                  )}
+                  {fallback.kind === "no_day_of" && (
+                    <>
+                      <p className="font-semibold">Checked in — but no Day-of page is available.</p>
+                      <p className="text-xs mt-1">
+                        This tournament has no published slug or the player has no scoring code yet.
+                        Direct {fallback.player.first_name} to the scoring tent.
+                      </p>
+                    </>
+                  )}
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setFallback(null)}>Dismiss</Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

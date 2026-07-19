@@ -8410,6 +8410,8 @@ export type Database = {
           is_pro: boolean
           is_sample: boolean
           leaderboard_design: Json
+          leaderboard_frozen_at: string | null
+          leaderboard_frozen_by: string | null
           leaderboard_rotating_logos: Json
           leaderboard_show_sponsor: boolean
           leaderboard_sponsor_banner_enabled: boolean
@@ -8660,6 +8662,8 @@ export type Database = {
           is_pro?: boolean
           is_sample?: boolean
           leaderboard_design?: Json
+          leaderboard_frozen_at?: string | null
+          leaderboard_frozen_by?: string | null
           leaderboard_rotating_logos?: Json
           leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean
@@ -8910,6 +8914,8 @@ export type Database = {
           is_pro?: boolean
           is_sample?: boolean
           leaderboard_design?: Json
+          leaderboard_frozen_at?: string | null
+          leaderboard_frozen_by?: string | null
           leaderboard_rotating_logos?: Json
           leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean

@@ -418,13 +418,20 @@ export default function Leaderboard() {
           <h1 className="text-2xl font-bold tracking-tight">Live Leaderboard & Scoring</h1>
           <p className="text-muted-foreground">Enter scores and track the leaderboard in real-time.</p>
         </div>
-        {hasEdits && (
+        {hasEdits && canEditScores && (
           <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
             <Save className="mr-2 h-4 w-4" />
             {saveMutation.isPending ? "Saving..." : "Save Scores"}
           </Button>
         )}
       </div>
+
+      {selectedTournament && !canEditScores && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm">
+          <strong>View-only:</strong> Your role ({org?.role || "viewer"}) can view the leaderboard but cannot submit or edit scores.
+          Ask an organization owner or admin to grant you a scoring role (Owner, Admin, Editor, or Scoring Only).
+        </div>
+      )}
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>

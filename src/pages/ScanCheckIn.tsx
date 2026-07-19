@@ -84,23 +84,50 @@ export default function ScanCheckIn() {
   }, [tournamentId]);
 
   const handleScan = async () => {
-    const id = scanInput.trim();
-    if (!id) return;
+    const raw = scanInput.trim();
+    if (!raw) return;
+
+    // Accept full URLs like https://…/day-of/<slug>/<CODE> or bare codes/ids.
+    let id = raw;
+    let scoringCode: string | null = null;
+    let dayOfUrl: string | null = null;
+    try {
+      const asUrl = new URL(raw);
+      const parts = asUrl.pathname.split("/").filter(Boolean);
+      const doIdx = parts.indexOf("day-of");
+      if (doIdx >= 0 && parts[doIdx + 2]) {
+        scoringCode = parts[doIdx + 2].toUpperCase();
+        dayOfUrl = raw;
+        id = scoringCode;
+      }
+    } catch {
+      // not a URL — treat as raw code / id
+      if (/^[A-Za-z0-9]{6}$/.test(raw)) scoringCode = raw.toUpperCase();
+    }
+
+    // Try scoring_code match first (roster QR codes use this)
+    if (scoringCode) {
+      const player = players.find((p) => (p as any).scoring_code?.toUpperCase() === scoringCode);
+      if (player) {
+        await checkInAndRedirect(player, dayOfUrl);
+        return;
+      }
+      // Fetch by scoring_code in case not in local list
+      const { data: match } = await supabase
+        .from("tournament_registrations")
+        .select("id, first_name, last_name, email, group_number, checked_in, check_in_time, scoring_code")
+        .eq("tournament_id", tournamentId as string)
+        .ilike("scoring_code", scoringCode)
+        .maybeSingle();
+      if (match) {
+        await checkInAndRedirect(match as any, dayOfUrl);
+        return;
+      }
+    }
+
     const player = players.find((p) => p.id === id);
     if (player) {
-      if (player.checked_in) { toast.info(`${player.first_name} ${player.last_name} is already checked in.`); setScanInput(""); return; }
-      const { error } = await supabase
-        .from("tournament_registrations")
-        .update({ checked_in: true, check_in_time: new Date().toISOString() })
-        .eq("id", id);
-      if (error) toast.error(error.message);
-      else {
-        const updated = { ...player, checked_in: true, check_in_time: new Date().toISOString() };
-        setPlayers((prev) => prev.map((p) => (p.id === id ? updated : p)));
-        setLastCheckedIn(updated);
-        toast.success(`${player.first_name} ${player.last_name} checked in!`);
-      }
-      setScanInput("");
+      await checkInAndRedirect(player, dayOfUrl);
       return;
     }
 
@@ -114,6 +141,37 @@ export default function ScanCheckIn() {
       const v = (data as any).vendor;
       if ((data as any).already) toast.info(`Vendor ${v.vendor_name} was already checked in.`);
       else toast.success(`Vendor ${v.vendor_name} checked in!`);
+    }
+    setScanInput("");
+  };
+
+  const checkInAndRedirect = async (player: Player, dayOfUrl: string | null) => {
+    const alreadyIn = !!player.checked_in;
+    if (!alreadyIn) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ checked_in: true, check_in_time: new Date().toISOString() })
+        .eq("id", player.id);
+      if (error) {
+        toast.error(error.message);
+        setScanInput("");
+        return;
+      }
+    }
+    const updated = { ...player, checked_in: true, check_in_time: player.check_in_time || new Date().toISOString() };
+    setPlayers((prev) => prev.map((p) => (p.id === player.id ? updated : p)));
+    setLastCheckedIn(updated);
+    toast.success(alreadyIn
+      ? `${player.first_name} ${player.last_name} was already checked in — opening Day-of page…`
+      : `${player.first_name} ${player.last_name} checked in!`);
+
+    const targetUrl = dayOfUrl
+      || (tournament?.slug && (player as any).scoring_code
+        ? `${window.location.origin}/day-of/${tournament.slug}/${(player as any).scoring_code}`
+        : null);
+    if (targetUrl) {
+      // Open the player's personal Day-of page in a new tab so the scan station stays open.
+      window.open(targetUrl, "_blank", "noopener");
     }
     setScanInput("");
   };

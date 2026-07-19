@@ -91,6 +91,24 @@ export default function CheckIn() {
     enabled: !!selectedTournament,
   });
 
+  // Real-time: keep the roster progress fresh without manual refresh.
+  useEffect(() => {
+    if (!selectedTournament) return;
+    const channel = supabase
+      .channel(`checkin-${selectedTournament}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${selectedTournament}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["checkin-players", selectedTournament] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedTournament, queryClient]);
+
   const playerDayOfUrl = (scoring_code: string | null) => {
     const slug = currentTournament?.slug;
     if (!slug || !scoring_code) return "";

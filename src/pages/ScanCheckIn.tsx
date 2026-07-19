@@ -55,7 +55,7 @@ export default function ScanCheckIn() {
         payment_status: "walkup",
         payment_method: "walkup",
       })
-      .select("id, first_name, last_name, email, group_number, checked_in, check_in_time")
+      .select("id, first_name, last_name, email, group_number, checked_in, check_in_time, scoring_code")
       .single();
     setWalkupSaving(false);
     if (error) {
@@ -74,7 +74,7 @@ export default function ScanCheckIn() {
     Promise.all([
       supabase.from("tournaments").select("id, title, slug").eq("id", tournamentId).single(),
       supabase.from("tournament_registrations")
-        .select("id, first_name, last_name, email, group_number, checked_in, check_in_time")
+        .select("id, first_name, last_name, email, group_number, checked_in, check_in_time, scoring_code")
         .eq("tournament_id", tournamentId)
         .order("last_name"),
     ]).then(([tRes, pRes]) => {

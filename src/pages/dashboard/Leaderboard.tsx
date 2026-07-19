@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -20,8 +20,21 @@ import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
 import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCard";
+import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
+import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
+
+// Score validation: strokes must be an integer between 1 and 20 inclusive.
+const MIN_STROKES = 1;
+const MAX_STROKES = 20;
+function validateStrokes(n: unknown): string | null {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "Must be a number";
+  if (!Number.isInteger(n)) return "Whole strokes only";
+  if (n < MIN_STROKES) return `Min ${MIN_STROKES}`;
+  if (n > MAX_STROKES) return `Max ${MAX_STROKES}`;
+  return null;
+}
 
 interface PlayerScore {
   registration_id: string;
@@ -95,7 +108,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, organizations(name)")
+        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, organizations(name)")
         .order("date", { ascending: false });
       if (!isPlatformAdmin) {
         query = query.eq("organization_id", org!.orgId);
@@ -113,6 +126,18 @@ export default function Leaderboard() {
   const isStableford = scoringFormat?.scoring === "stableford";
   const handicapEnabled = (selectedTournamentData as any)?.handicap_enabled === true;
   const coursePar = selectedTournamentData?.course_par || 72;
+
+  // Freeze state
+  const frozenAt: string | null = (selectedTournamentData as any)?.leaderboard_frozen_at ?? null;
+  const isFrozen = !!frozenAt && new Date(frozenAt).getTime() <= Date.now();
+  const canManageFreeze =
+    !!isPlatformAdmin || (!!org && (org.role === "owner" || org.role === "admin"));
+
+  // Offline queue
+  const { online, pending, enqueue, flush } = useOfflineScoreQueue(selectedTournament || null);
+
+  // Per-cell validation errors: { [regId]: { [hole]: message } }
+  const [scoreErrors, setScoreErrors] = useState<Record<string, Record<number, string>>>({});
 
   // Fetch course data for hole pars
   const { data: courseData } = useQuery({
@@ -309,57 +334,107 @@ export default function Leaderboard() {
       if (!canEditScores) {
         throw new Error("You don't have permission to submit scores. Ask your tournament owner to grant a scoring role.");
       }
+      if (isFrozen) {
+        throw new Error("This leaderboard is frozen. Unfreeze it in the Freeze Leaderboard card to edit scores.");
+      }
+
+      // ---- Validation ----
+      const errs: Record<string, Record<number, string>> = {};
       const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
-      const editLogs: any[] = [];
+      Object.entries(editedScores).forEach(([regId, holes]) => {
+        Object.entries(holes).forEach(([hole, strokes]) => {
+          const holeNum = parseInt(hole);
+          const err = validateStrokes(strokes);
+          if (err) {
+            if (!errs[regId]) errs[regId] = {};
+            errs[regId][holeNum] = err;
+          } else {
+            upserts.push({
+              tournament_id: selectedTournament,
+              registration_id: regId,
+              hole_number: holeNum,
+              strokes,
+            });
+          }
+        });
+      });
+      setScoreErrors(errs);
+      if (Object.keys(errs).length > 0) {
+        const count = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
+        throw new Error(
+          `${count} invalid score${count === 1 ? "" : "s"}. Strokes must be a whole number between ${MIN_STROKES} and ${MAX_STROKES}.`
+        );
+      }
+      if (upserts.length === 0) return { mode: "noop" as const };
+
+      // ---- Offline fallback: queue instead of network call ----
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
+          tournament_id, registration_id, hole_number, strokes,
+        })));
+        return { mode: "queued" as const, count: upserts.length };
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: isPlatformAdminUser } = user
-        ? await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as any })
-        : { data: false };
-      // Build previous score lookup
       const prevMap: Record<string, Record<number, number>> = {};
       (scores || []).forEach((s: any) => {
         if (!prevMap[s.registration_id]) prevMap[s.registration_id] = {};
         prevMap[s.registration_id][s.hole_number] = s.strokes;
       });
-      Object.entries(editedScores).forEach(([regId, holes]) => {
-        Object.entries(holes).forEach(([hole, strokes]) => {
-          const holeNum = parseInt(hole);
-          upserts.push({
+      const editLogs: any[] = [];
+      upserts.forEach((u) => {
+        const oldScore = prevMap[u.registration_id]?.[u.hole_number] ?? null;
+        if (oldScore !== u.strokes && user) {
+          editLogs.push({
             tournament_id: selectedTournament,
-            registration_id: regId,
-            hole_number: holeNum,
-            strokes,
+            registration_id: u.registration_id,
+            hole_number: u.hole_number,
+            old_score: oldScore,
+            new_score: u.strokes,
+            edited_by: user.id,
+            editor_type: isPlatformAdmin ? "admin" : "organizer",
           });
-          const oldScore = prevMap[regId]?.[holeNum] ?? null;
-          if (oldScore !== strokes && user) {
-            editLogs.push({
-              tournament_id: selectedTournament,
-              registration_id: regId,
-              hole_number: holeNum,
-              old_score: oldScore,
-              new_score: strokes,
-              edited_by: user.id,
-              editor_type: isPlatformAdmin ? "admin" : "organizer",
-            });
-          }
+        }
+      });
+
+      try {
+        const { error } = await supabase.from("tournament_scores").upsert(upserts, {
+          onConflict: "registration_id,hole_number",
         });
-      });
-      if (upserts.length === 0) return;
-      const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-        onConflict: "registration_id,hole_number",
-      });
-      if (error) throw error;
-      if (editLogs.length > 0) {
-        await (supabase as any).from("score_edits").insert(editLogs);
+        if (error) throw error;
+        if (editLogs.length > 0) {
+          await (supabase as any).from("score_edits").insert(editLogs);
+        }
+        return { mode: "saved" as const, count: upserts.length };
+      } catch (e: any) {
+        // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.
+        const msg = String(e?.message || e || "");
+        const looksNetwork = /network|fetch|failed to fetch|load failed/i.test(msg);
+        if (looksNetwork) {
+          enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
+            tournament_id, registration_id, hole_number, strokes,
+          })));
+          return { mode: "queued" as const, count: upserts.length };
+        }
+        throw e;
       }
     },
-    onSuccess: () => {
-      toast({ title: "Scores saved!" });
+    onSuccess: (result) => {
+      if (!result) return;
+      if (result.mode === "queued") {
+        toast({
+          title: `Saved ${result.count} score${result.count === 1 ? "" : "s"} offline`,
+          description: "We'll sync automatically when you're back online.",
+        });
+      } else if (result.mode === "saved") {
+        toast({ title: "Scores saved!" });
+      }
       setEditedScores({});
+      setScoreErrors({});
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
     onError: (e: Error) => {
-      toast({ title: "Error saving scores", description: e.message, variant: "destructive" });
+      toast({ title: "Can't save scores", description: e.message, variant: "destructive" });
     },
   });
 
@@ -368,6 +443,14 @@ export default function Leaderboard() {
       ...prev,
       [regId]: { ...(prev[regId] || {}), [hole]: num },
     }));
+    // Live-clear any prior error for this cell.
+    setScoreErrors((prev) => {
+      if (!prev[regId]?.[hole]) return prev;
+      const next = { ...prev, [regId]: { ...prev[regId] } };
+      delete next[regId][hole];
+      if (Object.keys(next[regId]).length === 0) delete next[regId];
+      return next;
+    });
   };
 
   const clearScore = (regId: string, hole: number) => {
@@ -379,19 +462,37 @@ export default function Leaderboard() {
       else next[regId] = holes;
       return next;
     });
+    setScoreErrors((prev) => {
+      if (!prev[regId]?.[hole]) return prev;
+      const next = { ...prev, [regId]: { ...prev[regId] } };
+      delete next[regId][hole];
+      if (Object.keys(next[regId]).length === 0) delete next[regId];
+      return next;
+    });
   };
 
   const updateScore = (regId: string, hole: number, value: string) => {
     const parsed = parseScoreInput(value);
     if (parsed.kind === "clear") clearScore(regId, hole);
     else if (parsed.kind === "value") setScore(regId, hole, parsed.value);
+    else if (parsed.kind === "invalid") {
+      // Show inline error immediately; don't commit the bad value.
+      setScoreErrors((prev) => ({
+        ...prev,
+        [regId]: { ...(prev[regId] || {}), [hole]: `1–${MAX_STROKES} only` },
+      }));
+    }
   };
 
   const getScore = (ps: PlayerScore, hole: number) => {
     return editedScores[ps.registration_id]?.[hole] ?? ps.scores[hole] ?? "";
   };
+  const getScoreError = (regId: string, hole: number): string | undefined =>
+    scoreErrors[regId]?.[hole];
 
   const hasEdits = Object.keys(editedScores).length > 0;
+  const hasErrors = Object.keys(scoreErrors).length > 0;
+
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 
@@ -413,17 +514,43 @@ export default function Leaderboard() {
       >
         <ArrowLeft className="h-4 w-4" /> Back to Dashboard
       </Link>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Live Leaderboard & Scoring</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2 flex-wrap">
+            Live Leaderboard & Scoring
+            {isFrozen && (
+              <Badge variant="destructive" className="gap-1"><Lock className="h-3 w-3" /> Frozen</Badge>
+            )}
+            {!online && (
+              <Badge variant="outline" className="gap-1 border-amber-500 text-amber-700 dark:text-amber-300">
+                <WifiOff className="h-3 w-3" /> Offline
+              </Badge>
+            )}
+            {pending.length > 0 && (
+              <Badge variant="secondary" className="gap-1">
+                <CloudUpload className="h-3 w-3" /> {pending.length} queued
+              </Badge>
+            )}
+          </h1>
           <p className="text-muted-foreground">Enter scores and track the leaderboard in real-time.</p>
         </div>
-        {hasEdits && canEditScores && (
-          <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-            <Save className="mr-2 h-4 w-4" />
-            {saveMutation.isPending ? "Saving..." : "Save Scores"}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {pending.length > 0 && online && (
+            <Button variant="outline" size="sm" onClick={() => flush()}>
+              <CloudUpload className="h-4 w-4 mr-1" /> Sync {pending.length}
+            </Button>
+          )}
+          {hasEdits && canEditScores && (
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || isFrozen}
+              title={isFrozen ? "Leaderboard is frozen" : undefined}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saveMutation.isPending ? "Saving..." : isFrozen ? "Frozen" : "Save Scores"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {selectedTournament && !canEditScores && (
@@ -432,6 +559,34 @@ export default function Leaderboard() {
           Ask an organization owner or admin to grant you a scoring role (Owner, Admin, Editor, or Scoring Only).
         </div>
       )}
+
+      {selectedTournament && isFrozen && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 text-destructive px-4 py-3 text-sm flex items-start gap-2">
+          <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>Leaderboard frozen.</strong> Score entry is locked as of {new Date(frozenAt!).toLocaleString()}. Unfreeze below to resume edits.
+          </div>
+        </div>
+      )}
+
+      {selectedTournament && !online && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm flex items-start gap-2">
+          <WifiOff className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>You're offline.</strong> Score submissions will be queued on this device and synced automatically when the connection returns.
+          </div>
+        </div>
+      )}
+
+      {selectedTournament && hasErrors && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 text-destructive px-4 py-3 text-sm flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>Fix invalid scores before saving.</strong> Strokes must be a whole number between {MIN_STROKES} and {MAX_STROKES}.
+          </div>
+        </div>
+      )}
+
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
@@ -592,6 +747,7 @@ export default function Leaderboard() {
                       {holes.map((h) => {
                         const val = getScore(ps, h);
                         const hp = getHolePar(h);
+                        const err = getScoreError(ps.registration_id, h);
                         return (
                           <TableCell key={h} className="p-1 text-center">
                             <ScoreInput
@@ -600,8 +756,13 @@ export default function Leaderboard() {
                               ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                               onChange={(raw) => updateScore(ps.registration_id, h, raw)}
                               onSet={(n) => setScore(ps.registration_id, h, n)}
+                              className={err ? "border-destructive ring-1 ring-destructive" : undefined}
                             />
-                            {renderStablefordCell(val, h)}
+                            {err ? (
+                              <span className="text-[10px] block mt-0.5 font-semibold text-destructive">{err}</span>
+                            ) : (
+                              renderStablefordCell(val, h)
+                            )}
                           </TableCell>
                         );
                       })}
@@ -697,6 +858,7 @@ export default function Leaderboard() {
                           {holes.map((h) => {
                             const val = getScore(ps, h);
                             const hp = getHolePar(h);
+                            const err = getScoreError(ps.registration_id, h);
                             const scoreColorClass = typeof val === "number"
                               ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
                               : "";
@@ -708,8 +870,11 @@ export default function Leaderboard() {
                                   ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                                   onChange={(raw) => updateScore(ps.registration_id, h, raw)}
                                   onSet={(n) => setScore(ps.registration_id, h, n)}
-                                  className={scoreColorClass}
+                                  className={`${scoreColorClass} ${err ? "border-destructive ring-1 ring-destructive" : ""}`}
                                 />
+                                {err && (
+                                  <span className="text-[10px] block mt-0.5 font-semibold text-destructive">{err}</span>
+                                )}
                               </TableCell>
                             );
                           })}
@@ -730,6 +895,15 @@ export default function Leaderboard() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {selectedTournament && (
+        <LeaderboardFreezeCard
+          tournamentId={selectedTournament}
+          frozenAt={frozenAt}
+          canManage={canManageFreeze}
+          onChange={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
+        />
       )}
 
       {selectedTournament && (

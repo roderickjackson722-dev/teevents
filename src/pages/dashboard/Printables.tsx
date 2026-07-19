@@ -58,7 +58,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, group_number, group_position, scoring_code")
+        .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, checked_in, created_at")
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase

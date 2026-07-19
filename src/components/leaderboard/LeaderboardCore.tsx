@@ -52,6 +52,14 @@ interface RendererProps {
   compact?: boolean;
   /** Optional banner above the leaderboard (eg. "Preview Mode"). */
   topNotice?: React.ReactNode;
+  /** Optional subtitle under title (date · course). */
+  subtitle?: string;
+  /** "Presented by" headline sponsor for the leaderboard. */
+  presentedBy?: {
+    label: string;
+    name: string;
+    logoUrl: string | null;
+  } | null;
 }
 
 /**

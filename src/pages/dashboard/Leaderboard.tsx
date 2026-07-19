@@ -84,6 +84,12 @@ export default function Leaderboard() {
     enabled: !!org?.userId,
   });
 
+  // Role-based gating: only owners/admins/editors/scoring_only + platform admins may write scores.
+  const SCORING_ROLES = new Set(["owner", "admin", "editor", "scoring_only"]);
+  const canEditScores =
+    !!isPlatformAdmin ||
+    (!!org && (SCORING_ROLES.has(org.role) || (org.permissions || []).includes("scoring")));
+
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId, isPlatformAdmin],
     queryFn: async () => {

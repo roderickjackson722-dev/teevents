@@ -33,11 +33,18 @@ interface Tournament {
   slug: string | null;
   scoring_format: string;
   course_par: number | null;
+  course_name?: string | null;
+  date?: string | null;
   site_logo_url: string | null;
   site_primary_color: string | null;
   live_display_enabled: boolean;
   live_display_refresh_seconds: number;
   show_branding_badge?: boolean | null;
+  leaderboard_show_sponsor?: boolean | null;
+  leaderboard_sponsor_name?: string | null;
+  leaderboard_sponsor_logo_url?: string | null;
+  leaderboard_sponsor_label?: string | null;
+  leaderboard_title?: string | null;
 }
 
 interface LeaderboardRow {

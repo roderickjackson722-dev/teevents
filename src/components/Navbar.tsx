@@ -109,7 +109,7 @@ const Navbar = () => {
           )}
         </div>
 
-        <button className="md:hidden text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="lg:hidden text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>

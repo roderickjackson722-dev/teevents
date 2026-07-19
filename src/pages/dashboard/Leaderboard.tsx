@@ -858,6 +858,7 @@ export default function Leaderboard() {
                           {holes.map((h) => {
                             const val = getScore(ps, h);
                             const hp = getHolePar(h);
+                            const err = getScoreError(ps.registration_id, h);
                             const scoreColorClass = typeof val === "number"
                               ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
                               : "";
@@ -869,8 +870,11 @@ export default function Leaderboard() {
                                   ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                                   onChange={(raw) => updateScore(ps.registration_id, h, raw)}
                                   onSet={(n) => setScore(ps.registration_id, h, n)}
-                                  className={scoreColorClass}
+                                  className={`${scoreColorClass} ${err ? "border-destructive ring-1 ring-destructive" : ""}`}
                                 />
+                                {err && (
+                                  <span className="text-[10px] block mt-0.5 font-semibold text-destructive">{err}</span>
+                                )}
                               </TableCell>
                             );
                           })}

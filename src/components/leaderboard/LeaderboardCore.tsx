@@ -79,6 +79,8 @@ export function LeaderboardRenderer({
   logoUrl,
   compact = false,
   topNotice,
+  subtitle,
+  presentedBy,
 }: RendererProps) {
   const fontSize = FONT_SIZE_PX[design.font_size] || 16;
   const bg = design.background_color;

@@ -735,6 +735,10 @@ export default function Leaderboard() {
       )}
 
       {selectedTournament && org && (
+        <LeaderboardSponsorCard tournamentId={selectedTournament} orgId={org.orgId} />
+      )}
+
+      {selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
       )}
       <StickySaveBar onSave={() => {}} />

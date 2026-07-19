@@ -334,57 +334,107 @@ export default function Leaderboard() {
       if (!canEditScores) {
         throw new Error("You don't have permission to submit scores. Ask your tournament owner to grant a scoring role.");
       }
+      if (isFrozen) {
+        throw new Error("This leaderboard is frozen. Unfreeze it in the Freeze Leaderboard card to edit scores.");
+      }
+
+      // ---- Validation ----
+      const errs: Record<string, Record<number, string>> = {};
       const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
-      const editLogs: any[] = [];
+      Object.entries(editedScores).forEach(([regId, holes]) => {
+        Object.entries(holes).forEach(([hole, strokes]) => {
+          const holeNum = parseInt(hole);
+          const err = validateStrokes(strokes);
+          if (err) {
+            if (!errs[regId]) errs[regId] = {};
+            errs[regId][holeNum] = err;
+          } else {
+            upserts.push({
+              tournament_id: selectedTournament,
+              registration_id: regId,
+              hole_number: holeNum,
+              strokes,
+            });
+          }
+        });
+      });
+      setScoreErrors(errs);
+      if (Object.keys(errs).length > 0) {
+        const count = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
+        throw new Error(
+          `${count} invalid score${count === 1 ? "" : "s"}. Strokes must be a whole number between ${MIN_STROKES} and ${MAX_STROKES}.`
+        );
+      }
+      if (upserts.length === 0) return { mode: "noop" as const };
+
+      // ---- Offline fallback: queue instead of network call ----
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
+          tournament_id, registration_id, hole_number, strokes,
+        })));
+        return { mode: "queued" as const, count: upserts.length };
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: isPlatformAdminUser } = user
-        ? await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as any })
-        : { data: false };
-      // Build previous score lookup
       const prevMap: Record<string, Record<number, number>> = {};
       (scores || []).forEach((s: any) => {
         if (!prevMap[s.registration_id]) prevMap[s.registration_id] = {};
         prevMap[s.registration_id][s.hole_number] = s.strokes;
       });
-      Object.entries(editedScores).forEach(([regId, holes]) => {
-        Object.entries(holes).forEach(([hole, strokes]) => {
-          const holeNum = parseInt(hole);
-          upserts.push({
+      const editLogs: any[] = [];
+      upserts.forEach((u) => {
+        const oldScore = prevMap[u.registration_id]?.[u.hole_number] ?? null;
+        if (oldScore !== u.strokes && user) {
+          editLogs.push({
             tournament_id: selectedTournament,
-            registration_id: regId,
-            hole_number: holeNum,
-            strokes,
+            registration_id: u.registration_id,
+            hole_number: u.hole_number,
+            old_score: oldScore,
+            new_score: u.strokes,
+            edited_by: user.id,
+            editor_type: isPlatformAdmin ? "admin" : "organizer",
           });
-          const oldScore = prevMap[regId]?.[holeNum] ?? null;
-          if (oldScore !== strokes && user) {
-            editLogs.push({
-              tournament_id: selectedTournament,
-              registration_id: regId,
-              hole_number: holeNum,
-              old_score: oldScore,
-              new_score: strokes,
-              edited_by: user.id,
-              editor_type: isPlatformAdmin ? "admin" : "organizer",
-            });
-          }
+        }
+      });
+
+      try {
+        const { error } = await supabase.from("tournament_scores").upsert(upserts, {
+          onConflict: "registration_id,hole_number",
         });
-      });
-      if (upserts.length === 0) return;
-      const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-        onConflict: "registration_id,hole_number",
-      });
-      if (error) throw error;
-      if (editLogs.length > 0) {
-        await (supabase as any).from("score_edits").insert(editLogs);
+        if (error) throw error;
+        if (editLogs.length > 0) {
+          await (supabase as any).from("score_edits").insert(editLogs);
+        }
+        return { mode: "saved" as const, count: upserts.length };
+      } catch (e: any) {
+        // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.
+        const msg = String(e?.message || e || "");
+        const looksNetwork = /network|fetch|failed to fetch|load failed/i.test(msg);
+        if (looksNetwork) {
+          enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
+            tournament_id, registration_id, hole_number, strokes,
+          })));
+          return { mode: "queued" as const, count: upserts.length };
+        }
+        throw e;
       }
     },
-    onSuccess: () => {
-      toast({ title: "Scores saved!" });
+    onSuccess: (result) => {
+      if (!result) return;
+      if (result.mode === "queued") {
+        toast({
+          title: `Saved ${result.count} score${result.count === 1 ? "" : "s"} offline`,
+          description: "We'll sync automatically when you're back online.",
+        });
+      } else if (result.mode === "saved") {
+        toast({ title: "Scores saved!" });
+      }
       setEditedScores({});
+      setScoreErrors({});
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
     onError: (e: Error) => {
-      toast({ title: "Error saving scores", description: e.message, variant: "destructive" });
+      toast({ title: "Can't save scores", description: e.message, variant: "destructive" });
     },
   });
 
@@ -393,6 +443,14 @@ export default function Leaderboard() {
       ...prev,
       [regId]: { ...(prev[regId] || {}), [hole]: num },
     }));
+    // Live-clear any prior error for this cell.
+    setScoreErrors((prev) => {
+      if (!prev[regId]?.[hole]) return prev;
+      const next = { ...prev, [regId]: { ...prev[regId] } };
+      delete next[regId][hole];
+      if (Object.keys(next[regId]).length === 0) delete next[regId];
+      return next;
+    });
   };
 
   const clearScore = (regId: string, hole: number) => {
@@ -404,19 +462,37 @@ export default function Leaderboard() {
       else next[regId] = holes;
       return next;
     });
+    setScoreErrors((prev) => {
+      if (!prev[regId]?.[hole]) return prev;
+      const next = { ...prev, [regId]: { ...prev[regId] } };
+      delete next[regId][hole];
+      if (Object.keys(next[regId]).length === 0) delete next[regId];
+      return next;
+    });
   };
 
   const updateScore = (regId: string, hole: number, value: string) => {
     const parsed = parseScoreInput(value);
     if (parsed.kind === "clear") clearScore(regId, hole);
     else if (parsed.kind === "value") setScore(regId, hole, parsed.value);
+    else if (parsed.kind === "invalid") {
+      // Show inline error immediately; don't commit the bad value.
+      setScoreErrors((prev) => ({
+        ...prev,
+        [regId]: { ...(prev[regId] || {}), [hole]: `1–${MAX_STROKES} only` },
+      }));
+    }
   };
 
   const getScore = (ps: PlayerScore, hole: number) => {
     return editedScores[ps.registration_id]?.[hole] ?? ps.scores[hole] ?? "";
   };
+  const getScoreError = (regId: string, hole: number): string | undefined =>
+    scoreErrors[regId]?.[hole];
 
   const hasEdits = Object.keys(editedScores).length > 0;
+  const hasErrors = Object.keys(scoreErrors).length > 0;
+
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 

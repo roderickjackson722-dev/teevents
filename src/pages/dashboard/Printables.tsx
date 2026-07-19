@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, Award, BadgeCheck } from "lucide-react";
+import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, Award, BadgeCheck, QrCode } from "lucide-react";
 import type { Tournament, Registration, Sponsor } from "@/components/printables/types";
 import CartSignsTab from "@/components/printables/CartSignsTab";
 import AlphaListTab from "@/components/printables/AlphaListTab";
 import HoleAssignmentsTab from "@/components/printables/HoleAssignmentsTab";
 import ScorecardsTab from "@/components/printables/ScorecardsTab";
+import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
 import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 

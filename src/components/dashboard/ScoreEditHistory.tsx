@@ -106,15 +106,36 @@ export default function ScoreEditHistory({ tournamentId }: Props) {
         <CardTitle className="flex items-center gap-2">
           <History className="h-5 w-5" /> Edit History
           <Badge variant="secondary" className="ml-1">{rows.length}</Badge>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="ml-auto"
-            onClick={load}
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (filtered.length === 0) return;
+                const csv = toCsv(filtered);
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `score-edit-history-${new Date().toISOString().slice(0, 10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+              }}
+              disabled={filtered.length === 0}
+            >
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={load}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

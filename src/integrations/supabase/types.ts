@@ -9918,6 +9918,10 @@ export type Database = {
           tournament_id: string
         }[]
       }
+      mark_day_of_check_in: {
+        Args: { _code: string; _tournament_id: string }
+        Returns: Json
+      }
       mark_demo_lead_started: {
         Args: { _id: string; _role: string; _user_agent: string }
         Returns: undefined

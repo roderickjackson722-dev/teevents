@@ -269,9 +269,19 @@ export default function CheckIn() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="rounded-lg bg-primary/10 p-2"><Users className="h-5 w-5 text-primary" /></div>
-                <div>
-                  <p className="text-2xl font-bold">{checkedInCount}/{totalCount}</p>
-                  <p className="text-xs text-muted-foreground">Checked In</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold">{checkedInCount}/{totalCount}</p>
+                    <Badge variant="outline" className="text-[10px] gap-1">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                      </span>
+                      LIVE
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">Checked In — updates in real time</p>
+                  <Progress value={totalCount ? (checkedInCount / totalCount) * 100 : 0} className="h-2" />
                 </div>
               </div>
             </CardContent>

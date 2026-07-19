@@ -343,7 +343,25 @@ export default function LiveLeaderboard() {
     activeFlight === "__overall"
       ? null
       : flights.find((f) => f.id === activeFlight)?.tier_name || null;
-  const displayTitle = activeFlightName ? `${tournament.title} — ${activeFlightName}` : tournament.title;
+  const baseTitle = tournament.leaderboard_title || tournament.title;
+  const displayTitle = activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+
+  const subtitleParts: string[] = [];
+  if (tournament.course_name) subtitleParts.push(tournament.course_name);
+  if (tournament.date) {
+    try {
+      subtitleParts.push(new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+    } catch { /* ignore */ }
+  }
+  const subtitle = subtitleParts.join(" · ");
+
+  const presentedBy = tournament.leaderboard_show_sponsor && tournament.leaderboard_sponsor_name
+    ? {
+        label: tournament.leaderboard_sponsor_label || "Presented by",
+        name: tournament.leaderboard_sponsor_name,
+        logoUrl: tournament.leaderboard_sponsor_logo_url || null,
+      }
+    : null;
 
   const flightTabs = flights.length > 0 ? (
     <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center">

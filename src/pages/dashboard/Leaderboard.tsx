@@ -108,7 +108,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, organizations(name)")
+        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, organizations(name)")
         .order("date", { ascending: false });
       if (!isPlatformAdmin) {
         query = query.eq("organization_id", org!.orgId);
@@ -126,6 +126,18 @@ export default function Leaderboard() {
   const isStableford = scoringFormat?.scoring === "stableford";
   const handicapEnabled = (selectedTournamentData as any)?.handicap_enabled === true;
   const coursePar = selectedTournamentData?.course_par || 72;
+
+  // Freeze state
+  const frozenAt: string | null = (selectedTournamentData as any)?.leaderboard_frozen_at ?? null;
+  const isFrozen = !!frozenAt && new Date(frozenAt).getTime() <= Date.now();
+  const canManageFreeze =
+    !!isPlatformAdmin || (!!org && (org.role === "owner" || org.role === "admin"));
+
+  // Offline queue
+  const { online, pending, enqueue, flush } = useOfflineScoreQueue(selectedTournament || null);
+
+  // Per-cell validation errors: { [regId]: { [hole]: message } }
+  const [scoreErrors, setScoreErrors] = useState<Record<string, Record<number, string>>>({});
 
   // Fetch course data for hole pars
   const { data: courseData } = useQuery({

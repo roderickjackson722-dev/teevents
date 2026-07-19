@@ -51,12 +51,12 @@ const Navbar = () => {
           <span className="font-display text-xl font-semibold text-primary-foreground tracking-wide">TeeVents</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+              className={`text-sm font-medium tracking-wider uppercase whitespace-nowrap transition-colors ${
                 pathname === link.to ? "text-secondary" : "text-primary-foreground/80 hover:text-secondary"
               }`}
             >

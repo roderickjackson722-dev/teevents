@@ -514,17 +514,43 @@ export default function Leaderboard() {
       >
         <ArrowLeft className="h-4 w-4" /> Back to Dashboard
       </Link>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Live Leaderboard & Scoring</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2 flex-wrap">
+            Live Leaderboard & Scoring
+            {isFrozen && (
+              <Badge variant="destructive" className="gap-1"><Lock className="h-3 w-3" /> Frozen</Badge>
+            )}
+            {!online && (
+              <Badge variant="outline" className="gap-1 border-amber-500 text-amber-700 dark:text-amber-300">
+                <WifiOff className="h-3 w-3" /> Offline
+              </Badge>
+            )}
+            {pending.length > 0 && (
+              <Badge variant="secondary" className="gap-1">
+                <CloudUpload className="h-3 w-3" /> {pending.length} queued
+              </Badge>
+            )}
+          </h1>
           <p className="text-muted-foreground">Enter scores and track the leaderboard in real-time.</p>
         </div>
-        {hasEdits && canEditScores && (
-          <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-            <Save className="mr-2 h-4 w-4" />
-            {saveMutation.isPending ? "Saving..." : "Save Scores"}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {pending.length > 0 && online && (
+            <Button variant="outline" size="sm" onClick={() => flush()}>
+              <CloudUpload className="h-4 w-4 mr-1" /> Sync {pending.length}
+            </Button>
+          )}
+          {hasEdits && canEditScores && (
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || isFrozen}
+              title={isFrozen ? "Leaderboard is frozen" : undefined}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saveMutation.isPending ? "Saving..." : isFrozen ? "Frozen" : "Save Scores"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {selectedTournament && !canEditScores && (
@@ -533,6 +559,34 @@ export default function Leaderboard() {
           Ask an organization owner or admin to grant you a scoring role (Owner, Admin, Editor, or Scoring Only).
         </div>
       )}
+
+      {selectedTournament && isFrozen && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 text-destructive px-4 py-3 text-sm flex items-start gap-2">
+          <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>Leaderboard frozen.</strong> Score entry is locked as of {new Date(frozenAt!).toLocaleString()}. Unfreeze below to resume edits.
+          </div>
+        </div>
+      )}
+
+      {selectedTournament && !online && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm flex items-start gap-2">
+          <WifiOff className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>You're offline.</strong> Score submissions will be queued on this device and synced automatically when the connection returns.
+          </div>
+        </div>
+      )}
+
+      {selectedTournament && hasErrors && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 text-destructive px-4 py-3 text-sm flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <strong>Fix invalid scores before saving.</strong> Strokes must be a whole number between {MIN_STROKES} and {MAX_STROKES}.
+          </div>
+        </div>
+      )}
+
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>

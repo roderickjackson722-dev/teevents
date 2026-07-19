@@ -138,7 +138,12 @@ const Printables = () => {
           <TabsTrigger value="sponsor-signs" className="gap-2"><Award className="h-4 w-4" /> Sponsor Signs</TabsTrigger>
           <TabsTrigger value="alpha-list" className="gap-2"><List className="h-4 w-4" /> Alpha List</TabsTrigger>
           <TabsTrigger value="hole-assignments" className="gap-2"><MapPin className="h-4 w-4" /> Hole Assignments</TabsTrigger>
+          <TabsTrigger value="check-in-roster" className="gap-2"><QrCode className="h-4 w-4" /> Check-In Roster</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="check-in-roster">
+          <CheckInRosterTab tournament={tournament} registrations={registrations as any} loading={loading} />
+        </TabsContent>
 
         <TabsContent value="cart-signs">
           <CartSignsTab tournament={tournament} registrations={registrations} loading={loading} />

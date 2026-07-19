@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -20,8 +20,21 @@ import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
 import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCard";
+import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
+import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
+
+// Score validation: strokes must be an integer between 1 and 20 inclusive.
+const MIN_STROKES = 1;
+const MAX_STROKES = 20;
+function validateStrokes(n: unknown): string | null {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "Must be a number";
+  if (!Number.isInteger(n)) return "Whole strokes only";
+  if (n < MIN_STROKES) return `Min ${MIN_STROKES}`;
+  if (n > MAX_STROKES) return `Max ${MAX_STROKES}`;
+  return null;
+}
 
 interface PlayerScore {
   registration_id: string;

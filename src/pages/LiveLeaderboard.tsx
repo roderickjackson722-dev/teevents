@@ -403,6 +403,8 @@ export default function LiveLeaderboard() {
         footerSponsors={footerSponsors}
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
+        subtitle={subtitle}
+        presentedBy={presentedBy}
         topNotice={
           <>
             {isPreview ? (

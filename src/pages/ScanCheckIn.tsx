@@ -7,8 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Search, ScanLine, Loader2, Users, UserPlus } from "lucide-react";
+import { CheckCircle2, Search, ScanLine, Loader2, Users, UserPlus, AlertTriangle, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+
+type ScanFallback =
+  | { kind: "invalid_format"; raw: string }
+  | { kind: "not_found"; code: string }
+  | { kind: "already_checked_in"; player: Player; dayOfUrl: string | null }
+  | { kind: "no_day_of"; player: Player };
 
 interface Player {
   id: string;

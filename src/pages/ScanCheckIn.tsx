@@ -91,16 +91,25 @@ export default function ScanCheckIn() {
     });
   }, [tournamentId]);
 
+  const buildDayOfUrl = (p: Player, override: string | null) =>
+    override
+    || (tournament?.slug && p.scoring_code
+      ? `${window.location.origin}/day-of/${tournament.slug}/${p.scoring_code}`
+      : null);
+
   const handleScan = async () => {
     const raw = scanInput.trim();
     if (!raw) return;
+    setFallback(null);
 
     // Accept full URLs like https://…/day-of/<slug>/<CODE> or bare codes/ids.
     let id = raw;
     let scoringCode: string | null = null;
     let dayOfUrl: string | null = null;
+    let looksLikeUrl = false;
     try {
       const asUrl = new URL(raw);
+      looksLikeUrl = true;
       const parts = asUrl.pathname.split("/").filter(Boolean);
       const doIdx = parts.indexOf("day-of");
       if (doIdx >= 0 && parts[doIdx + 2]) {
@@ -113,14 +122,22 @@ export default function ScanCheckIn() {
       if (/^[A-Za-z0-9]{6}$/.test(raw)) scoringCode = raw.toUpperCase();
     }
 
+    // Reject inputs that don't look like any known code shape
+    const looksLikeUuid = /^[0-9a-f-]{20,}$/i.test(raw);
+    if (!scoringCode && !looksLikeUuid && !looksLikeUrl) {
+      setFallback({ kind: "invalid_format", raw });
+      toast.error("That doesn't look like a valid QR / player code.");
+      setScanInput("");
+      return;
+    }
+
     // Try scoring_code match first (roster QR codes use this)
     if (scoringCode) {
-      const player = players.find((p) => (p as any).scoring_code?.toUpperCase() === scoringCode);
+      const player = players.find((p) => (p.scoring_code || "").toUpperCase() === scoringCode);
       if (player) {
         await checkInAndRedirect(player, dayOfUrl);
         return;
       }
-      // Fetch by scoring_code in case not in local list
       const { data: match } = await supabase
         .from("tournament_registrations")
         .select("id, first_name, last_name, email, group_number, checked_in, check_in_time, scoring_code")
@@ -144,7 +161,8 @@ export default function ScanCheckIn() {
       body: id.length === 6 ? { code: id, tournament_id: tournamentId } : { vendor_registration_id: id, tournament_id: tournamentId },
     });
     if (error || (data as any)?.error) {
-      toast.error((data as any)?.error || "Not found — check the code");
+      setFallback({ kind: "not_found", code: scoringCode || raw });
+      toast.error("Code not found or expired. Try manual search below.");
     } else {
       const v = (data as any).vendor;
       if ((data as any).already) toast.info(`Vendor ${v.vendor_name} was already checked in.`);
@@ -155,30 +173,35 @@ export default function ScanCheckIn() {
 
   const checkInAndRedirect = async (player: Player, dayOfUrl: string | null) => {
     const alreadyIn = !!player.checked_in;
-    if (!alreadyIn) {
-      const { error } = await supabase
-        .from("tournament_registrations")
-        .update({ checked_in: true, check_in_time: new Date().toISOString() })
-        .eq("id", player.id);
-      if (error) {
-        toast.error(error.message);
-        setScanInput("");
-        return;
-      }
+    const targetUrl = buildDayOfUrl(player, dayOfUrl);
+
+    if (alreadyIn) {
+      setFallback({ kind: "already_checked_in", player, dayOfUrl: targetUrl });
+      toast.info(`${player.first_name} ${player.last_name} was already checked in.`);
+      if (targetUrl) window.open(targetUrl, "_blank", "noopener");
+      setLastCheckedIn(player);
+      setScanInput("");
+      return;
     }
-    const updated = { ...player, checked_in: true, check_in_time: player.check_in_time || new Date().toISOString() };
+
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ checked_in: true, check_in_time: new Date().toISOString() })
+      .eq("id", player.id);
+    if (error) {
+      toast.error(error.message);
+      setScanInput("");
+      return;
+    }
+
+    const updated = { ...player, checked_in: true, check_in_time: new Date().toISOString() };
     setPlayers((prev) => prev.map((p) => (p.id === player.id ? updated : p)));
     setLastCheckedIn(updated);
-    toast.success(alreadyIn
-      ? `${player.first_name} ${player.last_name} was already checked in — opening Day-of page…`
-      : `${player.first_name} ${player.last_name} checked in!`);
+    toast.success(`${player.first_name} ${player.last_name} checked in!`);
 
-    const targetUrl = dayOfUrl
-      || (tournament?.slug && (player as any).scoring_code
-        ? `${window.location.origin}/day-of/${tournament.slug}/${(player as any).scoring_code}`
-        : null);
-    if (targetUrl) {
-      // Open the player's personal Day-of page in a new tab so the scan station stays open.
+    if (!targetUrl) {
+      setFallback({ kind: "no_day_of", player: updated });
+    } else {
       window.open(targetUrl, "_blank", "noopener");
     }
     setScanInput("");

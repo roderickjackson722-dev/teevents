@@ -26,6 +26,7 @@ import LeagueManage from "./pages/dashboard/LeagueManage";
 import PublicLeague from "./pages/PublicLeague";
 import LeagueMemberLogin from "./pages/LeagueMemberLogin";
 import LeagueMemberPortal from "./pages/LeagueMemberPortal";
+import SelectWorkspace from "./pages/SelectWorkspace";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
 import Printables from "./pages/dashboard/Printables";

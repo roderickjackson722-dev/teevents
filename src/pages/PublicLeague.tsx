@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Trophy, Calendar, MapPin, KeyRound } from "lucide-react";
+import { Loader2, Trophy, Calendar, KeyRound, Sparkles, Smartphone } from "lucide-react";
 import SEO from "@/components/SEO";
 
 export default function PublicLeague() {
@@ -14,31 +14,66 @@ export default function PublicLeague() {
   const [league, setLeague] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [standings, setStandings] = useState<any[]>([]);
+  const [skinTotals, setSkinTotals] = useState<Record<string, { count: number; cents: number }>>({});
+  const [pastResults, setPastResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const { data: lg } = await (supabase as any)
-        .from("golf_leagues")
-        .select("*")
-        .eq("league_slug", slug)
-        .eq("is_public", true)
-        .maybeSingle();
+        .from("golf_leagues").select("*").eq("league_slug", slug).eq("is_public", true).maybeSingle();
       if (!lg) { setLoading(false); return; }
       setLeague(lg);
+
       const [{ data: ev }, { data: st }] = await Promise.all([
         (supabase as any).from("league_events").select("*").eq("league_id", lg.id).order("event_date"),
         (supabase as any).from("league_standings").select("*, league_members!inner(member_name)").eq("league_id", lg.id).order("points", { ascending: false }).limit(25),
       ]);
       setEvents(ev || []);
       setStandings(st || []);
+
+      // Aggregate skins per member (season-wide)
+      const eventIds = (ev || []).map((e: any) => e.id);
+      if (eventIds.length) {
+        const { data: sk } = await (supabase as any)
+          .from("league_skins")
+          .select("winner_member_id, skin_amount_cents, event_id")
+          .in("event_id", eventIds)
+          .not("winner_member_id", "is", null);
+        const totals: Record<string, { count: number; cents: number }> = {};
+        (sk || []).forEach((row: any) => {
+          const t = totals[row.winner_member_id] || { count: 0, cents: 0 };
+          t.count += 1;
+          t.cents += Number(row.skin_amount_cents || 0);
+          totals[row.winner_member_id] = t;
+        });
+        setSkinTotals(totals);
+      }
+
+      // Past results: completed events with top 3 by total gross
+      const completed = (ev || []).filter((e: any) => e.is_completed);
+      const results: any[] = [];
+      for (const e of completed) {
+        const { data: scores } = await (supabase as any)
+          .from("league_event_scores")
+          .select("member_id, gross_score, net_score, league_members!inner(member_name)")
+          .eq("event_id", e.id);
+        const byMember: Record<string, { name: string; gross: number; net: number }> = {};
+        (scores || []).forEach((s: any) => {
+          const key = s.member_id;
+          if (!byMember[key]) byMember[key] = { name: s.league_members.member_name, gross: 0, net: 0 };
+          byMember[key].gross += Number(s.gross_score || 0);
+          byMember[key].net += Number(s.net_score || s.gross_score || 0);
+        });
+        const rows = Object.values(byMember).sort((a, b) => a.gross - b.gross).slice(0, 3);
+        results.push({ event: e, top: rows });
+      }
+      setPastResults(results);
       setLoading(false);
     })();
   }, [slug]);
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   if (!league) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6">
@@ -50,7 +85,7 @@ export default function PublicLeague() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${league.league_name} — Golf League`} description={league.description || `${league.league_name} standings, events, and results.`} />
+      <SEO title={`${league.league_name} — Golf League`} description={league.description || `${league.league_name} standings, schedule and results.`} />
       {league.banner_url && <img src={league.banner_url} alt="" className="w-full h-48 md:h-64 object-cover" />}
       <div className="max-w-5xl mx-auto p-6 space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -62,7 +97,7 @@ export default function PublicLeague() {
             </div>
           </div>
           <Button onClick={() => navigate(`/league/${slug}/score`)} className="gap-2">
-            <KeyRound className="h-4 w-4" /> Member Login
+            <Smartphone className="h-4 w-4" /> Score on your phone
           </Button>
         </div>
 
@@ -88,7 +123,14 @@ export default function PublicLeague() {
                   {events.map((e) => (
                     <TableRow key={e.id}>
                       <TableCell>{e.event_date}</TableCell>
-                      <TableCell className="font-medium">{e.event_name}</TableCell>
+                      <TableCell className="font-medium">
+                        {e.event_name}
+                        {e.skins_enabled && (
+                          <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-900 border-yellow-300 gap-1">
+                            <Sparkles className="h-3 w-3" /> Skins
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell>{e.course_name || "—"}</TableCell>
                       <TableCell className="capitalize">{String(e.format_type || "").replace(/_/g, " ")}</TableCell>
                       <TableCell className="text-right">
@@ -104,7 +146,7 @@ export default function PublicLeague() {
 
         <Card>
           <CardContent className="pt-6 space-y-3">
-            <h2 className="text-xl font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Standings</h2>
+            <h2 className="text-xl font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Season Standings</h2>
             {standings.length === 0 ? <p className="text-muted-foreground text-sm">Standings will appear once results are posted.</p> : (
               <Table>
                 <TableHeader>
@@ -113,22 +155,79 @@ export default function PublicLeague() {
                     <TableHead>Player</TableHead>
                     <TableHead className="text-right">Matches</TableHead>
                     <TableHead className="text-right">W-L-T</TableHead>
+                    <TableHead className="text-right">Skins</TableHead>
                     <TableHead className="text-right font-bold">Points</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {standings.map((s, i) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-bold">{i + 1}</TableCell>
-                      <TableCell className="font-medium">{s.league_members.member_name}</TableCell>
-                      <TableCell className="text-right">{s.matches_played}</TableCell>
-                      <TableCell className="text-right">{s.wins}-{s.losses}-{s.ties}</TableCell>
-                      <TableCell className="text-right font-bold">{s.points}</TableCell>
-                    </TableRow>
-                  ))}
+                  {standings.map((s, i) => {
+                    const skin = skinTotals[s.member_id];
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-bold">{i + 1}</TableCell>
+                        <TableCell className="font-medium">{s.league_members.member_name}</TableCell>
+                        <TableCell className="text-right">{s.matches_played}</TableCell>
+                        <TableCell className="text-right">{s.wins}-{s.losses}-{s.ties}</TableCell>
+                        <TableCell className="text-right">
+                          {skin ? (
+                            <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 bg-yellow-100 text-yellow-900 border border-yellow-300 font-medium">
+                              <Sparkles className="h-3 w-3" /> {skin.count}
+                              {skin.cents > 0 && <span className="ml-1 text-xs">${(skin.cents / 100).toFixed(0)}</span>}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">{s.points}</TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}
+          </CardContent>
+        </Card>
+
+        {pastResults.length > 0 && (
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Previous Results</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {pastResults.map(({ event, top }) => (
+                  <div key={event.id} className="border rounded-lg p-4">
+                    <p className="font-medium">{event.event_name}</p>
+                    <p className="text-xs text-muted-foreground mb-3">{event.event_date} · {event.course_name || ""}</p>
+                    {top.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No scores posted.</p>
+                    ) : (
+                      <ol className="space-y-1 text-sm">
+                        {top.map((r: any, i: number) => (
+                          <li key={i} className="flex justify-between">
+                            <span>{i + 1}. {r.name}</span>
+                            <span className="text-muted-foreground">
+                              <span className="font-medium text-foreground">{r.gross}</span> gross · {r.net} net
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <KeyRound className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-semibold">Members: enter your scores from your phone</p>
+                <p className="text-sm text-muted-foreground">Use your 6‑character scoring code — no app required.</p>
+              </div>
+            </div>
+            <Button onClick={() => navigate(`/league/${slug}/score`)}>Open Scoring</Button>
           </CardContent>
         </Card>
       </div>

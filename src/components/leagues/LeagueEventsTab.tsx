@@ -3,31 +3,60 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, DollarSign } from "lucide-react";
 
 export const LEAGUE_FORMATS = [
   { id: "individual_stroke", name: "Individual Stroke Play", teamSize: 1 },
+  { id: "match_play", name: "Match Play", teamSize: 1 },
   { id: "two_man_scramble", name: "Two-Man Scramble", teamSize: 2 },
   { id: "two_man_shamble", name: "Two-Man Shamble", teamSize: 2 },
-  { id: "four_man_baseball", name: "Four-Man Baseball (Best Ball)", teamSize: 4 },
+  { id: "four_man_best_ball", name: "Four-Man Best Ball", teamSize: 4 },
   { id: "four_man_scramble", name: "Four-Man Scramble", teamSize: 4 },
+  { id: "stableford", name: "Stableford", teamSize: 1 },
+  { id: "quota", name: "Quota", teamSize: 1 },
+  { id: "team_points", name: "Team Points", teamSize: 4 },
+  { id: "ryder_cup", name: "Ryder Cup Style", teamSize: 2 },
+  { id: "round_robin", name: "Round Robin", teamSize: 1 },
+];
+
+const RECURRENCE_OPTIONS = [
+  { id: "", label: "One-time (no recurrence)" },
+  { id: "weekly", label: "Weekly (same day each week)" },
+  { id: "biweekly", label: "Every 2 weeks" },
+  { id: "monthly", label: "Monthly" },
 ];
 
 const empty = {
   event_name: "",
   event_date: "",
+  end_date: "",
   course_name: "",
   format_type: "individual_stroke",
   start_time: "",
   registration_deadline: "",
   max_players: "" as any,
   registration_fee_cents: "" as any,
+  recurrence_freq: "",
+  recurrence_count: "" as any,
+  skins_enabled: false,
+  skins_mode: "gross",
+  skins_carryover: true,
+  skins_value_cents: "" as any,
+  pass_platform_fee_to_player: false,
 };
+
+function addDays(dateStr: string, days: number) {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
   const [events, setEvents] = useState<any[]>([]);
@@ -48,23 +77,44 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       toast({ title: "Event name and date are required", variant: "destructive" });
       return;
     }
-    const payload: any = {
+    const base: any = {
       league_id: leagueId,
       event_name: editing.event_name.trim(),
       event_date: editing.event_date,
+      end_date: editing.end_date || null,
       course_name: editing.course_name || null,
       format_type: editing.format_type,
       start_time: editing.start_time || null,
       registration_deadline: editing.registration_deadline || null,
       max_players: editing.max_players !== "" ? Number(editing.max_players) : null,
       registration_fee_cents: editing.registration_fee_cents !== "" ? Math.round(Number(editing.registration_fee_cents) * 100) : 0,
+      skins_enabled: !!editing.skins_enabled,
+      skins_mode: editing.skins_mode || "gross",
+      skins_carryover: !!editing.skins_carryover,
+      skins_value_cents: editing.skins_value_cents !== "" ? Math.round(Number(editing.skins_value_cents) * 100) : 0,
+      pass_platform_fee_to_player: !!editing.pass_platform_fee_to_player,
+      recurrence_rule: editing.recurrence_freq
+        ? { freq: editing.recurrence_freq, count: editing.recurrence_count ? Number(editing.recurrence_count) : null }
+        : null,
     };
-    const q = editing.id
-      ? (supabase as any).from("league_events").update(payload).eq("id", editing.id)
-      : (supabase as any).from("league_events").insert(payload);
-    const { error } = await q;
-    if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    toast({ title: editing.id ? "Event updated" : "Event created" });
+
+    if (editing.id) {
+      const { error } = await (supabase as any).from("league_events").update(base).eq("id", editing.id);
+      if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      toast({ title: "Event updated" });
+    } else {
+      // Handle recurrence: expand into multiple rows
+      const rows: any[] = [base];
+      if (editing.recurrence_freq && editing.recurrence_count && Number(editing.recurrence_count) > 1) {
+        const step = editing.recurrence_freq === "weekly" ? 7 : editing.recurrence_freq === "biweekly" ? 14 : 30;
+        for (let i = 1; i < Number(editing.recurrence_count); i++) {
+          rows.push({ ...base, event_date: addDays(base.event_date, step * i), end_date: base.end_date ? addDays(base.end_date, step * i) : null });
+        }
+      }
+      const { error } = await (supabase as any).from("league_events").insert(rows);
+      if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      toast({ title: `Created ${rows.length} event${rows.length === 1 ? "" : "s"}` });
+    }
     setEditing(null);
     load();
   };
@@ -98,6 +148,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                   <TableHead>Format</TableHead>
                   <TableHead>Course</TableHead>
                   <TableHead>Fee</TableHead>
+                  <TableHead>Skins</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -105,18 +156,37 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                 {events.map((e) => (
                   <TableRow key={e.id}>
                     <TableCell className="font-medium">{e.event_name}</TableCell>
-                    <TableCell>{e.event_date}{e.start_time ? ` @ ${e.start_time}` : ""}</TableCell>
+                    <TableCell>
+                      {e.event_date}{e.end_date && e.end_date !== e.event_date ? ` – ${e.end_date}` : ""}
+                      {e.start_time ? ` @ ${e.start_time}` : ""}
+                    </TableCell>
                     <TableCell>{LEAGUE_FORMATS.find(f => f.id === e.format_type)?.name || e.format_type}</TableCell>
                     <TableCell>{e.course_name || "—"}</TableCell>
-                    <TableCell>{e.registration_fee_cents ? `$${(e.registration_fee_cents / 100).toFixed(2)}` : "Free"}</TableCell>
+                    <TableCell>
+                      {e.registration_fee_cents ? `$${(e.registration_fee_cents / 100).toFixed(2)}` : "Free"}
+                      {e.pass_platform_fee_to_player && <Badge variant="outline" className="ml-2 text-xs">+ fee</Badge>}
+                    </TableCell>
+                    <TableCell>
+                      {e.skins_enabled
+                        ? <Badge className="bg-yellow-400 text-yellow-950 hover:bg-yellow-400">{e.skins_mode}</Badge>
+                        : <span className="text-muted-foreground text-xs">off</span>}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" onClick={() => setEditing({
                         ...e,
                         max_players: e.max_players ?? "",
                         registration_fee_cents: e.registration_fee_cents ? e.registration_fee_cents / 100 : "",
+                        skins_value_cents: e.skins_value_cents ? e.skins_value_cents / 100 : "",
                         course_name: e.course_name ?? "",
+                        end_date: e.end_date ?? "",
                         start_time: e.start_time ?? "",
                         registration_deadline: e.registration_deadline ?? "",
+                        skins_enabled: !!e.skins_enabled,
+                        skins_mode: e.skins_mode || "gross",
+                        skins_carryover: e.skins_carryover !== false,
+                        pass_platform_fee_to_player: !!e.pass_platform_fee_to_player,
+                        recurrence_freq: e.recurrence_rule?.freq || "",
+                        recurrence_count: "",
                       })}><Pencil className="h-3.5 w-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </TableCell>
@@ -129,36 +199,67 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
 
         {editing && (
           <Dialog open onOpenChange={() => setEditing(null)}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing.id ? "Edit Event" : "Add Event"}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <Label>Event Name *</Label>
                   <Input value={editing.event_name} onChange={(e) => setEditing({ ...editing, event_name: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Date *</Label>
+                    <Label>Start Date *</Label>
                     <Input type="date" value={editing.event_date} onChange={(e) => setEditing({ ...editing, event_date: e.target.value })} />
                   </div>
+                  <div>
+                    <Label>End Date (multi-day)</Label>
+                    <Input type="date" value={editing.end_date} onChange={(e) => setEditing({ ...editing, end_date: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Start Time</Label>
                     <Input type="time" value={editing.start_time} onChange={(e) => setEditing({ ...editing, start_time: e.target.value })} />
                   </div>
-                </div>
-                <div>
-                  <Label>Course</Label>
-                  <Input value={editing.course_name} onChange={(e) => setEditing({ ...editing, course_name: e.target.value })} />
+                  <div>
+                    <Label>Course</Label>
+                    <Input value={editing.course_name} onChange={(e) => setEditing({ ...editing, course_name: e.target.value })} />
+                  </div>
                 </div>
                 <div>
                   <Label>Format</Label>
                   <Select value={editing.format_type} onValueChange={(v) => setEditing({ ...editing, format_type: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-60">
                       {LEAGUE_FORMATS.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
+
+                {!editing.id && (
+                  <div className="rounded-md border p-3 space-y-3 bg-muted/30">
+                    <div className="text-sm font-semibold">Recurring Event</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Frequency</Label>
+                        <Select value={editing.recurrence_freq} onValueChange={(v) => setEditing({ ...editing, recurrence_freq: v })}>
+                          <SelectTrigger><SelectValue placeholder="One-time" /></SelectTrigger>
+                          <SelectContent>
+                            {RECURRENCE_OPTIONS.map(r => <SelectItem key={r.id || "none"} value={r.id || "none"}>{r.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {editing.recurrence_freq && editing.recurrence_freq !== "none" && (
+                        <div>
+                          <Label>How many events?</Label>
+                          <Input type="number" min={2} max={52} value={editing.recurrence_count}
+                            onChange={(e) => setEditing({ ...editing, recurrence_count: e.target.value })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Registration Deadline</Label>
@@ -169,9 +270,56 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     <Input type="number" value={editing.max_players} onChange={(e) => setEditing({ ...editing, max_players: e.target.value })} />
                   </div>
                 </div>
-                <div>
-                  <Label>Registration Fee ($)</Label>
-                  <Input type="number" step="0.01" value={editing.registration_fee_cents} onChange={(e) => setEditing({ ...editing, registration_fee_cents: e.target.value })} />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Registration Fee ($)</Label>
+                    <Input type="number" step="0.01" value={editing.registration_fee_cents} onChange={(e) => setEditing({ ...editing, registration_fee_cents: e.target.value })} />
+                  </div>
+                  <div className="flex items-end">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={!!editing.pass_platform_fee_to_player}
+                        onCheckedChange={(v) => setEditing({ ...editing, pass_platform_fee_to_player: v })} />
+                      <Label className="text-sm">Pass 5% platform fee to player</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-md border p-3 space-y-3 bg-yellow-50 dark:bg-yellow-950/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-yellow-600" />
+                      <Label className="font-semibold">Skins Game</Label>
+                    </div>
+                    <Switch checked={!!editing.skins_enabled}
+                      onCheckedChange={(v) => setEditing({ ...editing, skins_enabled: v })} />
+                  </div>
+                  {editing.skins_enabled && (
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <Label>Mode</Label>
+                        <Select value={editing.skins_mode} onValueChange={(v) => setEditing({ ...editing, skins_mode: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gross">Gross</SelectItem>
+                            <SelectItem value="net">Net</SelectItem>
+                            <SelectItem value="both">Both</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Per-skin $</Label>
+                        <Input type="number" step="0.01" value={editing.skins_value_cents}
+                          onChange={(e) => setEditing({ ...editing, skins_value_cents: e.target.value })} />
+                      </div>
+                      <div className="flex items-end pb-2">
+                        <div className="flex items-center gap-2">
+                          <Switch checked={!!editing.skins_carryover}
+                            onCheckedChange={(v) => setEditing({ ...editing, skins_carryover: v })} />
+                          <Label className="text-sm">Carryover</Label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <DialogFooter>

@@ -313,7 +313,14 @@ export function DashboardSidebar() {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3">
+        <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3 space-y-2">
+          <NavLink
+            to="/select-workspace"
+            className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors w-full"
+          >
+            <LogOut className="h-4 w-4 rotate-180" />
+            {!collapsed && <span>Switch Workspace</span>}
+          </NavLink>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors w-full"

@@ -2997,38 +2997,47 @@ export type Database = {
         Row: {
           created_at: string
           event_id: string
+          fee_paid: boolean | null
           id: string
           member_id: string
           paid_at: string | null
           pairing_group: number | null
           pairing_position: number | null
           registration_fee_paid: boolean
+          status: string
           team_name: string | null
           tee_time: string | null
+          waitlist_position: number | null
         }
         Insert: {
           created_at?: string
           event_id: string
+          fee_paid?: boolean | null
           id?: string
           member_id: string
           paid_at?: string | null
           pairing_group?: number | null
           pairing_position?: number | null
           registration_fee_paid?: boolean
+          status?: string
           team_name?: string | null
           tee_time?: string | null
+          waitlist_position?: number | null
         }
         Update: {
           created_at?: string
           event_id?: string
+          fee_paid?: boolean | null
           id?: string
           member_id?: string
           paid_at?: string | null
           pairing_group?: number | null
           pairing_position?: number | null
           registration_fee_paid?: boolean
+          status?: string
           team_name?: string | null
           tee_time?: string | null
+          waitlist_position?: number | null
         }
         Relationships: [
           {
@@ -3103,6 +3112,7 @@ export type Database = {
           course_id: string | null
           course_name: string | null
           created_at: string
+          end_date: string | null
           event_date: string
           event_name: string
           format_type: string
@@ -3110,9 +3120,15 @@ export type Database = {
           is_completed: boolean
           league_id: string
           max_players: number | null
+          pass_platform_fee_to_player: boolean
+          recurrence_rule: Json | null
           registration_deadline: string | null
           registration_fee_cents: number
           season_id: string | null
+          skins_carryover: boolean
+          skins_enabled: boolean
+          skins_mode: string
+          skins_value_cents: number
           start_time: string | null
           updated_at: string
         }
@@ -3120,6 +3136,7 @@ export type Database = {
           course_id?: string | null
           course_name?: string | null
           created_at?: string
+          end_date?: string | null
           event_date: string
           event_name: string
           format_type?: string
@@ -3127,9 +3144,15 @@ export type Database = {
           is_completed?: boolean
           league_id: string
           max_players?: number | null
+          pass_platform_fee_to_player?: boolean
+          recurrence_rule?: Json | null
           registration_deadline?: string | null
           registration_fee_cents?: number
           season_id?: string | null
+          skins_carryover?: boolean
+          skins_enabled?: boolean
+          skins_mode?: string
+          skins_value_cents?: number
           start_time?: string | null
           updated_at?: string
         }
@@ -3137,6 +3160,7 @@ export type Database = {
           course_id?: string | null
           course_name?: string | null
           created_at?: string
+          end_date?: string | null
           event_date?: string
           event_name?: string
           format_type?: string
@@ -3144,9 +3168,15 @@ export type Database = {
           is_completed?: boolean
           league_id?: string
           max_players?: number | null
+          pass_platform_fee_to_player?: boolean
+          recurrence_rule?: Json | null
           registration_deadline?: string | null
           registration_fee_cents?: number
           season_id?: string | null
+          skins_carryover?: boolean
+          skins_enabled?: boolean
+          skins_mode?: string
+          skins_value_cents?: number
           start_time?: string | null
           updated_at?: string
         }
@@ -3229,6 +3259,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          league_id: string
+          recipient_count: number | null
+          sent_at: string
+          sent_by: string | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          league_id: string
+          recipient_count?: number | null
+          sent_at?: string
+          sent_by?: string | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          league_id?: string
+          recipient_count?: number | null
+          sent_at?: string
+          sent_by?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_messages_league_id_fkey"
             columns: ["league_id"]
             isOneToOne: false
             referencedRelation: "golf_leagues"
@@ -3326,6 +3397,7 @@ export type Database = {
           league_id: string
           loss_points: number
           position_points: Json
+          standings_mode: string
           tie_points: number
           updated_at: string
           win_points: number
@@ -3336,6 +3408,7 @@ export type Database = {
           league_id: string
           loss_points?: number
           position_points?: Json
+          standings_mode?: string
           tie_points?: number
           updated_at?: string
           win_points?: number
@@ -3346,6 +3419,7 @@ export type Database = {
           league_id?: string
           loss_points?: number
           position_points?: Json
+          standings_mode?: string
           tie_points?: number
           updated_at?: string
           win_points?: number

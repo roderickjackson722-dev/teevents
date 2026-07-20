@@ -203,6 +203,7 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
+          <Route path="/select-workspace" element={<SelectWorkspace />} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/webpage-layout" element={<DashboardLayout><WebpageLayout /></DashboardLayout>} />

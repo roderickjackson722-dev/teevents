@@ -42,7 +42,8 @@ export default function LeagueMemberLogin() {
       toast({ title: "Code not recognized", variant: "destructive" });
       return;
     }
-    navigate(`/league/${slug}/me/${clean}`);
+    if (eventId) navigate(`/league/${slug}/register/${clean}?event=${eventId}`);
+    else navigate(`/league/${slug}/me/${clean}`);
   };
 
   return (

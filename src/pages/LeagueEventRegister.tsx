@@ -34,7 +34,22 @@ export default function LeagueEventRegister() {
   const [member, setMember] = useState<any>(null);
   const [event, setEvent] = useState<any>(null);
   const [registration, setRegistration] = useState<any>(null);
+  const [payment, setPayment] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
+  const paySuccess = params.get("pay") === "success";
+
+  const loadPayment = async (memberId: string) => {
+    const { data: pay } = await (supabase as any)
+      .from("league_payments")
+      .select("id, amount_cents, platform_fee_cents, status, stripe_payment_intent, created_at")
+      .eq("event_id", eventId)
+      .eq("member_id", memberId)
+      .eq("kind", "event")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setPayment(pay || null);
+  };
 
   useEffect(() => {
     (async () => {
@@ -50,9 +65,31 @@ export default function LeagueEventRegister() {
         .from("league_event_registrations").select("*")
         .eq("event_id", eventId).eq("member_id", m.id).maybeSingle();
       setLeague(lg); setMember(m); setEvent(ev); setRegistration(reg);
+      await loadPayment(m.id);
       setLoading(false);
     })();
   }, [slug, code, eventId]);
+
+  // If returning from Stripe, poll briefly for webhook to flip registration to paid.
+  useEffect(() => {
+    if (!paySuccess || !member?.id || !eventId) return;
+    let tries = 0;
+    const t = setInterval(async () => {
+      tries++;
+      const { data: reg } = await (supabase as any)
+        .from("league_event_registrations").select("*")
+        .eq("event_id", eventId).eq("member_id", member.id).maybeSingle();
+      if (reg?.fee_paid) {
+        setRegistration(reg);
+        await loadPayment(member.id);
+        clearInterval(t);
+      } else if (tries > 15) {
+        clearInterval(t);
+      }
+    }, 2000);
+    return () => clearInterval(t);
+  }, [paySuccess, member?.id, eventId]);
+
 
   const goToEvent = () => navigate(`/league/${slug}/me/${code}?event=${eventId}`);
 
@@ -143,10 +180,35 @@ export default function LeagueEventRegister() {
 
             {alreadyRegistered ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-emerald-600"><CheckCircle2 className="h-5 w-5" /> <span className="font-medium">You're registered for this event.</span></div>
-                <Button className="w-full h-12" onClick={goToEvent}>Continue to Event →</Button>
+                <div className="rounded-md border border-emerald-300 bg-emerald-50 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-800">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-semibold">Registration Confirmed</span>
+                    <Badge className="ml-auto bg-emerald-600 hover:bg-emerald-600">PAID</Badge>
+                  </div>
+                  <div className="text-sm text-emerald-900/90 space-y-1">
+                    <div><span className="text-emerald-800/70">Player:</span> <span className="font-medium">{member.member_name}</span></div>
+                    <div><span className="text-emerald-800/70">Event:</span> <span className="font-medium">{event.event_name}</span> · {event.event_date}</div>
+                    {payment && (
+                      <>
+                        <div><span className="text-emerald-800/70">Amount:</span> <span className="font-medium">${((payment.amount_cents || 0) / 100).toFixed(2)}</span></div>
+                        {payment.stripe_payment_intent && (
+                          <div className="font-mono text-[11px] break-all"><span className="text-emerald-800/70 font-sans">Reference:</span> {payment.stripe_payment_intent}</div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <p className="text-xs text-emerald-800/70">A confirmation email has been sent to your address on file.</p>
+                </div>
+                <Button className="w-full h-12" onClick={goToEvent}>Continue to Leaderboard & Scoring →</Button>
+              </div>
+            ) : paySuccess ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-4 flex items-center gap-2 text-sm text-amber-900">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Finalizing your payment… this usually takes a few seconds.
               </div>
             ) : feeDollars > 0 ? (
+
               <Button className="w-full h-12" onClick={payAndRegister} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
                 Pay ${feeDollars.toFixed(2)} & Register

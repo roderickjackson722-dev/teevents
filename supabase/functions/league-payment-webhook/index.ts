@@ -1,6 +1,7 @@
 // Stripe webhook for league payments. Handles both platform-level (league access unlock)
-// and connected-account (membership / event fee) checkout.session.completed events.
-// Configure the endpoint URL for both the platform account and Connect webhook, both point here.
+// and connected-account (membership / event fee) checkout.session.completed events, plus
+// account.updated (to flip organization_payout_methods.stripe_onboarding_complete for the
+// real-time banner in the League Overview tab).
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -8,6 +9,58 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "content-type, stripe-signature",
 };
+
+async function sendConfirmationEmail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const key = Deno.env.get("RESEND_API_KEY");
+  if (!key || !opts.to) return;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "TeeVents <no-reply@teevents.golf>",
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+      }),
+    });
+  } catch (e) {
+    console.error("Email send error:", (e as Error).message);
+  }
+}
+
+function confirmationHtml(opts: {
+  headline: string;
+  leagueName: string;
+  eventName?: string;
+  eventDate?: string;
+  amountCents: number;
+  reference: string;
+  memberName?: string;
+  continueUrl?: string;
+}) {
+  const dollars = (opts.amountCents / 100).toFixed(2);
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:20px">
+      <h2 style="color:#1a5c38;margin:0 0 8px">${opts.headline}</h2>
+      <p style="color:#555;margin:0 0 16px">Thanks${opts.memberName ? `, ${opts.memberName}` : ""} — your payment was received.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin:12px 0">
+        <tr><td style="padding:6px 0;color:#666">League</td><td style="padding:6px 0"><strong>${opts.leagueName}</strong></td></tr>
+        ${opts.eventName ? `<tr><td style="padding:6px 0;color:#666">Event</td><td style="padding:6px 0"><strong>${opts.eventName}</strong></td></tr>` : ""}
+        ${opts.eventDate ? `<tr><td style="padding:6px 0;color:#666">Date</td><td style="padding:6px 0">${opts.eventDate}</td></tr>` : ""}
+        <tr><td style="padding:6px 0;color:#666">Amount paid</td><td style="padding:6px 0"><strong>$${dollars}</strong></td></tr>
+        <tr><td style="padding:6px 0;color:#666">Status</td><td style="padding:6px 0"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;font-weight:600">PAID</span></td></tr>
+        <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-family:monospace;font-size:12px">${opts.reference}</td></tr>
+      </table>
+      ${opts.continueUrl ? `<p style="margin:20px 0"><a href="${opts.continueUrl}" style="background:#F5A623;color:#1a5c38;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">Continue to Event</a></p>` : ""}
+      <p style="color:#888;font-size:12px;margin-top:24px">Keep this email as your receipt. Reply if you have any questions.</p>
+    </div>
+  `;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -30,7 +83,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    if (event.type === "checkout.session.completed") {
+    if (event.type === "account.updated") {
+      const acct = event.data.object as Stripe.Account;
+      const onboarded = !!acct.charges_enabled && !!acct.payouts_enabled && !!acct.details_submitted;
+      await supabaseAdmin
+        .from("organization_payout_methods")
+        .update({
+          stripe_onboarding_complete: onboarded,
+          stripe_account_status: onboarded ? "active" : (acct.details_submitted ? "pending_verification" : "pending"),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_account_id", acct.id);
+    } else if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const kind = session.metadata?.kind;
 
@@ -67,25 +131,76 @@ Deno.serve(async (req) => {
       } else if (kind === "league_membership") {
         const paymentId = session.metadata!.payment_id;
         const memberId = session.metadata!.member_id;
+        const pi = String(session.payment_intent || "");
         await supabaseAdmin
           .from("league_payments")
-          .update({ status: "paid", stripe_payment_intent: String(session.payment_intent || "") })
+          .update({ status: "paid", stripe_payment_intent: pi })
           .eq("id", paymentId);
         await supabaseAdmin
           .from("league_members")
           .update({ membership_fee_paid: true, membership_status: "active" })
           .eq("id", memberId);
+
+        const { data: pay } = await supabaseAdmin
+          .from("league_payments")
+          .select("amount_cents, payer_email, league:golf_leagues(league_name, league_slug), member:league_members(member_name)")
+          .eq("id", paymentId)
+          .maybeSingle();
+        if (pay?.payer_email) {
+          await sendConfirmationEmail({
+            to: pay.payer_email,
+            subject: `Membership confirmed — ${(pay as any).league?.league_name || "your league"}`,
+            html: confirmationHtml({
+              headline: "Membership Confirmed",
+              leagueName: (pay as any).league?.league_name || "",
+              amountCents: pay.amount_cents,
+              reference: pi || String(session.id),
+              memberName: (pay as any).member?.member_name,
+              continueUrl: (pay as any).league?.league_slug
+                ? `https://teevents.golf/league/${(pay as any).league.league_slug}`
+                : undefined,
+            }),
+          });
+        }
       } else if (kind === "league_event") {
         const paymentId = session.metadata!.payment_id;
         const regId = session.metadata!.registration_id;
+        const pi = String(session.payment_intent || "");
         await supabaseAdmin
           .from("league_payments")
-          .update({ status: "paid", stripe_payment_intent: String(session.payment_intent || "") })
+          .update({ status: "paid", stripe_payment_intent: pi })
           .eq("id", paymentId);
         await supabaseAdmin
           .from("league_event_registrations")
           .update({ fee_paid: true })
           .eq("id", regId);
+
+        const { data: pay } = await supabaseAdmin
+          .from("league_payments")
+          .select("amount_cents, payer_email, league:golf_leagues(league_name, league_slug), event:league_events(event_name, event_date), member:league_members(member_name, scoring_code)")
+          .eq("id", paymentId)
+          .maybeSingle();
+        if (pay?.payer_email) {
+          const slug = (pay as any).league?.league_slug;
+          const code = (pay as any).member?.scoring_code;
+          const continueUrl = slug && code
+            ? `https://teevents.golf/league/${slug}/me/${code}?event=${session.metadata!.event_id}`
+            : undefined;
+          await sendConfirmationEmail({
+            to: pay.payer_email,
+            subject: `You're registered — ${(pay as any).event?.event_name || "event"}`,
+            html: confirmationHtml({
+              headline: "Registration Confirmed",
+              leagueName: (pay as any).league?.league_name || "",
+              eventName: (pay as any).event?.event_name,
+              eventDate: (pay as any).event?.event_date,
+              amountCents: pay.amount_cents,
+              reference: pi || String(session.id),
+              memberName: (pay as any).member?.member_name,
+              continueUrl,
+            }),
+          });
+        }
       }
     }
   } catch (e: any) {

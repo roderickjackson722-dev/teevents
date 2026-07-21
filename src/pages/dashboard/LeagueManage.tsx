@@ -18,6 +18,8 @@ import LeagueSettingsTab from "@/components/leagues/LeagueSettingsTab";
 import LeagueCommunicationTab from "@/components/leagues/LeagueCommunicationTab";
 import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
+import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
+
 
 export default function LeagueManage() {
   const { leagueId } = useParams<{ leagueId: string }>();
@@ -146,11 +148,13 @@ export default function LeagueManage() {
           <TabsTrigger value="standings">Leaderboard</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="payouts">Payouts</TabsTrigger>
           <TabsTrigger value="customize">Customize Page</TabsTrigger>
           <TabsTrigger value="public">Public Page</TabsTrigger>
           <TabsTrigger value="share">Share</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+
         <TabsContent value="overview" className="mt-4"><LeagueOverviewTab leagueId={league.id} /></TabsContent>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
         <TabsContent value="events" className="mt-4"><LeagueEventsTab leagueId={league.id} /></TabsContent>
@@ -160,6 +164,8 @@ export default function LeagueManage() {
         <TabsContent value="standings" className="mt-4"><LeagueStandingsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="skins" className="mt-4"><LeagueSkinsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="messages" className="mt-4"><LeagueCommunicationTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="payouts" className="mt-4"><LeaguePayoutsTab leagueId={league.id} /></TabsContent>
+
         <TabsContent value="customize" className="mt-4"><LeagueCustomizeTab league={league} onSaved={load} /></TabsContent>
         <TabsContent value="public" className="mt-4">
           {league.league_slug ? (

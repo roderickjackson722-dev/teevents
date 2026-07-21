@@ -115,3 +115,6 @@ verify_jwt = false
 
 [functions.send-atl-qa-preview]
 verify_jwt = false
+
+[functions.signup-with-vetting]
+verify_jwt = false

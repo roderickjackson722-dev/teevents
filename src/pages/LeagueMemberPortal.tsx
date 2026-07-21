@@ -145,11 +145,7 @@ export default function LeagueMemberPortal() {
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center"><User className="h-6 w-6 text-primary" /></div>
               <div>
                 <p className="text-xl font-bold">{member.member_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  Handicap: {member.handicap_index ?? "—"}
-                  {alloc && <> · Course Hcp: <span className="font-medium text-foreground">{alloc.courseHandicap}</span></>}
-                  {" · "}Status: {member.membership_status}
-                </p>
+                <p className="text-sm text-muted-foreground">Status: {member.membership_status}</p>
               </div>
             </div>
             {standing && (
@@ -159,7 +155,29 @@ export default function LeagueMemberPortal() {
               </div>
             )}
           </CardContent>
+          <CardContent className="pt-0 pb-6">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-md border p-3 text-center">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Handicap Index</p>
+                <p className="text-xl font-bold">{member.handicap_index != null ? Number(member.handicap_index).toFixed(1) : "—"}</p>
+                {member.handicap_updated_at && (
+                  <p className="text-[10px] text-muted-foreground">Updated {new Date(member.handicap_updated_at).toLocaleDateString()}</p>
+                )}
+              </div>
+              <div className="rounded-md border p-3 text-center">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Course Hcp</p>
+                <p className="text-xl font-bold">{alloc ? alloc.courseHandicap : (member.course_handicap ?? "—")}</p>
+                <p className="text-[10px] text-muted-foreground">{course ? "this event" : "select an event"}</p>
+              </div>
+              <div className="rounded-md border p-3 text-center">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Playing Hcp</p>
+                <p className="text-xl font-bold">{alloc ? alloc.courseHandicap : (member.playing_handicap ?? "—")}</p>
+                <p className="text-[10px] text-muted-foreground">applied to net</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
+
 
         {member.membership_fee_cents > 0 && !member.membership_fee_paid && (
           <Card className="border-primary/40 bg-primary/5">

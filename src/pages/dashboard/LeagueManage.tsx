@@ -134,17 +134,21 @@ export default function LeagueManage() {
       )}
 
 
-      <Tabs defaultValue="members">
+      <Tabs defaultValue="overview">
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="overview">Dashboard</TabsTrigger>
+          <TabsTrigger value="members">Players</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
           <TabsTrigger value="scoring">Scoring</TabsTrigger>
-          <TabsTrigger value="standings">Standings</TabsTrigger>
+          <TabsTrigger value="standings">Leaderboard</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="customize">Customize Page</TabsTrigger>
+          <TabsTrigger value="share">Share</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+        <TabsContent value="overview" className="mt-4"><LeagueOverviewTab leagueId={league.id} /></TabsContent>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
         <TabsContent value="events" className="mt-4"><LeagueEventsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="pairings" className="mt-4"><LeaguePairingsTab leagueId={league.id} /></TabsContent>
@@ -152,6 +156,8 @@ export default function LeagueManage() {
         <TabsContent value="standings" className="mt-4"><LeagueStandingsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="skins" className="mt-4"><LeagueSkinsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="messages" className="mt-4"><LeagueCommunicationTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="customize" className="mt-4"><LeagueCustomizeTab league={league} onSaved={load} /></TabsContent>
+        <TabsContent value="share" className="mt-4"><LeagueShareTab league={league} /></TabsContent>
         <TabsContent value="settings" className="mt-4"><LeagueSettingsTab league={league} onSaved={load} /></TabsContent>
       </Tabs>
       {league.is_public && league.league_slug && (

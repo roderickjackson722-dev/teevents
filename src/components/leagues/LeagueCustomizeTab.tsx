@@ -45,9 +45,9 @@ export default function LeagueCustomizeTab({ league, onSaved }: Props) {
     try {
       const ext = file.name.split(".").pop();
       const path = `leagues/${league.id}/${kind}-${Date.now()}.${ext}`;
-      const { error } = await (supabase as any).storage.from("event-images").upload(path, file, { upsert: true });
+      const { error } = await (supabase as any).storage.from("tournament-assets").upload(path, file, { upsert: true });
       if (error) throw error;
-      const { data } = (supabase as any).storage.from("event-images").getPublicUrl(path);
+      const { data } = (supabase as any).storage.from("tournament-assets").getPublicUrl(path);
       set(kind === "logo" ? "logo_url" : "banner_url", data.publicUrl);
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });

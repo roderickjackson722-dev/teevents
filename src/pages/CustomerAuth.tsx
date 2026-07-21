@@ -138,14 +138,25 @@ const CustomerAuth = () => {
     const { data } = await supabase
       .from("org_members")
       .select("organization_id")
-      .eq("user_id", userId)
-      .limit(1);
+      .eq("user_id", userId);
     if (redirectParam && redirectParam.startsWith("/")) {
       navigate(redirectParam);
       return;
     }
-    if (data && data.length > 0) navigate("/dashboard");
-    else navigate("/onboarding");
+    if (!data || data.length === 0) {
+      navigate("/onboarding");
+      return;
+    }
+    const orgIds = data.map((r: any) => r.organization_id);
+    const [{ count: tCount }, { count: lCount }] = await Promise.all([
+      (supabase as any).from("tournaments").select("id", { count: "exact", head: true }).in("organization_id", orgIds),
+      (supabase as any).from("golf_leagues").select("id", { count: "exact", head: true }).in("organization_id", orgIds),
+    ]);
+    const hasT = (tCount || 0) > 0;
+    const hasL = (lCount || 0) > 0;
+    if (hasT && hasL) navigate("/select-workspace");
+    else if (hasL && !hasT) navigate("/dashboard/leagues");
+    else navigate("/dashboard");
   };
 
   const toggleRole = (r: string) => {

@@ -2676,6 +2676,7 @@ export type Database = {
       }
       golf_leagues: {
         Row: {
+          accent_color: string | null
           access_amount_cents: number | null
           access_paid_at: string | null
           access_status: string
@@ -2684,6 +2685,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           end_date: string | null
+          font_color: string | null
           id: string
           is_active: boolean
           is_public: boolean
@@ -2691,11 +2693,19 @@ export type Database = {
           league_slug: string
           logo_url: string | null
           organization_id: string
+          primary_color: string | null
           season_year: number | null
+          show_register: boolean
+          show_results: boolean
+          show_schedule: boolean
+          show_standings: boolean
           start_date: string | null
+          tagline: string | null
           updated_at: string
+          welcome_message: string | null
         }
         Insert: {
+          accent_color?: string | null
           access_amount_cents?: number | null
           access_paid_at?: string | null
           access_status?: string
@@ -2704,6 +2714,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          font_color?: string | null
           id?: string
           is_active?: boolean
           is_public?: boolean
@@ -2711,11 +2722,19 @@ export type Database = {
           league_slug: string
           logo_url?: string | null
           organization_id: string
+          primary_color?: string | null
           season_year?: number | null
+          show_register?: boolean
+          show_results?: boolean
+          show_schedule?: boolean
+          show_standings?: boolean
           start_date?: string | null
+          tagline?: string | null
           updated_at?: string
+          welcome_message?: string | null
         }
         Update: {
+          accent_color?: string | null
           access_amount_cents?: number | null
           access_paid_at?: string | null
           access_status?: string
@@ -2724,6 +2743,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          font_color?: string | null
           id?: string
           is_active?: boolean
           is_public?: boolean
@@ -2731,9 +2751,16 @@ export type Database = {
           league_slug?: string
           logo_url?: string | null
           organization_id?: string
+          primary_color?: string | null
           season_year?: number | null
+          show_register?: boolean
+          show_results?: boolean
+          show_schedule?: boolean
+          show_standings?: boolean
           start_date?: string | null
+          tagline?: string | null
           updated_at?: string
+          welcome_message?: string | null
         }
         Relationships: [
           {

@@ -83,115 +83,148 @@ export default function PublicLeague() {
     );
   }
 
+  const primary = league.primary_color || "#1a5c38";
+  const accent = league.accent_color || "#F5A623";
+  const fontColor = league.font_color || "#FFFFFF";
+  const showSchedule = league.show_schedule !== false;
+  const showStandings = league.show_standings !== false;
+  const showResults = league.show_results !== false;
+  const showRegister = league.show_register !== false;
+
   return (
-    <div className="min-h-screen bg-background">
-      <SEO title={`${league.league_name} — Golf League`} description={league.description || `${league.league_name} standings, schedule and results.`} />
-      {league.banner_url && <img src={league.banner_url} alt="" className="w-full h-48 md:h-64 object-cover" />}
+    <div className="min-h-screen bg-background" style={{ ["--league-primary" as any]: primary, ["--league-accent" as any]: accent }}>
+      <SEO title={`${league.league_name} — Golf League`} description={league.description || league.tagline || `${league.league_name} standings, schedule and results.`} />
+      {league.banner_url ? (
+        <div className="relative">
+          <img src={league.banner_url} alt="" className="w-full h-48 md:h-64 object-cover" />
+          <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(0deg, ${primary}CC, ${primary}66)`, color: fontColor }}>
+            <div className="text-center px-4">
+              <h1 className="text-3xl md:text-5xl font-bold">{league.league_name}</h1>
+              {league.tagline && <p className="mt-2 text-lg opacity-90">{league.tagline}</p>}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="py-10 px-6 text-center" style={{ background: primary, color: fontColor }}>
+          {league.logo_url && <img src={league.logo_url} alt="" className="h-16 w-16 mx-auto mb-3 rounded-lg object-cover bg-white/10 p-1" />}
+          <h1 className="text-3xl md:text-4xl font-bold">{league.league_name}</h1>
+          {league.tagline && <p className="mt-2 opacity-90">{league.tagline}</p>}
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto p-6 space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
-            {league.logo_url && <img src={league.logo_url} alt="" className="h-16 w-16 rounded-lg object-cover" />}
+            {league.logo_url && league.banner_url && <img src={league.logo_url} alt="" className="h-16 w-16 rounded-lg object-cover -mt-14 border-4 border-background bg-background" />}
             <div>
-              <h1 className="text-3xl font-bold">{league.league_name}</h1>
               {league.season_year && <p className="text-muted-foreground">Season {league.season_year}</p>}
             </div>
           </div>
-          <Button onClick={() => navigate(`/league/${slug}/score`)} className="gap-2">
-            <Smartphone className="h-4 w-4" /> Score on your phone
-          </Button>
+          {showRegister && (
+            <Button onClick={() => navigate(`/league/${slug}/score`)} className="gap-2" style={{ background: accent, color: primary }}>
+              <Smartphone className="h-4 w-4" /> Score on your phone
+            </Button>
+          )}
         </div>
 
-        {league.description && (
+        {league.welcome_message && (
+          <Card><CardContent className="pt-6"><p className="whitespace-pre-wrap">{league.welcome_message}</p></CardContent></Card>
+        )}
+        {league.description && !league.welcome_message && (
           <Card><CardContent className="pt-6"><p className="whitespace-pre-wrap">{league.description}</p></CardContent></Card>
         )}
 
-        <Card>
-          <CardContent className="pt-6 space-y-3">
-            <h2 className="text-xl font-semibold flex items-center gap-2"><Calendar className="h-5 w-5" /> Schedule</h2>
-            {events.length === 0 ? <p className="text-muted-foreground text-sm">No events scheduled.</p> : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Course</TableHead>
-                    <TableHead>Format</TableHead>
-                    <TableHead className="text-right">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {events.map((e) => (
-                    <TableRow key={e.id}>
-                      <TableCell>{e.event_date}</TableCell>
-                      <TableCell className="font-medium">
-                        {e.event_name}
-                        {e.skins_enabled && (
-                          <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-900 border-yellow-300 gap-1">
-                            <Sparkles className="h-3 w-3" /> Skins
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{e.course_name || "—"}</TableCell>
-                      <TableCell className="capitalize">{String(e.format_type || "").replace(/_/g, " ")}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant={e.is_completed ? "secondary" : "default"}>{e.is_completed ? "Completed" : "Upcoming"}</Badge>
-                      </TableCell>
+        {showSchedule && (
+          <Card>
+            <CardContent className="pt-6 space-y-3">
+              <h2 className="text-xl font-semibold flex items-center gap-2" style={{ color: primary }}><Calendar className="h-5 w-5" /> Schedule</h2>
+              {events.length === 0 ? <p className="text-muted-foreground text-sm">No events scheduled.</p> : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Format</TableHead>
+                      <TableHead className="text-right">Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6 space-y-3">
-            <h2 className="text-xl font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Season Standings</h2>
-            {standings.length === 0 ? <p className="text-muted-foreground text-sm">Standings will appear once results are posted.</p> : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>Player</TableHead>
-                    <TableHead className="text-right">Matches</TableHead>
-                    <TableHead className="text-right">W-L-T</TableHead>
-                    <TableHead className="text-right">Skins</TableHead>
-                    <TableHead className="text-right font-bold">Points</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {standings.map((s, i) => {
-                    const skin = skinTotals[s.member_id];
-                    return (
-                      <TableRow key={s.id}>
-                        <TableCell className="font-bold">{i + 1}</TableCell>
-                        <TableCell className="font-medium">{s.league_members.member_name}</TableCell>
-                        <TableCell className="text-right">{s.matches_played}</TableCell>
-                        <TableCell className="text-right">{s.wins}-{s.losses}-{s.ties}</TableCell>
-                        <TableCell className="text-right">
-                          {skin ? (
-                            <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 bg-yellow-100 text-yellow-900 border border-yellow-300 font-medium">
-                              <Sparkles className="h-3 w-3" /> {skin.count}
-                              {skin.cents > 0 && <span className="ml-1 text-xs">${(skin.cents / 100).toFixed(0)}</span>}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
+                  </TableHeader>
+                  <TableBody>
+                    {events.map((e) => (
+                      <TableRow key={e.id}>
+                        <TableCell>{e.event_date}</TableCell>
+                        <TableCell className="font-medium">
+                          {e.event_name}
+                          {e.skins_enabled && (
+                            <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-900 border-yellow-300 gap-1">
+                              <Sparkles className="h-3 w-3" /> Skins
+                            </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right font-bold">{s.points}</TableCell>
+                        <TableCell>{e.course_name || "—"}</TableCell>
+                        <TableCell className="capitalize">{String(e.format_type || "").replace(/_/g, " ")}</TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant={e.is_completed ? "secondary" : "default"}>{e.is_completed ? "Completed" : "Upcoming"}</Badge>
+                        </TableCell>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        {pastResults.length > 0 && (
+        {showStandings && (
+          <Card>
+            <CardContent className="pt-6 space-y-3">
+              <h2 className="text-xl font-semibold flex items-center gap-2" style={{ color: primary }}><Trophy className="h-5 w-5" /> Season Standings</h2>
+              {standings.length === 0 ? <p className="text-muted-foreground text-sm">Standings will appear once results are posted.</p> : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Player</TableHead>
+                      <TableHead className="text-right">Matches</TableHead>
+                      <TableHead className="text-right">W-L-T</TableHead>
+                      <TableHead className="text-right">Skins</TableHead>
+                      <TableHead className="text-right font-bold">Points</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {standings.map((s, i) => {
+                      const skin = skinTotals[s.member_id];
+                      return (
+                        <TableRow key={s.id}>
+                          <TableCell className="font-bold">{i + 1}</TableCell>
+                          <TableCell className="font-medium">{s.league_members.member_name}</TableCell>
+                          <TableCell className="text-right">{s.matches_played}</TableCell>
+                          <TableCell className="text-right">{s.wins}-{s.losses}-{s.ties}</TableCell>
+                          <TableCell className="text-right">
+                            {skin ? (
+                              <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 bg-yellow-100 text-yellow-900 border border-yellow-300 font-medium">
+                                <Sparkles className="h-3 w-3" /> {skin.count}
+                                {skin.cents > 0 && <span className="ml-1 text-xs">${(skin.cents / 100).toFixed(0)}</span>}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">{s.points}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {showResults && pastResults.length > 0 && (
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Previous Results</h2>
+              <h2 className="text-xl font-semibold flex items-center gap-2" style={{ color: primary }}><Trophy className="h-5 w-5" /> Previous Results</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {pastResults.map(({ event, top }) => (
                   <div key={event.id} className="border rounded-lg p-4">
@@ -218,18 +251,20 @@ export default function PublicLeague() {
           </Card>
         )}
 
-        <Card className="border-primary/40 bg-primary/5">
-          <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3">
-              <KeyRound className="h-5 w-5 text-primary" />
-              <div>
-                <p className="font-semibold">Members: enter your scores from your phone</p>
-                <p className="text-sm text-muted-foreground">Use your 6‑character scoring code — no app required.</p>
+        {showRegister && (
+          <Card className="border-primary/40" style={{ background: `${accent}15`, borderColor: accent }}>
+            <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3">
+                <KeyRound className="h-5 w-5" style={{ color: primary }} />
+                <div>
+                  <p className="font-semibold">Members: enter your scores from your phone</p>
+                  <p className="text-sm text-muted-foreground">Use your 6‑character scoring code — no app required.</p>
+                </div>
               </div>
-            </div>
-            <Button onClick={() => navigate(`/league/${slug}/score`)}>Open Scoring</Button>
-          </CardContent>
-        </Card>
+              <Button onClick={() => navigate(`/league/${slug}/score`)} style={{ background: primary, color: fontColor }}>Open Scoring</Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

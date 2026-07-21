@@ -140,6 +140,7 @@ export default function LeagueManage() {
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
           <TabsTrigger value="members">Players</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
           <TabsTrigger value="scoring">Scoring</TabsTrigger>
           <TabsTrigger value="standings">Leaderboard</TabsTrigger>
@@ -152,6 +153,7 @@ export default function LeagueManage() {
         <TabsContent value="overview" className="mt-4"><LeagueOverviewTab leagueId={league.id} /></TabsContent>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
         <TabsContent value="events" className="mt-4"><LeagueEventsTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="courses" className="mt-4"><LeagueCoursesTab leagueId={league.id} /></TabsContent>
         <TabsContent value="pairings" className="mt-4"><LeaguePairingsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="scoring" className="mt-4"><LeagueScoringTab leagueId={league.id} /></TabsContent>
         <TabsContent value="standings" className="mt-4"><LeagueStandingsTab leagueId={league.id} /></TabsContent>

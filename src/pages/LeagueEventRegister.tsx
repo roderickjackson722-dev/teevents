@@ -180,10 +180,35 @@ export default function LeagueEventRegister() {
 
             {alreadyRegistered ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-emerald-600"><CheckCircle2 className="h-5 w-5" /> <span className="font-medium">You're registered for this event.</span></div>
-                <Button className="w-full h-12" onClick={goToEvent}>Continue to Event →</Button>
+                <div className="rounded-md border border-emerald-300 bg-emerald-50 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-800">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-semibold">Registration Confirmed</span>
+                    <Badge className="ml-auto bg-emerald-600 hover:bg-emerald-600">PAID</Badge>
+                  </div>
+                  <div className="text-sm text-emerald-900/90 space-y-1">
+                    <div><span className="text-emerald-800/70">Player:</span> <span className="font-medium">{member.member_name}</span></div>
+                    <div><span className="text-emerald-800/70">Event:</span> <span className="font-medium">{event.event_name}</span> · {event.event_date}</div>
+                    {payment && (
+                      <>
+                        <div><span className="text-emerald-800/70">Amount:</span> <span className="font-medium">${((payment.amount_cents || 0) / 100).toFixed(2)}</span></div>
+                        {payment.stripe_payment_intent && (
+                          <div className="font-mono text-[11px] break-all"><span className="text-emerald-800/70 font-sans">Reference:</span> {payment.stripe_payment_intent}</div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <p className="text-xs text-emerald-800/70">A confirmation email has been sent to your address on file.</p>
+                </div>
+                <Button className="w-full h-12" onClick={goToEvent}>Continue to Leaderboard & Scoring →</Button>
+              </div>
+            ) : paySuccess ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-4 flex items-center gap-2 text-sm text-amber-900">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Finalizing your payment… this usually takes a few seconds.
               </div>
             ) : feeDollars > 0 ? (
+
               <Button className="w-full h-12" onClick={payAndRegister} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
                 Pay ${feeDollars.toFixed(2)} & Register

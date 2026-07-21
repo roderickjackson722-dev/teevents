@@ -289,20 +289,18 @@ export default function PublicLeague() {
           </Card>
         )}
 
-        {showRegister && (
-          <Card className="border-primary/40" style={{ background: `${accent}15`, borderColor: accent }}>
-            <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-3">
-                <KeyRound className="h-5 w-5" style={{ color: primary }} />
-                <div>
-                  <p className="font-semibold">Members: enter your scores from your phone</p>
-                  <p className="text-sm text-muted-foreground">Use your 6‑character scoring code — no app required.</p>
-                </div>
+        <Card className="border-primary/40" style={{ background: `${accent}15`, borderColor: accent }}>
+          <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <KeyRound className="h-5 w-5" style={{ color: primary }} />
+              <div>
+                <p className="font-semibold">Members: enter your scores from your phone</p>
+                <p className="text-sm text-muted-foreground">Use your 6‑character scoring code — no app required.</p>
               </div>
-              <Button onClick={() => navigate(`/league/${slug}/score`)} style={{ background: primary, color: fontColor }}>Open Scoring</Button>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+            <Button onClick={() => navigate(`/league/${slug}/score`)} style={{ background: primary, color: fontColor }}>Open Scoring</Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

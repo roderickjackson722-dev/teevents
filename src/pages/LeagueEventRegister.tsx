@@ -34,7 +34,22 @@ export default function LeagueEventRegister() {
   const [member, setMember] = useState<any>(null);
   const [event, setEvent] = useState<any>(null);
   const [registration, setRegistration] = useState<any>(null);
+  const [payment, setPayment] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
+  const paySuccess = params.get("pay") === "success";
+
+  const loadPayment = async (memberId: string) => {
+    const { data: pay } = await (supabase as any)
+      .from("league_payments")
+      .select("id, amount_cents, platform_fee_cents, status, stripe_payment_intent, created_at")
+      .eq("event_id", eventId)
+      .eq("member_id", memberId)
+      .eq("kind", "event")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setPayment(pay || null);
+  };
 
   useEffect(() => {
     (async () => {
@@ -50,9 +65,31 @@ export default function LeagueEventRegister() {
         .from("league_event_registrations").select("*")
         .eq("event_id", eventId).eq("member_id", m.id).maybeSingle();
       setLeague(lg); setMember(m); setEvent(ev); setRegistration(reg);
+      await loadPayment(m.id);
       setLoading(false);
     })();
   }, [slug, code, eventId]);
+
+  // If returning from Stripe, poll briefly for webhook to flip registration to paid.
+  useEffect(() => {
+    if (!paySuccess || !member?.id || !eventId) return;
+    let tries = 0;
+    const t = setInterval(async () => {
+      tries++;
+      const { data: reg } = await (supabase as any)
+        .from("league_event_registrations").select("*")
+        .eq("event_id", eventId).eq("member_id", member.id).maybeSingle();
+      if (reg?.fee_paid) {
+        setRegistration(reg);
+        await loadPayment(member.id);
+        clearInterval(t);
+      } else if (tries > 15) {
+        clearInterval(t);
+      }
+    }, 2000);
+    return () => clearInterval(t);
+  }, [paySuccess, member?.id, eventId]);
+
 
   const goToEvent = () => navigate(`/league/${slug}/me/${code}?event=${eventId}`);
 

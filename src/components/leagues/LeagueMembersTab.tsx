@@ -261,6 +261,19 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                   <Label>Membership Fee Paid</Label>
                   <Switch checked={editing.membership_fee_paid} onCheckedChange={(v) => setEditing({ ...editing, membership_fee_paid: v })} />
                 </div>
+                {editing.id && (
+                  <div>
+                    <Label>Scoring / Login Code (6 chars)</Label>
+                    <Input
+                      value={editing.scoring_code ?? ""}
+                      maxLength={6}
+                      onChange={(e) => setEditing({ ...editing, scoring_code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) })}
+                      className="font-mono tracking-widest uppercase"
+                      placeholder="ABC123"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Members use this code to log in and register for events.</p>
+                  </div>
+                )}
                 <div>
                   <Label>Notes</Label>
                   <Textarea rows={2} value={editing.notes} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />

@@ -103,7 +103,10 @@ export default function LeagueMemberPortal() {
     }
     if (count === 0) { toast({ title: "Enter at least one score" }); setSaving(false); return; }
     if (lastError) toast({ title: "Some scores failed", description: lastError.message, variant: "destructive" });
-    else toast({ title: `Saved ${count} scores` });
+    else toast({ title: `Saved ${count} scores · handicap updated` });
+    // Refresh member row so the just-recalculated Handicap Index shows up.
+    const { data: fresh } = await (supabase as any).from("league_members").select("*").eq("id", member.id).maybeSingle();
+    if (fresh) setMember(fresh);
     setSaving(false);
   };
 

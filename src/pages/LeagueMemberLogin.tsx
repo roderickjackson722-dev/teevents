@@ -10,6 +10,8 @@ import { Loader2, KeyRound } from "lucide-react";
 export default function LeagueMemberLogin() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const eventId = params.get("event");
   const [league, setLeague] = useState<any>(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);

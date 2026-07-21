@@ -205,6 +205,8 @@ const App = () => (
           <Route path="/get-started" element={<CustomerAuth />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/create-workspace" element={<CreateWorkspace />} />
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/select-workspace" element={<SelectWorkspace />} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />

@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Save, User, Trophy, ArrowLeft, CreditCard, ClipboardList } from "lucide-react";
+import { Loader2, Save, User, Trophy, ArrowLeft, CreditCard, ClipboardList, Lock, Target } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import { LEAGUE_FORMATS } from "@/components/leagues/LeagueEventsTab";
+import { buildAllocation } from "@/lib/leagueHandicap";
 
 const FORMAT_DESCRIPTIONS: Record<string, string> = {
   individual_stroke: "Each player plays their own ball. Lowest total gross (or net) strokes wins.",
@@ -36,6 +37,8 @@ export default function LeagueMemberPortal() {
   const [eventId, setEventId] = useState<string>("");
   const [standing, setStanding] = useState<any>(null);
   const [scores, setScores] = useState<Record<number, string>>({});
+  const [registration, setRegistration] = useState<any>(null);
+  const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -48,7 +51,7 @@ export default function LeagueMemberPortal() {
       setLeague(lg); setMember(m);
 
       const [{ data: ev }, { data: st }] = await Promise.all([
-        (supabase as any).from("league_events").select("id, event_name, event_date, registration_fee_cents, format_type, course_name, start_time").eq("league_id", lg.id).order("event_date"),
+        (supabase as any).from("league_events").select("id, event_name, event_date, registration_fee_cents, format_type, course_name, start_time, league_course_id").eq("league_id", lg.id).order("event_date"),
         (supabase as any).from("league_standings").select("*").eq("league_id", lg.id).eq("member_id", m.id).maybeSingle(),
       ]);
       setEvents(ev || []);
@@ -59,15 +62,25 @@ export default function LeagueMemberPortal() {
     })();
   }, [slug, code]);
 
+  // Load registration + course + existing scores whenever selected event changes
   useEffect(() => {
-    if (!eventId || !member) return;
+    if (!eventId || !member) { setRegistration(null); setCourse(null); setScores({}); return; }
     (async () => {
-      const { data } = await (supabase as any).from("league_event_scores").select("hole_number, gross_score").eq("event_id", eventId).eq("member_id", member.id);
-      const m: Record<number, string> = {};
-      (data || []).forEach((s: any) => { m[s.hole_number] = String(s.gross_score); });
-      setScores(m);
+      const ev = events.find((e: any) => e.id === eventId);
+      const [{ data: reg }, { data: existing }, courseRes] = await Promise.all([
+        (supabase as any).from("league_event_registrations").select("*").eq("event_id", eventId).eq("member_id", member.id).maybeSingle(),
+        (supabase as any).from("league_event_scores").select("hole_number, gross_score").eq("event_id", eventId).eq("member_id", member.id),
+        ev?.league_course_id
+          ? (supabase as any).from("league_courses").select("*").eq("id", ev.league_course_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+      ]);
+      setRegistration(reg);
+      setCourse(courseRes?.data || null);
+      const map: Record<number, string> = {};
+      (existing || []).forEach((s: any) => { map[s.hole_number] = String(s.gross_score); });
+      setScores(map);
     })();
-  }, [eventId, member]);
+  }, [eventId, member, events]);
 
   const save = async () => {
     if (!eventId || !member) return;
@@ -105,6 +118,19 @@ export default function LeagueMemberPortal() {
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const total = holes.reduce((s, h) => s + Number(scores[h] || 0), 0);
 
+  const selectedEvent = events.find(e => e.id === eventId);
+  const feeCents = Number(selectedEvent?.registration_fee_cents || 0);
+  const isRegistered = !!registration && (registration.registration_fee_paid || registration.fee_paid || feeCents === 0);
+
+  // Build handicap allocation from course if available
+  const alloc = course ? buildAllocation(member.handicap_index, {
+    par_total: course.par_total,
+    course_rating: course.course_rating,
+    slope_rating: course.slope_rating,
+    hole_pars: course.hole_pars,
+    hole_stroke_indexes: course.hole_stroke_indexes,
+  }) : null;
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title={`${member.member_name} — ${league.league_name}`} description={`Member portal for ${league.league_name}`} />
@@ -119,7 +145,11 @@ export default function LeagueMemberPortal() {
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center"><User className="h-6 w-6 text-primary" /></div>
               <div>
                 <p className="text-xl font-bold">{member.member_name}</p>
-                <p className="text-sm text-muted-foreground">Handicap: {member.handicap_index ?? "—"} · Status: {member.membership_status}</p>
+                <p className="text-sm text-muted-foreground">
+                  Handicap: {member.handicap_index ?? "—"}
+                  {alloc && <> · Course Hcp: <span className="font-medium text-foreground">{alloc.courseHandicap}</span></>}
+                  {" · "}Status: {member.membership_status}
+                </p>
               </div>
             </div>
             {standing && (
@@ -131,7 +161,6 @@ export default function LeagueMemberPortal() {
           </CardContent>
         </Card>
 
-        {/* Membership fee payment */}
         {member.membership_fee_cents > 0 && !member.membership_fee_paid && (
           <Card className="border-primary/40 bg-primary/5">
             <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
@@ -154,38 +183,21 @@ export default function LeagueMemberPortal() {
           </Card>
         )}
 
-        {/* Event fee payment for selected event */}
-        {eventId && (() => {
-          const ev = events.find(e => e.id === eventId) as any;
-          if (!ev?.registration_fee_cents) return null;
-          return (
-            <Card className="border-primary/40 bg-primary/5">
-              <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
-                <div>
-                  <p className="font-semibold">{ev.event_name} — Entry Fee</p>
-                  <p className="text-sm text-muted-foreground">${(ev.registration_fee_cents/100).toFixed(2)} to register.</p>
-                </div>
-                <Button
-                  onClick={async () => {
-                    const { data, error } = await (supabase as any).functions.invoke("create-league-event-checkout", {
-                      body: { event_id: ev.id, member_id: member.id, scoring_code: code?.toUpperCase(), return_url: window.location.href },
-                    });
-                    if (error || !data?.url) return toast({ title: "Checkout failed", description: error?.message || data?.error, variant: "destructive" });
-                    window.location.href = data.url;
-                  }}
-                >
-                  <CreditCard className="h-4 w-4 mr-2" /> Pay Entry Fee
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })()}
+        <Card>
+          <CardContent className="pt-6 space-y-3">
+            <Label>Event</Label>
+            <Select value={eventId} onValueChange={setEventId}>
+              <SelectTrigger><SelectValue placeholder="Choose event" /></SelectTrigger>
+              <SelectContent>
+                {events.map(e => <SelectItem key={e.id} value={e.id}>{e.event_name} — {e.event_date}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
-        {(() => {
-          const ev = events.find((e: any) => e.id === eventId) as any;
-          if (!ev) return null;
-          const fmt = LEAGUE_FORMATS.find(f => f.id === ev.format_type);
-          const desc = FORMAT_DESCRIPTIONS[ev.format_type];
+        {selectedEvent && (() => {
+          const fmt = LEAGUE_FORMATS.find(f => f.id === selectedEvent.format_type);
+          const desc = FORMAT_DESCRIPTIONS[selectedEvent.format_type];
           if (!fmt && !desc) return null;
           return (
             <Card className="border-primary/30 bg-primary/5">
@@ -199,54 +211,112 @@ export default function LeagueMemberPortal() {
           );
         })()}
 
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <h2 className="text-lg font-semibold">Enter Your Score</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-              <div className="md:col-span-2">
-                <Label>Event</Label>
-                <Select value={eventId} onValueChange={setEventId}>
-                  <SelectTrigger><SelectValue placeholder="Choose event" /></SelectTrigger>
-                  <SelectContent>
-                    {events.map(e => <SelectItem key={e.id} value={e.id}>{e.event_name} — {e.event_date}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+        {/* Registration guard */}
+        {eventId && !isRegistered ? (
+          <Card className="border-amber-400 bg-amber-50 dark:bg-amber-950/20">
+            <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-start gap-3">
+                <Lock className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Registration required</p>
+                  <p className="text-sm text-muted-foreground">
+                    You must be registered for this event before you can view the leaderboard or enter scores.
+                  </p>
+                </div>
               </div>
-              <Button onClick={save} disabled={saving || !eventId}>
-                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                Save Score
+              <Button asChild>
+                <Link to={`/league/${slug}/register/${code}?event=${eventId}`}>
+                  {feeCents > 0 ? `Register — $${(feeCents/100).toFixed(2)}` : "Register (Free)"}
+                </Link>
               </Button>
-            </div>
-
-            {eventId && (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      {holes.map(h => <TableHead key={h} className="text-center min-w-[52px]">H{h}</TableHead>)}
-                      <TableHead className="text-center">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      {holes.map(h => (
-                        <TableCell key={h} className="p-1">
-                          <Input
-                            type="number"
-                            value={scores[h] ?? ""}
-                            onChange={(e) => setScores({ ...scores, [h]: e.target.value })}
-                            className="h-9 w-12 px-1 text-center"
-                          />
-                        </TableCell>
-                      ))}
-                      <TableCell className="text-center font-bold">{total || "—"}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
+            </CardContent>
+          </Card>
+        ) : eventId && isRegistered ? (
+          <>
+            {alloc && (
+              <Card>
+                <CardContent className="pt-6 space-y-3">
+                  <h2 className="text-lg font-semibold flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> Your Handicap Pops</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Course Handicap {alloc.courseHandicap} · ● = you receive a stroke on this hole (net = gross − strokes)
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="text-xs border-collapse w-full">
+                      <thead>
+                        <tr className="border-b bg-muted/40">
+                          <th className="p-1 text-left">Hole</th>
+                          {holes.map(h => <th key={h} className="p-1 min-w-[36px] text-center">{h}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="p-1 font-medium">Par</td>
+                          {alloc.holePars.map((p, i) => <td key={i} className="p-1 text-center">{p}</td>)}
+                        </tr>
+                        <tr>
+                          <td className="p-1 font-medium">Pops</td>
+                          {alloc.strokesPerHole.map((s, i) => (
+                            <td key={i} className="p-1 text-center">
+                              {s > 0 ? <span className="text-primary font-bold">{"●".repeat(Math.min(s, 3))}</span> : <span className="text-muted-foreground">—</span>}
+                            </td>
+                          ))}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <h2 className="text-lg font-semibold">Enter Your Score</h2>
+                  <Button onClick={save} disabled={saving}>
+                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Score
+                  </Button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {holes.map(h => <TableHead key={h} className="text-center min-w-[52px]">H{h}</TableHead>)}
+                        <TableHead className="text-center">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        {holes.map(h => {
+                          const strokes = alloc?.strokesPerHole[h - 1] || 0;
+                          return (
+                            <TableCell key={h} className="p-1">
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  value={scores[h] ?? ""}
+                                  onChange={(e) => setScores({ ...scores, [h]: e.target.value })}
+                                  className="h-9 w-12 px-1 text-center"
+                                />
+                                {strokes > 0 && (
+                                  <span className="absolute -top-1 -right-1 text-[9px] text-primary font-bold">
+                                    {"•".repeat(Math.min(strokes, 2))}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell className="text-center font-bold">{total || "—"}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
       </div>
     </div>
   );

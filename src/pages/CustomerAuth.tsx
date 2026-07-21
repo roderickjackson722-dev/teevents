@@ -122,8 +122,15 @@ const CustomerAuth = () => {
     (planningStatus && (roles.length > 0 || roleOther.trim()) && (heardFrom && (heardFrom !== "other" || heardFromOther.trim())));
 
   useEffect(() => {
+    // Route signup traffic to the new unified /signup flow.
+    // Signin (?mode=signin) and invite flows still use this page.
+    const mode = params.get("mode");
+    if (mode !== "signin" && !isInviteFlow) {
+      navigate("/signup" + (window.location.search || ""), { replace: true });
+      return;
+    }
     if (params.get("plan") === "free") setIsSignUp(true);
-    if (params.get("mode") === "signin") setIsSignUp(false);
+    if (mode === "signin") setIsSignUp(false);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) checkUserOrg(session.user.id);

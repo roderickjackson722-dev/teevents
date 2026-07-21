@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Calendar, Trophy, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Calendar, Trophy, Sparkles, CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
+import { useOrgContext } from "@/hooks/useOrgContext";
 
 export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
   const [stats, setStats] = useState({ members: 0, events: 0, upcoming: [] as any[], recent: [] as any[], topStandings: [] as any[] });

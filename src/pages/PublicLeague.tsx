@@ -96,17 +96,32 @@ export default function PublicLeague() {
       <SEO title={`${league.league_name} — Golf League`} description={league.description || league.tagline || `${league.league_name} standings, schedule and results.`} />
       {league.banner_url ? (
         <div className="relative">
-          <img src={league.banner_url} alt="" className="w-full h-48 md:h-64 object-cover" />
+          <img src={league.banner_url} alt="" className="w-full h-56 md:h-72 object-cover" />
           <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(0deg, ${primary}CC, ${primary}66)`, color: fontColor }}>
-            <div className="text-center px-4">
-              <h1 className="text-3xl md:text-5xl font-bold">{league.league_name}</h1>
-              {league.tagline && <p className="mt-2 text-lg opacity-90">{league.tagline}</p>}
+            <div className="text-center px-4 flex flex-col items-center gap-3">
+              {league.logo_url && (
+                <img
+                  src={league.logo_url}
+                  alt={`${league.league_name} logo`}
+                  className="h-24 w-24 md:h-28 md:w-28 rounded-full object-contain bg-white p-2 shadow-lg ring-2 ring-white/60"
+                  loading="eager"
+                />
+              )}
+              <h1 className="text-3xl md:text-5xl font-bold drop-shadow">{league.league_name}</h1>
+              {league.tagline && <p className="text-lg opacity-90">{league.tagline}</p>}
             </div>
           </div>
         </div>
       ) : (
-        <div className="py-10 px-6 text-center" style={{ background: primary, color: fontColor }}>
-          {league.logo_url && <img src={league.logo_url} alt="" className="h-16 w-16 mx-auto mb-3 rounded-lg object-cover bg-white/10 p-1" />}
+        <div className="py-12 px-6 text-center" style={{ background: primary, color: fontColor }}>
+          {league.logo_url && (
+            <img
+              src={league.logo_url}
+              alt={`${league.league_name} logo`}
+              className="h-24 w-24 md:h-28 md:w-28 mx-auto mb-4 rounded-full object-contain bg-white p-2 shadow-lg"
+              loading="eager"
+            />
+          )}
           <h1 className="text-3xl md:text-4xl font-bold">{league.league_name}</h1>
           {league.tagline && <p className="mt-2 opacity-90">{league.tagline}</p>}
         </div>
@@ -114,11 +129,8 @@ export default function PublicLeague() {
 
       <div className="max-w-5xl mx-auto p-6 space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4">
-            {league.logo_url && league.banner_url && <img src={league.logo_url} alt="" className="h-16 w-16 rounded-lg object-cover -mt-14 border-4 border-background bg-background" />}
-            <div>
-              {league.season_year && <p className="text-muted-foreground">Season {league.season_year}</p>}
-            </div>
+          <div>
+            {league.season_year && <p className="text-muted-foreground">Season {league.season_year}</p>}
           </div>
           <div className="flex gap-2 flex-wrap">
             {showRegister && (

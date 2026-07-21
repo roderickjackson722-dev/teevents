@@ -13,15 +13,30 @@ export default function LeagueMemberLogin() {
   const [params] = useSearchParams();
   const eventId = params.get("event");
   const [league, setLeague] = useState<any>(null);
+  const [event, setEvent] = useState<any>(null);
+  const [eventError, setEventError] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any).from("golf_leagues").select("id, league_name, league_slug").eq("league_slug", slug).maybeSingle();
-      setLeague(data);
+      const { data: lg } = await (supabase as any).from("golf_leagues").select("id, league_name, league_slug").eq("league_slug", slug).maybeSingle();
+      setLeague(lg);
+      if (eventId && lg) {
+        // Basic uuid shape check
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId);
+        if (!isUuid) {
+          setEventError("The event link is malformed.");
+          return;
+        }
+        const { data: ev } = await (supabase as any)
+          .from("league_events").select("id, event_name, event_date, league_id")
+          .eq("id", eventId).maybeSingle();
+        if (!ev || ev.league_id !== lg.id) setEventError("That event no longer exists or belongs to another league.");
+        else setEvent(ev);
+      }
     })();
-  }, [slug]);
+  }, [slug, eventId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +57,7 @@ export default function LeagueMemberLogin() {
       toast({ title: "Code not recognized", variant: "destructive" });
       return;
     }
-    if (eventId) navigate(`/league/${slug}/register/${clean}?event=${eventId}`);
+    if (eventId && !eventError) navigate(`/league/${slug}/register/${clean}?event=${eventId}`);
     else navigate(`/league/${slug}/me/${clean}`);
   };
 
@@ -55,21 +70,31 @@ export default function LeagueMemberLogin() {
           </div>
           <CardTitle>League Member Login</CardTitle>
           {league && <p className="text-sm text-muted-foreground">{league.league_name}</p>}
+          {event && <p className="text-xs text-primary mt-1">Registering for: <span className="font-medium">{event.event_name} — {event.event_date}</span></p>}
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            <Input
-              autoFocus
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
-              placeholder="ABC123"
-              className="text-center text-3xl font-mono tracking-[0.5em] h-16"
-            />
-            <Button type="submit" className="w-full h-12" disabled={loading || code.length !== 6}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue →"}
-            </Button>
-            <p className="text-xs text-center text-muted-foreground">Your scoring code was provided by your league organizer.</p>
-          </form>
+          {eventError ? (
+            <div className="space-y-3 text-center">
+              <p className="text-sm text-destructive">{eventError}</p>
+              <Button variant="outline" className="w-full" onClick={() => navigate(`/league/${slug}`)}>
+                Back to league
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={submit} className="space-y-4">
+              <Input
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
+                placeholder="ABC123"
+                className="text-center text-3xl font-mono tracking-[0.5em] h-16"
+              />
+              <Button type="submit" className="w-full h-12" disabled={loading || code.length !== 6}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue →"}
+              </Button>
+              <p className="text-xs text-center text-muted-foreground">Your scoring code was provided by your league organizer.</p>
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>

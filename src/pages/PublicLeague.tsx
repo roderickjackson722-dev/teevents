@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Trophy, Calendar, KeyRound, Sparkles, Smartphone } from "lucide-react";
+import { Loader2, Trophy, Calendar, KeyRound, Sparkles, Smartphone, Ticket } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 
 export default function PublicLeague() {

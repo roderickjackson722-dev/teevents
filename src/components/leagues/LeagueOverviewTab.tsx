@@ -1,10 +1,31 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Calendar, Trophy, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Calendar, Trophy, Sparkles, CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
+import { useOrgContext } from "@/hooks/useOrgContext";
 
 export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
+  const { org } = useOrgContext();
   const [stats, setStats] = useState({ members: 0, events: 0, upcoming: [] as any[], recent: [] as any[], topStandings: [] as any[] });
+  const [stripe, setStripe] = useState<{ loading: boolean; connected: boolean; started: boolean }>({ loading: true, connected: false, started: false });
+
+  useEffect(() => {
+    if (!org?.orgId) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("organization_payout_methods")
+        .select("stripe_account_id, stripe_onboarding_complete")
+        .eq("organization_id", org.orgId)
+        .maybeSingle();
+      setStripe({
+        loading: false,
+        connected: !!data?.stripe_onboarding_complete,
+        started: !!data?.stripe_account_id,
+      });
+    })();
+  }, [org?.orgId]);
 
   useEffect(() => {
     (async () => {
@@ -28,6 +49,37 @@ export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
 
   return (
     <div className="space-y-6">
+      {!stripe.loading && !stripe.connected && (
+        <Card className={stripe.started ? "border-amber-400 bg-amber-50" : "border-primary bg-primary/5"}>
+          <CardContent className="p-4 flex items-start gap-3">
+            {stripe.started ? (
+              <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            ) : (
+              <CreditCard className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <p className="font-semibold">
+                {stripe.started ? "Finish connecting Stripe to accept league payments" : "Connect Stripe to accept membership & event fees"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Members pay directly to your bank account through Stripe. TeeVents keeps a 5% platform fee per transaction — same as tournaments.
+              </p>
+              <Button asChild size="sm" className="mt-3">
+                <Link to="/dashboard/payout-settings">{stripe.started ? "Complete Stripe Onboarding" : "Connect Stripe"}</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {!stripe.loading && stripe.connected && (
+        <Card className="border-emerald-400 bg-emerald-50">
+          <CardContent className="p-3 flex items-center gap-2 text-sm">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <span className="font-medium text-emerald-900">Stripe connected — collecting league payments with a 5% platform fee.</span>
+            <Link to="/dashboard/payout-settings" className="ml-auto text-emerald-700 underline text-xs">Manage</Link>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid gap-4 md:grid-cols-4">
         <Card><CardContent className="p-4"><div className="flex items-center gap-3"><Users className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{stats.members}</p><p className="text-xs text-muted-foreground">Players</p></div></div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center gap-3"><Calendar className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{stats.events}</p><p className="text-xs text-muted-foreground">Events</p></div></div></CardContent></Card>

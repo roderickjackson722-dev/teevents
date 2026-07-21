@@ -184,6 +184,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         registration_fee_cents: e.registration_fee_cents ? e.registration_fee_cents / 100 : "",
                         skins_value_cents: e.skins_value_cents ? e.skins_value_cents / 100 : "",
                         course_name: e.course_name ?? "",
+                        league_course_id: e.league_course_id ?? "",
                         end_date: e.end_date ?? "",
                         start_time: e.start_time ?? "",
                         registration_deadline: e.registration_deadline ?? "",

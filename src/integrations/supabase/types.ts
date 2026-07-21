@@ -3847,6 +3847,7 @@ export type Database = {
           display_order: number
           id: string
           is_active: boolean
+          is_published: boolean
           thumbnail_url: string | null
           title: string
           tournament_id: string
@@ -3859,6 +3860,7 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
+          is_published?: boolean
           thumbnail_url?: string | null
           title: string
           tournament_id: string
@@ -3871,6 +3873,7 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
+          is_published?: boolean
           thumbnail_url?: string | null
           title?: string
           tournament_id?: string
@@ -6478,6 +6481,7 @@ export type Database = {
           name: string
           package_type: string | null
           price_cents: number
+          published_to_public: boolean
           require_logo: boolean
           show_logo_upload: boolean
           show_remaining: boolean
@@ -6498,6 +6502,7 @@ export type Database = {
           name: string
           package_type?: string | null
           price_cents: number
+          published_to_public?: boolean
           require_logo?: boolean
           show_logo_upload?: boolean
           show_remaining?: boolean
@@ -6518,6 +6523,7 @@ export type Database = {
           name?: string
           package_type?: string | null
           price_cents?: number
+          published_to_public?: boolean
           require_logo?: boolean
           show_logo_upload?: boolean
           show_remaining?: boolean
@@ -7050,6 +7056,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           name: string
+          published_to_public: boolean
           sort_order: number | null
           tournament_id: string
         }
@@ -7061,6 +7068,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name: string
+          published_to_public?: boolean
           sort_order?: number | null
           tournament_id: string
         }
@@ -7072,6 +7080,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           name?: string
+          published_to_public?: boolean
           sort_order?: number | null
           tournament_id?: string
         }
@@ -9715,6 +9724,7 @@ export type Database = {
           is_active: boolean
           name: string
           price_cents: number
+          published_to_public: boolean
           spots_used: number
           total_spots: number | null
           tournament_id: string
@@ -9729,6 +9739,7 @@ export type Database = {
           is_active?: boolean
           name: string
           price_cents?: number
+          published_to_public?: boolean
           spots_used?: number
           total_spots?: number | null
           tournament_id: string
@@ -9743,6 +9754,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           price_cents?: number
+          published_to_public?: boolean
           spots_used?: number
           total_spots?: number | null
           tournament_id?: string

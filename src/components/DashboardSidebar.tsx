@@ -168,6 +168,9 @@ export function DashboardSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLeagueWorkspace = location.pathname.startsWith("/dashboard/leagues");
+  const activeCategories = isLeagueWorkspace ? leagueCategories : categories;
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);

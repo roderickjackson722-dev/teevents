@@ -285,7 +285,7 @@ export function DashboardSidebar() {
             );
           })}
 
-          {showSettings && (
+          {showSettings && !isLeagueWorkspace && (
             <SidebarGroup>
               <div className="border-l-2 border-l-gray-400 ml-2 pl-2">
                 <SidebarGroupLabel className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold">

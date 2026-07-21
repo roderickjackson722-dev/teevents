@@ -14,6 +14,9 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isNewSignup = searchParams.get("new") === "1";
+  const workspaceType = searchParams.get("type");
   const { toast } = useToast();
 
   useEffect(() => {

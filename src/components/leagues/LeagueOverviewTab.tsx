@@ -7,7 +7,25 @@ import { Users, Calendar, Trophy, Sparkles, CreditCard, CheckCircle2, AlertCircl
 import { useOrgContext } from "@/hooks/useOrgContext";
 
 export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
+  const { org } = useOrgContext();
   const [stats, setStats] = useState({ members: 0, events: 0, upcoming: [] as any[], recent: [] as any[], topStandings: [] as any[] });
+  const [stripe, setStripe] = useState<{ loading: boolean; connected: boolean; started: boolean }>({ loading: true, connected: false, started: false });
+
+  useEffect(() => {
+    if (!org?.id) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("organization_payout_methods")
+        .select("stripe_account_id, stripe_onboarding_complete")
+        .eq("organization_id", org.id)
+        .maybeSingle();
+      setStripe({
+        loading: false,
+        connected: !!data?.stripe_onboarding_complete,
+        started: !!data?.stripe_account_id,
+      });
+    })();
+  }, [org?.id]);
 
   useEffect(() => {
     (async () => {

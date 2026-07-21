@@ -18,6 +18,8 @@ import LeagueSettingsTab from "@/components/leagues/LeagueSettingsTab";
 import LeagueCommunicationTab from "@/components/leagues/LeagueCommunicationTab";
 import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
+import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
+
 
 export default function LeagueManage() {
   const { leagueId } = useParams<{ leagueId: string }>();

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Lock, CreditCard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
+import LeagueOverviewTab from "@/components/leagues/LeagueOverviewTab";
 import LeagueMembersTab from "@/components/leagues/LeagueMembersTab";
 import LeagueEventsTab from "@/components/leagues/LeagueEventsTab";
 import LeaguePairingsTab from "@/components/leagues/LeaguePairingsTab";
@@ -14,6 +15,8 @@ import LeagueStandingsTab from "@/components/leagues/LeagueStandingsTab";
 import LeagueSkinsTab from "@/components/leagues/LeagueSkinsTab";
 import LeagueSettingsTab from "@/components/leagues/LeagueSettingsTab";
 import LeagueCommunicationTab from "@/components/leagues/LeagueCommunicationTab";
+import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
+import LeagueShareTab from "@/components/leagues/LeagueShareTab";
 
 export default function LeagueManage() {
   const { leagueId } = useParams<{ leagueId: string }>();

@@ -184,16 +184,7 @@ export default function PublicLeague() {
                             <Button
                               size="sm"
                               style={{ background: accent, color: primary }}
-                              onClick={async () => {
-                                const { data, error } = await (supabase as any).functions.invoke("create-league-event-checkout", {
-                                  body: { event_id: e.id },
-                                });
-                                if (error || (!data?.url && !data?.free)) {
-                                  return toast({ title: "Registration unavailable", description: error?.message || data?.error || "Please contact the league organizer.", variant: "destructive" });
-                                }
-                                if (data.free) { toast({ title: "Registered" }); return; }
-                                window.location.href = data.url;
-                              }}
+                              onClick={() => navigate(`/league/${slug}/score?event=${e.id}`)}
                             >
                               Register
                               {Number(e.registration_fee_cents || 0) > 0 && (

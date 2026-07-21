@@ -60,13 +60,18 @@ function addDays(dateStr: string, days: number) {
 
 export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
   const [events, setEvents] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
 
   const load = async () => {
     setLoading(true);
-    const { data } = await (supabase as any).from("league_events").select("*").eq("league_id", leagueId).order("event_date");
-    setEvents(data || []);
+    const [{ data: ev }, { data: cs }] = await Promise.all([
+      (supabase as any).from("league_events").select("*").eq("league_id", leagueId).order("event_date"),
+      (supabase as any).from("league_courses").select("id, course_name, tee_name").eq("league_id", leagueId).order("course_name"),
+    ]);
+    setEvents(ev || []);
+    setCourses(cs || []);
     setLoading(false);
   };
 
@@ -83,6 +88,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       event_date: editing.event_date,
       end_date: editing.end_date || null,
       course_name: editing.course_name || null,
+      league_course_id: editing.league_course_id || null,
       format_type: editing.format_type,
       start_time: editing.start_time || null,
       registration_deadline: editing.registration_deadline || null,

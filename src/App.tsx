@@ -28,6 +28,8 @@ import LeagueMemberLogin from "./pages/LeagueMemberLogin";
 import LeagueMemberPortal from "./pages/LeagueMemberPortal";
 import LeagueEventRegister from "./pages/LeagueEventRegister";
 import SelectWorkspace from "./pages/SelectWorkspace";
+import Signup from "./pages/Signup";
+import CreateWorkspace from "./pages/CreateWorkspace";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
 import Printables from "./pages/dashboard/Printables";

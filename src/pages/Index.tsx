@@ -135,7 +135,7 @@ const Index = () => {
               to="/get-started"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              Start a Tournament for Free
+              GET STARTED
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link

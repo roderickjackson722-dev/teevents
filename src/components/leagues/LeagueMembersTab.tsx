@@ -81,7 +81,21 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
         toast({ title: "Scoring code must be 6 characters (A-Z, 0-9)", variant: "destructive" });
         return;
       }
-      if (cleanCode) payload.scoring_code = cleanCode;
+      if (cleanCode) {
+        // Per-league uniqueness check
+        const { data: clash } = await (supabase as any)
+          .from("league_members")
+          .select("id")
+          .eq("league_id", leagueId)
+          .eq("scoring_code", cleanCode)
+          .neq("id", editing.id)
+          .maybeSingle();
+        if (clash) {
+          toast({ title: "That code is already in use by another member in this league", variant: "destructive" });
+          return;
+        }
+        payload.scoring_code = cleanCode;
+      }
     }
     const q = editing.id
       ? (supabase as any).from("league_members").update(payload).eq("id", editing.id)

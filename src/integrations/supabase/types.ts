@@ -3020,6 +3020,59 @@ export type Database = {
           },
         ]
       }
+      league_courses: {
+        Row: {
+          course_name: string
+          course_rating: number
+          created_at: string
+          hole_distances: Json | null
+          hole_pars: Json | null
+          hole_stroke_indexes: Json | null
+          id: string
+          league_id: string
+          par_total: number
+          slope_rating: number
+          tee_name: string
+          updated_at: string
+        }
+        Insert: {
+          course_name: string
+          course_rating?: number
+          created_at?: string
+          hole_distances?: Json | null
+          hole_pars?: Json | null
+          hole_stroke_indexes?: Json | null
+          id?: string
+          league_id: string
+          par_total?: number
+          slope_rating?: number
+          tee_name?: string
+          updated_at?: string
+        }
+        Update: {
+          course_name?: string
+          course_rating?: number
+          created_at?: string
+          hole_distances?: Json | null
+          hole_pars?: Json | null
+          hole_stroke_indexes?: Json | null
+          id?: string
+          league_id?: string
+          par_total?: number
+          slope_rating?: number
+          tee_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_courses_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       league_event_registrations: {
         Row: {
           created_at: string
@@ -3145,6 +3198,7 @@ export type Database = {
           format_type: string
           id: string
           is_completed: boolean
+          league_course_id: string | null
           league_id: string
           max_players: number | null
           pass_platform_fee_to_player: boolean
@@ -3169,6 +3223,7 @@ export type Database = {
           format_type?: string
           id?: string
           is_completed?: boolean
+          league_course_id?: string | null
           league_id: string
           max_players?: number | null
           pass_platform_fee_to_player?: boolean
@@ -3193,6 +3248,7 @@ export type Database = {
           format_type?: string
           id?: string
           is_completed?: boolean
+          league_course_id?: string | null
           league_id?: string
           max_players?: number | null
           pass_platform_fee_to_player?: boolean
@@ -3216,6 +3272,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "league_events_league_course_id_fkey"
+            columns: ["league_course_id"]
+            isOneToOne: false
+            referencedRelation: "league_courses"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "league_events_league_id_fkey"
             columns: ["league_id"]
             isOneToOne: false
@@ -3233,9 +3296,11 @@ export type Database = {
       }
       league_members: {
         Row: {
+          course_handicap: number | null
           created_at: string
           email: string
           handicap_index: number | null
+          handicap_updated_at: string | null
           id: string
           join_date: string
           league_id: string
@@ -3245,14 +3310,17 @@ export type Database = {
           membership_status: string
           notes: string | null
           phone: string | null
+          playing_handicap: number | null
           scoring_code: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          course_handicap?: number | null
           created_at?: string
           email: string
           handicap_index?: number | null
+          handicap_updated_at?: string | null
           id?: string
           join_date?: string
           league_id: string
@@ -3262,14 +3330,17 @@ export type Database = {
           membership_status?: string
           notes?: string | null
           phone?: string | null
+          playing_handicap?: number | null
           scoring_code?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          course_handicap?: number | null
           created_at?: string
           email?: string
           handicap_index?: number | null
+          handicap_updated_at?: string | null
           id?: string
           join_date?: string
           league_id?: string
@@ -3279,6 +3350,7 @@ export type Database = {
           membership_status?: string
           notes?: string | null
           phone?: string | null
+          playing_handicap?: number | null
           scoring_code?: string | null
           updated_at?: string
           user_id?: string | null

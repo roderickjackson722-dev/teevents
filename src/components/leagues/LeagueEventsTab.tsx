@@ -60,13 +60,18 @@ function addDays(dateStr: string, days: number) {
 
 export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
   const [events, setEvents] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
 
   const load = async () => {
     setLoading(true);
-    const { data } = await (supabase as any).from("league_events").select("*").eq("league_id", leagueId).order("event_date");
-    setEvents(data || []);
+    const [{ data: ev }, { data: cs }] = await Promise.all([
+      (supabase as any).from("league_events").select("*").eq("league_id", leagueId).order("event_date"),
+      (supabase as any).from("league_courses").select("id, course_name, tee_name").eq("league_id", leagueId).order("course_name"),
+    ]);
+    setEvents(ev || []);
+    setCourses(cs || []);
     setLoading(false);
   };
 
@@ -83,6 +88,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       event_date: editing.event_date,
       end_date: editing.end_date || null,
       course_name: editing.course_name || null,
+      league_course_id: editing.league_course_id || null,
       format_type: editing.format_type,
       start_time: editing.start_time || null,
       registration_deadline: editing.registration_deadline || null,
@@ -178,6 +184,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         registration_fee_cents: e.registration_fee_cents ? e.registration_fee_cents / 100 : "",
                         skins_value_cents: e.skins_value_cents ? e.skins_value_cents / 100 : "",
                         course_name: e.course_name ?? "",
+                        league_course_id: e.league_course_id ?? "",
                         end_date: e.end_date ?? "",
                         start_time: e.start_time ?? "",
                         registration_deadline: e.registration_deadline ?? "",
@@ -222,9 +229,25 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     <Input type="time" value={editing.start_time} onChange={(e) => setEditing({ ...editing, start_time: e.target.value })} />
                   </div>
                   <div>
-                    <Label>Course</Label>
+                    <Label>Course (display name)</Label>
                     <Input value={editing.course_name} onChange={(e) => setEditing({ ...editing, course_name: e.target.value })} />
                   </div>
+                </div>
+                <div>
+                  <Label>Course Details (for handicap pops)</Label>
+                  <Select
+                    value={editing.league_course_id || "__none"}
+                    onValueChange={(v) => setEditing({ ...editing, league_course_id: v === "__none" ? "" : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="No course details attached" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">No course details</SelectItem>
+                      {courses.map(c => <SelectItem key={c.id} value={c.id}>{c.course_name} — {c.tee_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {courses.length === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Add courses in the <span className="font-medium">Courses</span> tab to enable stroke allocation.</p>
+                  )}
                 </div>
                 <div>
                   <Label>Format</Label>

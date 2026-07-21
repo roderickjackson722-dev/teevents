@@ -86,11 +86,21 @@ export default function LeagueEventRegister() {
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+  if (!eventId) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-3 text-center">
+        <p className="text-lg font-semibold">Missing event</p>
+        <p className="text-muted-foreground max-w-sm">This link is missing an event. Please open the registration link from the league schedule.</p>
+        <Button asChild><Link to={`/league/${slug}`}>Back to league</Link></Button>
+      </div>
+    );
+  }
   if (!league || !member || !event) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-3">
-        <p className="text-muted-foreground">Registration link is invalid or expired.</p>
-        <Button asChild variant="link"><Link to={`/league/${slug}`}>Back to league</Link></Button>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-3 text-center">
+        <p className="text-lg font-semibold">Registration link is invalid or expired</p>
+        <p className="text-muted-foreground max-w-sm">The event may have been removed, or your scoring code doesn't match this league.</p>
+        <Button asChild variant="outline"><Link to={`/league/${slug}`}>Back to league</Link></Button>
       </div>
     );
   }

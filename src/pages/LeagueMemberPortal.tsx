@@ -181,6 +181,23 @@ export default function LeagueMemberPortal() {
           );
         })()}
 
+        {(() => {
+          const ev = events.find((e: any) => e.id === eventId) as any;
+          if (!ev) return null;
+          const fmt = LEAGUE_FORMATS.find(f => f.id === ev.format_type);
+          const desc = FORMAT_DESCRIPTIONS[ev.format_type];
+          if (!fmt && !desc) return null;
+          return (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="pt-6">
+                <p className="flex items-center gap-2 text-sm font-semibold mb-1">
+                  <ClipboardList className="h-4 w-4" /> Event Format{fmt ? ` · ${fmt.name}` : ""}
+                </p>
+                {desc && <p className="text-sm text-muted-foreground">{desc}</p>}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         <Card>
           <CardContent className="pt-6 space-y-4">

@@ -151,7 +151,7 @@ const CustomerAuth = () => {
       return;
     }
     if (!data || data.length === 0) {
-      navigate("/onboarding");
+      navigate("/create-workspace");
       return;
     }
     const orgIds = data.map((r: any) => r.organization_id);

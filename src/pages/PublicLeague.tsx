@@ -121,11 +121,24 @@ export default function PublicLeague() {
               {league.season_year && <p className="text-muted-foreground">Season {league.season_year}</p>}
             </div>
           </div>
-          {showRegister && (
-            <Button onClick={() => navigate(`/league/${slug}/score`)} className="gap-2" style={{ background: accent, color: primary }}>
+          <div className="flex gap-2 flex-wrap">
+            {showRegister && (
+              <Button
+                onClick={() => document.getElementById("schedule")?.scrollIntoView({ behavior: "smooth" })}
+                className="gap-2"
+                style={{ background: accent, color: primary }}
+              >
+                <Ticket className="h-4 w-4" /> Register
+              </Button>
+            )}
+            <Button
+              onClick={() => navigate(`/league/${slug}/score`)}
+              variant="outline"
+              className="gap-2"
+            >
               <Smartphone className="h-4 w-4" /> Score on your phone
             </Button>
-          )}
+          </div>
         </div>
 
         {league.welcome_message && (
@@ -136,7 +149,7 @@ export default function PublicLeague() {
         )}
 
         {showSchedule && (
-          <Card>
+          <Card id="schedule">
             <CardContent className="pt-6 space-y-3">
               <h2 className="text-xl font-semibold flex items-center gap-2" style={{ color: primary }}><Calendar className="h-5 w-5" /> Schedule</h2>
               {events.length === 0 ? <p className="text-muted-foreground text-sm">No events scheduled.</p> : (
@@ -147,7 +160,7 @@ export default function PublicLeague() {
                       <TableHead>Event</TableHead>
                       <TableHead>Course</TableHead>
                       <TableHead>Format</TableHead>
-                      <TableHead className="text-right">Status</TableHead>
+                      <TableHead className="text-right">{showRegister ? "Register" : "Status"}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -165,7 +178,31 @@ export default function PublicLeague() {
                         <TableCell>{e.course_name || "—"}</TableCell>
                         <TableCell className="capitalize">{String(e.format_type || "").replace(/_/g, " ")}</TableCell>
                         <TableCell className="text-right">
-                          <Badge variant={e.is_completed ? "secondary" : "default"}>{e.is_completed ? "Completed" : "Upcoming"}</Badge>
+                          {e.is_completed ? (
+                            <Badge variant="secondary">Completed</Badge>
+                          ) : showRegister ? (
+                            <Button
+                              size="sm"
+                              style={{ background: accent, color: primary }}
+                              onClick={async () => {
+                                const { data, error } = await (supabase as any).functions.invoke("create-league-event-checkout", {
+                                  body: { event_id: e.id },
+                                });
+                                if (error || (!data?.url && !data?.free)) {
+                                  return toast({ title: "Registration unavailable", description: error?.message || data?.error || "Please contact the league organizer.", variant: "destructive" });
+                                }
+                                if (data.free) { toast({ title: "Registered" }); return; }
+                                window.location.href = data.url;
+                              }}
+                            >
+                              Register
+                              {Number(e.registration_fee_cents || 0) > 0 && (
+                                <span className="ml-1 opacity-80">${(e.registration_fee_cents / 100).toFixed(0)}</span>
+                              )}
+                            </Button>
+                          ) : (
+                            <Badge>Upcoming</Badge>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

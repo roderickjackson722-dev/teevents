@@ -874,6 +874,13 @@ const AdminDashboard = () => {
                 >
                   <Trophy className="h-4 w-4" /> League Invoices
                 </button>
+                <button
+                  onClick={() => navigate("/admin/league-reconciliation")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Trophy className="h-4 w-4" /> League Reconciliation
+                </button>
+
               </div>
             </div>
 

@@ -4307,6 +4307,7 @@ export type Database = {
           stripe_account_id: string | null
           subdomain: string | null
           updated_at: string
+          workspace_type: string
         }
         Insert: {
           created_at?: string
@@ -4330,6 +4331,7 @@ export type Database = {
           stripe_account_id?: string | null
           subdomain?: string | null
           updated_at?: string
+          workspace_type?: string
         }
         Update: {
           created_at?: string
@@ -4353,6 +4355,7 @@ export type Database = {
           stripe_account_id?: string | null
           subdomain?: string | null
           updated_at?: string
+          workspace_type?: string
         }
         Relationships: []
       }
@@ -6266,8 +6269,11 @@ export type Database = {
           heard_from: string | null
           heard_from_other: string | null
           id: string
+          interest_area: string | null
+          organization_name: string | null
           phone: string | null
           planning_status: string | null
+          primary_goal: string | null
           role_other: string | null
           roles: string[] | null
           user_id: string
@@ -6280,8 +6286,11 @@ export type Database = {
           heard_from?: string | null
           heard_from_other?: string | null
           id?: string
+          interest_area?: string | null
+          organization_name?: string | null
           phone?: string | null
           planning_status?: string | null
+          primary_goal?: string | null
           role_other?: string | null
           roles?: string[] | null
           user_id: string
@@ -6294,8 +6303,11 @@ export type Database = {
           heard_from?: string | null
           heard_from_other?: string | null
           id?: string
+          interest_area?: string | null
+          organization_name?: string | null
           phone?: string | null
           planning_status?: string | null
+          primary_goal?: string | null
           role_other?: string | null
           roles?: string[] | null
           user_id?: string

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Save, User, Trophy, ArrowLeft, CreditCard } from "lucide-react";
+import { Loader2, Save, User, Trophy, ArrowLeft, CreditCard, ClipboardList } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
+import { LEAGUE_FORMATS } from "@/components/leagues/LeagueEventsTab";
+
+const FORMAT_DESCRIPTIONS: Record<string, string> = {
+  individual_stroke: "Each player plays their own ball. Lowest total gross (or net) strokes wins.",
+  match_play: "Head-to-head. Win a hole to earn a point; player with most holes won wins the match.",
+  two_man_scramble: "Two-player teams. Both hit, pick the best shot, both hit again from there.",
+  two_man_shamble: "Two-player teams. Both tee off, pick the best drive, then each plays their own ball in.",
+  four_man_best_ball: "Four-player teams. Each plays their own ball; the team's score on each hole is the lowest score.",
+  four_man_scramble: "Four-player teams. Everyone hits, pick the best shot, everyone plays from there.",
+  stableford: "Points-based scoring — higher is better. Rewards aggressive play.",
+  quota: "Each player has a target point quota based on handicap; play to exceed it.",
+  team_points: "Team format with points allocated per hole based on team performance.",
+  ryder_cup: "Two-team competition using a mix of match play formats.",
+  round_robin: "Rotating opponents across the round or event.",
+};
 
 export default function LeagueMemberPortal() {
   const { slug, code } = useParams<{ slug: string; code: string }>();
+  const [params] = useSearchParams();
+  const preEventId = params.get("event");
   const [league, setLeague] = useState<any>(null);
   const [member, setMember] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);

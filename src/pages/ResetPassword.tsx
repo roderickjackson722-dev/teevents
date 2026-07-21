@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,9 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isNewSignup = searchParams.get("new") === "1";
+  const workspaceType = searchParams.get("type");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -44,8 +47,15 @@ const ResetPassword = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Password updated!", description: "You can now sign in with your new password." });
-      navigate("/get-started");
+      toast({
+        title: isNewSignup ? "Welcome to TeeVents!" : "Password updated!",
+        description: isNewSignup ? "Let's set up your workspace." : "You can now sign in with your new password.",
+      });
+      if (isNewSignup) {
+        navigate(`/create-workspace${workspaceType ? `?type=${workspaceType}` : ""}`);
+      } else {
+        navigate("/get-started");
+      }
     }
     setLoading(false);
   };

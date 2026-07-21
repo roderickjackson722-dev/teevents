@@ -28,6 +28,8 @@ import LeagueMemberLogin from "./pages/LeagueMemberLogin";
 import LeagueMemberPortal from "./pages/LeagueMemberPortal";
 import LeagueEventRegister from "./pages/LeagueEventRegister";
 import SelectWorkspace from "./pages/SelectWorkspace";
+import Signup from "./pages/Signup";
+import CreateWorkspace from "./pages/CreateWorkspace";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
 import Printables from "./pages/dashboard/Printables";
@@ -203,6 +205,8 @@ const App = () => (
           <Route path="/get-started" element={<CustomerAuth />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/create-workspace" element={<CreateWorkspace />} />
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/select-workspace" element={<SelectWorkspace />} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />

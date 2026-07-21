@@ -202,6 +202,7 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                         membership_fee_cents: m.membership_fee_cents ? m.membership_fee_cents / 100 : "",
                         notes: m.notes ?? "",
                         phone: m.phone ?? "",
+                        scoring_code: m.scoring_code ?? "",
                       })}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>

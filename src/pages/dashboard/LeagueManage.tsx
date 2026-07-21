@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import LeagueOverviewTab from "@/components/leagues/LeagueOverviewTab";
 import LeagueMembersTab from "@/components/leagues/LeagueMembersTab";
 import LeagueEventsTab from "@/components/leagues/LeagueEventsTab";
+import LeagueCoursesTab from "@/components/leagues/LeagueCoursesTab";
 import LeaguePairingsTab from "@/components/leagues/LeaguePairingsTab";
 import LeagueScoringTab from "@/components/leagues/LeagueScoringTab";
 import LeagueStandingsTab from "@/components/leagues/LeagueStandingsTab";

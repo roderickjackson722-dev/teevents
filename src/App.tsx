@@ -322,6 +322,8 @@ const App = () => (
             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />
             <Route path="/admin/league-invoices" element={<LeagueInvoices />} />
+            <Route path="/admin/league-reconciliation" element={<LeagueReconciliation />} />
+
 
             <Route path="/admin/scoring/:tournamentId" element={<AdminScoring />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />

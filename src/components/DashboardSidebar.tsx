@@ -150,6 +150,16 @@ const categories: SidebarCategory[] = [
   },
 ];
 
+const leagueCategories: SidebarCategory[] = [
+  {
+    label: "League Management",
+    color: "border-l-emerald-400 bg-emerald-400/5",
+    items: [
+      { title: "All Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "View and manage all your leagues" },
+    ],
+  },
+];
+
 const settingsItems: NavItem[] = [
   { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null, description: "Branding, custom domain, public page tabs" },
 ];

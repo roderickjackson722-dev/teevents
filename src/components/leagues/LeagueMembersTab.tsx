@@ -75,6 +75,14 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
       membership_fee_cents: editing.membership_fee_cents !== "" ? Math.round(Number(editing.membership_fee_cents) * 100) : null,
       notes: editing.notes || null,
     };
+    if (editing.id && typeof editing.scoring_code === "string") {
+      const cleanCode = editing.scoring_code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (cleanCode && cleanCode.length !== 6) {
+        toast({ title: "Scoring code must be 6 characters (A-Z, 0-9)", variant: "destructive" });
+        return;
+      }
+      if (cleanCode) payload.scoring_code = cleanCode;
+    }
     const q = editing.id
       ? (supabase as any).from("league_members").update(payload).eq("id", editing.id)
       : (supabase as any).from("league_members").insert(payload);
@@ -194,6 +202,7 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                         membership_fee_cents: m.membership_fee_cents ? m.membership_fee_cents / 100 : "",
                         notes: m.notes ?? "",
                         phone: m.phone ?? "",
+                        scoring_code: m.scoring_code ?? "",
                       })}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -252,6 +261,19 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                   <Label>Membership Fee Paid</Label>
                   <Switch checked={editing.membership_fee_paid} onCheckedChange={(v) => setEditing({ ...editing, membership_fee_paid: v })} />
                 </div>
+                {editing.id && (
+                  <div>
+                    <Label>Scoring / Login Code (6 chars)</Label>
+                    <Input
+                      value={editing.scoring_code ?? ""}
+                      maxLength={6}
+                      onChange={(e) => setEditing({ ...editing, scoring_code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) })}
+                      className="font-mono tracking-widest uppercase"
+                      placeholder="ABC123"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Members use this code to log in and register for events.</p>
+                  </div>
+                )}
                 <div>
                   <Label>Notes</Label>
                   <Textarea rows={2} value={editing.notes} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />

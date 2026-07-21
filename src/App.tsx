@@ -26,6 +26,7 @@ import LeagueManage from "./pages/dashboard/LeagueManage";
 import PublicLeague from "./pages/PublicLeague";
 import LeagueMemberLogin from "./pages/LeagueMemberLogin";
 import LeagueMemberPortal from "./pages/LeagueMemberPortal";
+import LeagueEventRegister from "./pages/LeagueEventRegister";
 import SelectWorkspace from "./pages/SelectWorkspace";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
@@ -213,6 +214,7 @@ const App = () => (
           <Route path="/league/:slug" element={<PublicLeague />} />
           <Route path="/league/:slug/score" element={<LeagueMemberLogin />} />
           <Route path="/league/:slug/me/:code" element={<LeagueMemberPortal />} />
+          <Route path="/league/:slug/register/:code" element={<LeagueEventRegister />} />
 
 
           <Route path="/dashboard/checklist" element={<DashboardLayout><PlanningGuide /></DashboardLayout>} />

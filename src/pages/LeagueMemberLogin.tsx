@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ import { Loader2, KeyRound } from "lucide-react";
 export default function LeagueMemberLogin() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const eventId = params.get("event");
   const [league, setLeague] = useState<any>(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,8 @@ export default function LeagueMemberLogin() {
       toast({ title: "Code not recognized", variant: "destructive" });
       return;
     }
-    navigate(`/league/${slug}/me/${clean}`);
+    if (eventId) navigate(`/league/${slug}/register/${clean}?event=${eventId}`);
+    else navigate(`/league/${slug}/me/${clean}`);
   };
 
   return (

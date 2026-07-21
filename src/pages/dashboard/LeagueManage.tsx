@@ -164,6 +164,8 @@ export default function LeagueManage() {
         <TabsContent value="standings" className="mt-4"><LeagueStandingsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="skins" className="mt-4"><LeagueSkinsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="messages" className="mt-4"><LeagueCommunicationTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="payouts" className="mt-4"><LeaguePayoutsTab leagueId={league.id} /></TabsContent>
+
         <TabsContent value="customize" className="mt-4"><LeagueCustomizeTab league={league} onSaved={load} /></TabsContent>
         <TabsContent value="public" className="mt-4">
           {league.league_slug ? (

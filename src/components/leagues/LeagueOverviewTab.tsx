@@ -13,19 +13,36 @@ export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
 
   useEffect(() => {
     if (!org?.orgId) return;
-    (async () => {
+    let cancelled = false;
+    const load = async () => {
       const { data } = await (supabase as any)
         .from("organization_payout_methods")
         .select("stripe_account_id, stripe_onboarding_complete")
         .eq("organization_id", org.orgId)
         .maybeSingle();
+      if (cancelled) return;
       setStripe({
         loading: false,
         connected: !!data?.stripe_onboarding_complete,
         started: !!data?.stripe_account_id,
       });
-    })();
+    };
+    load();
+    // Real-time: refresh instantly when the Stripe account.updated webhook flips onboarding.
+    const channel = supabase
+      .channel(`payout-methods-${org.orgId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "organization_payout_methods", filter: `organization_id=eq.${org.orgId}` },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [org?.orgId]);
+
 
   useEffect(() => {
     (async () => {

@@ -170,6 +170,24 @@ export default function LeagueCoursesTab({ leagueId }: { leagueId: string }) {
                 <DialogTitle>{editing.id ? "Edit Course" : "Add Course"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
+                <CourseDatabaseSearch
+                  onSelect={(c: CourseDBResult) => {
+                    const pars = (c.hole_pars && c.hole_pars.length === 18) ? c.hole_pars : emptyHoles(4);
+                    const sis = (c.hole_stroke_indexes && c.hole_stroke_indexes.length === 18) ? c.hole_stroke_indexes : emptyHoles(0);
+                    const dists = (c.hole_distances && c.hole_distances.length === 18) ? c.hole_distances : emptyHoles(0);
+                    setEditing({
+                      ...editing,
+                      course_name: c.course_name || editing.course_name,
+                      tee_name: c.tee_name || editing.tee_name || "Blue",
+                      par_total: c.par_total ?? pars.reduce((a, b) => a + b, 0) ?? 72,
+                      course_rating: c.course_rating ?? 72.0,
+                      slope_rating: c.slope_rating ?? 113,
+                      hole_pars: pars,
+                      hole_stroke_indexes: sis,
+                      hole_distances: dists,
+                    });
+                  }}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <Label>Course Name *</Label>

@@ -229,9 +229,25 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     <Input type="time" value={editing.start_time} onChange={(e) => setEditing({ ...editing, start_time: e.target.value })} />
                   </div>
                   <div>
-                    <Label>Course</Label>
+                    <Label>Course (display name)</Label>
                     <Input value={editing.course_name} onChange={(e) => setEditing({ ...editing, course_name: e.target.value })} />
                   </div>
+                </div>
+                <div>
+                  <Label>Course Details (for handicap pops)</Label>
+                  <Select
+                    value={editing.league_course_id || "__none"}
+                    onValueChange={(v) => setEditing({ ...editing, league_course_id: v === "__none" ? "" : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="No course details attached" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">No course details</SelectItem>
+                      {courses.map(c => <SelectItem key={c.id} value={c.id}>{c.course_name} — {c.tee_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {courses.length === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Add courses in the <span className="font-medium">Courses</span> tab to enable stroke allocation.</p>
+                  )}
                 </div>
                 <div>
                   <Label>Format</Label>

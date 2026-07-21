@@ -48,11 +48,12 @@ export default function LeagueMemberPortal() {
       setLeague(lg); setMember(m);
 
       const [{ data: ev }, { data: st }] = await Promise.all([
-        (supabase as any).from("league_events").select("id, event_name, event_date, registration_fee_cents").eq("league_id", lg.id).order("event_date"),
+        (supabase as any).from("league_events").select("id, event_name, event_date, registration_fee_cents, format_type, course_name, start_time").eq("league_id", lg.id).order("event_date"),
         (supabase as any).from("league_standings").select("*").eq("league_id", lg.id).eq("member_id", m.id).maybeSingle(),
       ]);
       setEvents(ev || []);
-      if (ev?.[0]) setEventId(ev[0].id);
+      const initial = preEventId && ev?.find((x: any) => x.id === preEventId) ? preEventId : ev?.[0]?.id;
+      if (initial) setEventId(initial);
       setStanding(st);
       setLoading(false);
     })();

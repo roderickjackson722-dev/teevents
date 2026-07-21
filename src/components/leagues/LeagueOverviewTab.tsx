@@ -12,12 +12,12 @@ export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
   const [stripe, setStripe] = useState<{ loading: boolean; connected: boolean; started: boolean }>({ loading: true, connected: false, started: false });
 
   useEffect(() => {
-    if (!org?.id) return;
+    if (!org?.orgId) return;
     (async () => {
       const { data } = await (supabase as any)
         .from("organization_payout_methods")
         .select("stripe_account_id, stripe_onboarding_complete")
-        .eq("organization_id", org.id)
+        .eq("organization_id", org.orgId)
         .maybeSingle();
       setStripe({
         loading: false,
@@ -25,7 +25,7 @@ export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
         started: !!data?.stripe_account_id,
       });
     })();
-  }, [org?.id]);
+  }, [org?.orgId]);
 
   useEffect(() => {
     (async () => {

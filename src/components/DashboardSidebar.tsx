@@ -8,7 +8,7 @@ import {
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logoWhite from "@/assets/logo-white.png";
 import { usePlanFeatures } from "@/hooks/usePlanFeatures";
@@ -150,6 +150,16 @@ const categories: SidebarCategory[] = [
   },
 ];
 
+const leagueCategories: SidebarCategory[] = [
+  {
+    label: "League Management",
+    color: "border-l-emerald-400 bg-emerald-400/5",
+    items: [
+      { title: "All Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "View and manage all your leagues" },
+    ],
+  },
+];
+
 const settingsItems: NavItem[] = [
   { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null, description: "Branding, custom domain, public page tabs" },
 ];
@@ -158,6 +168,9 @@ export function DashboardSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLeagueWorkspace = location.pathname.startsWith("/dashboard/leagues");
+  const activeCategories = isLeagueWorkspace ? leagueCategories : categories;
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
@@ -247,7 +260,7 @@ export function DashboardSidebar() {
             )}
           </div>
 
-          {categories.map((cat) => {
+          {activeCategories.map((cat) => {
             let items = cat.items;
             if (cat.label === "Public Webpage" && tournamentSlug) {
               items = [
@@ -272,7 +285,7 @@ export function DashboardSidebar() {
             );
           })}
 
-          {showSettings && (
+          {showSettings && !isLeagueWorkspace && (
             <SidebarGroup>
               <div className="border-l-2 border-l-gray-400 ml-2 pl-2">
                 <SidebarGroupLabel className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold">

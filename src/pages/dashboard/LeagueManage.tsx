@@ -147,6 +147,7 @@ export default function LeagueManage() {
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="customize">Customize Page</TabsTrigger>
+          <TabsTrigger value="public">Public Page</TabsTrigger>
           <TabsTrigger value="share">Share</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -160,6 +161,39 @@ export default function LeagueManage() {
         <TabsContent value="skins" className="mt-4"><LeagueSkinsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="messages" className="mt-4"><LeagueCommunicationTab leagueId={league.id} /></TabsContent>
         <TabsContent value="customize" className="mt-4"><LeagueCustomizeTab league={league} onSaved={load} /></TabsContent>
+        <TabsContent value="public" className="mt-4">
+          {league.league_slug ? (
+            <Card>
+              <CardContent className="pt-6 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <p className="font-semibold">Live Public Page</p>
+                    <p className="text-sm text-muted-foreground">This is exactly what your members and visitors see.</p>
+                  </div>
+                  <Button asChild variant="outline">
+                    <a href={`/league/${league.league_slug}`} target="_blank" rel="noreferrer">Open in new tab</a>
+                  </Button>
+                </div>
+                <div className="border rounded-md overflow-hidden bg-background">
+                  <iframe
+                    src={`/league/${league.league_slug}`}
+                    title="Public League Page"
+                    className="w-full"
+                    style={{ height: "80vh", border: 0 }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-sm text-muted-foreground">
+                  Set a league slug in Settings, then publish the league from Customize Page to view your public page here.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
         <TabsContent value="share" className="mt-4"><LeagueShareTab league={league} /></TabsContent>
         <TabsContent value="settings" className="mt-4"><LeagueSettingsTab league={league} onSaved={load} /></TabsContent>
       </Tabs>

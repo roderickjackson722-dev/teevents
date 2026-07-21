@@ -158,6 +158,13 @@ const leagueCategories: SidebarCategory[] = [
       { title: "All Leagues", url: "/dashboard/leagues", icon: Trophy, feature: null, description: "View and manage all your leagues" },
     ],
   },
+  {
+    label: "Finance",
+    color: "border-l-yellow-400 bg-yellow-400/5",
+    items: [
+      { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Connect Stripe to collect league fees (5% platform fee)" },
+    ],
+  },
 ];
 
 const settingsItems: NavItem[] = [

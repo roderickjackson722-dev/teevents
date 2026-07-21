@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Loader2, MapPin } from "lucide-react";
+import CourseDatabaseSearch, { CourseDBResult } from "@/components/dashboard/CourseDatabaseSearch";
 
 interface LeagueCourse {
   id: string;

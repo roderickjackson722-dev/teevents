@@ -260,7 +260,7 @@ export function DashboardSidebar() {
             )}
           </div>
 
-          {categories.map((cat) => {
+          {activeCategories.map((cat) => {
             let items = cat.items;
             if (cat.label === "Public Webpage" && tournamentSlug) {
               items = [

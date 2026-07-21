@@ -10140,6 +10140,14 @@ export type Database = {
         Args: { _org_id: string }
         Returns: boolean
       }
+      recalculate_league_handicaps: {
+        Args: { _league_id: string }
+        Returns: number
+      }
+      recalculate_member_handicap: {
+        Args: { _member_id: string }
+        Returns: number
+      }
       recompute_tournament_setup_progress: {
         Args: { _tournament_id: string }
         Returns: undefined

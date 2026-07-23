@@ -237,13 +237,28 @@ export default function TeeSheet() {
           <Card className="print:hidden">
             <CardHeader>
               <CardTitle>Tee Sheet Settings</CardTitle>
-              <CardDescription>Configure start format, timing, and group size.</CardDescription>
+              <CardDescription>
+                Configure start format, timing, and group size{eventDays.length > 1 ? " — each day is configured independently." : "."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
+              {eventDays.length > 1 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {eventDays.map((d, i) => {
+                    const label = new Date(d + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+                    const isActive = d === activeDay;
+                    return (
+                      <Button key={d} size="sm" variant={isActive ? "default" : "outline"} onClick={() => setActiveDay(d)}>
+                        Day {i + 1} · {label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Start Format</Label>
-                  <Select value={startFormat} onValueChange={(v) => setStartFormat(v as any)}>
+                  <Select value={activeConfig.start_format} onValueChange={(v) => setActiveConfig({ start_format: v as any })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="shotgun">Shotgun Start</SelectItem>
@@ -252,13 +267,14 @@ export default function TeeSheet() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>{startFormat === "shotgun" ? "Start Time" : "First Tee Time"}</Label>
-                  <Input type="time" value={firstTeeTime} onChange={(e) => setFirstTeeTime(e.target.value)} />
+                  <Label>{activeConfig.start_format === "shotgun" ? "Start Time" : "First Tee Time"}</Label>
+                  <Input type="time" value={activeConfig.first_tee_time} onChange={(e) => setActiveConfig({ first_tee_time: e.target.value })} />
                 </div>
-                {startFormat === "tee_times" && (
+                {activeConfig.start_format === "tee_times" && (
                   <div className="space-y-2">
                     <Label>Interval (minutes)</Label>
-                    <Input type="number" min={5} max={30} value={interval} onChange={(e) => setInterval(parseInt(e.target.value) || 10)} />
+                    <Input type="number" min={5} max={30} value={activeConfig.interval} onChange={(e) => setActiveConfig({ interval: parseInt(e.target.value) || 10 })} />
+                    <p className="text-xs text-muted-foreground">Default 10 minutes between groups.</p>
                   </div>
                 )}
                 <div className="space-y-2">

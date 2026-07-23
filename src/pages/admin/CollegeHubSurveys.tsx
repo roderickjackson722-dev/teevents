@@ -270,6 +270,27 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
               <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="student-survey-2026" />
             </div>
           </div>
+          <div>
+            <Label>Hero Image (optional)</Label>
+            {heroImageUrl && (
+              <div className="mb-2 relative inline-block">
+                <img src={heroImageUrl} alt="Survey hero" className="max-h-40 rounded border" />
+                <Button size="sm" variant="ghost" className="absolute top-1 right-1 h-6 text-destructive bg-background/80" onClick={() => setHeroImageUrl(null)}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            )}
+            <Input type="file" accept="image/*" disabled={uploadingHero} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); }} />
+            {uploadingHero && <p className="text-xs text-muted-foreground mt-1">Uploading…</p>}
+          </div>
+          <div>
+            <Label>Connect to College Hub Tournament (optional)</Label>
+            <select className="w-full border rounded px-2 py-2 bg-background text-sm" value={tournamentId} onChange={(e) => setTournamentId(e.target.value)}>
+              <option value="">— Not connected —</option>
+              {tournaments.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">When connected, this survey will appear on the tournament's College Hub page.</p>
+          </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm"><Switch checked={isActive} onCheckedChange={setIsActive} /> Active</label>
             <label className="flex items-center gap-2 text-sm"><Switch checked={notifyRespondent} onCheckedChange={setNotifyRespondent} /> Email respondent a thank-you</label>

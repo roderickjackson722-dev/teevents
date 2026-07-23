@@ -113,6 +113,7 @@ export default function LeagueEventRegister() {
         event_id: eventId,
         member_id: member.id,
         scoring_code: code?.toUpperCase(),
+        fee_tier_id: selectedTierId || undefined,
         return_url: `${window.location.origin}/league/${slug}/me/${code}?event=${eventId}`,
       },
     });
@@ -122,6 +123,7 @@ export default function LeagueEventRegister() {
     }
     window.location.href = data.url;
   };
+
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   if (!eventId) {

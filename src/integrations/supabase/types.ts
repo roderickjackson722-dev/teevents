@@ -1043,6 +1043,8 @@ export type Database = {
       college_surveys: {
         Row: {
           created_at: string
+          cta_description: string | null
+          cta_label: string | null
           description: string | null
           hero_image_url: string | null
           id: string
@@ -1055,6 +1057,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          cta_description?: string | null
+          cta_label?: string | null
           description?: string | null
           hero_image_url?: string | null
           id?: string
@@ -1067,6 +1071,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          cta_description?: string | null
+          cta_label?: string | null
           description?: string | null
           hero_image_url?: string | null
           id?: string

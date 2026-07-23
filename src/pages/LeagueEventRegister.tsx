@@ -36,6 +36,7 @@ export default function LeagueEventRegister() {
   const [registration, setRegistration] = useState<any>(null);
   const [payment, setPayment] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedTierId, setSelectedTierId] = useState<string>("");
   const paySuccess = params.get("pay") === "success";
 
   const loadPayment = async (memberId: string) => {

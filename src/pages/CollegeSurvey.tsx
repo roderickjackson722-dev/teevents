@@ -25,7 +25,7 @@ export default function CollegeSurvey() {
   useEffect(() => {
     (async () => {
       if (!slug) return;
-      const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active").eq("slug", slug).eq("is_active", true).maybeSingle();
+      const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active, hero_image_url").eq("slug", slug).eq("is_active", true).maybeSingle();
       if (s) {
         const { data: qs } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", s.id).order("display_order");
         setSurvey(s);

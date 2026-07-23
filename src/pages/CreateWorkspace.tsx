@@ -68,7 +68,7 @@ export default function CreateWorkspace() {
       if (interest === "league") {
         // Send to Stripe checkout for $199/year
         const { data, error } = await (supabase as any).functions.invoke("create-league-subscription", {
-          body: { organization_id: orgId, subscription_type: "flat_fee" },
+          body: { organization_id: orgId, subscription_type: "flat_fee", promo_code: promoCode.trim() || undefined },
         });
         if (error || !data?.url) {
           toast({

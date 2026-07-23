@@ -153,26 +153,51 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const [slug, setSlug] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [notifyRespondent, setNotifyRespondent] = useState(false);
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [tournamentId, setTournamentId] = useState<string | "">("");
+  const [tournaments, setTournaments] = useState<CollegeTournament[]>([]);
   const [questions, setQuestions] = useState<(Question | (Omit<Question, "id" | "survey_id"> & { id?: string }))[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
+      const { data: ts } = await (supabase as any).from("college_tournaments").select("id, title").order("created_at", { ascending: false });
+      setTournaments(ts || []);
       if (survey) {
         setTitle(survey.title);
         setDescription(survey.description || "");
         setSlug(survey.slug);
         setIsActive(survey.is_active);
         setNotifyRespondent(survey.notify_respondent);
+        setHeroImageUrl(survey.hero_image_url || null);
+        setTournamentId(survey.tournament_id || "");
         const { data } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", survey.id).order("display_order");
         setQuestions(data || []);
       } else {
         setTitle(""); setDescription(""); setSlug(""); setIsActive(true); setNotifyRespondent(false);
+        setHeroImageUrl(null); setTournamentId("");
         setQuestions(DEFAULT_QUESTIONS.map((q) => ({ ...q })));
       }
     })();
   }, [open, survey]);
+
+  const uploadHero = async (file: File) => {
+    setUploadingHero(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `college-surveys/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      setHeroImageUrl(data.publicUrl);
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingHero(false);
+    }
+  };
 
   useEffect(() => {
     if (!survey && title && !slug) setSlug(slugify(title));

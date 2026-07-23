@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const organization_id = body.organization_id;
+    const promo_code = typeof body.promo_code === "string" ? body.promo_code.trim() : "";
     if (!organization_id) throw new Error("organization_id required");
 
     const supabaseAdmin = createClient(

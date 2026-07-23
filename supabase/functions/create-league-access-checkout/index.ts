@@ -1,4 +1,4 @@
-// League Manager Access unlock — $299 one-time, paid to TeeVents platform.
+// League Manager Access unlock — $199 one-time, paid to TeeVents platform.
 // Supports admin promo codes via public.validate_league_promo_code().
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -9,7 +9,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const LEAGUE_ACCESS_BASE_CENTS = 29900;
+const LEAGUE_ACCESS_BASE_CENTS = 19900;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

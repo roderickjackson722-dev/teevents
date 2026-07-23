@@ -18,15 +18,25 @@ export default function CreateWorkspace() {
   const preset = (params.get("type") as Interest) || null;
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
   const [interest, setInterest] = useState<Interest | null>(preset);
   const [name, setName] = useState("");
   const [promoCode, setPromoCode] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/get-started?mode=signin"); return; }
       setUserId(session.user.id);
+      const email = session.user.email || "";
+      setUserEmail(email);
+      setContactEmail((prev) => prev || email);
+      const meta: any = session.user.user_metadata || {};
+      setContactName((prev) => prev || meta.full_name || meta.name || "");
+      setContactPhone((prev) => prev || meta.phone || "");
     });
     // Prefill from pending workspace from signup
     try {
@@ -43,6 +53,12 @@ export default function CreateWorkspace() {
     if (!interest || !name.trim() || !userId) {
       toast({ title: "Missing info", description: "Choose a workspace type and enter a name.", variant: "destructive" });
       return;
+    }
+    if (interest === "league") {
+      if (!contactName.trim() || !contactEmail.trim() || !contactPhone.trim()) {
+        toast({ title: "Contact info required", description: "Please provide your name, email, and phone to sign up for Golf Leagues.", variant: "destructive" });
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -68,7 +84,15 @@ export default function CreateWorkspace() {
       if (interest === "league") {
         // Send to Stripe checkout for $199/year
         const { data, error } = await (supabase as any).functions.invoke("create-league-subscription", {
-          body: { organization_id: orgId, subscription_type: "flat_fee", promo_code: promoCode.trim() || undefined },
+          body: {
+            organization_id: orgId,
+            subscription_type: "flat_fee",
+            promo_code: promoCode.trim() || undefined,
+            contact_name: contactName.trim(),
+            contact_email: contactEmail.trim(),
+            contact_phone: contactPhone.trim(),
+            league_name: name.trim(),
+          },
         });
         if (error || !data?.url) {
           toast({
@@ -133,19 +157,41 @@ export default function CreateWorkspace() {
             </div>
 
             {interest === "league" && (
-              <div>
-                <Label htmlFor="promo">Promo code (optional)</Label>
-                <Input
-                  id="promo"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                  placeholder="Enter promo code"
-                  className="uppercase"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Applied automatically at checkout. Leave blank if you don't have one.
-                </p>
-              </div>
+              <>
+                <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-sm">League Manager Contact Info</h3>
+                    <p className="text-xs text-muted-foreground">Required — used for account recovery and league support.</p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="contactName">Full name</Label>
+                      <Input id="contactName" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Jane Smith" />
+                    </div>
+                    <div>
+                      <Label htmlFor="contactPhone">Phone</Label>
+                      <Input id="contactPhone" type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 123-4567" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="contactEmail">Email</Label>
+                    <Input id="contactEmail" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="you@example.com" />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="promo">Promo code (optional)</Label>
+                  <Input
+                    id="promo"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="Enter promo code"
+                    className="uppercase"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Applied automatically at checkout. Leave blank if you don't have one.
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="flex justify-between pt-2">

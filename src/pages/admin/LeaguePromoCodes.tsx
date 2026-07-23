@@ -82,7 +82,7 @@ export default function LeaguePromoCodes() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Golf League Promo Codes</h1>
-          <p className="text-muted-foreground text-sm mt-1">Discount codes applied to the $299 League Manager access fee.</p>
+          <p className="text-muted-foreground text-sm mt-1">Discount codes applied to the $199 League Manager access fee.</p>
         </div>
         <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-1" /> New Code</Button>
       </div>

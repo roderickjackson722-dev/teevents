@@ -18,6 +18,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const organization_id = body.organization_id;
     const promo_code = typeof body.promo_code === "string" ? body.promo_code.trim() : "";
+    const contact_name = typeof body.contact_name === "string" ? body.contact_name.trim() : "";
+    const contact_email = typeof body.contact_email === "string" ? body.contact_email.trim() : "";
+    const contact_phone = typeof body.contact_phone === "string" ? body.contact_phone.trim() : "";
+    const league_name = typeof body.league_name === "string" ? body.league_name.trim() : "";
     if (!organization_id) throw new Error("organization_id required");
 
     const supabaseAdmin = createClient(
@@ -99,8 +103,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/dashboard/leagues?league_sub=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/golf-leagues`,
+      success_url: `${origin}/select-workspace?league_sub=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/select-workspace`,
       subscription_data: {
         metadata: {
           kind: "league_subscription",
@@ -116,6 +120,44 @@ Deno.serve(async (req) => {
         subscription_type: "flat_fee",
       },
     });
+
+    // Notify TeeVents admin of the league sign-up (fires even when promo makes it 100% off).
+    try {
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      if (RESEND_API_KEY) {
+        const html = `
+          <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#111827;">
+            <h2 style="color:#1a5c38;margin:0 0 12px 0;">🏆 New Golf League Sign-Up</h2>
+            <p style="color:#6b7280;margin:0 0 20px 0;">A user just initiated the Golf League subscription flow.</p>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;width:35%;">Contact Name</td><td style="padding:8px;border:1px solid #e5e7eb;">${contact_name || "—"}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">Contact Email</td><td style="padding:8px;border:1px solid #e5e7eb;">${contact_email || user.email || "—"}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">Phone</td><td style="padding:8px;border:1px solid #e5e7eb;">${contact_phone || "—"}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">League / Workspace</td><td style="padding:8px;border:1px solid #e5e7eb;">${league_name || "—"}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">Organization ID</td><td style="padding:8px;border:1px solid #e5e7eb;">${organization_id}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">Promo Code</td><td style="padding:8px;border:1px solid #e5e7eb;">${promo_code || "—"}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">Auth User</td><td style="padding:8px;border:1px solid #e5e7eb;">${user.email || user.id}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;">Started</td><td style="padding:8px;border:1px solid #e5e7eb;">${new Date().toLocaleString("en-US")}</td></tr>
+            </table>
+            <p style="color:#6b7280;font-size:12px;margin-top:20px;">Stripe Checkout Session: ${session.id}</p>
+          </div>`;
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "TeeVents Golf Management <info@notifications.teevents.golf>",
+            to: ["info@teevents.golf"],
+            subject: `🏆 New Golf League Sign-Up – ${contact_name || contact_email || user.email || "user"}`,
+            html,
+          }),
+        });
+      }
+    } catch (notifyErr) {
+      console.error("[create-league-subscription] notify failed", notifyErr);
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -161,10 +161,10 @@ export default function Leagues() {
         <div className="grid gap-4">
           {leagues.map((l) => (
             <Card key={l.id}>
-              <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    {l.league_name}
+              <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 space-y-0">
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="flex flex-wrap items-center gap-2 break-words">
+                    <span className="break-words">{l.league_name}</span>
                     {l.is_active ? (
                       <Badge variant="default">Active</Badge>
                     ) : (
@@ -175,17 +175,17 @@ export default function Leagues() {
                       ? <Badge className="bg-green-600 hover:bg-green-600">Unlocked</Badge>
                       : <Badge variant="destructive" className="gap-1"><Lock className="h-3 w-3" /> Locked</Badge>}
                   </CardTitle>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{l.member_count} members</span>
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{l.event_count} events</span>
                     {l.season_year && <span>Season: {l.season_year}</span>}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 shrink-0">
                   {l.access_status !== "paid" && !hasSubscription && (
                     <>
                       <Button onClick={() => unlockLeague(l.id)}>
-                        <CreditCard className="h-4 w-4 mr-2" /> Unlock $299
+                        <CreditCard className="h-4 w-4 mr-2" /> Unlock $199
                       </Button>
                       {isAdmin && (
                         <Button variant="secondary" onClick={() => adminInvoiceUnlock(l.id)}>

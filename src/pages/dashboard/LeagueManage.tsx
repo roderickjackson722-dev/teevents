@@ -92,7 +92,7 @@ export default function LeagueManage() {
               <Lock className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold">League is locked</p>
-                <p className="text-sm text-muted-foreground">Pay the one-time $299 League Manager Access fee to activate members, events, pairings, scoring, standings, skins, and public/member portals.</p>
+                <p className="text-sm text-muted-foreground">Pay the one-time $199 League Manager Access fee to activate members, events, pairings, scoring, standings, skins, and public/member portals.</p>
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -109,7 +109,7 @@ export default function LeagueManage() {
                   window.location.href = data.url;
                 }}
               >
-                <CreditCard className="h-4 w-4 mr-2" /> Unlock League — $299
+                <CreditCard className="h-4 w-4 mr-2" /> Unlock League — $199
               </Button>
               {isAdmin && (
                 <Button

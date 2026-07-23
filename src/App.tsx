@@ -128,6 +128,7 @@ import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
 import LeagueInvoices from "./pages/admin/LeagueInvoices";
 import LeagueReconciliation from "./pages/admin/LeagueReconciliation";
+import AdminLeagues from "./pages/admin/Leagues";
 
 
 import AdminScoring from "./pages/admin/AdminScoring";

@@ -118,3 +118,6 @@ verify_jwt = false
 
 [functions.signup-with-vetting]
 verify_jwt = false
+
+[functions.submit-college-survey]
+verify_jwt = false

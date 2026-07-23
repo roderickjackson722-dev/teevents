@@ -145,9 +145,9 @@ export default function TeeSheet() {
     let groupNum = 1;
     for (let i = 0; i < sorted.length; i += groupSize) {
       const players = sorted.slice(i, i + groupSize);
-      const teeTime = startFormat === "shotgun"
-        ? firstTeeTime
-        : addMinutes(firstTeeTime, (groupNum - 1) * interval);
+      const teeTime = activeConfig.start_format === "shotgun"
+        ? activeConfig.first_tee_time
+        : addMinutes(activeConfig.first_tee_time, (groupNum - 1) * activeConfig.interval);
       const expectedFinish = addMinutes(teeTime, paceMinutes);
 
       groups.push({

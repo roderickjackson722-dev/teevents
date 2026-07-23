@@ -78,11 +78,27 @@ Deno.serve(async (req) => {
     if (!regId) {
       const { data: newReg, error: rErr } = await supabaseAdmin
         .from("league_event_registrations")
-        .insert({ event_id: event.id, member_id: member.id, fee_paid: false })
+        .insert({
+          event_id: event.id,
+          member_id: member.id,
+          fee_paid: false,
+          fee_tier_id: tierId,
+          fee_tier_label: tierLabel,
+          fee_tier_amount_cents: tiers.length > 0 ? amountCents : null,
+        })
         .select("id")
         .single();
       if (rErr) throw rErr;
       regId = newReg.id;
+    } else {
+      await supabaseAdmin
+        .from("league_event_registrations")
+        .update({
+          fee_tier_id: tierId,
+          fee_tier_label: tierLabel,
+          fee_tier_amount_cents: tiers.length > 0 ? amountCents : null,
+        })
+        .eq("id", regId);
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });

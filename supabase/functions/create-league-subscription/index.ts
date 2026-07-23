@@ -70,12 +70,14 @@ Deno.serve(async (req) => {
       payment_method_types: ["card"],
       customer: customerId,
       customer_email: customerId ? undefined : user.email || undefined,
+      allow_promotion_codes: true,
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "TeeVents Golf League — Annual (Unlimited Golfers)",
+              name: "TeeVents Golf League Management — Annual Subscription",
+              description: "Annual subscription for golf league management. Unlimited golfers. Cancel anytime.",
             },
             unit_amount: FLAT_FEE_CENTS,
             recurring: { interval: "year" },

@@ -4293,6 +4293,11 @@ export type Database = {
           fee_override: number | null
           id: string
           is_nonprofit: boolean
+          league_subscription_active: boolean | null
+          league_subscription_ends_at: string | null
+          league_subscription_started_at: string | null
+          league_subscription_status: string | null
+          league_subscription_stripe_id: string | null
           logo_url: string | null
           mailing_address: string | null
           name: string
@@ -4317,6 +4322,11 @@ export type Database = {
           fee_override?: number | null
           id?: string
           is_nonprofit?: boolean
+          league_subscription_active?: boolean | null
+          league_subscription_ends_at?: string | null
+          league_subscription_started_at?: string | null
+          league_subscription_status?: string | null
+          league_subscription_stripe_id?: string | null
           logo_url?: string | null
           mailing_address?: string | null
           name: string
@@ -4341,6 +4351,11 @@ export type Database = {
           fee_override?: number | null
           id?: string
           is_nonprofit?: boolean
+          league_subscription_active?: boolean | null
+          league_subscription_ends_at?: string | null
+          league_subscription_started_at?: string | null
+          league_subscription_status?: string | null
+          league_subscription_stripe_id?: string | null
           logo_url?: string | null
           mailing_address?: string | null
           name?: string

@@ -334,13 +334,24 @@ export function DashboardSidebar() {
         </SidebarContent>
 
         <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3 space-y-2">
-          <NavLink
-            to="/select-workspace"
+          <button
+            onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session) { navigate("/select-workspace"); return; }
+              const { data: memberships } = await supabase
+                .from("org_members")
+                .select("organizations(workspace_type)")
+                .eq("user_id", session.user.id);
+              const hasLeague = (memberships || []).some(
+                (m: any) => m.organizations?.workspace_type === "league",
+              );
+              navigate(hasLeague ? "/select-workspace" : "/golf-leagues");
+            }}
             className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors w-full"
           >
             <LogOut className="h-4 w-4 rotate-180" />
             {!collapsed && <span>Switch Workspace</span>}
-          </NavLink>
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-primary-foreground/60 hover:text-primary-foreground text-sm transition-colors w-full"

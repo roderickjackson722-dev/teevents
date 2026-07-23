@@ -3361,7 +3361,9 @@ export type Database = {
           skins_enabled: boolean
           skins_mode: string
           skins_value_cents: number
+          start_format: string
           start_time: string | null
+          tee_interval_minutes: number
           updated_at: string
         }
         Insert: {
@@ -3387,7 +3389,9 @@ export type Database = {
           skins_enabled?: boolean
           skins_mode?: string
           skins_value_cents?: number
+          start_format?: string
           start_time?: string | null
+          tee_interval_minutes?: number
           updated_at?: string
         }
         Update: {
@@ -3413,7 +3417,9 @@ export type Database = {
           skins_enabled?: boolean
           skins_mode?: string
           skins_value_cents?: number
+          start_format?: string
           start_time?: string | null
+          tee_interval_minutes?: number
           updated_at?: string
         }
         Relationships: [

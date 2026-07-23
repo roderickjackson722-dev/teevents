@@ -18,7 +18,10 @@ type Survey = {
   is_active: boolean;
   notify_respondent: boolean;
   created_at: string;
+  hero_image_url: string | null;
+  tournament_id: string | null;
 };
+type CollegeTournament = { id: string; title: string };
 type Question = {
   id: string;
   survey_id: string;

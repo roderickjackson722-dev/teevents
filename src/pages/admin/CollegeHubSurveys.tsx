@@ -280,6 +280,16 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
           </div>
           <div>
+            <Label>Survey Card Label</Label>
+            <Input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Take Our Survey" />
+            <p className="text-xs text-muted-foreground mt-1">Shown above the survey title on the tournament page (e.g., "Take Our Survey").</p>
+          </div>
+          <div>
+            <Label>Survey Card Description</Label>
+            <Textarea value={ctaDescription} onChange={(e) => setCtaDescription(e.target.value)} rows={2} placeholder="Share your feedback — it only takes a minute." />
+            <p className="text-xs text-muted-foreground mt-1">Shown below the survey title on the tournament page.</p>
+          </div>
+          <div>
             <Label>Custom URL Slug</Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">/s/</span>

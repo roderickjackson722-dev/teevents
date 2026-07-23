@@ -87,7 +87,10 @@ export default function CollegeSurvey() {
   return (
     <div className="min-h-screen bg-muted/30 py-10 px-4">
       <div className="max-w-2xl mx-auto">
-        <Card>
+        <Card className="overflow-hidden">
+          {survey.hero_image_url && (
+            <img src={survey.hero_image_url} alt={survey.title} className="w-full max-h-64 object-cover" />
+          )}
           <CardHeader>
             <CardTitle className="text-2xl">{survey.title}</CardTitle>
             {survey.description && <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-2">{survey.description}</p>}

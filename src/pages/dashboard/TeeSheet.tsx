@@ -48,7 +48,7 @@ export default function TeeSheet() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, max_players")
+        .select("id, title, max_players, date, end_date")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -56,6 +56,40 @@ export default function TeeSheet() {
     },
     enabled: !!org,
   });
+
+  const currentTournament = tournaments?.find((t: any) => t.id === selectedTournament) as any;
+  const eventDays = useMemo(() => {
+    if (!currentTournament?.date) return [] as string[];
+    const start = new Date(currentTournament.date + "T00:00:00");
+    const end = currentTournament.end_date ? new Date(currentTournament.end_date + "T00:00:00") : start;
+    const days: string[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      days.push(new Date(d).toISOString().slice(0, 10));
+    }
+    return days.length ? days : [currentTournament.date];
+  }, [currentTournament]);
+
+  const [dayConfigs, setDayConfigs] = useState<Record<string, { start_format: "shotgun" | "tee_times"; first_tee_time: string; interval: number }>>({});
+  const [activeDay, setActiveDay] = useState<string>("");
+
+  // Initialize/sync per-day settings whenever the day list changes
+  useMemo(() => {
+    if (eventDays.length === 0) return;
+    setDayConfigs((prev) => {
+      const next = { ...prev };
+      for (const d of eventDays) {
+        if (!next[d]) next[d] = { start_format: startFormat, first_tee_time: firstTeeTime, interval };
+      }
+      return next;
+    });
+    if (!activeDay || !eventDays.includes(activeDay)) setActiveDay(eventDays[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventDays.join("|")]);
+
+  const activeConfig = dayConfigs[activeDay] || { start_format: startFormat, first_tee_time: firstTeeTime, interval };
+  const setActiveConfig = (patch: Partial<typeof activeConfig>) => {
+    setDayConfigs((prev) => ({ ...prev, [activeDay]: { ...activeConfig, ...patch } }));
+  };
 
   const { data: registrations, isLoading: regLoading } = useQuery({
     queryKey: ["teesheet-registrations", selectedTournament],

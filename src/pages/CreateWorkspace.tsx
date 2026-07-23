@@ -157,19 +157,41 @@ export default function CreateWorkspace() {
             </div>
 
             {interest === "league" && (
-              <div>
-                <Label htmlFor="promo">Promo code (optional)</Label>
-                <Input
-                  id="promo"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                  placeholder="Enter promo code"
-                  className="uppercase"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Applied automatically at checkout. Leave blank if you don't have one.
-                </p>
-              </div>
+              <>
+                <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-sm">League Manager Contact Info</h3>
+                    <p className="text-xs text-muted-foreground">Required — used for account recovery and league support.</p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="contactName">Full name</Label>
+                      <Input id="contactName" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Jane Smith" />
+                    </div>
+                    <div>
+                      <Label htmlFor="contactPhone">Phone</Label>
+                      <Input id="contactPhone" type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 123-4567" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="contactEmail">Email</Label>
+                    <Input id="contactEmail" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="you@example.com" />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="promo">Promo code (optional)</Label>
+                  <Input
+                    id="promo"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="Enter promo code"
+                    className="uppercase"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Applied automatically at checkout. Leave blank if you don't have one.
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="flex justify-between pt-2">

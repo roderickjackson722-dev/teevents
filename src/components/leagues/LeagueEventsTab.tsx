@@ -108,6 +108,10 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       skins_carryover: !!editing.skins_carryover,
       skins_value_cents: editing.skins_value_cents !== "" ? Math.round(Number(editing.skins_value_cents) * 100) : 0,
       pass_platform_fee_to_player: !!editing.pass_platform_fee_to_player,
+      start_format: editing.start_format === "tee_times" ? "tee_times" : "shotgun",
+      tee_interval_minutes: editing.tee_interval_minutes !== "" && editing.tee_interval_minutes != null
+        ? Math.max(5, Math.min(30, Number(editing.tee_interval_minutes) || 10))
+        : 10,
       recurrence_rule: editing.recurrence_freq
         ? { freq: editing.recurrence_freq, count: editing.recurrence_count ? Number(editing.recurrence_count) : null }
         : null,

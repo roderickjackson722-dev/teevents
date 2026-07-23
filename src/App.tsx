@@ -135,6 +135,8 @@ import AdminScoring from "./pages/admin/AdminScoring";
 import LeaguePromoCodes from "./pages/admin/LeaguePromoCodes";
 import AiSalesAgent from "./pages/admin/AiSalesAgent";
 import CollegeHubBookingsPublic from "./pages/CollegeHubBookings";
+import CollegeHubSurveys from "./pages/admin/CollegeHubSurveys";
+import CollegeSurvey from "./pages/CollegeSurvey";
 import DemoPrepShare from "./pages/DemoPrepShare";
 import HelpCenter from "./pages/help/HelpCenter";
 import StepByStep from "./pages/help/StepByStep";

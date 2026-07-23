@@ -126,7 +126,20 @@ export default function CollegeHubSurveys() {
                 <td className="p-3 font-medium">{s.title}</td>
                 <td className="p-3">{counts[s.id] || 0}</td>
                 <td className="p-3 font-mono text-xs">/s/{s.slug}</td>
-                <td className="p-3">{s.is_active ? <span className="text-green-700">Active</span> : <span className="text-muted-foreground">Inactive</span>}</td>
+                <td className="p-3">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={s.is_active}
+                      onCheckedChange={async (checked) => {
+                        const { error } = await supabase.from("college_surveys").update({ is_active: checked }).eq("id", s.id);
+                        if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
+                        toast({ title: checked ? "Survey turned on" : "Survey turned off", description: checked ? "Now visible on the college page." : "Hidden from the college page." });
+                        load();
+                      }}
+                    />
+                    <span className={s.is_active ? "text-green-700 text-xs" : "text-muted-foreground text-xs"}>{s.is_active ? "On" : "Off"}</span>
+                  </div>
+                </td>
                 <td className="p-3">
                   <div className="flex justify-end gap-1 flex-wrap">
                     <Button variant="ghost" size="sm" onClick={() => setResponsesOpenFor(s)}><Eye className="w-3.5 h-3.5 mr-1" />Responses</Button>

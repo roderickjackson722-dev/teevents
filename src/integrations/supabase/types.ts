@@ -3219,6 +3219,9 @@ export type Database = {
           created_at: string
           event_id: string
           fee_paid: boolean | null
+          fee_tier_amount_cents: number | null
+          fee_tier_id: string | null
+          fee_tier_label: string | null
           id: string
           member_id: string
           paid_at: string | null
@@ -3234,6 +3237,9 @@ export type Database = {
           created_at?: string
           event_id: string
           fee_paid?: boolean | null
+          fee_tier_amount_cents?: number | null
+          fee_tier_id?: string | null
+          fee_tier_label?: string | null
           id?: string
           member_id: string
           paid_at?: string | null
@@ -3249,6 +3255,9 @@ export type Database = {
           created_at?: string
           event_id?: string
           fee_paid?: boolean | null
+          fee_tier_amount_cents?: number | null
+          fee_tier_id?: string | null
+          fee_tier_label?: string | null
           id?: string
           member_id?: string
           paid_at?: string | null
@@ -3336,6 +3345,7 @@ export type Database = {
           end_date: string | null
           event_date: string
           event_name: string
+          fee_tiers: Json
           format_type: string
           id: string
           is_completed: boolean
@@ -3361,6 +3371,7 @@ export type Database = {
           end_date?: string | null
           event_date: string
           event_name: string
+          fee_tiers?: Json
           format_type?: string
           id?: string
           is_completed?: boolean
@@ -3386,6 +3397,7 @@ export type Database = {
           end_date?: string | null
           event_date?: string
           event_name?: string
+          fee_tiers?: Json
           format_type?: string
           id?: string
           is_completed?: boolean

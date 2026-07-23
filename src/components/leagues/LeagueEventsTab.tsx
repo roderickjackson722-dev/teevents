@@ -312,8 +312,9 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Registration Fee ($)</Label>
+                    <Label>Base Registration Fee ($)</Label>
                     <Input type="number" step="0.01" value={editing.registration_fee_cents} onChange={(e) => setEditing({ ...editing, registration_fee_cents: e.target.value })} />
+                    <p className="text-xs text-muted-foreground mt-1">Used when no fee options are defined below.</p>
                   </div>
                   <div className="flex items-end">
                     <div className="flex items-center gap-2">
@@ -323,6 +324,55 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     </div>
                   </div>
                 </div>
+
+                <div className="rounded-md border p-3 space-y-3 bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="font-semibold">Registration Fee Options</Label>
+                      <p className="text-xs text-muted-foreground">Offer multiple choices — e.g. Walking, Riding, Guest. Players pick one at checkout.</p>
+                    </div>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setEditing({
+                      ...editing,
+                      fee_tiers: [...(editing.fee_tiers || []), { id: newTierId(), label: "", amount: "" }],
+                    })}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Add option
+                    </Button>
+                  </div>
+                  {(editing.fee_tiers || []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No fee options — the base fee above will apply to everyone.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(editing.fee_tiers as FeeTier[]).map((t, idx) => (
+                        <div key={t.id} className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <Label className="text-xs">Label</Label>
+                            <Input placeholder="e.g. Walking" value={t.label}
+                              onChange={(e) => {
+                                const next = [...editing.fee_tiers];
+                                next[idx] = { ...t, label: e.target.value };
+                                setEditing({ ...editing, fee_tiers: next });
+                              }} />
+                          </div>
+                          <div className="w-32">
+                            <Label className="text-xs">Price ($)</Label>
+                            <Input type="number" step="0.01" placeholder="0.00" value={t.amount}
+                              onChange={(e) => {
+                                const next = [...editing.fee_tiers];
+                                next[idx] = { ...t, amount: e.target.value };
+                                setEditing({ ...editing, fee_tiers: next });
+                              }} />
+                          </div>
+                          <Button type="button" size="icon" variant="ghost" onClick={() => {
+                            const next = [...editing.fee_tiers];
+                            next.splice(idx, 1);
+                            setEditing({ ...editing, fee_tiers: next });
+                          }}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
 
                 <div className="rounded-md border p-3 space-y-3 bg-yellow-50 dark:bg-yellow-950/20">
                   <div className="flex items-center justify-between">

@@ -54,6 +54,12 @@ export default function CreateWorkspace() {
       toast({ title: "Missing info", description: "Choose a workspace type and enter a name.", variant: "destructive" });
       return;
     }
+    if (interest === "league") {
+      if (!contactName.trim() || !contactEmail.trim() || !contactPhone.trim()) {
+        toast({ title: "Contact info required", description: "Please provide your name, email, and phone to sign up for Golf Leagues.", variant: "destructive" });
+        return;
+      }
+    }
     setLoading(true);
     try {
       const subdomain = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
@@ -78,7 +84,15 @@ export default function CreateWorkspace() {
       if (interest === "league") {
         // Send to Stripe checkout for $199/year
         const { data, error } = await (supabase as any).functions.invoke("create-league-subscription", {
-          body: { organization_id: orgId, subscription_type: "flat_fee", promo_code: promoCode.trim() || undefined },
+          body: {
+            organization_id: orgId,
+            subscription_type: "flat_fee",
+            promo_code: promoCode.trim() || undefined,
+            contact_name: contactName.trim(),
+            contact_email: contactEmail.trim(),
+            contact_phone: contactPhone.trim(),
+            league_name: name.trim(),
+          },
         });
         if (error || !data?.url) {
           toast({

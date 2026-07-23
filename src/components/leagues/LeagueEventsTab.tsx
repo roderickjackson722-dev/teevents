@@ -183,7 +183,9 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     <TableCell>{LEAGUE_FORMATS.find(f => f.id === e.format_type)?.name || e.format_type}</TableCell>
                     <TableCell>{e.course_name || "—"}</TableCell>
                     <TableCell>
-                      {e.registration_fee_cents ? `$${(e.registration_fee_cents / 100).toFixed(2)}` : "Free"}
+                      {Array.isArray(e.fee_tiers) && e.fee_tiers.length > 0
+                        ? `${e.fee_tiers.length} option${e.fee_tiers.length === 1 ? "" : "s"}`
+                        : e.registration_fee_cents ? `$${(e.registration_fee_cents / 100).toFixed(2)}` : "Free"}
                       {e.pass_platform_fee_to_player && <Badge variant="outline" className="ml-2 text-xs">+ fee</Badge>}
                     </TableCell>
                     <TableCell>

@@ -952,6 +952,127 @@ export type Database = {
         }
         Relationships: []
       }
+      college_survey_questions: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_required: boolean
+          options: Json | null
+          question_text: string
+          question_type: string
+          survey_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          question_text: string
+          question_type?: string
+          survey_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          question_text?: string
+          question_type?: string
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_survey_questions_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "college_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_survey_responses: {
+        Row: {
+          id: string
+          respondent_career_goals: string | null
+          respondent_email: string | null
+          respondent_major: string | null
+          respondent_name: string | null
+          respondent_school: string | null
+          respondent_year: string | null
+          response_data: Json
+          submitted_at: string
+          survey_id: string
+        }
+        Insert: {
+          id?: string
+          respondent_career_goals?: string | null
+          respondent_email?: string | null
+          respondent_major?: string | null
+          respondent_name?: string | null
+          respondent_school?: string | null
+          respondent_year?: string | null
+          response_data?: Json
+          submitted_at?: string
+          survey_id: string
+        }
+        Update: {
+          id?: string
+          respondent_career_goals?: string | null
+          respondent_email?: string | null
+          respondent_major?: string | null
+          respondent_name?: string | null
+          respondent_school?: string | null
+          respondent_year?: string | null
+          response_data?: Json
+          submitted_at?: string
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "college_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_surveys: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          notify_respondent: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          notify_respondent?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          notify_respondent?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       college_tournament_invitations: {
         Row: {
           coach_email: string

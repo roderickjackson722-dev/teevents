@@ -339,7 +339,7 @@ export default function TeeSheet() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-16">
-                          {startFormat === "shotgun" ? "Hole" : "Group"}
+                          {activeConfig.start_format === "shotgun" ? "Hole" : "Group"}
                         </TableHead>
                         <TableHead className="w-24">Tee Time</TableHead>
                         <TableHead className="w-16">Cart #</TableHead>

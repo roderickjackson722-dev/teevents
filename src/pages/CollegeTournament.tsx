@@ -123,7 +123,7 @@ const CollegeTournament = () => {
       // Fetch linked survey (if any)
       const { data: sv } = await (supabase as any)
         .from("college_surveys")
-        .select("slug, title, hero_image_url")
+        .select("slug, title, hero_image_url, cta_label, cta_description")
         .eq("tournament_id", t.id)
         .eq("is_active", true)
         .maybeSingle();

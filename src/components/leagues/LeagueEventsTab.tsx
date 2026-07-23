@@ -33,6 +33,8 @@ const RECURRENCE_OPTIONS = [
   { id: "monthly", label: "Monthly" },
 ];
 
+type FeeTier = { id: string; label: string; amount: string };
+
 const empty = {
   event_name: "",
   event_date: "",
@@ -50,7 +52,12 @@ const empty = {
   skins_carryover: true,
   skins_value_cents: "" as any,
   pass_platform_fee_to_player: false,
+  fee_tiers: [] as FeeTier[],
 };
+
+function newTierId() {
+  return `t_${Math.random().toString(36).slice(2, 9)}`;
+}
 
 function addDays(dateStr: string, days: number) {
   const d = new Date(dateStr + "T00:00:00");

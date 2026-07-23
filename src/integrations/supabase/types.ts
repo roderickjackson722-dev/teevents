@@ -1044,34 +1044,48 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          hero_image_url: string | null
           id: string
           is_active: boolean
           notify_respondent: boolean
           slug: string
           title: string
+          tournament_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           description?: string | null
+          hero_image_url?: string | null
           id?: string
           is_active?: boolean
           notify_respondent?: boolean
           slug: string
           title: string
+          tournament_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           description?: string | null
+          hero_image_url?: string | null
           id?: string
           is_active?: boolean
           notify_respondent?: boolean
           slug?: string
           title?: string
+          tournament_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "college_surveys_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "college_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       college_tournament_invitations: {
         Row: {

@@ -20,6 +20,8 @@ type Survey = {
   created_at: string;
   hero_image_url: string | null;
   tournament_id: string | null;
+  cta_label: string | null;
+  cta_description: string | null;
 };
 type CollegeTournament = { id: string; title: string };
 type Question = {
@@ -159,6 +161,8 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const [tournaments, setTournaments] = useState<CollegeTournament[]>([]);
   const [questions, setQuestions] = useState<(Question | (Omit<Question, "id" | "survey_id"> & { id?: string }))[]>([]);
   const [saving, setSaving] = useState(false);
+  const [ctaLabel, setCtaLabel] = useState("");
+  const [ctaDescription, setCtaDescription] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -173,11 +177,13 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
         setNotifyRespondent(survey.notify_respondent);
         setHeroImageUrl(survey.hero_image_url || null);
         setTournamentId(survey.tournament_id || "");
+        setCtaLabel(survey.cta_label || "");
+        setCtaDescription(survey.cta_description || "");
         const { data } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", survey.id).order("display_order");
         setQuestions(data || []);
       } else {
         setTitle(""); setDescription(""); setSlug(""); setIsActive(true); setNotifyRespondent(false);
-        setHeroImageUrl(null); setTournamentId("");
+        setHeroImageUrl(null); setTournamentId(""); setCtaLabel(""); setCtaDescription("");
         setQuestions(DEFAULT_QUESTIONS.map((q) => ({ ...q })));
       }
     })();
@@ -220,7 +226,17 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
     setSaving(true);
     try {
       let surveyId = survey?.id;
-      const payload = { title: title.trim(), description: description.trim() || null, slug: slugify(slug), is_active: isActive, notify_respondent: notifyRespondent, hero_image_url: heroImageUrl, tournament_id: tournamentId || null };
+      const payload = {
+        title: title.trim(),
+        description: description.trim() || null,
+        slug: slugify(slug),
+        is_active: isActive,
+        notify_respondent: notifyRespondent,
+        hero_image_url: heroImageUrl,
+        tournament_id: tournamentId || null,
+        cta_label: ctaLabel.trim() || null,
+        cta_description: ctaDescription.trim() || null,
+      };
       if (surveyId) {
         const { error } = await (supabase as any).from("college_surveys").update(payload).eq("id", surveyId);
         if (error) throw error;
@@ -262,6 +278,16 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
           <div>
             <Label>Description</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+          </div>
+          <div>
+            <Label>Survey Card Label</Label>
+            <Input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Take Our Survey" />
+            <p className="text-xs text-muted-foreground mt-1">Shown above the survey title on the tournament page (e.g., "Take Our Survey").</p>
+          </div>
+          <div>
+            <Label>Survey Card Description</Label>
+            <Textarea value={ctaDescription} onChange={(e) => setCtaDescription(e.target.value)} rows={2} placeholder="Share your feedback — it only takes a minute." />
+            <p className="text-xs text-muted-foreground mt-1">Shown below the survey title on the tournament page.</p>
           </div>
           <div>
             <Label>Custom URL Slug</Label>

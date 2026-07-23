@@ -128,6 +128,7 @@ import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
 import LeagueInvoices from "./pages/admin/LeagueInvoices";
 import LeagueReconciliation from "./pages/admin/LeagueReconciliation";
+import AdminLeagues from "./pages/admin/Leagues";
 
 
 import AdminScoring from "./pages/admin/AdminScoring";
@@ -325,6 +326,7 @@ const App = () => (
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />
             <Route path="/admin/league-invoices" element={<LeagueInvoices />} />
             <Route path="/admin/league-reconciliation" element={<LeagueReconciliation />} />
+            <Route path="/admin/leagues" element={<AdminLeagues />} />
 
 
             <Route path="/admin/scoring/:tournamentId" element={<AdminScoring />} />

@@ -161,6 +161,8 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const [tournaments, setTournaments] = useState<CollegeTournament[]>([]);
   const [questions, setQuestions] = useState<(Question | (Omit<Question, "id" | "survey_id"> & { id?: string }))[]>([]);
   const [saving, setSaving] = useState(false);
+  const [ctaLabel, setCtaLabel] = useState("");
+  const [ctaDescription, setCtaDescription] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -175,11 +177,13 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
         setNotifyRespondent(survey.notify_respondent);
         setHeroImageUrl(survey.hero_image_url || null);
         setTournamentId(survey.tournament_id || "");
+        setCtaLabel(survey.cta_label || "");
+        setCtaDescription(survey.cta_description || "");
         const { data } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", survey.id).order("display_order");
         setQuestions(data || []);
       } else {
         setTitle(""); setDescription(""); setSlug(""); setIsActive(true); setNotifyRespondent(false);
-        setHeroImageUrl(null); setTournamentId("");
+        setHeroImageUrl(null); setTournamentId(""); setCtaLabel(""); setCtaDescription("");
         setQuestions(DEFAULT_QUESTIONS.map((q) => ({ ...q })));
       }
     })();

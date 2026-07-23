@@ -20,6 +20,7 @@ export default function CreateWorkspace() {
   const [userId, setUserId] = useState<string | null>(null);
   const [interest, setInterest] = useState<Interest | null>(preset);
   const [name, setName] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

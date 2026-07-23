@@ -320,7 +320,7 @@ export default function TeeSheet() {
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" /> Tee Sheet
                     <Badge variant="secondary" className="ml-2">
-                      {startFormat === "shotgun" ? "Shotgun Start" : "Tee Times"}
+                      {activeConfig.start_format === "shotgun" ? "Shotgun Start" : "Tee Times"}
                     </Badge>
                   </CardTitle>
                   <div className="flex gap-2 print:hidden">

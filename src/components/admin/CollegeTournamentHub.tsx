@@ -696,6 +696,9 @@ const CollegeTournamentHub = () => {
           <Button asChild variant="outline" size="sm">
             <a href="/admin/college-hub/bookings"><Calendar className="h-4 w-4 mr-2" />Bookings</a>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <a href="/admin/college-hub/surveys"><FileText className="h-4 w-4 mr-2" />Surveys</a>
+          </Button>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button size="sm"><Plus className="h-4 w-4 mr-2" /> New Tournament</Button>

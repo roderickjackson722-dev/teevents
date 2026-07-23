@@ -20,6 +20,8 @@ type Survey = {
   created_at: string;
   hero_image_url: string | null;
   tournament_id: string | null;
+  cta_label: string | null;
+  cta_description: string | null;
 };
 type CollegeTournament = { id: string; title: string };
 type Question = {

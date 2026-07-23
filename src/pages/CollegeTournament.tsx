@@ -74,7 +74,7 @@ const CollegeTournament = () => {
   const [tabs, setTabs] = useState<TournamentTab[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("info");
-  const [linkedSurvey, setLinkedSurvey] = useState<{ slug: string; title: string; hero_image_url: string | null } | null>(null);
+  const [linkedSurvey, setLinkedSurvey] = useState<{ slug: string; title: string; hero_image_url: string | null; cta_label: string | null; cta_description: string | null } | null>(null);
 
   // RSVP state
   const rsvpToken = searchParams.get("rsvp");

@@ -53,6 +53,8 @@ const empty = {
   skins_value_cents: "" as any,
   pass_platform_fee_to_player: false,
   fee_tiers: [] as FeeTier[],
+  start_format: "shotgun",
+  tee_interval_minutes: 10 as any,
 };
 
 function newTierId() {

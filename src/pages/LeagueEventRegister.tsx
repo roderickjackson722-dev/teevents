@@ -147,8 +147,13 @@ export default function LeagueEventRegister() {
 
   const fmt = LEAGUE_FORMATS.find(f => f.id === event.format_type);
   const description = FORMAT_DESCRIPTIONS[event.format_type] || "";
-  const feeDollars = (event.registration_fee_cents || 0) / 100;
-  const alreadyRegistered = registration && (registration.registration_fee_paid || registration.fee_paid || feeDollars === 0);
+  const feeTiers: Array<{ id: string; label: string; amount_cents: number }> = Array.isArray(event.fee_tiers) ? event.fee_tiers : [];
+  const hasTiers = feeTiers.length > 0;
+  const selectedTier = hasTiers ? feeTiers.find(t => t.id === selectedTierId) : null;
+  const baseFeeCents = event.registration_fee_cents || 0;
+  const activeFeeCents = hasTiers ? (selectedTier?.amount_cents ?? 0) : baseFeeCents;
+  const feeDollars = activeFeeCents / 100;
+  const alreadyRegistered = registration && (registration.registration_fee_paid || registration.fee_paid);
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,7 +175,9 @@ export default function LeagueEventRegister() {
             <div className="grid gap-2 text-sm">
               <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> {event.event_date}{event.start_time ? ` · ${event.start_time}` : ""}</div>
               {event.course_name && <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> {event.course_name}</div>}
-              <div className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-muted-foreground" /> {feeDollars > 0 ? `$${feeDollars.toFixed(2)} entry fee` : "No entry fee"}</div>
+              {!hasTiers && (
+                <div className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-muted-foreground" /> {feeDollars > 0 ? `$${feeDollars.toFixed(2)} entry fee` : "No entry fee"}</div>
+              )}
               {event.registration_deadline && <div className="text-muted-foreground text-xs">Deadline: {event.registration_deadline}</div>}
             </div>
 
@@ -178,6 +185,29 @@ export default function LeagueEventRegister() {
               <div className="rounded-md border bg-muted/40 p-3">
                 <p className="flex items-center gap-2 text-sm font-semibold mb-1"><ClipboardList className="h-4 w-4" /> Format</p>
                 <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+            )}
+
+            {!alreadyRegistered && hasTiers && (
+              <div className="rounded-md border p-3 space-y-2">
+                <p className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> Choose your registration option</p>
+                <div className="space-y-2">
+                  {feeTiers.map(t => (
+                    <label key={t.id} className={`flex items-center justify-between gap-3 p-3 rounded-md border cursor-pointer transition ${selectedTierId === t.id ? "border-primary bg-primary/5" : "hover:bg-muted/40"}`}>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="fee_tier"
+                          value={t.id}
+                          checked={selectedTierId === t.id}
+                          onChange={() => setSelectedTierId(t.id)}
+                        />
+                        <span className="font-medium">{t.label}</span>
+                      </div>
+                      <span className="font-semibold">${(t.amount_cents / 100).toFixed(2)}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -192,6 +222,9 @@ export default function LeagueEventRegister() {
                   <div className="text-sm text-emerald-900/90 space-y-1">
                     <div><span className="text-emerald-800/70">Player:</span> <span className="font-medium">{member.member_name}</span></div>
                     <div><span className="text-emerald-800/70">Event:</span> <span className="font-medium">{event.event_name}</span> · {event.event_date}</div>
+                    {registration?.fee_tier_label && (
+                      <div><span className="text-emerald-800/70">Option:</span> <span className="font-medium">{registration.fee_tier_label}</span></div>
+                    )}
                     {payment && (
                       <>
                         <div><span className="text-emerald-800/70">Amount:</span> <span className="font-medium">${((payment.amount_cents || 0) / 100).toFixed(2)}</span></div>
@@ -211,11 +244,12 @@ export default function LeagueEventRegister() {
                 Finalizing your payment… this usually takes a few seconds.
               </div>
             ) : feeDollars > 0 ? (
-
-              <Button className="w-full h-12" onClick={payAndRegister} disabled={submitting}>
+              <Button className="w-full h-12" onClick={payAndRegister} disabled={submitting || (hasTiers && !selectedTierId)}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                Pay ${feeDollars.toFixed(2)} & Register
+                {hasTiers && !selectedTierId ? "Select an option to continue" : `Pay $${feeDollars.toFixed(2)} & Register`}
               </Button>
+            ) : hasTiers ? (
+              <Button className="w-full h-12" disabled>Select an option to continue</Button>
             ) : (
               <Button className="w-full h-12" onClick={registerFree} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

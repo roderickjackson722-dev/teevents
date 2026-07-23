@@ -132,6 +132,22 @@ export default function CreateWorkspace() {
               <Input id="wsname" value={name} onChange={(e) => setName(e.target.value)} placeholder={interest === "league" ? "Weekend Warriors League" : "Acme Charity Classic"} />
             </div>
 
+            {interest === "league" && (
+              <div>
+                <Label htmlFor="promo">Promo code (optional)</Label>
+                <Input
+                  id="promo"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Enter promo code"
+                  className="uppercase"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Applied automatically at checkout. Leave blank if you don't have one.
+                </p>
+              </div>
+            )}
+
             <div className="flex justify-between pt-2">
               <Button variant="ghost" asChild>
                 <Link to="/select-workspace"><ArrowLeft className="h-4 w-4 mr-1" /> Back to workspaces</Link>

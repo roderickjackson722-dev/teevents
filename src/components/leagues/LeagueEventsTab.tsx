@@ -53,6 +53,8 @@ const empty = {
   skins_value_cents: "" as any,
   pass_platform_fee_to_player: false,
   fee_tiers: [] as FeeTier[],
+  start_format: "shotgun",
+  tee_interval_minutes: 10 as any,
 };
 
 function newTierId() {
@@ -106,6 +108,10 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       skins_carryover: !!editing.skins_carryover,
       skins_value_cents: editing.skins_value_cents !== "" ? Math.round(Number(editing.skins_value_cents) * 100) : 0,
       pass_platform_fee_to_player: !!editing.pass_platform_fee_to_player,
+      start_format: editing.start_format === "tee_times" ? "tee_times" : "shotgun",
+      tee_interval_minutes: editing.tee_interval_minutes !== "" && editing.tee_interval_minutes != null
+        ? Math.max(5, Math.min(30, Number(editing.tee_interval_minutes) || 10))
+        : 10,
       recurrence_rule: editing.recurrence_freq
         ? { freq: editing.recurrence_freq, count: editing.recurrence_count ? Number(editing.recurrence_count) : null }
         : null,
@@ -208,6 +214,8 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         skins_mode: e.skins_mode || "gross",
                         skins_carryover: e.skins_carryover !== false,
                         pass_platform_fee_to_player: !!e.pass_platform_fee_to_player,
+                        start_format: e.start_format || "shotgun",
+                        tee_interval_minutes: e.tee_interval_minutes ?? 10,
                         recurrence_freq: e.recurrence_rule?.freq || "",
                         recurrence_count: "",
                         fee_tiers: Array.isArray(e.fee_tiers)
@@ -244,13 +252,33 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Start Time</Label>
+                    <Label>{editing.start_format === "tee_times" ? "First Tee Time" : "Shotgun Start Time"}</Label>
                     <Input type="time" value={editing.start_time} onChange={(e) => setEditing({ ...editing, start_time: e.target.value })} />
                   </div>
                   <div>
                     <Label>Course (display name)</Label>
                     <Input value={editing.course_name} onChange={(e) => setEditing({ ...editing, course_name: e.target.value })} />
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Start Format</Label>
+                    <Select value={editing.start_format || "shotgun"} onValueChange={(v) => setEditing({ ...editing, start_format: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="shotgun">Shotgun Start</SelectItem>
+                        <SelectItem value="tee_times">Tee Times</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {editing.start_format === "tee_times" && (
+                    <div>
+                      <Label>Interval Between Groups (minutes)</Label>
+                      <Input type="number" min={5} max={30} value={editing.tee_interval_minutes ?? 10}
+                        onChange={(e) => setEditing({ ...editing, tee_interval_minutes: e.target.value })} />
+                      <p className="text-xs text-muted-foreground mt-1">Default 10 minutes.</p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label>Course Details (for handicap pops)</Label>

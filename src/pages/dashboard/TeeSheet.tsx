@@ -48,7 +48,7 @@ export default function TeeSheet() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, max_players")
+        .select("id, title, max_players, date, end_date")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -56,6 +56,40 @@ export default function TeeSheet() {
     },
     enabled: !!org,
   });
+
+  const currentTournament = tournaments?.find((t: any) => t.id === selectedTournament) as any;
+  const eventDays = useMemo(() => {
+    if (!currentTournament?.date) return [] as string[];
+    const start = new Date(currentTournament.date + "T00:00:00");
+    const end = currentTournament.end_date ? new Date(currentTournament.end_date + "T00:00:00") : start;
+    const days: string[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      days.push(new Date(d).toISOString().slice(0, 10));
+    }
+    return days.length ? days : [currentTournament.date];
+  }, [currentTournament]);
+
+  const [dayConfigs, setDayConfigs] = useState<Record<string, { start_format: "shotgun" | "tee_times"; first_tee_time: string; interval: number }>>({});
+  const [activeDay, setActiveDay] = useState<string>("");
+
+  // Initialize/sync per-day settings whenever the day list changes
+  useMemo(() => {
+    if (eventDays.length === 0) return;
+    setDayConfigs((prev) => {
+      const next = { ...prev };
+      for (const d of eventDays) {
+        if (!next[d]) next[d] = { start_format: startFormat, first_tee_time: firstTeeTime, interval };
+      }
+      return next;
+    });
+    if (!activeDay || !eventDays.includes(activeDay)) setActiveDay(eventDays[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventDays.join("|")]);
+
+  const activeConfig = dayConfigs[activeDay] || { start_format: startFormat, first_tee_time: firstTeeTime, interval };
+  const setActiveConfig = (patch: Partial<typeof activeConfig>) => {
+    setDayConfigs((prev) => ({ ...prev, [activeDay]: { ...activeConfig, ...patch } }));
+  };
 
   const { data: registrations, isLoading: regLoading } = useQuery({
     queryKey: ["teesheet-registrations", selectedTournament],
@@ -111,9 +145,9 @@ export default function TeeSheet() {
     let groupNum = 1;
     for (let i = 0; i < sorted.length; i += groupSize) {
       const players = sorted.slice(i, i + groupSize);
-      const teeTime = startFormat === "shotgun"
-        ? firstTeeTime
-        : addMinutes(firstTeeTime, (groupNum - 1) * interval);
+      const teeTime = activeConfig.start_format === "shotgun"
+        ? activeConfig.first_tee_time
+        : addMinutes(activeConfig.first_tee_time, (groupNum - 1) * activeConfig.interval);
       const expectedFinish = addMinutes(teeTime, paceMinutes);
 
       groups.push({
@@ -203,13 +237,28 @@ export default function TeeSheet() {
           <Card className="print:hidden">
             <CardHeader>
               <CardTitle>Tee Sheet Settings</CardTitle>
-              <CardDescription>Configure start format, timing, and group size.</CardDescription>
+              <CardDescription>
+                Configure start format, timing, and group size{eventDays.length > 1 ? " — each day is configured independently." : "."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
+              {eventDays.length > 1 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {eventDays.map((d, i) => {
+                    const label = new Date(d + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+                    const isActive = d === activeDay;
+                    return (
+                      <Button key={d} size="sm" variant={isActive ? "default" : "outline"} onClick={() => setActiveDay(d)}>
+                        Day {i + 1} · {label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Start Format</Label>
-                  <Select value={startFormat} onValueChange={(v) => setStartFormat(v as any)}>
+                  <Select value={activeConfig.start_format} onValueChange={(v) => setActiveConfig({ start_format: v as any })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="shotgun">Shotgun Start</SelectItem>
@@ -218,13 +267,14 @@ export default function TeeSheet() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>{startFormat === "shotgun" ? "Start Time" : "First Tee Time"}</Label>
-                  <Input type="time" value={firstTeeTime} onChange={(e) => setFirstTeeTime(e.target.value)} />
+                  <Label>{activeConfig.start_format === "shotgun" ? "Start Time" : "First Tee Time"}</Label>
+                  <Input type="time" value={activeConfig.first_tee_time} onChange={(e) => setActiveConfig({ first_tee_time: e.target.value })} />
                 </div>
-                {startFormat === "tee_times" && (
+                {activeConfig.start_format === "tee_times" && (
                   <div className="space-y-2">
                     <Label>Interval (minutes)</Label>
-                    <Input type="number" min={5} max={30} value={interval} onChange={(e) => setInterval(parseInt(e.target.value) || 10)} />
+                    <Input type="number" min={5} max={30} value={activeConfig.interval} onChange={(e) => setActiveConfig({ interval: parseInt(e.target.value) || 10 })} />
+                    <p className="text-xs text-muted-foreground">Default 10 minutes between groups.</p>
                   </div>
                 )}
                 <div className="space-y-2">
@@ -270,7 +320,7 @@ export default function TeeSheet() {
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" /> Tee Sheet
                     <Badge variant="secondary" className="ml-2">
-                      {startFormat === "shotgun" ? "Shotgun Start" : "Tee Times"}
+                      {activeConfig.start_format === "shotgun" ? "Shotgun Start" : "Tee Times"}
                     </Badge>
                   </CardTitle>
                   <div className="flex gap-2 print:hidden">
@@ -289,7 +339,7 @@ export default function TeeSheet() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-16">
-                          {startFormat === "shotgun" ? "Hole" : "Group"}
+                          {activeConfig.start_format === "shotgun" ? "Hole" : "Group"}
                         </TableHead>
                         <TableHead className="w-24">Tee Time</TableHead>
                         <TableHead className="w-16">Cart #</TableHead>

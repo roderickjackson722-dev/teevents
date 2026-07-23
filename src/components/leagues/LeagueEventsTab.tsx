@@ -109,6 +109,13 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       recurrence_rule: editing.recurrence_freq
         ? { freq: editing.recurrence_freq, count: editing.recurrence_count ? Number(editing.recurrence_count) : null }
         : null,
+      fee_tiers: (editing.fee_tiers || [])
+        .filter((t: FeeTier) => t.label.trim() && t.amount !== "" && !isNaN(Number(t.amount)))
+        .map((t: FeeTier) => ({
+          id: t.id || newTierId(),
+          label: t.label.trim(),
+          amount_cents: Math.round(Number(t.amount) * 100),
+        })),
     };
 
     if (editing.id) {

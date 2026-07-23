@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-type Survey = { id: string; title: string; description: string | null; slug: string; is_active: boolean };
+type Survey = { id: string; title: string; description: string | null; slug: string; is_active: boolean; hero_image_url: string | null };
 type Question = { id: string; question_text: string; question_type: string; display_order: number; is_required: boolean; options: string[] | null };
 
 export default function CollegeSurvey() {

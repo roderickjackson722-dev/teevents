@@ -66,12 +66,25 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://teevents.golf";
 
+    // Look up promotion code (if provided) so it's pre-applied at Stripe Checkout.
+    let discounts: { promotion_code: string }[] | undefined;
+    let promoError: string | null = null;
+    if (promo_code) {
+      const found = await stripe.promotionCodes.list({ code: promo_code, active: true, limit: 1 });
+      if (found.data.length > 0) {
+        discounts = [{ promotion_code: found.data[0].id }];
+      } else {
+        promoError = `Promo code "${promo_code}" is not valid`;
+      }
+    }
+    if (promoError) throw new Error(promoError);
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       customer: customerId,
       customer_email: customerId ? undefined : user.email || undefined,
-      allow_promotion_codes: true,
+      ...(discounts ? { discounts } : { allow_promotion_codes: true }),
       line_items: [
         {
           price_data: {

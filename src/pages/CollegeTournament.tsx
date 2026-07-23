@@ -326,9 +326,9 @@ const CollegeTournament = () => {
               )}
               <div className="flex-1 p-4 flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-xs font-medium uppercase tracking-wider text-primary mb-1">Take Our Survey</div>
+                  <div className="text-xs font-medium uppercase tracking-wider text-primary mb-1">{linkedSurvey.cta_label || "Take Our Survey"}</div>
                   <h3 className="font-display font-bold text-lg">{linkedSurvey.title}</h3>
-                  <p className="text-sm text-muted-foreground">Share your feedback — it only takes a minute.</p>
+                  {linkedSurvey.cta_description && <p className="text-sm text-muted-foreground">{linkedSurvey.cta_description}</p>}
                 </div>
                 <Button size="sm"><FileText className="h-4 w-4 mr-1" /> Open</Button>
               </div>

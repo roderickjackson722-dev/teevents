@@ -208,6 +208,9 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         pass_platform_fee_to_player: !!e.pass_platform_fee_to_player,
                         recurrence_freq: e.recurrence_rule?.freq || "",
                         recurrence_count: "",
+                        fee_tiers: Array.isArray(e.fee_tiers)
+                          ? e.fee_tiers.map((t: any) => ({ id: t.id || newTierId(), label: t.label || "", amount: t.amount_cents != null ? (Number(t.amount_cents) / 100).toString() : "" }))
+                          : [],
                       })}><Pencil className="h-3.5 w-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </TableCell>

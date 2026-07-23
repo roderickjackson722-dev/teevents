@@ -20,6 +20,7 @@ export default function CreateWorkspace() {
   const [userId, setUserId] = useState<string | null>(null);
   const [interest, setInterest] = useState<Interest | null>(preset);
   const [name, setName] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function CreateWorkspace() {
       if (interest === "league") {
         // Send to Stripe checkout for $199/year
         const { data, error } = await (supabase as any).functions.invoke("create-league-subscription", {
-          body: { organization_id: orgId, subscription_type: "flat_fee" },
+          body: { organization_id: orgId, subscription_type: "flat_fee", promo_code: promoCode.trim() || undefined },
         });
         if (error || !data?.url) {
           toast({
@@ -130,6 +131,22 @@ export default function CreateWorkspace() {
               <Label htmlFor="wsname">{interest === "league" ? "League name" : "Organization / tournament name"}</Label>
               <Input id="wsname" value={name} onChange={(e) => setName(e.target.value)} placeholder={interest === "league" ? "Weekend Warriors League" : "Acme Charity Classic"} />
             </div>
+
+            {interest === "league" && (
+              <div>
+                <Label htmlFor="promo">Promo code (optional)</Label>
+                <Input
+                  id="promo"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Enter promo code"
+                  className="uppercase"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Applied automatically at checkout. Leave blank if you don't have one.
+                </p>
+              </div>
+            )}
 
             <div className="flex justify-between pt-2">
               <Button variant="ghost" asChild>

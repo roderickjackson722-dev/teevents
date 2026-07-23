@@ -214,6 +214,8 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         skins_mode: e.skins_mode || "gross",
                         skins_carryover: e.skins_carryover !== false,
                         pass_platform_fee_to_player: !!e.pass_platform_fee_to_player,
+                        start_format: e.start_format || "shotgun",
+                        tee_interval_minutes: e.tee_interval_minutes ?? 10,
                         recurrence_freq: e.recurrence_rule?.freq || "",
                         recurrence_count: "",
                         fee_tiers: Array.isArray(e.fee_tiers)

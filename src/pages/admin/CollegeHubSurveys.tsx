@@ -226,7 +226,17 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
     setSaving(true);
     try {
       let surveyId = survey?.id;
-      const payload = { title: title.trim(), description: description.trim() || null, slug: slugify(slug), is_active: isActive, notify_respondent: notifyRespondent, hero_image_url: heroImageUrl, tournament_id: tournamentId || null };
+      const payload = {
+        title: title.trim(),
+        description: description.trim() || null,
+        slug: slugify(slug),
+        is_active: isActive,
+        notify_respondent: notifyRespondent,
+        hero_image_url: heroImageUrl,
+        tournament_id: tournamentId || null,
+        cta_label: ctaLabel.trim() || null,
+        cta_description: ctaDescription.trim() || null,
+      };
       if (surveyId) {
         const { error } = await (supabase as any).from("college_surveys").update(payload).eq("id", surveyId);
         if (error) throw error;

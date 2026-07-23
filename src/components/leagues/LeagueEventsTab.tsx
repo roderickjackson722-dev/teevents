@@ -33,6 +33,8 @@ const RECURRENCE_OPTIONS = [
   { id: "monthly", label: "Monthly" },
 ];
 
+type FeeTier = { id: string; label: string; amount: string };
+
 const empty = {
   event_name: "",
   event_date: "",
@@ -50,7 +52,12 @@ const empty = {
   skins_carryover: true,
   skins_value_cents: "" as any,
   pass_platform_fee_to_player: false,
+  fee_tiers: [] as FeeTier[],
 };
+
+function newTierId() {
+  return `t_${Math.random().toString(36).slice(2, 9)}`;
+}
 
 function addDays(dateStr: string, days: number) {
   const d = new Date(dateStr + "T00:00:00");
@@ -102,6 +109,13 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       recurrence_rule: editing.recurrence_freq
         ? { freq: editing.recurrence_freq, count: editing.recurrence_count ? Number(editing.recurrence_count) : null }
         : null,
+      fee_tiers: (editing.fee_tiers || [])
+        .filter((t: FeeTier) => t.label.trim() && t.amount !== "" && !isNaN(Number(t.amount)))
+        .map((t: FeeTier) => ({
+          id: t.id || newTierId(),
+          label: t.label.trim(),
+          amount_cents: Math.round(Number(t.amount) * 100),
+        })),
     };
 
     if (editing.id) {
@@ -169,7 +183,9 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     <TableCell>{LEAGUE_FORMATS.find(f => f.id === e.format_type)?.name || e.format_type}</TableCell>
                     <TableCell>{e.course_name || "—"}</TableCell>
                     <TableCell>
-                      {e.registration_fee_cents ? `$${(e.registration_fee_cents / 100).toFixed(2)}` : "Free"}
+                      {Array.isArray(e.fee_tiers) && e.fee_tiers.length > 0
+                        ? `${e.fee_tiers.length} option${e.fee_tiers.length === 1 ? "" : "s"}`
+                        : e.registration_fee_cents ? `$${(e.registration_fee_cents / 100).toFixed(2)}` : "Free"}
                       {e.pass_platform_fee_to_player && <Badge variant="outline" className="ml-2 text-xs">+ fee</Badge>}
                     </TableCell>
                     <TableCell>
@@ -194,6 +210,9 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         pass_platform_fee_to_player: !!e.pass_platform_fee_to_player,
                         recurrence_freq: e.recurrence_rule?.freq || "",
                         recurrence_count: "",
+                        fee_tiers: Array.isArray(e.fee_tiers)
+                          ? e.fee_tiers.map((t: any) => ({ id: t.id || newTierId(), label: t.label || "", amount: t.amount_cents != null ? (Number(t.amount_cents) / 100).toString() : "" }))
+                          : [],
                       })}><Pencil className="h-3.5 w-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </TableCell>
@@ -295,8 +314,9 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Registration Fee ($)</Label>
+                    <Label>Base Registration Fee ($)</Label>
                     <Input type="number" step="0.01" value={editing.registration_fee_cents} onChange={(e) => setEditing({ ...editing, registration_fee_cents: e.target.value })} />
+                    <p className="text-xs text-muted-foreground mt-1">Used when no fee options are defined below.</p>
                   </div>
                   <div className="flex items-end">
                     <div className="flex items-center gap-2">
@@ -306,6 +326,55 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     </div>
                   </div>
                 </div>
+
+                <div className="rounded-md border p-3 space-y-3 bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="font-semibold">Registration Fee Options</Label>
+                      <p className="text-xs text-muted-foreground">Offer multiple choices — e.g. Walking, Riding, Guest. Players pick one at checkout.</p>
+                    </div>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setEditing({
+                      ...editing,
+                      fee_tiers: [...(editing.fee_tiers || []), { id: newTierId(), label: "", amount: "" }],
+                    })}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Add option
+                    </Button>
+                  </div>
+                  {(editing.fee_tiers || []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No fee options — the base fee above will apply to everyone.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(editing.fee_tiers as FeeTier[]).map((t, idx) => (
+                        <div key={t.id} className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <Label className="text-xs">Label</Label>
+                            <Input placeholder="e.g. Walking" value={t.label}
+                              onChange={(e) => {
+                                const next = [...editing.fee_tiers];
+                                next[idx] = { ...t, label: e.target.value };
+                                setEditing({ ...editing, fee_tiers: next });
+                              }} />
+                          </div>
+                          <div className="w-32">
+                            <Label className="text-xs">Price ($)</Label>
+                            <Input type="number" step="0.01" placeholder="0.00" value={t.amount}
+                              onChange={(e) => {
+                                const next = [...editing.fee_tiers];
+                                next[idx] = { ...t, amount: e.target.value };
+                                setEditing({ ...editing, fee_tiers: next });
+                              }} />
+                          </div>
+                          <Button type="button" size="icon" variant="ghost" onClick={() => {
+                            const next = [...editing.fee_tiers];
+                            next.splice(idx, 1);
+                            setEditing({ ...editing, fee_tiers: next });
+                          }}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
 
                 <div className="rounded-md border p-3 space-y-3 bg-yellow-50 dark:bg-yellow-950/20">
                   <div className="flex items-center justify-between">

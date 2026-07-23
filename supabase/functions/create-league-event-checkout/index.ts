@@ -18,7 +18,7 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { event_id, member_id, scoring_code, return_url } = await req.json();
+    const { event_id, member_id, scoring_code, return_url, fee_tier_id } = await req.json();
     if (!event_id || !member_id || !scoring_code) throw new Error("Missing event_id, member_id, or scoring_code");
 
     const supabaseAdmin = createClient(
@@ -38,12 +38,25 @@ Deno.serve(async (req) => {
 
     const { data: event } = await supabaseAdmin
       .from("league_events")
-      .select("id, event_name, event_date, league_id, registration_fee_cents, pass_platform_fee_to_player")
+      .select("id, event_name, event_date, league_id, registration_fee_cents, pass_platform_fee_to_player, fee_tiers")
       .eq("id", event_id)
       .single();
     if (!event) throw new Error("Event not found");
     if (event.league_id !== member.league_id) throw new Error("Event does not belong to this league");
-    const amountCents = Number((event as any).registration_fee_cents || 0);
+
+    // Resolve fee amount — from selected tier if the event has tiers, else fall back to base fee.
+    const tiers: Array<{ id: string; label: string; amount_cents: number }> = Array.isArray((event as any).fee_tiers) ? (event as any).fee_tiers : [];
+    let amountCents = Number((event as any).registration_fee_cents || 0);
+    let tierLabel: string | null = null;
+    let tierId: string | null = null;
+    if (tiers.length > 0) {
+      if (!fee_tier_id) throw new Error("Please select a registration option");
+      const tier = tiers.find(t => t.id === fee_tier_id);
+      if (!tier) throw new Error("Selected registration option is no longer available");
+      amountCents = Number(tier.amount_cents || 0);
+      tierLabel = tier.label;
+      tierId = tier.id;
+    }
     if (!amountCents || amountCents < 100) throw new Error("Event fee not set");
 
     const { data: league } = await supabaseAdmin
@@ -65,11 +78,27 @@ Deno.serve(async (req) => {
     if (!regId) {
       const { data: newReg, error: rErr } = await supabaseAdmin
         .from("league_event_registrations")
-        .insert({ event_id: event.id, member_id: member.id, fee_paid: false })
+        .insert({
+          event_id: event.id,
+          member_id: member.id,
+          fee_paid: false,
+          fee_tier_id: tierId,
+          fee_tier_label: tierLabel,
+          fee_tier_amount_cents: tiers.length > 0 ? amountCents : null,
+        })
         .select("id")
         .single();
       if (rErr) throw rErr;
       regId = newReg.id;
+    } else {
+      await supabaseAdmin
+        .from("league_event_registrations")
+        .update({
+          fee_tier_id: tierId,
+          fee_tier_label: tierLabel,
+          fee_tier_amount_cents: tiers.length > 0 ? amountCents : null,
+        })
+        .eq("id", regId);
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });

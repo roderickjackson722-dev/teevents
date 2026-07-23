@@ -18,15 +18,25 @@ export default function CreateWorkspace() {
   const preset = (params.get("type") as Interest) || null;
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
   const [interest, setInterest] = useState<Interest | null>(preset);
   const [name, setName] = useState("");
   const [promoCode, setPromoCode] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/get-started?mode=signin"); return; }
       setUserId(session.user.id);
+      const email = session.user.email || "";
+      setUserEmail(email);
+      setContactEmail((prev) => prev || email);
+      const meta: any = session.user.user_metadata || {};
+      setContactName((prev) => prev || meta.full_name || meta.name || "");
+      setContactPhone((prev) => prev || meta.phone || "");
     });
     // Prefill from pending workspace from signup
     try {

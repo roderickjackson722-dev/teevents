@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-type Survey = { id: string; title: string; description: string | null; slug: string; is_active: boolean };
+type Survey = { id: string; title: string; description: string | null; slug: string; is_active: boolean; hero_image_url: string | null };
 type Question = { id: string; question_text: string; question_type: string; display_order: number; is_required: boolean; options: string[] | null };
 
 export default function CollegeSurvey() {
@@ -25,7 +25,7 @@ export default function CollegeSurvey() {
   useEffect(() => {
     (async () => {
       if (!slug) return;
-      const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active").eq("slug", slug).eq("is_active", true).maybeSingle();
+      const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active, hero_image_url").eq("slug", slug).eq("is_active", true).maybeSingle();
       if (s) {
         const { data: qs } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", s.id).order("display_order");
         setSurvey(s);
@@ -87,7 +87,10 @@ export default function CollegeSurvey() {
   return (
     <div className="min-h-screen bg-muted/30 py-10 px-4">
       <div className="max-w-2xl mx-auto">
-        <Card>
+        <Card className="overflow-hidden">
+          {survey.hero_image_url && (
+            <img src={survey.hero_image_url} alt={survey.title} className="w-full max-h-64 object-cover" />
+          )}
           <CardHeader>
             <CardTitle className="text-2xl">{survey.title}</CardTitle>
             {survey.description && <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-2">{survey.description}</p>}

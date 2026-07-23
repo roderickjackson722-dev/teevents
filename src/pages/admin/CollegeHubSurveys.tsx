@@ -18,7 +18,10 @@ type Survey = {
   is_active: boolean;
   notify_respondent: boolean;
   created_at: string;
+  hero_image_url: string | null;
+  tournament_id: string | null;
 };
+type CollegeTournament = { id: string; title: string };
 type Question = {
   id: string;
   survey_id: string;
@@ -150,26 +153,51 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const [slug, setSlug] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [notifyRespondent, setNotifyRespondent] = useState(false);
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [tournamentId, setTournamentId] = useState<string | "">("");
+  const [tournaments, setTournaments] = useState<CollegeTournament[]>([]);
   const [questions, setQuestions] = useState<(Question | (Omit<Question, "id" | "survey_id"> & { id?: string }))[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
+      const { data: ts } = await (supabase as any).from("college_tournaments").select("id, title").order("created_at", { ascending: false });
+      setTournaments(ts || []);
       if (survey) {
         setTitle(survey.title);
         setDescription(survey.description || "");
         setSlug(survey.slug);
         setIsActive(survey.is_active);
         setNotifyRespondent(survey.notify_respondent);
+        setHeroImageUrl(survey.hero_image_url || null);
+        setTournamentId(survey.tournament_id || "");
         const { data } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", survey.id).order("display_order");
         setQuestions(data || []);
       } else {
         setTitle(""); setDescription(""); setSlug(""); setIsActive(true); setNotifyRespondent(false);
+        setHeroImageUrl(null); setTournamentId("");
         setQuestions(DEFAULT_QUESTIONS.map((q) => ({ ...q })));
       }
     })();
   }, [open, survey]);
+
+  const uploadHero = async (file: File) => {
+    setUploadingHero(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `college-surveys/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      setHeroImageUrl(data.publicUrl);
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingHero(false);
+    }
+  };
 
   useEffect(() => {
     if (!survey && title && !slug) setSlug(slugify(title));
@@ -192,7 +220,7 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
     setSaving(true);
     try {
       let surveyId = survey?.id;
-      const payload = { title: title.trim(), description: description.trim() || null, slug: slugify(slug), is_active: isActive, notify_respondent: notifyRespondent };
+      const payload = { title: title.trim(), description: description.trim() || null, slug: slugify(slug), is_active: isActive, notify_respondent: notifyRespondent, hero_image_url: heroImageUrl, tournament_id: tournamentId || null };
       if (surveyId) {
         const { error } = await (supabase as any).from("college_surveys").update(payload).eq("id", surveyId);
         if (error) throw error;
@@ -241,6 +269,27 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
               <span className="text-sm text-muted-foreground">/s/</span>
               <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="student-survey-2026" />
             </div>
+          </div>
+          <div>
+            <Label>Hero Image (optional)</Label>
+            {heroImageUrl && (
+              <div className="mb-2 relative inline-block">
+                <img src={heroImageUrl} alt="Survey hero" className="max-h-40 rounded border" />
+                <Button size="sm" variant="ghost" className="absolute top-1 right-1 h-6 text-destructive bg-background/80" onClick={() => setHeroImageUrl(null)}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            )}
+            <Input type="file" accept="image/*" disabled={uploadingHero} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); }} />
+            {uploadingHero && <p className="text-xs text-muted-foreground mt-1">Uploading…</p>}
+          </div>
+          <div>
+            <Label>Connect to College Hub Tournament (optional)</Label>
+            <select className="w-full border rounded px-2 py-2 bg-background text-sm" value={tournamentId} onChange={(e) => setTournamentId(e.target.value)}>
+              <option value="">— Not connected —</option>
+              {tournaments.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">When connected, this survey will appear on the tournament's College Hub page.</p>
           </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm"><Switch checked={isActive} onCheckedChange={setIsActive} /> Active</label>

@@ -74,6 +74,7 @@ const CollegeTournament = () => {
   const [tabs, setTabs] = useState<TournamentTab[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("info");
+  const [linkedSurvey, setLinkedSurvey] = useState<{ slug: string; title: string; hero_image_url: string | null } | null>(null);
 
   // RSVP state
   const rsvpToken = searchParams.get("rsvp");
@@ -118,6 +119,15 @@ const CollegeTournament = () => {
       if (t.overview_visible === false && (tabData || []).length > 0) {
         setActiveTab(tabData[0].id);
       }
+
+      // Fetch linked survey (if any)
+      const { data: sv } = await (supabase as any)
+        .from("college_surveys")
+        .select("slug, title, hero_image_url")
+        .eq("tournament_id", t.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      setLinkedSurvey(sv || null);
 
       // Check RSVP token
       if (rsvpToken) {
@@ -307,6 +317,25 @@ const CollegeTournament = () => {
       </div>
 
       <div className="container mx-auto px-4 max-w-4xl py-8">
+        {/* Linked Survey */}
+        {linkedSurvey && (
+          <a href={`/s/${linkedSurvey.slug}`} className="block mb-8 rounded-lg border border-primary/30 bg-primary/5 overflow-hidden hover:border-primary transition-colors">
+            <div className="flex flex-col sm:flex-row items-stretch">
+              {linkedSurvey.hero_image_url && (
+                <img src={linkedSurvey.hero_image_url} alt={linkedSurvey.title} className="w-full sm:w-48 h-32 sm:h-auto object-cover" />
+              )}
+              <div className="flex-1 p-4 flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs font-medium uppercase tracking-wider text-primary mb-1">Take Our Survey</div>
+                  <h3 className="font-display font-bold text-lg">{linkedSurvey.title}</h3>
+                  <p className="text-sm text-muted-foreground">Share your feedback — it only takes a minute.</p>
+                </div>
+                <Button size="sm"><FileText className="h-4 w-4 mr-1" /> Open</Button>
+              </div>
+            </div>
+          </a>
+        )}
+
         {/* RSVP Banner */}
         {invitation && !rsvpDone && (
           <div className="bg-secondary/10 border border-secondary/30 rounded-lg p-6 mb-8 text-center">

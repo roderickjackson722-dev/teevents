@@ -18,6 +18,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const organization_id = body.organization_id;
     const promo_code = typeof body.promo_code === "string" ? body.promo_code.trim() : "";
+    const contact_name = typeof body.contact_name === "string" ? body.contact_name.trim() : "";
+    const contact_email = typeof body.contact_email === "string" ? body.contact_email.trim() : "";
+    const contact_phone = typeof body.contact_phone === "string" ? body.contact_phone.trim() : "";
+    const league_name = typeof body.league_name === "string" ? body.league_name.trim() : "";
     if (!organization_id) throw new Error("organization_id required");
 
     const supabaseAdmin = createClient(
@@ -99,8 +103,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/dashboard/leagues?league_sub=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/golf-leagues`,
+      success_url: `${origin}/select-workspace?league_sub=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/select-workspace`,
       subscription_data: {
         metadata: {
           kind: "league_subscription",

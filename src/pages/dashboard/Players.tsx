@@ -588,12 +588,38 @@ const Players = () => {
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
   const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
   const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
-  const [holeTeeTimes, setHoleTeeTimes] = useState<Record<number, string>>({});
-  const [startFormat, setStartFormat] = useState<"tee_times" | "shotgun">("tee_times");
-  const [firstTeeHole, setFirstTeeHole] = useState<number>(1);
-  const [firstTeeTime, setFirstTeeTime] = useState<string>("08:00");
-  const [teeInterval, setTeeInterval] = useState<number>(10);
-  const [shotgunTime, setShotgunTime] = useState<string>("09:00");
+
+  // ---- Multi-day tournament awareness ----
+  const currentTournamentObj: any = tournaments.find((t: any) => t.id === selectedTournament);
+  const tournamentDays: string[] = useMemo(() => {
+    const t: any = currentTournamentObj;
+    if (!t?.date) return [];
+    const start = new Date(String(t.date) + "T00:00:00");
+    const end = t.end_date ? new Date(String(t.end_date) + "T00:00:00") : start;
+    const days: string[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      days.push(new Date(d).toISOString().slice(0, 10));
+    }
+    return days.length ? days : [];
+  }, [currentTournamentObj?.date, currentTournamentObj?.end_date]);
+  const numDays = Math.max(1, tournamentDays.length);
+  const [activeDay, setActiveDay] = useState<number>(0);
+  useEffect(() => { if (activeDay >= numDays) setActiveDay(0); }, [numDays, activeDay]);
+
+  type DayCfg = { startFormat: "tee_times" | "shotgun"; firstTeeHole: number; firstTeeTime: string; teeInterval: number; shotgunTime: string };
+  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00" });
+
+  const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
+  const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
+
+  const holeTeeTimes: Record<number, string> = holeTeeTimesByDay[activeDay] || {};
+  const dayCfg: DayCfg = startFormatByDay[activeDay] || defaultDayCfg();
+  const startFormat = dayCfg.startFormat;
+  const firstTeeHole = dayCfg.firstTeeHole;
+  const firstTeeTime = dayCfg.firstTeeTime;
+  const teeInterval = dayCfg.teeInterval;
+  const shotgunTime = dayCfg.shotgunTime;
+
   useEffect(() => {
     if (!locStorageKey) return;
     try {
@@ -608,22 +634,31 @@ const Players = () => {
       const raw = localStorage.getItem(notesStorageKey);
       setHoleNotes(raw ? JSON.parse(raw) : {});
     } catch { setHoleNotes({}); }
+    // Tee times — support legacy flat shape and new per-day shape
     try {
-      const raw = localStorage.getItem(teeTimesStorageKey);
-      setHoleTeeTimes(raw ? JSON.parse(raw) : {});
-    } catch { setHoleTeeTimes({}); }
+      const raw = teeTimesStorageKey ? localStorage.getItem(teeTimesStorageKey) : null;
+      const parsed = raw ? JSON.parse(raw) : {};
+      const isNested = parsed && typeof parsed === "object" && Object.values(parsed).every((v: any) => v && typeof v === "object" && !Array.isArray(v));
+      setHoleTeeTimesByDay(isNested ? parsed : (Object.keys(parsed || {}).length ? { 0: parsed } : {}));
+    } catch { setHoleTeeTimesByDay({}); }
+    // Start format cfg — support legacy flat cfg and new per-day cfg
     try {
       const raw = startFormatStorageKey ? localStorage.getItem(startFormatStorageKey) : null;
-      if (raw) {
-        const cfg = JSON.parse(raw);
-        if (cfg.startFormat) setStartFormat(cfg.startFormat);
-        if (cfg.firstTeeHole) setFirstTeeHole(cfg.firstTeeHole);
-        if (cfg.firstTeeTime) setFirstTeeTime(cfg.firstTeeTime);
-        if (cfg.teeInterval) setTeeInterval(cfg.teeInterval);
-        if (cfg.shotgunTime) setShotgunTime(cfg.shotgunTime);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed && typeof parsed === "object") {
+        if (parsed.byDay && typeof parsed.byDay === "object") {
+          setStartFormatByDay(parsed.byDay);
+        } else if (parsed.startFormat) {
+          setStartFormatByDay({ 0: { ...defaultDayCfg(), ...parsed } });
+        } else {
+          setStartFormatByDay({ 0: defaultDayCfg() });
+        }
+      } else {
+        setStartFormatByDay({ 0: defaultDayCfg() });
       }
-    } catch { /* noop */ }
+    } catch { setStartFormatByDay({ 0: defaultDayCfg() }); }
   }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey, startFormatStorageKey]);
+
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
@@ -643,16 +678,10 @@ const Players = () => {
     saveNotes(next);
     setEditingNotesNum(null);
   };
-  const saveTeeTimes = (next: Record<number, string>) => {
-    setHoleTeeTimes(next);
-    try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(next)); } catch { /* noop */ }
-  };
-  const saveHoleTeeTime = (num: number, value: string) => {
-    const next = { ...holeTeeTimes };
-    const v = value.trim();
-    if (v) next[num] = v; else delete next[num];
-    saveTeeTimes(next);
-    setEditingTeeTimeNum(null);
+  const saveTeeTimes = (nextForDay: Record<number, string>) => {
+    const nextAll = { ...holeTeeTimesByDay, [activeDay]: nextForDay };
+    setHoleTeeTimesByDay(nextAll);
+    try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(nextAll)); } catch { /* noop */ }
   };
   const fmtTee12 = (t?: string) => {
     if (!t) return "";
@@ -664,11 +693,36 @@ const Players = () => {
     h = h % 12 || 12;
     return `${h}:${mm} ${ap}`;
   };
+  const saveHoleTeeTime = (num: number, value: string) => {
+    const next = { ...holeTeeTimes };
+    const v = value.trim();
+    if (v) {
+      // Prevent duplicate tee times within the same day (for tee_times format)
+      if (dayCfg.startFormat === "tee_times") {
+        const conflict = Object.entries(holeTeeTimes).find(([h, t]) => Number(h) !== num && t === v);
+        if (conflict) {
+          toast({
+            title: "Duplicate tee time",
+            description: `Hole ${conflict[0]} is already at ${fmtTee12(v)} on ${tournamentDays[activeDay] || "this day"}. Choose a different time.`,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      next[num] = v;
+    } else {
+      delete next[num];
+    }
+    saveTeeTimes(next);
+    setEditingTeeTimeNum(null);
+  };
 
-  const persistStartFormat = (patch: Partial<{ startFormat: "tee_times" | "shotgun"; firstTeeHole: number; firstTeeTime: string; teeInterval: number; shotgunTime: string }>) => {
+  const persistStartFormat = (patch: Partial<DayCfg>) => {
+    const nextDay: DayCfg = { ...dayCfg, ...patch };
+    const nextAll = { ...startFormatByDay, [activeDay]: nextDay };
+    setStartFormatByDay(nextAll);
     if (!startFormatStorageKey) return;
-    const cfg = { startFormat, firstTeeHole, firstTeeTime, teeInterval, shotgunTime, ...patch };
-    try { localStorage.setItem(startFormatStorageKey, JSON.stringify(cfg)); } catch { /* noop */ }
+    try { localStorage.setItem(startFormatStorageKey, JSON.stringify({ byDay: nextAll })); } catch { /* noop */ }
   };
 
   const addMinutes = (hhmm: string, mins: number) => {
@@ -689,19 +743,41 @@ const Players = () => {
       toast({ title: "No holes to assign", variant: "destructive" });
       return;
     }
+    const dayLabel = tournamentDays[activeDay] || "Day 1";
     const next: Record<number, string> = {};
     if (startFormat === "shotgun") {
+      if (!/^\d{1,2}:\d{2}/.test(shotgunTime)) {
+        toast({ title: "Enter a valid shotgun time", variant: "destructive" });
+        return;
+      }
       groupNums.forEach(n => { next[n] = shotgunTime; });
       saveTeeTimes(next);
-      toast({ title: "Shotgun time applied", description: `All ${groupNums.length} holes set to ${fmtTee12(shotgunTime)}.` });
+      toast({ title: "Shotgun time applied", description: `All ${groupNums.length} holes on ${dayLabel} set to ${fmtTee12(shotgunTime)}.` });
     } else {
+      if (!Number.isFinite(teeInterval) || teeInterval < 1) {
+        toast({ title: "Invalid interval", description: "Interval must be at least 1 minute to avoid duplicate tee times.", variant: "destructive" });
+        return;
+      }
       // Reorder so firstTeeHole comes first (e.g., 10, 11, ...18, 1, 2, ...9)
       const first = groupNums.filter(n => n >= firstTeeHole);
       const rest = groupNums.filter(n => n < firstTeeHole);
       const ordered = [...first, ...rest];
       ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
+      // Guard: ensure no two holes ended up with the same computed time
+      const seen = new Map<string, number>();
+      for (const [holeStr, t] of Object.entries(next)) {
+        if (seen.has(t)) {
+          toast({
+            title: "Duplicate tee times detected",
+            description: `Holes ${seen.get(t)} and ${holeStr} would both start at ${fmtTee12(t)}. Increase the interval or reduce holes.`,
+            variant: "destructive",
+          });
+          return;
+        }
+        seen.set(t, Number(holeStr));
+      }
       saveTeeTimes(next);
-      toast({ title: "Tee times applied", description: `${ordered.length} holes starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });
+      toast({ title: "Tee times applied", description: `${ordered.length} holes on ${dayLabel} starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });
     }
   };
 

@@ -55,11 +55,19 @@ const UpgradeToProBanner = ({ tournamentId, tournamentTitle, variant = "banner" 
           </div>
           <div className="flex-1">
             <h3 className="text-base md:text-lg font-display font-bold text-foreground">
-              Unlock live leaderboard, sponsor portal, auction & raffle, and automatic Stripe payouts.
+              Unlock the full Add-on bundle for this tournament.
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Upgrade <span className="font-semibold">{tournamentTitle || "this tournament"}</span> to Pro for a one-time <span className="font-semibold">$399</span>. No subscription.
+              Upgrade <span className="font-semibold">{tournamentTitle || "this tournament"}</span> for a one-time <span className="font-semibold">$399</span> and unlock every add-on. No subscription.
             </p>
+            <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1 mt-3 text-sm text-foreground/90">
+              <li>• Custom Domain <span className="text-muted-foreground">($99)</span></li>
+              <li>• Unlimited Manual Entries <span className="text-muted-foreground">($149)</span></li>
+              <li>• Auction & Raffle <span className="text-muted-foreground">($149)</span></li>
+              <li>• SMS & Email Blasts <span className="text-muted-foreground">($99)</span></li>
+              <li>• Priority Support <span className="text-muted-foreground">($99)</span></li>
+            </ul>
+            <p className="text-xs text-muted-foreground mt-2">Bundle saves $196 vs. buying individually ($595 total).</p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 md:flex-shrink-0">

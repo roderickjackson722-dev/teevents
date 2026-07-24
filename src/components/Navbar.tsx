@@ -46,9 +46,9 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-golf-green-dark/95 backdrop-blur-sm border-b border-primary/20">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-3">
-          <img src={logoWhite} alt="TeeVents Golf" className="h-10 w-10 object-contain" />
-          <span className="font-display text-xl font-semibold text-primary-foreground tracking-wide">TeeVents</span>
+        <Link to="/" className="flex items-center gap-3 flex-shrink-0">
+          <img src={logoWhite} alt="TeeVents Golf" className="h-10 w-10 object-contain flex-shrink-0" />
+          <span className="font-display text-xl font-semibold text-primary-foreground tracking-wide whitespace-nowrap">TeeVents</span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-6 xl:gap-8">

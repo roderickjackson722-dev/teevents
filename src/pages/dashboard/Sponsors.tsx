@@ -562,10 +562,15 @@ const Sponsors = () => {
     ]);
     setSponsors((data as Sponsor[]) || []);
     const rlist = (regs as any[]) || [];
-    const pledged = rlist.reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    // Pledged = every sponsor registration entered (any status except refunded/cancelled/failed)
+    const pledged = rlist
+      .filter((r) => !["refunded", "cancelled", "failed"].includes(String(r.payment_status || "").toLowerCase()))
+      .reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    // Collected = only registrations actually marked paid — matches what Finances / platform_transactions record.
+    // (manually_approved alone does NOT count as collected; the organizer must mark it paid.)
     const collected =
       rlist
-        .filter((r) => r.payment_status === "paid" || r.manually_approved === true)
+        .filter((r) => String(r.payment_status || "").toLowerCase() === "paid")
         .reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
     setRegStats({ count: rlist.length, pledged, collected });
     setLoading(false);
@@ -752,21 +757,21 @@ const Sponsors = () => {
             <span className="text-sm text-muted-foreground">Total Sponsors</span>
             <Award className="h-5 w-5 text-secondary" />
           </div>
-          <p className="text-2xl font-display font-bold text-foreground">{Math.max(sponsors.length, regStats.count)}</p>
+          <p className="text-2xl font-display font-bold text-foreground">{regStats.count}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="bg-card rounded-lg border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-muted-foreground">Total Pledged</span>
             <DollarSign className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-2xl font-display font-bold text-primary">{fmt(totalPledged + regStats.pledged)}</p>
+          <p className="text-2xl font-display font-bold text-primary">{fmt(regStats.pledged)}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} className="bg-card rounded-lg border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-muted-foreground">Collected</span>
             <DollarSign className="h-5 w-5 text-secondary" />
           </div>
-          <p className="text-2xl font-display font-bold text-secondary">{fmt(totalPaid + regStats.collected)}</p>
+          <p className="text-2xl font-display font-bold text-secondary">{fmt(regStats.collected)}</p>
         </motion.div>
       </div>
 

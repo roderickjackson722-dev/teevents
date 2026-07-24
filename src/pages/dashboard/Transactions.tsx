@@ -250,6 +250,24 @@ const Transactions = () => {
 
   const tournamentTitle = (id: string | null) => tournaments.find(t => t.id === id)?.title || "—";
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const handleDeleteTransaction = async (tx: Tx) => {
+    setDeletingId(tx.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-organizer-transaction", {
+        body: { transaction_id: tx.id },
+      });
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || error?.message || "Failed to delete transaction");
+        return;
+      }
+      toast.success("Transaction deleted");
+      await fetchAll();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const fieldsForTournament = (tournId: string) =>
     customFields.filter(f => f.tournament_id === tournId);
 

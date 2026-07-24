@@ -584,10 +584,16 @@ const Players = () => {
   const labelsStorageKey = selectedTournament ? `teevents_hole_labels_${selectedTournament}` : "";
   const notesStorageKey = selectedTournament ? `teevents_hole_notes_${selectedTournament}` : "";
   const teeTimesStorageKey = selectedTournament ? `teevents_hole_teetimes_${selectedTournament}` : "";
+  const startFormatStorageKey = selectedTournament ? `teevents_pairings_startformat_${selectedTournament}` : "";
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
   const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
   const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
   const [holeTeeTimes, setHoleTeeTimes] = useState<Record<number, string>>({});
+  const [startFormat, setStartFormat] = useState<"tee_times" | "shotgun">("tee_times");
+  const [firstTeeHole, setFirstTeeHole] = useState<number>(1);
+  const [firstTeeTime, setFirstTeeTime] = useState<string>("08:00");
+  const [teeInterval, setTeeInterval] = useState<number>(10);
+  const [shotgunTime, setShotgunTime] = useState<string>("09:00");
   useEffect(() => {
     if (!locStorageKey) return;
     try {

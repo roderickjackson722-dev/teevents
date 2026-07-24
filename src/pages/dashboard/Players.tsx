@@ -1602,6 +1602,32 @@ const Players = () => {
                             <span className="truncate">{holeNotes[group.number] || "Add note"}</span>
                           </button>
                         )}
+                        {editingTeeTimeNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="time"
+                              className="h-7 w-32 text-xs"
+                              value={editTeeTimeValue}
+                              onChange={(e) => setEditTeeTimeValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleTeeTime(group.number, editTeeTimeValue);
+                                if (e.key === "Escape") setEditingTeeTimeNum(null);
+                              }}
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleTeeTime(group.number, editTeeTimeValue)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                            onClick={() => { setEditingTeeTimeNum(group.number); setEditTeeTimeValue(holeTeeTimes[group.number] || ""); }}
+                            title="Set tee time"
+                          >
+                            🕒 {holeTeeTimes[group.number] ? fmtTee12(holeTeeTimes[group.number]) : "Add tee time"}
+                          </button>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1">

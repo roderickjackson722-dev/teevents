@@ -97,7 +97,7 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "code" | "payment" | "tier";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
@@ -106,9 +106,24 @@ const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "tier", label: "Division / Tier" },
   { key: "shirt", label: "Shirt" },
   { key: "hole", label: "Hole" },
+  { key: "teetime", label: "Tee Time" },
   { key: "code", label: "Scoring Code" },
   { key: "payment", label: "Payment" },
 ];
+
+// Reserved custom_answers ids for organizer-entered demographic fields
+const RESERVED_AGE = "_age";
+const RESERVED_CITY = "_city";
+const RESERVED_STATE = "_state";
+const readReserved = (
+  p: { custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null },
+  id: string,
+) => {
+  const m = (p.custom_answers || []).find((a) => a.field_id === id);
+  const v = m?.answer;
+  if (v === null || v === undefined) return "";
+  return String(v);
+};
 
 const Players = () => {
   const { org } = useOrgContext();
@@ -131,6 +146,10 @@ const Players = () => {
     shirt_size: "",
     payment_status: "paid",
     payment_method: "online",
+    age: "",
+    city: "",
+    state: "",
+    tier_id: "",
   });
   const [emptyGroups, setEmptyGroups] = useState<number[]>([]);
   const FIELD_DEFS = [
@@ -138,18 +157,22 @@ const Players = () => {
     { key: "handicap", label: "Handicap" },
     { key: "shirt_size", label: "Shirt Size" },
     { key: "payment_status", label: "Payment Status" },
+    { key: "age", label: "Age" },
+    { key: "city_state", label: "City / State" },
+    { key: "division", label: "Division / Tier" },
   ] as const;
   type FieldKey = typeof FIELD_DEFS[number]["key"];
   const fieldsStorageKey = selectedTournament ? `teevents_add_player_fields_${selectedTournament}` : "";
   const [visibleFields, setVisibleFields] = useState<Record<FieldKey, boolean>>({
     phone: true, handicap: true, shirt_size: true, payment_status: true,
+    age: false, city_state: false, division: false,
   });
   useEffect(() => {
     if (!fieldsStorageKey) return;
     try {
       const raw = localStorage.getItem(fieldsStorageKey);
       if (raw) setVisibleFields((prev) => ({ ...prev, ...JSON.parse(raw) }));
-      else setVisibleFields({ phone: true, handicap: true, shirt_size: true, payment_status: true });
+      else setVisibleFields({ phone: true, handicap: true, shirt_size: true, payment_status: true, age: false, city_state: false, division: false });
     } catch { /* noop */ }
   }, [fieldsStorageKey]);
   const toggleField = (k: FieldKey) => {
@@ -167,6 +190,7 @@ const Players = () => {
   const [editForm, setEditForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
     handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "", group_label: "",
+    age: "", city: "", state: "", tier_id: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
   const [regFeeCents, setRegFeeCents] = useState(0);
@@ -273,6 +297,10 @@ const Players = () => {
       case "tier": return tierName(p.tier_id).toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
       case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
+      case "teetime": {
+        const t = p.group_number != null ? holeTeeTimes[p.group_number] : "";
+        return t || "\uFFFF"; // empty sorts last
+      }
       case "code": return (p.scoring_code || "").toLowerCase();
       case "payment": return (p.payment_status || "").toLowerCase();
       default:
@@ -325,6 +353,10 @@ const Players = () => {
       dietary_restrictions: p.dietary_restrictions || "",
       group_number: p.group_number !== null && p.group_number !== undefined ? String(p.group_number) : "",
       group_label: label,
+      age: readReserved(p, RESERVED_AGE),
+      city: readReserved(p, RESERVED_CITY),
+      state: readReserved(p, RESERVED_STATE),
+      tier_id: p.tier_id || "",
     });
   };
 
@@ -349,7 +381,18 @@ const Players = () => {
       dietary_restrictions: editForm.dietary_restrictions.trim() || null,
       group_number: parsedGroupNumber,
       group_label: labelRaw || null,
+      tier_id: editForm.tier_id || null,
     };
+    // Merge reserved demographic answers into custom_answers, preserving other entries
+    const existing = (editingPlayer.custom_answers || []).filter(
+      (a: any) => a && a.field_id !== RESERVED_AGE && a.field_id !== RESERVED_CITY && a.field_id !== RESERVED_STATE,
+    );
+    const merged = [...existing];
+    if (editForm.age.trim()) merged.push({ field_id: RESERVED_AGE, label: "Age", field_type: "number", answer: editForm.age.trim() });
+    if (editForm.city.trim()) merged.push({ field_id: RESERVED_CITY, label: "City", field_type: "text", answer: editForm.city.trim() });
+    if (editForm.state.trim()) merged.push({ field_id: RESERVED_STATE, label: "State", field_type: "text", answer: editForm.state.trim() });
+    updates.custom_answers = merged;
+
     const { error } = await supabase
       .from("tournament_registrations")
       .update(updates)
@@ -418,6 +461,10 @@ const Players = () => {
     if (!proceed) return;
     setAddingPlayer(true);
     const isCash = newPlayer.payment_method === "cash" || newPlayer.payment_method === "check";
+    const extraAnswers: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> = [];
+    if (newPlayer.age.trim()) extraAnswers.push({ field_id: RESERVED_AGE, label: "Age", field_type: "number", answer: newPlayer.age.trim() });
+    if (newPlayer.city.trim()) extraAnswers.push({ field_id: RESERVED_CITY, label: "City", field_type: "text", answer: newPlayer.city.trim() });
+    if (newPlayer.state.trim()) extraAnswers.push({ field_id: RESERVED_STATE, label: "State", field_type: "text", answer: newPlayer.state.trim() });
     const insertPayload: any = {
       tournament_id: selectedTournament,
       first_name: newPlayer.first_name.trim(),
@@ -426,11 +473,13 @@ const Players = () => {
       phone: newPlayer.phone.trim() || null,
       handicap: newPlayer.handicap ? parseInt(newPlayer.handicap) : null,
       shirt_size: newPlayer.shirt_size || null,
+      tier_id: newPlayer.tier_id || null,
       payment_method: newPlayer.payment_method || "online",
       payment_status: isCash
         ? (newPlayer.payment_status === "paid" ? "paid" : "pending")
         : newPlayer.payment_status,
       cash_payment_received: isCash && newPlayer.payment_status === "paid",
+      ...(extraAnswers.length ? { custom_answers: extraAnswers } : {}),
     };
     const { data, error } = await supabase.from("tournament_registrations").insert(insertPayload).select("*").single();
     setAddingPlayer(false);
@@ -438,7 +487,7 @@ const Players = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
       setPlayers((prev) => [...prev, data as unknown as Registration]);
-      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online" });
+      setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online", age: "", city: "", state: "", tier_id: "" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
       markChecklistTaskComplete(selectedTournament, "add_first_player");
@@ -529,12 +578,16 @@ const Players = () => {
   const [editLocationValue, setEditLocationValue] = useState<string>("");
   const [editingNotesNum, setEditingNotesNum] = useState<number | null>(null);
   const [editNotesValue, setEditNotesValue] = useState<string>("");
+  const [editingTeeTimeNum, setEditingTeeTimeNum] = useState<number | null>(null);
+  const [editTeeTimeValue, setEditTeeTimeValue] = useState<string>("");
   const locStorageKey = selectedTournament ? `teevents_hole_locations_${selectedTournament}` : "";
   const labelsStorageKey = selectedTournament ? `teevents_hole_labels_${selectedTournament}` : "";
   const notesStorageKey = selectedTournament ? `teevents_hole_notes_${selectedTournament}` : "";
+  const teeTimesStorageKey = selectedTournament ? `teevents_hole_teetimes_${selectedTournament}` : "";
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
   const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
   const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
+  const [holeTeeTimes, setHoleTeeTimes] = useState<Record<number, string>>({});
   useEffect(() => {
     if (!locStorageKey) return;
     try {
@@ -549,7 +602,11 @@ const Players = () => {
       const raw = localStorage.getItem(notesStorageKey);
       setHoleNotes(raw ? JSON.parse(raw) : {});
     } catch { setHoleNotes({}); }
-  }, [locStorageKey, labelsStorageKey, notesStorageKey]);
+    try {
+      const raw = localStorage.getItem(teeTimesStorageKey);
+      setHoleTeeTimes(raw ? JSON.parse(raw) : {});
+    } catch { setHoleTeeTimes({}); }
+  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey]);
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
@@ -568,6 +625,27 @@ const Players = () => {
     if (v) next[num] = v; else delete next[num];
     saveNotes(next);
     setEditingNotesNum(null);
+  };
+  const saveTeeTimes = (next: Record<number, string>) => {
+    setHoleTeeTimes(next);
+    try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+  };
+  const saveHoleTeeTime = (num: number, value: string) => {
+    const next = { ...holeTeeTimes };
+    const v = value.trim();
+    if (v) next[num] = v; else delete next[num];
+    saveTeeTimes(next);
+    setEditingTeeTimeNum(null);
+  };
+  const fmtTee12 = (t?: string) => {
+    if (!t) return "";
+    const m = /^(\d{1,2}):(\d{2})/.exec(t);
+    if (!m) return t;
+    let h = parseInt(m[1]);
+    const mm = m[2];
+    const ap = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h}:${mm} ${ap}`;
   };
 
 
@@ -1047,6 +1125,41 @@ const Players = () => {
                     )}
                   </div>
                 )}
+                {(visibleFields.age || visibleFields.city_state) && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {visibleFields.age && (
+                      <div>
+                        <Label htmlFor="ap-age">Age</Label>
+                        <Input id="ap-age" type="number" value={newPlayer.age} onChange={(e) => setNewPlayer((p) => ({ ...p, age: e.target.value }))} placeholder="35" />
+                      </div>
+                    )}
+                    {visibleFields.city_state && (
+                      <>
+                        <div className="col-span-1">
+                          <Label htmlFor="ap-city">City</Label>
+                          <Input id="ap-city" value={newPlayer.city} onChange={(e) => setNewPlayer((p) => ({ ...p, city: e.target.value }))} placeholder="Atlanta" />
+                        </div>
+                        <div className="col-span-1">
+                          <Label htmlFor="ap-state">State</Label>
+                          <Input id="ap-state" value={newPlayer.state} onChange={(e) => setNewPlayer((p) => ({ ...p, state: e.target.value }))} placeholder="GA" maxLength={20} />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+                {visibleFields.division && tiers.length > 0 && (
+                  <div>
+                    <Label htmlFor="ap-tier">Division / Tier</Label>
+                    <Select value={newPlayer.tier_id} onValueChange={(v) => setNewPlayer((p) => ({ ...p, tier_id: v }))}>
+                      <SelectTrigger id="ap-tier"><SelectValue placeholder="Select division" /></SelectTrigger>
+                      <SelectContent>
+                        {tiers.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 {(() => {
                   const tt = tournaments.find((t) => t.id === selectedTournament) as any;
                   return tt?.allow_cash_registration ? (
@@ -1127,6 +1240,7 @@ const Players = () => {
                       {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
                       {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
+                      {rosterCols.teetime !== false && <SortableTh colKey="teetime" align="center">Tee Time</SortableTh>}
                       {rosterCols.code !== false && (
                         <SortableTh colKey="code" align="center">
                           <QrCode className="h-3.5 w-3.5" /> Code
@@ -1189,6 +1303,13 @@ const Players = () => {
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
                         )}
+                      </td>
+                    )}
+                    {rosterCols.teetime !== false && (
+                      <td className="px-4 py-3 text-center text-xs">
+                        {p.group_number != null && holeTeeTimes[p.group_number]
+                          ? fmtTee12(holeTeeTimes[p.group_number])
+                          : <span className="text-muted-foreground">—</span>}
                       </td>
                     )}
                     {rosterCols.code !== false && (
@@ -1698,6 +1819,34 @@ const Players = () => {
                 <p className="text-[10px] text-muted-foreground mt-1">Accepts numbers or split-tee labels like 1A / 1B.</p>
               </div>
             </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="ep-age">Age</Label>
+                <Input id="ep-age" type="number" value={editForm.age} onChange={(e) => setEditForm((f) => ({ ...f, age: e.target.value }))} placeholder="—" />
+              </div>
+              <div>
+                <Label htmlFor="ep-city">City</Label>
+                <Input id="ep-city" value={editForm.city} onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))} placeholder="City" />
+              </div>
+              <div>
+                <Label htmlFor="ep-state">State</Label>
+                <Input id="ep-state" value={editForm.state} onChange={(e) => setEditForm((f) => ({ ...f, state: e.target.value }))} placeholder="GA" maxLength={20} />
+              </div>
+            </div>
+            {tiers.length > 0 && (
+              <div>
+                <Label htmlFor="ep-tier">Division / Tier</Label>
+                <Select value={editForm.tier_id || "__none"} onValueChange={(v) => setEditForm((f) => ({ ...f, tier_id: v === "__none" ? "" : v }))}>
+                  <SelectTrigger id="ep-tier"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">None</SelectItem>
+                    {tiers.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <Label htmlFor="ep-diet">Dietary Restrictions</Label>
               <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />

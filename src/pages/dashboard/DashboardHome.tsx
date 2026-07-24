@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
+import UpcomingRemindersWidget from "@/components/dashboard/UpcomingRemindersWidget";
 import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
 

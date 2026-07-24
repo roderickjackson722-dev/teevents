@@ -341,12 +341,26 @@ export function DashboardSidebar() {
               if (!session) { navigate("/select-workspace"); return; }
               const { data: memberships } = await supabase
                 .from("org_members")
-                .select("organizations(workspace_type)")
+                .select("organization_id, organizations(id, workspace_type)")
                 .eq("user_id", session.user.id);
-              const hasLeague = (memberships || []).some(
-                (m: any) => m.organizations?.workspace_type === "league",
+              const rows = (memberships || []) as any[];
+              const onLeagueDashboard = location.pathname.startsWith("/dashboard/leagues");
+              const targetType = onLeagueDashboard ? "tournament" : "league";
+              const others = rows.filter(
+                (m) => (m.organizations?.workspace_type || "tournament") === targetType,
               );
-              navigate(hasLeague ? "/select-workspace" : "/golf-leagues");
+              if (others.length === 1) {
+                const orgId = others[0].organizations?.id || others[0].organization_id;
+                navigate(
+                  targetType === "league"
+                    ? `/dashboard/leagues?admin_org=${orgId}`
+                    : `/dashboard?admin_org=${orgId}`,
+                );
+              } else if (others.length > 1) {
+                navigate("/select-workspace");
+              } else {
+                navigate(`/create-workspace?type=${targetType}`);
+              }
             }}
             className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors w-full"
           >

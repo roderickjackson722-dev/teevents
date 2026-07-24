@@ -1503,6 +1503,93 @@ const Players = () => {
       ) : (
         /* Pairings View */
         <div>
+          {/* Start Format Controls */}
+          <div className="mb-4 rounded-lg border border-border bg-card p-4">
+            <div className="flex flex-wrap items-end gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Start Format</Label>
+                <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-sm ${startFormat === "tee_times" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"}`}
+                    onClick={() => { setStartFormat("tee_times"); persistStartFormat({ startFormat: "tee_times" }); }}
+                  >
+                    Tee Times
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-sm border-l border-border ${startFormat === "shotgun" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"}`}
+                    onClick={() => { setStartFormat("shotgun"); persistStartFormat({ startFormat: "shotgun" }); }}
+                  >
+                    Shotgun
+                  </button>
+                </div>
+              </div>
+
+              {startFormat === "tee_times" ? (
+                <>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Starting Hole</Label>
+                    <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
+                      {[1, 10].map((h) => (
+                        <button
+                          key={h}
+                          type="button"
+                          className={`px-3 py-1.5 text-sm ${firstTeeHole === h ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${h === 10 ? "border-l border-border" : ""}`}
+                          onClick={() => { setFirstTeeHole(h); persistStartFormat({ firstTeeHole: h }); }}
+                        >
+                          #{h}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="first-tee-time" className="text-xs text-muted-foreground">First Tee Time</Label>
+                    <Input
+                      id="first-tee-time"
+                      type="time"
+                      className="mt-1 h-9 w-32"
+                      value={firstTeeTime}
+                      onChange={(e) => { setFirstTeeTime(e.target.value); persistStartFormat({ firstTeeTime: e.target.value }); }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tee-interval" className="text-xs text-muted-foreground">Interval (min)</Label>
+                    <Input
+                      id="tee-interval"
+                      type="number"
+                      min={5}
+                      max={30}
+                      className="mt-1 h-9 w-24"
+                      value={teeInterval}
+                      onChange={(e) => { const v = parseInt(e.target.value) || 10; setTeeInterval(v); persistStartFormat({ teeInterval: v }); }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <Label htmlFor="shotgun-time" className="text-xs text-muted-foreground">Shotgun Start Time</Label>
+                  <Input
+                    id="shotgun-time"
+                    type="time"
+                    className="mt-1 h-9 w-32"
+                    value={shotgunTime}
+                    onChange={(e) => { setShotgunTime(e.target.value); persistStartFormat({ shotgunTime: e.target.value }); }}
+                  />
+                </div>
+              )}
+
+              <Button onClick={applyStartTimesToHoles} size="sm" className="ml-auto">
+                {startFormat === "tee_times" ? "Apply Tee Times to Holes" : "Apply Shotgun Time"}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {startFormat === "tee_times"
+                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes. Edit individual hole times below to override.`
+                : "All holes tee off at the same time. Individual hole overrides still apply below."}
+            </p>
+          </div>
+
           <div className="flex items-center gap-3 mb-6">
             <Button onClick={handleAutoAssign} variant="outline" size="sm">
               Auto-Assign All
@@ -1514,6 +1601,7 @@ const Players = () => {
               Drag and drop players between holes
             </span>
           </div>
+
 
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid lg:grid-cols-2 gap-6">

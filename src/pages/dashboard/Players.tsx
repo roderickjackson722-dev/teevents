@@ -612,7 +612,18 @@ const Players = () => {
       const raw = localStorage.getItem(teeTimesStorageKey);
       setHoleTeeTimes(raw ? JSON.parse(raw) : {});
     } catch { setHoleTeeTimes({}); }
-  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey]);
+    try {
+      const raw = startFormatStorageKey ? localStorage.getItem(startFormatStorageKey) : null;
+      if (raw) {
+        const cfg = JSON.parse(raw);
+        if (cfg.startFormat) setStartFormat(cfg.startFormat);
+        if (cfg.firstTeeHole) setFirstTeeHole(cfg.firstTeeHole);
+        if (cfg.firstTeeTime) setFirstTeeTime(cfg.firstTeeTime);
+        if (cfg.teeInterval) setTeeInterval(cfg.teeInterval);
+        if (cfg.shotgunTime) setShotgunTime(cfg.shotgunTime);
+      }
+    } catch { /* noop */ }
+  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey, startFormatStorageKey]);
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }

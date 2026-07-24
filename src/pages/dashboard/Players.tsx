@@ -1581,6 +1581,28 @@ const Players = () => {
         <div>
           {/* Start Format Controls */}
           <div className="mb-4 rounded-lg border border-border bg-card p-4">
+            {numDays > 1 && (
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Day:</span>
+                <div className="inline-flex rounded-md border border-border overflow-hidden">
+                  {tournamentDays.map((d, idx) => {
+                    const dt = new Date(d + "T00:00:00");
+                    const label = `Day ${idx + 1} · ${dt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        className={`px-3 py-1.5 text-xs ${activeDay === idx ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${idx > 0 ? "border-l border-border" : ""}`}
+                        onClick={() => setActiveDay(idx)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-[11px] text-muted-foreground ml-1">Each day has its own start format and tee times.</span>
+              </div>
+            )}
             <div className="flex flex-wrap items-end gap-4">
               <div>
                 <Label className="text-xs text-muted-foreground">Start Format</Label>
@@ -1588,22 +1610,23 @@ const Players = () => {
                   <button
                     type="button"
                     className={`px-3 py-1.5 text-sm ${startFormat === "tee_times" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"}`}
-                    onClick={() => { setStartFormat("tee_times"); persistStartFormat({ startFormat: "tee_times" }); }}
+                    onClick={() => persistStartFormat({ startFormat: "tee_times" })}
                   >
                     Tee Times
                   </button>
                   <button
                     type="button"
                     className={`px-3 py-1.5 text-sm border-l border-border ${startFormat === "shotgun" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"}`}
-                    onClick={() => { setStartFormat("shotgun"); persistStartFormat({ startFormat: "shotgun" }); }}
+                    onClick={() => persistStartFormat({ startFormat: "shotgun" })}
                   >
                     Shotgun
                   </button>
                 </div>
               </div>
 
-              {startFormat === "tee_times" ? (
-                <>
+              {/* Tee-time fields: always rendered, disabled when Shotgun */}
+              <div className={startFormat === "shotgun" ? "opacity-50 pointer-events-none select-none" : ""} aria-disabled={startFormat === "shotgun"}>
+                <div className="flex flex-wrap items-end gap-4">
                   <div>
                     <Label className="text-xs text-muted-foreground">Starting Hole</Label>
                     <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
@@ -1611,8 +1634,9 @@ const Players = () => {
                         <button
                           key={h}
                           type="button"
+                          disabled={startFormat === "shotgun"}
                           className={`px-3 py-1.5 text-sm ${firstTeeHole === h ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${h === 10 ? "border-l border-border" : ""}`}
-                          onClick={() => { setFirstTeeHole(h); persistStartFormat({ firstTeeHole: h }); }}
+                          onClick={() => persistStartFormat({ firstTeeHole: h })}
                         >
                           #{h}
                         </button>
@@ -1624,9 +1648,10 @@ const Players = () => {
                     <Input
                       id="first-tee-time"
                       type="time"
+                      disabled={startFormat === "shotgun"}
                       className="mt-1 h-9 w-32"
                       value={firstTeeTime}
-                      onChange={(e) => { setFirstTeeTime(e.target.value); persistStartFormat({ firstTeeTime: e.target.value }); }}
+                      onChange={(e) => persistStartFormat({ firstTeeTime: e.target.value })}
                     />
                   </div>
                   <div>
@@ -1634,15 +1659,18 @@ const Players = () => {
                     <Input
                       id="tee-interval"
                       type="number"
-                      min={5}
+                      min={1}
                       max={30}
+                      disabled={startFormat === "shotgun"}
                       className="mt-1 h-9 w-24"
                       value={teeInterval}
-                      onChange={(e) => { const v = parseInt(e.target.value) || 10; setTeeInterval(v); persistStartFormat({ teeInterval: v }); }}
+                      onChange={(e) => { const v = parseInt(e.target.value) || 10; persistStartFormat({ teeInterval: v }); }}
                     />
                   </div>
-                </>
-              ) : (
+                </div>
+              </div>
+
+              {startFormat === "shotgun" && (
                 <div>
                   <Label htmlFor="shotgun-time" className="text-xs text-muted-foreground">Shotgun Start Time</Label>
                   <Input
@@ -1650,7 +1678,7 @@ const Players = () => {
                     type="time"
                     className="mt-1 h-9 w-32"
                     value={shotgunTime}
-                    onChange={(e) => { setShotgunTime(e.target.value); persistStartFormat({ shotgunTime: e.target.value }); }}
+                    onChange={(e) => persistStartFormat({ shotgunTime: e.target.value })}
                   />
                 </div>
               )}
@@ -1661,10 +1689,11 @@ const Players = () => {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {startFormat === "tee_times"
-                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes. Edit individual hole times below to override.`
-                : "All holes tee off at the same time. Individual hole overrides still apply below."}
+                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. Duplicates are blocked; edit individual hole times below to override.`
+                : `All holes tee off at ${fmtTee12(shotgunTime)}${numDays > 1 ? ` on Day ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
             </p>
           </div>
+
 
           <div className="flex items-center gap-3 mb-6">
             <Button onClick={handleAutoAssign} variant="outline" size="sm">

@@ -665,6 +665,47 @@ const Players = () => {
     return `${h}:${mm} ${ap}`;
   };
 
+  const persistStartFormat = (patch: Partial<{ startFormat: "tee_times" | "shotgun"; firstTeeHole: number; firstTeeTime: string; teeInterval: number; shotgunTime: string }>) => {
+    if (!startFormatStorageKey) return;
+    const cfg = { startFormat, firstTeeHole, firstTeeTime, teeInterval, shotgunTime, ...patch };
+    try { localStorage.setItem(startFormatStorageKey, JSON.stringify(cfg)); } catch { /* noop */ }
+  };
+
+  const addMinutes = (hhmm: string, mins: number) => {
+    const m = /^(\d{1,2}):(\d{2})/.exec(hhmm);
+    if (!m) return hhmm;
+    const total = parseInt(m[1]) * 60 + parseInt(m[2]) + mins;
+    const h = Math.floor(((total % (24 * 60)) + 24 * 60) % (24 * 60) / 60);
+    const mm = ((total % 60) + 60) % 60;
+    return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  };
+
+  const applyStartTimesToHoles = () => {
+    const groupNums = [...new Set([...Object.keys(holeLabels).map(Number), ...emptyGroups])]
+      .concat(players.map(p => p.group_number).filter((n): n is number => n != null))
+      .filter((n, i, arr) => arr.indexOf(n) === i)
+      .sort((a, b) => a - b);
+    if (groupNums.length === 0) {
+      toast({ title: "No holes to assign", variant: "destructive" });
+      return;
+    }
+    const next: Record<number, string> = {};
+    if (startFormat === "shotgun") {
+      groupNums.forEach(n => { next[n] = shotgunTime; });
+      saveTeeTimes(next);
+      toast({ title: "Shotgun time applied", description: `All ${groupNums.length} holes set to ${fmtTee12(shotgunTime)}.` });
+    } else {
+      // Reorder so firstTeeHole comes first (e.g., 10, 11, ...18, 1, 2, ...9)
+      const first = groupNums.filter(n => n >= firstTeeHole);
+      const rest = groupNums.filter(n => n < firstTeeHole);
+      const ordered = [...first, ...rest];
+      ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
+      saveTeeTimes(next);
+      toast({ title: "Tee times applied", description: `${ordered.length} holes starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });
+    }
+  };
+
+
 
   const handleAddGroup = () => {
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);

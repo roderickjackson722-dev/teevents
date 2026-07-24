@@ -757,21 +757,21 @@ const Sponsors = () => {
             <span className="text-sm text-muted-foreground">Total Sponsors</span>
             <Award className="h-5 w-5 text-secondary" />
           </div>
-          <p className="text-2xl font-display font-bold text-foreground">{Math.max(sponsors.length, regStats.count)}</p>
+          <p className="text-2xl font-display font-bold text-foreground">{regStats.count}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="bg-card rounded-lg border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-muted-foreground">Total Pledged</span>
             <DollarSign className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-2xl font-display font-bold text-primary">{fmt(totalPledged + regStats.pledged)}</p>
+          <p className="text-2xl font-display font-bold text-primary">{fmt(regStats.pledged)}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} className="bg-card rounded-lg border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-muted-foreground">Collected</span>
             <DollarSign className="h-5 w-5 text-secondary" />
           </div>
-          <p className="text-2xl font-display font-bold text-secondary">{fmt(totalPaid + regStats.collected)}</p>
+          <p className="text-2xl font-display font-bold text-secondary">{fmt(regStats.collected)}</p>
         </motion.div>
       </div>
 

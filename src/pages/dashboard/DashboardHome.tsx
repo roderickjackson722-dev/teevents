@@ -144,6 +144,10 @@ const DashboardHome = () => {
         </TooltipProvider>
       )}
 
+      {latestTournament && (
+        <UpcomingRemindersWidget tournamentId={latestTournament.id} />
+      )}
+
       {/* Per-tournament Pro upgrade banner */}
       {latestTournament && !latestTournament.is_pro && (
         <div className="mb-8">

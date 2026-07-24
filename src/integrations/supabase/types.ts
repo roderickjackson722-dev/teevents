@@ -4587,6 +4587,62 @@ export type Database = {
           },
         ]
       }
+      organizer_notes: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          is_completed: boolean
+          priority: string
+          reminder_enabled: boolean
+          reminder_sent: boolean
+          title: string
+          tournament_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          priority?: string
+          reminder_enabled?: boolean
+          reminder_sent?: boolean
+          title: string
+          tournament_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          priority?: string
+          reminder_enabled?: boolean
+          reminder_sent?: boolean
+          title?: string
+          tournament_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_notes_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_campaigns: {
         Row: {
           created_at: string

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";

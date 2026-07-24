@@ -562,10 +562,15 @@ const Sponsors = () => {
     ]);
     setSponsors((data as Sponsor[]) || []);
     const rlist = (regs as any[]) || [];
-    const pledged = rlist.reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    // Pledged = every sponsor registration entered (any status except refunded/cancelled/failed)
+    const pledged = rlist
+      .filter((r) => !["refunded", "cancelled", "failed"].includes(String(r.payment_status || "").toLowerCase()))
+      .reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
+    // Collected = only registrations actually marked paid — matches what Finances / platform_transactions record.
+    // (manually_approved alone does NOT count as collected; the organizer must mark it paid.)
     const collected =
       rlist
-        .filter((r) => r.payment_status === "paid" || r.manually_approved === true)
+        .filter((r) => String(r.payment_status || "").toLowerCase() === "paid")
         .reduce((s, r) => s + Number(r.amount_cents || 0), 0) / 100;
     setRegStats({ count: rlist.length, pledged, collected });
     setLoading(false);

@@ -16,6 +16,7 @@ export default function CreateWorkspace() {
   const { toast } = useToast();
   const [params] = useSearchParams();
   const preset = (params.get("type") as Interest) || null;
+  const reason = params.get("reason");
 
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -121,6 +122,18 @@ export default function CreateWorkspace() {
       <div className="w-full max-w-2xl">
         <Card>
           <CardContent className="p-8 space-y-6">
+            {reason === "switch" && (
+              <div className="rounded-lg border border-secondary/40 bg-secondary/10 p-4 text-sm">
+                <p className="font-semibold text-foreground">
+                  You don't have a {preset === "league" ? "league" : "tournament"} workspace yet.
+                </p>
+                <p className="text-muted-foreground mt-1">
+                  Switch Workspace can only toggle between dashboards you already own.
+                  Create a {preset === "league" ? "league" : "tournament"} workspace below and the
+                  Switch Workspace button will jump straight between it and your existing account.
+                </p>
+              </div>
+            )}
             <div>
               <h1 className="text-2xl font-bold">Create a new workspace</h1>
               <p className="text-muted-foreground text-sm">Choose what you want to manage and give it a name.</p>

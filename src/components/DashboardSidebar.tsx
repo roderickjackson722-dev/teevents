@@ -337,30 +337,19 @@ export function DashboardSidebar() {
         <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3 space-y-2">
           <button
             onClick={async () => {
+              const { decideWorkspaceSwitch } = await import("@/lib/workspaceSwitch");
               const { data: { session } } = await supabase.auth.getSession();
               if (!session) { navigate("/select-workspace"); return; }
               const { data: memberships } = await supabase
                 .from("org_members")
-                .select("organization_id, organizations(id, workspace_type)")
+                .select("organization_id, organizations(workspace_type)")
                 .eq("user_id", session.user.id);
-              const rows = (memberships || []) as any[];
-              const onLeagueDashboard = location.pathname.startsWith("/dashboard/leagues");
-              const targetType = onLeagueDashboard ? "tournament" : "league";
-              const others = rows.filter(
-                (m) => (m.organizations?.workspace_type || "tournament") === targetType,
-              );
-              if (others.length === 1) {
-                const orgId = others[0].organizations?.id || others[0].organization_id;
-                navigate(
-                  targetType === "league"
-                    ? `/dashboard/leagues?admin_org=${orgId}`
-                    : `/dashboard?admin_org=${orgId}`,
-                );
-              } else if (others.length > 1) {
-                navigate("/select-workspace");
-              } else {
-                navigate(`/create-workspace?type=${targetType}`);
-              }
+              const rows = (memberships || []).map((m: any) => ({
+                organization_id: m.organizations?.id || m.organization_id,
+                workspace_type: m.organizations?.workspace_type || "tournament",
+              }));
+              const { path } = decideWorkspaceSwitch(rows, location.pathname);
+              navigate(path);
             }}
             className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors w-full"
           >

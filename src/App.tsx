@@ -32,6 +32,7 @@ import Signup from "./pages/Signup";
 import CreateWorkspace from "./pages/CreateWorkspace";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
+import OrganizerNotes from "./pages/dashboard/OrganizerNotes";
 import Printables from "./pages/dashboard/Printables";
 import ComingSoon from "./pages/dashboard/ComingSoon";
 import SiteBuilder from "./pages/dashboard/SiteBuilder";

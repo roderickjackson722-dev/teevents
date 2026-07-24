@@ -584,10 +584,16 @@ const Players = () => {
   const labelsStorageKey = selectedTournament ? `teevents_hole_labels_${selectedTournament}` : "";
   const notesStorageKey = selectedTournament ? `teevents_hole_notes_${selectedTournament}` : "";
   const teeTimesStorageKey = selectedTournament ? `teevents_hole_teetimes_${selectedTournament}` : "";
+  const startFormatStorageKey = selectedTournament ? `teevents_pairings_startformat_${selectedTournament}` : "";
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
   const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
   const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
   const [holeTeeTimes, setHoleTeeTimes] = useState<Record<number, string>>({});
+  const [startFormat, setStartFormat] = useState<"tee_times" | "shotgun">("tee_times");
+  const [firstTeeHole, setFirstTeeHole] = useState<number>(1);
+  const [firstTeeTime, setFirstTeeTime] = useState<string>("08:00");
+  const [teeInterval, setTeeInterval] = useState<number>(10);
+  const [shotgunTime, setShotgunTime] = useState<string>("09:00");
   useEffect(() => {
     if (!locStorageKey) return;
     try {
@@ -606,7 +612,18 @@ const Players = () => {
       const raw = localStorage.getItem(teeTimesStorageKey);
       setHoleTeeTimes(raw ? JSON.parse(raw) : {});
     } catch { setHoleTeeTimes({}); }
-  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey]);
+    try {
+      const raw = startFormatStorageKey ? localStorage.getItem(startFormatStorageKey) : null;
+      if (raw) {
+        const cfg = JSON.parse(raw);
+        if (cfg.startFormat) setStartFormat(cfg.startFormat);
+        if (cfg.firstTeeHole) setFirstTeeHole(cfg.firstTeeHole);
+        if (cfg.firstTeeTime) setFirstTeeTime(cfg.firstTeeTime);
+        if (cfg.teeInterval) setTeeInterval(cfg.teeInterval);
+        if (cfg.shotgunTime) setShotgunTime(cfg.shotgunTime);
+      }
+    } catch { /* noop */ }
+  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey, startFormatStorageKey]);
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
@@ -647,6 +664,47 @@ const Players = () => {
     h = h % 12 || 12;
     return `${h}:${mm} ${ap}`;
   };
+
+  const persistStartFormat = (patch: Partial<{ startFormat: "tee_times" | "shotgun"; firstTeeHole: number; firstTeeTime: string; teeInterval: number; shotgunTime: string }>) => {
+    if (!startFormatStorageKey) return;
+    const cfg = { startFormat, firstTeeHole, firstTeeTime, teeInterval, shotgunTime, ...patch };
+    try { localStorage.setItem(startFormatStorageKey, JSON.stringify(cfg)); } catch { /* noop */ }
+  };
+
+  const addMinutes = (hhmm: string, mins: number) => {
+    const m = /^(\d{1,2}):(\d{2})/.exec(hhmm);
+    if (!m) return hhmm;
+    const total = parseInt(m[1]) * 60 + parseInt(m[2]) + mins;
+    const h = Math.floor(((total % (24 * 60)) + 24 * 60) % (24 * 60) / 60);
+    const mm = ((total % 60) + 60) % 60;
+    return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  };
+
+  const applyStartTimesToHoles = () => {
+    const groupNums = [...new Set([...Object.keys(holeLabels).map(Number), ...emptyGroups])]
+      .concat(players.map(p => p.group_number).filter((n): n is number => n != null))
+      .filter((n, i, arr) => arr.indexOf(n) === i)
+      .sort((a, b) => a - b);
+    if (groupNums.length === 0) {
+      toast({ title: "No holes to assign", variant: "destructive" });
+      return;
+    }
+    const next: Record<number, string> = {};
+    if (startFormat === "shotgun") {
+      groupNums.forEach(n => { next[n] = shotgunTime; });
+      saveTeeTimes(next);
+      toast({ title: "Shotgun time applied", description: `All ${groupNums.length} holes set to ${fmtTee12(shotgunTime)}.` });
+    } else {
+      // Reorder so firstTeeHole comes first (e.g., 10, 11, ...18, 1, 2, ...9)
+      const first = groupNums.filter(n => n >= firstTeeHole);
+      const rest = groupNums.filter(n => n < firstTeeHole);
+      const ordered = [...first, ...rest];
+      ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
+      saveTeeTimes(next);
+      toast({ title: "Tee times applied", description: `${ordered.length} holes starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });
+    }
+  };
+
 
 
   const handleAddGroup = () => {
@@ -1445,6 +1503,93 @@ const Players = () => {
       ) : (
         /* Pairings View */
         <div>
+          {/* Start Format Controls */}
+          <div className="mb-4 rounded-lg border border-border bg-card p-4">
+            <div className="flex flex-wrap items-end gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Start Format</Label>
+                <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-sm ${startFormat === "tee_times" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"}`}
+                    onClick={() => { setStartFormat("tee_times"); persistStartFormat({ startFormat: "tee_times" }); }}
+                  >
+                    Tee Times
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-sm border-l border-border ${startFormat === "shotgun" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"}`}
+                    onClick={() => { setStartFormat("shotgun"); persistStartFormat({ startFormat: "shotgun" }); }}
+                  >
+                    Shotgun
+                  </button>
+                </div>
+              </div>
+
+              {startFormat === "tee_times" ? (
+                <>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Starting Hole</Label>
+                    <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
+                      {[1, 10].map((h) => (
+                        <button
+                          key={h}
+                          type="button"
+                          className={`px-3 py-1.5 text-sm ${firstTeeHole === h ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${h === 10 ? "border-l border-border" : ""}`}
+                          onClick={() => { setFirstTeeHole(h); persistStartFormat({ firstTeeHole: h }); }}
+                        >
+                          #{h}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="first-tee-time" className="text-xs text-muted-foreground">First Tee Time</Label>
+                    <Input
+                      id="first-tee-time"
+                      type="time"
+                      className="mt-1 h-9 w-32"
+                      value={firstTeeTime}
+                      onChange={(e) => { setFirstTeeTime(e.target.value); persistStartFormat({ firstTeeTime: e.target.value }); }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tee-interval" className="text-xs text-muted-foreground">Interval (min)</Label>
+                    <Input
+                      id="tee-interval"
+                      type="number"
+                      min={5}
+                      max={30}
+                      className="mt-1 h-9 w-24"
+                      value={teeInterval}
+                      onChange={(e) => { const v = parseInt(e.target.value) || 10; setTeeInterval(v); persistStartFormat({ teeInterval: v }); }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <Label htmlFor="shotgun-time" className="text-xs text-muted-foreground">Shotgun Start Time</Label>
+                  <Input
+                    id="shotgun-time"
+                    type="time"
+                    className="mt-1 h-9 w-32"
+                    value={shotgunTime}
+                    onChange={(e) => { setShotgunTime(e.target.value); persistStartFormat({ shotgunTime: e.target.value }); }}
+                  />
+                </div>
+              )}
+
+              <Button onClick={applyStartTimesToHoles} size="sm" className="ml-auto">
+                {startFormat === "tee_times" ? "Apply Tee Times to Holes" : "Apply Shotgun Time"}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {startFormat === "tee_times"
+                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes. Edit individual hole times below to override.`
+                : "All holes tee off at the same time. Individual hole overrides still apply below."}
+            </p>
+          </div>
+
           <div className="flex items-center gap-3 mb-6">
             <Button onClick={handleAutoAssign} variant="outline" size="sm">
               Auto-Assign All
@@ -1456,6 +1601,7 @@ const Players = () => {
               Drag and drop players between holes
             </span>
           </div>
+
 
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid lg:grid-cols-2 gap-6">

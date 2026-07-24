@@ -906,10 +906,39 @@ const Transactions = () => {
                             {t.status}
                           </Badge>
                         </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                                disabled={deletingId === t.id}
+                                title="Delete this transaction"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete this transaction?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This removes the <strong>${(t.amount_cents / 100).toFixed(2)}</strong> {typeLabel(t.type).toLowerCase()} record{t.golfer_name ? ` for ${t.golfer_name}` : ""} from your revenue totals and Finances dashboard.
+                                  {t.type === "sponsorship" && t.metadata?.sponsor_registration_id ? " The linked sponsor registration will also be removed." : ""}
+                                  {" "}This does not automatically issue a refund in Stripe — if money was already collected, process the refund separately.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteTransaction(t)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
                       </TableRow>
                       {open && (
                         <TableRow className="bg-muted/30">
-                          <TableCell colSpan={10} className="p-4">{renderDetails(t)}</TableCell>
+                          <TableCell colSpan={11} className="p-4">{renderDetails(t)}</TableCell>
                         </TableRow>
                       )}
                     </Fragment>
@@ -917,7 +946,7 @@ const Transactions = () => {
                 })}
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">No transactions match the current filters.</TableCell>
+                    <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">No transactions match the current filters.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

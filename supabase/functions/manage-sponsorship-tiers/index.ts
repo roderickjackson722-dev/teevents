@@ -388,6 +388,14 @@ Deno.serve(async (req) => {
 
     if (action === "delete_registration") {
       if (!registrationId) throw new Error("Registration not specified");
+      // Remove any linked platform_transactions rows so revenue totals don't stay inflated
+      // after a duplicate/erroneous sponsor registration is removed.
+      const { error: txErr } = await supabaseAdmin
+        .from("platform_transactions")
+        .delete()
+        .eq("tournament_id", tournamentId)
+        .filter("metadata->>sponsor_registration_id", "eq", registrationId);
+      if (txErr) console.error("[delete_registration] platform_transactions cleanup failed:", txErr);
       const { error } = await supabaseAdmin
         .from("sponsor_registrations")
         .delete()
@@ -396,6 +404,7 @@ Deno.serve(async (req) => {
       if (error) throw error;
       return json({ success: true });
     }
+
 
     if (action === "create") {
       const payload = sanitizeTierPayload(body?.payload ?? {}, tournamentId);

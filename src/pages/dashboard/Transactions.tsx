@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Download, Eye, RefreshCw, ChevronDown, ChevronRight, Receipt, Search } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertTriangle, Download, Eye, RefreshCw, ChevronDown, ChevronRight, Receipt, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Tx {
@@ -248,6 +249,24 @@ const Transactions = () => {
   };
 
   const tournamentTitle = (id: string | null) => tournaments.find(t => t.id === id)?.title || "—";
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const handleDeleteTransaction = async (tx: Tx) => {
+    setDeletingId(tx.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-organizer-transaction", {
+        body: { transaction_id: tx.id },
+      });
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || error?.message || "Failed to delete transaction");
+        return;
+      }
+      toast.success("Transaction deleted");
+      await fetchAll();
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const fieldsForTournament = (tournId: string) =>
     customFields.filter(f => f.tournament_id === tournId);
@@ -857,6 +876,7 @@ const Transactions = () => {
                   <TableHead className="text-right">Gross</TableHead>
                   <TableHead className="text-right">Net</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-10 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -886,10 +906,39 @@ const Transactions = () => {
                             {t.status}
                           </Badge>
                         </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                                disabled={deletingId === t.id}
+                                title="Delete this transaction"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete this transaction?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This removes the <strong>${(t.amount_cents / 100).toFixed(2)}</strong> {typeLabel(t.type).toLowerCase()} record{t.golfer_name ? ` for ${t.golfer_name}` : ""} from your revenue totals and Finances dashboard.
+                                  {t.type === "sponsorship" && t.metadata?.sponsor_registration_id ? " The linked sponsor registration will also be removed." : ""}
+                                  {" "}This does not automatically issue a refund in Stripe — if money was already collected, process the refund separately.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteTransaction(t)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
                       </TableRow>
                       {open && (
                         <TableRow className="bg-muted/30">
-                          <TableCell colSpan={10} className="p-4">{renderDetails(t)}</TableCell>
+                          <TableCell colSpan={11} className="p-4">{renderDetails(t)}</TableCell>
                         </TableRow>
                       )}
                     </Fragment>
@@ -897,7 +946,7 @@ const Transactions = () => {
                 })}
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">No transactions match the current filters.</TableCell>
+                    <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">No transactions match the current filters.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

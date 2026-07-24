@@ -876,6 +876,7 @@ const Transactions = () => {
                   <TableHead className="text-right">Gross</TableHead>
                   <TableHead className="text-right">Net</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-10 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -61,6 +61,7 @@ const categories: SidebarCategory[] = [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
       { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null, description: "Helps organizers think through the event timeline" },
       { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null, description: "Actionable tasks to launch the tournament" },
+      { title: "Notes & Reminders", url: "/dashboard/notes", icon: FileText, feature: null, description: "Personal to-do list, reminders, and notes for this tournament" },
     ],
   },
   {

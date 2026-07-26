@@ -942,11 +942,12 @@ export default function StressTest() {
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="outline">
                       <a href={leaderboardUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Live Leaderboard
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                        Open Live Leaderboard{tournament?.title ? ` — ${tournament.title}` : ""}
                       </a>
                     </Button>
                     <Button asChild size="sm" variant="outline">
-                      <a href={`${leaderboardUrl}?display=1`} target="_blank" rel="noopener noreferrer">
+                      <a href={tvDisplayUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> TV Display Mode
                       </a>
                     </Button>
@@ -956,12 +957,22 @@ export default function StressTest() {
                       </a>
                     </Button>
                   </div>
+                  {publicSlug && (
+                    <p className="text-[11px] text-muted-foreground break-all">{leaderboardUrl}</p>
+                  )}
+                  {leaderboardBlocked && (
+                    <p className="text-xs text-destructive">
+                      This tournament site isn't published yet, so the public leaderboard can't display scores. Publish
+                      the site (or use Admin Scoring) to watch the test scores come in.
+                    </p>
+                  )}
                   {targetMode === "sandbox" && !mirrorLeaderboard && (
                     <p className="text-xs text-muted-foreground">
                       Heads up: with leaderboard mirroring off, sandbox scores stay in the isolated test tables and will
                       not appear on the live leaderboard.
                     </p>
                   )}
+
                 </div>
 
                 {(finishedAt || (participants?.length ?? 0) > 0) && !running && (

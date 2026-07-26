@@ -365,6 +365,57 @@ export default function StressTest() {
       snapshot = (data ?? []) as typeof snapshot;
     }
 
+    /* sandbox mirroring: ensure every test player has a throwaway registration
+       so their scores show up on the public live leaderboard during the run */
+    if (targetMode === "sandbox" && mirrorLeaderboard) {
+      try {
+        const emailFor = (id: string) => `stress+${id}@teevents.test`;
+        const { data: existing } = await supabase
+          .from("tournament_registrations")
+          .select("id, email")
+          .eq("tournament_id", selectedTournament)
+          .like("email", "stress+%@teevents.test");
+        const byEmail: Record<string, string> = {};
+        (existing ?? []).forEach((r: any) => { byEmail[r.email] = r.id; });
+
+        const missing = runPool.filter((p) => !byEmail[emailFor(p.id)]);
+        if (missing.length) {
+          const { data: inserted, error: insErr } = await supabase
+            .from("tournament_registrations")
+            .insert(
+              missing.map((p, i) => {
+                const clean = p.name.replace("[TEST] ", "");
+                const [first, ...rest] = clean.split(" ");
+                return {
+                  tournament_id: selectedTournament,
+                  first_name: `[TEST] ${first}`,
+                  last_name: rest.join(" ") || "Player",
+                  email: emailFor(p.id),
+                  payment_status: "paid",
+                  group_number: Math.floor(i / 4) + 1,
+                  playing_handicap: p.playing_handicap ?? null,
+                } as any;
+              }),
+            )
+            .select("id, email");
+          if (insErr) throw insErr;
+          (inserted ?? []).forEach((r: any) => { byEmail[r.email] = r.id; });
+        }
+        mirrorMapRef.current = Object.fromEntries(
+          runPool.map((p) => [p.id, byEmail[emailFor(p.id)]]).filter(([, v]) => !!v) as [string, string][],
+        );
+      } catch (e) {
+        mirrorMapRef.current = {};
+        toast({
+          title: "Leaderboard mirroring unavailable",
+          description: (e as Error).message,
+          variant: "destructive",
+        });
+      }
+    }
+
+
+
     setRunning(true);
     setProgress(0);
     setLog([]);

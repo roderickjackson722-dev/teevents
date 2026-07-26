@@ -18,7 +18,7 @@ import {
   Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import {
-  Activity, AlertTriangle, CheckCircle2, Download, Gauge, Loader2, Play,
+  Activity, AlertTriangle, CheckCircle2, Download, ExternalLink, Gauge, Loader2, Play,
   QrCode, RotateCcw, Trash2, Users, XCircle,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -82,6 +82,10 @@ export default function StressTest() {
   /* target mode */
   const [targetMode, setTargetMode] = useState<TargetMode>("sandbox");
   const [liveAck, setLiveAck] = useState(false);
+
+  /* mirror sandbox scores onto the public live leaderboard */
+  const [mirrorLeaderboard, setMirrorLeaderboard] = useState(true);
+  const mirrorMapRef = useRef<Record<string, string>>({}); // test participant id -> registration id
 
   /* seeding config */
   const [seedCount, setSeedCount] = useState("70");
@@ -161,6 +165,11 @@ export default function StressTest() {
     ? `${window.location.origin}/t/${tournament.slug}/scoring`
     : `${window.location.origin}/dashboard/scoring`;
 
+  const leaderboardUrl = tournament?.slug
+    ? `${window.location.origin}/live/${tournament.slug}`
+    : `${window.location.origin}/dashboard/leaderboard?tournament_id=${selectedTournament}`;
+  const adminScoringUrl = `${window.location.origin}/dashboard/scoring?tournament_id=${selectedTournament}`;
+
   const codeFor = (id: string) => id.replace(/-/g, "").slice(0, 6).toUpperCase();
 
   /* ─────────── 1. SEED ─────────── */
@@ -191,22 +200,47 @@ export default function StressTest() {
     }
   };
 
+  /* remove any registrations/scores we mirrored onto the public leaderboard */
+  const removeMirroredData = async () => {
+    const { data: regs } = await supabase
+      .from("tournament_registrations")
+      .select("id")
+      .eq("tournament_id", selectedTournament)
+      .like("email", "stress+%@teevents.test");
+    const ids = (regs ?? []).map((r) => r.id as string);
+    if (ids.length) {
+      await supabase.from("tournament_scores").delete().in("registration_id", ids);
+      await supabase.from("tournament_registrations").delete().in("id", ids);
+    }
+    mirrorMapRef.current = {};
+    return ids.length;
+  };
+
   const clearTestData = async () => {
     setSeeding(true);
     try {
+      const mirrored = await removeMirroredData();
       await supabase.from("test_scores").delete().eq("tournament_id", selectedTournament);
       await supabase.from("test_participants").delete().eq("tournament_id", selectedTournament);
       await queryClient.invalidateQueries({ queryKey: ["stress-participants", selectedTournament] });
+      await queryClient.invalidateQueries({ queryKey: ["stress-real-players", selectedTournament] });
       setLog([]);
       collectedRef.current = [];
       setFinishedAt(null);
-      toast({ title: "Test data cleared" });
+      setProgress(0);
+      toast({
+        title: "Test data cleared",
+        description: mirrored
+          ? `${mirrored} mirrored leaderboard entr${mirrored === 1 ? "y" : "ies"} removed.`
+          : "Test players and scores removed.",
+      });
     } catch (e) {
       toast({ title: "Clear failed", description: (e as Error).message, variant: "destructive" });
     } finally {
       setSeeding(false);
     }
   };
+
 
   /* ─────────── 2. SIMULATE ─────────── */
   const submitScore = async (
@@ -242,6 +276,21 @@ export default function StressTest() {
                 { onConflict: "test_participant_id,hole_number" },
               );
         if (error) throw error;
+        // mirror sandbox scores onto the public leaderboard so [TEST] names appear live
+        if (targetMode === "sandbox" && mirrorLeaderboard) {
+          const regId = mirrorMapRef.current[entity.id];
+          if (regId) {
+            void supabase.from("tournament_scores").upsert(
+              {
+                tournament_id: selectedTournament,
+                registration_id: regId,
+                hole_number: hole,
+                strokes: gross,
+              },
+              { onConflict: "registration_id,hole_number" },
+            );
+          }
+        }
         return { ok: true, retries };
       } catch (e) {
         const msg = (e as Error).message ?? String(e);
@@ -315,6 +364,57 @@ export default function StressTest() {
         .in("hole_number", holeList);
       snapshot = (data ?? []) as typeof snapshot;
     }
+
+    /* sandbox mirroring: ensure every test player has a throwaway registration
+       so their scores show up on the public live leaderboard during the run */
+    if (targetMode === "sandbox" && mirrorLeaderboard) {
+      try {
+        const emailFor = (id: string) => `stress+${id}@teevents.test`;
+        const { data: existing } = await supabase
+          .from("tournament_registrations")
+          .select("id, email")
+          .eq("tournament_id", selectedTournament)
+          .like("email", "stress+%@teevents.test");
+        const byEmail: Record<string, string> = {};
+        (existing ?? []).forEach((r: any) => { byEmail[r.email] = r.id; });
+
+        const missing = runPool.filter((p) => !byEmail[emailFor(p.id)]);
+        if (missing.length) {
+          const { data: inserted, error: insErr } = await supabase
+            .from("tournament_registrations")
+            .insert(
+              missing.map((p, i) => {
+                const clean = p.name.replace("[TEST] ", "");
+                const [first, ...rest] = clean.split(" ");
+                return {
+                  tournament_id: selectedTournament,
+                  first_name: `[TEST] ${first}`,
+                  last_name: rest.join(" ") || "Player",
+                  email: emailFor(p.id),
+                  payment_status: "paid",
+                  group_number: Math.floor(i / 4) + 1,
+                  playing_handicap: p.playing_handicap ?? null,
+                } as any;
+              }),
+            )
+            .select("id, email");
+          if (insErr) throw insErr;
+          (inserted ?? []).forEach((r: any) => { byEmail[r.email] = r.id; });
+        }
+        mirrorMapRef.current = Object.fromEntries(
+          runPool.map((p) => [p.id, byEmail[emailFor(p.id)]]).filter(([, v]) => !!v) as [string, string][],
+        );
+      } catch (e) {
+        mirrorMapRef.current = {};
+        toast({
+          title: "Leaderboard mirroring unavailable",
+          description: (e as Error).message,
+          variant: "destructive",
+        });
+      }
+    }
+
+
 
     setRunning(true);
     setProgress(0);
@@ -406,8 +506,11 @@ export default function StressTest() {
       description:
         targetMode === "live"
           ? "Real scores were restored to their pre-test values. See the Results tab."
-          : "See the Results tab for the readiness report.",
+          : mirrorLeaderboard
+            ? "Test scores are on the live leaderboard. Use Reset & Remove All Test Data when you're done."
+            : "See the Results tab for the readiness report.",
     });
+
   };
 
   /* ─────────── 3. METRICS ─────────── */
@@ -718,7 +821,22 @@ export default function StressTest() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {targetMode === "sandbox" && (
+                  <div className="rounded-lg border p-3 flex items-start gap-2">
+                    <Checkbox
+                      id="mirror-lb"
+                      checked={mirrorLeaderboard}
+                      onCheckedChange={(v) => setMirrorLeaderboard(!!v)}
+                      disabled={running}
+                    />
+                    <Label htmlFor="mirror-lb" className="text-xs font-normal leading-relaxed">
+                      Show test players on the live leaderboard. Creates temporary [TEST] entries so you can watch the
+                      public leaderboard update in real time. They are removed with "Reset &amp; Remove All Test Data".
+                    </Label>
+                  </div>
+                )}
                 {targetMode === "live" && (
+
                   <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 space-y-2">
                     <p className="text-sm font-medium flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4" /> Live tournament mode
@@ -793,13 +911,51 @@ export default function StressTest() {
                   </div>
                 )}
 
-                <p className="text-xs text-muted-foreground">
-                  Tip: open the live leaderboard on a second screen while this runs to visually confirm real-time updates,
-                  and edit one player's score from the admin scoring page to verify overrides land instantly.
-                </p>
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Tip: open the live leaderboard on a second screen while this runs to visually confirm real-time
+                    updates, and edit one player's score from the admin scoring page to verify overrides land instantly.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <a href={leaderboardUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Live Leaderboard
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={`${leaderboardUrl}?display=1`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> TV Display Mode
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={adminScoringUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Admin Scoring
+                      </a>
+                    </Button>
+                  </div>
+                  {targetMode === "sandbox" && !mirrorLeaderboard && (
+                    <p className="text-xs text-muted-foreground">
+                      Heads up: with leaderboard mirroring off, sandbox scores stay in the isolated test tables and will
+                      not appear on the live leaderboard.
+                    </p>
+                  )}
+                </div>
+
+                {(finishedAt || (participants?.length ?? 0) > 0) && !running && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <Button variant="destructive" size="sm" onClick={clearTestData} disabled={seeding}>
+                      {seeding ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
+                      Reset &amp; Remove All Test Data
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      Deletes [TEST] players, their scores, and anything mirrored to the live leaderboard.
+                    </span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
+
 
           {/* ═══ RESULTS ═══ */}
           <TabsContent value="results" className="space-y-4">

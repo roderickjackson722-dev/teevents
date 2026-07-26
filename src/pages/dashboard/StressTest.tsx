@@ -195,22 +195,47 @@ export default function StressTest() {
     }
   };
 
+  /* remove any registrations/scores we mirrored onto the public leaderboard */
+  const removeMirroredData = async () => {
+    const { data: regs } = await supabase
+      .from("tournament_registrations")
+      .select("id")
+      .eq("tournament_id", selectedTournament)
+      .like("email", "stress+%@teevents.test");
+    const ids = (regs ?? []).map((r) => r.id as string);
+    if (ids.length) {
+      await supabase.from("tournament_scores").delete().in("registration_id", ids);
+      await supabase.from("tournament_registrations").delete().in("id", ids);
+    }
+    mirrorMapRef.current = {};
+    return ids.length;
+  };
+
   const clearTestData = async () => {
     setSeeding(true);
     try {
+      const mirrored = await removeMirroredData();
       await supabase.from("test_scores").delete().eq("tournament_id", selectedTournament);
       await supabase.from("test_participants").delete().eq("tournament_id", selectedTournament);
       await queryClient.invalidateQueries({ queryKey: ["stress-participants", selectedTournament] });
+      await queryClient.invalidateQueries({ queryKey: ["stress-real-players", selectedTournament] });
       setLog([]);
       collectedRef.current = [];
       setFinishedAt(null);
-      toast({ title: "Test data cleared" });
+      setProgress(0);
+      toast({
+        title: "Test data cleared",
+        description: mirrored
+          ? `${mirrored} mirrored leaderboard entr${mirrored === 1 ? "y" : "ies"} removed.`
+          : "Test players and scores removed.",
+      });
     } catch (e) {
       toast({ title: "Clear failed", description: (e as Error).message, variant: "destructive" });
     } finally {
       setSeeding(false);
     }
   };
+
 
   /* ─────────── 2. SIMULATE ─────────── */
   const submitScore = async (

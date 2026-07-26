@@ -184,6 +184,7 @@ import SampleDashboardPreview from "./pages/sample/SampleDashboardPreview";
 import SampleLive from "./pages/sample/SampleLive";
 import SampleTournamentDashboard from "./pages/sample/SampleTournamentDashboard";
 import EventDaySales from "./pages/dashboard/EventDaySales";
+import StressTest from "./pages/dashboard/StressTest";
 
 const queryClient = new QueryClient();
 
@@ -250,6 +251,7 @@ const App = () => (
           <Route path="/dashboard/raffles" element={<DashboardLayout><PlanGate feature="auction"><Raffles /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/media" element={<DashboardLayout><MediaClips /></DashboardLayout>} />
           <Route path="/dashboard/day-of" element={<DashboardLayout><DayOfSettings /></DashboardLayout>} />
+          <Route path="/dashboard/stress-test" element={<DashboardLayout><StressTest /></DashboardLayout>} />
           <Route path="/dashboard/event-day-sales" element={<DashboardLayout><EventDaySales /></DashboardLayout>} />
           <Route path="/day-of/:slug/:code" element={<DayOf />} />
           <Route path="/day-of/:slug" element={<DayOf />} />

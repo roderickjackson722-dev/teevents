@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -9,10 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QRCodeSVG } from "qrcode.react";
+import {
+  Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
 import {
   Activity, AlertTriangle, CheckCircle2, Download, Gauge, Loader2, Play,
   QrCode, RotateCcw, Trash2, Users, XCircle,
@@ -28,10 +32,18 @@ const TARGET_WRITE_MS = 1000;
 const FIRST = ["James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda", "David", "Elizabeth", "William", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Karen", "Charles", "Sarah", "Chris", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Sandra", "Mark", "Ashley", "Donald", "Kimberly", "Steven", "Donna", "Andrew", "Carol"];
 const LAST = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Clark", "Lewis", "Walker", "Hall", "Allen", "Young", "King", "Wright", "Scott", "Green", "Baker", "Adams"];
 
+type TargetMode = "sandbox" | "live";
+
 interface TestParticipant {
   id: string;
   name: string;
   handicap_index: number | null;
+  playing_handicap: number | null;
+}
+
+interface RunEntity {
+  id: string;
+  name: string;
   playing_handicap: number | null;
 }
 
@@ -42,6 +54,7 @@ interface LogRow {
   ok: boolean;
   writeMs: number;
   visibleMs: number | null;
+  retries: number;
   error?: string;
 }
 
@@ -51,10 +64,24 @@ const pct = (arr: number[], p: number) => {
   return s[Math.min(s.length - 1, Math.floor((p / 100) * s.length))];
 };
 
+const isTransient = (msg: string) => {
+  const m = (msg || "").toLowerCase();
+  return (
+    m.includes("fetch") || m.includes("network") || m.includes("timeout") ||
+    m.includes("timed out") || m.includes("502") || m.includes("503") ||
+    m.includes("504") || m.includes("429") || m.includes("temporarily") ||
+    m.includes("connection") || m.includes("aborted") || m.includes("deadlock")
+  );
+};
+
 export default function StressTest() {
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
+
+  /* target mode */
+  const [targetMode, setTargetMode] = useState<TargetMode>("sandbox");
+  const [liveAck, setLiveAck] = useState(false);
 
   /* seeding config */
   const [seedCount, setSeedCount] = useState("70");
@@ -65,13 +92,16 @@ export default function StressTest() {
   const [holes, setHoles] = useState("3");
   const [durationSec, setDurationSec] = useState("120");
   const [sampleRate, setSampleRate] = useState("20"); // % of writes read-back verified
+  const [maxRetries, setMaxRetries] = useState("3");
 
   /* run state */
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [log, setLog] = useState<LogRow[]>([]);
   const [finishedAt, setFinishedAt] = useState<number | null>(null);
+  const [restoring, setRestoring] = useState(false);
   const cancelRef = useRef(false);
+  const collectedRef = useRef<LogRow[]>([]);
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -102,6 +132,30 @@ export default function StressTest() {
     },
     enabled: !!selectedTournament,
   });
+
+  /* real registrations for live-tournament mode */
+  const { data: realPlayers, isLoading: loadingReal } = useQuery({
+    queryKey: ["stress-real-players", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournament_registrations")
+        .select("id, first_name, last_name, playing_handicap, handicap_index")
+        .eq("tournament_id", selectedTournament)
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []).map((r) => ({
+        id: r.id as string,
+        name: `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || "Registered player",
+        playing_handicap: (r.playing_handicap ?? r.handicap_index ?? null) as number | null,
+      })) as RunEntity[];
+    },
+    enabled: !!selectedTournament && targetMode === "live",
+  });
+
+  const pool: RunEntity[] = useMemo(() => {
+    if (targetMode === "live") return realPlayers ?? [];
+    return (participants ?? []).map((p) => ({ id: p.id, name: p.name, playing_handicap: p.playing_handicap }));
+  }, [targetMode, realPlayers, participants]);
 
   const scoringBase = tournament?.slug
     ? `${window.location.origin}/t/${tournament.slug}/scoring`
@@ -144,6 +198,7 @@ export default function StressTest() {
       await supabase.from("test_participants").delete().eq("tournament_id", selectedTournament);
       await queryClient.invalidateQueries({ queryKey: ["stress-participants", selectedTournament] });
       setLog([]);
+      collectedRef.current = [];
       setFinishedAt(null);
       toast({ title: "Test data cleared" });
     } catch (e) {
@@ -154,106 +209,205 @@ export default function StressTest() {
   };
 
   /* ─────────── 2. SIMULATE ─────────── */
+  const submitScore = async (
+    entity: RunEntity,
+    hole: number,
+    gross: number,
+    net: number,
+  ): Promise<{ ok: boolean; error?: string; retries: number }> => {
+    const attempts = Math.max(0, Math.min(6, parseInt(maxRetries) || 0));
+    let retries = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        const { error } =
+          targetMode === "live"
+            ? await supabase.from("tournament_scores").upsert(
+                {
+                  tournament_id: selectedTournament,
+                  registration_id: entity.id,
+                  hole_number: hole,
+                  strokes: gross,
+                },
+                { onConflict: "registration_id,hole_number" },
+              )
+            : await supabase.from("test_scores").upsert(
+                {
+                  tournament_id: selectedTournament,
+                  test_participant_id: entity.id,
+                  hole_number: hole,
+                  gross_score: gross,
+                  net_score: net,
+                },
+                { onConflict: "test_participant_id,hole_number" },
+              );
+        if (error) throw error;
+        return { ok: true, retries };
+      } catch (e) {
+        const msg = (e as Error).message ?? String(e);
+        if (retries < attempts && isTransient(msg)) {
+          retries += 1;
+          // exponential backoff with jitter
+          await new Promise((r) => setTimeout(r, 150 * 2 ** (retries - 1) + Math.random() * 100));
+          continue;
+        }
+        return { ok: false, error: msg, retries };
+      }
+    }
+  };
+
+  const verifyVisible = async (entity: RunEntity, hole: number, gross: number) => {
+    const v0 = performance.now();
+    for (let attempt = 0; attempt < 20; attempt++) {
+      if (targetMode === "live") {
+        const { data } = await supabase
+          .from("tournament_scores")
+          .select("strokes")
+          .eq("registration_id", entity.id)
+          .eq("hole_number", hole)
+          .maybeSingle();
+        if (data?.strokes === gross) break;
+      } else {
+        const { data } = await supabase
+          .from("test_scores")
+          .select("gross_score")
+          .eq("test_participant_id", entity.id)
+          .eq("hole_number", hole)
+          .maybeSingle();
+        if (data?.gross_score === gross) break;
+      }
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    return performance.now() - v0;
+  };
+
   const runSimulation = async () => {
-    if (!participants?.length) {
-      toast({ title: "Seed test players first", variant: "destructive" });
+    if (!pool.length) {
+      toast({
+        title: targetMode === "live" ? "No registrations found for this tournament" : "Seed test players first",
+        variant: "destructive",
+      });
       return;
     }
-    const conc = Math.max(1, Math.min(participants.length, parseInt(concurrency) || 25));
+    if (targetMode === "live" && !liveAck) {
+      toast({ title: "Confirm the live-tournament warning first", variant: "destructive" });
+      return;
+    }
+
+    const conc = Math.max(1, Math.min(pool.length, parseInt(concurrency) || 25));
     const holeCount = Math.max(1, Math.min(18, parseInt(holes) || 3));
     const totalSec = Math.max(10, Math.min(600, parseInt(durationSec) || 120));
     const verifyPct = Math.max(0, Math.min(100, parseInt(sampleRate) || 20));
 
-    const pool = participants.slice(0, conc);
-    const totalWrites = pool.length * holeCount;
-    const gapMs = Math.max(0, Math.floor((totalSec * 1000) / holeCount)); // one wave per hole
+    const runPool = pool.slice(0, conc);
+    const holeList = Array.from({ length: holeCount }, (_, i) => i + 1);
+    const totalWrites = runPool.length * holeCount;
+    const gapMs = Math.max(0, Math.floor((totalSec * 1000) / holeCount));
+
+    /* live mode: snapshot existing scores so we can restore afterwards */
+    let snapshot: { registration_id: string; hole_number: number; strokes: number }[] = [];
+    if (targetMode === "live") {
+      const { data } = await supabase
+        .from("tournament_scores")
+        .select("registration_id, hole_number, strokes")
+        .eq("tournament_id", selectedTournament)
+        .in("registration_id", runPool.map((p) => p.id))
+        .in("hole_number", holeList);
+      snapshot = (data ?? []) as typeof snapshot;
+    }
 
     setRunning(true);
     setProgress(0);
     setLog([]);
+    collectedRef.current = [];
     setFinishedAt(null);
     cancelRef.current = false;
 
     const started = performance.now();
-    const collected: LogRow[] = [];
+    const collected = collectedRef.current;
     let done = 0;
 
-    for (let h = 1; h <= holeCount; h++) {
-      if (cancelRef.current) break;
-      const waveStart = performance.now();
+    // flush the log to the UI on a timer so charts update live without thrashing React
+    const flush = window.setInterval(() => setLog([...collected]), 400);
 
-      // fire the whole wave concurrently — this is the concurrent-write test
-      await Promise.all(
-        pool.map(async (p) => {
-          const gross = 3 + Math.floor(Math.random() * 4);
-          const net = Math.max(1, gross - Math.round((p.playing_handicap ?? 0) / 18));
-          const t0 = performance.now();
-          let ok = true;
-          let err: string | undefined;
-          try {
-            const { error } = await supabase.from("test_scores").upsert(
-              {
-                tournament_id: selectedTournament,
-                test_participant_id: p.id,
-                hole_number: h,
-                gross_score: gross,
-                net_score: net,
-              },
-              { onConflict: "test_participant_id,hole_number" },
-            );
-            if (error) throw error;
-          } catch (e) {
-            ok = false;
-            err = (e as Error).message;
-          }
-          const writeMs = performance.now() - t0;
+    try {
+      for (const h of holeList) {
+        if (cancelRef.current) break;
+        const waveStart = performance.now();
 
-          // read-back visibility check on a sample of writes
-          let visibleMs: number | null = null;
-          if (ok && Math.random() * 100 < verifyPct) {
-            const v0 = performance.now();
-            for (let attempt = 0; attempt < 20; attempt++) {
-              const { data } = await supabase
-                .from("test_scores")
-                .select("gross_score")
-                .eq("test_participant_id", p.id)
-                .eq("hole_number", h)
-                .maybeSingle();
-              if (data?.gross_score === gross) break;
-              await new Promise((r) => setTimeout(r, 100));
+        await Promise.all(
+          runPool.map(async (p) => {
+            const gross = 3 + Math.floor(Math.random() * 4);
+            const net = Math.max(1, gross - Math.round((p.playing_handicap ?? 0) / 18));
+            const t0 = performance.now();
+            const res = await submitScore(p, h, gross, net);
+            const writeMs = performance.now() - t0;
+
+            let visibleMs: number | null = null;
+            if (res.ok && Math.random() * 100 < verifyPct) {
+              visibleMs = (await verifyVisible(p, h, gross)) + writeMs;
             }
-            visibleMs = performance.now() - v0 + writeMs;
-          }
 
-          collected.push({
-            t: Math.round(performance.now() - started),
-            player: p.name,
-            hole: h,
-            ok,
-            writeMs: Math.round(writeMs),
-            visibleMs: visibleMs != null ? Math.round(visibleMs) : null,
-            error: err,
-          });
-          done += 1;
-          setProgress(Math.round((done / totalWrites) * 100));
-        }),
-      );
+            collected.push({
+              t: Math.round(performance.now() - started),
+              player: p.name,
+              hole: h,
+              ok: res.ok,
+              writeMs: Math.round(writeMs),
+              visibleMs: visibleMs != null ? Math.round(visibleMs) : null,
+              retries: res.retries,
+              error: res.error,
+            });
+            done += 1;
+            setProgress(Math.round((done / totalWrites) * 100));
+          }),
+        );
 
+        setLog([...collected]);
+
+        const elapsed = performance.now() - waveStart;
+        const wait = gapMs - elapsed;
+        if (wait > 0 && h < holeCount && !cancelRef.current) {
+          await new Promise((r) => setTimeout(r, wait));
+        }
+      }
+    } finally {
+      window.clearInterval(flush);
       setLog([...collected]);
+    }
 
-      // pace the waves so the run spans the configured window
-      const elapsed = performance.now() - waveStart;
-      if (h < holeCount && gapMs > elapsed && !cancelRef.current) {
-        await new Promise((r) => setTimeout(r, gapMs - elapsed));
+    /* live mode: restore the tournament to its pre-test state */
+    if (targetMode === "live") {
+      setRestoring(true);
+      try {
+        await supabase
+          .from("tournament_scores")
+          .delete()
+          .eq("tournament_id", selectedTournament)
+          .in("registration_id", runPool.map((p) => p.id))
+          .in("hole_number", holeList);
+        if (snapshot.length) {
+          await supabase.from("tournament_scores").insert(
+            snapshot.map((s) => ({ ...s, tournament_id: selectedTournament })),
+          );
+        }
+      } catch (e) {
+        toast({ title: "Restore warning", description: (e as Error).message, variant: "destructive" });
+      } finally {
+        setRestoring(false);
       }
     }
 
-    setLog([...collected]);
-    setFinishedAt(Date.now());
     setRunning(false);
-    setProgress(100);
+    setFinishedAt(Date.now());
     queryClient.invalidateQueries({ queryKey: ["stress-participants", selectedTournament] });
-    toast({ title: "Simulation complete", description: "See the Results tab for the readiness report." });
+    toast({
+      title: "Simulation complete",
+      description:
+        targetMode === "live"
+          ? "Real scores were restored to their pre-test values. See the Results tab."
+          : "See the Results tab for the readiness report.",
+    });
   };
 
   /* ─────────── 3. METRICS ─────────── */
@@ -266,6 +420,8 @@ export default function StressTest() {
     return {
       total,
       failures: failures.length,
+      retries: log.reduce((a, l) => a + l.retries, 0),
+      recovered: log.filter((l) => l.ok && l.retries > 0).length,
       errorRate,
       avgWrite: writeTimes.length ? Math.round(writeTimes.reduce((a, b) => a + b, 0) / writeTimes.length) : 0,
       p95Write: Math.round(pct(writeTimes, 95)),
@@ -275,6 +431,28 @@ export default function StressTest() {
       p95Visible: Math.round(pct(visTimes, 95)),
     };
   }, [log]);
+
+  /* time-bucketed series for the live charts */
+  const series = useMemo(() => {
+    if (!log.length) return [] as { s: number; p95Write: number; p95Visible: number | null; errorRate: number; throughput: number }[];
+    const BUCKET = 5000;
+    const maxT = log[log.length - 1].t;
+    const buckets: LogRow[][] = Array.from({ length: Math.floor(maxT / BUCKET) + 1 }, () => []);
+    log.forEach((l) => buckets[Math.floor(l.t / BUCKET)].push(l));
+    return buckets.map((rows, i) => {
+      const w = rows.filter((r) => r.ok).map((r) => r.writeMs);
+      const v = rows.filter((r) => r.visibleMs != null).map((r) => r.visibleMs as number);
+      return {
+        s: (i * BUCKET) / 1000,
+        p95Write: Math.round(pct(w, 95)),
+        p95Visible: v.length ? Math.round(pct(v, 95)) : null,
+        errorRate: rows.length ? +((rows.filter((r) => !r.ok).length / rows.length) * 100).toFixed(3) : 0,
+        throughput: Math.round(rows.length / (BUCKET / 1000)),
+      };
+    });
+  }, [log]);
+
+  const errorAlert = metrics.total > 0 && metrics.errorRate > TARGET_ERROR_RATE;
 
   const checks = useMemo(() => ([
     {
@@ -299,6 +477,13 @@ export default function StressTest() {
       action: "If scores take over 2s to appear, raise the read-back sample or investigate leaderboard refresh logic.",
     },
     {
+      label: "Transient failures recovered",
+      value: `${metrics.recovered} recovered · ${metrics.retries} retries`,
+      target: "no unrecovered errors",
+      pass: metrics.total > 0 && metrics.failures === 0,
+      action: "Retries fired but some writes still failed. Investigate the error text before event day.",
+    },
+    {
       label: "Concurrent writes stable",
       value: `${concurrency} simultaneous entries × ${holes} holes`,
       target: "no data loss",
@@ -310,9 +495,9 @@ export default function StressTest() {
   const readiness = metrics.total > 0 && checks.every((c) => c.pass);
 
   const downloadLog = () => {
-    const header = "elapsed_ms,player,hole,status,write_ms,visible_ms,error\n";
+    const header = "elapsed_ms,player,hole,status,write_ms,visible_ms,retries,error\n";
     const body = log
-      .map((l) => [l.t, `"${l.player}"`, l.hole, l.ok ? "ok" : "error", l.writeMs, l.visibleMs ?? "", `"${(l.error ?? "").replace(/"/g, "'")}"`].join(","))
+      .map((l) => [l.t, `"${l.player}"`, l.hole, l.ok ? "ok" : "error", l.writeMs, l.visibleMs ?? "", l.retries, `"${(l.error ?? "").replace(/"/g, "'")}"`].join(","))
       .join("\n");
     const blob = new Blob([header + body], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -323,7 +508,71 @@ export default function StressTest() {
     URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    if (targetMode === "sandbox") setLiveAck(false);
+  }, [targetMode]);
+
   if (orgLoading) return <div className="p-6"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+
+  const liveCharts = (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Latency p95 over time (ms)</CardTitle>
+          <CardDescription className="text-xs">Write vs leaderboard visibility, 5-second buckets</CardDescription>
+        </CardHeader>
+        <CardContent className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={series}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="s" tick={{ fontSize: 11 }} unit="s" />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Line type="monotone" dataKey="p95Write" name="Write p95" stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+              <Line type="monotone" dataKey="p95Visible" name="Visibility p95" stroke="hsl(var(--destructive))" dot={false} strokeWidth={2} connectNulls />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Error rate & throughput</CardTitle>
+          <CardDescription className="text-xs">Error % per bucket, writes per second</CardDescription>
+        </CardHeader>
+        <CardContent className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={series}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="s" tick={{ fontSize: 11 }} unit="s" />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Area type="monotone" dataKey="throughput" name="Writes/sec" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.15)" strokeWidth={2} />
+              <Area type="monotone" dataKey="errorRate" name="Error %" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive) / 0.2)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const statTiles = (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {[
+        { label: "Error rate", value: `${(metrics.errorRate * 100).toFixed(3)}%`, bad: metrics.errorRate > TARGET_ERROR_RATE },
+        { label: "Write p95", value: `${metrics.p95Write} ms`, bad: metrics.p95Write >= TARGET_WRITE_MS },
+        { label: "Visibility p95", value: metrics.verified ? `${metrics.p95Visible} ms` : "—", bad: metrics.verified > 0 && metrics.p95Visible >= TARGET_VISIBILITY_MS },
+        { label: "Retries fired", value: `${metrics.retries}`, bad: false },
+      ].map((s) => (
+        <Card key={s.label}>
+          <CardContent className="py-3">
+            <p className="text-xs text-muted-foreground">{s.label}</p>
+            <p className={`text-xl font-bold ${s.bad ? "text-destructive" : ""}`}>{s.value}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -336,16 +585,28 @@ export default function StressTest() {
         </p>
       </div>
 
-      <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-        <SelectTrigger className="w-[300px]">
-          <SelectValue placeholder="Select a tournament" />
-        </SelectTrigger>
-        <SelectContent>
-          {tournaments?.map((t) => (
-            <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-wrap items-center gap-3">
+        <Select value={selectedTournament} onValueChange={setSelectedTournament}>
+          <SelectTrigger className="w-[300px]">
+            <SelectValue placeholder="Select a tournament" />
+          </SelectTrigger>
+          <SelectContent>
+            {tournaments?.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={targetMode} onValueChange={(v) => setTargetMode(v as TargetMode)} disabled={running}>
+          <SelectTrigger className="w-[280px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="sandbox">Sandbox — isolated [TEST] players</SelectItem>
+            <SelectItem value="live">Live tournament — real registrations</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {!selectedTournament && (
         <Card>
@@ -354,6 +615,20 @@ export default function StressTest() {
             <p className="text-muted-foreground">Select a tournament above to build a test environment.</p>
           </CardContent>
         </Card>
+      )}
+
+      {selectedTournament && errorAlert && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold text-destructive">Error rate target exceeded</p>
+            <p className="text-sm text-muted-foreground">
+              {(metrics.errorRate * 100).toFixed(3)}% of submissions failed after retries (target &lt; 0.01%).
+              {metrics.retries > 0 && ` ${metrics.recovered} write(s) recovered via automatic retry.`} Review the run log
+              and re-test before event day.
+            </p>
+          </div>
+        </div>
       )}
 
       {selectedTournament && (
@@ -390,11 +665,16 @@ export default function StressTest() {
                   </Button>
                 </div>
 
-                <div className="text-sm">
+                <div className="text-sm flex items-center gap-2">
                   {loadingP ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Badge variant="secondary">{participants?.length ?? 0} test players ready</Badge>
+                  )}
+                  {targetMode === "live" && (
+                    <Badge variant="outline">
+                      {loadingReal ? "loading…" : `${realPlayers?.length ?? 0} real registrations`}
+                    </Badge>
                   )}
                 </div>
 
@@ -433,10 +713,29 @@ export default function StressTest() {
                 <CardTitle className="text-base">Simulation Script</CardTitle>
                 <CardDescription>
                   Each hole is one wave of simultaneous submissions. Waves are paced so the run spans the configured window.
+                  Target: <strong>{targetMode === "live" ? "live tournament registrations" : "sandbox [TEST] players"}</strong>
+                  {" · "}{pool.length} player(s) available.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {targetMode === "live" && (
+                  <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 space-y-2">
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4" /> Live tournament mode
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      This writes real hole scores for real registrations so you exercise the exact production path
+                      (scoring, leaderboard, realtime). Existing scores for the tested holes are snapshotted before the run
+                      and restored automatically when it finishes. Do not run this while players are actively scoring.
+                    </p>
+                    <label className="flex items-center gap-2 text-xs">
+                      <Checkbox checked={liveAck} onCheckedChange={(c) => setLiveAck(!!c)} disabled={running} />
+                      I understand real scores will be written and then restored.
+                    </label>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   <div>
                     <Label className="text-xs">Concurrent players</Label>
                     <Input type="number" min={1} value={concurrency} onChange={(e) => setConcurrency(e.target.value)} />
@@ -453,10 +752,14 @@ export default function StressTest() {
                     <Label className="text-xs">Read-back sample (%)</Label>
                     <Input type="number" min={0} max={100} value={sampleRate} onChange={(e) => setSampleRate(e.target.value)} />
                   </div>
+                  <div>
+                    <Label className="text-xs">Max retries / write</Label>
+                    <Input type="number" min={0} max={6} value={maxRetries} onChange={(e) => setMaxRetries(e.target.value)} />
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Button onClick={runSimulation} disabled={running || !participants?.length}>
+                  <Button onClick={runSimulation} disabled={running || !pool.length || (targetMode === "live" && !liveAck)}>
                     {running ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Play className="h-4 w-4 mr-1.5" />}
                     {running ? "Running…" : "Start Simulation"}
                   </Button>
@@ -465,6 +768,11 @@ export default function StressTest() {
                       <RotateCcw className="h-4 w-4 mr-1.5" /> Stop
                     </Button>
                   )}
+                  {restoring && (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" /> restoring original scores…
+                    </span>
+                  )}
                 </div>
 
                 {(running || progress > 0) && (
@@ -472,14 +780,22 @@ export default function StressTest() {
                     <Progress value={progress} />
                     <p className="text-xs text-muted-foreground">
                       {progress}% — {log.length} submissions logged
+                      {metrics.retries > 0 && <span> · {metrics.retries} retries</span>}
                       {metrics.failures > 0 && <span className="text-destructive"> · {metrics.failures} errors</span>}
                     </p>
                   </div>
                 )}
 
+                {log.length > 0 && (
+                  <div className="space-y-4 pt-2">
+                    {statTiles}
+                    {liveCharts}
+                  </div>
+                )}
+
                 <p className="text-xs text-muted-foreground">
                   Tip: open the live leaderboard on a second screen while this runs to visually confirm real-time updates,
-                  and edit one test player's score from the admin scoring page to verify overrides land instantly.
+                  and edit one player's score from the admin scoring page to verify overrides land instantly.
                 </p>
               </CardContent>
             </Card>
@@ -495,6 +811,9 @@ export default function StressTest() {
               </Card>
             ) : (
               <>
+                {statTiles}
+                {liveCharts}
+
                 <Card className={readiness ? "border-green-500/50" : "border-destructive/50"}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
@@ -503,7 +822,8 @@ export default function StressTest() {
                         : <><AlertTriangle className="h-5 w-5 text-destructive" /> Issues found — review before event day</>}
                     </CardTitle>
                     <CardDescription>
-                      {metrics.total} submissions · {metrics.verified} read-back verified
+                      {metrics.total} submissions · {metrics.verified} read-back verified · target:{" "}
+                      {targetMode === "live" ? "live registrations" : "sandbox players"}
                       {finishedAt && ` · finished ${new Date(finishedAt).toLocaleTimeString()}`}
                     </CardDescription>
                   </CardHeader>
@@ -563,6 +883,7 @@ export default function StressTest() {
                             <TableHead>Hole</TableHead>
                             <TableHead>Write</TableHead>
                             <TableHead>Visible</TableHead>
+                            <TableHead>Retries</TableHead>
                             <TableHead>Status</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -574,6 +895,7 @@ export default function StressTest() {
                               <TableCell className="text-xs">{l.hole}</TableCell>
                               <TableCell className="text-xs">{l.writeMs} ms</TableCell>
                               <TableCell className="text-xs">{l.visibleMs != null ? `${l.visibleMs} ms` : "—"}</TableCell>
+                              <TableCell className="text-xs">{l.retries || "—"}</TableCell>
                               <TableCell className="text-xs">
                                 {l.ok ? <span className="text-green-600">ok</span> : <span className="text-destructive">{l.error}</span>}
                               </TableCell>

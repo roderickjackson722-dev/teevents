@@ -797,13 +797,51 @@ export default function StressTest() {
                   </div>
                 )}
 
-                <p className="text-xs text-muted-foreground">
-                  Tip: open the live leaderboard on a second screen while this runs to visually confirm real-time updates,
-                  and edit one player's score from the admin scoring page to verify overrides land instantly.
-                </p>
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Tip: open the live leaderboard on a second screen while this runs to visually confirm real-time
+                    updates, and edit one player's score from the admin scoring page to verify overrides land instantly.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <a href={leaderboardUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Live Leaderboard
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={`${leaderboardUrl}?display=1`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> TV Display Mode
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={adminScoringUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Admin Scoring
+                      </a>
+                    </Button>
+                  </div>
+                  {targetMode === "sandbox" && !mirrorLeaderboard && (
+                    <p className="text-xs text-muted-foreground">
+                      Heads up: with leaderboard mirroring off, sandbox scores stay in the isolated test tables and will
+                      not appear on the live leaderboard.
+                    </p>
+                  )}
+                </div>
+
+                {(finishedAt || (participants?.length ?? 0) > 0) && !running && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <Button variant="destructive" size="sm" onClick={clearTestData} disabled={seeding}>
+                      {seeding ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
+                      Reset &amp; Remove All Test Data
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      Deletes [TEST] players, their scores, and anything mirrored to the live leaderboard.
+                    </span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
+
 
           {/* ═══ RESULTS ═══ */}
           <TabsContent value="results" className="space-y-4">

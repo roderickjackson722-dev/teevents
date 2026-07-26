@@ -165,6 +165,11 @@ export default function StressTest() {
     ? `${window.location.origin}/t/${tournament.slug}/scoring`
     : `${window.location.origin}/dashboard/scoring`;
 
+  const leaderboardUrl = tournament?.slug
+    ? `${window.location.origin}/live/${tournament.slug}`
+    : `${window.location.origin}/dashboard/leaderboard?tournament_id=${selectedTournament}`;
+  const adminScoringUrl = `${window.location.origin}/dashboard/scoring?tournament_id=${selectedTournament}`;
+
   const codeFor = (id: string) => id.replace(/-/g, "").slice(0, 6).toUpperCase();
 
   /* ─────────── 1. SEED ─────────── */

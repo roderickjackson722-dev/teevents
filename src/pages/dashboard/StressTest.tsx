@@ -276,6 +276,21 @@ export default function StressTest() {
                 { onConflict: "test_participant_id,hole_number" },
               );
         if (error) throw error;
+        // mirror sandbox scores onto the public leaderboard so [TEST] names appear live
+        if (targetMode === "sandbox" && mirrorLeaderboard) {
+          const regId = mirrorMapRef.current[entity.id];
+          if (regId) {
+            void supabase.from("tournament_scores").upsert(
+              {
+                tournament_id: selectedTournament,
+                registration_id: regId,
+                hole_number: hole,
+                strokes: gross,
+              },
+              { onConflict: "registration_id,hole_number" },
+            );
+          }
+        }
         return { ok: true, retries };
       } catch (e) {
         const msg = (e as Error).message ?? String(e);

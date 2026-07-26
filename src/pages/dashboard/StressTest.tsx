@@ -506,8 +506,11 @@ export default function StressTest() {
       description:
         targetMode === "live"
           ? "Real scores were restored to their pre-test values. See the Results tab."
-          : "See the Results tab for the readiness report.",
+          : mirrorLeaderboard
+            ? "Test scores are on the live leaderboard. Use Reset & Remove All Test Data when you're done."
+            : "See the Results tab for the readiness report.",
     });
+
   };
 
   /* ─────────── 3. METRICS ─────────── */

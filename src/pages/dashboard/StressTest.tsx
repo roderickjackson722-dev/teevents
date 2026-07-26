@@ -385,6 +385,7 @@ export default function StressTest() {
       snapshot = (data ?? []) as typeof snapshot;
     }
 
+    mirrorWarnedRef.current = false;
     /* sandbox mirroring: ensure every test player has a throwaway registration
        so their scores show up on the public live leaderboard during the run */
     if (targetMode === "sandbox" && mirrorLeaderboard) {
@@ -412,7 +413,9 @@ export default function StressTest() {
                   last_name: rest.join(" ") || "Player",
                   email: emailFor(p.id),
                   payment_status: "paid",
-                  group_number: Math.floor(i / 4) + 1,
+                  // offset well past real groups so mirrored [TEST] foursomes
+                  // never merge with a real team row on the leaderboard
+                  group_number: 900 + Math.floor(i / 4) + 1,
                   playing_handicap: p.playing_handicap ?? null,
                 } as any;
               }),

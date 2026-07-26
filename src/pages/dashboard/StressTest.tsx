@@ -18,7 +18,7 @@ import {
   Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import {
-  Activity, AlertTriangle, CheckCircle2, Download, Gauge, Loader2, Play,
+  Activity, AlertTriangle, CheckCircle2, Download, ExternalLink, Gauge, Loader2, Play,
   QrCode, RotateCcw, Trash2, Users, XCircle,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";

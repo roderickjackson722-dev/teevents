@@ -5,7 +5,7 @@ import {
   BarChart3, ScanLine, Gavel, ImageIcon, UserCheck, ClipboardList, Heart,
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
-  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt,
+  Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt, Gauge,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -113,6 +113,7 @@ const categories: SidebarCategory[] = [
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
       { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
       { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
+      { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
     ],
   },
   {

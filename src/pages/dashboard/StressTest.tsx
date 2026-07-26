@@ -86,6 +86,7 @@ export default function StressTest() {
   /* mirror sandbox scores onto the public live leaderboard */
   const [mirrorLeaderboard, setMirrorLeaderboard] = useState(true);
   const mirrorMapRef = useRef<Record<string, string>>({}); // test participant id -> registration id
+  const mirrorWarnedRef = useRef(false);
 
   /* seeding config */
   const [seedCount, setSeedCount] = useState("70");
@@ -290,7 +291,8 @@ export default function StressTest() {
         if (targetMode === "sandbox" && mirrorLeaderboard) {
           const regId = mirrorMapRef.current[entity.id];
           if (regId) {
-            void supabase.from("tournament_scores").upsert(
+            // NOTE: PostgREST builders are lazy — they only fire when awaited.
+            const { error: mirrorErr } = await supabase.from("tournament_scores").upsert(
               {
                 tournament_id: selectedTournament,
                 registration_id: regId,
@@ -299,6 +301,14 @@ export default function StressTest() {
               },
               { onConflict: "registration_id,hole_number" },
             );
+            if (mirrorErr && !mirrorWarnedRef.current) {
+              mirrorWarnedRef.current = true;
+              toast({
+                title: "Leaderboard mirroring failed",
+                description: mirrorErr.message,
+                variant: "destructive",
+              });
+            }
           }
         }
         return { ok: true, retries };

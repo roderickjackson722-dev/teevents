@@ -86,6 +86,7 @@ export default function StressTest() {
   /* mirror sandbox scores onto the public live leaderboard */
   const [mirrorLeaderboard, setMirrorLeaderboard] = useState(true);
   const mirrorMapRef = useRef<Record<string, string>>({}); // test participant id -> registration id
+  const mirrorWarnedRef = useRef(false);
 
   /* seeding config */
   const [seedCount, setSeedCount] = useState("70");
@@ -112,7 +113,7 @@ export default function StressTest() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, slug, course_par, test_mode_enabled")
+        .select("id, title, slug, custom_slug, course_par, test_mode_enabled, site_published, live_display_enabled")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -165,9 +166,19 @@ export default function StressTest() {
     ? `${window.location.origin}/t/${tournament.slug}/scoring`
     : `${window.location.origin}/dashboard/scoring`;
 
-  const leaderboardUrl = tournament?.slug
-    ? `${window.location.origin}/live/${tournament.slug}`
+  const publicSlug = (tournament as any)?.custom_slug || tournament?.slug;
+  // The public leaderboard hides itself when the live display is switched off,
+  // so fall back to preview mode which bypasses that gate for the organizer.
+  const leaderboardUrl = publicSlug
+    ? `${window.location.origin}/live/${publicSlug}${
+        (tournament as any)?.live_display_enabled === false ? "?preview=1" : ""
+      }`
     : `${window.location.origin}/dashboard/leaderboard?tournament_id=${selectedTournament}`;
+  const tvDisplayUrl = publicSlug
+    ? `${leaderboardUrl}${leaderboardUrl.includes("?") ? "&" : "?"}display=1`
+    : leaderboardUrl;
+  const leaderboardBlocked =
+    targetMode === "sandbox" && mirrorLeaderboard && tournament && (tournament as any).site_published === false;
   const adminScoringUrl = `${window.location.origin}/dashboard/scoring?tournament_id=${selectedTournament}`;
 
   const codeFor = (id: string) => id.replace(/-/g, "").slice(0, 6).toUpperCase();
@@ -280,7 +291,8 @@ export default function StressTest() {
         if (targetMode === "sandbox" && mirrorLeaderboard) {
           const regId = mirrorMapRef.current[entity.id];
           if (regId) {
-            void supabase.from("tournament_scores").upsert(
+            // NOTE: PostgREST builders are lazy — they only fire when awaited.
+            const { error: mirrorErr } = await supabase.from("tournament_scores").upsert(
               {
                 tournament_id: selectedTournament,
                 registration_id: regId,
@@ -289,6 +301,14 @@ export default function StressTest() {
               },
               { onConflict: "registration_id,hole_number" },
             );
+            if (mirrorErr && !mirrorWarnedRef.current) {
+              mirrorWarnedRef.current = true;
+              toast({
+                title: "Leaderboard mirroring failed",
+                description: mirrorErr.message,
+                variant: "destructive",
+              });
+            }
           }
         }
         return { ok: true, retries };
@@ -365,6 +385,7 @@ export default function StressTest() {
       snapshot = (data ?? []) as typeof snapshot;
     }
 
+    mirrorWarnedRef.current = false;
     /* sandbox mirroring: ensure every test player has a throwaway registration
        so their scores show up on the public live leaderboard during the run */
     if (targetMode === "sandbox" && mirrorLeaderboard) {
@@ -392,7 +413,9 @@ export default function StressTest() {
                   last_name: rest.join(" ") || "Player",
                   email: emailFor(p.id),
                   payment_status: "paid",
-                  group_number: Math.floor(i / 4) + 1,
+                  // offset well past real groups so mirrored [TEST] foursomes
+                  // never merge with a real team row on the leaderboard
+                  group_number: 900 + Math.floor(i / 4) + 1,
                   playing_handicap: p.playing_handicap ?? null,
                 } as any;
               }),
@@ -919,11 +942,12 @@ export default function StressTest() {
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="outline">
                       <a href={leaderboardUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Live Leaderboard
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                        Open Live Leaderboard{tournament?.title ? ` — ${tournament.title}` : ""}
                       </a>
                     </Button>
                     <Button asChild size="sm" variant="outline">
-                      <a href={`${leaderboardUrl}?display=1`} target="_blank" rel="noopener noreferrer">
+                      <a href={tvDisplayUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> TV Display Mode
                       </a>
                     </Button>
@@ -933,12 +957,22 @@ export default function StressTest() {
                       </a>
                     </Button>
                   </div>
+                  {publicSlug && (
+                    <p className="text-[11px] text-muted-foreground break-all">{leaderboardUrl}</p>
+                  )}
+                  {leaderboardBlocked && (
+                    <p className="text-xs text-destructive">
+                      This tournament site isn't published yet, so the public leaderboard can't display scores. Publish
+                      the site (or use Admin Scoring) to watch the test scores come in.
+                    </p>
+                  )}
                   {targetMode === "sandbox" && !mirrorLeaderboard && (
                     <p className="text-xs text-muted-foreground">
                       Heads up: with leaderboard mirroring off, sandbox scores stay in the isolated test tables and will
                       not appear on the live leaderboard.
                     </p>
                   )}
+
                 </div>
 
                 {(finishedAt || (participants?.length ?? 0) > 0) && !running && (

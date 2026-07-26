@@ -83,6 +83,10 @@ export default function StressTest() {
   const [targetMode, setTargetMode] = useState<TargetMode>("sandbox");
   const [liveAck, setLiveAck] = useState(false);
 
+  /* mirror sandbox scores onto the public live leaderboard */
+  const [mirrorLeaderboard, setMirrorLeaderboard] = useState(true);
+  const mirrorMapRef = useRef<Record<string, string>>({}); // test participant id -> registration id
+
   /* seeding config */
   const [seedCount, setSeedCount] = useState("70");
   const [seeding, setSeeding] = useState(false);

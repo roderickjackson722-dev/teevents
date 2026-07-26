@@ -818,7 +818,22 @@ export default function StressTest() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {targetMode === "sandbox" && (
+                  <div className="rounded-lg border p-3 flex items-start gap-2">
+                    <Checkbox
+                      id="mirror-lb"
+                      checked={mirrorLeaderboard}
+                      onCheckedChange={(v) => setMirrorLeaderboard(!!v)}
+                      disabled={running}
+                    />
+                    <Label htmlFor="mirror-lb" className="text-xs font-normal leading-relaxed">
+                      Show test players on the live leaderboard. Creates temporary [TEST] entries so you can watch the
+                      public leaderboard update in real time. They are removed with "Reset &amp; Remove All Test Data".
+                    </Label>
+                  </div>
+                )}
                 {targetMode === "live" && (
+
                   <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 space-y-2">
                     <p className="text-sm font-medium flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4" /> Live tournament mode

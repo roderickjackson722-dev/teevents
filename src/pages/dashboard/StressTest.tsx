@@ -112,7 +112,7 @@ export default function StressTest() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournaments")
-        .select("id, title, slug, course_par, test_mode_enabled")
+        .select("id, title, slug, custom_slug, course_par, test_mode_enabled, site_published, live_display_enabled")
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -165,9 +165,19 @@ export default function StressTest() {
     ? `${window.location.origin}/t/${tournament.slug}/scoring`
     : `${window.location.origin}/dashboard/scoring`;
 
-  const leaderboardUrl = tournament?.slug
-    ? `${window.location.origin}/live/${tournament.slug}`
+  const publicSlug = (tournament as any)?.custom_slug || tournament?.slug;
+  // The public leaderboard hides itself when the live display is switched off,
+  // so fall back to preview mode which bypasses that gate for the organizer.
+  const leaderboardUrl = publicSlug
+    ? `${window.location.origin}/live/${publicSlug}${
+        (tournament as any)?.live_display_enabled === false ? "?preview=1" : ""
+      }`
     : `${window.location.origin}/dashboard/leaderboard?tournament_id=${selectedTournament}`;
+  const tvDisplayUrl = publicSlug
+    ? `${leaderboardUrl}${leaderboardUrl.includes("?") ? "&" : "?"}display=1`
+    : leaderboardUrl;
+  const leaderboardBlocked =
+    targetMode === "sandbox" && mirrorLeaderboard && tournament && (tournament as any).site_published === false;
   const adminScoringUrl = `${window.location.origin}/dashboard/scoring?tournament_id=${selectedTournament}`;
 
   const codeFor = (id: string) => id.replace(/-/g, "").slice(0, 6).toUpperCase();

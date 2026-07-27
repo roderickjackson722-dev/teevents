@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download, Copy, KeyRound, RefreshCw, Mail } from "lucide-react";
 import { useRef } from "react";
 
 interface Member {
@@ -117,6 +117,62 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     else load();
   };
 
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const randomCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  };
+
+  const uniqueCode = (taken: Set<string>) => {
+    let c = randomCode();
+    while (taken.has(c)) c = randomCode();
+    taken.add(c);
+    return c;
+  };
+
+  const assignCode = async (m: Member, regenerate = false) => {
+    if (regenerate && !confirm(`Generate a new login code for ${m.member_name}? Their old code will stop working.`)) return;
+    setBusyId(m.id);
+    const taken = new Set(members.map((x) => x.scoring_code).filter(Boolean) as string[]);
+    const code = uniqueCode(taken);
+    const { error } = await (supabase as any).from("league_members").update({ scoring_code: code }).eq("id", m.id);
+    setBusyId(null);
+    if (error) return toast({ title: "Could not assign code", description: error.message, variant: "destructive" });
+    toast({ title: `Login code for ${m.member_name}: ${code}` });
+    load();
+  };
+
+  const assignAllMissing = async () => {
+    const missing = members.filter((m) => !m.scoring_code);
+    if (missing.length === 0) return toast({ title: "Every member already has a login code" });
+    const taken = new Set(members.map((x) => x.scoring_code).filter(Boolean) as string[]);
+    for (const m of missing) {
+      await (supabase as any).from("league_members").update({ scoring_code: uniqueCode(taken) }).eq("id", m.id);
+    }
+    toast({ title: `Assigned codes to ${missing.length} member${missing.length === 1 ? "" : "s"}` });
+    load();
+  };
+
+  const copyCode = (m: Member) => {
+    if (!m.scoring_code) return;
+    navigator.clipboard.writeText(m.scoring_code);
+    toast({ title: `Copied ${m.member_name}'s code` });
+  };
+
+  const sendPasswordReset = async (m: Member) => {
+    if (!m.email) return toast({ title: "This member has no email on file", variant: "destructive" });
+    if (!confirm(`Send a password reset email to ${m.email}?`)) return;
+    setBusyId(m.id);
+    const { error } = await supabase.auth.resetPasswordForEmail(m.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusyId(null);
+    if (error) toast({ title: "Reset email failed", description: error.message, variant: "destructive" });
+    else toast({ title: `Password reset sent to ${m.email}` });
+  };
+
+
   const fileInput = useRef<HTMLInputElement>(null);
 
   const handleCsvImport = async (file: File) => {
@@ -167,8 +223,9 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Users className="h-5 w-5" /> Members ({members.length})
           </h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <input ref={fileInput} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvImport(f); e.target.value = ""; }} />
+            <Button variant="outline" size="sm" onClick={assignAllMissing} disabled={members.length === 0}><KeyRound className="h-4 w-4 mr-2" /> Assign Missing Codes</Button>
             <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}><Upload className="h-4 w-4 mr-2" /> Import CSV</Button>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={members.length === 0}><Download className="h-4 w-4 mr-2" /> Export</Button>
             <Button onClick={() => setEditing({ ...emptyMember })}>
@@ -176,6 +233,10 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
             </Button>
           </div>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Login codes are visible below. Use the key icon to assign or regenerate a member's 6-character code, and the mail icon to send a password reset if they sign in with email &amp; password.
+        </p>
+
 
 
         {loading ? (
@@ -192,7 +253,7 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                   <TableHead>Handicap</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Fee Paid</TableHead>
-                  <TableHead>Scoring Code</TableHead>
+                  <TableHead>Login Code</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -208,9 +269,28 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                       </Badge>
                     </TableCell>
                     <TableCell>{m.membership_fee_paid ? "✅" : "❌"}</TableCell>
-                    <TableCell className="font-mono text-xs">{m.scoring_code}</TableCell>
+                    <TableCell>
+                      {m.scoring_code ? (
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs tracking-widest">{m.scoring_code}</span>
+                          <Button size="sm" variant="ghost" title="Copy code" onClick={() => copyCode(m)}>
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" title="Generate a new code" disabled={busyId === m.id} onClick={() => assignCode(m, true)}>
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled={busyId === m.id} onClick={() => assignCode(m)}>
+                          <KeyRound className="h-3.5 w-3.5 mr-1" /> Assign Code
+                        </Button>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => setEditing({
+                      <Button size="sm" variant="ghost" title="Send password reset email" disabled={busyId === m.id} onClick={() => sendPasswordReset(m)}>
+                        <Mail className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="sm" variant="ghost" title="Edit member" onClick={() => setEditing({
                         ...m,
                         handicap_index: m.handicap_index ?? "",
                         membership_fee_cents: m.membership_fee_cents ? m.membership_fee_cents / 100 : "",
@@ -220,10 +300,11 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                       })}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(m.id)}>
+                      <Button size="sm" variant="ghost" title="Remove member" onClick={() => remove(m.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>

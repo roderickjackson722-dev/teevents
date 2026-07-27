@@ -98,13 +98,12 @@ const ResetPassword = () => {
     } else {
       toast({
         title: isNewSignup ? "Welcome to TeeVents!" : "Password updated!",
-        description: isNewSignup ? "Let's set up your workspace." : "You can now sign in with your new password.",
+        description: leagueSlug
+          ? `You're all set${leagueName ? ` for ${leagueName}` : ""} — taking you to your league.`
+          : isNewSignup ? "Let's set up your workspace." : "You can now sign in with your new password.",
       });
-      if (isNewSignup) {
-        navigate(`/create-workspace${workspaceType ? `?type=${workspaceType}` : ""}`);
-      } else {
-        navigate("/get-started");
-      }
+      const { data } = await supabase.auth.getUser();
+      await goAfterReset(data.user?.email);
     }
     setLoading(false);
   };

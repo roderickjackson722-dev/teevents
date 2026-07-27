@@ -6,11 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Trophy } from "lucide-react";
 import { recomputeLeagueStandings } from "@/lib/leagueStandings";
+import { assignFlights, flightLabel, flightsForMethod, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
 
 export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
+  const [flightCfg, setFlightCfg] = useState<{ enabled: boolean; method: FlightMethod; basis: FlightBasis }>({ enabled: false, method: "half", basis: "score" });
 
   const load = async () => {
     setLoading(true);
@@ -20,6 +22,18 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
       .eq("league_id", leagueId)
       .order("points", { ascending: false });
     setRows(data || []);
+    const { data: lg } = await (supabase as any)
+      .from("golf_leagues")
+      .select("flights_enabled, flight_method, flight_based_on")
+      .eq("id", leagueId)
+      .maybeSingle();
+    if (lg) {
+      setFlightCfg({
+        enabled: !!lg.flights_enabled,
+        method: (lg.flight_method as FlightMethod) || "half",
+        basis: (lg.flight_based_on as FlightBasis) || "score",
+      });
+    }
     setLoading(false);
   };
 
@@ -36,6 +50,19 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
     }
     setComputing(false);
   };
+
+  const groups: { label: string; rows: any[] }[] = (() => {
+    if (!flightCfg.enabled || rows.length === 0) return [{ label: "", rows }];
+    const n = flightsForMethod(flightCfg.method, 2);
+    const assigned = assignFlights(
+      rows,
+      (r: any) => (flightCfg.basis === "handicap" ? r.league_members?.handicap_index : r.total_net ?? r.total_gross),
+      n,
+    );
+    const buckets: any[][] = Array.from({ length: n }, () => []);
+    assigned.forEach((a) => buckets[a.flightIndex].push(a.entry));
+    return buckets.map((b, i) => ({ label: flightLabel(i), rows: b })).filter((g) => g.rows.length > 0);
+  })();
 
   return (
     <Card>
@@ -54,35 +81,41 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
             No standings yet. Enter scores on the Scoring tab, then click <b>Recompute</b>.
           </p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">#</TableHead>
-                <TableHead>Player</TableHead>
-                <TableHead>HCP</TableHead>
-                <TableHead className="text-right">Matches</TableHead>
-                <TableHead className="text-right">W-L-T</TableHead>
-                <TableHead className="text-right">Gross</TableHead>
-                <TableHead className="text-right">Net</TableHead>
-                <TableHead className="text-right font-bold">Points</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r, i) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-bold">{i + 1}</TableCell>
-                  <TableCell className="font-medium">{r.league_members.member_name}</TableCell>
-                  <TableCell>{r.league_members.handicap_index ?? "—"}</TableCell>
-                  <TableCell className="text-right">{r.matches_played}</TableCell>
-                  <TableCell className="text-right">{r.wins}-{r.losses}-{r.ties}</TableCell>
-                  <TableCell className="text-right">{r.total_gross}</TableCell>
-                  <TableCell className="text-right">{r.total_net}</TableCell>
-                  <TableCell className="text-right font-bold">{r.points}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          groups.map((g, gi) => (
+            <div key={gi} className="space-y-2">
+              {g.label && <h3 className="text-sm font-semibold text-muted-foreground">{g.label} · {g.rows.length} players</h3>}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>Player</TableHead>
+                    <TableHead>HCP</TableHead>
+                    <TableHead className="text-right">Matches</TableHead>
+                    <TableHead className="text-right">W-L-T</TableHead>
+                    <TableHead className="text-right">Gross</TableHead>
+                    <TableHead className="text-right">Net</TableHead>
+                    <TableHead className="text-right font-bold">Points</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {g.rows.map((r, i) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="font-bold">{i + 1}</TableCell>
+                      <TableCell className="font-medium">{r.league_members.member_name}</TableCell>
+                      <TableCell>{r.league_members.handicap_index ?? "—"}</TableCell>
+                      <TableCell className="text-right">{r.matches_played}</TableCell>
+                      <TableCell className="text-right">{r.wins}-{r.losses}-{r.ties}</TableCell>
+                      <TableCell className="text-right">{r.total_gross}</TableCell>
+                      <TableCell className="text-right">{r.total_net}</TableCell>
+                      <TableCell className="text-right font-bold">{r.points}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ))
         )}
+
       </CardContent>
     </Card>
   );

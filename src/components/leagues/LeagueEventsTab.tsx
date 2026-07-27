@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Loader2, Calendar, DollarSign } from "lucide-react";
+import { FLIGHT_METHODS, SHOOTOUT_DEFAULT_ROUNDS, THREE_MAN_SCRAMBLE_WEIGHTS } from "@/lib/flightPayouts";
 
 export const LEAGUE_FORMATS = [
   { id: "individual_stroke", name: "Individual Stroke Play", teamSize: 1 },
@@ -18,7 +19,10 @@ export const LEAGUE_FORMATS = [
   { id: "two_man_scramble", name: "Two-Man Scramble", teamSize: 2 },
   { id: "two_man_shamble", name: "Two-Man Shamble", teamSize: 2 },
   { id: "four_man_best_ball", name: "Four-Man Best Ball", teamSize: 4 },
+  { id: "three_man_scramble", name: "3-Man Scramble", teamSize: 3 },
   { id: "four_man_scramble", name: "Four-Man Scramble", teamSize: 4 },
+  { id: "shootout", name: "Shootout (multi-round)", teamSize: 2 },
+
   { id: "stableford", name: "Stableford", teamSize: 1 },
   { id: "quota", name: "Quota", teamSize: 1 },
   { id: "team_points", name: "Team Points", teamSize: 4 },
@@ -55,6 +59,10 @@ const empty = {
   fee_tiers: [] as FeeTier[],
   start_format: "shotgun",
   tee_interval_minutes: 10 as any,
+  flights_enabled: false,
+  flight_method: "half",
+  flight_based_on: "score",
+
 };
 
 function newTierId() {
@@ -112,6 +120,10 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       tee_interval_minutes: editing.tee_interval_minutes !== "" && editing.tee_interval_minutes != null
         ? Math.max(5, Math.min(30, Number(editing.tee_interval_minutes) || 10))
         : 10,
+      flights_enabled: !!editing.flights_enabled,
+      flight_method: editing.flights_enabled ? (editing.flight_method || "half") : "none",
+      flight_based_on: editing.flight_based_on || "score",
+
       recurrence_rule: editing.recurrence_freq
         ? { freq: editing.recurrence_freq, count: editing.recurrence_count ? Number(editing.recurrence_count) : null }
         : null,
@@ -305,6 +317,58 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {editing.format_type === "three_man_scramble" && (
+                  <p className="text-xs text-muted-foreground rounded-md border bg-muted/30 p-2">
+                    Team handicap for a 3-Man Scramble is calculated as {THREE_MAN_SCRAMBLE_WEIGHTS} of the three players' handicaps.
+                  </p>
+                )}
+                {editing.format_type === "shootout" && (
+                  <div className="rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
+                    <p className="font-medium text-foreground mb-1">Shootout rounds (scores aggregate):</p>
+                    <ul className="list-disc pl-4">
+                      {SHOOTOUT_DEFAULT_ROUNDS.map((r) => <li key={r.round}>{r.label}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="rounded-md border p-3 space-y-3 bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="event-flights"
+                      checked={!!editing.flights_enabled}
+                      onCheckedChange={(v) => setEditing({ ...editing, flights_enabled: v })}
+                    />
+                    <Label htmlFor="event-flights" className="text-sm font-semibold">Flight this event</Label>
+                  </div>
+                  {editing.flights_enabled && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Flight Method</Label>
+                        <Select value={editing.flight_method || "half"} onValueChange={(v) => setEditing({ ...editing, flight_method: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {FLIGHT_METHODS.filter((m) => m.id !== "none").map((m) => (
+                              <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Based on</Label>
+                        <Select value={editing.flight_based_on || "score"} onValueChange={(v) => setEditing({ ...editing, flight_based_on: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="score">Total Score</SelectItem>
+                            <SelectItem value="handicap">Handicap</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+
 
                 {!editing.id && (
                   <div className="rounded-md border p-3 space-y-3 bg-muted/30">

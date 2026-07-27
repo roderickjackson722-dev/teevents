@@ -2705,6 +2705,76 @@ export type Database = {
         }
         Relationships: []
       }
+      flight_payouts: {
+        Row: {
+          created_at: string
+          display_order: number
+          first_place_cents: number
+          flight_name: string
+          id: string
+          league_event_id: string | null
+          league_id: string | null
+          player_count: number
+          second_place_cents: number
+          third_place_cents: number
+          total_purse_cents: number
+          tournament_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          first_place_cents?: number
+          flight_name: string
+          id?: string
+          league_event_id?: string | null
+          league_id?: string | null
+          player_count?: number
+          second_place_cents?: number
+          third_place_cents?: number
+          total_purse_cents?: number
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          first_place_cents?: number
+          flight_name?: string
+          id?: string
+          league_event_id?: string | null
+          league_id?: string | null
+          player_count?: number
+          second_place_cents?: number
+          third_place_cents?: number
+          total_purse_cents?: number
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_payouts_league_event_id_fkey"
+            columns: ["league_event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_payouts_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_payouts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flyer_templates: {
         Row: {
           canva_template_id: string | null
@@ -2826,6 +2896,9 @@ export type Database = {
           created_by: string | null
           description: string | null
           end_date: string | null
+          flight_based_on: string
+          flight_method: string
+          flights_enabled: boolean
           font_color: string | null
           id: string
           is_active: boolean
@@ -2855,6 +2928,9 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          flight_based_on?: string
+          flight_method?: string
+          flights_enabled?: boolean
           font_color?: string | null
           id?: string
           is_active?: boolean
@@ -2884,6 +2960,9 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          flight_based_on?: string
+          flight_method?: string
+          flights_enabled?: boolean
           font_color?: string | null
           id?: string
           is_active?: boolean
@@ -3346,6 +3425,9 @@ export type Database = {
           event_date: string
           event_name: string
           fee_tiers: Json
+          flight_based_on: string
+          flight_method: string
+          flights_enabled: boolean
           format_type: string
           id: string
           is_completed: boolean
@@ -3374,6 +3456,9 @@ export type Database = {
           event_date: string
           event_name: string
           fee_tiers?: Json
+          flight_based_on?: string
+          flight_method?: string
+          flights_enabled?: boolean
           format_type?: string
           id?: string
           is_completed?: boolean
@@ -3402,6 +3487,9 @@ export type Database = {
           event_date?: string
           event_name?: string
           fee_tiers?: Json
+          flight_based_on?: string
+          flight_method?: string
+          flights_enabled?: boolean
           format_type?: string
           id?: string
           is_completed?: boolean
@@ -8262,6 +8350,8 @@ export type Database = {
           strokes_per_hole: Json | null
           survey_completed_at: string | null
           survey_response_token: string | null
+          team_handicap: number | null
+          team_handicap_percentage: number | null
           tier_id: string | null
           tournament_id: string
         }
@@ -8300,6 +8390,8 @@ export type Database = {
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
           survey_response_token?: string | null
+          team_handicap?: number | null
+          team_handicap_percentage?: number | null
           tier_id?: string | null
           tournament_id: string
         }
@@ -8338,6 +8430,8 @@ export type Database = {
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
           survey_response_token?: string | null
+          team_handicap?: number | null
+          team_handicap_percentage?: number | null
           tier_id?: string | null
           tournament_id?: string
         }
@@ -8989,6 +9083,9 @@ export type Database = {
           early_signup_label: string | null
           end_date: string | null
           external_link: string | null
+          flight_based_on: string
+          flight_method: string
+          flights_enabled: boolean
           foursome_registration: boolean
           fundraising_goal_custom: boolean
           gallery_position: string
@@ -9090,6 +9187,7 @@ export type Database = {
           schedule_info_html: string | null
           scoring_format: string
           setup_checklist_dismissed: boolean
+          shootout_rounds: Json | null
           show_branding_badge: boolean
           show_branding_footer: boolean
           show_countdown: boolean
@@ -9241,6 +9339,9 @@ export type Database = {
           early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
+          flight_based_on?: string
+          flight_method?: string
+          flights_enabled?: boolean
           foursome_registration?: boolean
           fundraising_goal_custom?: boolean
           gallery_position?: string
@@ -9342,6 +9443,7 @@ export type Database = {
           schedule_info_html?: string | null
           scoring_format?: string
           setup_checklist_dismissed?: boolean
+          shootout_rounds?: Json | null
           show_branding_badge?: boolean
           show_branding_footer?: boolean
           show_countdown?: boolean
@@ -9493,6 +9595,9 @@ export type Database = {
           early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
+          flight_based_on?: string
+          flight_method?: string
+          flights_enabled?: boolean
           foursome_registration?: boolean
           fundraising_goal_custom?: boolean
           gallery_position?: string
@@ -9594,6 +9699,7 @@ export type Database = {
           schedule_info_html?: string | null
           scoring_format?: string
           setup_checklist_dismissed?: boolean
+          shootout_rounds?: Json | null
           show_branding_badge?: boolean
           show_branding_footer?: boolean
           show_countdown?: boolean

@@ -1,196 +1,302 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Scale, Info, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Scale, Info, Loader2, Save } from "lucide-react";
 import {
-  SPLIT_OPTIONS,
-  PAYOUT_TEMPLATES,
+  FLIGHT_METHODS,
+  flightsForMethod,
   buildPayoutPlan,
+  placesPaidFor,
   money,
-  type SplitMode,
-  type PotSplitMode,
+  type FlightMethod,
+  type FlightBasis,
 } from "@/lib/flightPayouts";
 
 interface Props {
   /** number of players/teams in the field */
   defaultFieldSize?: number;
-  /** money collected, in cents — used to prefill the pot */
-  defaultPotCents?: number;
-  /** label describing where the money came from */
+  /** money collected so far, in cents — used to prefill the purse */
+  defaultPurseCents?: number;
   potSourceLabel?: string;
-  /** optional: create the flights in the database */
-  onCreateFlights?: (names: string[]) => Promise<void> | void;
-  creating?: boolean;
+  /** persisted settings */
+  flightsEnabled?: boolean;
+  flightMethod?: FlightMethod;
+  flightBasedOn?: FlightBasis;
+  /** save the flight settings back to the tournament / league / event */
+  onSaveSettings?: (s: { flights_enabled: boolean; flight_method: FlightMethod; flight_based_on: FlightBasis }) => Promise<void> | void;
+  /** optional: apply the flights to the field (create flights + assign players) */
+  onApplyFlights?: (opts: { flights: number; names: string[]; basedOn: FlightBasis }) => Promise<void> | void;
+  /** scope used when saving the financial breakdown */
+  scope?: { tournament_id?: string; league_id?: string; league_event_id?: string };
 }
 
 export default function FlightPayoutPlanner({
   defaultFieldSize = 0,
-  defaultPotCents = 0,
-  potSourceLabel = "collected",
-  onCreateFlights,
-  creating,
+  defaultPurseCents = 0,
+  potSourceLabel = "collected so far",
+  flightsEnabled = false,
+  flightMethod = "half",
+  flightBasedOn = "score",
+  onSaveSettings,
+  onApplyFlights,
+  scope,
 }: Props) {
+  const { toast } = useToast();
+  const [enabled, setEnabled] = useState(flightsEnabled);
+  const [method, setMethod] = useState<FlightMethod>(flightMethod === "none" ? "half" : flightMethod);
+  const [basis, setBasis] = useState<FlightBasis>(flightBasedOn);
+  const [customFlights, setCustomFlights] = useState("3");
   const [fieldSize, setFieldSize] = useState(String(defaultFieldSize || 0));
-  const [potDollars, setPotDollars] = useState(((defaultPotCents || 0) / 100).toFixed(2));
-  const [splitMode, setSplitMode] = useState<SplitMode>("half");
-  const [customFlights, setCustomFlights] = useState("5");
-  const [potSplit, setPotSplit] = useState<PotSplitMode>("even");
-  const [templateId, setTemplateId] = useState("top3");
+  const [purseDollars, setPurseDollars] = useState(((defaultPurseCents || 0) / 100).toFixed(2));
+  const [sponsorDollars, setSponsorDollars] = useState("0");
+  const [busy, setBusy] = useState<null | "settings" | "apply" | "save">(null);
 
-  const flights =
-    splitMode === "custom"
-      ? Math.min(10, Math.max(1, parseInt(customFlights) || 1))
-      : SPLIT_OPTIONS.find((o) => o.id === splitMode)?.flights ?? 1;
+  useEffect(() => { setEnabled(flightsEnabled); }, [flightsEnabled]);
+  useEffect(() => { if (flightMethod && flightMethod !== "none") setMethod(flightMethod); }, [flightMethod]);
+  useEffect(() => { setBasis(flightBasedOn); }, [flightBasedOn]);
+  useEffect(() => { if (defaultFieldSize) setFieldSize(String(defaultFieldSize)); }, [defaultFieldSize]);
+  useEffect(() => { if (defaultPurseCents) setPurseDollars((defaultPurseCents / 100).toFixed(2)); }, [defaultPurseCents]);
 
-  const percents = PAYOUT_TEMPLATES.find((t) => t.id === templateId)?.percents ?? [100];
+  const flights = flightsForMethod(method, parseInt(customFlights) || 1);
+  const totalPurseCents =
+    Math.round((parseFloat(purseDollars) || 0) * 100) + Math.round((parseFloat(sponsorDollars) || 0) * 100);
 
   const plan = useMemo(
     () =>
       buildPayoutPlan({
         fieldSize: Math.max(0, parseInt(fieldSize) || 0),
-        potCents: Math.round((parseFloat(potDollars) || 0) * 100),
-        flights,
-        potSplit,
-        percents,
+        purseCents: totalPurseCents,
+        flights: enabled ? flights : 1,
       }),
-    [fieldSize, potDollars, flights, potSplit, percents],
+    [fieldSize, totalPurseCents, flights, enabled],
   );
 
-  const activeOption = SPLIT_OPTIONS.find((o) => o.id === splitMode);
+  const maxPlaces = Math.max(1, ...plan.flights.map((f) => f.places.length));
+  const activeMethod = FLIGHT_METHODS.find((m) => m.id === method);
+
+  const saveSettings = async () => {
+    if (!onSaveSettings) return;
+    setBusy("settings");
+    try {
+      await onSaveSettings({
+        flights_enabled: enabled,
+        flight_method: enabled ? method : "none",
+        flight_based_on: basis,
+      });
+      toast({ title: "Flight settings saved" });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const applyFlights = async () => {
+    if (!onApplyFlights) return;
+    setBusy("apply");
+    try {
+      await onApplyFlights({ flights, names: plan.flights.map((f) => f.name), basedOn: basis });
+      toast({ title: "Flights applied" });
+    } catch (e: any) {
+      toast({ title: "Could not apply flights", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const saveBreakdown = async () => {
+    if (!scope) return;
+    setBusy("save");
+    try {
+      let del = (supabase as any).from("flight_payouts").delete();
+      if (scope.league_event_id) del = del.eq("league_event_id", scope.league_event_id);
+      else if (scope.tournament_id) del = del.eq("tournament_id", scope.tournament_id);
+      else if (scope.league_id) del = del.eq("league_id", scope.league_id).is("league_event_id", null);
+      await del;
+
+      const rows = plan.flights.map((f, i) => ({
+        ...scope,
+        flight_name: f.name,
+        display_order: i,
+        player_count: f.players,
+        total_purse_cents: f.purseCents,
+        first_place_cents: f.places[0]?.amountCents ?? 0,
+        second_place_cents: f.places[1]?.amountCents ?? 0,
+        third_place_cents: f.places[2]?.amountCents ?? 0,
+      }));
+      const { error } = await (supabase as any).from("flight_payouts").insert(rows);
+      if (error) throw error;
+      toast({ title: "Financial breakdown saved" });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Scale className="h-5 w-5 text-primary" /> Flighting &amp; Payout Breakdown
+          <Scale className="h-5 w-5 text-primary" /> Flight Settings &amp; Payout Breakdown
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Sort the field by score, split it into flights, and see exactly how the pot is divided.
+          Rank the field by score or handicap, split it into flights, and see exactly how the purse is divided.
         </p>
       </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Switch id="flights-enabled" checked={enabled} onCheckedChange={setEnabled} />
+          <Label htmlFor="flights-enabled">Flight this field</Label>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <Label>Field size (players/teams)</Label>
-            <Input type="number" min="0" value={fieldSize} onChange={(e) => setFieldSize(e.target.value)} />
-          </div>
-          <div>
-            <Label>Total pot ($)</Label>
-            <Input type="number" min="0" step="0.01" value={potDollars} onChange={(e) => setPotDollars(e.target.value)} />
-            {defaultPotCents > 0 && (
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {money(defaultPotCents)} {potSourceLabel}
-              </p>
+            <Label className="text-sm font-semibold">Flight Method</Label>
+            <RadioGroup value={method} onValueChange={(v) => setMethod(v as FlightMethod)} className="mt-2 space-y-2">
+              {FLIGHT_METHODS.filter((m) => m.id !== "none").map((m) => (
+                <div key={m.id} className="flex items-start gap-2">
+                  <RadioGroupItem value={m.id} id={`fm-${m.id}`} className="mt-1" disabled={!enabled} />
+                  <div>
+                    <Label htmlFor={`fm-${m.id}`} className="font-normal">{m.label}</Label>
+                    <p className="text-xs text-muted-foreground">{m.description}</p>
+                  </div>
+                </div>
+              ))}
+            </RadioGroup>
+            {method === "custom" && (
+              <div className="mt-2">
+                <Label className="text-xs">Number of flights (for the breakdown below)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={customFlights}
+                  onChange={(e) => setCustomFlights(e.target.value)}
+                  disabled={!enabled}
+                />
+              </div>
             )}
           </div>
+
           <div>
-            <Label>How to flight the field</Label>
-            <Select value={splitMode} onValueChange={(v) => setSplitMode(v as SplitMode)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {SPLIT_OPTIONS.map((o) => (
-                  <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {splitMode === "custom" && (
-              <Input
-                className="mt-2"
-                type="number"
-                min="1"
-                max="10"
-                value={customFlights}
-                onChange={(e) => setCustomFlights(e.target.value)}
-              />
-            )}
-          </div>
-          <div>
-            <Label>Places paid per flight</Label>
-            <Select value={templateId} onValueChange={setTemplateId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PAYOUT_TEMPLATES.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label className="text-sm font-semibold">Based on</Label>
+            <RadioGroup value={basis} onValueChange={(v) => setBasis(v as FlightBasis)} className="mt-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="score" id="fb-score" disabled={!enabled} />
+                <Label htmlFor="fb-score" className="font-normal">Total Score</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="handicap" id="fb-hcp" disabled={!enabled} />
+                <Label htmlFor="fb-hcp" className="font-normal">Handicap</Label>
+              </div>
+            </RadioGroup>
+
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div>
+                <Label className="text-xs">Field size</Label>
+                <Input type="number" min="0" value={fieldSize} onChange={(e) => setFieldSize(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Entry fees ($)</Label>
+                <Input type="number" min="0" step="0.01" value={purseDollars} onChange={(e) => setPurseDollars(e.target.value)} />
+                {defaultPurseCents > 0 && (
+                  <p className="text-[11px] text-muted-foreground mt-1">{money(defaultPurseCents)} {potSourceLabel}</p>
+                )}
+              </div>
+              <div>
+                <Label className="text-xs">Sponsor contributions ($)</Label>
+                <Input type="number" min="0" step="0.01" value={sponsorDollars} onChange={(e) => setSponsorDollars(e.target.value)} />
+              </div>
+              <div className="flex items-end">
+                <p className="text-sm"><span className="text-muted-foreground">Total purse: </span><span className="font-semibold">{money(totalPurseCents)}</span></p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Label className="text-sm">Divide the pot</Label>
-          <Select value={potSplit} onValueChange={(v) => setPotSplit(v as PotSplitMode)}>
-            <SelectTrigger className="w-[260px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="even">Evenly between flights</SelectItem>
-              <SelectItem value="by_size">Proportional to flight size</SelectItem>
-            </SelectContent>
-          </Select>
-          {onCreateFlights && flights > 1 && (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={creating}
-              onClick={() => onCreateFlights(plan.flights.map((f) => f.name))}
-            >
-              {creating && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-              Create these {flights} flights
+        <div className="flex flex-wrap gap-2">
+          {onSaveSettings && (
+            <Button size="sm" onClick={saveSettings} disabled={busy !== null}>
+              {busy === "settings" ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
+              Save Flight Settings
+            </Button>
+          )}
+          {onApplyFlights && enabled && method !== "custom" && (
+            <Button size="sm" variant="outline" onClick={applyFlights} disabled={busy !== null}>
+              {busy === "apply" && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              Apply Flights
+            </Button>
+          )}
+          {scope && (
+            <Button size="sm" variant="outline" onClick={saveBreakdown} disabled={busy !== null}>
+              {busy === "save" && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              Save Financial Breakdown
             </Button>
           )}
         </div>
 
-        {activeOption && (
+        {activeMethod && (
           <div className="flex gap-2 rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
             <span>
-              {activeOption.description} Rank every player by total score (gross or net), then assign the
-              top finishers to Flight A, the next group to Flight B, and so on. Each flight is paid from its
-              own share of the pot.
+              {activeMethod.description} Each flight's purse is its share of the field
+              (players in flight ÷ total players × total purse). Places paid follow flight size:
+              1–6 players pay 1 place (100%), 7–10 pay 2 (70/30), 11+ pay 3 (65/25/10).
             </span>
           </div>
         )}
 
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Flight</TableHead>
-                <TableHead>Field positions</TableHead>
-                <TableHead className="text-right">Players</TableHead>
-                <TableHead className="text-right">Flight pot</TableHead>
-                {percents.map((_, i) => (
-                  <TableHead key={i} className="text-right">
-                    {i + 1}
-                    {["st", "nd", "rd"][i] ?? "th"}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {plan.flights.map((f) => (
-                <TableRow key={f.name}>
-                  <TableCell className="font-medium">{f.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{f.range}</TableCell>
-                  <TableCell className="text-right">{f.players}</TableCell>
-                  <TableCell className="text-right font-medium">{money(f.potCents)}</TableCell>
-                  {f.places.map((p) => (
-                    <TableCell key={p.place} className="text-right">{money(p.amountCents)}</TableCell>
+        <div>
+          <h4 className="font-semibold mb-2 text-sm">Financial Breakdown</h4>
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Flight</TableHead>
+                  <TableHead>Positions</TableHead>
+                  <TableHead className="text-right">Players</TableHead>
+                  <TableHead className="text-right">Purse</TableHead>
+                  {Array.from({ length: maxPlaces }, (_, i) => (
+                    <TableHead key={i} className="text-right">
+                      {i + 1}{["st", "nd", "rd"][i] ?? "th"}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {plan.flights.map((f) => (
+                  <TableRow key={f.name}>
+                    <TableCell className="font-medium">{f.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.range}</TableCell>
+                    <TableCell className="text-right">{f.players}</TableCell>
+                    <TableCell className="text-right font-medium">{money(f.purseCents)}</TableCell>
+                    {Array.from({ length: maxPlaces }, (_, i) => (
+                      <TableCell key={i} className="text-right">
+                        {f.places[i] ? money(f.places[i].amountCents) : "—"}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex flex-wrap gap-3 text-sm">
+          <Badge variant="outline">Total purse: {money(totalPurseCents)}</Badge>
           <Badge variant="outline">Total paid out: {money(plan.totalPaidCents)}</Badge>
+          <Badge variant="outline">Rounding remainder: {money(plan.remainderCents)}</Badge>
           <Badge variant="outline">
-            Rounding remainder: {money(plan.remainderCents)}
+            Places paid (largest flight): {placesPaidFor(Math.max(0, ...plan.flights.map((f) => f.players))).length}
           </Badge>
         </div>
       </CardContent>

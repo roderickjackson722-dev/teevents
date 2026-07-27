@@ -39,10 +39,11 @@ export const SCORING_FORMATS: ScoringFormat[] = [
   {
     id: "shootout",
     name: "Shootout",
-    description: "Elimination format — the highest scorer on each hole is knocked out (ties settled by chip-off or playoff) until one player remains.",
-    teamSize: 1,
+    description: "Multi-round team event: Round 1 Scramble, Round 2 Greensomes (modified alternate shot), Final Round Better Ball. Scores aggregate across rounds.",
+    teamSize: 2,
     scoring: "shootout",
   },
+  {
 
     id: "best_ball_2",
     name: "2-Man Best Ball",

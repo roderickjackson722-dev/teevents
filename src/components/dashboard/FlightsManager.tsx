@@ -11,7 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Users } from "lucide-react";
 import FlightPayoutPlanner from "@/components/payouts/FlightPayoutPlanner";
+import MinimumDrivesTracker from "@/components/dashboard/MinimumDrivesTracker";
+import ShootoutRoundsEditor from "@/components/dashboard/ShootoutRoundsEditor";
 import { assignFlights, threeManScrambleHandicap, THREE_MAN_SCRAMBLE_WEIGHTS, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
+
 
 interface Flight {
   id: string;

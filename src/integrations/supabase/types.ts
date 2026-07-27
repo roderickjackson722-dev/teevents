@@ -10262,9 +10262,77 @@ export type Database = {
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
+      admin_get_sample_tournament: {
+        Args: { _id: string }
+        Returns: {
+          admin_id: string | null
+          created_at: string
+          crm_notes: string | null
+          crm_status: string | null
+          description: string | null
+          event_date: string | null
+          hero_image_url: string | null
+          id: string
+          last_accessed_at: string | null
+          last_contacted_at: string | null
+          location: string | null
+          logo_url: string | null
+          prospect_company: string | null
+          prospect_email: string | null
+          prospect_name: string | null
+          prospect_source: string | null
+          registration_fee_cents: number | null
+          scoring_format: string | null
+          team_fee_cents: number | null
+          tournament_name: string
+          unique_slug: string
+          updated_at: string
+          view_count: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "sample_tournaments"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_grant_manual_entries: {
         Args: { _additional: number; _reason: string; _tournament_id: string }
         Returns: undefined
+      }
+      admin_list_sample_tournaments: {
+        Args: never
+        Returns: {
+          admin_id: string | null
+          created_at: string
+          crm_notes: string | null
+          crm_status: string | null
+          description: string | null
+          event_date: string | null
+          hero_image_url: string | null
+          id: string
+          last_accessed_at: string | null
+          last_contacted_at: string | null
+          location: string | null
+          logo_url: string | null
+          prospect_company: string | null
+          prospect_email: string | null
+          prospect_name: string | null
+          prospect_source: string | null
+          registration_fee_cents: number | null
+          scoring_format: string | null
+          team_fee_cents: number | null
+          tournament_name: string
+          unique_slug: string
+          updated_at: string
+          view_count: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "sample_tournaments"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       bump_sample_view: { Args: { _token: string }; Returns: string }
       check_auth_rate_limit: {

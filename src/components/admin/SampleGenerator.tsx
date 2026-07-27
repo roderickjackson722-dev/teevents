@@ -132,12 +132,10 @@ export default function SampleGenerator() {
 
 
   async function loadSamples() {
-    const { data } = await supabase
-      .from("sample_tournaments")
-      .select("id, unique_slug, tournament_name, event_date, location, view_count, last_accessed_at, created_at, prospect_name, prospect_email, prospect_company, prospect_source, last_contacted_at, crm_status, crm_notes")
-      .order("created_at", { ascending: false });
+    const { data } = await (supabase as any).rpc("admin_list_sample_tournaments");
     setSamples((data as SampleRow[]) || []);
   }
+
 
   useEffect(() => { loadSamples(); }, []);
 
@@ -230,8 +228,10 @@ export default function SampleGenerator() {
 
   function handleEdit(s: SampleRow) {
     setEditingId(s.id);
-    supabase.from("sample_tournaments").select("*").eq("id", s.id).single().then(({ data }) => {
+    (supabase as any).rpc("admin_get_sample_tournament", { _id: s.id }).then(({ data: rows }: any) => {
+      const data = Array.isArray(rows) ? rows[0] : rows;
       if (data) {
+
         setForm({
           tournament_name: data.tournament_name || "",
           event_date: data.event_date || "",

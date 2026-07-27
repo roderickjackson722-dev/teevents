@@ -128,8 +128,69 @@ Deno.serve(async (req) => {
             .update({ times_used: (p?.times_used || 0) + 1 })
             .eq("code", promo);
         }
-      } else if (kind === "league_membership") {
+      } else if (kind === "league_registration") {
         const paymentId = session.metadata!.payment_id;
+        const memberId = session.metadata!.member_id;
+        const responseId = session.metadata!.response_id;
+        const promo = session.metadata?.promo_code || "";
+        const pi = String(session.payment_intent || "");
+
+        await supabaseAdmin
+          .from("league_payments")
+          .update({ status: "paid", stripe_payment_intent: pi })
+          .eq("id", paymentId);
+        await supabaseAdmin
+          .from("league_registration_responses")
+          .update({ payment_status: "paid", paid_at: new Date().toISOString() })
+          .eq("id", responseId);
+        await supabaseAdmin
+          .from("league_members")
+          .update({ membership_fee_paid: true, membership_status: "active" })
+          .eq("id", memberId);
+
+        if (promo) {
+          const { data: p } = await supabaseAdmin
+            .from("league_registration_promo_codes")
+            .select("id, times_used")
+            .eq("league_id", session.metadata!.league_id)
+            .eq("code", promo)
+            .maybeSingle();
+          if (p) {
+            await supabaseAdmin
+              .from("league_registration_promo_codes")
+              .update({ times_used: (p.times_used || 0) + 1 })
+              .eq("id", p.id);
+          }
+        }
+
+        const { data: member } = await supabaseAdmin
+          .from("league_members")
+          .select("member_name, email, scoring_code, league:golf_leagues(league_name, league_slug)")
+          .eq("id", memberId)
+          .maybeSingle();
+        if (member?.email) {
+          const slug = (member as any).league?.league_slug;
+          await sendConfirmationEmail({
+            to: member.email,
+            subject: `You're in — ${(member as any).league?.league_name || "your league"}`,
+            html: confirmationHtml({
+              headline: "League Registration Confirmed",
+              leagueName: (member as any).league?.league_name || "",
+              amountCents: session.amount_total || 0,
+              reference: pi || String(session.id),
+              memberName: member.member_name,
+              continueUrl: slug && member.scoring_code
+                ? `https://teevents.golf/league/${slug}/me/${member.scoring_code}`
+                : undefined,
+            }) + `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:0 20px">
+              <p style="color:#555;font-size:14px">Your member login code is
+              <strong style="font-family:monospace;font-size:18px;letter-spacing:2px">${member.scoring_code || ""}</strong>.
+              Use it at <a href="https://teevents.golf/league/${slug}/score">teevents.golf/league/${slug}/score</a>.</p>
+            </div>`,
+          });
+        }
+      } else if (kind === "league_membership") {
+
         const memberId = session.metadata!.member_id;
         const pi = String(session.payment_intent || "");
         await supabaseAdmin

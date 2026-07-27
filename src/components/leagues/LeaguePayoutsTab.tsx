@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, DollarSign, Percent, Wallet } from "lucide-react";
+import FlightPayoutPlanner from "@/components/payouts/FlightPayoutPlanner";
+import type { FlightBasis, FlightMethod } from "@/lib/flightPayouts";
+
 
 type Row = {
   id: string;
@@ -23,19 +26,51 @@ const fmt = (c: number) => `$${((c || 0) / 100).toFixed(2)}`;
 export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [memberCount, setMemberCount] = useState(0);
+  const [settings, setSettings] = useState<{ flights_enabled: boolean; flight_method: FlightMethod; flight_based_on: FlightBasis }>({
+    flights_enabled: false,
+    flight_method: "half",
+    flight_based_on: "score",
+  });
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await (supabase as any)
-        .from("league_payments")
-        .select("id, created_at, kind, amount_cents, platform_fee_cents, status, stripe_payment_intent, payer_email, event:league_events(event_name, event_date), member:league_members(member_name)")
-        .eq("league_id", leagueId)
-        .order("created_at", { ascending: false });
-      setRows((data as Row[]) || []);
+      const [pRes, mRes, lRes] = await Promise.all([
+        (supabase as any)
+          .from("league_payments")
+          .select("id, created_at, kind, amount_cents, platform_fee_cents, status, stripe_payment_intent, payer_email, event:league_events(event_name, event_date), member:league_members(member_name)")
+          .eq("league_id", leagueId)
+          .order("created_at", { ascending: false }),
+        (supabase as any)
+          .from("league_members")
+          .select("id", { count: "exact", head: true })
+          .eq("league_id", leagueId),
+        (supabase as any)
+          .from("golf_leagues")
+          .select("flights_enabled, flight_method, flight_based_on")
+          .eq("id", leagueId)
+          .maybeSingle(),
+      ]);
+      setRows((pRes.data as Row[]) || []);
+      setMemberCount(mRes.count || 0);
+      if (lRes.data) {
+        setSettings({
+          flights_enabled: !!lRes.data.flights_enabled,
+          flight_method: (lRes.data.flight_method as FlightMethod) || "half",
+          flight_based_on: (lRes.data.flight_based_on as FlightBasis) || "score",
+        });
+      }
       setLoading(false);
     })();
   }, [leagueId]);
+
+  const saveFlightSettings = async (s: { flights_enabled: boolean; flight_method: FlightMethod; flight_based_on: FlightBasis }) => {
+    const { error } = await (supabase as any).from("golf_leagues").update(s).eq("id", leagueId);
+    if (error) throw error;
+    setSettings(s);
+  };
+
 
   const paid = useMemo(() => rows.filter((r) => r.status === "paid"), [rows]);
   const totals = useMemo(() => {
@@ -67,6 +102,17 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
 
   return (
     <div className="space-y-5">
+      <FlightPayoutPlanner
+        defaultFieldSize={memberCount}
+        defaultPurseCents={totals.net}
+        potSourceLabel="net collected this season"
+        flightsEnabled={settings.flights_enabled}
+        flightMethod={settings.flight_method}
+        flightBasedOn={settings.flight_based_on}
+        onSaveSettings={saveFlightSettings}
+        scope={{ league_id: leagueId }}
+      />
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card><CardContent className="p-4 flex items-center gap-3">
           <TrendingUp className="h-5 w-5 text-primary" />

@@ -1,49 +1,36 @@
 /**
  * Flighting & payout math shared by tournament management and league management.
  *
- * "Flighting" a field means sorting every player (or team) by score/handicap and
- * splitting the sorted list into equal groups. Each group ("flight") competes only
- * against itself and receives its own slice of the prize pot.
+ * "Flighting" a field means ranking every player (or team) by total score or
+ * handicap and splitting the ranked list into equal groups. Each group ("flight")
+ * competes only against itself and receives its own slice of the purse.
  */
 
-export type SplitMode = "none" | "half" | "thirds" | "quarters" | "custom";
+export type FlightMethod = "none" | "half" | "thirds" | "quarters" | "custom";
+export type FlightBasis = "score" | "handicap";
 
-export interface SplitOption {
-  id: SplitMode;
+export interface FlightMethodOption {
+  id: FlightMethod;
   label: string;
   flights: number;
   description: string;
 }
 
-export const SPLIT_OPTIONS: SplitOption[] = [
-  { id: "none", label: "One flight (open field)", flights: 1, description: "Everyone competes together for a single prize pool." },
-  { id: "half", label: "Split in half (2 flights)", flights: 2, description: "Top half of the field is Flight A, bottom half is Flight B." },
-  { id: "thirds", label: "Split in thirds (3 flights)", flights: 3, description: "Sorted field divided into three equal flights." },
-  { id: "quarters", label: "Split in fourths (4 flights)", flights: 4, description: "Sorted field divided into four equal flights." },
-  { id: "custom", label: "Custom number of flights", flights: 5, description: "Choose any number of flights from 1 to 10." },
+export const FLIGHT_METHODS: FlightMethodOption[] = [
+  { id: "none", label: "No flights (open field)", flights: 1, description: "Everyone competes together for a single purse." },
+  { id: "half", label: "Split in Half (50/50)", flights: 2, description: "Top half of the ranked field is Flight A, bottom half is Flight B." },
+  { id: "thirds", label: "Split in Thirds (33/33/33)", flights: 3, description: "Ranked field divided into three equal flights." },
+  { id: "quarters", label: "Split in Quarters (25/25/25/25)", flights: 4, description: "Ranked field divided into four equal flights." },
+  { id: "custom", label: "Custom (manual assignment)", flights: 1, description: "You assign each player to a flight yourself." },
 ];
 
-/** How the pot is divided across flights. */
-export type PotSplitMode = "even" | "by_size";
-
-/** Places-paid payout templates (percent of the flight's pot). */
-export interface PayoutTemplate {
-  id: string;
-  label: string;
-  /** percentages, index 0 = 1st place */
-  percents: number[];
+export function flightsForMethod(method: FlightMethod, custom = 1): number {
+  if (method === "custom") return Math.min(10, Math.max(1, Math.floor(custom) || 1));
+  return FLIGHT_METHODS.find((m) => m.id === method)?.flights ?? 1;
 }
 
-export const PAYOUT_TEMPLATES: PayoutTemplate[] = [
-  { id: "winner", label: "Winner takes all", percents: [100] },
-  { id: "top2", label: "Top 2 — 65 / 35", percents: [65, 35] },
-  { id: "top3", label: "Top 3 — 50 / 30 / 20", percents: [50, 30, 20] },
-  { id: "top4", label: "Top 4 — 40 / 30 / 20 / 10", percents: [40, 30, 20, 10] },
-  { id: "top5", label: "Top 5 — 35 / 25 / 20 / 12 / 8", percents: [35, 25, 20, 12, 8] },
-];
-
 export function flightLabel(index: number): string {
-  return `Flight ${String.fromCharCode(65 + index)}`;
+  return index === 0 ? "Championship Flight" : `${String.fromCharCode(64 + index)} Flight`;
 }
 
 /** Split `fieldSize` entries as evenly as possible across `flights` groups. */
@@ -55,79 +42,153 @@ export function splitField(fieldSize: number, flights: number): number[] {
   return Array.from({ length: n }, (_, i) => base + (i < extra ? 1 : 0));
 }
 
-export interface FlightPayout {
+/**
+ * Rank a field and assign flight indexes.
+ * `values` are total scores (lower = better) or handicaps (lower = better).
+ */
+export function assignFlights<T>(
+  entries: T[],
+  value: (e: T) => number | null | undefined,
+  flights: number,
+): { entry: T; flightIndex: number; rank: number }[] {
+  const ranked = [...entries].sort((a, b) => {
+    const av = value(a);
+    const bv = value(b);
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return av - bv;
+  });
+  const sizes = splitField(ranked.length, flights);
+  const out: { entry: T; flightIndex: number; rank: number }[] = [];
+  let i = 0;
+  sizes.forEach((size, flightIndex) => {
+    for (let k = 0; k < size; k++, i++) {
+      out.push({ entry: ranked[i], flightIndex, rank: i + 1 });
+    }
+  });
+  return out;
+}
+
+/** Standard places-paid rule based on how many players are in the flight. */
+export function placesPaidFor(flightSize: number): number[] {
+  if (flightSize <= 0) return [];
+  if (flightSize <= 6) return [100];
+  if (flightSize <= 10) return [70, 30];
+  return [65, 25, 10];
+}
+
+export interface FlightPayoutRow {
   name: string;
   players: number;
-  /** range of finishing positions in the sorted field, e.g. "1–18" */
+  /** range of finishing positions in the ranked field, e.g. "1–18" */
   range: string;
-  potCents: number;
+  purseCents: number;
   places: { place: number; percent: number; amountCents: number }[];
 }
 
-export interface PayoutPlanInput {
-  fieldSize: number;
-  /** total money available for payouts, in cents */
-  potCents: number;
-  flights: number;
-  potSplit: PotSplitMode;
-  /** percent of each flight pot per place */
-  percents: number[];
-}
-
 export interface PayoutPlan {
-  flights: FlightPayout[];
+  flights: FlightPayoutRow[];
   totalPaidCents: number;
   /** rounding leftover kept by the organizer */
   remainderCents: number;
 }
 
+export interface PayoutPlanInput {
+  fieldSize: number;
+  /** total purse available for payouts, in cents */
+  purseCents: number;
+  flights: number;
+  /** override the automatic places-paid rule */
+  percentsOverride?: number[] | null;
+  /** custom flight sizes (used for manual assignment) */
+  flightSizes?: number[] | null;
+  /** custom flight names */
+  names?: string[] | null;
+}
+
+/**
+ * Flight Purse = (Players in Flight / Total Players) x Total Purse.
+ */
 export function buildPayoutPlan({
   fieldSize,
-  potCents,
+  purseCents,
   flights,
-  potSplit,
-  percents,
+  percentsOverride,
+  flightSizes,
+  names,
 }: PayoutPlanInput): PayoutPlan {
-  const sizes = splitField(fieldSize, flights);
-  const totalPct = percents.reduce((s, p) => s + p, 0) || 100;
+  const sizes = flightSizes && flightSizes.length ? flightSizes : splitField(fieldSize, flights);
+  const total = sizes.reduce((s, n) => s + n, 0);
 
   let cursor = 1;
   let allocated = 0;
-  const out: FlightPayout[] = sizes.map((players, i) => {
-    const share =
-      potSplit === "by_size" && fieldSize > 0
-        ? Math.round((potCents * players) / fieldSize)
-        : Math.round(potCents / sizes.length);
+  const rows: FlightPayoutRow[] = sizes.map((players, i) => {
+    const share = total > 0 ? Math.round((purseCents * players) / total) : 0;
     // give any rounding drift to the last flight
-    const flightPot = i === sizes.length - 1 ? Math.max(0, potCents - allocated) : share;
-    allocated += flightPot;
+    const purse = i === sizes.length - 1 ? Math.max(0, purseCents - allocated) : share;
+    allocated += purse;
 
     const start = cursor;
     const end = cursor + players - 1;
     cursor = end + 1;
 
-    const places = percents.map((p, idx) => ({
-      place: idx + 1,
-      percent: p,
-      amountCents: Math.round((flightPot * p) / totalPct),
-    }));
+    const percents =
+      percentsOverride && percentsOverride.length ? percentsOverride : placesPaidFor(players);
+    const pctTotal = percents.reduce((s, p) => s + p, 0) || 100;
 
     return {
-      name: flightLabel(i),
+      name: names?.[i] || flightLabel(i),
       players,
       range: players > 0 ? (players === 1 ? `${start}` : `${start}–${end}`) : "—",
-      potCents: flightPot,
-      places,
+      purseCents: purse,
+      places: percents.map((p, idx) => ({
+        place: idx + 1,
+        percent: p,
+        amountCents: Math.round((purse * p) / pctTotal),
+      })),
     };
   });
 
-  const totalPaidCents = out.reduce(
+  const totalPaidCents = rows.reduce(
     (s, f) => s + f.places.reduce((a, p) => a + p.amountCents, 0),
     0,
   );
 
-  return { flights: out, totalPaidCents, remainderCents: potCents - totalPaidCents };
+  return { flights: rows, totalPaidCents, remainderCents: purseCents - totalPaidCents };
 }
+
+/**
+ * 3-Man Scramble team handicap: 20% of the lowest handicap + 15% of the middle
+ * + 10% of the highest. Returns null when no handicaps are supplied.
+ */
+export function threeManScrambleHandicap(handicaps: (number | null | undefined)[]): number | null {
+  const vals = handicaps.filter((h): h is number => typeof h === "number" && !Number.isNaN(h));
+  if (vals.length === 0) return null;
+  const sorted = [...vals].sort((a, b) => a - b);
+  const weights = [0.2, 0.15, 0.1];
+  const total = sorted
+    .slice(0, 3)
+    .reduce((sum, h, i) => sum + h * weights[i], 0);
+  return Math.round(total * 10) / 10;
+}
+
+export const THREE_MAN_SCRAMBLE_WEIGHTS = "20% low / 15% middle / 10% high";
+
+/** Rounds that make up a Shootout event, in order. */
+export const SHOOTOUT_DEFAULT_ROUNDS = [
+  { round: 1, format: "scramble", label: "Round 1 — Scramble" },
+  { round: 2, format: "greensomes", label: "Round 2 — Greensomes (modified alternate shot)" },
+  { round: 3, format: "better_ball", label: "Final Round — Better Ball" },
+];
+
+export const SHOOTOUT_ROUND_FORMATS = [
+  { id: "scramble", label: "Scramble" },
+  { id: "greensomes", label: "Greensomes (modified alternate shot)" },
+  { id: "better_ball", label: "Better Ball" },
+  { id: "alternate_shot", label: "Alternate Shot" },
+  { id: "stroke_play", label: "Stroke Play" },
+];
 
 export const money = (cents: number) =>
   `$${((cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

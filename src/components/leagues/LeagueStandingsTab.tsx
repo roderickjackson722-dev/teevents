@@ -6,11 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Trophy } from "lucide-react";
 import { recomputeLeagueStandings } from "@/lib/leagueStandings";
+import { assignFlights, flightLabel, flightsForMethod, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
 
 export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
+  const [flightCfg, setFlightCfg] = useState<{ enabled: boolean; method: FlightMethod; basis: FlightBasis }>({ enabled: false, method: "half", basis: "score" });
 
   const load = async () => {
     setLoading(true);
@@ -20,6 +22,18 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
       .eq("league_id", leagueId)
       .order("points", { ascending: false });
     setRows(data || []);
+    const { data: lg } = await (supabase as any)
+      .from("golf_leagues")
+      .select("flights_enabled, flight_method, flight_based_on")
+      .eq("id", leagueId)
+      .maybeSingle();
+    if (lg) {
+      setFlightCfg({
+        enabled: !!lg.flights_enabled,
+        method: (lg.flight_method as FlightMethod) || "half",
+        basis: (lg.flight_based_on as FlightBasis) || "score",
+      });
+    }
     setLoading(false);
   };
 
@@ -36,6 +50,19 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
     }
     setComputing(false);
   };
+
+  const groups: { label: string; rows: any[] }[] = (() => {
+    if (!flightCfg.enabled || rows.length === 0) return [{ label: "", rows }];
+    const n = flightsForMethod(flightCfg.method, 2);
+    const assigned = assignFlights(
+      rows,
+      (r: any) => (flightCfg.basis === "handicap" ? r.league_members?.handicap_index : r.total_net ?? r.total_gross),
+      n,
+    );
+    const buckets: any[][] = Array.from({ length: n }, () => []);
+    assigned.forEach((a) => buckets[a.flightIndex].push(a.entry));
+    return buckets.map((b, i) => ({ label: flightLabel(i), rows: b })).filter((g) => g.rows.length > 0);
+  })();
 
   return (
     <Card>

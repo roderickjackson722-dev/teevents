@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Users } from "lucide-react";
+import FlightPayoutPlanner from "@/components/payouts/FlightPayoutPlanner";
+import { assignFlights, threeManScrambleHandicap, THREE_MAN_SCRAMBLE_WEIGHTS, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
 
 interface Flight {
   id: string;
@@ -25,6 +27,9 @@ interface Player {
   first_name: string;
   last_name: string;
   flight_id: string | null;
+  handicap: number | null;
+  amount_paid_cents?: number | null;
+  group_number?: number | null;
 }
 
 interface Props {
@@ -32,6 +37,7 @@ interface Props {
 }
 
 const emptyDraft = { tier_name: "", tier_description: "", display_order: 0, is_active: true };
+
 
 export default function FlightsManager({ tournamentId }: Props) {
   const { toast } = useToast();
@@ -41,10 +47,20 @@ export default function FlightsManager({ tournamentId }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<typeof emptyDraft>(emptyDraft);
+  const [settings, setSettings] = useState<{ flights_enabled: boolean; flight_method: FlightMethod; flight_based_on: FlightBasis }>({
+    flights_enabled: false,
+    flight_method: "half",
+    flight_based_on: "score",
+  });
+  const [purseCents, setPurseCents] = useState(0);
+  const [scoreTotals, setScoreTotals] = useState<Map<string, number>>(new Map());
+  const [scoringFormat, setScoringFormat] = useState<string>("");
+  const [teamHcpSaving, setTeamHcpSaving] = useState(false);
+
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [fRes, pRes] = await Promise.all([
+    const [fRes, pRes, tRes, sRes] = await Promise.all([
       (supabase as any)
         .from("tournament_tiers")
         .select("*")
@@ -52,18 +68,75 @@ export default function FlightsManager({ tournamentId }: Props) {
         .order("display_order", { ascending: true }),
       (supabase as any)
         .from("tournament_registrations")
-        .select("id, first_name, last_name, flight_id")
+        .select("id, first_name, last_name, flight_id, handicap, amount_paid_cents, group_number")
         .eq("tournament_id", tournamentId)
         .order("last_name", { ascending: true }),
+      (supabase as any)
+        .from("tournaments")
+        .select("flights_enabled, flight_method, flight_based_on, scoring_format")
+        .eq("id", tournamentId)
+        .maybeSingle(),
+      (supabase as any)
+        .from("tournament_scores")
+        .select("registration_id, strokes")
+        .eq("tournament_id", tournamentId),
     ]);
     setFlights(fRes.data || []);
-    setPlayers(pRes.data || []);
+    const rows: Player[] = pRes.data || [];
+    setPlayers(rows);
+    setPurseCents(rows.reduce((s, r) => s + (r.amount_paid_cents || 0), 0));
+    if (tRes.data) {
+      setSettings({
+        flights_enabled: !!tRes.data.flights_enabled,
+        flight_method: (tRes.data.flight_method as FlightMethod) || "half",
+        flight_based_on: (tRes.data.flight_based_on as FlightBasis) || "score",
+      });
+      setScoringFormat(tRes.data.scoring_format || "");
+    }
+
+    const totals = new Map<string, number>();
+    for (const s of (sRes.data || []) as { registration_id: string; strokes: number }[]) {
+      totals.set(s.registration_id, (totals.get(s.registration_id) || 0) + (s.strokes || 0));
+    }
+    setScoreTotals(totals);
     setLoading(false);
   }, [tournamentId]);
+
+
+  const calcTeamHandicaps = async () => {
+    setTeamHcpSaving(true);
+    try {
+      const groups = new Map<number, Player[]>();
+      for (const p of players) {
+        if (p.group_number == null) continue;
+        const arr = groups.get(p.group_number) || [];
+        arr.push(p);
+        groups.set(p.group_number, arr);
+      }
+      let updated = 0;
+      for (const [, members] of groups) {
+        const teamHcp = threeManScrambleHandicap(members.map((m) => m.handicap));
+        if (teamHcp == null) continue;
+        const { error } = await (supabase as any)
+          .from("tournament_registrations")
+          .update({ team_handicap: Math.round(teamHcp), team_handicap_percentage: Number(teamHcp.toFixed(2)) })
+          .in("id", members.map((m) => m.id));
+        if (error) throw error;
+        updated += members.length;
+      }
+      toast({ title: "Team handicaps calculated", description: `${updated} player${updated === 1 ? "" : "s"} updated (${THREE_MAN_SCRAMBLE_WEIGHTS}).` });
+      load();
+    } catch (e: any) {
+      toast({ title: "Could not calculate", description: e.message, variant: "destructive" });
+    } finally {
+      setTeamHcpSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (tournamentId) load();
   }, [tournamentId, load]);
+
 
   const openAdd = () => {
     setEditingId(null);
@@ -119,6 +192,55 @@ export default function FlightsManager({ tournamentId }: Props) {
     load();
   };
 
+  const saveFlightSettings = async (s: { flights_enabled: boolean; flight_method: FlightMethod; flight_based_on: FlightBasis }) => {
+    const { error } = await (supabase as any).from("tournaments").update(s).eq("id", tournamentId);
+    if (error) throw error;
+    setSettings(s);
+  };
+
+  /** Ranks the field and creates/assigns flights automatically. */
+  const applyFlights = async ({ flights: count, names, basedOn }: { flights: number; names: string[]; basedOn: FlightBasis }) => {
+    if (players.length === 0) throw new Error("No players in the field yet");
+
+    // remove auto-generated flights from a previous run, keep manual ones
+    const existing = flights.filter((f) => names.includes(f.tier_name));
+    const toCreate = names.filter((n) => !existing.some((f) => f.tier_name === n));
+    if (toCreate.length) {
+      const { error } = await (supabase as any).from("tournament_tiers").insert(
+        toCreate.map((n, i) => ({
+          tournament_id: tournamentId,
+          tier_name: n,
+          display_order: names.indexOf(n),
+          is_active: true,
+          tier_description: `Auto-generated flight (${basedOn === "handicap" ? "by handicap" : "by total score"})`,
+        })),
+      );
+      if (error) throw error;
+    }
+
+    const { data: allFlights } = await (supabase as any)
+      .from("tournament_tiers")
+      .select("id, tier_name")
+      .eq("tournament_id", tournamentId);
+    const idByName = new Map<string, string>((allFlights || []).map((f: any) => [f.tier_name, f.id]));
+
+    const value = (p: Player) =>
+      basedOn === "handicap" ? p.handicap ?? null : scoreTotals.get(p.id) ?? null;
+    const assigned = assignFlights(players, value, count);
+
+    for (const a of assigned) {
+      const flightId = idByName.get(names[a.flightIndex]);
+      if (!flightId) continue;
+      const { error } = await (supabase as any)
+        .from("tournament_registrations")
+        .update({ flight_id: flightId })
+        .eq("id", a.entry.id);
+      if (error) throw error;
+    }
+    await load();
+  };
+
+
   const assign = async (playerId: string, flightId: string | null) => {
     const { error } = await (supabase as any)
       .from("tournament_registrations")
@@ -137,6 +259,32 @@ export default function FlightsManager({ tournamentId }: Props) {
 
   return (
     <div className="space-y-8">
+      <FlightPayoutPlanner
+        defaultFieldSize={players.length}
+        defaultPurseCents={purseCents}
+        potSourceLabel="collected in entry fees"
+        flightsEnabled={settings.flights_enabled}
+        flightMethod={settings.flight_method}
+        flightBasedOn={settings.flight_based_on}
+        onSaveSettings={saveFlightSettings}
+        onApplyFlights={applyFlights}
+        scope={{ tournament_id: tournamentId }}
+      />
+
+      {scoringFormat === "scramble_3" && (
+        <div className="rounded-lg border p-4 space-y-2">
+          <div className="font-semibold">3-Person Scramble Team Handicaps</div>
+          <p className="text-sm text-muted-foreground">
+            Calculates each team's handicap from its group ({THREE_MAN_SCRAMBLE_WEIGHTS}) and saves it to every player in the group.
+          </p>
+          <Button size="sm" onClick={calcTeamHandicaps} disabled={teamHcpSaving}>
+            {teamHcpSaving ? "Calculating…" : "Calculate team handicaps"}
+          </Button>
+        </div>
+      )}
+
+
+
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>

@@ -135,12 +135,13 @@ export default function PublicLeague() {
           <div className="flex gap-2 flex-wrap">
             {showRegister && (
               <Button
-                onClick={() => document.getElementById("schedule")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => navigate(`/league/${slug}/register`)}
                 className="gap-2"
                 style={{ background: accent, color: primary }}
               >
-                <Ticket className="h-4 w-4" /> Register
+                <Ticket className="h-4 w-4" /> Join the League
               </Button>
+
             )}
             <Button
               onClick={() => navigate(`/league/${slug}/score`)}

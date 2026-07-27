@@ -30,6 +30,20 @@ export const SCORING_FORMATS: ScoringFormat[] = [
     scoring: "scramble",
   },
   {
+    id: "scramble_3",
+    name: "3-Person Scramble",
+    description: "All 3 players tee off, the team picks the best shot, then everyone plays from that spot until holed.",
+    teamSize: 3,
+    scoring: "scramble",
+  },
+  {
+    id: "shootout",
+    name: "Shootout",
+    description: "Elimination format — the highest scorer on each hole is knocked out (ties settled by chip-off or playoff) until one player remains.",
+    teamSize: 1,
+    scoring: "shootout",
+  },
+
     id: "best_ball_2",
     name: "2-Man Best Ball",
     description: "Both players play their own ball. The lowest score between the two on each hole counts as the team score.",

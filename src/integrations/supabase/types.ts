@@ -8325,6 +8325,7 @@ export type Database = {
           custom_answers: Json
           dietary_restrictions: string | null
           donation_amount_cents: number
+          drives_used: number
           email: string
           first_name: string
           flight_id: string | null
@@ -8365,6 +8366,7 @@ export type Database = {
           custom_answers?: Json
           dietary_restrictions?: string | null
           donation_amount_cents?: number
+          drives_used?: number
           email: string
           first_name: string
           flight_id?: string | null
@@ -8405,6 +8407,7 @@ export type Database = {
           custom_answers?: Json
           dietary_restrictions?: string | null
           donation_amount_cents?: number
+          drives_used?: number
           email?: string
           first_name?: string
           flight_id?: string | null
@@ -9137,6 +9140,7 @@ export type Database = {
           max_waitlist_slots: number | null
           media_position: string
           media_tab_title: string | null
+          min_drives_per_player: number
           mission_statement: string | null
           org_address: string | null
           org_contact_email: string | null
@@ -9393,6 +9397,7 @@ export type Database = {
           max_waitlist_slots?: number | null
           media_position?: string
           media_tab_title?: string | null
+          min_drives_per_player?: number
           mission_statement?: string | null
           org_address?: string | null
           org_contact_email?: string | null
@@ -9649,6 +9654,7 @@ export type Database = {
           max_waitlist_slots?: number | null
           media_position?: string
           media_tab_title?: string | null
+          min_drives_per_player?: number
           mission_statement?: string | null
           org_address?: string | null
           org_contact_email?: string | null

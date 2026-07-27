@@ -228,8 +228,10 @@ export default function SampleGenerator() {
 
   function handleEdit(s: SampleRow) {
     setEditingId(s.id);
-    supabase.from("sample_tournaments").select("*").eq("id", s.id).single().then(({ data }) => {
+    (supabase as any).rpc("admin_get_sample_tournament", { _id: s.id }).then(({ data: rows }: any) => {
+      const data = Array.isArray(rows) ? rows[0] : rows;
       if (data) {
+
         setForm({
           tournament_name: data.tournament_name || "",
           event_date: data.event_date || "",

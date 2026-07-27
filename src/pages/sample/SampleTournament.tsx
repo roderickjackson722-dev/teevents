@@ -37,7 +37,7 @@ export default function SampleTournament() {
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data: s } = await supabase.from("sample_tournaments").select("*").eq("unique_slug", slug).maybeSingle();
+      const { data: s } = await supabase.from("sample_tournaments").select("id,admin_id,unique_slug,tournament_name,event_date,location,description,logo_url,hero_image_url,scoring_format,registration_fee_cents,team_fee_cents,view_count,last_accessed_at,created_at,updated_at").eq("unique_slug", slug).maybeSingle();
       if (!s) { setLoading(false); return; }
       setSample(s as Sample);
       supabase.rpc("increment_sample_view", { _slug: slug });

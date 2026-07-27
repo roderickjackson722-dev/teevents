@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download, Copy, KeyRound, RefreshCw, Mail } from "lucide-react";
 import { useRef } from "react";
 
 interface Member {

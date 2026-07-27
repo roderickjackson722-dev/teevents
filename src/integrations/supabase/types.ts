@@ -9224,6 +9224,9 @@ export type Database = {
           site_show_logo: boolean | null
           site_text_color: string | null
           site_title_position: string | null
+          skins_enabled: boolean
+          skins_entry_fee_cents: number
+          skins_mode: string
           slug: string | null
           sponsor_email_config: Json | null
           sponsor_form_config: Json
@@ -9481,6 +9484,9 @@ export type Database = {
           site_show_logo?: boolean | null
           site_text_color?: string | null
           site_title_position?: string | null
+          skins_enabled?: boolean
+          skins_entry_fee_cents?: number
+          skins_mode?: string
           slug?: string | null
           sponsor_email_config?: Json | null
           sponsor_form_config?: Json
@@ -9738,6 +9744,9 @@ export type Database = {
           site_show_logo?: boolean | null
           site_text_color?: string | null
           site_title_position?: string | null
+          skins_enabled?: boolean
+          skins_entry_fee_cents?: number
+          skins_mode?: string
           slug?: string | null
           sponsor_email_config?: Json | null
           sponsor_form_config?: Json

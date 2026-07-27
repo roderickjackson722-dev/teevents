@@ -64,6 +64,7 @@ import Finances from "./pages/dashboard/Finances";
 import Transactions from "./pages/dashboard/Transactions";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
 import Registration from "./pages/dashboard/Registration";
+import ScoringPayouts from "./pages/dashboard/ScoringPayouts";
 import Settings from "./pages/dashboard/Settings";
 import ActivityLog from "./pages/dashboard/ActivityLog";
 import OrganizationInfo from "./pages/dashboard/OrganizationInfo";
@@ -236,6 +237,7 @@ const App = () => (
           <Route path="/dashboard/setup-checklist" element={<DashboardLayout><SetupChecklistPage /></DashboardLayout>} />
           <Route path="/dashboard/notes" element={<DashboardLayout><OrganizerNotes /></DashboardLayout>} />
           <Route path="/dashboard/printables" element={<DashboardLayout><Printables /></DashboardLayout>} />
+          <Route path="/dashboard/scoring-payouts" element={<DashboardLayout><ScoringPayouts /></DashboardLayout>} />
           <Route path="/dashboard/registration" element={<DashboardLayout><Registration /></DashboardLayout>} />
           <Route path="/dashboard/contests" element={<DashboardLayout><Contests /></DashboardLayout>} />
           <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />

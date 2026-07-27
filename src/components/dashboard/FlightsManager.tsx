@@ -269,19 +269,27 @@ export default function FlightsManager({ tournamentId }: Props) {
         onSaveSettings={saveFlightSettings}
         onApplyFlights={applyFlights}
         scope={{ tournament_id: tournamentId }}
+        actualFlights={flights.map((f) => ({ name: f.tier_name, players: countByFlight(f.id) }))}
+        unassignedCount={players.filter((p) => !p.flight_id).length}
       />
 
       {scoringFormat === "scramble_3" && (
-        <div className="rounded-lg border p-4 space-y-2">
-          <div className="font-semibold">3-Person Scramble Team Handicaps</div>
-          <p className="text-sm text-muted-foreground">
-            Calculates each team's handicap from its group ({THREE_MAN_SCRAMBLE_WEIGHTS}) and saves it to every player in the group.
-          </p>
-          <Button size="sm" onClick={calcTeamHandicaps} disabled={teamHcpSaving}>
-            {teamHcpSaving ? "Calculating…" : "Calculate team handicaps"}
-          </Button>
-        </div>
+        <>
+          <div className="rounded-lg border p-4 space-y-2">
+            <div className="font-semibold">3-Person Scramble Team Handicaps</div>
+            <p className="text-sm text-muted-foreground">
+              Calculates each team's handicap from its group ({THREE_MAN_SCRAMBLE_WEIGHTS}) and saves it to every player in the group.
+            </p>
+            <Button size="sm" onClick={calcTeamHandicaps} disabled={teamHcpSaving}>
+              {teamHcpSaving ? "Calculating…" : "Calculate team handicaps"}
+            </Button>
+          </div>
+          <MinimumDrivesTracker tournamentId={tournamentId} />
+        </>
       )}
+
+      {scoringFormat === "shootout" && <ShootoutRoundsEditor tournamentId={tournamentId} />}
+
 
 
 

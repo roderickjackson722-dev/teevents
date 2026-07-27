@@ -4,7 +4,7 @@ export interface ScoringFormat {
   description: string;
   teamSize: number;
   /** How the final score per hole is determined */
-  scoring: "individual" | "best_ball" | "scramble" | "stableford" | "alternate_shot" | "shamble";
+  scoring: "individual" | "best_ball" | "scramble" | "stableford" | "alternate_shot" | "shamble" | "shootout";
 }
 
 export const SCORING_FORMATS: ScoringFormat[] = [

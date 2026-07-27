@@ -53,6 +53,8 @@ export default function FlightPayoutPlanner({
   onSaveSettings,
   onApplyFlights,
   scope,
+  actualFlights,
+  unassignedCount = 0,
 }: Props) {
   const { toast } = useToast();
   const [enabled, setEnabled] = useState(flightsEnabled);
@@ -74,15 +76,22 @@ export default function FlightPayoutPlanner({
   const totalPurseCents =
     Math.round((parseFloat(purseDollars) || 0) * 100) + Math.round((parseFloat(sponsorDollars) || 0) * 100);
 
+  /** use the real, manually-assigned flights when the organizer picked "custom" */
+  const useActual = method === "custom" && enabled && !!actualFlights?.length;
+
   const plan = useMemo(
     () =>
       buildPayoutPlan({
         fieldSize: Math.max(0, parseInt(fieldSize) || 0),
         purseCents: totalPurseCents,
         flights: enabled ? flights : 1,
+        flightSizes: useActual ? actualFlights!.map((f) => f.players) : null,
+        names: useActual ? actualFlights!.map((f) => f.name) : null,
       }),
-    [fieldSize, totalPurseCents, flights, enabled],
+    [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights],
   );
+
+
 
   const maxPlaces = Math.max(1, ...plan.flights.map((f) => f.places.length));
   const activeMethod = FLIGHT_METHODS.find((m) => m.id === method);

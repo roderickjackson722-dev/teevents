@@ -343,15 +343,18 @@ export default function FlightsManager({ tournamentId }: Props) {
 
       {flights.length > 0 && players.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-1">Assign Players to Flights</h3>
+          <h3 className="text-lg font-semibold mb-1">Custom Flight Editor</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Change a player's flight at any time. Scores automatically feed the assigned flight's leaderboard.
+            Assign any player to any flight manually. The flighted leaderboard and the payout breakdown above update
+            immediately.
           </p>
           <div className="rounded-lg border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr className="text-left">
                   <th className="px-4 py-2 font-medium">Player</th>
+                  <th className="px-4 py-2 font-medium w-24 text-right">Hcp</th>
+                  <th className="px-4 py-2 font-medium w-24 text-right">Total</th>
                   <th className="px-4 py-2 font-medium w-64">Flight</th>
                 </tr>
               </thead>
@@ -361,6 +364,8 @@ export default function FlightsManager({ tournamentId }: Props) {
                     <td className="px-4 py-2">
                       {p.first_name} {p.last_name}
                     </td>
+                    <td className="px-4 py-2 text-right text-muted-foreground">{p.handicap ?? "—"}</td>
+                    <td className="px-4 py-2 text-right text-muted-foreground">{scoreTotals.get(p.id) ?? "—"}</td>
                     <td className="px-4 py-2">
                       <Select
                         value={p.flight_id || "__none"}
@@ -384,8 +389,49 @@ export default function FlightsManager({ tournamentId }: Props) {
               </tbody>
             </table>
           </div>
+
+          <h3 className="text-lg font-semibold mt-8 mb-1">Flighted Leaderboards (live)</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Ranked by total score, lowest first. Players without a score yet are listed last.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {[...flights, { id: "__none", tier_name: "Unassigned", tournament_id: tournamentId, tier_description: null, display_order: 999, is_active: true } as Flight]
+              .map((f) => {
+                const members = players
+                  .filter((p) => (f.id === "__none" ? !p.flight_id : p.flight_id === f.id))
+                  .sort((a, b) => {
+                    const av = scoreTotals.get(a.id);
+                    const bv = scoreTotals.get(b.id);
+                    if (av == null && bv == null) return 0;
+                    if (av == null) return 1;
+                    if (bv == null) return -1;
+                    return av - bv;
+                  });
+                if (members.length === 0) return null;
+                return (
+                  <div key={f.id} className="rounded-lg border bg-card p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-sm">{f.tier_name}</span>
+                      <Badge variant="outline" className="text-xs">{members.length} players</Badge>
+                    </div>
+                    <ol className="space-y-1 text-sm">
+                      {members.map((p, i) => (
+                        <li key={p.id} className="flex items-center justify-between gap-2">
+                          <span className="truncate">
+                            <span className="text-muted-foreground mr-2">{i + 1}.</span>
+                            {p.first_name} {p.last_name}
+                          </span>
+                          <span className="font-medium">{scoreTotals.get(p.id) ?? "—"}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       )}
+
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

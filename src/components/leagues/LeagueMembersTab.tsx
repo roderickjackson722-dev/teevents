@@ -175,7 +175,7 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     if (!confirm(`Send a password reset email to ${m.email}?`)) return;
     setBusyId(m.id);
     const { error } = await supabase.auth.resetPasswordForEmail(m.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/reset-password${leagueSlug ? `?league=${encodeURIComponent(leagueSlug)}` : ""}`,
     });
     setBusyId(null);
     if (error) toast({ title: "Reset email failed", description: error.message, variant: "destructive" });

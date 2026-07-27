@@ -36,7 +36,12 @@ interface Props {
   onApplyFlights?: (opts: { flights: number; names: string[]; basedOn: FlightBasis }) => Promise<void> | void;
   /** scope used when saving the financial breakdown */
   scope?: { tournament_id?: string; league_id?: string; league_event_id?: string };
+  /** real, manually-assigned flight sizes — drives the payout validation view */
+  actualFlights?: { name: string; players: number }[];
+  /** players in the field with no flight assigned yet */
+  unassignedCount?: number;
 }
+
 
 export default function FlightPayoutPlanner({
   defaultFieldSize = 0,

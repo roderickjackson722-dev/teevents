@@ -269,9 +269,28 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                       </Badge>
                     </TableCell>
                     <TableCell>{m.membership_fee_paid ? "✅" : "❌"}</TableCell>
-                    <TableCell className="font-mono text-xs">{m.scoring_code}</TableCell>
+                    <TableCell>
+                      {m.scoring_code ? (
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs tracking-widest">{m.scoring_code}</span>
+                          <Button size="sm" variant="ghost" title="Copy code" onClick={() => copyCode(m)}>
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" title="Generate a new code" disabled={busyId === m.id} onClick={() => assignCode(m, true)}>
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled={busyId === m.id} onClick={() => assignCode(m)}>
+                          <KeyRound className="h-3.5 w-3.5 mr-1" /> Assign Code
+                        </Button>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => setEditing({
+                      <Button size="sm" variant="ghost" title="Send password reset email" disabled={busyId === m.id} onClick={() => sendPasswordReset(m)}>
+                        <Mail className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="sm" variant="ghost" title="Edit member" onClick={() => setEditing({
                         ...m,
                         handicap_index: m.handicap_index ?? "",
                         membership_fee_cents: m.membership_fee_cents ? m.membership_fee_cents / 100 : "",
@@ -281,10 +300,11 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                       })}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(m.id)}>
+                      <Button size="sm" variant="ghost" title="Remove member" onClick={() => remove(m.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>

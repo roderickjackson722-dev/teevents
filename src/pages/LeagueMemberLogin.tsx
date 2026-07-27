@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2, KeyRound, Mail } from "lucide-react";
 
 export default function LeagueMemberLogin() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,14 +18,16 @@ export default function LeagueMemberLogin() {
   const [event, setEvent] = useState<any>(null);
   const [eventError, setEventError] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data: lg } = await (supabase as any).from("golf_leagues").select("id, league_name, league_slug").eq("league_slug", slug).maybeSingle();
       setLeague(lg);
       if (eventId && lg) {
-        // Basic uuid shape check
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId);
         if (!isUuid) {
           setEventError("The event link is malformed.");
@@ -38,7 +42,42 @@ export default function LeagueMemberLogin() {
     })();
   }, [slug, eventId]);
 
-  const submit = async (e: React.FormEvent) => {
+  const goToPortal = (memberCode: string) => {
+    if (eventId && !eventError) navigate(`/league/${slug}/register/${memberCode}?event=${eventId}`);
+    else navigate(`/league/${slug}/me/${memberCode}`);
+  };
+
+  // Resolve the signed-in user's member record for this league.
+  const resolveSignedInMember = async (userEmail: string) => {
+    if (!league) return;
+    const { data } = await (supabase as any)
+      .from("league_members")
+      .select("scoring_code")
+      .eq("league_id", league.id)
+      .ilike("email", userEmail)
+      .maybeSingle();
+    if (!data?.scoring_code) {
+      toast({
+        title: "No membership found",
+        description: `${userEmail} isn't a member of this league yet. Register first.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    goToPortal(data.scoring_code);
+  };
+
+  // If the member returns from Google OAuth already signed in, forward them.
+  useEffect(() => {
+    if (!league) return;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const userEmail = data.user?.email;
+      if (userEmail && params.get("oauth") === "1") await resolveSignedInMember(userEmail);
+    })();
+  }, [league]);
+
+  const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = code.trim().toUpperCase();
     if (clean.length !== 6 || !league) {
@@ -57,8 +96,38 @@ export default function LeagueMemberLogin() {
       toast({ title: "Code not recognized", variant: "destructive" });
       return;
     }
-    if (eventId && !eventError) navigate(`/league/${slug}/register/${clean}?event=${eventId}`);
-    else navigate(`/league/${slug}/me/${clean}`);
+    goToPortal(clean);
+  };
+
+  const submitEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return toast({ title: "Enter your email and password", variant: "destructive" });
+    setEmailLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setEmailLoading(false);
+    if (error) return toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+    await resolveSignedInMember(email.trim());
+  };
+
+  const signInWithGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/league/${slug}/score?oauth=1${eventId ? `&event=${eventId}` : ""}`,
+    });
+    if ((result as any).error) {
+      return toast({ title: "Google sign-in failed", description: (result as any).error.message, variant: "destructive" });
+    }
+    if ((result as any).redirected) return;
+    const { data } = await supabase.auth.getUser();
+    if (data.user?.email) await resolveSignedInMember(data.user.email);
+  };
+
+  const resetPassword = async () => {
+    if (!email.trim()) return toast({ title: "Enter your email first" });
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return toast({ title: "Could not send reset email", description: error.message, variant: "destructive" });
+    toast({ title: "Password reset email sent" });
   };
 
   return (
@@ -72,7 +141,7 @@ export default function LeagueMemberLogin() {
           {league && <p className="text-sm text-muted-foreground">{league.league_name}</p>}
           {event && <p className="text-xs text-primary mt-1">Registering for: <span className="font-medium">{event.event_name} — {event.event_date}</span></p>}
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-5">
           {eventError ? (
             <div className="space-y-3 text-center">
               <p className="text-sm text-destructive">{eventError}</p>
@@ -81,19 +150,56 @@ export default function LeagueMemberLogin() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={submit} className="space-y-4">
-              <Input
-                autoFocus
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
-                placeholder="ABC123"
-                className="text-center text-3xl font-mono tracking-[0.5em] h-16"
-              />
-              <Button type="submit" className="w-full h-12" disabled={loading || code.length !== 6}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue →"}
-              </Button>
-              <p className="text-xs text-center text-muted-foreground">Your scoring code was provided by your league organizer.</p>
-            </form>
+            <>
+              {/* Login code */}
+              <div className="rounded-md border p-4 space-y-3">
+                <p className="text-sm font-semibold flex items-center gap-2"><KeyRound className="h-4 w-4" /> Use Login Code</p>
+                <form onSubmit={submitCode} className="space-y-3">
+                  <Input
+                    autoFocus
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
+                    placeholder="ABC123"
+                    className="text-center text-3xl font-mono tracking-[0.5em] h-16"
+                  />
+                  <Button type="submit" className="w-full h-12" disabled={loading || code.length !== 6}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue →"}
+                  </Button>
+                </form>
+                <p className="text-xs text-center text-muted-foreground">Your code was provided by your league organizer.</p>
+              </div>
+
+              {/* Email & password */}
+              <div className="rounded-md border p-4 space-y-3">
+                <p className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4" /> Email &amp; Password</p>
+                <form onSubmit={submitEmail} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lm-email">Email</Label>
+                    <Input id="lm-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lm-pass">Password</Label>
+                    <Input id="lm-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
+                  <Button type="submit" variant="secondary" className="w-full" disabled={emailLoading}>
+                    {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+                  </Button>
+                </form>
+                <Button variant="link" size="sm" className="px-0" onClick={resetPassword}>Forgot password?</Button>
+              </div>
+
+              {/* Google */}
+              <div className="rounded-md border p-4 space-y-3">
+                <p className="text-sm font-semibold">Login with Google</p>
+                <Button variant="outline" className="w-full" onClick={signInWithGoogle}>
+                  Sign in with Google
+                </Button>
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground">
+                Not a member yet? <Link className="underline" to={`/league/${slug}/register`}>Join this league</Link>
+              </p>
+            </>
           )}
         </CardContent>
       </Card>

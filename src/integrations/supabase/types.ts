@@ -3455,12 +3455,15 @@ export type Database = {
       }
       league_members: {
         Row: {
+          avg_18_score: number | null
+          avg_9_score: number | null
           course_handicap: number | null
           created_at: string
           email: string
           handicap_index: number | null
           handicap_updated_at: string | null
           id: string
+          is_active: boolean
           join_date: string
           league_id: string
           member_name: string
@@ -3470,17 +3473,22 @@ export type Database = {
           notes: string | null
           phone: string | null
           playing_handicap: number | null
+          profile_image_url: string | null
           scoring_code: string | null
+          shirt_size: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          avg_18_score?: number | null
+          avg_9_score?: number | null
           course_handicap?: number | null
           created_at?: string
           email: string
           handicap_index?: number | null
           handicap_updated_at?: string | null
           id?: string
+          is_active?: boolean
           join_date?: string
           league_id: string
           member_name: string
@@ -3490,17 +3498,22 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           playing_handicap?: number | null
+          profile_image_url?: string | null
           scoring_code?: string | null
+          shirt_size?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          avg_18_score?: number | null
+          avg_9_score?: number | null
           course_handicap?: number | null
           created_at?: string
           email?: string
           handicap_index?: number | null
           handicap_updated_at?: string | null
           id?: string
+          is_active?: boolean
           join_date?: string
           league_id?: string
           member_name?: string
@@ -3510,7 +3523,9 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           playing_handicap?: number | null
+          profile_image_url?: string | null
           scoring_code?: string | null
+          shirt_size?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -3688,6 +3703,163 @@ export type Database = {
             columns: ["league_id"]
             isOneToOne: true
             referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_registration_forms: {
+        Row: {
+          created_at: string
+          custom_fields: Json
+          id: string
+          intro_text: string | null
+          is_free: boolean
+          is_open: boolean
+          league_fee_cents: number
+          league_id: string
+          pass_platform_fee_to_player: boolean
+          promo_code_enabled: boolean
+          terms_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_fields?: Json
+          id?: string
+          intro_text?: string | null
+          is_free?: boolean
+          is_open?: boolean
+          league_fee_cents?: number
+          league_id: string
+          pass_platform_fee_to_player?: boolean
+          promo_code_enabled?: boolean
+          terms_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_fields?: Json
+          id?: string
+          intro_text?: string | null
+          is_free?: boolean
+          is_open?: boolean
+          league_fee_cents?: number
+          league_id?: string
+          pass_platform_fee_to_player?: boolean
+          promo_code_enabled?: boolean
+          terms_text?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_registration_forms_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: true
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_registration_promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_cents: number | null
+          discount_percent: number | null
+          id: string
+          is_active: boolean
+          league_id: string
+          max_uses: number | null
+          times_used: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_cents?: number | null
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean
+          league_id: string
+          max_uses?: number | null
+          times_used?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_cents?: number | null
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean
+          league_id?: string
+          max_uses?: number | null
+          times_used?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_registration_promo_codes_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_registration_responses: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          league_id: string
+          member_id: string | null
+          paid_at: string | null
+          payment_status: string
+          promo_code: string | null
+          response_data: Json
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          league_id: string
+          member_id?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          promo_code?: string | null
+          response_data?: Json
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          league_id?: string
+          member_id?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          promo_code?: string | null
+          response_data?: Json
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_registration_responses_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_registration_responses_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
             referencedColumns: ["id"]
           },
         ]

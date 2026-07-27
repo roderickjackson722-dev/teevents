@@ -145,12 +145,21 @@ export default function LeagueMemberPortal() {
         <Card>
           <CardContent className="pt-6 flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center"><User className="h-6 w-6 text-primary" /></div>
+              {member.profile_image_url ? (
+                <img src={member.profile_image_url} alt={`${member.member_name} headshot`} className="h-12 w-12 rounded-full object-cover border" />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center"><User className="h-6 w-6 text-primary" /></div>
+              )}
               <div>
                 <p className="text-xl font-bold">{member.member_name}</p>
-                <p className="text-sm text-muted-foreground">Status: {member.membership_status}</p>
+                <p className="text-sm text-muted-foreground">
+                  Status: {member.membership_status}
+                  {member.shirt_size ? ` · Shirt: ${member.shirt_size}` : ""}
+                </p>
+                <p className="text-xs text-muted-foreground">Login code: <span className="font-mono">{member.scoring_code}</span></p>
               </div>
             </div>
+
             {standing && (
               <div className="text-right">
                 <div className="text-2xl font-bold flex items-center gap-2 justify-end"><Trophy className="h-5 w-5 text-primary" /> {standing.points} pts</div>

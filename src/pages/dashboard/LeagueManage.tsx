@@ -19,6 +19,8 @@ import LeagueCommunicationTab from "@/components/leagues/LeagueCommunicationTab"
 import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
 import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
+import LeagueRegistrationTab from "@/components/leagues/LeagueRegistrationTab";
+
 
 
 export default function LeagueManage() {

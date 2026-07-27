@@ -116,13 +116,22 @@ const ResetPassword = () => {
             <img src={logoBlack} alt="TeeVents" className="h-14 w-14 mx-auto mb-4 object-contain" />
             <Lock className="h-8 w-8 mx-auto mb-3 text-primary" />
             <h1 className="text-2xl font-display font-bold text-foreground">Set New Password</h1>
-            <p className="text-sm text-muted-foreground mt-2">Enter your new password below</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {leagueSlug
+                ? `Set a password for your ${leagueName ?? "league"} member account`
+                : "Enter your new password below"}
+            </p>
           </div>
 
           {!ready ? (
             <p className="text-center text-muted-foreground text-sm">
               Verifying your reset link… If this takes too long, request a new reset from the{" "}
-              <a href="/get-started" className="text-primary font-semibold hover:underline">sign in page</a>.
+              <a
+                href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
+                className="text-primary font-semibold hover:underline"
+              >
+                sign in page
+              </a>.
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

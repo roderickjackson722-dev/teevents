@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,55 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const isNewSignup = searchParams.get("new") === "1";
   const workspaceType = searchParams.get("type");
+  const leagueSlug = searchParams.get("league");
+  const [leagueName, setLeagueName] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!leagueSlug) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("golf_leagues")
+        .select("league_name")
+        .eq("league_slug", leagueSlug)
+        .maybeSingle();
+      setLeagueName(data?.league_name ?? null);
+    })();
+  }, [leagueSlug]);
+
+  // Send league members back to their league portal, not the organizer app.
+  const goAfterReset = async (userEmail?: string | null) => {
+    if (!leagueSlug) {
+      navigate(isNewSignup ? `/create-workspace${workspaceType ? `?type=${workspaceType}` : ""}` : "/get-started");
+      return;
+    }
+    let code: string | null = null;
+    if (userEmail) {
+      const { data: lg } = await (supabase as any)
+        .from("golf_leagues").select("id").eq("league_slug", leagueSlug).maybeSingle();
+      if (lg) {
+        const { data: member } = await (supabase as any)
+          .from("league_members").select("scoring_code")
+          .eq("league_id", lg.id).ilike("email", userEmail).maybeSingle();
+        code = member?.scoring_code ?? null;
+      }
+    }
+    navigate(code ? `/league/${leagueSlug}/me/${code}` : `/league/${leagueSlug}/score`);
+  };
+
+  const signInWithGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/league/${leagueSlug}/score?oauth=1`,
+    });
+    if ((result as any).error) {
+      toast({ title: "Google sign-in failed", description: (result as any).error.message, variant: "destructive" });
+      return;
+    }
+    if ((result as any).redirected) return;
+    const { data } = await supabase.auth.getUser();
+    await goAfterReset(data.user?.email);
+  };
+
 
   useEffect(() => {
     // Listen for the PASSWORD_RECOVERY event from the magic link
@@ -49,13 +98,12 @@ const ResetPassword = () => {
     } else {
       toast({
         title: isNewSignup ? "Welcome to TeeVents!" : "Password updated!",
-        description: isNewSignup ? "Let's set up your workspace." : "You can now sign in with your new password.",
+        description: leagueSlug
+          ? `You're all set${leagueName ? ` for ${leagueName}` : ""} — taking you to your league.`
+          : isNewSignup ? "Let's set up your workspace." : "You can now sign in with your new password.",
       });
-      if (isNewSignup) {
-        navigate(`/create-workspace${workspaceType ? `?type=${workspaceType}` : ""}`);
-      } else {
-        navigate("/get-started");
-      }
+      const { data } = await supabase.auth.getUser();
+      await goAfterReset(data.user?.email);
     }
     setLoading(false);
   };
@@ -68,13 +116,22 @@ const ResetPassword = () => {
             <img src={logoBlack} alt="TeeVents" className="h-14 w-14 mx-auto mb-4 object-contain" />
             <Lock className="h-8 w-8 mx-auto mb-3 text-primary" />
             <h1 className="text-2xl font-display font-bold text-foreground">Set New Password</h1>
-            <p className="text-sm text-muted-foreground mt-2">Enter your new password below</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {leagueSlug
+                ? `Set a password for your ${leagueName ?? "league"} member account`
+                : "Enter your new password below"}
+            </p>
           </div>
 
           {!ready ? (
             <p className="text-center text-muted-foreground text-sm">
               Verifying your reset link… If this takes too long, request a new reset from the{" "}
-              <a href="/get-started" className="text-primary font-semibold hover:underline">sign in page</a>.
+              <a
+                href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
+                className="text-primary font-semibold hover:underline"
+              >
+                sign in page
+              </a>.
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,6 +164,21 @@ const ResetPassword = () => {
                 Update Password
               </Button>
             </form>
+          )}
+
+          {leagueSlug && (
+            <div className="mt-6 border-t border-border pt-5 space-y-3 text-center">
+              <p className="text-xs text-muted-foreground">Or skip the password and use Google</p>
+              <Button variant="outline" className="w-full" onClick={signInWithGoogle}>
+                Sign in with Google
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Not registered yet?{" "}
+                <a href={`/league/${leagueSlug}/register`} className="text-primary font-semibold hover:underline">
+                  Join {leagueName ?? "this league"}
+                </a>
+              </p>
+            </div>
           )}
         </div>
       </div>

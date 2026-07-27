@@ -77,6 +77,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-blue-400 bg-blue-400/5",
     items: [
       { title: "Tournament Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Name, date, location, fees, add‑ons" },
+      { title: "Scoring & Payouts", url: "/dashboard/scoring-payouts", icon: Trophy, feature: null, description: "Scoring format, skins, flights, and payout breakdown" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
       { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
       { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },

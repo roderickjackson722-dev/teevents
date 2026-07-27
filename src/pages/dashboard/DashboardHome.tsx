@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
 import UpcomingRemindersWidget from "@/components/dashboard/UpcomingRemindersWidget";
+import ScoringPayoutsWidget from "@/components/dashboard/ScoringPayoutsWidget";
 import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
 
@@ -142,6 +143,10 @@ const DashboardHome = () => {
             </Tooltip>
           </div>
         </TooltipProvider>
+      )}
+
+      {latestTournament && (
+        <ScoringPayoutsWidget tournamentId={latestTournament.id} />
       )}
 
       {latestTournament && (

@@ -20,6 +20,7 @@ import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
 import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
 import LeagueRegistrationTab from "@/components/leagues/LeagueRegistrationTab";
+import LeagueScoringPayoutsTab from "@/components/leagues/LeagueScoringPayoutsTab";
 
 
 
@@ -142,6 +143,7 @@ export default function LeagueManage() {
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
+          <TabsTrigger value="scoring-payouts">Scoring &amp; Payouts</TabsTrigger>
           <TabsTrigger value="members">Players</TabsTrigger>
           <TabsTrigger value="registration">Registration</TabsTrigger>
 
@@ -160,6 +162,7 @@ export default function LeagueManage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4"><LeagueOverviewTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="scoring-payouts" className="mt-4"><LeagueScoringPayoutsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
         <TabsContent value="registration" className="mt-4"><LeagueRegistrationTab league={league} /></TabsContent>
 

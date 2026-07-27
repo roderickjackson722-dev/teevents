@@ -55,8 +55,18 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     setLoading(false);
   };
 
+  const [leagueSlug, setLeagueSlug] = useState<string | null>(null);
+
   useEffect(() => {
     load();
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("golf_leagues")
+        .select("league_slug")
+        .eq("id", leagueId)
+        .maybeSingle();
+      setLeagueSlug(data?.league_slug ?? null);
+    })();
   }, [leagueId]);
 
   const save = async () => {

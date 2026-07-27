@@ -161,6 +161,8 @@ export default function LeagueManage() {
 
         <TabsContent value="overview" className="mt-4"><LeagueOverviewTab leagueId={league.id} /></TabsContent>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="registration" className="mt-4"><LeagueRegistrationTab league={league} /></TabsContent>
+
         <TabsContent value="events" className="mt-4"><LeagueEventsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="courses" className="mt-4"><LeagueCoursesTab leagueId={league.id} /></TabsContent>
         <TabsContent value="pairings" className="mt-4"><LeaguePairingsTab leagueId={league.id} /></TabsContent>

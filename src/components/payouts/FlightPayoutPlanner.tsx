@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Scale, Info, Loader2, Save } from "lucide-react";
+import { Scale, Info, Loader2, Save, ClipboardCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import {
   FLIGHT_METHODS,
   flightsForMethod,

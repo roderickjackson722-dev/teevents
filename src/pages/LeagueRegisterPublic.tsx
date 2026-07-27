@@ -34,21 +34,27 @@ export default function LeagueRegisterPublic() {
 
   useEffect(() => {
     (async () => {
-      const { data: lg } = await (supabase as any)
-        .from("golf_leagues")
-        .select("id, league_name, league_slug, logo_url, tagline, is_public, is_active")
-        .eq("league_slug", slug)
-        .maybeSingle();
-      setLeague(lg);
-      if (lg) {
-        const { data: f } = await (supabase as any)
-          .from("league_registration_forms").select("*").eq("league_id", lg.id).maybeSingle();
-        setForm(f);
-        setFields(normalizeFields(f?.custom_fields).filter(x => x.enabled));
+      try {
+        const { data: lg } = await (supabase as any)
+          .from("golf_leagues")
+          .select("id, league_name, league_slug, logo_url, tagline, is_public, is_active")
+          .eq("league_slug", slug)
+          .maybeSingle();
+        setLeague(lg);
+        if (lg) {
+          const { data: f } = await (supabase as any)
+            .from("league_registration_forms").select("*").eq("league_id", lg.id).maybeSingle();
+          setForm(f);
+          setFields(normalizeFields(f?.custom_fields).filter(x => x.enabled));
+        }
+      } catch (e) {
+        console.error("League registration load failed", e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [slug]);
+
 
   const baseCents = form ? (form.is_free ? 0 : Number(form.league_fee_cents || 0)) : 0;
   const discounted = (() => {

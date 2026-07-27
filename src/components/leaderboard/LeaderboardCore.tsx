@@ -149,14 +149,29 @@ export function LeaderboardRenderer({
           <Trophy className={compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"} style={{ color: accent }} />
         </div>
         {!compact && presentedBy && (
-          <div className="mt-4 flex items-center justify-center gap-4 rounded-md py-3 px-4 border" style={{ borderColor: `${accent}55`, backgroundColor: `${accent}12` }}>
-            <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-semibold opacity-80" style={{ color: textColor }}>
+          <div
+            className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-md py-3 px-4 border"
+            style={{ borderColor: `${accent}55`, backgroundColor: `${accent}12` }}
+          >
+            <span
+              className="text-xs sm:text-sm uppercase tracking-[0.15em] font-semibold opacity-80 whitespace-nowrap"
+              style={{ color: textColor }}
+            >
               {presentedBy.label}
             </span>
             {presentedBy.logoUrl ? (
-              <img src={presentedBy.logoUrl} alt={presentedBy.name} className="h-8 sm:h-12 max-w-[220px] object-contain" />
+              <img
+                src={presentedBy.logoUrl}
+                alt={presentedBy.name}
+                className="h-8 sm:h-12 max-w-[160px] sm:max-w-[220px] object-contain"
+              />
             ) : null}
-            <span className="text-sm sm:text-lg font-bold" style={{ color: textColor }}>{presentedBy.name}</span>
+            <span
+              className="text-sm sm:text-lg font-bold text-center"
+              style={{ color: textColor }}
+            >
+              {presentedBy.name}
+            </span>
           </div>
         )}
       </header>

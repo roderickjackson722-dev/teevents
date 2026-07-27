@@ -143,6 +143,8 @@ export default function LeagueManage() {
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
           <TabsTrigger value="members">Players</TabsTrigger>
+          <TabsTrigger value="registration">Registration</TabsTrigger>
+
           <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,55 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const isNewSignup = searchParams.get("new") === "1";
   const workspaceType = searchParams.get("type");
+  const leagueSlug = searchParams.get("league");
+  const [leagueName, setLeagueName] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!leagueSlug) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("golf_leagues")
+        .select("league_name")
+        .eq("league_slug", leagueSlug)
+        .maybeSingle();
+      setLeagueName(data?.league_name ?? null);
+    })();
+  }, [leagueSlug]);
+
+  // Send league members back to their league portal, not the organizer app.
+  const goAfterReset = async (userEmail?: string | null) => {
+    if (!leagueSlug) {
+      navigate(isNewSignup ? `/create-workspace${workspaceType ? `?type=${workspaceType}` : ""}` : "/get-started");
+      return;
+    }
+    let code: string | null = null;
+    if (userEmail) {
+      const { data: lg } = await (supabase as any)
+        .from("golf_leagues").select("id").eq("league_slug", leagueSlug).maybeSingle();
+      if (lg) {
+        const { data: member } = await (supabase as any)
+          .from("league_members").select("scoring_code")
+          .eq("league_id", lg.id).ilike("email", userEmail).maybeSingle();
+        code = member?.scoring_code ?? null;
+      }
+    }
+    navigate(code ? `/league/${leagueSlug}/me/${code}` : `/league/${leagueSlug}/score`);
+  };
+
+  const signInWithGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/league/${leagueSlug}/score?oauth=1`,
+    });
+    if ((result as any).error) {
+      toast({ title: "Google sign-in failed", description: (result as any).error.message, variant: "destructive" });
+      return;
+    }
+    if ((result as any).redirected) return;
+    const { data } = await supabase.auth.getUser();
+    await goAfterReset(data.user?.email);
+  };
+
 
   useEffect(() => {
     // Listen for the PASSWORD_RECOVERY event from the magic link

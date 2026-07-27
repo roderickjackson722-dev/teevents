@@ -253,7 +253,7 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                   <TableHead>Handicap</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Fee Paid</TableHead>
-                  <TableHead>Scoring Code</TableHead>
+                  <TableHead>Login Code</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>

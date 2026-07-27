@@ -124,7 +124,7 @@ export default function LeagueMemberLogin() {
   const resetPassword = async () => {
     if (!email.trim()) return toast({ title: "Enter your email first" });
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/reset-password?league=${encodeURIComponent(slug || "")}`,
     });
     if (error) return toast({ title: "Could not send reset email", description: error.message, variant: "destructive" });
     toast({ title: "Password reset email sent" });

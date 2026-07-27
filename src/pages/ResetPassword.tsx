@@ -165,6 +165,21 @@ const ResetPassword = () => {
               </Button>
             </form>
           )}
+
+          {leagueSlug && (
+            <div className="mt-6 border-t border-border pt-5 space-y-3 text-center">
+              <p className="text-xs text-muted-foreground">Or skip the password and use Google</p>
+              <Button variant="outline" className="w-full" onClick={signInWithGoogle}>
+                Sign in with Google
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Not registered yet?{" "}
+                <a href={`/league/${leagueSlug}/register`} className="text-primary font-semibold hover:underline">
+                  Join {leagueName ?? "this league"}
+                </a>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

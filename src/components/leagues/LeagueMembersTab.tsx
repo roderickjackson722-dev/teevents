@@ -117,6 +117,62 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     else load();
   };
 
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const randomCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  };
+
+  const uniqueCode = (taken: Set<string>) => {
+    let c = randomCode();
+    while (taken.has(c)) c = randomCode();
+    taken.add(c);
+    return c;
+  };
+
+  const assignCode = async (m: Member, regenerate = false) => {
+    if (regenerate && !confirm(`Generate a new login code for ${m.member_name}? Their old code will stop working.`)) return;
+    setBusyId(m.id);
+    const taken = new Set(members.map((x) => x.scoring_code).filter(Boolean) as string[]);
+    const code = uniqueCode(taken);
+    const { error } = await (supabase as any).from("league_members").update({ scoring_code: code }).eq("id", m.id);
+    setBusyId(null);
+    if (error) return toast({ title: "Could not assign code", description: error.message, variant: "destructive" });
+    toast({ title: `Login code for ${m.member_name}: ${code}` });
+    load();
+  };
+
+  const assignAllMissing = async () => {
+    const missing = members.filter((m) => !m.scoring_code);
+    if (missing.length === 0) return toast({ title: "Every member already has a login code" });
+    const taken = new Set(members.map((x) => x.scoring_code).filter(Boolean) as string[]);
+    for (const m of missing) {
+      await (supabase as any).from("league_members").update({ scoring_code: uniqueCode(taken) }).eq("id", m.id);
+    }
+    toast({ title: `Assigned codes to ${missing.length} member${missing.length === 1 ? "" : "s"}` });
+    load();
+  };
+
+  const copyCode = (m: Member) => {
+    if (!m.scoring_code) return;
+    navigator.clipboard.writeText(m.scoring_code);
+    toast({ title: `Copied ${m.member_name}'s code` });
+  };
+
+  const sendPasswordReset = async (m: Member) => {
+    if (!m.email) return toast({ title: "This member has no email on file", variant: "destructive" });
+    if (!confirm(`Send a password reset email to ${m.email}?`)) return;
+    setBusyId(m.id);
+    const { error } = await supabase.auth.resetPasswordForEmail(m.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusyId(null);
+    if (error) toast({ title: "Reset email failed", description: error.message, variant: "destructive" });
+    else toast({ title: `Password reset sent to ${m.email}` });
+  };
+
+
   const fileInput = useRef<HTMLInputElement>(null);
 
   const handleCsvImport = async (file: File) => {

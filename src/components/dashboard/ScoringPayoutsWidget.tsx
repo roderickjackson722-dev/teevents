@@ -27,11 +27,11 @@ export default function ScoringPayoutsWidget({ tournamentId }: { tournamentId: s
           .maybeSingle(),
         supabase
           .from("flight_payouts")
-          .select("purse_cents")
+          .select("total_purse_cents")
           .eq("tournament_id", tournamentId),
       ]);
       setData(tRes.data);
-      setPurseCents(((pRes.data as any[]) || []).reduce((s, r) => s + (r.purse_cents || 0), 0));
+      setPurseCents(((pRes.data as any[]) || []).reduce((s, r) => s + (r.total_purse_cents || 0), 0));
     })();
   }, [tournamentId]);
 

@@ -223,8 +223,9 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Users className="h-5 w-5" /> Members ({members.length})
           </h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <input ref={fileInput} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvImport(f); e.target.value = ""; }} />
+            <Button variant="outline" size="sm" onClick={assignAllMissing} disabled={members.length === 0}><KeyRound className="h-4 w-4 mr-2" /> Assign Missing Codes</Button>
             <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}><Upload className="h-4 w-4 mr-2" /> Import CSV</Button>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={members.length === 0}><Download className="h-4 w-4 mr-2" /> Export</Button>
             <Button onClick={() => setEditing({ ...emptyMember })}>
@@ -232,6 +233,10 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
             </Button>
           </div>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Login codes are visible below. Use the key icon to assign or regenerate a member's 6-character code, and the mail icon to send a password reset if they sign in with email &amp; password.
+        </p>
+
 
 
         {loading ? (

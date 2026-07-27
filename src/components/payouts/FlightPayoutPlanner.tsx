@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Scale, Info, Loader2, Save } from "lucide-react";
+import { Scale, Info, Loader2, Save, ClipboardCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import {
   FLIGHT_METHODS,
   flightsForMethod,
@@ -36,7 +36,12 @@ interface Props {
   onApplyFlights?: (opts: { flights: number; names: string[]; basedOn: FlightBasis }) => Promise<void> | void;
   /** scope used when saving the financial breakdown */
   scope?: { tournament_id?: string; league_id?: string; league_event_id?: string };
+  /** real, manually-assigned flight sizes — drives the payout validation view */
+  actualFlights?: { name: string; players: number }[];
+  /** players in the field with no flight assigned yet */
+  unassignedCount?: number;
 }
+
 
 export default function FlightPayoutPlanner({
   defaultFieldSize = 0,
@@ -48,6 +53,8 @@ export default function FlightPayoutPlanner({
   onSaveSettings,
   onApplyFlights,
   scope,
+  actualFlights,
+  unassignedCount = 0,
 }: Props) {
   const { toast } = useToast();
   const [enabled, setEnabled] = useState(flightsEnabled);
@@ -69,15 +76,39 @@ export default function FlightPayoutPlanner({
   const totalPurseCents =
     Math.round((parseFloat(purseDollars) || 0) * 100) + Math.round((parseFloat(sponsorDollars) || 0) * 100);
 
+  /** use the real, manually-assigned flights when the organizer picked "custom" */
+  const useActual = method === "custom" && enabled && !!actualFlights?.length;
+
   const plan = useMemo(
     () =>
       buildPayoutPlan({
         fieldSize: Math.max(0, parseInt(fieldSize) || 0),
         purseCents: totalPurseCents,
         flights: enabled ? flights : 1,
+        flightSizes: useActual ? actualFlights!.map((f) => f.players) : null,
+        names: useActual ? actualFlights!.map((f) => f.name) : null,
       }),
-    [fieldSize, totalPurseCents, flights, enabled],
+    [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights],
   );
+
+  const validationIssues = useMemo(() => {
+    const issues: string[] = [];
+    if (totalPurseCents <= 0) issues.push("No purse entered — add entry fee or sponsor money before publishing payouts.");
+    const assigned = plan.flights.reduce((s, f) => s + f.players, 0);
+    if (assigned === 0) issues.push("No players in the field yet, so no payouts can be calculated.");
+    if (unassignedCount > 0)
+      issues.push(`${unassignedCount} player${unassignedCount === 1 ? " is" : "s are"} not assigned to a flight and will not be paid.`);
+    plan.flights.forEach((f) => {
+      if (f.players === 0) issues.push(`${f.name} has no players — it will receive no purse.`);
+      const paid = f.places.reduce((s, p) => s + p.amountCents, 0);
+      if (f.players > 0 && Math.abs(paid - f.purseCents) > 5)
+        issues.push(`${f.name}: payouts (${money(paid)}) do not match its purse (${money(f.purseCents)}).`);
+    });
+    if (Math.abs(plan.remainderCents) > 5)
+      issues.push(`Rounding remainder of ${money(plan.remainderCents)} will stay with the organizer.`);
+    return issues;
+  }, [plan, totalPurseCents, unassignedCount]);
+
 
   const maxPlaces = Math.max(1, ...plan.flights.map((f) => f.places.length));
   const activeMethod = FLIGHT_METHODS.find((m) => m.id === method);
@@ -299,6 +330,60 @@ export default function FlightPayoutPlanner({
             Places paid (largest flight): {placesPaidFor(Math.max(0, ...plan.flights.map((f) => f.players))).length}
           </Badge>
         </div>
+
+        {/* Payout validation — confirm every flight before publishing */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4" />
+            <h4 className="font-semibold text-sm">Payout Validation — review before publishing</h4>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {plan.flights.map((f) => (
+              <div key={`v-${f.name}`} className="rounded-md border bg-muted/30 p-3 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm">{f.name}</span>
+                  <Badge variant="outline" className="text-xs">{f.players} players</Badge>
+                </div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Flight purse: </span>
+                  <span className="font-semibold">{money(f.purseCents)}</span>
+                </div>
+                <ul className="text-sm space-y-0.5">
+                  {[0, 1, 2].map((i) => (
+                    <li key={i} className="flex justify-between">
+                      <span className="text-muted-foreground">{["1st", "2nd", "3rd"][i]} place</span>
+                      <span className={f.places[i] ? "font-medium" : "text-muted-foreground"}>
+                        {f.places[i] ? `${money(f.places[i].amountCents)} (${f.places[i].percent}%)` : "not paid"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="text-xs text-muted-foreground pt-1 border-t">
+                  Paid out: {money(f.places.reduce((s, p) => s + p.amountCents, 0))} of {money(f.purseCents)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-1 text-sm">
+            {validationIssues.length === 0 ? (
+              <p className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                Everything adds up — {money(plan.totalPaidCents)} across {plan.flights.length} flight
+                {plan.flights.length === 1 ? "" : "s"} is ready to publish.
+              </p>
+            ) : (
+              validationIssues.map((issue) => (
+                <p key={issue} className="flex items-start gap-2 text-destructive">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  {issue}
+                </p>
+              ))
+            )}
+          </div>
+        </div>
+
       </CardContent>
     </Card>
   );

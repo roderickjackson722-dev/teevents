@@ -192,3 +192,84 @@ export const SHOOTOUT_ROUND_FORMATS = [
 
 export const money = (cents: number) =>
   `$${((cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/* ------------------------------------------------------------------ *
+ * Scramble scoring & minimum-drive enforcement
+ * ------------------------------------------------------------------ */
+
+/**
+ * A scramble produces ONE team score per hole. Players may each punch in a
+ * number on their phone, so we reduce the entries to a single team score
+ * (the best/lowest recorded value) and report whether the entries disagreed.
+ */
+export function scrambleTeamHoleScore(entries: (number | null | undefined)[]): {
+  score: number | null;
+  agreed: boolean;
+} {
+  const vals = entries.filter((v): v is number => typeof v === "number" && !Number.isNaN(v) && v > 0);
+  if (vals.length === 0) return { score: null, agreed: true };
+  const min = Math.min(...vals);
+  return { score: min, agreed: vals.every((v) => v === min) };
+}
+
+/** Total team score for a scramble round: one score per hole, summed. */
+export function scrambleTeamTotal(holes: (number | null | undefined)[][]): number {
+  return holes.reduce((sum, hole) => sum + (scrambleTeamHoleScore(hole).score ?? 0), 0);
+}
+
+export interface DriveRequirementRow<T> {
+  player: T;
+  drivesUsed: number;
+  required: number;
+  short: number;
+  meetsRequirement: boolean;
+}
+
+export interface DriveRequirementResult<T> {
+  required: number;
+  rows: DriveRequirementRow<T>[];
+  totalDrives: number;
+  /** drives still to be played (holes - drives already recorded) */
+  drivesRemaining: number;
+  /** total drives still needed to satisfy every player's minimum */
+  totalShort: number;
+  /** true when every player already meets the minimum */
+  valid: boolean;
+  /** true when the minimum can no longer be met with the holes left */
+  impossible: boolean;
+}
+
+/**
+ * Minimum drives rule: each player's tee shot must be used at least `required`
+ * times over the round (commonly 4 on 18 holes for a 3-man scramble).
+ */
+export function validateMinimumDrives<T>(
+  players: T[],
+  drivesUsed: (p: T) => number | null | undefined,
+  required: number,
+  holes = 18,
+): DriveRequirementResult<T> {
+  const req = Math.max(0, Math.floor(required) || 0);
+  const rows = players.map((player) => {
+    const used = Math.max(0, Math.floor(drivesUsed(player) || 0));
+    const short = Math.max(0, req - used);
+    return { player, drivesUsed: used, required: req, short, meetsRequirement: short === 0 };
+  });
+  const totalDrives = rows.reduce((s, r) => s + r.drivesUsed, 0);
+  const drivesRemaining = Math.max(0, holes - totalDrives);
+  const totalShort = rows.reduce((s, r) => s + r.short, 0);
+  return {
+    required: req,
+    rows,
+    totalDrives,
+    drivesRemaining,
+    totalShort,
+    valid: totalShort === 0,
+    impossible: totalShort > drivesRemaining,
+  };
+}
+
+/** Aggregate a Shootout: every round's team score added together. */
+export function aggregateShootoutScore(rounds: { strokes?: number | null }[]): number {
+  return rounds.reduce((s, r) => s + (r.strokes || 0), 0);
+}

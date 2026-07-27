@@ -91,6 +91,23 @@ export default function FlightPayoutPlanner({
     [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights],
   );
 
+  const validationIssues = useMemo(() => {
+    const issues: string[] = [];
+    if (totalPurseCents <= 0) issues.push("No purse entered — add entry fee or sponsor money before publishing payouts.");
+    const assigned = plan.flights.reduce((s, f) => s + f.players, 0);
+    if (assigned === 0) issues.push("No players in the field yet, so no payouts can be calculated.");
+    if (unassignedCount > 0)
+      issues.push(`${unassignedCount} player${unassignedCount === 1 ? " is" : "s are"} not assigned to a flight and will not be paid.`);
+    plan.flights.forEach((f) => {
+      if (f.players === 0) issues.push(`${f.name} has no players — it will receive no purse.`);
+      const paid = f.places.reduce((s, p) => s + p.amountCents, 0);
+      if (f.players > 0 && Math.abs(paid - f.purseCents) > 5)
+        issues.push(`${f.name}: payouts (${money(paid)}) do not match its purse (${money(f.purseCents)}).`);
+    });
+    if (Math.abs(plan.remainderCents) > 5)
+      issues.push(`Rounding remainder of ${money(plan.remainderCents)} will stay with the organizer.`);
+    return issues;
+  }, [plan, totalPurseCents, unassignedCount]);
 
 
   const maxPlaces = Math.max(1, ...plan.flights.map((f) => f.places.length));

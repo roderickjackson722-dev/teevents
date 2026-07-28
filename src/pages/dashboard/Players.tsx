@@ -1679,6 +1679,8 @@ const Players = () => {
             </table>
           </div>
         </div>
+        </div>
+
       ) : (
         /* Pairings View */
         <div>

@@ -67,7 +67,7 @@ export default function FindYourLeague() {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <Button asChild variant="outline" size="sm"><Link to={`/league/${l.league_slug}`}>View</Link></Button>
-                    <Button asChild size="sm"><Link to={`/league/${l.league_slug}/login`}>Member Login</Link></Button>
+                    <Button asChild size="sm"><Link to={`/league/${l.league_slug}/score`}>Member Login</Link></Button>
                   </div>
                 </div>
               ))

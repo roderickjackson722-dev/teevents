@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await admin
       .from("tournaments")
-      .select("id, title, date, location, course_name, slug, organization_id, day_before_email_config")
+      .select("id, title, date, location, state, course_name, slug, organization_id, day_before_email_config, schedule_info, schedule_info_html")
       .eq("id", tournament_id)
       .single();
     if (!tournament) throw new Error("Tournament not found");
@@ -119,6 +119,26 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email is not configured");
 
+    // Course address lives on the tournament's saved course record.
+    const { data: course } = await admin
+      .from("golf_courses")
+      .select("course_address")
+      .eq("tournament_id", tournament_id)
+      .limit(1)
+      .maybeSingle();
+
+    const stripTags = (s: string) =>
+      s.replace(/<br\s*\/?>(\s*)/gi, "\n")
+        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+
+    const scheduleRaw =
+      (tournament as any).schedule_info ||
+      ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
+    const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
+
     const config = (tournament as any).day_before_email_config || DEFAULTS;
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
@@ -126,14 +146,17 @@ Deno.serve(async (req) => {
       : "";
     const homepage = tournament.slug ? `https://www.teevents.golf/t/${tournament.slug}` : "https://www.teevents.golf";
     const scoringLink = tournament.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score";
+    const courseAddress = (course as any)?.course_address || tournament.location || "See event homepage";
 
     const buildVars = (reg: any) => ({
       first_name: reg.first_name || "",
       last_name: reg.last_name || "",
       event_name: tournament.title || "",
       event_date: dateStr,
-      event_location: tournament.location || "",
+      event_location: [tournament.location, (tournament as any).state].filter(Boolean).join(", "),
       course_name: (tournament as any).course_name || tournament.location || "",
+      course_address: courseAddress,
+      event_schedule: schedule,
       tee_time: reg.tee_time || "TBD",
       hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
       scoring_code: reg.scoring_code || "TBD",

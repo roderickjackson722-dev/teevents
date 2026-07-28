@@ -108,7 +108,9 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
 };
 
 const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
   subject: "{{event_name}} – Tomorrow is the big day!",
+
   greeting: "Hello {{first_name}},",
   body_text:
     "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n\n🔑 Your Scoring Code: {{scoring_code}}",

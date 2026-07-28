@@ -481,7 +481,15 @@ export default function CourseDetails() {
         </Alert>
       )}
 
+      {importWarning && (
+        <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{importWarning}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Validation Banner */}
+
       {!validation.isComplete ? (
         <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
           <AlertTriangle className="h-4 w-4" />

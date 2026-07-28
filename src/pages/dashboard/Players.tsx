@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
@@ -1092,6 +1092,20 @@ const Players = () => {
     toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes. Registration groups were kept together.` });
   };
 
+  // Seed the pairings board with the teams we already know about the first time
+  // an organizer opens the Pairings tab with nothing assigned yet.
+  const autoSeededRef = useRef(false);
+  useEffect(() => {
+    if (view !== "pairings" || autoSeededRef.current) return;
+    if (players.length === 0 || registrationGroups.length === 0) return;
+    if (players.some((p) => p.group_number !== null)) return;
+    autoSeededRef.current = true;
+    handleAutoAssign();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, players, registrationGroups]);
+
+
+
   const onDragEnd = async (result: DropResult) => {
     const { draggableId, source, destination } = result;
     if (!destination) return;
@@ -1495,75 +1509,6 @@ const Players = () => {
 
         /* Roster View */
         <div className="space-y-6">
-        {registrationGroups.length > 0 && (
-          <div className="bg-card rounded-lg border border-border p-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <h3 className="font-display font-bold text-foreground">Team / Group Registrations</h3>
-              <span className="text-xs text-muted-foreground">{registrationGroups.length} group{registrationGroups.length !== 1 ? "s" : ""} signed up together</span>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {registrationGroups.map((g, gi) => (
-                <div key={g.id} className="border border-border rounded-md overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold flex items-center gap-2">
-                    {editingGroupId === g.id ? (
-                      <>
-                        <Input
-                          value={groupNameInput}
-                          onChange={(e) => setGroupNameInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") renameGroup(g.id, groupNameInput);
-                            if (e.key === "Escape") setEditingGroupId(null);
-                          }}
-                          className="h-7 text-sm"
-                          aria-label="Team name"
-                          autoFocus
-                        />
-                        <button className="text-primary" onClick={() => renameGroup(g.id, groupNameInput)} aria-label="Save team name">
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                        <button className="text-muted-foreground" onClick={() => setEditingGroupId(null)} aria-label="Cancel rename">
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span className="truncate">
-                          {g.name} ({groupSizeLabel(g.players.length)})
-                        </span>
-                        <button
-                          className="text-muted-foreground hover:text-primary shrink-0"
-                          title="Rename team"
-                          onClick={() => { setEditingGroupId(g.id); setGroupNameInput(g.name); }}
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {g.players.map((p) => (
-                        <tr key={p.id} className="border-t border-border">
-                          <td className="px-3 py-2">
-                            {p.first_name} {p.last_name}
-                            {p.group_leader && <span className="ml-2 text-[10px] uppercase tracking-wide text-primary">Captain</span>}
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
-                          <td className="px-3 py-2 text-center">{p.handicap ?? "—"}</td>
-                          <td className="px-3 py-2 text-right">
-                            <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         <div className="bg-card rounded-lg border border-border overflow-hidden">
 
           <div className="overflow-x-auto">
@@ -1816,6 +1761,75 @@ const Players = () => {
             </table>
           </div>
         </div>
+        {registrationGroups.length > 0 && (
+          <div className="bg-card rounded-lg border border-border p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <h3 className="font-display font-bold text-foreground">Team / Group Registrations</h3>
+              <span className="text-xs text-muted-foreground">{registrationGroups.length} group{registrationGroups.length !== 1 ? "s" : ""} signed up together</span>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {registrationGroups.map((g, gi) => (
+                <div key={g.id} className="border border-border rounded-md overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold flex items-center gap-2">
+                    {editingGroupId === g.id ? (
+                      <>
+                        <Input
+                          value={groupNameInput}
+                          onChange={(e) => setGroupNameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") renameGroup(g.id, groupNameInput);
+                            if (e.key === "Escape") setEditingGroupId(null);
+                          }}
+                          className="h-7 text-sm"
+                          aria-label="Team name"
+                          autoFocus
+                        />
+                        <button className="text-primary" onClick={() => renameGroup(g.id, groupNameInput)} aria-label="Save team name">
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button className="text-muted-foreground" onClick={() => setEditingGroupId(null)} aria-label="Cancel rename">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="truncate">
+                          {g.name} ({groupSizeLabel(g.players.length)})
+                        </span>
+                        <button
+                          className="text-muted-foreground hover:text-primary shrink-0"
+                          title="Rename team"
+                          onClick={() => { setEditingGroupId(g.id); setGroupNameInput(g.name); }}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {g.players.map((p) => (
+                        <tr key={p.id} className="border-t border-border">
+                          <td className="px-3 py-2">
+                            {p.first_name} {p.last_name}
+                            {p.group_leader && <span className="ml-2 text-[10px] uppercase tracking-wide text-primary">Captain</span>}
+                          </td>
+                          <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
+                          <td className="px-3 py-2 text-center">{p.handicap ?? "—"}</td>
+                          <td className="px-3 py-2 text-right">
+                            <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         </div>
 
       ) : (
@@ -1986,6 +2000,12 @@ const Players = () => {
                               <span className="font-medium text-foreground">
                                 {p.first_name} {p.last_name}
                               </span>
+                              {p.group_id && groupInfoById[p.group_id] && (
+                                <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                  {groupInfoById[p.group_id].name}
+                                </span>
+                              )}
+
                               {p.handicap !== null && (
                                 <span className="text-xs text-muted-foreground ml-auto">
                                   HCP {p.handicap}
@@ -2182,11 +2202,12 @@ const Players = () => {
                                   <span className="font-medium text-foreground">
                                     {p.first_name} {p.last_name}
                                   </span>
-                                  {p.group_id && groupNames[p.group_id] && (
+                                  {p.group_id && groupInfoById[p.group_id] && (
                                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                                      {groupNames[p.group_id]}
+                                      {groupInfoById[p.group_id].name}
                                     </span>
                                   )}
+
 
                                   {p.handicap !== null && (
                                     <span className="text-xs text-muted-foreground ml-auto">

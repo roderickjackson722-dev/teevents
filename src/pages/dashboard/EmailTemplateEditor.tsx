@@ -825,13 +825,27 @@ export default function EmailTemplateEditor() {
   );
 }
 
+const SAMPLE_VARS: Record<string, string> = {
+  course_name: "Pine Valley Golf Club",
+  course_address: "1 Clubhouse Dr, Pine Valley, NJ 08021",
+  event_schedule: "7:30 AM — Check-in & breakfast\n9:00 AM — Shotgun start\n2:00 PM — Lunch & awards",
+  tee_time: "8:30 AM",
+  hole_number: "5",
+  scoring_code: "ABC123",
+  scoring_link: "https://www.teevents.golf/t/sample/scoring",
+  event_homepage: "https://www.teevents.golf/t/sample",
+};
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function replaceVariables(text: string, vars: Record<string, string>): string {
-  return text
-    .replace(/\{\{first_name\}\}/g, vars.first_name || "")
-    .replace(/\{\{last_name\}\}/g, vars.last_name || "")
-    .replace(/\{\{event_name\}\}/g, vars.event_name || "")
-    .replace(/\{\{event_date\}\}/g, vars.event_date || "")
-    .replace(/\{\{event_location\}\}/g, vars.event_location || "");
+  const merged = { ...SAMPLE_VARS, ...vars };
+  return escapeHtml(text || "")
+    .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "")
+    .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#1a5c38;font-weight:600;">${u}</a>`)
+    .replace(/\n/g, "<br/>");
 }
 
 function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, headerText: string = "Registration Confirmed!", opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string }): string {
@@ -839,6 +853,7 @@ function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, head
   const body = replaceVariables(config.body_text, vars);
   const closing = replaceVariables(config.closing_text, vars);
   const footer = replaceVariables(config.footer_text, vars);
+
 
   const eventDetailsHtml = config.show_event_details && (vars.event_date || vars.event_location)
     ? `<div style="margin:16px 0;">

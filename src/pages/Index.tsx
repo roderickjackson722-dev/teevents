@@ -503,7 +503,10 @@ const Index = () => {
         </div>
       </section>
 
+      <FindYourLeague />
+
       {/* Final CTA */}
+
       <section className="bg-primary py-20">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <motion.div

@@ -1176,9 +1176,9 @@ const Players = () => {
           <h1 className="text-3xl font-display font-bold text-foreground">Players & Pairings</h1>
           <p className="text-muted-foreground mt-1">
             <span className="font-semibold text-foreground">{paidCount} paid</span> player{paidCount !== 1 ? "s" : ""}
-            {pendingCount > 0 && <> · {pendingCount} pending</>}
-            {" · "}{players.length} total
+            {pendingCount > 0 && <> · {pendingCount} pending (not counted)</>}
           </p>
+
         </div>
 
         <div className="flex items-center gap-3">

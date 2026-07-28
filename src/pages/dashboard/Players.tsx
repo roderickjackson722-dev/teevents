@@ -544,6 +544,58 @@ const Players = () => {
     }
   };
 
+  /** Organizer override: flip a pending registration to paid (counts update instantly). */
+  const markAsPaid = async (id: string) => {
+    if (demoGuard()) return;
+    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ payment_status: "paid" } as any)
+      .eq("id", id);
+    if (error) {
+      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+      toast({ title: "Couldn't mark as paid", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Marked as paid" });
+    }
+  };
+
+  const markAsPending = async (id: string) => {
+    if (demoGuard()) return;
+    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ payment_status: "pending" } as any)
+      .eq("id", id);
+    if (error) {
+      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+      toast({ title: "Couldn't update payment", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Moved back to pending" });
+    }
+  };
+
+  /** Rename a registration group (foursome / team name shown in Players & Pairings). */
+  const renameGroup = async (groupId: string, name: string) => {
+    if (demoGuard()) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const prevName = groupNames[groupId];
+    setGroupNames((prev) => ({ ...prev, [groupId]: trimmed }));
+    setEditingGroupId(null);
+    const { error } = await (supabase as any)
+      .from("registration_groups")
+      .update({ group_name: trimmed })
+      .eq("id", groupId);
+    if (error) {
+      setGroupNames((prev) => ({ ...prev, [groupId]: prevName }));
+      toast({ title: "Rename failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Team name updated" });
+    }
+  };
+
+
   const handleRegenerateAllCodes = async () => {
     if (players.length === 0 || demoGuard()) return;
     setRegenerating(true);

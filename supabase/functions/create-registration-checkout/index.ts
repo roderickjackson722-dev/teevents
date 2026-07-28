@@ -271,8 +271,25 @@ Deno.serve(async (req) => {
     }
 
     // Insert registration records. Donation is attached to the first (captain) row.
+    // Multi-player (twosome/threesome/foursome) sign-ups get a shared group id so
+    // organizers can see who registered together and keep them paired.
+    let groupId: string | null = null;
+    if (players.length > 1) {
+      const captain = players[0];
+      const { data: groupRow } = await supabaseAdmin
+        .from("registration_groups")
+        .insert({
+          tournament_id,
+          group_name: `${(captain.first_name || "").trim()} ${(captain.last_name || "").trim()}`.trim() || "Team",
+        })
+        .select("id")
+        .maybeSingle();
+      groupId = groupRow?.id ?? null;
+    }
+
     const registrationInserts = players.map((p: any, i: number) => ({
       tournament_id,
+
       first_name: (p.first_name || "").trim(),
       last_name: (p.last_name || "").trim(),
       email: (p.email || "").trim(),

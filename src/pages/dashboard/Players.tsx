@@ -1485,9 +1485,43 @@ const Players = () => {
             <div className="grid gap-4 md:grid-cols-2">
               {registrationGroups.map((g, gi) => (
                 <div key={g.id} className="border border-border rounded-md overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold">
-                    Group {gi + 1} — {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold flex items-center gap-2">
+                    {editingGroupId === g.id ? (
+                      <>
+                        <Input
+                          value={groupNameInput}
+                          onChange={(e) => setGroupNameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") renameGroup(g.id, groupNameInput);
+                            if (e.key === "Escape") setEditingGroupId(null);
+                          }}
+                          className="h-7 text-sm"
+                          aria-label="Team name"
+                          autoFocus
+                        />
+                        <button className="text-primary" onClick={() => renameGroup(g.id, groupNameInput)} aria-label="Save team name">
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button className="text-muted-foreground" onClick={() => setEditingGroupId(null)} aria-label="Cancel rename">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="truncate">
+                          {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                        </span>
+                        <button
+                          className="text-muted-foreground hover:text-primary shrink-0"
+                          title="Rename team"
+                          onClick={() => { setEditingGroupId(g.id); setGroupNameInput(g.name); }}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
                   </div>
+
                   <table className="w-full text-sm">
                     <tbody>
                       {g.players.map((p) => (

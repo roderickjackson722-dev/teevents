@@ -320,14 +320,11 @@ const Players = () => {
     }
   };
 
-  const isPaid = (p: Registration) => (p.payment_status || "").toLowerCase() === "paid";
-  const paidCount = players.filter(isPaid).length;
-  const pendingCount = players.filter((p) => !isPaid(p)).length;
+  const isPaid = (p: Registration) => isPaidStatus(p as any);
+  const { paid: paidCount, pending: pendingCount } = countPayments(players as any);
 
-  const filteredPlayers = players
+  const filteredPlayers = (filterByPayment(players as any, paymentFilter) as unknown as Registration[])
     .filter((p) => {
-      if (paymentFilter === "paid" && !isPaid(p)) return false;
-      if (paymentFilter === "pending" && isPaid(p)) return false;
       const q = search.toLowerCase();
       if (!q) return true;
       return (
@@ -345,22 +342,11 @@ const Players = () => {
     });
 
   // Registration groups (foursomes / twosomes that signed up together)
-  const registrationGroups = useMemo(() => {
-    const byGroup = new Map<string, Registration[]>();
-    players.forEach((p) => {
-      if (!p.group_id) return;
-      const list = byGroup.get(p.group_id) || [];
-      list.push(p);
-      byGroup.set(p.group_id, list);
-    });
-    return [...byGroup.entries()]
-      .filter(([, list]) => list.length > 1)
-      .map(([id, list], idx) => ({
-        id,
-        name: groupNames[id] || `Group ${idx + 1}`,
-        players: list.sort((a, b) => (a.group_leader === b.group_leader ? 0 : a.group_leader ? -1 : 1)),
-      }));
-  }, [players, groupNames]);
+  const registrationGroups = useMemo(
+    () => buildRegistrationGroups(players as any, groupNames) as unknown as Array<{ id: string; name: string; players: Registration[] }>,
+    [players, groupNames]
+  );
+
 
 
 

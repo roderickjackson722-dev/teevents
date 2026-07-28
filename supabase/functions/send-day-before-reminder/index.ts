@@ -12,9 +12,9 @@ const DEFAULTS = {
   subject: "{{event_name}} – Tomorrow is the big day!",
   greeting: "Hello {{first_name}},",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n\n🔑 Your Scoring Code: {{scoring_code}}",
+    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
-    "Please arrive 30 minutes before your tee time. Visit the event homepage for full details, pairings, and updates — and enter your scores with your scoring code at {{scoring_link}}.",
+    "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
 };
@@ -25,6 +25,14 @@ function replaceVars(text: string, vars: Record<string, string>): string {
 
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Turn bare URLs into clickable links (input must already be escaped).
+function linkify(s: string, color: string) {
+  return s.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    (u) => `<a href="${u}" style="color:${color};font-weight:600;">${u}</a>`,
+  );
 }
 
 function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string) {

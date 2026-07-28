@@ -9055,6 +9055,7 @@ export type Database = {
           custom_org_sections: Json
           custom_slug: string | null
           date: string | null
+          day_before_email_config: Json | null
           day_of_accent_color: string | null
           day_of_announcements: string | null
           day_of_announcements_list: Json
@@ -9315,6 +9316,7 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_before_email_config?: Json | null
           day_of_accent_color?: string | null
           day_of_announcements?: string | null
           day_of_announcements_list?: Json
@@ -9575,6 +9577,7 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_before_email_config?: Json | null
           day_of_accent_color?: string | null
           day_of_announcements?: string | null
           day_of_announcements_list?: Json

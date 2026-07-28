@@ -41,7 +41,7 @@ interface EmailConfig {
   font_family: string;
 }
 
-type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
 
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",
@@ -107,11 +107,26 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
   font_family: "Arial, sans-serif",
 };
 
+const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "{{event_name}} – Tomorrow is the big day!",
+
+  greeting: "Hello {{first_name}},",
+  body_text:
+    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n\n🔑 Your Scoring Code: {{scoring_code}}",
+  closing_text:
+    "Please arrive 30 minutes before your tee time. Visit the event homepage for full details, pairings, and updates — and enter your scores with your scoring code at {{scoring_link}}.",
+  footer_text: "See you on the course! ⛳",
+  button_text: "View Event Homepage",
+  show_event_details: true,
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
   vendor: "Vendor Confirmation",
   post_event: "Post-Event Thank You",
+  day_before: "Day Before Event Reminder",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -119,6 +134,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   sponsor: "Thank You for Sponsoring!",
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
+  day_before: "Tomorrow Is the Big Day!",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -126,6 +142,7 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   sponsor: "sponsor_email_config",
   vendor: "vendor_email_config",
   post_event: "post_event_email_config",
+  day_before: "day_before_email_config",
 };
 
 const FONT_OPTIONS = [
@@ -142,20 +159,35 @@ const VARIABLE_TAGS = [
   { label: "Event Name", value: "{{event_name}}" },
   { label: "Event Date", value: "{{event_date}}" },
   { label: "Event Location", value: "{{event_location}}" },
+  { label: "Course Name", value: "{{course_name}}" },
+  { label: "Tee Time", value: "{{tee_time}}" },
+  { label: "Starting Hole", value: "{{hole_number}}" },
+  { label: "Scoring Code", value: "{{scoring_code}}" },
+  { label: "Scoring Link", value: "{{scoring_link}}" },
 ];
 
 export default function EmailTemplateEditor() {
   const { org } = useOrgContext();
   const { isDemoMode } = useDemoMode();
   // ?template=post_event deep link from the Setup Checklist opens the post-event editor.
-  const initialTemplate: TemplateKind =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("template") === "post_event"
-      ? "post_event"
+  const initialTemplate: TemplateKind = (() => {
+    if (typeof window === "undefined") return "confirmation";
+    const q = new URLSearchParams(window.location.search).get("template");
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor"
+      ? (q as TemplateKind)
       : "confirmation";
+  })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
   const [config, setConfig] = useState<EmailConfig>(
-    initialTemplate === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG,
+    initialTemplate === "post_event"
+      ? DEFAULT_POST_EVENT_CONFIG
+      : initialTemplate === "day_before"
+        ? DEFAULT_DAY_BEFORE_CONFIG
+        : initialTemplate === "sponsor"
+          ? DEFAULT_SPONSOR_CONFIG
+          : initialTemplate === "vendor"
+            ? DEFAULT_VENDOR_CONFIG
+            : DEFAULT_CONFIG,
   );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -205,6 +237,7 @@ export default function EmailTemplateEditor() {
   const configKey = CONFIG_KEY[templateKind];
   const defaultsForKind = (k: TemplateKind): EmailConfig => {
     if (k === "post_event") return DEFAULT_POST_EVENT_CONFIG;
+    if (k === "day_before") return DEFAULT_DAY_BEFORE_CONFIG;
     if (k === "sponsor") return DEFAULT_SPONSOR_CONFIG;
     if (k === "vendor") return DEFAULT_VENDOR_CONFIG;
     return DEFAULT_CONFIG;
@@ -404,6 +437,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="sponsor">{TEMPLATE_LABELS.sponsor}</SelectItem>
               <SelectItem value="vendor">{TEMPLATE_LABELS.vendor}</SelectItem>
               <SelectItem value="post_event">{TEMPLATE_LABELS.post_event}</SelectItem>
+              <SelectItem value="day_before">{TEMPLATE_LABELS.day_before}</SelectItem>
             </SelectContent>
           </Select>
           <Button

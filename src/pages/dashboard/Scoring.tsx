@@ -61,6 +61,7 @@ export default function Scoring() {
         .from("tournament_registrations")
         .select("id, first_name, last_name, email, group_number, scoring_code")
         .eq("tournament_id", selectedTournament)
+        .eq("payment_status", "paid")
         .order("group_number")
         .order("last_name");
       if (error) throw error;

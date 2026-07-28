@@ -212,6 +212,32 @@ export default function DayOfSettings() {
 
   const [sending, setSending] = useState(false);
   const [testEmail, setTestEmail] = useState("");
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [reminderTestEmail, setReminderTestEmail] = useState("");
+
+  const sendDayBeforeReminder = async (mode: "test" | "all") => {
+    if (!t) return;
+    if (mode === "test" && !reminderTestEmail.trim()) {
+      toast({ title: "Enter a test email address", variant: "destructive" });
+      return;
+    }
+    if (mode === "all" && !confirm("Send the Day Before Event Reminder to every PAID player with an email on file?")) return;
+    setSendingReminder(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-before-reminder", {
+        body: mode === "test"
+          ? { tournament_id: t.id, test_email: reminderTestEmail.trim() }
+          : { tournament_id: t.id },
+      });
+      if (error) throw error;
+      const sent = (data as any)?.sent ?? 0;
+      toast({ title: mode === "test" ? "Test reminder sent" : `Reminder sent to ${sent} player${sent === 1 ? "" : "s"}` });
+    } catch (e: any) {
+      toast({ title: "Failed to send", description: e.message, variant: "destructive" });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
   const sendDayOfLinks = async (mode: "test" | "all") => {
     if (!t) return;
     if (mode === "all" && !confirm("Send the Day-of Event Page link to every registered player with an email on file?")) return;
@@ -500,6 +526,34 @@ export default function DayOfSettings() {
             <p className="font-medium text-foreground mb-1">Player access</p>
             <p>When a player scans their QR code or opens their email link, they go directly to their personalized day-of page. Share link template:</p>
             <code className="block bg-muted px-2 py-1 rounded mt-1 text-xs break-all">{baseUrl}/day-of/{t.slug}/[scoring-code]</code>
+          </div>
+
+          <div className="border-t pt-4 space-y-3">
+            <div>
+              <p className="font-medium text-foreground">Send Reminder Email</p>
+              <p className="text-sm text-muted-foreground">
+                Sends the “Day Before Event Reminder” to every paid player with their personal tee time, starting hole,
+                scoring code and a link to the event homepage. Edit the wording under Messages → Email Templates.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={reminderTestEmail}
+                onChange={(e) => setReminderTestEmail(e.target.value)}
+                className="sm:max-w-[240px]"
+              />
+              <Button type="button" variant="outline" disabled={sendingReminder} onClick={() => sendDayBeforeReminder("test")}>
+                Send test
+              </Button>
+              <Button type="button" disabled={sendingReminder} onClick={() => sendDayBeforeReminder("all")}>
+                Send to all paid players
+              </Button>
+              <a href="/dashboard/email-templates?template=day_before" className="text-sm text-primary underline self-center">
+                Edit template
+              </a>
+            </div>
           </div>
 
           <ParticipantEmailSender tournamentId={t.id} tournamentTitle={t.title} />

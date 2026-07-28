@@ -15,7 +15,6 @@ import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import {
   isPaidStatus,
   countPayments,
-  filterByPayment,
   buildRegistrationGroups,
   buildAutoAssignUnits,
   teammatesAwayFromHole,
@@ -50,6 +49,7 @@ import {
   ChevronDown,
   MapPin,
   StickyNote,
+  Clock,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
@@ -108,12 +108,13 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "group";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "hcp", label: "Handicap" },
+  { key: "group", label: "Group / Team" },
   { key: "tier", label: "Division / Tier" },
   { key: "shirt", label: "Shirt" },
   { key: "hole", label: "Hole" },
@@ -142,10 +143,10 @@ const Players = () => {
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
-  const [players, setPlayers] = useState<Registration[]>([]);
+  const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [view, setView] = useState<"roster" | "pairings">("roster");
+  const [view, setView] = useState<"roster" | "pairings" | "pending">("roster");
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newPlayer, setNewPlayer] = useState({
@@ -214,13 +215,12 @@ const Players = () => {
   const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
   const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
   const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
-    name: true, email: true, phone: true, hcp: true, tier: true, shirt: true, hole: true, code: true, payment: true,
+    name: true, email: true, phone: true, hcp: true, group: true, tier: true, shirt: true, hole: true, code: true, payment: true,
   });
   const [tiers, setTiers] = useState<Array<{ id: string; name: string }>>([]);
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [groupNameInput, setGroupNameInput] = useState("");
@@ -279,7 +279,7 @@ const Players = () => {
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("registration_groups").select("id, group_name").eq("tournament_id", selectedTournament).order("created_at"),
     ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
-      setPlayers((regsRes.data as unknown as Registration[]) || []);
+      setAllPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
       const gm: Record<string, string> = {};
@@ -316,6 +316,7 @@ const Players = () => {
       case "phone": return (p.phone || "").toLowerCase();
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
       case "tier": return tierName(p.tier_id).toLowerCase();
+      case "group": return (p.group_id ? (groupNames[p.group_id] || "team") : "\uFFFF").toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
       case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
       case "teetime": {
@@ -331,9 +332,14 @@ const Players = () => {
   };
 
   const isPaid = (p: Registration) => isPaidStatus(p as any);
-  const { paid: paidCount, pending: pendingCount } = countPayments(players as any);
+  const { paid: paidCount, pending: pendingCount } = countPayments(allPlayers as any);
 
-  const filteredPlayers = (filterByPayment(players as any, paymentFilter) as unknown as Registration[])
+  // Only paid players count toward the roster, pairings, scoring and totals.
+  const players = useMemo(() => allPlayers.filter(isPaid), [allPlayers]);
+  const pendingPlayers = useMemo(() => allPlayers.filter((p) => !isPaid(p)), [allPlayers]);
+
+  const filteredPlayers = players
+
     .filter((p) => {
       const q = search.toLowerCase();
       if (!q) return true;
@@ -351,6 +357,15 @@ const Players = () => {
       return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
     });
 
+  // Human-readable label for how many players registered together
+  const groupSizeLabel = (n: number) => {
+    if (n <= 1) return "Individual Registration";
+    if (n === 2) return "Twosome – 2 players";
+    if (n === 3) return "Threesome – 3 players";
+    if (n === 4) return "Foursome – 4 players";
+    return `${n} players`;
+  };
+
   // Registration groups (foursomes / twosomes that signed up together)
   const registrationGroups = useMemo(
     () => buildRegistrationGroups(players as any, groupNames) as unknown as Array<{ id: string; name: string; players: Registration[] }>,
@@ -361,13 +376,26 @@ const Players = () => {
 
 
 
+  // registration_group_id -> { name, size } for roster group indicators
+  const groupInfoById = useMemo(() => {
+    const m: Record<string, { name: string; size: number }> = {};
+    registrationGroups.forEach((g) => { m[g.id] = { name: g.name, size: g.players.length }; });
+    return m;
+  }, [registrationGroups]);
+
+  const groupCellFor = (p: Registration) => {
+    const info = p.group_id ? groupInfoById[p.group_id] : undefined;
+    if (!info) return { name: "", label: "Individual Registration" };
+    return { name: info.name, label: `(${groupSizeLabel(info.size)})` };
+  };
+
   const handleDeletePlayer = async (id: string) => {
     if (demoGuard()) return;
     const { error } = await supabase.from("tournament_registrations").delete().eq("id", id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      setPlayers((prev) => prev.filter((p) => p.id !== id));
+      setAllPlayers((prev) => prev.filter((p) => p.id !== id));
       toast({ title: "Player removed" });
     }
   };
@@ -434,7 +462,7 @@ const Players = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    setPlayers((prev) => prev.map((p) => p.id === editingPlayer.id ? { ...p, ...updates } : p));
+    setAllPlayers((prev) => prev.map((p) => p.id === editingPlayer.id ? { ...p, ...updates } : p));
     toast({ title: "Player updated", description: `${updates.first_name} ${updates.last_name} saved.` });
     setEditingPlayer(null);
   };
@@ -453,7 +481,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message.includes("unique") ? "This code is already in use" : error.message, variant: "destructive" });
     } else {
-      setPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
+      setAllPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
       setEditingScoringCode(null);
       toast({ title: "Scoring code updated" });
     }
@@ -518,7 +546,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
-      setPlayers((prev) => [...prev, data as unknown as Registration]);
+      setAllPlayers((prev) => [...prev, data as unknown as Registration]);
       setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online", age: "", city: "", state: "", tier_id: "" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
@@ -538,7 +566,7 @@ const Players = () => {
       .eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      setPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
+      setAllPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
       toast({ title: "Payment marked received" });
       supabase.functions.invoke("notify-manual-registration", {
         body: { registration_id: id },
@@ -549,13 +577,13 @@ const Players = () => {
   /** Organizer override: flip a pending registration to paid (counts update instantly). */
   const markAsPaid = async (id: string) => {
     if (demoGuard()) return;
-    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+    setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ payment_status: "paid" } as any)
       .eq("id", id);
     if (error) {
-      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+      setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
       toast({ title: "Couldn't mark as paid", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Marked as paid" });
@@ -564,13 +592,13 @@ const Players = () => {
 
   const markAsPending = async (id: string) => {
     if (demoGuard()) return;
-    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+    setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ payment_status: "pending" } as any)
       .eq("id", id);
     if (error) {
-      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+      setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
       toast({ title: "Couldn't update payment", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Moved back to pending" });
@@ -626,7 +654,7 @@ const Players = () => {
       if (!error) success++;
     }
 
-    setPlayers((prev) =>
+    setAllPlayers((prev) =>
       prev.map((p) => {
         const u = updates.find((u) => u.id === p.id);
         return u ? { ...p, scoring_code: u.code } : p;
@@ -907,7 +935,7 @@ const Players = () => {
         .in("id", ids);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
-    setPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
+    setAllPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
     setEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
     if (holeLocations[oldNum]) {
       const next = { ...holeLocations };
@@ -942,7 +970,7 @@ const Players = () => {
         .in("id", ids);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
-    setPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
+    setAllPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
     setEmptyGroups((prev) => prev.filter((n) => n !== num));
     if (holeLocations[num]) {
       const next = { ...holeLocations };
@@ -964,7 +992,7 @@ const Players = () => {
     if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: tempNum }).in("id", idsA);
     if (idsB.length > 0) await supabase.from("tournament_registrations").update({ group_number: num }).in("id", idsB);
     if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: other }).in("id", idsA);
-    setPlayers((prev) => prev.map((p) => {
+    setAllPlayers((prev) => prev.map((p) => {
       if (p.group_number === num) return { ...p, group_number: other };
       if (p.group_number === other) return { ...p, group_number: num };
       return p;
@@ -992,7 +1020,7 @@ const Players = () => {
       .eq("id", playerId);
 
     if (!error) {
-      setPlayers((prev) =>
+      setAllPlayers((prev) =>
         prev.map((p) =>
           p.id === playerId ? { ...p, group_number: groupNum, group_position: position } : p
         )
@@ -1007,7 +1035,7 @@ const Players = () => {
       .eq("id", playerId);
 
     if (!error) {
-      setPlayers((prev) =>
+      setAllPlayers((prev) =>
         prev.map((p) =>
           p.id === playerId ? { ...p, group_number: null, group_position: null } : p
         )
@@ -1056,7 +1084,7 @@ const Players = () => {
         .eq("id", update.id);
     }
 
-    setPlayers((prev) =>
+    setAllPlayers((prev) =>
       prev.map((p) => {
         const u = updates.find((u) => u.id === p.id);
         return u ? { ...p, group_number: u.group_number, group_position: u.group_position } : p;
@@ -1171,9 +1199,9 @@ const Players = () => {
           <h1 className="text-3xl font-display font-bold text-foreground">Players & Pairings</h1>
           <p className="text-muted-foreground mt-1">
             <span className="font-semibold text-foreground">{paidCount} paid</span> player{paidCount !== 1 ? "s" : ""}
-            {pendingCount > 0 && <> · {pendingCount} pending</>}
-            {" · "}{players.length} total
+            {pendingCount > 0 && <> · {pendingCount} pending (not counted)</>}
           </p>
+
         </div>
 
         <div className="flex items-center gap-3">
@@ -1212,6 +1240,15 @@ const Players = () => {
             <GripVertical className="h-4 w-4 inline mr-1.5" />
             Pairings
           </button>
+          <button
+            onClick={() => setView("pending")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              view === "pending" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Clock className="h-4 w-4 inline mr-1.5" />
+            Pending{pendingCount > 0 ? ` (${pendingCount})` : ""}
+          </button>
         </div>
         <div className="flex items-center gap-3">
           {view === "roster" && (
@@ -1225,14 +1262,7 @@ const Players = () => {
                   className="pl-9 w-[200px] bg-card"
                 />
               </div>
-              <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as "all" | "paid" | "pending")}>
-                <SelectTrigger className="w-[150px] bg-card"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All ({players.length})</SelectItem>
-                  <SelectItem value="paid">Paid ({paidCount})</SelectItem>
-                  <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
-                </SelectContent>
-              </Select>
+
 
               <Popover>
                 <PopoverTrigger asChild>
@@ -1288,7 +1318,7 @@ const Players = () => {
                   .select("*")
                   .eq("tournament_id", selectedTournament)
                   .order("created_at", { ascending: true })
-                  .then(({ data }) => setPlayers((data as unknown as Registration[]) || []));
+                  .then(({ data }) => setAllPlayers((data as unknown as Registration[]) || []));
               }}
             />
           )}
@@ -1460,7 +1490,7 @@ const Players = () => {
         <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
-      ) : players.length === 0 ? (
+      ) : allPlayers.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-lg border border-border">
           <UserPlus className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
           <h3 className="text-lg font-display font-bold text-foreground mb-2">No registrations yet</h3>
@@ -1472,7 +1502,51 @@ const Players = () => {
             Add First Player
           </Button>
         </div>
+      ) : view === "pending" ? (
+        /* Pending Registrations */
+        <div className="bg-card rounded-lg border border-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-display font-bold text-foreground">Pending Registrations ({pendingPlayers.length})</h3>
+          </div>
+          {pendingPlayers.length === 0 ? (
+            <p className="text-muted-foreground text-sm px-4 py-10 text-center">No pending registrations — everyone has paid.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/10 text-left">
+                  <th className="px-4 py-2 font-semibold">Name</th>
+                  <th className="px-4 py-2 font-semibold">Email</th>
+                  <th className="px-4 py-2 font-semibold text-center">Handicap</th>
+                  <th className="px-4 py-2 font-semibold text-center">Status</th>
+                  <th className="px-4 py-2 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingPlayers.map((p) => (
+                  <tr key={p.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 font-medium text-foreground">{p.first_name} {p.last_name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{p.handicap ?? "—"}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
+                        {p.payment_status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
+                      <Button size="sm" className="ml-2" onClick={() => markAsPaid(p.id)}>Convert to Paid</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <p className="px-4 py-3 text-xs text-muted-foreground border-t border-border bg-muted/10">
+            💡 Pending players are not included in any totals, roster lists, pairings, or scoring.
+          </p>
+        </div>
       ) : view === "roster" ? (
+
         /* Roster View */
         <div className="space-y-6">
         {registrationGroups.length > 0 && (
@@ -1509,7 +1583,7 @@ const Players = () => {
                     ) : (
                       <>
                         <span className="truncate">
-                          {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                          {g.name} ({groupSizeLabel(g.players.length)})
                         </span>
                         <button
                           className="text-muted-foreground hover:text-primary shrink-0"
@@ -1569,6 +1643,7 @@ const Players = () => {
                       {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
                       {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
                       {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
+                      {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
                       {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
                       {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
@@ -1610,6 +1685,21 @@ const Players = () => {
                     {rosterCols.hcp !== false && (
                       <td className="px-4 py-3 text-center text-muted-foreground">
                         {p.handicap !== null ? p.handicap : "—"}
+                      </td>
+                    )}
+                    {rosterCols.group !== false && (
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {(() => {
+                          const c = groupCellFor(p);
+                          return c.name ? (
+                            <span className="text-xs">
+                              <span className="font-semibold text-foreground">{c.name}</span>{" "}
+                              <span className="text-muted-foreground">{c.label}</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">(Individual Registration)</span>
+                          );
+                        })()}
                       </td>
                     )}
                     {rosterCols.tier !== false && (
@@ -1693,11 +1783,6 @@ const Players = () => {
                               Mark as Paid
                             </button>
                           )}
-                          {p.payment_status === "paid" && (
-                            <button onClick={() => markAsPending(p.id)} className="text-[10px] text-muted-foreground hover:underline">
-                              Move to Pending
-                            </button>
-                          )}
 
                         </div>
                       </td>
@@ -1747,7 +1832,7 @@ const Players = () => {
                                     toast({ title: "Refund failed", description: data?.error || error?.message, variant: "destructive" });
                                   } else {
                                     toast({ title: "Refund processed", description: `${p.first_name} ${p.last_name} has been refunded.` });
-                                    setPlayers((prev) => prev.map((pl) => pl.id === p.id ? { ...pl, payment_status: "refunded" } : pl));
+                                    setAllPlayers((prev) => prev.map((pl) => pl.id === p.id ? { ...pl, payment_status: "refunded" } : pl));
                                   }
                                 }}>
                                   Process Refund
@@ -2345,7 +2430,23 @@ const Players = () => {
               <Label htmlFor="ep-diet">Dietary Restrictions</Label>
               <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />
             </div>
+            <div className="border-t border-border pt-3">
+              <Label className="text-xs text-muted-foreground">Payment status</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-sm capitalize font-medium text-foreground">{editingPlayer?.payment_status}</span>
+                {editingPlayer && (isPaidStatus(editingPlayer as any) ? (
+                  <Button variant="outline" size="sm" onClick={() => { markAsPending(editingPlayer.id); setEditingPlayer(null); }}>
+                    Move to Pending
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={() => { markAsPaid(editingPlayer.id); setEditingPlayer(null); }}>
+                    Mark as Paid
+                  </Button>
+                ))}
+              </div>
+            </div>
             <div className="flex justify-end gap-2 pt-2">
+
               <Button variant="outline" onClick={() => setEditingPlayer(null)} disabled={savingEdit}>Cancel</Button>
               <Button onClick={handleSaveEdit} disabled={savingEdit}>
                 {savingEdit ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}

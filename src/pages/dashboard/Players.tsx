@@ -222,6 +222,8 @@ const Players = () => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [groupNameInput, setGroupNameInput] = useState("");
 
   useEffect(() => {
     if (!rosterColsKey) return;

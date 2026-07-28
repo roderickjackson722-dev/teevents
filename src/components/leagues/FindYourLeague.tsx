@@ -49,7 +49,7 @@ export default function FindYourLeague() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. Vets & Tees"
+              placeholder="e.g. TeeVets Golf League"
               className="pl-9 bg-card"
               aria-label="Search leagues by name"
             />
@@ -73,7 +73,7 @@ export default function FindYourLeague() {
                 <p className="font-semibold text-foreground">No leagues matched "{searchedFor}"</p>
                 <ul className="list-disc pl-5 text-muted-foreground space-y-1">
                   <li>Try a shorter search — just one distinctive word from the league name.</li>
-                  <li>Check the spelling, and leave out the year (e.g. search "Vets" not "2026 Vets &amp; Tees").</li>
+                  <li>Check the spelling, and leave out the year (e.g. search "TeeVets" not "2026 TeeVets Golf League").</li>
                   <li>
                     Brand-new leagues stay hidden until the manager publishes them. Ask your league manager to
                     publish the league and turn on search visibility in their League Settings.

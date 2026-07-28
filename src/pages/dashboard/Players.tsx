@@ -1466,7 +1466,7 @@ const Players = () => {
         <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
-      ) : players.length === 0 ? (
+      ) : allPlayers.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-lg border border-border">
           <UserPlus className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
           <h3 className="text-lg font-display font-bold text-foreground mb-2">No registrations yet</h3>
@@ -1478,7 +1478,51 @@ const Players = () => {
             Add First Player
           </Button>
         </div>
+      ) : view === "pending" ? (
+        /* Pending Registrations */
+        <div className="bg-card rounded-lg border border-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-display font-bold text-foreground">Pending Registrations ({pendingPlayers.length})</h3>
+          </div>
+          {pendingPlayers.length === 0 ? (
+            <p className="text-muted-foreground text-sm px-4 py-10 text-center">No pending registrations — everyone has paid.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/10 text-left">
+                  <th className="px-4 py-2 font-semibold">Name</th>
+                  <th className="px-4 py-2 font-semibold">Email</th>
+                  <th className="px-4 py-2 font-semibold text-center">Handicap</th>
+                  <th className="px-4 py-2 font-semibold text-center">Status</th>
+                  <th className="px-4 py-2 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingPlayers.map((p) => (
+                  <tr key={p.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 font-medium text-foreground">{p.first_name} {p.last_name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{p.handicap ?? "—"}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
+                        {p.payment_status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
+                      <Button size="sm" className="ml-2" onClick={() => markAsPaid(p.id)}>Convert to Paid</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <p className="px-4 py-3 text-xs text-muted-foreground border-t border-border bg-muted/10">
+            💡 Pending players are not included in any totals, roster lists, pairings, or scoring.
+          </p>
+        </div>
       ) : view === "roster" ? (
+
         /* Roster View */
         <div className="space-y-6">
         {registrationGroups.length > 0 && (

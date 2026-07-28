@@ -1217,6 +1217,15 @@ const Players = () => {
             <GripVertical className="h-4 w-4 inline mr-1.5" />
             Pairings
           </button>
+          <button
+            onClick={() => setView("pending")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              view === "pending" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Clock className="h-4 w-4 inline mr-1.5" />
+            Pending{pendingCount > 0 ? ` (${pendingCount})` : ""}
+          </button>
         </div>
         <div className="flex items-center gap-3">
           {view === "roster" && (
@@ -1230,14 +1239,7 @@ const Players = () => {
                   className="pl-9 w-[200px] bg-card"
                 />
               </div>
-              <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as "all" | "paid" | "pending")}>
-                <SelectTrigger className="w-[150px] bg-card"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All ({players.length})</SelectItem>
-                  <SelectItem value="paid">Paid ({paidCount})</SelectItem>
-                  <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
-                </SelectContent>
-              </Select>
+
 
               <Popover>
                 <PopoverTrigger asChild>

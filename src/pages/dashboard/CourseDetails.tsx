@@ -527,8 +527,12 @@ export default function CourseDetails() {
               <Select value={teeName} onValueChange={setTeeName}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {TEE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t} Tees</SelectItem>)}
+                  {Array.from(new Set([
+                    ...importedTees.map(t => t.tee_name).filter((n): n is string => !!n),
+                    ...TEE_OPTIONS,
+                  ])).map(t => <SelectItem key={t} value={t}>{t} Tees</SelectItem>)}
                 </SelectContent>
+
               </Select>
             </div>
           </div>

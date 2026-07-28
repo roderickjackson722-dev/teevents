@@ -108,12 +108,13 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "group";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "hcp", label: "Handicap" },
+  { key: "group", label: "Group / Team" },
   { key: "tier", label: "Division / Tier" },
   { key: "shirt", label: "Shirt" },
   { key: "hole", label: "Hole" },
@@ -214,7 +215,7 @@ const Players = () => {
   const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
   const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
   const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
-    name: true, email: true, phone: true, hcp: true, tier: true, shirt: true, hole: true, code: true, payment: true,
+    name: true, email: true, phone: true, hcp: true, group: true, tier: true, shirt: true, hole: true, code: true, payment: true,
   });
   const [tiers, setTiers] = useState<Array<{ id: string; name: string }>>([]);
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
@@ -315,6 +316,7 @@ const Players = () => {
       case "phone": return (p.phone || "").toLowerCase();
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
       case "tier": return tierName(p.tier_id).toLowerCase();
+      case "group": return (p.group_id ? (groupNames[p.group_id] || "team") : "\uFFFF").toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
       case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
       case "teetime": {
@@ -355,6 +357,15 @@ const Players = () => {
       return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
     });
 
+  // Human-readable label for how many players registered together
+  const groupSizeLabel = (n: number) => {
+    if (n <= 1) return "Individual Registration";
+    if (n === 2) return "Twosome – 2 players";
+    if (n === 3) return "Threesome – 3 players";
+    if (n === 4) return "Foursome – 4 players";
+    return `${n} players`;
+  };
+
   // Registration groups (foursomes / twosomes that signed up together)
   const registrationGroups = useMemo(
     () => buildRegistrationGroups(players as any, groupNames) as unknown as Array<{ id: string; name: string; players: Registration[] }>,
@@ -364,6 +375,19 @@ const Players = () => {
 
 
 
+
+  // registration_group_id -> { name, size } for roster group indicators
+  const groupInfoById = useMemo(() => {
+    const m: Record<string, { name: string; size: number }> = {};
+    registrationGroups.forEach((g) => { m[g.id] = { name: g.name, size: g.players.length }; });
+    return m;
+  }, [registrationGroups]);
+
+  const groupCellFor = (p: Registration) => {
+    const info = p.group_id ? groupInfoById[p.group_id] : undefined;
+    if (!info) return { name: "", label: "Individual Registration" };
+    return { name: info.name, label: `(${groupSizeLabel(info.size)})` };
+  };
 
   const handleDeletePlayer = async (id: string) => {
     if (demoGuard()) return;
@@ -1559,7 +1583,7 @@ const Players = () => {
                     ) : (
                       <>
                         <span className="truncate">
-                          {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                          {g.name} ({groupSizeLabel(g.players.length)})
                         </span>
                         <button
                           className="text-muted-foreground hover:text-primary shrink-0"
@@ -1619,6 +1643,7 @@ const Players = () => {
                       {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
                       {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
                       {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
+                      {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
                       {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
                       {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
@@ -1660,6 +1685,21 @@ const Players = () => {
                     {rosterCols.hcp !== false && (
                       <td className="px-4 py-3 text-center text-muted-foreground">
                         {p.handicap !== null ? p.handicap : "—"}
+                      </td>
+                    )}
+                    {rosterCols.group !== false && (
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {(() => {
+                          const c = groupCellFor(p);
+                          return c.name ? (
+                            <span className="text-xs">
+                              <span className="font-semibold text-foreground">{c.name}</span>{" "}
+                              <span className="text-muted-foreground">{c.label}</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">(Individual Registration)</span>
+                          );
+                        })()}
                       </td>
                     )}
                     {rosterCols.tier !== false && (
@@ -1741,11 +1781,6 @@ const Players = () => {
                           {p.payment_status !== "paid" && p.payment_status !== "refunded" && (
                             <button onClick={() => markAsPaid(p.id)} className="text-[10px] text-primary hover:underline">
                               Mark as Paid
-                            </button>
-                          )}
-                          {p.payment_status === "paid" && (
-                            <button onClick={() => markAsPending(p.id)} className="text-[10px] text-muted-foreground hover:underline">
-                              Move to Pending
                             </button>
                           )}
 

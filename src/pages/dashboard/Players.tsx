@@ -212,6 +212,9 @@ const Players = () => {
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
+  const [groupNames, setGroupNames] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (!rosterColsKey) return;
     try {

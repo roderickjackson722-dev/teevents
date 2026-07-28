@@ -279,7 +279,7 @@ const Players = () => {
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("registration_groups").select("id, group_name").eq("tournament_id", selectedTournament).order("created_at"),
     ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
-      setPlayers((regsRes.data as unknown as Registration[]) || []);
+      setAllPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
       const gm: Record<string, string> = {};
@@ -367,7 +367,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      setPlayers((prev) => prev.filter((p) => p.id !== id));
+      setAllPlayers((prev) => prev.filter((p) => p.id !== id));
       toast({ title: "Player removed" });
     }
   };
@@ -434,7 +434,7 @@ const Players = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    setPlayers((prev) => prev.map((p) => p.id === editingPlayer.id ? { ...p, ...updates } : p));
+    setAllPlayers((prev) => prev.map((p) => p.id === editingPlayer.id ? { ...p, ...updates } : p));
     toast({ title: "Player updated", description: `${updates.first_name} ${updates.last_name} saved.` });
     setEditingPlayer(null);
   };
@@ -453,7 +453,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message.includes("unique") ? "This code is already in use" : error.message, variant: "destructive" });
     } else {
-      setPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
+      setAllPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
       setEditingScoringCode(null);
       toast({ title: "Scoring code updated" });
     }
@@ -518,7 +518,7 @@ const Players = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else if (data) {
-      setPlayers((prev) => [...prev, data as unknown as Registration]);
+      setAllPlayers((prev) => [...prev, data as unknown as Registration]);
       setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online", age: "", city: "", state: "", tier_id: "" });
       setAddPlayerOpen(false);
       toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
@@ -538,7 +538,7 @@ const Players = () => {
       .eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      setPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
+      setAllPlayers((prev) => prev.map((p) => p.id === id ? { ...p, payment_status: "paid", cash_payment_received: true } : p));
       toast({ title: "Payment marked received" });
       supabase.functions.invoke("notify-manual-registration", {
         body: { registration_id: id },
@@ -549,13 +549,13 @@ const Players = () => {
   /** Organizer override: flip a pending registration to paid (counts update instantly). */
   const markAsPaid = async (id: string) => {
     if (demoGuard()) return;
-    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+    setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ payment_status: "paid" } as any)
       .eq("id", id);
     if (error) {
-      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+      setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
       toast({ title: "Couldn't mark as paid", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Marked as paid" });
@@ -564,13 +564,13 @@ const Players = () => {
 
   const markAsPending = async (id: string) => {
     if (demoGuard()) return;
-    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+    setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ payment_status: "pending" } as any)
       .eq("id", id);
     if (error) {
-      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+      setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
       toast({ title: "Couldn't update payment", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Moved back to pending" });
@@ -626,7 +626,7 @@ const Players = () => {
       if (!error) success++;
     }
 
-    setPlayers((prev) =>
+    setAllPlayers((prev) =>
       prev.map((p) => {
         const u = updates.find((u) => u.id === p.id);
         return u ? { ...p, scoring_code: u.code } : p;
@@ -907,7 +907,7 @@ const Players = () => {
         .in("id", ids);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
-    setPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
+    setAllPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
     setEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
     if (holeLocations[oldNum]) {
       const next = { ...holeLocations };
@@ -942,7 +942,7 @@ const Players = () => {
         .in("id", ids);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
-    setPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
+    setAllPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
     setEmptyGroups((prev) => prev.filter((n) => n !== num));
     if (holeLocations[num]) {
       const next = { ...holeLocations };
@@ -964,7 +964,7 @@ const Players = () => {
     if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: tempNum }).in("id", idsA);
     if (idsB.length > 0) await supabase.from("tournament_registrations").update({ group_number: num }).in("id", idsB);
     if (idsA.length > 0) await supabase.from("tournament_registrations").update({ group_number: other }).in("id", idsA);
-    setPlayers((prev) => prev.map((p) => {
+    setAllPlayers((prev) => prev.map((p) => {
       if (p.group_number === num) return { ...p, group_number: other };
       if (p.group_number === other) return { ...p, group_number: num };
       return p;
@@ -992,7 +992,7 @@ const Players = () => {
       .eq("id", playerId);
 
     if (!error) {
-      setPlayers((prev) =>
+      setAllPlayers((prev) =>
         prev.map((p) =>
           p.id === playerId ? { ...p, group_number: groupNum, group_position: position } : p
         )
@@ -1007,7 +1007,7 @@ const Players = () => {
       .eq("id", playerId);
 
     if (!error) {
-      setPlayers((prev) =>
+      setAllPlayers((prev) =>
         prev.map((p) =>
           p.id === playerId ? { ...p, group_number: null, group_position: null } : p
         )
@@ -1056,7 +1056,7 @@ const Players = () => {
         .eq("id", update.id);
     }
 
-    setPlayers((prev) =>
+    setAllPlayers((prev) =>
       prev.map((p) => {
         const u = updates.find((u) => u.id === p.id);
         return u ? { ...p, group_number: u.group_number, group_position: u.group_position } : p;
@@ -1288,7 +1288,7 @@ const Players = () => {
                   .select("*")
                   .eq("tournament_id", selectedTournament)
                   .order("created_at", { ascending: true })
-                  .then(({ data }) => setPlayers((data as unknown as Registration[]) || []));
+                  .then(({ data }) => setAllPlayers((data as unknown as Registration[]) || []));
               }}
             />
           )}
@@ -1747,7 +1747,7 @@ const Players = () => {
                                     toast({ title: "Refund failed", description: data?.error || error?.message, variant: "destructive" });
                                   } else {
                                     toast({ title: "Refund processed", description: `${p.first_name} ${p.last_name} has been refunded.` });
-                                    setPlayers((prev) => prev.map((pl) => pl.id === p.id ? { ...pl, payment_status: "refunded" } : pl));
+                                    setAllPlayers((prev) => prev.map((pl) => pl.id === p.id ? { ...pl, payment_status: "refunded" } : pl));
                                   }
                                 }}>
                                   Process Refund

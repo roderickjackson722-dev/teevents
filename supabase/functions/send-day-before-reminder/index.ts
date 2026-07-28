@@ -48,8 +48,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string)
     ? `<div style="text-align:${align};margin-bottom:12px;"><img src="${c.logo_url}" alt="Logo" style="max-height:60px;display:inline-block;" /></div>`
     : "";
 
-  const body = esc(replaceVars(c.body_text, vars)).replace(/\n/g, "<br/>");
-  const closing = esc(replaceVars(c.closing_text, vars)).replace(/\n/g, "<br/>");
+  const body = linkify(esc(replaceVars(c.body_text, vars)), primary).replace(/\n/g, "<br/>");
+  const closing = linkify(esc(replaceVars(c.closing_text, vars)), primary).replace(/\n/g, "<br/>");
   const greeting = esc(replaceVars(c.greeting, vars));
   const footer = esc(replaceVars(c.footer_text, vars));
   const btnText = replaceVars(c.button_text || "View Event Homepage", vars);

@@ -113,9 +113,9 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
 
   greeting: "Hello {{first_name}},",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n\n🔑 Your Scoring Code: {{scoring_code}}",
+    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
-    "Please arrive 30 minutes before your tee time. Visit the event homepage for full details, pairings, and updates — and enter your scores with your scoring code at {{scoring_link}}.",
+    "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
   show_event_details: true,

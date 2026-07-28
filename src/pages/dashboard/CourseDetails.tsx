@@ -409,6 +409,7 @@ export default function CourseDetails() {
             const addr = (c as any).address || [c.city, c.state].filter(Boolean).join(", ");
             if (addr) setCourseAddress(addr);
             if ((c as any).website) setCourseWebsite((c as any).website);
+            setImportedTees(c.tees ?? []);
             const pars = c.hole_pars ?? [];
             const sis = c.hole_stroke_indexes ?? [];
             const dists = c.hole_distances ?? [];
@@ -417,8 +418,21 @@ export default function CourseDetails() {
               si: sis[i] != null ? String(sis[i]) : "",
               distance: dists[i] != null ? String(dists[i]) : "",
             })));
+            const parsSum = pars.reduce((a, b) => a + (b || 0), 0);
+            if (pars.length === 18 && c.par_total != null && c.hole_pars_verified === false) {
+              setImportWarning(
+                `Imported hole pars add up to ${parsSum}, but ${c.course_name} is listed as par ${c.par_total}. This course's scorecard data is incomplete in the golf course database — please correct the pars below before saving.`,
+              );
+            } else if (pars.length !== 18) {
+              setImportWarning(
+                `No hole-by-hole scorecard is available for ${c.course_name}. Enter par, stroke index, and yardage for each hole below.`,
+              );
+            } else {
+              setImportWarning(null);
+            }
             toast({ title: `Loaded "${c.course_name}"`, description: "Review the address & hole data, then click Save Course Details to sync to live scoring." });
           }}
+
           onSaveCurrent={async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;

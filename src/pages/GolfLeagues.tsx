@@ -114,6 +114,10 @@ export default function GolfLeagues() {
           </div>
         </section>
 
+        <FindYourLeague />
+
+
+
         <section id="standings" className="py-16 px-4 bg-muted/30">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-8">

@@ -12,9 +12,9 @@ const DEFAULTS = {
   subject: "{{event_name}} – Tomorrow is the big day!",
   greeting: "Hello {{first_name}},",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n\n🔑 Your Scoring Code: {{scoring_code}}",
+    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
-    "Please arrive 30 minutes before your tee time. Visit the event homepage for full details, pairings, and updates — and enter your scores with your scoring code at {{scoring_link}}.",
+    "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
 };
@@ -25,6 +25,14 @@ function replaceVars(text: string, vars: Record<string, string>): string {
 
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Turn bare URLs into clickable links (input must already be escaped).
+function linkify(s: string, color: string) {
+  return s.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    (u) => `<a href="${u}" style="color:${color};font-weight:600;">${u}</a>`,
+  );
 }
 
 function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string) {
@@ -40,8 +48,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string)
     ? `<div style="text-align:${align};margin-bottom:12px;"><img src="${c.logo_url}" alt="Logo" style="max-height:60px;display:inline-block;" /></div>`
     : "";
 
-  const body = esc(replaceVars(c.body_text, vars)).replace(/\n/g, "<br/>");
-  const closing = esc(replaceVars(c.closing_text, vars)).replace(/\n/g, "<br/>");
+  const body = linkify(esc(replaceVars(c.body_text, vars)), primary).replace(/\n/g, "<br/>");
+  const closing = linkify(esc(replaceVars(c.closing_text, vars)), primary).replace(/\n/g, "<br/>");
   const greeting = esc(replaceVars(c.greeting, vars));
   const footer = esc(replaceVars(c.footer_text, vars));
   const btnText = replaceVars(c.button_text || "View Event Homepage", vars);
@@ -99,7 +107,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await admin
       .from("tournaments")
-      .select("id, title, date, location, course_name, slug, organization_id, day_before_email_config")
+      .select("id, title, date, location, state, course_name, slug, organization_id, day_before_email_config, schedule_info, schedule_info_html")
       .eq("id", tournament_id)
       .single();
     if (!tournament) throw new Error("Tournament not found");
@@ -111,21 +119,52 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email is not configured");
 
-    const config = (tournament as any).day_before_email_config || DEFAULTS;
+    // Course address lives on the tournament's saved course record.
+    const { data: course } = await admin
+      .from("golf_courses")
+      .select("course_address")
+      .eq("tournament_id", tournament_id)
+      .limit(1)
+      .maybeSingle();
+
+    const stripTags = (s: string) =>
+      s.replace(/<br\s*\/?>(\s*)/gi, "\n")
+        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+
+    const scheduleRaw =
+      (tournament as any).schedule_info ||
+      ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
+    const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
+
+    const config = { ...DEFAULTS, ...((tournament as any).day_before_email_config || {}) };
+    // Older saved templates may predate address / schedule / homepage — append what's missing.
+    {
+      let bt = String(config.body_text || DEFAULTS.body_text);
+      if (!bt.includes("{{course_address}}")) bt += "\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}";
+      if (!bt.includes("{{event_schedule}}")) bt += "\n\n🗓 Event Schedule:\n{{event_schedule}}";
+      if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
+      config.body_text = bt;
+    }
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
           .toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : "";
     const homepage = tournament.slug ? `https://www.teevents.golf/t/${tournament.slug}` : "https://www.teevents.golf";
     const scoringLink = tournament.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score";
+    const courseAddress = (course as any)?.course_address || tournament.location || "See event homepage";
 
     const buildVars = (reg: any) => ({
       first_name: reg.first_name || "",
       last_name: reg.last_name || "",
       event_name: tournament.title || "",
       event_date: dateStr,
-      event_location: tournament.location || "",
+      event_location: [tournament.location, (tournament as any).state].filter(Boolean).join(", "),
       course_name: (tournament as any).course_name || tournament.location || "",
+      course_address: courseAddress,
+      event_schedule: schedule,
       tee_time: reg.tee_time || "TBD",
       hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
       scoring_code: reg.scoring_code || "TBD",

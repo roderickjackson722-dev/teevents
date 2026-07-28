@@ -1654,6 +1654,17 @@ const Players = () => {
                               Mark Received
                             </button>
                           )}
+                          {p.payment_status !== "paid" && p.payment_status !== "refunded" && (
+                            <button onClick={() => markAsPaid(p.id)} className="text-[10px] text-primary hover:underline">
+                              Mark as Paid
+                            </button>
+                          )}
+                          {p.payment_status === "paid" && (
+                            <button onClick={() => markAsPending(p.id)} className="text-[10px] text-muted-foreground hover:underline">
+                              Move to Pending
+                            </button>
+                          )}
+
                         </div>
                       </td>
                     )}

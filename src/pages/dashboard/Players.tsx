@@ -15,7 +15,6 @@ import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import {
   isPaidStatus,
   countPayments,
-  filterByPayment,
   buildRegistrationGroups,
   buildAutoAssignUnits,
   teammatesAwayFromHole,
@@ -50,6 +49,7 @@ import {
   ChevronDown,
   MapPin,
   StickyNote,
+  Clock,
 } from "lucide-react";
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
@@ -145,7 +145,7 @@ const Players = () => {
   const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [view, setView] = useState<"roster" | "pairings">("roster");
+  const [view, setView] = useState<"roster" | "pairings" | "pending">("roster");
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newPlayer, setNewPlayer] = useState({
@@ -220,7 +220,6 @@ const Players = () => {
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [groupNameInput, setGroupNameInput] = useState("");

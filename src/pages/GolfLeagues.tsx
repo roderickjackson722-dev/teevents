@@ -13,6 +13,7 @@ import heroImg from "@/assets/golf-league-hero.jpg";
 import seasonBoardImg from "@/assets/season-leaderboard-preview.jpg";
 import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
 import { DEFAULT_DESIGN } from "@/components/dashboard/LeaderboardDesignCard";
+import FindYourLeague from "@/components/leagues/FindYourLeague";
 
 const FEATURES = [
   { icon: BarChart3, text: "Real-time scoring and live leaderboards" },
@@ -106,12 +107,16 @@ export default function GolfLeagues() {
                   Start your league — $199/year
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                  <a href="#standings">See season standings</a>
+                  <a href="#find-your-league">Find your league</a>
                 </Button>
               </div>
             </div>
           </div>
         </section>
+
+        <FindYourLeague />
+
+
 
         <section id="standings" className="py-16 px-4 bg-muted/30">
           <div className="max-w-5xl mx-auto">

@@ -12,6 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
+import {
+  isPaidStatus,
+  countPayments,
+  filterByPayment,
+  buildRegistrationGroups,
+  buildAutoAssignUnits,
+  teammatesAwayFromHole,
+} from "@/lib/rosterUtils";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import {
   Dialog,
@@ -214,6 +222,8 @@ const Players = () => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [groupNameInput, setGroupNameInput] = useState("");
 
   useEffect(() => {
     if (!rosterColsKey) return;
@@ -320,14 +330,11 @@ const Players = () => {
     }
   };
 
-  const isPaid = (p: Registration) => (p.payment_status || "").toLowerCase() === "paid";
-  const paidCount = players.filter(isPaid).length;
-  const pendingCount = players.filter((p) => !isPaid(p)).length;
+  const isPaid = (p: Registration) => isPaidStatus(p as any);
+  const { paid: paidCount, pending: pendingCount } = countPayments(players as any);
 
-  const filteredPlayers = players
+  const filteredPlayers = (filterByPayment(players as any, paymentFilter) as unknown as Registration[])
     .filter((p) => {
-      if (paymentFilter === "paid" && !isPaid(p)) return false;
-      if (paymentFilter === "pending" && isPaid(p)) return false;
       const q = search.toLowerCase();
       if (!q) return true;
       return (
@@ -345,22 +352,11 @@ const Players = () => {
     });
 
   // Registration groups (foursomes / twosomes that signed up together)
-  const registrationGroups = useMemo(() => {
-    const byGroup = new Map<string, Registration[]>();
-    players.forEach((p) => {
-      if (!p.group_id) return;
-      const list = byGroup.get(p.group_id) || [];
-      list.push(p);
-      byGroup.set(p.group_id, list);
-    });
-    return [...byGroup.entries()]
-      .filter(([, list]) => list.length > 1)
-      .map(([id, list], idx) => ({
-        id,
-        name: groupNames[id] || `Group ${idx + 1}`,
-        players: list.sort((a, b) => (a.group_leader === b.group_leader ? 0 : a.group_leader ? -1 : 1)),
-      }));
-  }, [players, groupNames]);
+  const registrationGroups = useMemo(
+    () => buildRegistrationGroups(players as any, groupNames) as unknown as Array<{ id: string; name: string; players: Registration[] }>,
+    [players, groupNames]
+  );
+
 
 
 
@@ -549,6 +545,58 @@ const Players = () => {
       }).catch((e) => console.error("notify-manual-registration failed:", e));
     }
   };
+
+  /** Organizer override: flip a pending registration to paid (counts update instantly). */
+  const markAsPaid = async (id: string) => {
+    if (demoGuard()) return;
+    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ payment_status: "paid" } as any)
+      .eq("id", id);
+    if (error) {
+      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+      toast({ title: "Couldn't mark as paid", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Marked as paid" });
+    }
+  };
+
+  const markAsPending = async (id: string) => {
+    if (demoGuard()) return;
+    setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "pending" } : p)));
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ payment_status: "pending" } as any)
+      .eq("id", id);
+    if (error) {
+      setPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, payment_status: "paid" } : p)));
+      toast({ title: "Couldn't update payment", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Moved back to pending" });
+    }
+  };
+
+  /** Rename a registration group (foursome / team name shown in Players & Pairings). */
+  const renameGroup = async (groupId: string, name: string) => {
+    if (demoGuard()) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const prevName = groupNames[groupId];
+    setGroupNames((prev) => ({ ...prev, [groupId]: trimmed }));
+    setEditingGroupId(null);
+    const { error } = await (supabase as any)
+      .from("registration_groups")
+      .update({ group_name: trimmed })
+      .eq("id", groupId);
+    if (error) {
+      setGroupNames((prev) => ({ ...prev, [groupId]: prevName }));
+      toast({ title: "Rename failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Team name updated" });
+    }
+  };
+
 
   const handleRegenerateAllCodes = async () => {
     if (players.length === 0 || demoGuard()) return;
@@ -973,23 +1021,8 @@ const Players = () => {
 
     // Keep registration groups (foursomes etc.) together: build units of players
     // that signed up on the same registration, chunked to the max hole size.
-    const byGroup = new Map<string, Registration[]>();
-    const singles: Registration[] = [];
-    unassignedPlayers.forEach((p) => {
-      if (p.group_id) {
-        const list = byGroup.get(p.group_id) || [];
-        list.push(p);
-        byGroup.set(p.group_id, list);
-      } else {
-        singles.push(p);
-      }
-    });
-    const units: Registration[][] = [];
-    byGroup.forEach((list) => {
-      for (let i = 0; i < list.length; i += maxGroupSize) units.push(list.slice(i, i + maxGroupSize));
-    });
-    units.sort((a, b) => b.length - a.length);
-    singles.forEach((p) => units.push([p]));
+    const units = buildAutoAssignUnits(unassignedPlayers as any, maxGroupSize) as unknown as Registration[][];
+
 
     let currentGroup = nextGroupNumber;
     const updates: { id: string; group_number: number; group_position: number }[] = [];
@@ -1065,8 +1098,36 @@ const Players = () => {
       await handleUnassignPlayer(draggableId);
     } else {
       await handleAssignPlayer(draggableId, destGroupNum, destination.index + 1);
+
+      // Keep registration groups together during manual edits: pull teammates along when there's room.
+      const moved = players.find((p) => p.id === draggableId);
+      const strays = moved ? (teammatesAwayFromHole(moved as any, players as any, destGroupNum) as unknown as Registration[]) : [];
+      if (strays.length > 0) {
+        const destGroup = groups.find((g) => g.number === destGroupNum);
+        const occupied = (destGroup ? destGroup.players.length : 0) + 1;
+        const room = maxGroupSize - occupied;
+        const toMove = strays.slice(0, Math.max(0, room));
+        for (let i = 0; i < toMove.length; i++) {
+          await handleAssignPlayer(toMove[i].id, destGroupNum, occupied + i + 1);
+        }
+        const label = groupNames[moved!.group_id as string] || "their registration group";
+        if (toMove.length > 0) {
+          toast({
+            title: "Group kept together",
+            description: `${toMove.length} teammate${toMove.length !== 1 ? "s" : ""} from ${label} moved to hole ${destGroupNum} as well.`,
+          });
+        }
+        if (toMove.length < strays.length) {
+          toast({
+            title: "Group split",
+            description: `Hole ${destGroupNum} doesn't have room for all of ${label}. ${strays.length - toMove.length} teammate(s) are still on another hole.`,
+            variant: "destructive",
+          });
+        }
+      }
     }
   };
+
 
   const paymentColors: Record<string, string> = {
     pending: "bg-muted text-muted-foreground",
@@ -1424,9 +1485,43 @@ const Players = () => {
             <div className="grid gap-4 md:grid-cols-2">
               {registrationGroups.map((g, gi) => (
                 <div key={g.id} className="border border-border rounded-md overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold">
-                    Group {gi + 1} — {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold flex items-center gap-2">
+                    {editingGroupId === g.id ? (
+                      <>
+                        <Input
+                          value={groupNameInput}
+                          onChange={(e) => setGroupNameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") renameGroup(g.id, groupNameInput);
+                            if (e.key === "Escape") setEditingGroupId(null);
+                          }}
+                          className="h-7 text-sm"
+                          aria-label="Team name"
+                          autoFocus
+                        />
+                        <button className="text-primary" onClick={() => renameGroup(g.id, groupNameInput)} aria-label="Save team name">
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button className="text-muted-foreground" onClick={() => setEditingGroupId(null)} aria-label="Cancel rename">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="truncate">
+                          {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                        </span>
+                        <button
+                          className="text-muted-foreground hover:text-primary shrink-0"
+                          title="Rename team"
+                          onClick={() => { setEditingGroupId(g.id); setGroupNameInput(g.name); }}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
                   </div>
+
                   <table className="w-full text-sm">
                     <tbody>
                       {g.players.map((p) => (
@@ -1593,6 +1688,17 @@ const Players = () => {
                               Mark Received
                             </button>
                           )}
+                          {p.payment_status !== "paid" && p.payment_status !== "refunded" && (
+                            <button onClick={() => markAsPaid(p.id)} className="text-[10px] text-primary hover:underline">
+                              Mark as Paid
+                            </button>
+                          )}
+                          {p.payment_status === "paid" && (
+                            <button onClick={() => markAsPending(p.id)} className="text-[10px] text-muted-foreground hover:underline">
+                              Move to Pending
+                            </button>
+                          )}
+
                         </div>
                       </td>
                     )}
@@ -2045,6 +2151,12 @@ const Players = () => {
                                   <span className="font-medium text-foreground">
                                     {p.first_name} {p.last_name}
                                   </span>
+                                  {p.group_id && groupNames[p.group_id] && (
+                                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                      {groupNames[p.group_id]}
+                                    </span>
+                                  )}
+
                                   {p.handicap !== null && (
                                     <span className="text-xs text-muted-foreground ml-auto">
                                       HCP {p.handicap}

@@ -2430,7 +2430,23 @@ const Players = () => {
               <Label htmlFor="ep-diet">Dietary Restrictions</Label>
               <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />
             </div>
+            <div className="border-t border-border pt-3">
+              <Label className="text-xs text-muted-foreground">Payment status</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-sm capitalize font-medium text-foreground">{editingPlayer?.payment_status}</span>
+                {editingPlayer && (isPaidStatus(editingPlayer as any) ? (
+                  <Button variant="outline" size="sm" onClick={() => { markAsPending(editingPlayer.id); setEditingPlayer(null); }}>
+                    Move to Pending
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={() => { markAsPaid(editingPlayer.id); setEditingPlayer(null); }}>
+                    Mark as Paid
+                  </Button>
+                ))}
+              </div>
+            </div>
             <div className="flex justify-end gap-2 pt-2">
+
               <Button variant="outline" onClick={() => setEditingPlayer(null)} disabled={savingEdit}>Cancel</Button>
               <Button onClick={handleSaveEdit} disabled={savingEdit}>
                 {savingEdit ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}

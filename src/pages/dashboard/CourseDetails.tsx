@@ -20,7 +20,7 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 import { formatTournamentDate } from "@/lib/formatDate";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
-import CourseDatabaseSearch, { type CourseDBResult } from "@/components/dashboard/CourseDatabaseSearch";
+import CourseDatabaseSearch, { type CourseDBResult, type CourseTee } from "@/components/dashboard/CourseDatabaseSearch";
 
 interface HoleData {
   par: string;
@@ -101,6 +101,9 @@ export default function CourseDetails() {
   const [courseAddress, setCourseAddress] = useState("");
   const [courseWebsite, setCourseWebsite] = useState("");
   const [holes, setHoles] = useState<HoleData[]>(DEFAULT_HOLES);
+  const [importedTees, setImportedTees] = useState<CourseTee[]>([]);
+  const [importWarning, setImportWarning] = useState<string | null>(null);
+
   const [showTeeSets, setShowTeeSets] = useState(false);
   const [teeSetDialogOpen, setTeeSetDialogOpen] = useState(false);
 
@@ -138,6 +141,19 @@ export default function CourseDetails() {
   useEffect(() => {
     if (teeSets && teeSets.length > 0) setShowTeeSets(true);
   }, [teeSets]);
+
+  // Keep rating/slope in sync with the tee set chosen from imported course data
+  useEffect(() => {
+    if (importedTees.length === 0) return;
+    const match = importedTees.find(
+      (t) => (t.tee_name || "").toLowerCase() === teeName.toLowerCase(),
+    );
+    if (!match) return;
+    if (match.course_rating != null) setCourseRating(String(match.course_rating));
+    if (match.slope_rating != null) setSlopeRating(String(match.slope_rating));
+  }, [teeName, importedTees]);
+
+
 
   const parTotal = holes.reduce((s, h) => s + (parseInt(h.par) || 0), 0);
   const frontPar = holes.slice(0, 9).reduce((s, h) => s + (parseInt(h.par) || 0), 0);
@@ -409,6 +425,7 @@ export default function CourseDetails() {
             const addr = (c as any).address || [c.city, c.state].filter(Boolean).join(", ");
             if (addr) setCourseAddress(addr);
             if ((c as any).website) setCourseWebsite((c as any).website);
+            setImportedTees(c.tees ?? []);
             const pars = c.hole_pars ?? [];
             const sis = c.hole_stroke_indexes ?? [];
             const dists = c.hole_distances ?? [];
@@ -417,8 +434,21 @@ export default function CourseDetails() {
               si: sis[i] != null ? String(sis[i]) : "",
               distance: dists[i] != null ? String(dists[i]) : "",
             })));
+            const parsSum = pars.reduce((a, b) => a + (b || 0), 0);
+            if (pars.length === 18 && c.par_total != null && c.hole_pars_verified === false) {
+              setImportWarning(
+                `Imported hole pars add up to ${parsSum}, but ${c.course_name} is listed as par ${c.par_total}. This course's scorecard data is incomplete in the golf course database — please correct the pars below before saving.`,
+              );
+            } else if (pars.length !== 18) {
+              setImportWarning(
+                `No hole-by-hole scorecard is available for ${c.course_name}. Enter par, stroke index, and yardage for each hole below.`,
+              );
+            } else {
+              setImportWarning(null);
+            }
             toast({ title: `Loaded "${c.course_name}"`, description: "Review the address & hole data, then click Save Course Details to sync to live scoring." });
           }}
+
           onSaveCurrent={async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -451,7 +481,15 @@ export default function CourseDetails() {
         </Alert>
       )}
 
+      {importWarning && (
+        <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{importWarning}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Validation Banner */}
+
       {!validation.isComplete ? (
         <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
           <AlertTriangle className="h-4 w-4" />
@@ -489,8 +527,12 @@ export default function CourseDetails() {
               <Select value={teeName} onValueChange={setTeeName}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {TEE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t} Tees</SelectItem>)}
+                  {Array.from(new Set([
+                    ...importedTees.map(t => t.tee_name).filter((n): n is string => !!n),
+                    ...TEE_OPTIONS,
+                  ])).map(t => <SelectItem key={t} value={t}>{t} Tees</SelectItem>)}
                 </SelectContent>
+
               </Select>
             </div>
           </div>

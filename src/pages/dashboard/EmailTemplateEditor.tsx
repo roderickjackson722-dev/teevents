@@ -160,10 +160,13 @@ const VARIABLE_TAGS = [
   { label: "Event Date", value: "{{event_date}}" },
   { label: "Event Location", value: "{{event_location}}" },
   { label: "Course Name", value: "{{course_name}}" },
+  { label: "Course Address", value: "{{course_address}}" },
+  { label: "Event Schedule", value: "{{event_schedule}}" },
   { label: "Tee Time", value: "{{tee_time}}" },
   { label: "Starting Hole", value: "{{hole_number}}" },
   { label: "Scoring Code", value: "{{scoring_code}}" },
   { label: "Scoring Link", value: "{{scoring_link}}" },
+  { label: "Event Homepage", value: "{{event_homepage}}" },
 ];
 
 export default function EmailTemplateEditor() {

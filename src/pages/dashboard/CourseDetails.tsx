@@ -142,6 +142,19 @@ export default function CourseDetails() {
     if (teeSets && teeSets.length > 0) setShowTeeSets(true);
   }, [teeSets]);
 
+  // Keep rating/slope in sync with the tee set chosen from imported course data
+  useEffect(() => {
+    if (importedTees.length === 0) return;
+    const match = importedTees.find(
+      (t) => (t.tee_name || "").toLowerCase() === teeName.toLowerCase(),
+    );
+    if (!match) return;
+    if (match.course_rating != null) setCourseRating(String(match.course_rating));
+    if (match.slope_rating != null) setSlopeRating(String(match.slope_rating));
+  }, [teeName, importedTees]);
+
+
+
   const parTotal = holes.reduce((s, h) => s + (parseInt(h.par) || 0), 0);
   const frontPar = holes.slice(0, 9).reduce((s, h) => s + (parseInt(h.par) || 0), 0);
   const backPar = holes.slice(9).reduce((s, h) => s + (parseInt(h.par) || 0), 0);

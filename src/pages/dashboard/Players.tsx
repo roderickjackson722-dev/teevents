@@ -1986,6 +1986,12 @@ const Players = () => {
                               <span className="font-medium text-foreground">
                                 {p.first_name} {p.last_name}
                               </span>
+                              {p.group_id && groupInfoById[p.group_id] && (
+                                <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                  {groupInfoById[p.group_id].name}
+                                </span>
+                              )}
+
                               {p.handicap !== null && (
                                 <span className="text-xs text-muted-foreground ml-auto">
                                   HCP {p.handicap}

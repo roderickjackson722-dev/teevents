@@ -13,6 +13,7 @@ import heroImg from "@/assets/golf-league-hero.jpg";
 import seasonBoardImg from "@/assets/season-leaderboard-preview.jpg";
 import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
 import { DEFAULT_DESIGN } from "@/components/dashboard/LeaderboardDesignCard";
+import FindYourLeague from "@/components/leagues/FindYourLeague";
 
 const FEATURES = [
   { icon: BarChart3, text: "Real-time scoring and live leaderboards" },

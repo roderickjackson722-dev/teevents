@@ -639,28 +639,48 @@ const CollegeTournamentHub = () => {
     }
   };
 
+  const deleteHeroObjects = async (tournamentId: string) => {
+    // Remove every previously uploaded hero file for this tournament so old
+    // cached CDN copies can never be served again.
+    const { data: existing } = await supabase.storage
+      .from("tournament-assets")
+      .list(`college/${tournamentId}`, { limit: 100 });
+    const stale = (existing || [])
+      .filter((f) => f.name.startsWith("hero"))
+      .map((f) => `college/${tournamentId}/${f.name}`);
+    if (stale.length) {
+      await supabase.storage.from("tournament-assets").remove(stale);
+    }
+  };
+
   const handleHeroUpload = async (tournamentId: string, file: File) => {
     setUploadingHero(true);
-    const ext = file.name.split(".").pop();
-    const path = `college/${tournamentId}/hero.${ext}`;
-    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    await deleteHeroObjects(tournamentId);
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `college/${tournamentId}/hero-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("tournament-assets")
+      .upload(path, file, { upsert: true, cacheControl: "3600", contentType: file.type || undefined });
     if (upErr) {
       toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
       setUploadingHero(false);
       return;
     }
     const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-    await supabase.from("college_tournaments").update({ hero_image_url: publicUrl } as any).eq("id", tournamentId);
-    fetchTournaments();
+    const bustedUrl = `${publicUrl}?v=${Date.now()}`;
+    await supabase.from("college_tournaments").update({ hero_image_url: bustedUrl } as any).eq("id", tournamentId);
+    await fetchTournaments();
     toast({ title: "Hero image uploaded" });
     setUploadingHero(false);
   };
 
   const removeHeroImage = async (tournamentId: string) => {
+    await deleteHeroObjects(tournamentId);
     await supabase.from("college_tournaments").update({ hero_image_url: null } as any).eq("id", tournamentId);
-    fetchTournaments();
+    await fetchTournaments();
     toast({ title: "Hero image removed (default will be used)" });
   };
+
 
   const updateOverlayOpacity = async (tournamentId: string, value: number) => {
     await supabase.from("college_tournaments").update({ hero_overlay_opacity: value } as any).eq("id", tournamentId);

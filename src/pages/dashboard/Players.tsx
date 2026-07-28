@@ -332,11 +332,10 @@ const Players = () => {
   };
 
   const isPaid = (p: Registration) => isPaidStatus(p as any);
-  const { paid: paidCount, pending: pendingCount } = countPayments(allPlayers as any);
+  const { paid: paidCount } = countPayments(allPlayers as any);
 
   // Only paid players count toward the roster, pairings, scoring and totals.
   const players = useMemo(() => allPlayers.filter(isPaid), [allPlayers]);
-  const pendingPlayers = useMemo(() => allPlayers.filter((p) => !isPaid(p)), [allPlayers]);
 
   const filteredPlayers = players
 
@@ -1399,7 +1398,6 @@ const Players = () => {
                           <SelectTrigger id="ap-payment"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="comp">Comp</SelectItem>
                           </SelectContent>
                         </Select>

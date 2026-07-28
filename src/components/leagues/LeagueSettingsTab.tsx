@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Loader2, Settings } from "lucide-react";
+import { Trash2, Loader2, Settings, Globe } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LeagueForm from "./LeagueForm";
 
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
@@ -15,6 +17,29 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
   const [pts, setPts] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingVis, setSavingVis] = useState(false);
+  const [vis, setVis] = useState({
+    publish_status: league.publish_status || (league.is_public ? "published" : "draft"),
+    is_public: !!league.is_public,
+    allow_search: league.allow_search ?? true,
+  });
+
+  const saveVisibility = async () => {
+    setSavingVis(true);
+    const { error } = await (supabase as any)
+      .from("golf_leagues")
+      .update({
+        publish_status: vis.publish_status,
+        is_public: vis.is_public,
+        allow_search: vis.allow_search,
+      })
+      .eq("id", league.id);
+    setSavingVis(false);
+    if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    toast({ title: vis.publish_status === "published" ? "League published" : "Saved as draft" });
+    onSaved();
+  };
+
 
   const load = async () => {
     setLoading(true);
@@ -67,6 +92,48 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2"><Globe className="h-5 w-5" /> Publishing & Visibility</h2>
+            <p className="text-sm text-muted-foreground">Members can only find and log in to a league that is published.</p>
+          </div>
+
+          <div>
+            <Label>Status</Label>
+            <Select value={vis.publish_status} onValueChange={(v) => setVis({ ...vis, publish_status: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft — only your team can see it</SelectItem>
+                <SelectItem value="published">Published — members can find and log in</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-start justify-between gap-4 rounded-md border p-3">
+            <div>
+              <p className="font-medium text-sm">Public league page</p>
+              <p className="text-xs text-muted-foreground">Show standings and events at /league/{league.league_slug || "your-slug"}.</p>
+            </div>
+            <Switch checked={!!vis.is_public} onCheckedChange={(v) => setVis({ ...vis, is_public: v })} />
+          </div>
+
+          <div className="flex items-start justify-between gap-4 rounded-md border p-3">
+            <div>
+              <p className="font-medium text-sm">Listed in "Find Your League"</p>
+              <p className="text-xs text-muted-foreground">Let members search for this league by name on the TeeVents homepage.</p>
+            </div>
+            <Switch checked={!!vis.allow_search} onCheckedChange={(v) => setVis({ ...vis, allow_search: v })} />
+          </div>
+
+          <Button onClick={saveVisibility} disabled={savingVis}>
+            {savingVis && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save Visibility
+          </Button>
+        </CardContent>
+      </Card>
+
+
 
       <Card>
         <CardContent className="pt-6 space-y-4">

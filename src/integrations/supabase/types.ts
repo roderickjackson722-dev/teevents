@@ -2891,6 +2891,7 @@ export type Database = {
           access_amount_cents: number | null
           access_paid_at: string | null
           access_status: string
+          allow_search: boolean
           banner_url: string | null
           created_at: string
           created_by: string | null
@@ -2908,6 +2909,7 @@ export type Database = {
           logo_url: string | null
           organization_id: string
           primary_color: string | null
+          publish_status: string
           season_year: number | null
           show_register: boolean
           show_results: boolean
@@ -2923,6 +2925,7 @@ export type Database = {
           access_amount_cents?: number | null
           access_paid_at?: string | null
           access_status?: string
+          allow_search?: boolean
           banner_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -2940,6 +2943,7 @@ export type Database = {
           logo_url?: string | null
           organization_id: string
           primary_color?: string | null
+          publish_status?: string
           season_year?: number | null
           show_register?: boolean
           show_results?: boolean
@@ -2955,6 +2959,7 @@ export type Database = {
           access_amount_cents?: number | null
           access_paid_at?: string | null
           access_status?: string
+          allow_search?: boolean
           banner_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -2972,6 +2977,7 @@ export type Database = {
           logo_url?: string | null
           organization_id?: string
           primary_color?: string | null
+          publish_status?: string
           season_year?: number | null
           show_register?: boolean
           show_results?: boolean
@@ -6180,6 +6186,38 @@ export type Database = {
           },
         ]
       }
+      registration_groups: {
+        Row: {
+          created_at: string
+          group_name: string | null
+          id: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          group_name?: string | null
+          id?: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          group_name?: string | null
+          id?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_groups_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           author: string
@@ -8329,7 +8367,9 @@ export type Database = {
           email: string
           first_name: string
           flight_id: string | null
+          group_id: string | null
           group_label: string | null
+          group_leader: boolean
           group_number: number | null
           group_position: number | null
           group_scoring_code: string | null
@@ -8370,7 +8410,9 @@ export type Database = {
           email: string
           first_name: string
           flight_id?: string | null
+          group_id?: string | null
           group_label?: string | null
+          group_leader?: boolean
           group_number?: number | null
           group_position?: number | null
           group_scoring_code?: string | null
@@ -8411,7 +8453,9 @@ export type Database = {
           email?: string
           first_name?: string
           flight_id?: string | null
+          group_id?: string | null
           group_label?: string | null
+          group_leader?: boolean
           group_number?: number | null
           group_position?: number | null
           group_scoring_code?: string | null
@@ -10470,6 +10514,16 @@ export type Database = {
         Returns: boolean
       }
       delete_old_demo_tournaments: { Args: never; Returns: number }
+      find_leagues: {
+        Args: { _query: string }
+        Returns: {
+          is_active: boolean
+          is_member: boolean
+          league_name: string
+          league_slug: string
+          season_year: number
+        }[]
+      }
       get_college_invitation_by_token: {
         Args: { _token: string; _tournament_id: string }
         Returns: {

@@ -15,6 +15,8 @@ import {
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
+import FindYourLeague from "@/components/leagues/FindYourLeague";
+
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
 
@@ -503,7 +505,10 @@ const Index = () => {
         </div>
       </section>
 
+      <FindYourLeague />
+
       {/* Final CTA */}
+
       <section className="bg-primary py-20">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <motion.div

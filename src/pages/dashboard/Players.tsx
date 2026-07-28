@@ -74,6 +74,9 @@ interface Registration {
   group_number: number | null;
   group_label: string | null;
   group_position: number | null;
+  group_id?: string | null;
+  group_leader?: boolean | null;
+
   created_at: string;
   scoring_code: string | null;
   tier_id: string | null;
@@ -209,6 +212,9 @@ const Players = () => {
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "pending">("all");
+  const [groupNames, setGroupNames] = useState<Record<string, string>>({});
+
   useEffect(() => {
     if (!rosterColsKey) return;
     try {
@@ -261,16 +267,21 @@ const Players = () => {
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
-    ]).then(([regsRes, fieldsRes, tiersRes]: any) => {
+      (supabase as any).from("registration_groups").select("id, group_name").eq("tournament_id", selectedTournament).order("created_at"),
+    ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
       setPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
+      const gm: Record<string, string> = {};
+      (groupsRes?.data || []).forEach((g: any, i: number) => { gm[g.id] = g.group_name || `Group ${i + 1}`; });
+      setGroupNames(gm);
       setLoading(false);
     });
   }, [selectedTournament]);
 
   useEffect(() => {
     const t: any = tournaments.find((x: any) => x.id === selectedTournament);
+
     setRegFeeCents(Number(t?.registration_fee_cents || 0));
   }, [selectedTournament, tournaments]);
 
@@ -309,8 +320,14 @@ const Players = () => {
     }
   };
 
+  const isPaid = (p: Registration) => (p.payment_status || "").toLowerCase() === "paid";
+  const paidCount = players.filter(isPaid).length;
+  const pendingCount = players.filter((p) => !isPaid(p)).length;
+
   const filteredPlayers = players
     .filter((p) => {
+      if (paymentFilter === "paid" && !isPaid(p)) return false;
+      if (paymentFilter === "pending" && isPaid(p)) return false;
       const q = search.toLowerCase();
       if (!q) return true;
       return (
@@ -326,6 +343,25 @@ const Players = () => {
       if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
       return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
     });
+
+  // Registration groups (foursomes / twosomes that signed up together)
+  const registrationGroups = useMemo(() => {
+    const byGroup = new Map<string, Registration[]>();
+    players.forEach((p) => {
+      if (!p.group_id) return;
+      const list = byGroup.get(p.group_id) || [];
+      list.push(p);
+      byGroup.set(p.group_id, list);
+    });
+    return [...byGroup.entries()]
+      .filter(([, list]) => list.length > 1)
+      .map(([id, list], idx) => ({
+        id,
+        name: groupNames[id] || `Group ${idx + 1}`,
+        players: list.sort((a, b) => (a.group_leader === b.group_leader ? 0 : a.group_leader ? -1 : 1)),
+      }));
+  }, [players, groupNames]);
+
 
 
 
@@ -935,31 +971,49 @@ const Players = () => {
     const unassignedPlayers = players.filter((p) => p.group_number === null);
     if (unassignedPlayers.length === 0) return;
 
+    // Keep registration groups (foursomes etc.) together: build units of players
+    // that signed up on the same registration, chunked to the max hole size.
+    const byGroup = new Map<string, Registration[]>();
+    const singles: Registration[] = [];
+    unassignedPlayers.forEach((p) => {
+      if (p.group_id) {
+        const list = byGroup.get(p.group_id) || [];
+        list.push(p);
+        byGroup.set(p.group_id, list);
+      } else {
+        singles.push(p);
+      }
+    });
+    const units: Registration[][] = [];
+    byGroup.forEach((list) => {
+      for (let i = 0; i < list.length; i += maxGroupSize) units.push(list.slice(i, i + maxGroupSize));
+    });
+    units.sort((a, b) => b.length - a.length);
+    singles.forEach((p) => units.push([p]));
+
     let currentGroup = nextGroupNumber;
-    let positionInGroup = 1;
-
-    // Fill existing groups first
     const updates: { id: string; group_number: number; group_position: number }[] = [];
-    let idx = 0;
+    const countIn = (num: number) => updates.filter((u) => u.group_number === num).length;
 
-    for (const group of groups) {
-      while (group.players.length + (updates.filter((u) => u.group_number === group.number).length) < maxGroupSize && idx < unassignedPlayers.length) {
-        const pos = group.players.length + updates.filter((u) => u.group_number === group.number).length + 1;
-        updates.push({ id: unassignedPlayers[idx].id, group_number: group.number, group_position: pos });
-        idx++;
+    for (const unit of units) {
+      // Try to fit the whole unit into an existing hole with enough room
+      const target = groups.find((g) => g.players.length + countIn(g.number) + unit.length <= maxGroupSize);
+      if (target) {
+        unit.forEach((p) => {
+          updates.push({ id: p.id, group_number: target.number, group_position: target.players.length + countIn(target.number) + 1 });
+        });
+        continue;
       }
+      // Otherwise place into a fresh hole (creating extra holes if the unit is oversized)
+      let pos = countIn(currentGroup) + 1;
+      for (const p of unit) {
+        if (pos > maxGroupSize) { currentGroup++; pos = 1; }
+        updates.push({ id: p.id, group_number: currentGroup, group_position: pos });
+        pos++;
+      }
+      currentGroup++;
     }
 
-    // Remaining into new groups
-    while (idx < unassignedPlayers.length) {
-      updates.push({ id: unassignedPlayers[idx].id, group_number: currentGroup, group_position: positionInGroup });
-      positionInGroup++;
-      if (positionInGroup > maxGroupSize) {
-        positionInGroup = 1;
-        currentGroup++;
-      }
-      idx++;
-    }
 
     // Batch update
     for (const update of updates) {
@@ -976,7 +1030,7 @@ const Players = () => {
       })
     );
 
-    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes.` });
+    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes. Registration groups were kept together.` });
   };
 
   const onDragEnd = async (result: DropResult) => {
@@ -1055,9 +1109,12 @@ const Players = () => {
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Players & Pairings</h1>
           <p className="text-muted-foreground mt-1">
-            {players.length} registered player{players.length !== 1 ? "s" : ""}
+            <span className="font-semibold text-foreground">{paidCount} paid</span> player{paidCount !== 1 ? "s" : ""}
+            {pendingCount > 0 && <> · {pendingCount} pending</>}
+            {" · "}{players.length} total
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
             <SelectTrigger className="w-[240px] bg-card">
@@ -1107,6 +1164,15 @@ const Players = () => {
                   className="pl-9 w-[200px] bg-card"
                 />
               </div>
+              <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as "all" | "paid" | "pending")}>
+                <SelectTrigger className="w-[150px] bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All ({players.length})</SelectItem>
+                  <SelectItem value="paid">Paid ({paidCount})</SelectItem>
+                  <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -1347,7 +1413,44 @@ const Players = () => {
         </div>
       ) : view === "roster" ? (
         /* Roster View */
+        <div className="space-y-6">
+        {registrationGroups.length > 0 && (
+          <div className="bg-card rounded-lg border border-border p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <h3 className="font-display font-bold text-foreground">Team / Group Registrations</h3>
+              <span className="text-xs text-muted-foreground">{registrationGroups.length} group{registrationGroups.length !== 1 ? "s" : ""} signed up together</span>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {registrationGroups.map((g, gi) => (
+                <div key={g.id} className="border border-border rounded-md overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold">
+                    Group {gi + 1} — {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                  </div>
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {g.players.map((p) => (
+                        <tr key={p.id} className="border-t border-border">
+                          <td className="px-3 py-2">
+                            {p.first_name} {p.last_name}
+                            {p.group_leader && <span className="ml-2 text-[10px] uppercase tracking-wide text-primary">Captain</span>}
+                          </td>
+                          <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
+                          <td className="px-3 py-2 text-center">{p.handicap ?? "—"}</td>
+                          <td className="px-3 py-2 text-right">
+                            <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="bg-card rounded-lg border border-border overflow-hidden">
+
           <div className="overflow-x-auto">
             <table className="min-w-full w-max text-sm">
               <thead>
@@ -1576,6 +1679,8 @@ const Players = () => {
             </table>
           </div>
         </div>
+        </div>
+
       ) : (
         /* Pairings View */
         <div>

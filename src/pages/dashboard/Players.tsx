@@ -74,6 +74,9 @@ interface Registration {
   group_number: number | null;
   group_label: string | null;
   group_position: number | null;
+  group_id?: string | null;
+  group_leader?: boolean | null;
+
   created_at: string;
   scoring_code: string | null;
   tier_id: string | null;

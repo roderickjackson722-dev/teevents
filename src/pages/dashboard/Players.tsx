@@ -1044,8 +1044,36 @@ const Players = () => {
       await handleUnassignPlayer(draggableId);
     } else {
       await handleAssignPlayer(draggableId, destGroupNum, destination.index + 1);
+
+      // Keep registration groups together during manual edits: pull teammates along when there's room.
+      const moved = players.find((p) => p.id === draggableId);
+      const strays = moved ? (teammatesAwayFromHole(moved as any, players as any, destGroupNum) as unknown as Registration[]) : [];
+      if (strays.length > 0) {
+        const destGroup = groups.find((g) => g.number === destGroupNum);
+        const occupied = (destGroup ? destGroup.players.length : 0) + 1;
+        const room = maxGroupSize - occupied;
+        const toMove = strays.slice(0, Math.max(0, room));
+        for (let i = 0; i < toMove.length; i++) {
+          await handleAssignPlayer(toMove[i].id, destGroupNum, occupied + i + 1);
+        }
+        const label = groupNames[moved!.group_id as string] || "their registration group";
+        if (toMove.length > 0) {
+          toast({
+            title: "Group kept together",
+            description: `${toMove.length} teammate${toMove.length !== 1 ? "s" : ""} from ${label} moved to hole ${destGroupNum} as well.`,
+          });
+        }
+        if (toMove.length < strays.length) {
+          toast({
+            title: "Group split",
+            description: `Hole ${destGroupNum} doesn't have room for all of ${label}. ${strays.length - toMove.length} teammate(s) are still on another hole.`,
+            variant: "destructive",
+          });
+        }
+      }
     }
   };
+
 
   const paymentColors: Record<string, string> = {
     pending: "bg-muted text-muted-foreground",

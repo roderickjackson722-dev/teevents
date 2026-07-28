@@ -170,14 +170,24 @@ export default function EmailTemplateEditor() {
   const { org } = useOrgContext();
   const { isDemoMode } = useDemoMode();
   // ?template=post_event deep link from the Setup Checklist opens the post-event editor.
-  const initialTemplate: TemplateKind =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("template") === "post_event"
-      ? "post_event"
+  const initialTemplate: TemplateKind = (() => {
+    if (typeof window === "undefined") return "confirmation";
+    const q = new URLSearchParams(window.location.search).get("template");
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor"
+      ? (q as TemplateKind)
       : "confirmation";
+  })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
   const [config, setConfig] = useState<EmailConfig>(
-    initialTemplate === "post_event" ? DEFAULT_POST_EVENT_CONFIG : DEFAULT_CONFIG,
+    initialTemplate === "post_event"
+      ? DEFAULT_POST_EVENT_CONFIG
+      : initialTemplate === "day_before"
+        ? DEFAULT_DAY_BEFORE_CONFIG
+        : initialTemplate === "sponsor"
+          ? DEFAULT_SPONSOR_CONFIG
+          : initialTemplate === "vendor"
+            ? DEFAULT_VENDOR_CONFIG
+            : DEFAULT_CONFIG,
   );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);

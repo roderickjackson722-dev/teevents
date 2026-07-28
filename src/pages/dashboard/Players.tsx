@@ -146,7 +146,7 @@ const Players = () => {
   const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [view, setView] = useState<"roster" | "pairings" | "pending">("roster");
+  const [view, setView] = useState<"roster" | "pairings">("roster");
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newPlayer, setNewPlayer] = useState({

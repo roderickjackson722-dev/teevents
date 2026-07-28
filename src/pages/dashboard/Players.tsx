@@ -1413,7 +1413,44 @@ const Players = () => {
         </div>
       ) : view === "roster" ? (
         /* Roster View */
+        <div className="space-y-6">
+        {registrationGroups.length > 0 && (
+          <div className="bg-card rounded-lg border border-border p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <h3 className="font-display font-bold text-foreground">Team / Group Registrations</h3>
+              <span className="text-xs text-muted-foreground">{registrationGroups.length} group{registrationGroups.length !== 1 ? "s" : ""} signed up together</span>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {registrationGroups.map((g, gi) => (
+                <div key={g.id} className="border border-border rounded-md overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/40 text-sm font-semibold">
+                    Group {gi + 1} — {g.name} ({g.players.length} player{g.players.length !== 1 ? "s" : ""})
+                  </div>
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {g.players.map((p) => (
+                        <tr key={p.id} className="border-t border-border">
+                          <td className="px-3 py-2">
+                            {p.first_name} {p.last_name}
+                            {p.group_leader && <span className="ml-2 text-[10px] uppercase tracking-wide text-primary">Captain</span>}
+                          </td>
+                          <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
+                          <td className="px-3 py-2 text-center">{p.handicap ?? "—"}</td>
+                          <td className="px-3 py-2 text-right">
+                            <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="bg-card rounded-lg border border-border overflow-hidden">
+
           <div className="overflow-x-auto">
             <table className="min-w-full w-max text-sm">
               <thead>

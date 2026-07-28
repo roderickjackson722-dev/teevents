@@ -106,7 +106,7 @@ export default function GolfLeagues() {
                   Start your league — $199/year
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                  <a href="#standings">See season standings</a>
+                  <a href="#find-your-league">Find your league</a>
                 </Button>
               </div>
             </div>

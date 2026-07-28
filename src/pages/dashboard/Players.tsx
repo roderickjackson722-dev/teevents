@@ -267,15 +267,18 @@ const Players = () => {
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
-    ]).then(([regsRes, fieldsRes, tiersRes]: any) => {
+      (supabase as any).from("registration_groups").select("id, group_name").eq("tournament_id", selectedTournament).order("created_at"),
+    ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
       setPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
+      const gm: Record<string, string> = {};
+      (groupsRes?.data || []).forEach((g: any, i: number) => { gm[g.id] = g.group_name || `Group ${i + 1}`; });
+      setGroupNames(gm);
       setLoading(false);
     });
   }, [selectedTournament]);
 
-  useEffect(() => {
     const t: any = tournaments.find((x: any) => x.id === selectedTournament);
     setRegFeeCents(Number(t?.registration_fee_cents || 0));
   }, [selectedTournament, tournaments]);

@@ -331,9 +331,14 @@ const Players = () => {
   };
 
   const isPaid = (p: Registration) => isPaidStatus(p as any);
-  const { paid: paidCount, pending: pendingCount } = countPayments(players as any);
+  const { paid: paidCount, pending: pendingCount } = countPayments(allPlayers as any);
 
-  const filteredPlayers = (filterByPayment(players as any, paymentFilter) as unknown as Registration[])
+  // Only paid players count toward the roster, pairings, scoring and totals.
+  const players = useMemo(() => allPlayers.filter(isPaid), [allPlayers]);
+  const pendingPlayers = useMemo(() => allPlayers.filter((p) => !isPaid(p)), [allPlayers]);
+
+  const filteredPlayers = players
+
     .filter((p) => {
       const q = search.toLowerCase();
       if (!q) return true;

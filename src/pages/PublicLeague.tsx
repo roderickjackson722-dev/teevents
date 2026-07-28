@@ -145,6 +145,13 @@ export default function PublicLeague() {
             )}
             <Button
               onClick={() => navigate(`/league/${slug}/score`)}
+              className="gap-2"
+              style={{ background: primary, color: fontColor }}
+            >
+              <KeyRound className="h-4 w-4" /> Member Login
+            </Button>
+            <Button
+              onClick={() => navigate(`/league/${slug}/score`)}
               variant="outline"
               className="gap-2"
             >

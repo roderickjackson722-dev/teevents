@@ -191,8 +191,14 @@ const RegistrationSubmissions = ({ tournamentId, fields }: Props) => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            {filtered.length} of {rows.length} submission{rows.length === 1 ? "" : "s"}
+            <span className="font-semibold text-foreground">
+              {rows.filter((r) => (r.payment_status || "").toLowerCase() === "paid").length} paid
+            </span>
+            {" · "}
+            {rows.filter((r) => (r.payment_status || "").toLowerCase() !== "paid").length} pending
+            {" · "}{filtered.length} of {rows.length} shown
           </span>
+
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
             <Download className="h-4 w-4 mr-1.5" /> Export CSV
           </Button>

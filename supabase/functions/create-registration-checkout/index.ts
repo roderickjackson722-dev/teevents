@@ -305,6 +305,9 @@ Deno.serve(async (req) => {
       promoter_id: promoterId,
       donation_amount_cents: i === 0 ? donationAmountCents : 0,
       custom_answers: canonicalPlayerAnswers[i] || [],
+      group_id: groupId,
+      group_leader: groupId ? i === 0 : false,
+
     }));
 
     const { data: registrations, error: regErr } = await supabaseAdmin

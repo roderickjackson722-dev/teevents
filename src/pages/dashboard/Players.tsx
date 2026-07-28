@@ -1164,6 +1164,15 @@ const Players = () => {
                   className="pl-9 w-[200px] bg-card"
                 />
               </div>
+              <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as "all" | "paid" | "pending")}>
+                <SelectTrigger className="w-[150px] bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All ({players.length})</SelectItem>
+                  <SelectItem value="paid">Paid ({paidCount})</SelectItem>
+                  <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">

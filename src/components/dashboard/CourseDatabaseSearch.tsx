@@ -7,6 +7,16 @@ import { Loader2, Search, Library, CheckCircle2, MapPin, X } from "lucide-react"
 import { toast } from "@/hooks/use-toast";
 import { US_STATES } from "@/lib/usStates";
 
+export interface CourseTee {
+  tee_name: string | null;
+  tee_color: string | null;
+  gender: string | null;
+  course_rating: number | null;
+  slope_rating: number | null;
+  par: number | null;
+  yardage: number | null;
+}
+
 export interface CourseDBResult {
   id: string;
   course_name: string;
@@ -21,9 +31,13 @@ export interface CourseDBResult {
   hole_pars: number[] | null;
   hole_stroke_indexes: number[] | null;
   hole_distances: number[] | null;
+  hole_pars_total?: number | null;
+  hole_pars_verified?: boolean;
+  tees?: CourseTee[];
   is_verified?: boolean;
   source?: "saved" | "api";
 }
+
 
 interface Props {
   onSelect: (course: CourseDBResult) => void;

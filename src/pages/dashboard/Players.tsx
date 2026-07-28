@@ -967,23 +967,8 @@ const Players = () => {
 
     // Keep registration groups (foursomes etc.) together: build units of players
     // that signed up on the same registration, chunked to the max hole size.
-    const byGroup = new Map<string, Registration[]>();
-    const singles: Registration[] = [];
-    unassignedPlayers.forEach((p) => {
-      if (p.group_id) {
-        const list = byGroup.get(p.group_id) || [];
-        list.push(p);
-        byGroup.set(p.group_id, list);
-      } else {
-        singles.push(p);
-      }
-    });
-    const units: Registration[][] = [];
-    byGroup.forEach((list) => {
-      for (let i = 0; i < list.length; i += maxGroupSize) units.push(list.slice(i, i + maxGroupSize));
-    });
-    units.sort((a, b) => b.length - a.length);
-    singles.forEach((p) => units.push([p]));
+    const units = buildAutoAssignUnits(unassignedPlayers as any, maxGroupSize) as unknown as Registration[][];
+
 
     let currentGroup = nextGroupNumber;
     const updates: { id: string; group_number: number; group_position: number }[] = [];

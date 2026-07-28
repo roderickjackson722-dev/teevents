@@ -139,7 +139,15 @@ Deno.serve(async (req) => {
       ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
     const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
 
-    const config = (tournament as any).day_before_email_config || DEFAULTS;
+    const config = { ...DEFAULTS, ...((tournament as any).day_before_email_config || {}) };
+    // Older saved templates may predate address / schedule / homepage — append what's missing.
+    {
+      let bt = String(config.body_text || DEFAULTS.body_text);
+      if (!bt.includes("{{course_address}}")) bt += "\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}";
+      if (!bt.includes("{{event_schedule}}")) bt += "\n\n🗓 Event Schedule:\n{{event_schedule}}";
+      if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
+      config.body_text = bt;
+    }
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
           .toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })

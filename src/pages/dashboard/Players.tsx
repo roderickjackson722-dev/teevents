@@ -971,31 +971,49 @@ const Players = () => {
     const unassignedPlayers = players.filter((p) => p.group_number === null);
     if (unassignedPlayers.length === 0) return;
 
+    // Keep registration groups (foursomes etc.) together: build units of players
+    // that signed up on the same registration, chunked to the max hole size.
+    const byGroup = new Map<string, Registration[]>();
+    const singles: Registration[] = [];
+    unassignedPlayers.forEach((p) => {
+      if (p.group_id) {
+        const list = byGroup.get(p.group_id) || [];
+        list.push(p);
+        byGroup.set(p.group_id, list);
+      } else {
+        singles.push(p);
+      }
+    });
+    const units: Registration[][] = [];
+    byGroup.forEach((list) => {
+      for (let i = 0; i < list.length; i += maxGroupSize) units.push(list.slice(i, i + maxGroupSize));
+    });
+    units.sort((a, b) => b.length - a.length);
+    singles.forEach((p) => units.push([p]));
+
     let currentGroup = nextGroupNumber;
-    let positionInGroup = 1;
-
-    // Fill existing groups first
     const updates: { id: string; group_number: number; group_position: number }[] = [];
-    let idx = 0;
+    const countIn = (num: number) => updates.filter((u) => u.group_number === num).length;
 
-    for (const group of groups) {
-      while (group.players.length + (updates.filter((u) => u.group_number === group.number).length) < maxGroupSize && idx < unassignedPlayers.length) {
-        const pos = group.players.length + updates.filter((u) => u.group_number === group.number).length + 1;
-        updates.push({ id: unassignedPlayers[idx].id, group_number: group.number, group_position: pos });
-        idx++;
+    for (const unit of units) {
+      // Try to fit the whole unit into an existing hole with enough room
+      const target = groups.find((g) => g.players.length + countIn(g.number) + unit.length <= maxGroupSize);
+      if (target) {
+        unit.forEach((p) => {
+          updates.push({ id: p.id, group_number: target.number, group_position: target.players.length + countIn(target.number) + 1 });
+        });
+        continue;
       }
+      // Otherwise place into a fresh hole (creating extra holes if the unit is oversized)
+      let pos = countIn(currentGroup) + 1;
+      for (const p of unit) {
+        if (pos > maxGroupSize) { currentGroup++; pos = 1; }
+        updates.push({ id: p.id, group_number: currentGroup, group_position: pos });
+        pos++;
+      }
+      currentGroup++;
     }
 
-    // Remaining into new groups
-    while (idx < unassignedPlayers.length) {
-      updates.push({ id: unassignedPlayers[idx].id, group_number: currentGroup, group_position: positionInGroup });
-      positionInGroup++;
-      if (positionInGroup > maxGroupSize) {
-        positionInGroup = 1;
-        currentGroup++;
-      }
-      idx++;
-    }
 
     // Batch update
     for (const update of updates) {

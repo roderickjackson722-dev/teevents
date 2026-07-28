@@ -1030,7 +1030,7 @@ const Players = () => {
       })
     );
 
-    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes.` });
+    toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes. Registration groups were kept together.` });
   };
 
   const onDragEnd = async (result: DropResult) => {

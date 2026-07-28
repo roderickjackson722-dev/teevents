@@ -142,7 +142,7 @@ const Players = () => {
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
-  const [players, setPlayers] = useState<Registration[]>([]);
+  const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"roster" | "pairings">("roster");

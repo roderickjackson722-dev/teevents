@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Loader2, Settings } from "lucide-react";
+import { Trash2, Loader2, Settings, Globe } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LeagueForm from "./LeagueForm";
 
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
@@ -15,6 +17,29 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
   const [pts, setPts] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingVis, setSavingVis] = useState(false);
+  const [vis, setVis] = useState({
+    publish_status: league.publish_status || (league.is_public ? "published" : "draft"),
+    is_public: !!league.is_public,
+    allow_search: league.allow_search ?? true,
+  });
+
+  const saveVisibility = async () => {
+    setSavingVis(true);
+    const { error } = await (supabase as any)
+      .from("golf_leagues")
+      .update({
+        publish_status: vis.publish_status,
+        is_public: vis.is_public,
+        allow_search: vis.allow_search,
+      })
+      .eq("id", league.id);
+    setSavingVis(false);
+    if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    toast({ title: vis.publish_status === "published" ? "League published" : "Saved as draft" });
+    onSaved();
+  };
+
 
   const load = async () => {
     setLoading(true);

@@ -1055,9 +1055,12 @@ const Players = () => {
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Players & Pairings</h1>
           <p className="text-muted-foreground mt-1">
-            {players.length} registered player{players.length !== 1 ? "s" : ""}
+            <span className="font-semibold text-foreground">{paidCount} paid</span> player{paidCount !== 1 ? "s" : ""}
+            {pendingCount > 0 && <> · {pendingCount} pending</>}
+            {" · "}{players.length} total
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
             <SelectTrigger className="w-[240px] bg-card">

@@ -118,7 +118,7 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
     "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
-  show_event_details: true,
+  show_event_details: false,
 };
 
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {

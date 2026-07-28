@@ -1092,6 +1092,20 @@ const Players = () => {
     toast({ title: "Auto-assigned!", description: `${updates.length} players assigned to holes. Registration groups were kept together.` });
   };
 
+  // Seed the pairings board with the teams we already know about the first time
+  // an organizer opens the Pairings tab with nothing assigned yet.
+  const autoSeededRef = useRef(false);
+  useEffect(() => {
+    if (view !== "pairings" || autoSeededRef.current) return;
+    if (players.length === 0 || registrationGroups.length === 0) return;
+    if (players.some((p) => p.group_number !== null)) return;
+    autoSeededRef.current = true;
+    handleAutoAssign();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, players, registrationGroups]);
+
+
+
   const onDragEnd = async (result: DropResult) => {
     const { draggableId, source, destination } = result;
     if (!destination) return;

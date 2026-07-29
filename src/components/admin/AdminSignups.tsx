@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, UserPlus, Users, Phone, Mail, Building2, ExternalLink } from "lucide-react";
+import { Loader2, UserPlus, Users, Phone, Mail, Building2, ExternalLink, Copy, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";

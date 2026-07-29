@@ -325,7 +325,22 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     return () => { cancelled = true; };
   }, [tournamentId]);
 
-
+  // Keep the group size valid if allowed sizes arrive/change after mount
+  useEffect(() => {
+    setPlayers((prev) => {
+      const all = Array.from({ length: Math.max(1, maxGroupSize) }, (_, i) => i + 1);
+      const allowed = Array.isArray(allowedGroupSizes) && allowedGroupSizes.length > 0
+        ? all.filter((n) => allowedGroupSizes.includes(n))
+        : all;
+      if (!allowed.length || allowed.includes(prev.length)) return prev;
+      const target = Math.min(...allowed);
+      if (target === prev.length) return prev;
+      return target > prev.length
+        ? [...prev, ...Array.from({ length: target - prev.length }, () => emptyPlayer())]
+        : prev.slice(0, target);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxGroupSize, JSON.stringify(allowedGroupSizes)]);
 
   const allowGroup_pre = maxGroupSize > 1;
   const playerCount_pre = allowGroup_pre ? players.length : 1;

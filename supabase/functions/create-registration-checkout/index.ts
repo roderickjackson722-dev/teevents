@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
+import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
 import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>

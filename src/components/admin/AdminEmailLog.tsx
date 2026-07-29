@@ -111,6 +111,9 @@ export default function AdminEmailLog() {
         <Button onClick={load} variant="outline" size="sm"><RefreshCw className="h-4 w-4 mr-1" /> Refresh</Button>
       </div>
 
+      <AdminQaEmailTester />
+
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4"><div className="text-xs text-muted-foreground">Unique emails</div><div className="text-2xl font-bold">{stats.total}</div></Card>

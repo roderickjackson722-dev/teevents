@@ -334,9 +334,13 @@ const SiteBuilder = () => {
   }, [id]);
 
   const updateField = (field: keyof SiteSettings, value: string | boolean | number | number[] | null) => {
-    if (!settings) return;
-    setSettings({ ...settings, [field]: value });
+    setSettings((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
+
+  const updateFields = (patch: Record<string, unknown>) => {
+    setSettings((prev) => (prev ? ({ ...prev, ...patch } as SiteSettings) : prev));
+  };
+
 
   const handleSave = async () => {
     if (!settings || demoGuard()) return;

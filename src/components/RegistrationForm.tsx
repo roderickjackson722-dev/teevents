@@ -244,7 +244,18 @@ const PlayerFields = ({
 };
 
 const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
-  const [players, setPlayers] = useState<PlayerForm[]>([emptyPlayer()]);
+  // When the organizer restricts group sizes (e.g. foursomes only), start at the
+  // smallest allowed size so the total reflects the real number of players.
+  const initialGroupSize = (() => {
+    const all = Array.from({ length: Math.max(1, maxGroupSize) }, (_, i) => i + 1);
+    const allowed = Array.isArray(allowedGroupSizes) && allowedGroupSizes.length > 0
+      ? all.filter((n) => allowedGroupSizes.includes(n))
+      : all;
+    return allowed.length ? Math.min(...allowed) : 1;
+  })();
+  const [players, setPlayers] = useState<PlayerForm[]>(() =>
+    Array.from({ length: initialGroupSize }, () => emptyPlayer()),
+  );
   const [groupNotes, setGroupNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);

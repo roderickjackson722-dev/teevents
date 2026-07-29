@@ -454,6 +454,141 @@ export async function buildVendorAnswersHtml(supabaseAdmin: any, vendorRegId: st
   }
 }
 
+/**
+ * Renders every question & answer submitted on a league membership registration
+ * (league_registration_responses.response_data), backfilled with the league's
+ * configured custom fields so unanswered questions still appear.
+ */
+export async function buildLeagueRegistrationAnswersHtml(
+  supabaseAdmin: any,
+  responseId: string,
+): Promise<string> {
+  try {
+    if (!responseId) return "";
+    const { data: r } = await supabaseAdmin
+      .from("league_registration_responses")
+      .select("id, league_id, member_id, response_data, amount_cents, promo_code, payment_status, created_at")
+      .eq("id", responseId)
+      .maybeSingle();
+    if (!r) return "";
+
+    const { data: member } = await supabaseAdmin
+      .from("league_members")
+      .select("member_name, email, phone, handicap_index, scoring_code")
+      .eq("id", r.member_id)
+      .maybeSingle();
+
+    const rows: Array<[string, any]> = [];
+    if (member) {
+      rows.push(["Name", member.member_name]);
+      rows.push(["Email", member.email]);
+      if (member.phone) rows.push(["Phone", member.phone]);
+      if (member.handicap_index != null) rows.push(["Handicap Index", member.handicap_index]);
+    }
+    rows.push(["Amount Paid", r.amount_cents != null ? `$${(r.amount_cents / 100).toFixed(2)}` : ""]);
+    if (r.promo_code) rows.push(["Promo Code", r.promo_code]);
+
+    const seen = new Set(rows.map(([l]) => String(l).toLowerCase()));
+    const data: any = r.response_data || {};
+
+    // Backfill from the league's configured registration form fields
+    const { data: form } = await supabaseAdmin
+      .from("league_registration_forms")
+      .select("custom_fields")
+      .eq("league_id", r.league_id)
+      .maybeSingle();
+    const fields: any[] = Array.isArray(form?.custom_fields) ? form!.custom_fields : [];
+
+    for (const f of fields) {
+      const label = String(f?.label || f?.question || f?.id || "").trim();
+      if (!label || seen.has(label.toLowerCase())) continue;
+      const key = f?.id || f?.key || label;
+      const val = data && typeof data === "object" ? (data[key] ?? data[label] ?? "") : "";
+      rows.push([label, val]);
+      seen.add(label.toLowerCase());
+    }
+
+    // Include any remaining raw answers not covered by the field defs
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      for (const [k, v] of Object.entries(data)) {
+        if (seen.has(String(k).toLowerCase())) continue;
+        if (fields.some((f: any) => (f?.id || f?.key) === k)) continue;
+        rows.push([k, v]);
+        seen.add(String(k).toLowerCase());
+      }
+    }
+
+    return _wrapSection(
+      "📝 Full Registration Submission",
+      "Every question shown to the member and their submitted answer:",
+      _renderRows(rows),
+    );
+  } catch (err) {
+    console.error("[buildLeagueRegistrationAnswersHtml]", err);
+    return "";
+  }
+}
+
+/**
+ * Emails the league's managers (org owners/admins) plus the platform admin with
+ * a transaction notification. Used so league managers get the same full Q&A
+ * backup copy that tournament organizers receive.
+ */
+export async function notifyLeagueManagers(opts: {
+  supabaseAdmin: any;
+  leagueId: string;
+  subject: string;
+  htmlBody: string;
+}) {
+  try {
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) return;
+    const admin = opts.supabaseAdmin;
+    const { data: league } = await admin
+      .from("golf_leagues")
+      .select("organization_id")
+      .eq("id", opts.leagueId)
+      .maybeSingle();
+
+    const recipients = new Set<string>();
+    if (league?.organization_id) {
+      const { data: members } = await admin
+        .from("org_members")
+        .select("user_id, role")
+        .eq("organization_id", league.organization_id);
+      for (const m of (members || []) as any[]) {
+        if (!["owner", "admin"].includes(String(m.role || "").toLowerCase())) continue;
+        try {
+          const { data: u } = await admin.auth.admin.getUserById(m.user_id);
+          const email = u?.user?.email;
+          if (email) recipients.add(String(email).trim().toLowerCase());
+        } catch (_e) { /* ignore */ }
+      }
+    }
+    if (recipients.size === 0) recipients.add(PLATFORM_ADMIN_EMAIL);
+
+    await sendAndLog(
+      admin,
+      RESEND_API_KEY,
+      {
+        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        to: Array.from(recipients),
+        bcc: PLATFORM_ADMIN_EMAIL,
+        subject: opts.subject,
+        html: opts.htmlBody,
+      },
+      {
+        templateName: "league-manager-registration",
+        source: "notifyLeagueManagers",
+        organizationId: league?.organization_id || null,
+      },
+    );
+  } catch (err) {
+    console.error("[notifyLeagueManagers]", err);
+  }
+}
+
+
 // HTML email template helper for admin notifications
 export function buildNotificationHtml(title: string, lines: string[], extraHtml: string = ""): string {
   return `

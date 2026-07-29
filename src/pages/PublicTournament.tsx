@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { BrandingBadge } from "@/components/BrandingBadge";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { formatCents, formatMoney } from "@/lib/formatCurrency";
 
 
 interface PublicSponsor {
@@ -2159,7 +2160,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   <h3 className="font-display font-bold" style={{ color: "#1a1a1a" }}>{contest.name}</h3>
                   {contest.description && <p className="text-sm" style={{ color: "#666" }}>{contest.description}</p>}
                   {contest.fee_cents > 0 && (
-                    <p className="text-xs font-semibold" style={{ color: secondary }}>${(contest.fee_cents / 100).toFixed(2)}</p>
+                    <p className="text-xs font-semibold" style={{ color: secondary }}>{formatCents(contest.fee_cents)}</p>
                   )}
                 </div>
               ))}
@@ -2360,11 +2361,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     {item.type === "auction" && (
                       <div className="text-sm">
                         <span style={{ color: "#888" }}>Current bid: </span>
-                        <span className="font-bold text-lg" style={{ color: primary }}>${Number(item.current_bid).toFixed(2)}</span>
+                        <span className="font-bold text-lg" style={{ color: primary }}>{formatMoney(Number(item.current_bid))}</span>
                       </div>
                     )}
                     {item.type === "raffle" && item.raffle_ticket_price && (
-                      <p className="text-sm"><span style={{ color: "#888" }}>Ticket: </span><span className="font-bold">${Number(item.raffle_ticket_price).toFixed(2)}</span></p>
+                      <p className="text-sm"><span style={{ color: "#888" }}>Ticket: </span><span className="font-bold">{formatMoney(Number(item.raffle_ticket_price))}</span></p>
                     )}
                     {item.type === "auction" && (
                       bidForm?.itemId === item.id ? (
@@ -2807,7 +2808,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                             {rooms.map((r) => (
                               <li key={r.id}>
                                 {r.room_type}
-                                {r.rate_cents != null && `: $${(r.rate_cents / 100).toFixed(2)}`}
+                                {r.rate_cents != null && `: ${formatCents(r.rate_cents)}`}
                                 {r.rate_note ? ` ${r.rate_note}` : (r.rate_cents != null ? " / night" : "")}
                                 {r.max_occupancy ? ` (sleeps ${r.max_occupancy})` : ""}
                               </li>

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatTournamentDate } from "@/lib/formatDate";
+import { formatCents } from "@/lib/formatCurrency";
 
 type Tier = {
   id: string;
@@ -255,7 +256,7 @@ const EventDetail = () => {
                               {rem !== null && rem > 0 && rem <= 10 && <div className="text-xs text-amber-600 mt-0.5">Only {rem} left</div>}
                               {disabled && <div className="text-xs text-destructive mt-0.5">Sold out</div>}
                             </div>
-                            <div className="font-bold text-sm whitespace-nowrap">${(t.price_cents / 100).toFixed(2)}</div>
+                            <div className="font-bold text-sm whitespace-nowrap">{formatCents(t.price_cents)}</div>
                           </div>
                         </label>
                       );
@@ -307,7 +308,7 @@ const EventDetail = () => {
 
                   <div className="flex items-center justify-between pt-2 border-t border-border">
                     <span className="text-sm text-muted-foreground">Total</span>
-                    <span className="text-xl font-bold">${(total / 100).toFixed(2)}</span>
+                    <span className="text-xl font-bold">{formatCents(total)}</span>
                   </div>
 
                   <Button onClick={handlePurchase} disabled={submitting || !tier} className="w-full">

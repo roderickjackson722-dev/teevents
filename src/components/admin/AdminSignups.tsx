@@ -26,6 +26,79 @@ const PLAN_LABELS: Record<string, string> = {
   browsing: "Just exploring",
 };
 
+const LOGIN_URL = "https://www.teevents.golf/login";
+const ROD_PHONE = "404-781-7140";
+const ROD_EMAIL = "info@teevents.golf";
+
+export const WELCOME_EMAIL_SUBJECT = "Welcome to TeeVents — here's my direct contact info";
+
+export function buildWelcomeEmail(name?: string | null) {
+  const first = (name || "").trim().split(/\s+/)[0] || "there";
+  return `Hi ${first},
+
+Welcome to TeeVents! I'm Rod Jackson, the founder, and I wanted to reach out personally to say thank you for signing up.
+
+You can log in to your dashboard anytime here:
+${LOGIN_URL}
+
+My goal is to make your tournament as easy as possible to run. If you have ANY questions — setting up your event page, adding players, sponsors, payments, or anything else — please reach out to me directly:
+
+Phone: ${ROD_PHONE}
+Email: ${ROD_EMAIL}
+
+Don't hesitate to call or text. I'm happy to walk you through anything, and I'd rather hear from you early than have you stuck on something.
+
+Looking forward to working with you.
+
+Best,
+Rod Jackson
+Founder, TeeVents Golf
+${ROD_PHONE} | ${ROD_EMAIL}
+https://www.teevents.golf`;
+}
+
+function WelcomeEmailTemplate() {
+  const [copied, setCopied] = useState<"subject" | "body" | null>(null);
+  const body = buildWelcomeEmail(null);
+
+  const copy = async (what: "subject" | "body") => {
+    await navigator.clipboard.writeText(what === "subject" ? WELCOME_EMAIL_SUBJECT : body);
+    setCopied(what);
+    setTimeout(() => setCopied(null), 1800);
+  };
+
+  return (
+    <Card className="p-4 border-[#F5A623]/50 bg-[#F5A623]/5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="font-semibold">Welcome Email Template</h3>
+          <p className="text-sm text-muted-foreground">
+            Copy and send from your own inbox to new organizers. Includes your phone, email, and the login link.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => copy("subject")}>
+            {copied === "subject" ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+            Subject
+          </Button>
+          <Button size="sm" onClick={() => copy("body")}>
+            {copied === "body" ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+            Copy Email
+          </Button>
+        </div>
+      </div>
+      <div className="mt-3 text-xs font-medium">Subject: {WELCOME_EMAIL_SUBJECT}</div>
+      <pre className="mt-2 whitespace-pre-wrap text-sm bg-card border rounded-md p-3 max-h-64 overflow-auto">
+        {body}
+      </pre>
+      <p className="text-xs text-muted-foreground mt-2">
+        Tip: use the “Welcome Email” button on any signup below to copy a version personalized with their name.
+      </p>
+    </Card>
+  );
+}
+
+
 export default function AdminSignups() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<SignupRow[]>([]);

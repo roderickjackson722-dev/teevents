@@ -1296,18 +1296,31 @@ const SiteBuilder = () => {
                 <RichTextEditor
                   value={(settings as any).schedule_info_html || ""}
                   onChange={(html) => {
-                    updateField("schedule_info_html" as any, html);
-                    // keep plain-text fallback in sync for legacy consumers
+                    // keep plain-text fallback in sync for legacy consumers,
+                    // in a SINGLE state update so neither value is dropped.
                     const tmp = document.createElement("div");
                     tmp.innerHTML = html;
-                    updateField("schedule_info", tmp.textContent || "");
+                    updateFields({
+                      schedule_info_html: html,
+                      schedule_info: tmp.textContent || "",
+                    });
                   }}
                   placeholder="10:00 AM — Registration\n11:00 AM — Shotgun Start"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Use the toolbar to bold key items, change fonts, or highlight (e.g. SOLD OUT, LIMITED SPOTS).
                 </p>
+                <div className="mt-3 flex items-center gap-3">
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    <span className="ml-1.5">Save Schedule</span>
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Saves this section and all other site settings — same as the Save button at the top.
+                  </span>
+                </div>
               </div>
+
 
               <p className="text-xs text-muted-foreground italic">
                 Registration pricing is managed in the Registration Management tab — the single source of truth for fees.

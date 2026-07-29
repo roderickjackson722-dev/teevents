@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, RefreshCw, Mail, AlertCircle, X } from "lucide-react";
+import AdminQaEmailTester from "@/components/admin/AdminQaEmailTester";
+
 
 type LogRow = {
   id: string;

@@ -1146,11 +1146,29 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     )}
                   </div>
                 )}
-                {tournament.max_players && tournament.show_registration_count !== false && (
-                  <p className="text-xs mt-2" style={{ color: "#999" }}>
-                    {registrationCount} / {tournament.max_players} spots filled
-                  </p>
-                )}
+                {tournament.max_players && (tournament as any).show_registration_count === true && (() => {
+                  // When the only allowed registration size is a fixed group (e.g. foursomes only),
+                  // count in teams rather than individual players.
+                  const sizes = Array.isArray((tournament as any).allowed_group_sizes) ? ((tournament as any).allowed_group_sizes as number[]) : [];
+                  const fixedSize = sizes.length === 1 && sizes[0] > 1
+                    ? sizes[0]
+                    : (sizes.length === 0 && tournament.foursome_registration && ((tournament as any).max_group_size ?? 4) === 4 ? 4 : null);
+                  if (fixedSize) {
+                    const teamCapacity = Math.floor((tournament.max_players || 0) / fixedSize);
+                    const teamsFilled = Math.min(teamCapacity, Math.ceil(registrationCount / fixedSize));
+                    const label = fixedSize === 4 ? "foursome" : fixedSize === 3 ? "threesome" : fixedSize === 2 ? "twosome" : "team";
+                    return (
+                      <p className="text-xs mt-2" style={{ color: "#999" }}>
+                        {teamsFilled} / {teamCapacity} {label} spots filled
+                      </p>
+                    );
+                  }
+                  return (
+                    <p className="text-xs mt-2" style={{ color: "#999" }}>
+                      {registrationCount} / {tournament.max_players} spots filled
+                    </p>
+                  );
+                })()}
               </div>
 
 

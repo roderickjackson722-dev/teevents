@@ -1053,7 +1053,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                         ? { borderColor: secondaryColor, backgroundColor: secondaryColor }
                         : { borderColor: `${secondaryColor}40` }}
                     >
-                      ${(cents / 100).toFixed(0)}
+                      ${Math.round(cents / 100).toLocaleString("en-US")}
                     </button>
                   );
                 })}

@@ -389,20 +389,23 @@ export async function buildRegistrationAnswersHtml(
 
 
 const _esc = (s: any) =>
-  String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+  String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 const _fmt = (v: any) => {
   if (v === null || v === undefined || v === "") return "<em style='color:#9ca3af'>Not provided</em>";
-  if (Array.isArray(v)) return _esc(v.join(", "));
-  if (typeof v === "object") return _esc(JSON.stringify(v));
-  return _esc(v);
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (Array.isArray(v)) return _esc(v.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(", ")).replace(/\n/g, "<br/>");
+  if (typeof v === "object") return _esc(JSON.stringify(v, null, 2)).replace(/\n/g, "<br/>");
+  return _esc(v).replace(/\n/g, "<br/>");
 };
 function _renderRows(rows: Array<[string, any]>): string {
   return rows.map(([label, value]) => `
     <tr>
-      <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;white-space:nowrap;">${_esc(label)}</td>
-      <td style="padding:6px 0;color:#111827;font-size:14px;vertical-align:top;">${_fmt(value)}</td>
+      <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;width:38%;word-break:break-word;overflow-wrap:anywhere;">${_esc(label)}</td>
+      <td style="padding:6px 0;color:#111827;font-size:14px;line-height:1.5;vertical-align:top;word-break:break-word;overflow-wrap:anywhere;">${_fmt(value)}</td>
     </tr>`).join("");
 }
+
 function _wrapSection(title: string, subtitle: string, innerHtml: string): string {
   return `
     <div style="margin:18px 0 6px;">

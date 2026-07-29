@@ -763,7 +763,15 @@ const Registration = () => {
                   <div className="flex items-center gap-2 mt-2">
                     <Switch checked={showRegCount} onCheckedChange={setShowRegCount} id="show-reg-count" />
                     <Label htmlFor="show-reg-count" className="text-xs text-muted-foreground cursor-pointer">
-                      Show "X / {maxPlayers} spots filled" on public page
+                      {(() => {
+                        const sizes = allowedGroupSizes ?? [];
+                        const fixed = sizes.length === 1 && sizes[0] > 1 ? sizes[0] : (sizes.length === 0 && foursomeReg && maxGroupSize === 4 ? 4 : null);
+                        if (fixed) {
+                          const label = fixed === 4 ? "foursome" : fixed === 3 ? "threesome" : fixed === 2 ? "twosome" : "team";
+                          return `Show "X / ${Math.floor(maxPlayers / fixed)} ${label} spots filled" on public page (off by default)`;
+                        }
+                        return `Show "X / ${maxPlayers} spots filled" on public page (off by default)`;
+                      })()}
                     </Label>
                   </div>
                 </div>

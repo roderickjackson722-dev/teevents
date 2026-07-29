@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, RefreshCw, Mail, AlertCircle, X } from "lucide-react";
+import AdminQaEmailTester from "@/components/admin/AdminQaEmailTester";
+
 
 type LogRow = {
   id: string;
@@ -110,6 +112,9 @@ export default function AdminEmailLog() {
         </div>
         <Button onClick={load} variant="outline" size="sm"><RefreshCw className="h-4 w-4 mr-1" /> Refresh</Button>
       </div>
+
+      <AdminQaEmailTester />
+
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -255,10 +255,16 @@ export async function buildRegistrationAnswersHtml(
 ): Promise<string> {
   try {
     if (!registrationIds || registrationIds.length === 0) return "";
-    const { data: regs } = await supabaseAdmin
+    // NOTE: only select columns that actually exist on tournament_registrations.
+    // A bad column here makes the whole query error and silently drops the Q&A block.
+    const { data: regs, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("id, tournament_id, first_name, last_name, email, phone, handicap, shirt_size, dietary_restrictions, company, skill_level, custom_answers, created_at")
+      .select("id, tournament_id, first_name, last_name, email, phone, handicap, shirt_size, dietary_restrictions, notes, custom_answers, created_at")
       .in("id", registrationIds);
+    if (regErr) {
+      console.error("[buildRegistrationAnswersHtml] registration query failed:", regErr);
+      return "";
+    }
     if (!regs || regs.length === 0) return "";
 
     const tournamentId = (regs[0] as any).tournament_id;
@@ -269,12 +275,15 @@ export async function buildRegistrationAnswersHtml(
       .order("sort_order", { ascending: true });
 
     const escape = (s: any) =>
-      String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+      String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+    // Preserve line breaks in long free-text answers; never truncate.
     const fmt = (v: any) => {
       if (v === null || v === undefined || v === "") return "<em style='color:#9ca3af'>Not provided</em>";
-      if (Array.isArray(v)) return escape(v.join(", "));
-      if (typeof v === "object") return escape(JSON.stringify(v));
-      return escape(v);
+      if (typeof v === "boolean") return v ? "Yes" : "No";
+      if (Array.isArray(v)) return escape(v.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(", ")).replace(/\n/g, "<br/>");
+      if (typeof v === "object") return escape(JSON.stringify(v, null, 2)).replace(/\n/g, "<br/>");
+      return escape(v).replace(/\n/g, "<br/>");
     };
 
     const sections = regs.map((r: any, idx: number) => {
@@ -283,15 +292,36 @@ export async function buildRegistrationAnswersHtml(
       rows.push(["Email", r.email]);
       if (r.phone) rows.push(["Phone", r.phone]);
 
-      const answers: any[] = Array.isArray(r.custom_answers) ? r.custom_answers : [];
       const seenLabels = new Set(rows.map(([l]) => l.toLowerCase()));
 
-      // Prefer the canonical answers array (order matches the org's field setup)
-      for (const a of answers) {
-        const label = String(a?.label || "").trim();
-        if (!label) continue;
+      // Normalize custom_answers: supports the canonical array form
+      // [{label, answer, field_id}] as well as legacy object maps keyed by
+      // field id or label, and JSON strings.
+      let raw = r.custom_answers;
+      if (typeof raw === "string") {
+        try { raw = JSON.parse(raw); } catch { raw = []; }
+      }
+      const fieldById = new Map<string, string>();
+      for (const f of (fields || []) as any[]) fieldById.set(String(f.id), String(f.label || ""));
+
+      const answerPairs: Array<[string, any]> = [];
+      if (Array.isArray(raw)) {
+        for (const a of raw) {
+          const label = String(a?.label || fieldById.get(String(a?.field_id)) || a?.question || "").trim();
+          if (!label) continue;
+          answerPairs.push([label, a?.answer ?? a?.value ?? ""]);
+        }
+      } else if (raw && typeof raw === "object") {
+        for (const [k, v] of Object.entries(raw)) {
+          const label = (fieldById.get(String(k)) || String(k)).trim();
+          if (!label) continue;
+          answerPairs.push([label, v]);
+        }
+      }
+
+      for (const [label, value] of answerPairs) {
         if (seenLabels.has(label.toLowerCase())) continue;
-        rows.push([label, a?.answer ?? a?.value ?? ""]);
+        rows.push([label, value]);
         seenLabels.add(label.toLowerCase());
       }
 
@@ -300,16 +330,28 @@ export async function buildRegistrationAnswersHtml(
       for (const f of (fields || []) as any[]) {
         const label = String(f.label || "").trim();
         if (!label || seenLabels.has(label.toLowerCase())) continue;
-        // Look up matching native column for default fields
         const nativeMap: Record<string, string> = {
           "handicap": "handicap",
           "shirt size": "shirt_size",
           "dietary restrictions": "dietary_restrictions",
-          "company / organization": "company",
-          "skill level": "skill_level",
+          "notes": "notes",
         };
         const nativeKey = nativeMap[label.toLowerCase()];
         const val = nativeKey ? (r as any)[nativeKey] : "";
+        rows.push([label, val]);
+        seenLabels.add(label.toLowerCase());
+      }
+
+      // Always surface native values that weren't covered by a field label.
+      const nativeExtras: Array<[string, any]> = [
+        ["Handicap", r.handicap],
+        ["Shirt Size", r.shirt_size],
+        ["Dietary Restrictions", r.dietary_restrictions],
+        ["Notes", r.notes],
+      ];
+      for (const [label, val] of nativeExtras) {
+        if (val === null || val === undefined || val === "") continue;
+        if (seenLabels.has(label.toLowerCase())) continue;
         rows.push([label, val]);
         seenLabels.add(label.toLowerCase());
       }
@@ -318,8 +360,8 @@ export async function buildRegistrationAnswersHtml(
         .map(
           ([label, value]) => `
         <tr>
-          <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;white-space:nowrap;">${escape(label)}</td>
-          <td style="padding:6px 0;color:#111827;font-size:14px;vertical-align:top;">${fmt(value)}</td>
+          <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;width:38%;word-break:break-word;overflow-wrap:anywhere;">${escape(label)}</td>
+          <td style="padding:6px 0;color:#111827;font-size:14px;line-height:1.5;vertical-align:top;word-break:break-word;overflow-wrap:anywhere;">${fmt(value)}</td>
         </tr>`,
         )
         .join("");
@@ -329,7 +371,7 @@ export async function buildRegistrationAnswersHtml(
         <p style="margin:0 0 8px;color:#1a5c38;font-size:14px;font-weight:700;">
           🏌️ Player ${regs.length > 1 ? idx + 1 + " of " + regs.length : ""} — ${escape(`${r.first_name || ""} ${r.last_name || ""}`.trim())}
         </p>
-        <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">${rowsHtml}</table>
+        <table cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;">${rowsHtml}</table>
       </div>`;
     });
 
@@ -345,21 +387,25 @@ export async function buildRegistrationAnswersHtml(
   }
 }
 
+
 const _esc = (s: any) =>
-  String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+  String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 const _fmt = (v: any) => {
   if (v === null || v === undefined || v === "") return "<em style='color:#9ca3af'>Not provided</em>";
-  if (Array.isArray(v)) return _esc(v.join(", "));
-  if (typeof v === "object") return _esc(JSON.stringify(v));
-  return _esc(v);
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (Array.isArray(v)) return _esc(v.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(", ")).replace(/\n/g, "<br/>");
+  if (typeof v === "object") return _esc(JSON.stringify(v, null, 2)).replace(/\n/g, "<br/>");
+  return _esc(v).replace(/\n/g, "<br/>");
 };
 function _renderRows(rows: Array<[string, any]>): string {
   return rows.map(([label, value]) => `
     <tr>
-      <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;white-space:nowrap;">${_esc(label)}</td>
-      <td style="padding:6px 0;color:#111827;font-size:14px;vertical-align:top;">${_fmt(value)}</td>
+      <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;vertical-align:top;width:38%;word-break:break-word;overflow-wrap:anywhere;">${_esc(label)}</td>
+      <td style="padding:6px 0;color:#111827;font-size:14px;line-height:1.5;vertical-align:top;word-break:break-word;overflow-wrap:anywhere;">${_fmt(value)}</td>
     </tr>`).join("");
 }
+
 function _wrapSection(title: string, subtitle: string, innerHtml: string): string {
   return `
     <div style="margin:18px 0 6px;">

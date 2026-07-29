@@ -321,9 +321,10 @@ const SiteBuilder = () => {
           // the stored HTML is empty OR still contains raw flyer separators
           // ("━"/"─") or bullet markers ("•") that indicate it was never
           // properly structured into headings + lists.
+          // Only seed from legacy plain text when there is no saved rich-text
+          // schedule yet — never overwrite an organizer's saved edits.
           const existingHtmlText = (seeded.schedule_info_html || "").replace(/<[^>]*>/g, "").trim();
-          const looksUnformatted = /[━─]{3,}/.test(seeded.schedule_info_html || "") || /•/.test(seeded.schedule_info_html || "");
-          if (seeded.schedule_info && (!existingHtmlText || looksUnformatted)) {
+          if (seeded.schedule_info && !existingHtmlText) {
             seeded.schedule_info_html = autoFormatAgenda(seeded.schedule_info);
           }
           setSettings(seeded as SiteSettings);

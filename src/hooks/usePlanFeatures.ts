@@ -64,7 +64,7 @@ const ENTERPRISE_FEATURES = [
   "sla-guarantee",
 ];
 
-const PLAN_FEATURES: Record<string, string[]> = {
+export const PLAN_FEATURES: Record<string, string[]> = {
   free: FREE_FEATURES,
   base: FREE_FEATURES,
   pro: PRO_FEATURES,

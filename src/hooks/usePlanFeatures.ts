@@ -64,7 +64,7 @@ const ENTERPRISE_FEATURES = [
   "sla-guarantee",
 ];
 
-const PLAN_FEATURES: Record<string, string[]> = {
+export const PLAN_FEATURES: Record<string, string[]> = {
   free: FREE_FEATURES,
   base: FREE_FEATURES,
   pro: PRO_FEATURES,
@@ -110,12 +110,22 @@ export const ALL_FEATURES = [
 ];
 
 // Hierarchy used to inherit lower-tier features
-const PLAN_HIERARCHY = ["free", "pro", "enterprise"];
+export const PLAN_HIERARCHY = ["free", "pro", "enterprise"];
 
-function normalizePlan(plan: string): string {
+export function normalizePlan(plan: string): string {
   if (plan === "starter" || plan === "premium") return "pro";
   if (plan === "base") return "free";
   return plan || "free";
+}
+
+/** Single source of truth: does a plan include a feature by default? */
+export function planIncludesFeature(plan: string, feature: string): boolean {
+  const normalized = normalizePlan(plan);
+  const idx = PLAN_HIERARCHY.indexOf(normalized);
+  for (let i = 0; i <= idx; i++) {
+    if (PLAN_FEATURES[PLAN_HIERARCHY[i]]?.includes(feature)) return true;
+  }
+  return false;
 }
 
 export function usePlanFeatures() {

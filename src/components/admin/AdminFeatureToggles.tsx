@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ALL_FEATURES } from "@/hooks/usePlanFeatures";
+import { ALL_FEATURES, planIncludesFeature } from "@/hooks/usePlanFeatures";
 import { Save, Loader2, ToggleLeft, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,31 +17,6 @@ interface AdminFeatureTogglesProps {
   onRefresh: () => Promise<void>;
 }
 
-// Plan default features for reference
-const PLAN_FEATURES: Record<string, string[]> = {
-  free: [
-    "tournaments", "registration", "website", "players", "check-in",
-    "leaderboard", "planning-guide", "email-messaging", "custom-domain",
-    "sponsors", "budget", "gallery", "printables", "volunteers",
-  ],
-  base: [
-    "tournaments", "registration", "website", "players", "check-in",
-    "leaderboard", "planning-guide", "email-messaging", "custom-domain",
-    "sponsors", "budget", "gallery", "printables", "volunteers",
-  ],
-  starter: ["donations", "sms-messaging", "all-templates"],
-  premium: ["store", "auction", "surveys", "priority-support", "hole-in-one-insurance"],
-};
-
-const PLAN_HIERARCHY = ["free", "base", "starter", "premium"];
-
-function planIncludesFeature(plan: string, feature: string): boolean {
-  const idx = PLAN_HIERARCHY.indexOf(plan);
-  for (let i = 0; i <= idx; i++) {
-    if (PLAN_FEATURES[PLAN_HIERARCHY[i]]?.includes(feature)) return true;
-  }
-  return false;
-}
 
 export default function AdminFeatureToggles({
   organizationId,

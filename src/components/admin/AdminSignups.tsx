@@ -120,6 +120,9 @@ export default function AdminSignups() {
         </p>
       </div>
 
+      <WelcomeEmailTemplate />
+
+
       <div className="flex flex-wrap gap-2 items-center">
         {(["all", "new_organizer", "team_invite"] as const).map((k) => (
           <button

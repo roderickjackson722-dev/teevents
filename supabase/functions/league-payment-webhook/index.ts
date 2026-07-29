@@ -194,6 +194,28 @@ Deno.serve(async (req) => {
             </div>`,
           });
         }
+
+        // League manager + platform-admin copy with the FULL question & answer
+        // submission so every paid transaction has a permanent email backup.
+        try {
+          const leagueId = session.metadata!.league_id;
+          const answersHtml = await buildLeagueRegistrationAnswersHtml(supabaseAdmin, responseId);
+          await notifyLeagueManagers({
+            supabaseAdmin,
+            leagueId,
+            subject: `✅ New League Registration — ${(member as any)?.league?.league_name || "your league"}`,
+            htmlBody: buildNotificationHtml("New League Registration 🎉", [
+              `You have a new paid membership registration for <strong>${(member as any)?.league?.league_name || "your league"}</strong>.`,
+              `🏌️ <strong>Member:</strong> ${member?.member_name || "Member"}`,
+              `📧 <strong>Contact:</strong> ${member?.email || "n/a"}`,
+              `💵 <strong>Amount paid:</strong> $${((session.amount_total || 0) / 100).toFixed(2)}`,
+              `🧾 <strong>Reference:</strong> ${pi || String(session.id)}`,
+            ], answersHtml),
+          });
+        } catch (e) {
+          console.error("League manager notification failed:", (e as Error).message);
+        }
+
       } else if (kind === "league_membership") {
 
         const memberId = session.metadata!.member_id;

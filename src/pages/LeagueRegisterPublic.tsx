@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import { Loader2, CheckCircle2, ImagePlus, ArrowLeft } from "lucide-react";
 import { normalizeFields, type RegField } from "@/components/leagues/LeagueRegistrationTab";
+import { formatCents } from "@/lib/formatCurrency";
 
 const PLATFORM_FEE_RATE = 0.05;
 
@@ -175,7 +176,7 @@ export default function LeagueRegisterPublic() {
                 <div className="rounded-md border p-4 space-y-3 bg-muted/30">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">League Fee</span>
-                    <span className="font-semibold">{baseCents === 0 ? "Free" : `$${(baseCents / 100).toFixed(2)}`}</span>
+                    <span className="font-semibold">{baseCents === 0 ? "Free" : `${formatCents(baseCents)}`}</span>
                   </div>
                   {form.promo_code_enabled && baseCents > 0 && (
                     <div className="flex gap-2">
@@ -186,17 +187,17 @@ export default function LeagueRegisterPublic() {
                   {promo && (
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
                       <span>Discount ({promo.code})</span>
-                      <span>-${((baseCents - discounted) / 100).toFixed(2)}</span>
+                      <span>-{formatCents((baseCents - discounted))}</span>
                     </div>
                   )}
                   {platformFee > 0 && (
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>Processing fee</span><span>${(platformFee / 100).toFixed(2)}</span>
+                      <span>Processing fee</span><span>{formatCents(platformFee)}</span>
                     </div>
                   )}
                   {baseCents > 0 && (
                     <div className="flex items-center justify-between border-t pt-2 font-bold">
-                      <span>Total</span><span>${(total / 100).toFixed(2)}</span>
+                      <span>Total</span><span>{formatCents(total)}</span>
                     </div>
                   )}
                 </div>
@@ -244,7 +245,7 @@ export default function LeagueRegisterPublic() {
                 )}
 
                 <Button type="submit" className="w-full h-12" disabled={submitting || uploading}>
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : total > 0 ? `Register & Pay $${(total / 100).toFixed(2)}` : "Complete Registration"}
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : total > 0 ? `Register & Pay ${formatCents(total)}` : "Complete Registration"}
                 </Button>
               </form>
             )}

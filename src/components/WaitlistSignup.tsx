@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Clock, CheckCircle2, Users } from "lucide-react";
 import { z } from "zod";
+import { formatCents } from "@/lib/formatCurrency";
 
 const waitlistSchema = z.object({
   user_name: z.string().trim().min(1, "Name is required").max(100),
@@ -195,7 +196,7 @@ export default function WaitlistSignup({
         {depositCents > 0 && (
           <div className="rounded-md px-4 py-3 text-sm border" style={{ backgroundColor: `${secondaryColor}10`, borderColor: `${secondaryColor}30` }}>
             <p className="font-medium" style={{ color: "#1a1a1a" }}>
-              💰 Optional: Pay a ${(depositCents / 100).toFixed(2)} deposit to secure your priority
+              💰 Optional: Pay a {formatCents(depositCents)} deposit to secure your priority
             </p>
             <p className="text-xs mt-1" style={{ color: "#666" }}>
               Your deposit will be applied toward registration when a spot opens.

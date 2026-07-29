@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Calendar, MapPin, DollarSign, CheckCircle2, CreditC
 import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import { LEAGUE_FORMATS } from "@/components/leagues/LeagueEventsTab";
+import { formatCents, formatMoney } from "@/lib/formatCurrency";
 
 const FORMAT_DESCRIPTIONS: Record<string, string> = {
   individual_stroke: "Each player plays their own ball. Lowest total gross (or net) strokes wins.",
@@ -176,7 +177,7 @@ export default function LeagueEventRegister() {
               <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> {event.event_date}{event.start_time ? ` · ${event.start_time}` : ""}</div>
               {event.course_name && <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> {event.course_name}</div>}
               {!hasTiers && (
-                <div className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-muted-foreground" /> {feeDollars > 0 ? `$${feeDollars.toFixed(2)} entry fee` : "No entry fee"}</div>
+                <div className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-muted-foreground" /> {feeDollars > 0 ? `${formatMoney(feeDollars)} entry fee` : "No entry fee"}</div>
               )}
               {event.registration_deadline && <div className="text-muted-foreground text-xs">Deadline: {event.registration_deadline}</div>}
             </div>
@@ -204,7 +205,7 @@ export default function LeagueEventRegister() {
                         />
                         <span className="font-medium">{t.label}</span>
                       </div>
-                      <span className="font-semibold">${(t.amount_cents / 100).toFixed(2)}</span>
+                      <span className="font-semibold">{formatCents(t.amount_cents)}</span>
                     </label>
                   ))}
                 </div>
@@ -227,7 +228,7 @@ export default function LeagueEventRegister() {
                     )}
                     {payment && (
                       <>
-                        <div><span className="text-emerald-800/70">Amount:</span> <span className="font-medium">${((payment.amount_cents || 0) / 100).toFixed(2)}</span></div>
+                        <div><span className="text-emerald-800/70">Amount:</span> <span className="font-medium">{formatCents((payment.amount_cents || 0))}</span></div>
                         {payment.stripe_payment_intent && (
                           <div className="font-mono text-[11px] break-all"><span className="text-emerald-800/70 font-sans">Reference:</span> {payment.stripe_payment_intent}</div>
                         )}
@@ -246,7 +247,7 @@ export default function LeagueEventRegister() {
             ) : feeDollars > 0 ? (
               <Button className="w-full h-12" onClick={payAndRegister} disabled={submitting || (hasTiers && !selectedTierId)}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                {hasTiers && !selectedTierId ? "Select an option to continue" : `Pay $${feeDollars.toFixed(2)} & Register`}
+                {hasTiers && !selectedTierId ? "Select an option to continue" : `Pay ${formatMoney(feeDollars)} & Register`}
               </Button>
             ) : hasTiers ? (
               <Button className="w-full h-12" disabled>Select an option to continue</Button>

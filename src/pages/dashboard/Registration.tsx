@@ -161,7 +161,7 @@ const Registration = () => {
   const [earlyExpires, setEarlyExpires] = useState<string>(""); // datetime-local string
   /* Cash registration */
   const [allowCash, setAllowCash] = useState<boolean>(false);
-  const [showRegCount, setShowRegCount] = useState<boolean>(true);
+  const [showRegCount, setShowRegCount] = useState<boolean>(false);
   /* Promo code input visibility */
   const [showPromoCodeInput, setShowPromoCodeInput] = useState<boolean>(true);
   /* Public registration page custom content */
@@ -221,7 +221,7 @@ const Registration = () => {
       const exp = tournament.early_registration_expires_at;
       setEarlyExpires(exp ? new Date(exp).toISOString().slice(0, 16) : "");
       setAllowCash(!!tournament.allow_cash_registration);
-      setShowRegCount((tournament as any).show_registration_count !== false);
+      setShowRegCount((tournament as any).show_registration_count === true);
       setShowPromoCodeInput((tournament as any).show_promo_code_input !== false);
       setRegistrationIntroHtml(((tournament as any).registration_intro_html as string) || "");
       setRegistrationPromoHtml(((tournament as any).registration_promo_html as string) || "");
@@ -763,7 +763,15 @@ const Registration = () => {
                   <div className="flex items-center gap-2 mt-2">
                     <Switch checked={showRegCount} onCheckedChange={setShowRegCount} id="show-reg-count" />
                     <Label htmlFor="show-reg-count" className="text-xs text-muted-foreground cursor-pointer">
-                      Show "X / {maxPlayers} spots filled" on public page
+                      {(() => {
+                        const sizes = allowedGroupSizes ?? [];
+                        const fixed = sizes.length === 1 && sizes[0] > 1 ? sizes[0] : (sizes.length === 0 && foursomeReg && maxGroupSize === 4 ? 4 : null);
+                        if (fixed) {
+                          const label = fixed === 4 ? "foursome" : fixed === 3 ? "threesome" : fixed === 2 ? "twosome" : "team";
+                          return `Show "X / ${Math.floor(maxPlayers / fixed)} ${label} spots filled" on public page (off by default)`;
+                        }
+                        return `Show "X / ${maxPlayers} spots filled" on public page (off by default)`;
+                      })()}
                     </Label>
                   </div>
                 </div>

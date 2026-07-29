@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
+import { formatCents } from "@/lib/formatCurrency";
 
 interface AddonRow {
   id: string;
@@ -403,8 +404,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const stripeFee = totalWithDonationCents > 0 ? Math.round((totalWithDonationCents + platformFeeCents) * 0.029 + 30) : 0;
   const coverageAmount = stripeFee + platformFeeCents;
   const totalWithCoveredFees = coverFees ? totalWithDonationCents + coverageAmount : totalWithDonationCents;
-  const feeDisplay = activeFee ? `$${(activeFee / 100).toFixed(2)}` : null;
-  const totalDisplay = totalWithCoveredFees > 0 ? `$${(totalWithCoveredFees / 100).toFixed(2)}` : null;
+  const feeDisplay = activeFee ? `${formatCents(activeFee)}` : null;
+  const totalDisplay = totalWithCoveredFees > 0 ? `${formatCents(totalWithCoveredFees)}` : null;
 
   const applyPromo = async () => {
     const code = promoInput.trim().toUpperCase();
@@ -697,7 +698,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-sm text-foreground">{tier.name}</span>
                     <Badge variant="secondary" className="text-xs">
-                      {tier.price_cents > 0 ? `$${(tier.price_cents / 100).toFixed(2)}` : "Free"}
+                      {tier.price_cents > 0 ? `${formatCents(tier.price_cents)}` : "Free"}
                     </Badge>
                   </div>
                   {tier.description && <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>}
@@ -773,17 +774,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
             {addonTotalCents > 0 && (
               <span className="block text-xs mt-1 opacity-80">
-                Add-ons: ${(addonTotalCents / 100).toFixed(2)}
+                Add-ons: {formatCents(addonTotalCents)}
               </span>
             )}
             {discountCents > 0 && (
               <span className="block text-xs mt-1 opacity-80 text-green-700">
-                Promo {appliedPromo?.code}: −${(discountCents / 100).toFixed(2)}
+                Promo {appliedPromo?.code}: −{formatCents(discountCents)}
               </span>
             )}
             {donationCents > 0 && (
               <span className="block text-xs mt-1 opacity-80">
-                Donation: +${(donationCents / 100).toFixed(2)}
+                Donation: +{formatCents(donationCents)}
               </span>
             )}
             {totalDisplay && (
@@ -899,7 +900,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-sm text-foreground">{addon.name}</span>
-                        <Badge variant="secondary" className="text-xs">${(addon.price_cents / 100).toFixed(2)}</Badge>
+                        <Badge variant="secondary" className="text-xs">{formatCents(addon.price_cents)}</Badge>
                         {max > 1 && <span className="text-[10px] text-muted-foreground">max {max} per player</span>}
                       </div>
                       {addon.description && <p className="text-xs text-muted-foreground mt-0.5">{addon.description}</p>}
@@ -1052,7 +1053,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                         ? { borderColor: secondaryColor, backgroundColor: secondaryColor }
                         : { borderColor: `${secondaryColor}40` }}
                     >
-                      ${(cents / 100).toFixed(0)}
+                      ${Math.round(cents / 100).toLocaleString("en-US")}
                     </button>
                   );
                 })}
@@ -1094,7 +1095,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             )}
             {donationCents > 0 && (
               <p className="text-xs font-semibold" style={{ color: secondaryColor }}>
-                ✓ Adding ${(donationCents / 100).toFixed(2)} donation to your registration
+                ✓ Adding {formatCents(donationCents)} donation to your registration
               </p>
             )}
           </div>

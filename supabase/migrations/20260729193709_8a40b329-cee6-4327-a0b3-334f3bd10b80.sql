@@ -1,0 +1,2 @@
+ALTER TABLE public.tournaments ALTER COLUMN show_registration_count SET DEFAULT false;
+UPDATE public.tournaments SET show_registration_count = false WHERE show_registration_count IS DISTINCT FROM false;

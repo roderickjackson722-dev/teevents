@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Gavel, Ticket, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { formatCents, formatMoney } from "@/lib/formatCurrency";
 
 interface AuctionRow {
   id: string; item_name: string; description: string | null; images: string[];
@@ -19,7 +20,7 @@ interface RaffleRow {
   draw_time: string | null; status: string; winner_name: string | null;
 }
 
-function money(c: number | null | undefined) { return `$${((c ?? 0) / 100).toFixed(2)}`; }
+function money(c: number | null | undefined) { return `${formatCents((c ?? 0))}`; }
 
 function Countdown({ to }: { to: string | null }) {
   const [now, setNow] = useState(Date.now());
@@ -242,7 +243,7 @@ export function PublicAuctionsRaffles({
         <DialogContent>
           <DialogHeader><DialogTitle>Place Bid — {bidOpen?.item_name}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-gray-600">Minimum bid: <strong>${minBid.toFixed(2)}</strong>. We'll email you a link to confirm.</p>
+            <p className="text-sm text-gray-600">Minimum bid: <strong>{formatMoney(minBid)}</strong>. We'll email you a link to confirm.</p>
             <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
             <div><Label>Phone (optional)</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>

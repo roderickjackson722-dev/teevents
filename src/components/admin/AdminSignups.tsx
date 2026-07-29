@@ -273,12 +273,22 @@ export default function AdminSignups() {
                     </Button>
                   )}
                   {r.email && (
-                    <Button asChild size="sm" variant="ghost" className="mt-1">
-                      <a href={`mailto:${r.email}`}>
-                        <ExternalLink className="h-3.5 w-3.5 mr-1" /> Email
-                      </a>
-                    </Button>
+                    <div className="flex flex-col items-end">
+                      <Button asChild size="sm" variant="ghost" className="mt-1">
+                        <a href={`mailto:${r.email}?subject=${encodeURIComponent(WELCOME_EMAIL_SUBJECT)}&body=${encodeURIComponent(buildWelcomeEmail(r.full_name))}`}>
+                          <ExternalLink className="h-3.5 w-3.5 mr-1" /> Email
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => navigator.clipboard.writeText(buildWelcomeEmail(r.full_name))}
+                      >
+                        <Copy className="h-3.5 w-3.5 mr-1" /> Welcome Email
+                      </Button>
+                    </div>
                   )}
+
                 </div>
               </div>
             </Card>

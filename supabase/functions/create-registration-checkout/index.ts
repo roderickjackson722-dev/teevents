@@ -1,6 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
+import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
 import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
@@ -326,6 +326,7 @@ Deno.serve(async (req) => {
     if (!hasAnyCharge) {
       try {
         const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
+        const answersHtml = await buildRegistrationAnswersHtml(supabaseAdmin, registrationIds);
         await sendNotificationEmails(
           supabaseAdmin,
           tournament.organization_id,
@@ -336,7 +337,7 @@ Deno.serve(async (req) => {
             `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
             isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
             `✅ No fee — confirmed.`,
-          ].filter(Boolean)),
+          ].filter(Boolean), answersHtml),
           tournament.id,
         );
       } catch (e) {

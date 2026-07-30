@@ -40,7 +40,13 @@ export default {
 
     // On the main site we only intercept social/link-preview crawlers so real
     // visitors keep getting the normal app.
-    if (!isShareHost && !CRAWLER.test(ua)) return fetch(request);
+    if (!isShareHost && !CRAWLER.test(ua)) {
+      const passthrough = await fetch(request);
+      const h = new Headers(passthrough.headers);
+      h.set("x-teevents-share", "passthrough");
+      return new Response(passthrough.body, { status: passthrough.status, headers: h });
+    }
+
 
     const target = url.pathname + (url.search || "");
     const upstream = ${JSON.stringify(shareFnUrl)} + "?p=" + encodeURIComponent(target || "/");

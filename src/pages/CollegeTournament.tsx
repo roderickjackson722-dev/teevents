@@ -280,7 +280,13 @@ const CollegeTournament = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${tournament.title} | TeeVents College Golf`} description={tournament.hero_tagline || (tournament.description ? tournament.description.replace(/<[^>]+>/g, "").slice(0, 160) : `${tournament.title} college golf tournament`)} />
+      <SEO
+        title={`${tournament.title} | TeeVents College Golf`}
+        description={tournament.hero_tagline || (tournament.description ? tournament.description.replace(/<[^>]+>/g, "").slice(0, 160) : `${tournament.title} college golf tournament`)}
+        path={`/college/${tournament.slug}`}
+        ogImage={tournament.hero_image_url || tournament.flyer_url || undefined}
+      />
+
 
       {/* Hero */}
       <div className="relative text-primary-foreground py-24 overflow-hidden">

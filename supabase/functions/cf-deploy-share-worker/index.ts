@@ -21,13 +21,36 @@ async function cf(token: string, path: string, init: RequestInit = {}) {
   return { status: res.status, json: await res.json().catch(() => ({})) };
 }
 
+const CRAWLER_WORDS = [
+  "facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","slack-imgproxy",
+  "discordbot","whatsapp","telegrambot","skypeuripreview","pinterest","redditbot","embedly",
+  "quora link preview","vkshare","applebot","imessagebot","bingbot","googlebot","iframely",
+  "nuzzel","outbrain","mastodon","bluesky","opengraph","snippet","preview",
+];
+const CRAWLER_RE = `new RegExp(${JSON.stringify(CRAWLER_WORDS.join("|"))}, "i")`;
+
+
 function workerSource(shareFnUrl: string) {
-  return `export default {
+  return `const CRAWLER = ${CRAWLER_RE};
+export default {
   async fetch(request) {
     const url = new URL(request.url);
+    const ua = request.headers.get("user-agent") || "";
+    const isShareHost = url.hostname.startsWith("share.");
+
+    // On the main site we only intercept social/link-preview crawlers so real
+    // visitors keep getting the normal app.
+    if (!isShareHost && !CRAWLER.test(ua)) {
+      const passthrough = await fetch(request);
+      const h = new Headers(passthrough.headers);
+      h.set("x-teevents-share", "passthrough");
+      return new Response(passthrough.body, { status: passthrough.status, headers: h });
+    }
+
+
     const target = url.pathname + (url.search || "");
     const upstream = ${JSON.stringify(shareFnUrl)} + "?p=" + encodeURIComponent(target || "/");
-    const res = await fetch(upstream, { headers: { "user-agent": request.headers.get("user-agent") || "" } });
+    const res = await fetch(upstream, { headers: { "user-agent": ua } });
     const body = await res.text();
     return new Response(body, {
       status: res.status,
@@ -36,6 +59,7 @@ function workerSource(shareFnUrl: string) {
   },
 };`;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -102,11 +126,57 @@ Deno.serve(async (req) => {
     steps.push({ step: "dns_already_correct", host: SHARE_HOST });
   }
 
-  // 3. Ensure the worker route for the share host
+  // 2b. Diagnostics: are the apex/www records inside this zone and proxied?
+  const mainDns = await cf(token, `/zones/${zoneId}/dns_records?per_page=100`);
+  steps.push({
+    step: "dns_inventory",
+    records: (mainDns.json?.result || [])
+      .filter((r: { name: string }) => r.name === ZONE_NAME || r.name === `www.${ZONE_NAME}`)
+      .map((r: { name: string; type: string; content: string; proxied: boolean }) => ({
+        name: r.name, type: r.type, content: r.content, proxied: r.proxied,
+      })),
+  });
+
+  // 2c. Worker routes only fire on proxied hostnames. `?proxy_main=1` turns the
+  // orange cloud on for the apex + www A records; `?proxy_main=0` turns it off
+  // again (rollback) if Lovable hosting misbehaves behind the proxy.
+  const proxyParam = new URL(req.url).searchParams.get("proxy_main");
+  if (proxyParam === "1" || proxyParam === "0") {
+    const want = proxyParam === "1";
+    for (const r of (mainDns.json?.result || []) as Array<{
+      id: string; name: string; type: string; proxied: boolean;
+    }>) {
+      if (r.type !== "A" && r.type !== "AAAA" && r.type !== "CNAME") continue;
+      if (r.name !== ZONE_NAME && r.name !== `www.${ZONE_NAME}`) continue;
+      if (r.proxied === want) {
+        steps.push({ step: "main_proxy_noop", host: r.name, proxied: r.proxied });
+        continue;
+      }
+      const pr = await cf(token, `/zones/${zoneId}/dns_records/${r.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ proxied: want }),
+      });
+      steps.push({ step: "main_proxy_set", host: r.name, proxied: want, status: pr.status, errors: pr.json?.errors });
+    }
+  }
+
+
+  // 3. Ensure the worker route for the share host. Routes on the apex/www host
+  // are NOT possible: teevents.golf + www are registered as Cloudflare-for-SaaS
+  // custom hostnames by Lovable hosting, which takes precedence over this zone,
+  // so a worker route there never executes (verified). Any stale main-domain
+  // routes are removed below.
   const routes = await cf(token, `/zones/${zoneId}/workers/routes`);
   const existing = routes.json?.result || [];
-  for (const host of [SHARE_HOST]) {
-    const pattern = `${host}/*`;
+  const patterns = [`${SHARE_HOST}/*`];
+  for (const r of existing as Array<{ id: string; pattern: string; script: string }>) {
+    if (r.script === SCRIPT_NAME && !patterns.includes(r.pattern)) {
+      const del = await cf(token, `/zones/${zoneId}/workers/routes/${r.id}`, { method: "DELETE" });
+      steps.push({ step: "route_delete", pattern: r.pattern, status: del.status });
+    }
+  }
+
+  for (const pattern of patterns) {
     const dup = existing.find((r: { pattern: string; id: string; script: string }) => r.pattern === pattern);
     if (dup) {
       if (dup.script !== SCRIPT_NAME) {
@@ -126,6 +196,7 @@ Deno.serve(async (req) => {
       steps.push({ step: "route_create", pattern, status: rr.status, success: rr.json?.success, errors: rr.json?.errors });
     }
   }
+
 
   return new Response(JSON.stringify({ ok: true, steps }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },

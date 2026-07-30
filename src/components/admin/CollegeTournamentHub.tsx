@@ -547,6 +547,21 @@ const CollegeTournamentHub = () => {
     toast({ title: "Tab removed" });
   };
 
+  const reorderTabs = async (result: DropResult) => {
+    if (!result.destination || !expandedId) return;
+    const next = Array.from(tabs);
+    const [moved] = next.splice(result.source.index, 1);
+    next.splice(result.destination.index, 0, moved);
+    setTabs(next);
+
+    const updates = next.map((tab, i) =>
+      supabase.from("college_tournament_tabs").update({ sort_order: i } as any).eq("id", tab.id)
+    );
+    await Promise.all(updates);
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "Tab order saved" });
+  };
+
   const handleFileUpload = async (tabId: string, file: File) => {
     const ext = file.name.split(".").pop();
     const path = `college/${expandedId}/${tabId}.${ext}`;

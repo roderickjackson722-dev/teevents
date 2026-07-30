@@ -1472,6 +1472,10 @@ const CollegeTournamentHub = () => {
                           );
                         })()}
 
+                        <p className="text-xs text-muted-foreground">
+                          Drag the <GripVertical className="h-3 w-3 inline" /> handle to reorder tabs. The Overview tab is always shown first on the public page.
+                        </p>
+
                         <DragDropContext onDragEnd={reorderTabs}>
                           <Droppable droppableId="college-tabs">
                             {(droppableProvided) => (

@@ -32,7 +32,10 @@ interface ClickStats {
   tablet: number;
 }
 
+import { sharePreviewUrl } from "@/lib/shareLinks";
+
 const DOMAIN = "www.teevents.golf";
+
 
 const SharePromote = () => {
   const { org } = useOrgContext();
@@ -228,6 +231,25 @@ const SharePromote = () => {
             <Card>
               <CardHeader><CardTitle className="font-display">Share Links</CardTitle></CardHeader>
               <CardContent className="space-y-4">
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                  <p className="text-sm font-medium text-foreground">Text / Social Preview Link</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Use this link in text messages, Facebook, LinkedIn or Slack so the preview shows
+                    your tournament name and image instead of the generic TeeVents description. It
+                    forwards visitors straight to your registration page.
+                  </p>
+                  <p className="text-xs text-muted-foreground break-all mt-2">{sharePreviewUrl(`/t/${tournament.slug}`)}</p>
+                  <div className="flex gap-1.5 mt-2">
+                    <Button size="sm" variant="outline" onClick={() => copyToClipboard(sharePreviewUrl(`/t/${tournament.slug}`), "Preview link")}>
+                      <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Preview Link
+                    </Button>
+                    <Button size="sm" variant="ghost" asChild>
+                      <a href={sharePreviewUrl(`/t/${tournament.slug}`)} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
                 {[
                   { label: "Registration Page", url: registrationUrl, ref: "" },
                   { label: "QR Code Link", url: `${registrationUrl}?ref=qr`, ref: "qr" },
@@ -235,6 +257,7 @@ const SharePromote = () => {
                   { label: "LinkedIn Link", url: `${registrationUrl}?ref=linkedin`, ref: "linkedin" },
                   { label: "Email Link", url: `${registrationUrl}?ref=email`, ref: "email" },
                 ].map((link) => (
+
                   <div key={link.label} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="text-sm font-medium text-foreground">{link.label}</p>

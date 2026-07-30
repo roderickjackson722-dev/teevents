@@ -1,13 +1,9 @@
 import { createRoot } from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { installSampleSafeClient } from "./lib/sampleSafeClient";
 
 installSampleSafeClient();
 
-createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>
-);
+const root = document.getElementById("root");
+if (root) createRoot(root).render(<App />);

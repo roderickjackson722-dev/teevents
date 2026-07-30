@@ -21,13 +21,24 @@ async function cf(token: string, path: string, init: RequestInit = {}) {
   return { status: res.status, json: await res.json().catch(() => ({})) };
 }
 
+const CRAWLER_RE =
+  "/(facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|slack-imgproxy|discordbot|whatsapp|telegrambot|skypeuripreview|pinterest|redditbot|embedly|quora link preview|vkshare|applebot|imessagebot|bingbot|googlebot|developers\\\\.google\\\\.com\\\\/\\\\+\\\\/web\\\\/snippet|iframely|nuzzel|outbrain|mastodon|bluesky|opengraph)/i";
+
 function workerSource(shareFnUrl: string) {
-  return `export default {
+  return `const CRAWLER = ${CRAWLER_RE};
+export default {
   async fetch(request) {
     const url = new URL(request.url);
+    const ua = request.headers.get("user-agent") || "";
+    const isShareHost = url.hostname.startsWith("share.");
+
+    // On the main site we only intercept social/link-preview crawlers so real
+    // visitors keep getting the normal app.
+    if (!isShareHost && !CRAWLER.test(ua)) return fetch(request);
+
     const target = url.pathname + (url.search || "");
     const upstream = ${JSON.stringify(shareFnUrl)} + "?p=" + encodeURIComponent(target || "/");
-    const res = await fetch(upstream, { headers: { "user-agent": request.headers.get("user-agent") || "" } });
+    const res = await fetch(upstream, { headers: { "user-agent": ua } });
     const body = await res.text();
     return new Response(body, {
       status: res.status,
@@ -36,6 +47,7 @@ function workerSource(shareFnUrl: string) {
   },
 };`;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });

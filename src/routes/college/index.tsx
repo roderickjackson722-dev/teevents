@@ -24,7 +24,7 @@ export const Route = createFileRoute("/college/")({
 });
 
 function CollegeHubIndex() {
-  const events = Route.useLoaderData();
+  const events = Route.useLoaderData() as CollegeHubItem[];
   return (
     <main className="min-h-screen bg-background px-6 py-16">
       <div className="mx-auto max-w-4xl">

@@ -28,7 +28,7 @@ type Question = {
   id: string;
   survey_id: string;
   question_text: string;
-  question_type: "text" | "textarea" | "dropdown" | "checkbox";
+  question_type: "text" | "textarea" | "dropdown" | "checkbox" | "radio";
   display_order: number;
   is_required: boolean;
   options: string[] | null;
@@ -351,19 +351,38 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
                     <div className="flex-1 space-y-2">
                       <Input value={q.question_text} onChange={(e) => updateQ(i, { question_text: e.target.value })} placeholder={`Question ${i + 1}`} />
                       <div className="flex flex-wrap gap-3 items-center text-sm">
-                        <select className="border rounded px-2 py-1 bg-background" value={q.question_type} onChange={(e) => updateQ(i, { question_type: e.target.value as any })}>
-                          <option value="text">Text</option>
-                          <option value="textarea">Textarea</option>
+                        <select className="border rounded px-2 py-1 bg-background" value={q.question_type} onChange={(e) => updateQ(i, { question_type: e.target.value as any, options: ["radio", "dropdown", "checkbox"].includes(e.target.value) ? (q.options && q.options.length ? q.options : ["Option 1", "Option 2"]) : null })}>
+                          <option value="text">Short text</option>
+                          <option value="textarea">Long text</option>
+                          <option value="radio">Multiple choice (pick one)</option>
+                          <option value="checkbox">Multiple choice (pick many)</option>
                           <option value="dropdown">Dropdown</option>
-                          <option value="checkbox">Checkbox</option>
                         </select>
                         <label className="flex items-center gap-1"><input type="checkbox" checked={q.is_required} onChange={(e) => updateQ(i, { is_required: e.target.checked })} /> Required</label>
                         <Button size="sm" variant="ghost" className="ml-auto text-destructive" onClick={() => removeQ(i)}><Trash2 className="w-3.5 h-3.5" /></Button>
                       </div>
-                      {(q.question_type === "dropdown" || q.question_type === "checkbox") && (
-                        <div>
-                          <Label className="text-xs">Options (comma-separated)</Label>
-                          <Input value={(q.options || []).join(", ")} onChange={(e) => updateQ(i, { options: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} placeholder="Option 1, Option 2, Option 3" />
+                      {(q.question_type === "dropdown" || q.question_type === "checkbox" || q.question_type === "radio") && (
+                        <div className="space-y-2">
+                          <Label className="text-xs">Answer choices</Label>
+                          {(q.options || []).map((opt, oi) => (
+                            <div key={oi} className="flex items-center gap-2">
+                              <Input
+                                value={opt}
+                                placeholder={`Choice ${oi + 1}`}
+                                onChange={(e) => {
+                                  const next = [...(q.options || [])];
+                                  next[oi] = e.target.value;
+                                  updateQ(i, { options: next });
+                                }}
+                              />
+                              <Button size="sm" variant="ghost" className="text-destructive" onClick={() => updateQ(i, { options: (q.options || []).filter((_, x) => x !== oi) })}>
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button size="sm" variant="outline" onClick={() => updateQ(i, { options: [...(q.options || []), ""] })}>
+                            Add choice
+                          </Button>
                         </div>
                       )}
                     </div>

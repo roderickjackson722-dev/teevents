@@ -21,6 +21,19 @@ export async function getCollegeMeta(slug: string): Promise<PageMeta> {
   return { title: `${title} | TeeVents College Golf`, description: plain(row?.hero_tagline) || plain(row?.description) || `${title} — college golf tournament details, schedule and registration.`, image: absolute(row?.hero_image_url || row?.flyer_url), url: `${SITE}/college/${slug}` };
 }
 
+export interface CollegeHubItem { slug: string; title: string; tagline: string }
+
+export async function getCollegeHubList(): Promise<CollegeHubItem[]> {
+  const base = process.env.VITE_SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!base || !key) return [];
+  const params = new URLSearchParams({ select: "slug,title,hero_tagline", status: "eq.active", order: "created_at.desc", limit: "50" });
+  const response = await fetch(`${base}/rest/v1/college_tournaments?${params}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+  if (!response.ok) return [];
+  const rows = await response.json() as Record<string, unknown>[];
+  return rows.filter((row) => row.slug).map((row) => ({ slug: String(row.slug), title: plain(row.title) || "College Golf Tournament", tagline: plain(row.hero_tagline) }));
+}
+
 export async function getTournamentMeta(slug: string, route: "t" | "tournament"): Promise<PageMeta> {
   const filter = `or=(custom_slug.eq.${encodeURIComponent(slug)},slug.eq.${encodeURIComponent(slug)})`;
   const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url&${filter}&site_published=eq.true&limit=1`;

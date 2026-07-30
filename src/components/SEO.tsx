@@ -12,9 +12,17 @@ interface SEOProps {
   noIndex?: boolean;
 }
 
+const absolute = (url: string) => {
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("/")) return `${BASE_URL}${url}`;
+  return DEFAULT_OG_IMAGE;
+};
+
 const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noIndex = false }: SEOProps) => {
   const fullTitle = title === "Home" ? SITE_NAME : `${title} | ${SITE_NAME}`;
   const url = `${BASE_URL}${path}`;
+  const image = absolute(ogImage || DEFAULT_OG_IMAGE);
+
 
   useEffect(() => {
     document.title = fullTitle;

@@ -131,11 +131,17 @@ const SharePromote = () => {
     ? new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     : "[Date]";
 
+  // Social/messaging captions use the share.teevents.golf link so the preview card
+  // shows this tournament's own title, description and image.
+  const shareBase = tournament?.slug ? `/t/${tournament.slug}` : "";
+  const shareLink = (ref: string) => (shareBase ? sharePreviewUrl(shareBase, ref) : "");
+
   const socialCaptions = {
-    facebook: `⛳ Join us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}!\n\nRegister here: ${registrationUrl}?ref=facebook\n\n#GolfTournament #CharityGolf`,
-    linkedin: `⛳ ${tournament?.title || "[Tournament Name]"} - ${eventDate}\n\nRegister: ${registrationUrl}?ref=linkedin\n\n#GolfTournament`,
-    email: `Hello golfers,\n\nJoin us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}.\n\nRegister here: ${registrationUrl}?ref=email\n\nWe look forward to seeing you!`,
+    facebook: `⛳ Join us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}!\n\nRegister here: ${shareLink("facebook")}\n\n#GolfTournament #CharityGolf`,
+    linkedin: `⛳ ${tournament?.title || "[Tournament Name]"} - ${eventDate}\n\nRegister: ${shareLink("linkedin")}\n\n#GolfTournament`,
+    email: `Hello golfers,\n\nJoin us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}.\n\nRegister here: ${shareLink("email")}\n\nWe look forward to seeing you!`,
   };
+
 
   if (loading) {
     return (
@@ -253,10 +259,12 @@ const SharePromote = () => {
                 {[
                   { label: "Registration Page", url: registrationUrl, ref: "" },
                   { label: "QR Code Link", url: `${registrationUrl}?ref=qr`, ref: "qr" },
-                  { label: "Facebook Link", url: `${registrationUrl}?ref=facebook`, ref: "facebook" },
-                  { label: "LinkedIn Link", url: `${registrationUrl}?ref=linkedin`, ref: "linkedin" },
-                  { label: "Email Link", url: `${registrationUrl}?ref=email`, ref: "email" },
+                  { label: "Facebook Link (preview-ready)", url: shareLink("facebook"), ref: "facebook" },
+                  { label: "LinkedIn Link (preview-ready)", url: shareLink("linkedin"), ref: "linkedin" },
+                  { label: "Text Message Link (preview-ready)", url: shareLink("sms"), ref: "sms" },
+                  { label: "Email Link (preview-ready)", url: shareLink("email"), ref: "email" },
                 ].map((link) => (
+
 
                   <div key={link.label} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
@@ -316,9 +324,10 @@ const SharePromote = () => {
               <CardContent>
                 <pre className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg mb-3">
 {`⛳ ${tournament.title} - ${eventDate}
-Register: ${registrationUrl}?ref=sms`}
+Register: ${shareLink("sms")}`}
                 </pre>
-                <Button size="sm" variant="outline" onClick={() => copyToClipboard(`⛳ ${tournament.title} - ${eventDate}\nRegister: ${registrationUrl}?ref=sms`, "Text message")}>
+                <Button size="sm" variant="outline" onClick={() => copyToClipboard(`⛳ ${tournament.title} - ${eventDate}\nRegister: ${shareLink("sms")}`, "Text message")}>
+
                   <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Message
                 </Button>
               </CardContent>

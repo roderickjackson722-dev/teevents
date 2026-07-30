@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sharePreviewUrl } from "@/lib/shareLinks";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -544,6 +545,21 @@ const CollegeTournamentHub = () => {
     await supabase.from("college_tournament_tabs").delete().eq("id", id) as any;
     if (expandedId) fetchTournamentData(expandedId);
     toast({ title: "Tab removed" });
+  };
+
+  const reorderTabs = async (result: DropResult) => {
+    if (!result.destination || !expandedId) return;
+    const next = Array.from(tabs);
+    const [moved] = next.splice(result.source.index, 1);
+    next.splice(result.destination.index, 0, moved);
+    setTabs(next);
+
+    const updates = next.map((tab, i) =>
+      supabase.from("college_tournament_tabs").update({ sort_order: i } as any).eq("id", tab.id)
+    );
+    await Promise.all(updates);
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "Tab order saved" });
   };
 
   const handleFileUpload = async (tabId: string, file: File) => {
@@ -1456,98 +1472,135 @@ const CollegeTournamentHub = () => {
                           );
                         })()}
 
-                        {tabs.map(tab => (
-                          <div key={tab.id} className="bg-card rounded-lg border border-border p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-semibold text-sm">{tab.title}</h4>
-                                <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full capitalize">
-                                  {tab.content_type.replace("_", " ")}
-                                </span>
-                                {!tab.is_visible && <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Hidden</span>}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button onClick={() => toggleTabVisibility(tab)} className="text-muted-foreground hover:text-foreground" title={tab.is_visible ? "Hide tab" : "Show tab"}>
-                                  {tab.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                </button>
-                                <button onClick={() => deleteTab(tab.id)} className="text-muted-foreground hover:text-destructive" title="Delete tab">
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
+                        <p className="text-xs text-muted-foreground">
+                          Drag the <GripVertical className="h-3 w-3 inline" /> handle to reorder tabs. The Overview tab is always shown first on the public page.
+                        </p>
 
-                            {tab.content_type === "bookings" ? (
-                              <div className="space-y-2">
-                                <p className="text-xs text-muted-foreground">
-                                  Coaches can book trainer sessions from this tab. Manage available slots, categories, and reservations below.
-                                </p>
-                                <a
-                                  href={`/admin/college-hub/bookings?context=${encodeURIComponent(tab.content || `college-hub:${expandedId}`)}&label=${encodeURIComponent(tab.title)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                                >
-                                  <Settings className="h-3.5 w-3.5" /> Manage Booking Slots
-                                </a>
-                              </div>
-                            ) : tab.content_type === "file" ? (
-                              <div className="space-y-2">
-                                {tab.file_url && (
-                                  <a href={tab.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
-                                    <FileText className="h-3.5 w-3.5" /> View uploaded file
-                                  </a>
-                                )}
-                                <Input
-                                  type="file"
-                                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-                                  onChange={e => { if (e.target.files?.[0]) handleFileUpload(tab.id, e.target.files[0]); }}
-                                  className="text-sm"
-                                />
-                              </div>
-                            ) : (
-                              <div>
-                                {editingTab === tab.id ? (
-                                  <div className="space-y-2">
-                                    <RichTextEditor
-                                      value={editTabContent}
-                                      onChange={(html) => setEditTabContent(html)}
-                                      placeholder="Enter content..."
-                                      onImageUpload={async (file) => {
-                                        const ext = file.name.split(".").pop() || "png";
-                                        const path = `college/${expandedId}/tab-${tab.id}-${Date.now()}.${ext}`;
-                                        const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
-                                        if (upErr) {
-                                          toast({ title: "Image upload failed", description: upErr.message, variant: "destructive" });
-                                          throw upErr;
-                                        }
-                                        const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-                                        return publicUrl;
-                                      }}
-                                    />
-                                    <div className="flex gap-2">
-                                      <Button size="sm" onClick={() => saveTabContent(tab.id)}><Save className="h-3.5 w-3.5 mr-1" /> Save</Button>
-                                      <Button size="sm" variant="outline" onClick={() => setEditingTab(null)}><X className="h-3.5 w-3.5 mr-1" /> Cancel</Button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    {tab.content ? (
+                        <DragDropContext onDragEnd={reorderTabs}>
+                          <Droppable droppableId="college-tabs">
+                            {(droppableProvided) => (
+                              <div
+                                ref={droppableProvided.innerRef}
+                                {...droppableProvided.droppableProps}
+                                className="space-y-4"
+                              >
+                                {tabs.map((tab, index) => (
+                                  <Draggable key={tab.id} draggableId={tab.id} index={index}>
+                                    {(draggableProvided, snapshot) => (
                                       <div
-                                        className="prose prose-sm max-w-none text-muted-foreground line-clamp-4"
-                                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(tab.content) }}
-                                      />
-                                    ) : (
-                                      <p className="text-xs text-muted-foreground italic">No content yet.</p>
+                                        ref={draggableProvided.innerRef}
+                                        {...draggableProvided.draggableProps}
+                                        className={`bg-card rounded-lg border p-4 transition-shadow ${
+                                          snapshot.isDragging
+                                            ? "border-primary shadow-md"
+                                            : "border-border"
+                                        }`}
+                                      >
+                                        <div className="flex items-center justify-between mb-2">
+                                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <button
+                                              type="button"
+                                              {...draggableProvided.dragHandleProps}
+                                              className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+                                              aria-label={`Reorder ${tab.title}`}
+                                            >
+                                              <GripVertical className="h-4 w-4" />
+                                            </button>
+                                            <h4 className="font-semibold text-sm truncate">{tab.title}</h4>
+                                            <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full capitalize">
+                                              {tab.content_type.replace("_", " ")}
+                                            </span>
+                                            {!tab.is_visible && <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Hidden</span>}
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <button onClick={() => toggleTabVisibility(tab)} className="text-muted-foreground hover:text-foreground" title={tab.is_visible ? "Hide tab" : "Show tab"}>
+                                              {tab.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                            </button>
+                                            <button onClick={() => deleteTab(tab.id)} className="text-muted-foreground hover:text-destructive" title="Delete tab">
+                                              <Trash2 className="h-4 w-4" />
+                                            </button>
+                                          </div>
+                                        </div>
+
+                                        {tab.content_type === "bookings" ? (
+                                          <div className="space-y-2">
+                                            <p className="text-xs text-muted-foreground">
+                                              Coaches can book trainer sessions from this tab. Manage available slots, categories, and reservations below.
+                                            </p>
+                                            <a
+                                              href={`/admin/college-hub/bookings?context=${encodeURIComponent(tab.content || `college-hub:${expandedId}`)}&label=${encodeURIComponent(tab.title)}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                                            >
+                                              <Settings className="h-3.5 w-3.5" /> Manage Booking Slots
+                                            </a>
+                                          </div>
+                                        ) : tab.content_type === "file" ? (
+                                          <div className="space-y-2">
+                                            {tab.file_url && (
+                                              <a href={tab.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                                                <FileText className="h-3.5 w-3.5" /> View uploaded file
+                                              </a>
+                                            )}
+                                            <Input
+                                              type="file"
+                                              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                                              onChange={e => { if (e.target.files?.[0]) handleFileUpload(tab.id, e.target.files[0]); }}
+                                              className="text-sm"
+                                            />
+                                          </div>
+                                        ) : (
+                                          <div>
+                                            {editingTab === tab.id ? (
+                                              <div className="space-y-2">
+                                                <RichTextEditor
+                                                  value={editTabContent}
+                                                  onChange={(html) => setEditTabContent(html)}
+                                                  placeholder="Enter content..."
+                                                  onImageUpload={async (file) => {
+                                                    const ext = file.name.split(".").pop() || "png";
+                                                    const path = `college/${expandedId}/tab-${tab.id}-${Date.now()}.${ext}`;
+                                                    const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+                                                    if (upErr) {
+                                                      toast({ title: "Image upload failed", description: upErr.message, variant: "destructive" });
+                                                      throw upErr;
+                                                    }
+                                                    const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+                                                    return publicUrl;
+                                                  }}
+                                                />
+                                                <div className="flex gap-2">
+                                                  <Button size="sm" onClick={() => saveTabContent(tab.id)}><Save className="h-3.5 w-3.5 mr-1" /> Save</Button>
+                                                  <Button size="sm" variant="outline" onClick={() => setEditingTab(null)}><X className="h-3.5 w-3.5 mr-1" /> Cancel</Button>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div>
+                                                {tab.content ? (
+                                                  <div
+                                                    className="prose prose-sm max-w-none text-muted-foreground line-clamp-4"
+                                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(tab.content) }}
+                                                  />
+                                                ) : (
+                                                  <p className="text-xs text-muted-foreground italic">No content yet.</p>
+                                                )}
+                                                <Button size="sm" variant="outline" className="mt-2" onClick={() => { setEditingTab(tab.id); setEditTabContent(tab.content || ""); }}>
+                                                  Edit Content
+                                                </Button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
                                     )}
-                                    <Button size="sm" variant="outline" className="mt-2" onClick={() => { setEditingTab(tab.id); setEditTabContent(tab.content || ""); }}>
-                                      Edit Content
-                                    </Button>
-                                  </div>
-                                )}
+                                  </Draggable>
+                                ))}
+                                {droppableProvided.placeholder}
                               </div>
                             )}
-                          </div>
-                        ))}
+                          </Droppable>
+                        </DragDropContext>
 
                         {/* Add New Tab */}
                         <div className="bg-card rounded-lg border border-dashed border-border p-4">

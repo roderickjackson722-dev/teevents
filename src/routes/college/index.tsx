@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { getCollegeHubList } from "@/lib/serverMeta";
+import { getCollegeHubList, type CollegeHubItem } from "@/lib/serverMeta";
 
 const SITE = "https://www.teevents.golf";
 const TITLE = "College Golf Tournaments Hub";

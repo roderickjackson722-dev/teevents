@@ -114,11 +114,28 @@ Deno.serve(async (req) => {
     steps.push({ step: "dns_already_correct", host: SHARE_HOST });
   }
 
-  // 3. Ensure the worker route for the share host
+  // 2b. Diagnostics: are the apex/www records inside this zone and proxied?
+  const mainDns = await cf(token, `/zones/${zoneId}/dns_records?per_page=100`);
+  steps.push({
+    step: "dns_inventory",
+    records: (mainDns.json?.result || [])
+      .filter((r: { name: string }) => r.name === ZONE_NAME || r.name === `www.${ZONE_NAME}`)
+      .map((r: { name: string; type: string; content: string; proxied: boolean }) => ({
+        name: r.name, type: r.type, content: r.content, proxied: r.proxied,
+      })),
+  });
+
+  // 3. Ensure worker routes: the share host plus crawler interception on the
+  // public page paths of the main site (the worker passes real visitors through).
   const routes = await cf(token, `/zones/${zoneId}/workers/routes`);
   const existing = routes.json?.result || [];
-  for (const host of [SHARE_HOST]) {
-    const pattern = `${host}/*`;
+  const patterns = [`${SHARE_HOST}/*`];
+  for (const host of [ZONE_NAME, `www.${ZONE_NAME}`]) {
+    for (const p of ["college", "t", "tournament", "live", "league"]) {
+      patterns.push(`${host}/${p}/*`);
+    }
+  }
+  for (const pattern of patterns) {
     const dup = existing.find((r: { pattern: string; id: string; script: string }) => r.pattern === pattern);
     if (dup) {
       if (dup.script !== SCRIPT_NAME) {
@@ -138,6 +155,7 @@ Deno.serve(async (req) => {
       steps.push({ step: "route_create", pattern, status: rr.status, success: rr.json?.success, errors: rr.json?.errors });
     }
   }
+
 
   return new Response(JSON.stringify({ ok: true, steps }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },

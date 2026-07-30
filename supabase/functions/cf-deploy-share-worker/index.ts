@@ -131,6 +131,30 @@ Deno.serve(async (req) => {
       })),
   });
 
+  // 2c. Worker routes only fire on proxied hostnames. `?proxy_main=1` turns the
+  // orange cloud on for the apex + www A records; `?proxy_main=0` turns it off
+  // again (rollback) if Lovable hosting misbehaves behind the proxy.
+  const proxyParam = new URL(req.url).searchParams.get("proxy_main");
+  if (proxyParam === "1" || proxyParam === "0") {
+    const want = proxyParam === "1";
+    for (const r of (mainDns.json?.result || []) as Array<{
+      id: string; name: string; type: string; proxied: boolean;
+    }>) {
+      if (r.type !== "A" && r.type !== "AAAA" && r.type !== "CNAME") continue;
+      if (r.name !== ZONE_NAME && r.name !== `www.${ZONE_NAME}`) continue;
+      if (r.proxied === want) {
+        steps.push({ step: "main_proxy_noop", host: r.name, proxied: r.proxied });
+        continue;
+      }
+      const pr = await cf(token, `/zones/${zoneId}/dns_records/${r.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ proxied: want }),
+      });
+      steps.push({ step: "main_proxy_set", host: r.name, proxied: want, status: pr.status, errors: pr.json?.errors });
+    }
+  }
+
+
   // 3. Ensure worker routes: the share host plus crawler interception on the
   // public page paths of the main site (the worker passes real visitors through).
   const routes = await cf(token, `/zones/${zoneId}/workers/routes`);

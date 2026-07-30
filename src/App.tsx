@@ -189,7 +189,6 @@ import SampleTournamentDashboard from "./pages/sample/SampleTournamentDashboard"
 import EventDaySales from "./pages/dashboard/EventDaySales";
 import StressTest from "./pages/dashboard/StressTest";
 import { installSampleSafeClient } from "./lib/sampleSafeClient";
-import "./index.css";
 
 const queryClient = new QueryClient();
 

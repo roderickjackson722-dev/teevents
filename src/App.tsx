@@ -188,8 +188,12 @@ import SampleLive from "./pages/sample/SampleLive";
 import SampleTournamentDashboard from "./pages/sample/SampleTournamentDashboard";
 import EventDaySales from "./pages/dashboard/EventDaySales";
 import StressTest from "./pages/dashboard/StressTest";
+import { installSampleSafeClient } from "./lib/sampleSafeClient";
+import "./index.css";
 
 const queryClient = new QueryClient();
+
+if (typeof window !== "undefined") installSampleSafeClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

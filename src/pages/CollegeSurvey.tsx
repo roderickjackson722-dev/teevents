@@ -106,6 +106,20 @@ export default function CollegeSurvey() {
                     <option value="">Select…</option>
                     {(q.options || []).map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
+                ) : q.question_type === "radio" ? (
+                  <div className="space-y-1">
+                    {(q.options || []).map((opt) => (
+                      <label key={opt} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="radio"
+                          name={q.id}
+                          checked={answers[q.id] === opt}
+                          onChange={() => setAns(q.id, opt)}
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
                 ) : q.question_type === "checkbox" ? (
                   <div className="space-y-1">
                     {(q.options || []).map((opt) => {

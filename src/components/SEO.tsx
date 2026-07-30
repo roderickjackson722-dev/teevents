@@ -41,13 +41,15 @@ const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noInde
     setMeta("property", "og:title", fullTitle);
     setMeta("property", "og:description", description);
     setMeta("property", "og:url", url);
-    setMeta("property", "og:image", ogImage);
+    setMeta("property", "og:image", image);
+    setMeta("property", "og:image:secure_url", image);
+    setMeta("property", "og:image:alt", fullTitle);
     setMeta("property", "og:type", "website");
     setMeta("property", "og:site_name", SITE_NAME);
     setMeta("name", "twitter:card", "summary_large_image");
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", description);
-    setMeta("name", "twitter:image", ogImage);
+    setMeta("name", "twitter:image", image);
 
     if (noIndex) {
       setMeta("name", "robots", "noindex, nofollow");
@@ -56,14 +58,18 @@ const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noInde
       if (robotsMeta) robotsMeta.remove();
     }
 
-    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    // Keep exactly one canonical, pointing at this page (not the homepage).
+    const links = Array.from(document.head.querySelectorAll('link[rel="canonical"]')) as HTMLLinkElement[];
+    let link = links[0] || null;
+    links.slice(1).forEach((l) => l.remove());
     if (!link) {
       link = document.createElement("link");
       link.setAttribute("rel", "canonical");
       document.head.appendChild(link);
     }
     link.setAttribute("href", url);
-  }, [fullTitle, description, url, ogImage, noIndex]);
+  }, [fullTitle, description, url, image, noIndex]);
+
 
   return null;
 };

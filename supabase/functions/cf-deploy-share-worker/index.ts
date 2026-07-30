@@ -161,16 +161,21 @@ Deno.serve(async (req) => {
   }
 
 
-  // 3. Ensure worker routes: the share host plus crawler interception on the
-  // public page paths of the main site (the worker passes real visitors through).
+  // 3. Ensure the worker route for the share host. Routes on the apex/www host
+  // are NOT possible: teevents.golf + www are registered as Cloudflare-for-SaaS
+  // custom hostnames by Lovable hosting, which takes precedence over this zone,
+  // so a worker route there never executes (verified). Any stale main-domain
+  // routes are removed below.
   const routes = await cf(token, `/zones/${zoneId}/workers/routes`);
   const existing = routes.json?.result || [];
   const patterns = [`${SHARE_HOST}/*`];
-  for (const host of [ZONE_NAME, `www.${ZONE_NAME}`]) {
-    for (const p of ["college", "t", "tournament", "live", "league"]) {
-      patterns.push(`${host}/${p}/*`);
+  for (const r of existing as Array<{ id: string; pattern: string; script: string }>) {
+    if (r.script === SCRIPT_NAME && !patterns.includes(r.pattern)) {
+      const del = await cf(token, `/zones/${zoneId}/workers/routes/${r.id}`, { method: "DELETE" });
+      steps.push({ step: "route_delete", pattern: r.pattern, status: del.status });
     }
   }
+
   for (const pattern of patterns) {
     const dup = existing.find((r: { pattern: string; id: string; script: string }) => r.pattern === pattern);
     if (dup) {

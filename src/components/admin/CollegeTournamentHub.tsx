@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sharePreviewUrl } from "@/lib/shareLinks";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1076,6 +1078,28 @@ const CollegeTournamentHub = () => {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-2">Edit the slug via "Edit" button above. The slug is auto-generated on creation but can be customized.</p>
+                          {(t as any).slug && (
+                            <div className="mt-3 rounded-md border border-primary/30 bg-primary/5 p-3">
+                              <p className="text-xs font-medium text-foreground">Text / Social Preview Link</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Share this in texts, Facebook, LinkedIn or Slack so the preview shows this
+                                tournament's title and image instead of the TeeVents description.
+                              </p>
+                              <code className="mt-2 block text-xs break-all bg-muted px-2 py-1 rounded">{sharePreviewUrl(`/college/${(t as any).slug}`)}</code>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="mt-2"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(sharePreviewUrl(`/college/${(t as any).slug}`));
+                                  toast({ title: "Preview link copied" });
+                                }}
+                              >
+                                Copy Preview Link
+                              </Button>
+                            </div>
+                          )}
+
                         </div>
 
                         {/* Hero Image */}

@@ -26,7 +26,7 @@ async function query(table: string, params: URLSearchParams) {
 export async function getCollegeMeta(slug: string): Promise<PageMeta> {
   const row = await query("college_tournaments", new URLSearchParams({ select: "title,description,hero_tagline,hero_image_url,flyer_url", slug: `eq.${slug}`, status: "eq.active", limit: "1" }));
   const title = plain(row?.title) || "College Golf Tournament";
-  return { title: `${title} | TeeVents College Golf`, description: plain(row?.hero_tagline) || plain(row?.description) || `${title} — college golf tournament details, schedule and registration.`, image: absolute(row?.hero_image_url || row?.flyer_url), url: `${SITE}/college/${slug}` };
+  return { title: `${title} | TeeVents College Golf`, description: clamp(plain(row?.hero_tagline) || plain(row?.description) || `${title} — college golf tournament details, schedule and registration.`), image: absolute(row?.hero_image_url || row?.flyer_url), url: `${SITE}/college/${slug}` };
 }
 
 export interface CollegeHubItem { slug: string; title: string; tagline: string }

@@ -28,7 +28,7 @@ type Question = {
   id: string;
   survey_id: string;
   question_text: string;
-  question_type: "text" | "textarea" | "dropdown" | "checkbox";
+  question_type: "text" | "textarea" | "dropdown" | "checkbox" | "radio";
   display_order: number;
   is_required: boolean;
   options: string[] | null;

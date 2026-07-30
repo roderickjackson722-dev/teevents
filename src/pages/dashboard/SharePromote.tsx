@@ -259,10 +259,12 @@ const SharePromote = () => {
                 {[
                   { label: "Registration Page", url: registrationUrl, ref: "" },
                   { label: "QR Code Link", url: `${registrationUrl}?ref=qr`, ref: "qr" },
-                  { label: "Facebook Link", url: `${registrationUrl}?ref=facebook`, ref: "facebook" },
-                  { label: "LinkedIn Link", url: `${registrationUrl}?ref=linkedin`, ref: "linkedin" },
-                  { label: "Email Link", url: `${registrationUrl}?ref=email`, ref: "email" },
+                  { label: "Facebook Link (preview-ready)", url: shareLink("facebook"), ref: "facebook" },
+                  { label: "LinkedIn Link (preview-ready)", url: shareLink("linkedin"), ref: "linkedin" },
+                  { label: "Text Message Link (preview-ready)", url: shareLink("sms"), ref: "sms" },
+                  { label: "Email Link (preview-ready)", url: shareLink("email"), ref: "email" },
                 ].map((link) => (
+
 
                   <div key={link.label} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>

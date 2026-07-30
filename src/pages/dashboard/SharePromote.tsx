@@ -324,9 +324,10 @@ const SharePromote = () => {
               <CardContent>
                 <pre className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg mb-3">
 {`⛳ ${tournament.title} - ${eventDate}
-Register: ${registrationUrl}?ref=sms`}
+Register: ${shareLink("sms")}`}
                 </pre>
-                <Button size="sm" variant="outline" onClick={() => copyToClipboard(`⛳ ${tournament.title} - ${eventDate}\nRegister: ${registrationUrl}?ref=sms`, "Text message")}>
+                <Button size="sm" variant="outline" onClick={() => copyToClipboard(`⛳ ${tournament.title} - ${eventDate}\nRegister: ${shareLink("sms")}`, "Text message")}>
+
                   <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Message
                 </Button>
               </CardContent>

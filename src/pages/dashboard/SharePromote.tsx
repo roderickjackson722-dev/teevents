@@ -131,11 +131,17 @@ const SharePromote = () => {
     ? new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     : "[Date]";
 
+  // Social/messaging captions use the share.teevents.golf link so the preview card
+  // shows this tournament's own title, description and image.
+  const shareBase = tournament?.slug ? `/t/${tournament.slug}` : "";
+  const shareLink = (ref: string) => (shareBase ? sharePreviewUrl(shareBase, ref) : "");
+
   const socialCaptions = {
-    facebook: `⛳ Join us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}!\n\nRegister here: ${registrationUrl}?ref=facebook\n\n#GolfTournament #CharityGolf`,
-    linkedin: `⛳ ${tournament?.title || "[Tournament Name]"} - ${eventDate}\n\nRegister: ${registrationUrl}?ref=linkedin\n\n#GolfTournament`,
-    email: `Hello golfers,\n\nJoin us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}.\n\nRegister here: ${registrationUrl}?ref=email\n\nWe look forward to seeing you!`,
+    facebook: `⛳ Join us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}!\n\nRegister here: ${shareLink("facebook")}\n\n#GolfTournament #CharityGolf`,
+    linkedin: `⛳ ${tournament?.title || "[Tournament Name]"} - ${eventDate}\n\nRegister: ${shareLink("linkedin")}\n\n#GolfTournament`,
+    email: `Hello golfers,\n\nJoin us for ${tournament?.title || "[Tournament Name]"} on ${eventDate} at ${tournament?.course_name || tournament?.location || "[Location]"}.\n\nRegister here: ${shareLink("email")}\n\nWe look forward to seeing you!`,
   };
+
 
   if (loading) {
     return (

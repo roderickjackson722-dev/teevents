@@ -1,0 +1,3 @@
+export function renderErrorPage(): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>This page didn't load</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:15px/1.5 system-ui;background:#fafafa;color:#111;display:grid;place-items:center;min-height:100vh;margin:0}.card{text-align:center;padding:2rem}a,button{padding:.5rem 1rem;border-radius:.375rem;margin:.25rem}</style></head><body><div class="card"><h1>This page didn't load</h1><p>Please refresh or return home.</p><button onclick="location.reload()">Try again</button><a href="/">Go home</a></div></body></html>`;
+}

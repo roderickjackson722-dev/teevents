@@ -49,7 +49,7 @@ export default function DemoPreparation() {
       const { data } = await supabase
         .from("tournaments")
         .select("id, title, is_demo, demo_prospect_platform, demo_prospect_other, demo_prospect_email, demo_prospect_name, demo_notes, demo_prepared, demo_checklist, demo_converted_at, demo_conversion_token, demo_conversion_token_expires_at, demo_conversion_used_at, demo_share_token")
-        .eq("id", id)
+        .eq("id", id || "")
         .maybeSingle();
       const { data: comps } = await supabase
         .from("admin_competitors")
@@ -83,7 +83,7 @@ export default function DemoPreparation() {
         demo_checklist: checklist,
         demo_prepared: true,
       })
-      .eq("id", id);
+      .eq("id", id || "");
     setSaving(false);
     if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return false; }
     if (!silent) toast({ title: "Demo preparation saved" });
@@ -109,7 +109,7 @@ export default function DemoPreparation() {
     await save(true);
     const { data, error } = await supabase.functions.invoke("prepare-demo-conversion", {
       body: {
-        tournament_id: id,
+        tournament_id: id || "",
         prospect_email: prospectEmail,
         prospect_name: prospectName,
         app_base_url: window.location.origin,
@@ -123,7 +123,7 @@ export default function DemoPreparation() {
     setClaimUrl((data as any)?.claimUrl || null);
     toast({ title: "Signup link sent", description: `Emailed ${prospectEmail}` });
     // refresh state
-    const { data: refreshed } = await supabase.from("tournaments").select("demo_converted_at, demo_conversion_token").eq("id", id).maybeSingle();
+    const { data: refreshed } = await supabase.from("tournaments").select("demo_converted_at, demo_conversion_token").eq("id", id || "").maybeSingle();
     if (refreshed) setT({ ...t, ...refreshed });
   }
 
@@ -143,7 +143,7 @@ export default function DemoPreparation() {
     let token = t.demo_share_token;
     if (!token) {
       token = crypto.randomUUID();
-      const { error } = await supabase.from("tournaments").update({ demo_share_token: token }).eq("id", id);
+      const { error } = await supabase.from("tournaments").update({ demo_share_token: token }).eq("id", id || "");
       if (error) { setGeneratingShare(false); toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
       setT({ ...t, demo_share_token: token });
     }
@@ -155,7 +155,7 @@ export default function DemoPreparation() {
 
   async function revokeShareLink() {
     if (!confirm("Revoke the current share link? Anyone with the old link will lose access.")) return;
-    const { error } = await supabase.from("tournaments").update({ demo_share_token: null }).eq("id", id);
+    const { error } = await supabase.from("tournaments").update({ demo_share_token: null }).eq("id", id || "");
     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
     setT({ ...t, demo_share_token: null });
     setShareUrl(null);

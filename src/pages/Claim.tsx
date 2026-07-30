@@ -22,7 +22,7 @@ export default function Claim() {
       if (!token) return;
       const { data } = await supabase.from("demo_tournaments").select("*").eq("conversion_token", token).maybeSingle();
       setDemo(data);
-      if (data?.prospect_email) setForm((f) => ({ ...f, email: data.prospect_email }));
+      if (data?.prospect_email) setForm((f) => ({ ...f, email: data.prospect_email || "" }));
       setLoading(false);
     })();
   }, [token]);

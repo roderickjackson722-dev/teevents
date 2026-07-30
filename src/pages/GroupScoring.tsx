@@ -182,7 +182,7 @@ export default function GroupScoring() {
   const editLocked = isPastHole && tournament && !tournament.live_allow_edit_past_holes;
 
   const performSave = async () => {
-    if (!tournament) return;
+    if (!tournament || !code) return;
     setSaving(true);
     const rows = pendingChanges.map((p) => ({
       registration_id: p.id,

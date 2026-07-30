@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, type CSSProperties } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "@/lib/router-compat";
 import { motion } from "framer-motion";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";

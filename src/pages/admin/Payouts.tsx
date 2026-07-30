@@ -210,7 +210,7 @@ export default function AdminPayouts() {
 
     const paypalRows: PayoutRow[] = (paypal || []).map((p) => ({
       id: p.id,
-      date: p.created_at,
+      date: p.created_at || new Date(0).toISOString(),
       organizer_name: orgMap[p.organization_id] || "Unknown",
       tournament_name: null,
       gross_cents: p.amount_cents,
@@ -292,11 +292,13 @@ export default function AdminPayouts() {
   const saveNote = async () => {
     if (!selectedRow || !newNote.trim()) return;
     setSavingNote(true);
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return;
     const { error } = await supabase.from("payout_notes").insert({
       transaction_id: selectedRow.id,
       source: selectedRow.method.toLowerCase(),
       note: newNote.trim(),
-      created_by: (await supabase.auth.getUser()).data.user?.id,
+      created_by: userId,
     });
     if (error) {
       toast({ title: "Error saving note", description: error.message, variant: "destructive" });

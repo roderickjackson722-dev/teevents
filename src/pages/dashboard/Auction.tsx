@@ -223,7 +223,7 @@ export default function Auction() {
                       <TableCell>{b.bidder_name}</TableCell>
                       <TableCell className="font-bold">${Number(b.amount).toFixed(2)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {new Date(b.created_at).toLocaleString()}
+                        {b.created_at ? new Date(b.created_at).toLocaleString() : "—"}
                       </TableCell>
                     </TableRow>
                   ))}

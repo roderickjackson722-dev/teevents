@@ -26,7 +26,7 @@ export default function ClaimDemo() {
         .eq("demo_conversion_token", token)
         .maybeSingle();
       setT(data);
-      if (data?.demo_prospect_email) setForm((f) => ({ ...f, email: data.demo_prospect_email, orgName: data.demo_prospect_name || "" }));
+      if (data?.demo_prospect_email) setForm((f) => ({ ...f, email: data.demo_prospect_email || "", orgName: data.demo_prospect_name || "" }));
       setLoading(false);
     })();
   }, [token]);

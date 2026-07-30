@@ -751,7 +751,7 @@ export default function Leaderboard() {
                         return (
                           <TableCell key={h} className="p-1 text-center">
                             <ScoreInput
-                              value={val === "" ? "" : Number(val)}
+                              value={Number(val)}
                               par={hp}
                               ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                               onChange={(raw) => updateScore(ps.registration_id, h, raw)}
@@ -865,7 +865,7 @@ export default function Leaderboard() {
                             return (
                               <TableCell key={h} className="p-1 text-center">
                                 <ScoreInput
-                                  value={val === "" ? "" : Number(val)}
+                                  value={Number(val)}
                                   par={hp}
                                   ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                                   onChange={(raw) => updateScore(ps.registration_id, h, raw)}

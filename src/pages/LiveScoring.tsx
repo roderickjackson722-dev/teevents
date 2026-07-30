@@ -129,7 +129,7 @@ export default function LiveScoring() {
       const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
         _tournament_id: tournament.id,
         _scoring_code: code,
-        _email: null,
+        _email: "",
       });
 
       if (gNum) {
@@ -194,7 +194,7 @@ export default function LiveScoring() {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
         _tournament_id: tournament.id,
         _scoring_code: codeInput.trim(),
-        _email: null,
+        _email: "",
       });
       if (!data) { setError("Invalid scoring code."); return; }
       setScoringCode(codeInput.trim().toUpperCase());
@@ -202,7 +202,7 @@ export default function LiveScoring() {
     } else if (emailInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
         _tournament_id: tournament.id,
-        _scoring_code: null,
+        _scoring_code: "",
         _email: emailInput.trim(),
       });
       if (!data) { setError("Player not found or not assigned to a hole."); return; }

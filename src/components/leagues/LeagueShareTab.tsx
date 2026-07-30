@@ -10,7 +10,10 @@ import { toast } from "@/hooks/use-toast";
 import { Copy, Download, Mail, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
 
 export default function LeagueShareTab({ league }: { league: any }) {
-  const url = `${window.location.origin}/league/${league.league_slug}`;
+  const path = `/league/${league.league_slug}`;
+  // share.teevents.golf renders this league's own title/description/logo for
+  // iMessage, Facebook, LinkedIn etc., then forwards visitors to the real page.
+  const url = sharePreviewUrl(path);
   const [emails, setEmails] = useState("");
   const [sending, setSending] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
@@ -29,13 +32,8 @@ export default function LeagueShareTab({ league }: { league: any }) {
     link.click();
   };
 
-  const shareLinks = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Join ${league.league_name}!`)}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-    email: `mailto:?subject=${encodeURIComponent(`Join ${league.league_name}`)}&body=${encodeURIComponent(`Check out our league: ${url}`)}`,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(`Join ${league.league_name}: ${url}`)}`,
-  };
+  const shareLinks = socialShareLinks(path, `Join ${league.league_name}`);
+
 
   const sendInvites = async () => {
     const list = emails.split(/[,;\s]+/).map((s) => s.trim()).filter((s) => /@/.test(s));

@@ -93,7 +93,13 @@ export default function PublicLeague() {
 
   return (
     <div className="min-h-screen bg-background" style={{ ["--league-primary" as any]: primary, ["--league-accent" as any]: accent }}>
-      <SEO title={`${league.league_name} — Golf League`} description={league.description || league.tagline || `${league.league_name} standings, schedule and results.`} />
+      <SEO
+        title={`${league.league_name} — Golf League`}
+        description={(league.description || league.tagline || `${league.league_name} standings, schedule and results.`).replace(/<[^>]+>/g, "").slice(0, 160)}
+        path={`/league/${league.league_slug || slug}`}
+        ogImage={league.logo_url || undefined}
+      />
+
       <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-border bg-card">
         <p className="text-sm font-semibold truncate">{league.league_name}</p>
         <Button size="sm" className="gap-2" style={{ background: accent, color: primary }} onClick={() => navigate(`/league/${slug}/score`)}>

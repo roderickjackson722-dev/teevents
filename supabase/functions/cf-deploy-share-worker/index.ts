@@ -21,8 +21,14 @@ async function cf(token: string, path: string, init: RequestInit = {}) {
   return { status: res.status, json: await res.json().catch(() => ({})) };
 }
 
-const CRAWLER_RE =
-  "/(facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|slack-imgproxy|discordbot|whatsapp|telegrambot|skypeuripreview|pinterest|redditbot|embedly|quora link preview|vkshare|applebot|imessagebot|bingbot|googlebot|developers\\\\.google\\\\.com\\\\/\\\\+\\\\/web\\\\/snippet|iframely|nuzzel|outbrain|mastodon|bluesky|opengraph)/i";
+const CRAWLER_WORDS = [
+  "facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","slack-imgproxy",
+  "discordbot","whatsapp","telegrambot","skypeuripreview","pinterest","redditbot","embedly",
+  "quora link preview","vkshare","applebot","imessagebot","bingbot","googlebot","iframely",
+  "nuzzel","outbrain","mastodon","bluesky","opengraph","snippet","preview",
+];
+const CRAWLER_RE = `new RegExp(${JSON.stringify(CRAWLER_WORDS.join("|"))}, "i")`;
+
 
 function workerSource(shareFnUrl: string) {
   return `const CRAWLER = ${CRAWLER_RE};

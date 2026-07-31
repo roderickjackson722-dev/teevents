@@ -46,7 +46,11 @@ export default function LeagueMemberPortal() {
     (async () => {
       const { data: lg } = await (supabase as any).from("golf_leagues").select("*").eq("league_slug", slug).maybeSingle();
       if (!lg) { setLoading(false); return; }
-      const { data: m } = await (supabase as any).from("league_members").select("*").eq("league_id", lg.id).eq("scoring_code", code?.toUpperCase()).maybeSingle();
+      const { data: mRows } = await (supabase as any).rpc("lookup_league_member_by_code", {
+        _league_slug: slug || null,
+        _code: (code || "").toUpperCase(),
+      });
+      const m = Array.isArray(mRows) ? mRows[0] : mRows;
       if (!m) { setLoading(false); return; }
       setLeague(lg); setMember(m);
 
@@ -105,7 +109,11 @@ export default function LeagueMemberPortal() {
     if (lastError) toast({ title: "Some scores failed", description: lastError.message, variant: "destructive" });
     else toast({ title: `Saved ${count} scores · handicap updated` });
     // Refresh member row so the just-recalculated Handicap Index shows up.
-    const { data: fresh } = await (supabase as any).from("league_members").select("*").eq("id", member.id).maybeSingle();
+    const { data: freshRows } = await (supabase as any).rpc("lookup_league_member_by_code", {
+      _league_slug: slug || null,
+      _code: (code || "").toUpperCase(),
+    });
+    const fresh = Array.isArray(freshRows) ? freshRows[0] : freshRows;
     if (fresh) setMember(fresh);
     setSaving(false);
   };

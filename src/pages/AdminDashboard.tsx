@@ -58,6 +58,7 @@ const AdminDashboard = () => {
   })();
   const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
+  const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);

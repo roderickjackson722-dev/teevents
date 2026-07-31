@@ -552,6 +552,9 @@ const Settings = () => {
       {/* Email Notifications */}
       {org && <NotificationSettings orgId={org.orgId} />}
 
+      {/* Email on File */}
+      <AccountEmailCard />
+
       {/* Change Password */}
       <ChangePasswordCard />
 

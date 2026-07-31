@@ -58,9 +58,11 @@ export default function LeagueEventRegister() {
       if (!slug || !code || !eventId) { setLoading(false); return; }
       const { data: lg } = await (supabase as any).from("golf_leagues").select("*").eq("league_slug", slug).maybeSingle();
       if (!lg) { setLoading(false); return; }
-      const { data: m } = await (supabase as any)
-        .from("league_members").select("*")
-        .eq("league_id", lg.id).eq("scoring_code", code.toUpperCase()).maybeSingle();
+      const { data: mRows } = await (supabase as any).rpc("lookup_league_member_by_code", {
+        _league_slug: slug,
+        _code: code.toUpperCase(),
+      });
+      const m = Array.isArray(mRows) ? mRows[0] : mRows;
       if (!m) { setLoading(false); return; }
       const { data: ev } = await (supabase as any).from("league_events").select("*").eq("id", eventId).maybeSingle();
       const { data: reg } = await (supabase as any)

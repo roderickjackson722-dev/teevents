@@ -46,10 +46,11 @@ const ResetPassword = () => {
       const { data: lg } = await (supabase as any)
         .from("golf_leagues").select("id").eq("league_slug", leagueSlug).maybeSingle();
       if (lg) {
-        const { data: member } = await (supabase as any)
-          .from("league_members").select("scoring_code")
-          .eq("league_id", lg.id).ilike("email", userEmail).maybeSingle();
-        code = member?.scoring_code ?? null;
+        const { data: found } = await (supabase as any).rpc("lookup_league_member_code_by_email", {
+          _league_id: lg.id,
+          _email: userEmail,
+        });
+        code = (typeof found === "string" ? found : null);
       }
     }
     navigate(code ? `/league/${leagueSlug}/me/${code}` : `/league/${leagueSlug}/score`);

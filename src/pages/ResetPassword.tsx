@@ -14,6 +14,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isNewSignup = searchParams.get("new") === "1";
@@ -181,7 +182,10 @@ const ResetPassword = () => {
 
           {!ready ? (
             <p className="text-center text-muted-foreground text-sm">
-              Verifying your reset link… If this takes too long, request a new reset from the{" "}
+              {linkError
+                ? `This reset link is no longer valid (${linkError}). `
+                : "Verifying your reset link… If this takes too long, "}
+              request a new reset from the{" "}
               <a
                 href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
                 className="text-primary font-semibold hover:underline"

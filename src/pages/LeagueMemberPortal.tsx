@@ -109,7 +109,11 @@ export default function LeagueMemberPortal() {
     if (lastError) toast({ title: "Some scores failed", description: lastError.message, variant: "destructive" });
     else toast({ title: `Saved ${count} scores · handicap updated` });
     // Refresh member row so the just-recalculated Handicap Index shows up.
-    const { data: fresh } = await (supabase as any).from("league_members").select("*").eq("id", member.id).maybeSingle();
+    const { data: freshRows } = await (supabase as any).rpc("lookup_league_member_by_code", {
+      _league_slug: slug || null,
+      _code: (code || "").toUpperCase(),
+    });
+    const fresh = Array.isArray(freshRows) ? freshRows[0] : freshRows;
     if (fresh) setMember(fresh);
     setSaving(false);
   };

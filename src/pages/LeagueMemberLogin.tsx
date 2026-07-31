@@ -50,13 +50,12 @@ export default function LeagueMemberLogin() {
   // Resolve the signed-in user's member record for this league.
   const resolveSignedInMember = async (userEmail: string) => {
     if (!league) return;
-    const { data } = await (supabase as any)
-      .from("league_members")
-      .select("scoring_code")
-      .eq("league_id", league.id)
-      .ilike("email", userEmail)
-      .maybeSingle();
-    if (!data?.scoring_code) {
+    const { data: found } = await (supabase as any).rpc("lookup_league_member_code_by_email", {
+      _league_id: league.id,
+      _email: userEmail,
+    });
+    const memberCode = typeof found === "string" ? found : null;
+    if (!memberCode) {
       toast({
         title: "No membership found",
         description: `${userEmail} isn't a member of this league yet. Register first.`,
@@ -64,7 +63,7 @@ export default function LeagueMemberLogin() {
       });
       return;
     }
-    goToPortal(data.scoring_code);
+    goToPortal(memberCode);
   };
 
   // If the member returns from Google OAuth already signed in, forward them.
@@ -85,18 +84,17 @@ export default function LeagueMemberLogin() {
       return;
     }
     setLoading(true);
-    const { data } = await (supabase as any)
-      .from("league_members")
-      .select("id, scoring_code")
-      .eq("league_id", league.id)
-      .eq("scoring_code", clean)
-      .maybeSingle();
+    const { data: rows } = await (supabase as any).rpc("lookup_league_member_by_code", {
+      _league_slug: slug || null,
+      _code: clean,
+    });
     setLoading(false);
-    if (!data) {
+    const match = Array.isArray(rows) ? rows[0] : rows;
+    if (!match) {
       toast({ title: "Code not recognized", variant: "destructive" });
       return;
     }
-    goToPortal(clean);
+    goToPortal(match.scoring_code || clean);
   };
 
   const submitEmail = async (e: React.FormEvent) => {

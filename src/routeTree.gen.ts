@@ -16,6 +16,7 @@ import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
+import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 
 const SplatRoute = SplatRouteImport.update({
@@ -54,6 +55,12 @@ const ApiPublicLeagueEventConfirmationRoute =
     path: '/api/public/league-event-confirmation',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicLeagueLoginInstructionsRoute =
+  ApiPublicLeagueLoginInstructionsRouteImport.update({
+    id: '/api/public/league-login-instructions',
+    path: '/api/public/league-login-instructions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   id: '/s/sassurvey/share',
   path: '/s/sassurvey/share',
@@ -68,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
+  '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesByTo {
@@ -78,6 +86,7 @@ export interface FileRoutesByTo {
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
+  '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesById {
@@ -89,6 +98,7 @@ export interface FileRoutesById {
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
+  '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRouteTypes {
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
     | '/tournament/$slug'
     | '/college/'
     | '/api/public/league-event-confirmation'
+    | '/api/public/league-login-instructions'
     | '/s/sassurvey/share'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/tournament/$slug'
     | '/college'
     | '/api/public/league-event-confirmation'
+    | '/api/public/league-login-instructions'
     | '/s/sassurvey/share'
   id:
     | '__root__'
@@ -121,6 +133,7 @@ export interface FileRouteTypes {
     | '/tournament/$slug'
     | '/college/'
     | '/api/public/league-event-confirmation'
+    | '/api/public/league-login-instructions'
     | '/s/sassurvey/share'
   fileRoutesById: FileRoutesById
 }
@@ -132,6 +145,7 @@ export interface RootRouteChildren {
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
+  ApiPublicLeagueLoginInstructionsRoute: typeof ApiPublicLeagueLoginInstructionsRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
 }
 
@@ -186,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeagueEventConfirmationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/league-login-instructions': {
+      id: '/api/public/league-login-instructions'
+      path: '/api/public/league-login-instructions'
+      fullPath: '/api/public/league-login-instructions'
+      preLoaderRoute: typeof ApiPublicLeagueLoginInstructionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/sassurvey/share': {
       id: '/s/sassurvey/share'
       path: '/s/sassurvey/share'
@@ -204,6 +225,7 @@ const rootRouteChildren: RootRouteChildren = {
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
+  ApiPublicLeagueLoginInstructionsRoute: ApiPublicLeagueLoginInstructionsRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
 }
 export const routeTree = rootRouteImport

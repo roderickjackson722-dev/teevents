@@ -156,7 +156,7 @@ export default function LeagueManage() {
           <TabsTrigger value="standings">Leaderboard</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="payouts">Finances &amp; Payouts</TabsTrigger>
+          <TabsTrigger value="payouts">Finances</TabsTrigger>
           <TabsTrigger value="customize">Customize Page</TabsTrigger>
           <TabsTrigger value="public">Public Page</TabsTrigger>
           <TabsTrigger value="share">Share</TabsTrigger>

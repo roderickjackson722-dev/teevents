@@ -98,7 +98,7 @@ async function handle(request: Request) {
   if (body.member_ids?.length) q = q.in("id", body.member_ids);
   const { data: members } = await q;
 
-  const loginUrl = `${SITE}/league/${(league as any).league_slug}/score`;
+  const loginBaseUrl = `${SITE}/league/${(league as any).league_slug}/score`;
   const results: Array<{ email: string; ok: boolean; error?: string }> = [];
 
   for (const m of members ?? []) {

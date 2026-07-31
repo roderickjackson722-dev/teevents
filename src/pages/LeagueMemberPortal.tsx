@@ -71,13 +71,19 @@ export default function LeagueMemberPortal() {
     if (!eventId || !member) { setRegistration(null); setCourse(null); setScores({}); return; }
     (async () => {
       const ev = events.find((e: any) => e.id === eventId);
-      const [{ data: reg }, { data: existing }, courseRes] = await Promise.all([
-        (supabase as any).from("league_event_registrations").select("*").eq("event_id", eventId).eq("member_id", member.id).maybeSingle(),
+      const [{ data: regRows }, { data: existing }, courseRes] = await Promise.all([
+        (supabase as any).rpc("get_member_event_registration", {
+          _league_slug: slug || null,
+          _code: (code || "").toUpperCase(),
+          _event_id: eventId,
+        }),
         (supabase as any).from("league_event_scores").select("hole_number, gross_score").eq("event_id", eventId).eq("member_id", member.id),
         ev?.league_course_id
           ? (supabase as any).from("league_courses").select("*").eq("id", ev.league_course_id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
+      const reg = Array.isArray(regRows) ? regRows[0] : regRows;
+
       setRegistration(reg);
       setCourse(courseRes?.data || null);
       const map: Record<number, string> = {};

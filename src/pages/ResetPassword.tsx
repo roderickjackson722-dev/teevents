@@ -69,21 +69,77 @@ const ResetPassword = () => {
 
 
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event from the magic link
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
+    let cancelled = false;
+
+    // Listen for the PASSWORD_RECOVERY / SIGNED_IN events from the magic link
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
         setReady(true);
       }
     });
 
-    // Also check hash for type=recovery (handles page refresh)
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
-      setReady(true);
-    }
+    (async () => {
+      const url = new URL(window.location.href);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
-    return () => subscription.unsubscribe();
+      const errorDescription = url.searchParams.get("error_description") || hashParams.get("error_description");
+      if (errorDescription) {
+        setLinkError(errorDescription);
+        return;
+      }
+
+      // 1) Implicit flow: tokens arrive in the URL hash (#access_token=...&type=recovery)
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (!cancelled) {
+          if (error) setLinkError(error.message);
+          else setReady(true);
+        }
+        return;
+      }
+
+      // 2) PKCE flow: ?code=...
+      const code = url.searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!cancelled) {
+          if (error) setLinkError(error.message);
+          else setReady(true);
+        }
+        return;
+      }
+
+      // 3) Verify-OTP flow: ?token_hash=...&type=recovery (admin-generated links)
+      const tokenHash = url.searchParams.get("token_hash") || hashParams.get("token_hash");
+      const linkType = url.searchParams.get("type") || hashParams.get("type");
+      if (tokenHash) {
+        const { error } = await supabase.auth.verifyOtp({
+          type: (linkType as "recovery") || "recovery",
+          token_hash: tokenHash,
+        });
+        if (!cancelled) {
+          if (error) setLinkError(error.message);
+          else setReady(true);
+        }
+        return;
+      }
+
+      // 4) Already signed in via an earlier redirect (e.g. page refresh)
+      const { data } = await supabase.auth.getSession();
+      if (!cancelled && data.session) setReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

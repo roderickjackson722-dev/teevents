@@ -115,7 +115,7 @@ const DashboardHome = () => {
     <div>
       <div className="mb-8 bg-secondary/15 border border-secondary/30 rounded-xl p-6">
         <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-          Welcome back{org ? `, ${org.dashboardName || org.orgName}` : ""}
+          Welcome back{explicitTournamentId && latestTournament ? `, ${latestTournament.title}` : org ? `, ${org.dashboardName || org.orgName}` : ""}
         </h1>
         <p className="text-muted-foreground mt-1 text-base">
           Manage your golf tournaments from one place.

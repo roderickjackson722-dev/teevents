@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +13,12 @@ export default function LeagueMemberLogin() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const eventId = params.get("event");
+  const prefillEmail = params.get("email") || "";
   const [league, setLeague] = useState<any>(null);
   const [event, setEvent] = useState<any>(null);
   const [eventError, setEventError] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(prefillEmail);
   const [loading, setLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
 
@@ -66,16 +65,6 @@ export default function LeagueMemberLogin() {
     goToPortal(memberCode);
   };
 
-  // If the member returns from Google OAuth already signed in, forward them.
-  useEffect(() => {
-    if (!league) return;
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      const userEmail = data.user?.email;
-      if (userEmail && params.get("oauth") === "1") await resolveSignedInMember(userEmail);
-    })();
-  }, [league]);
-
   const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = code.trim().toUpperCase();
@@ -105,38 +94,6 @@ export default function LeagueMemberLogin() {
     setEmailLoading(true);
     await resolveSignedInMember(email.trim().toLowerCase());
     setEmailLoading(false);
-  };
-
-  const submitEmailPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password) return toast({ title: "Enter your email and password", variant: "destructive" });
-    setEmailLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setEmailLoading(false);
-    if (error) return toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-    await resolveSignedInMember(email.trim());
-  };
-
-
-  const signInWithGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/league/${slug}/score?oauth=1${eventId ? `&event=${eventId}` : ""}`,
-    });
-    if ((result as any).error) {
-      return toast({ title: "Google sign-in failed", description: (result as any).error.message, variant: "destructive" });
-    }
-    if ((result as any).redirected) return;
-    const { data } = await supabase.auth.getUser();
-    if (data.user?.email) await resolveSignedInMember(data.user.email);
-  };
-
-  const resetPassword = async () => {
-    if (!email.trim()) return toast({ title: "Enter your email first" });
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password?league=${encodeURIComponent(slug || "")}`,
-    });
-    if (error) return toast({ title: "Could not send reset email", description: error.message, variant: "destructive" });
-    toast({ title: "Password reset email sent" });
   };
 
   return (
@@ -194,28 +151,6 @@ export default function LeagueMemberLogin() {
                   Use the email address your league manager has on file — no password required.
                 </p>
 
-                <div className="pt-2 border-t space-y-3">
-                  <p className="text-xs font-medium text-muted-foreground">Have a TeeVents password?</p>
-                  <form onSubmit={submitEmailPassword} className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="lm-pass">Password</Label>
-                      <Input id="lm-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                    <Button type="submit" variant="secondary" className="w-full" disabled={emailLoading}>
-                      {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In with Password"}
-                    </Button>
-                  </form>
-                  <Button variant="link" size="sm" className="px-0" onClick={resetPassword}>Forgot password or code? Reset it here</Button>
-                </div>
-              </div>
-
-
-              {/* Google */}
-              <div className="rounded-md border p-4 space-y-3">
-                <p className="text-sm font-semibold">Login with Google</p>
-                <Button variant="outline" className="w-full" onClick={signInWithGoogle}>
-                  Sign in with Google
-                </Button>
               </div>
 
               <p className="text-xs text-center text-muted-foreground">

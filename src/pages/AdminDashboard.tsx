@@ -22,17 +22,14 @@ import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminFeatureUpdateEmails from "@/components/admin/AdminFeatureUpdateEmails";
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
 import AdminAuditLog from "@/components/admin/AdminAuditLog";
-import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
 import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import AdminFeatureFlags from "@/components/admin/AdminFeatureFlags";
 import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import AdminSetupChecklist from "@/components/admin/AdminSetupChecklist";
-import SampleGenerator from "@/components/admin/SampleGenerator";
 import AdminInvoices from "@/components/admin/AdminInvoices";
 import TournamentInvoices from "@/components/admin/TournamentInvoices";
-import AdminDemoRequests from "@/components/admin/AdminDemoRequests";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -55,10 +52,11 @@ const AdminDashboard = () => {
   const initialTab = (() => {
     const params = new URLSearchParams(location.search);
     const t = params.get("tab");
-    if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
+    if (t === "notification-center") return "notification-center" as const;
+    if (t === "signups") return "signups" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "demo-requests" | "feature-update-emails" | "signups">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
 
   // Prospects state
@@ -890,11 +888,9 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Sales Outreach</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["mockup-outreach", "Sample Mockups (CRM)", Trophy],
                   ["sales-outreach", "Outreach Templates", Mail],
                   ["feature-update-emails", "Feature Update Emails", Mail],
                   ["sales-demo", "Demo / Sales Hub", FileText],
-                  ["demo-requests", "Demo Requests", UserCheck],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -945,7 +941,6 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap gap-2">
                 {([
                   ["reviews", "Reviews", Star],
-                  ["demos", "Demo Events", Trophy],
                   ["promos", "Promo Codes", Tag],
                   ["store", "Store", ShoppingBag],
                   ["analytics", "Analytics", BarChart3],
@@ -2137,8 +2132,6 @@ const AdminDashboard = () => {
          {activeTab === "setup-checklist" && <AdminSetupChecklist />}
          {activeTab === "invoices" && <AdminInvoices />}
          {activeTab === "tournament-invoices" && <TournamentInvoices />}
-          {activeTab === "mockup-outreach" && <SampleGenerator />}
-          {activeTab === "demo-requests" && <AdminDemoRequests />}
         </div>
       </section>
 

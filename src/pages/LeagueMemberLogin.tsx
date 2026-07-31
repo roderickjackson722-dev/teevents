@@ -97,7 +97,17 @@ export default function LeagueMemberLogin() {
     goToPortal(match.scoring_code || clean);
   };
 
-  const submitEmail = async (e: React.FormEvent) => {
+  // Email-only sign in: match the address against the league roster and forward
+  // the member to their portal. No password required.
+  const submitEmailOnly = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !league) return toast({ title: "Enter your email address", variant: "destructive" });
+    setEmailLoading(true);
+    await resolveSignedInMember(email.trim().toLowerCase());
+    setEmailLoading(false);
+  };
+
+  const submitEmailPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password) return toast({ title: "Enter your email and password", variant: "destructive" });
     setEmailLoading(true);
@@ -106,6 +116,7 @@ export default function LeagueMemberLogin() {
     if (error) return toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
     await resolveSignedInMember(email.trim());
   };
+
 
   const signInWithGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
@@ -167,24 +178,37 @@ export default function LeagueMemberLogin() {
                 <p className="text-xs text-center text-muted-foreground">Your code was provided by your league organizer.</p>
               </div>
 
-              {/* Email & password */}
+              {/* Email login (no password needed) */}
               <div className="rounded-md border p-4 space-y-3">
-                <p className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4" /> Email &amp; Password</p>
-                <form onSubmit={submitEmail} className="space-y-3">
+                <p className="text-sm font-semibold flex items-center gap-2"><Mail className="h-4 w-4" /> Email Login</p>
+                <form onSubmit={submitEmailOnly} className="space-y-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="lm-email">Email</Label>
-                    <Input id="lm-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <Input id="lm-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="lm-pass">Password</Label>
-                    <Input id="lm-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" variant="secondary" className="w-full" disabled={emailLoading}>
-                    {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+                  <Button type="submit" className="w-full" disabled={emailLoading}>
+                    {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In with Email"}
                   </Button>
                 </form>
-                <Button variant="link" size="sm" className="px-0" onClick={resetPassword}>Forgot password?</Button>
+                <p className="text-xs text-muted-foreground">
+                  Use the email address your league manager has on file — no password required.
+                </p>
+
+                <div className="pt-2 border-t space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground">Have a TeeVents password?</p>
+                  <form onSubmit={submitEmailPassword} className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="lm-pass">Password</Label>
+                      <Input id="lm-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    </div>
+                    <Button type="submit" variant="secondary" className="w-full" disabled={emailLoading}>
+                      {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In with Password"}
+                    </Button>
+                  </form>
+                  <Button variant="link" size="sm" className="px-0" onClick={resetPassword}>Forgot password or code? Reset it here</Button>
+                </div>
               </div>
+
 
               {/* Google */}
               <div className="rounded-md border p-4 space-y-3">

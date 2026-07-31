@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download, Copy, KeyRound, RefreshCw, Mail } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Users, Upload, Download, Copy, KeyRound, RefreshCw, Mail, Send } from "lucide-react";
 import { useRef } from "react";
 
 interface Member {
@@ -170,6 +170,27 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     toast({ title: `Copied ${m.member_name}'s code` });
   };
 
+  // Emails members how to log in: their email address or their 6-character code.
+  const sendLoginInstructions = async (memberIds?: string[]) => {
+    const targets = memberIds?.length ? memberIds : members.filter((m) => m.email).map((m) => m.id);
+    if (targets.length === 0) return toast({ title: "No members with an email on file", variant: "destructive" });
+    if (!memberIds && !confirm(`Email login instructions to ${targets.length} member(s)?`)) return;
+    setBusyId(memberIds?.[0] ?? "bulk");
+    const { data: sess } = await supabase.auth.getSession();
+    const res = await fetch("/api/public/league-login-instructions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sess.session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ league_id: leagueId, member_ids: targets }),
+    });
+    setBusyId(null);
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) return toast({ title: "Could not send", description: payload?.error || `HTTP ${res.status}`, variant: "destructive" });
+    toast({ title: `Login instructions sent to ${payload.sent} member(s)` });
+  };
+
   const sendPasswordReset = async (m: Member) => {
     if (!m.email) return toast({ title: "This member has no email on file", variant: "destructive" });
     if (!confirm(`Send a password reset email to ${m.email}?`)) return;
@@ -236,6 +257,9 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
           <div className="flex gap-2 flex-wrap">
             <input ref={fileInput} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCsvImport(f); e.target.value = ""; }} />
             <Button variant="outline" size="sm" onClick={assignAllMissing} disabled={members.length === 0}><KeyRound className="h-4 w-4 mr-2" /> Assign Missing Codes</Button>
+            <Button variant="outline" size="sm" onClick={() => sendLoginInstructions()} disabled={members.length === 0 || busyId === "bulk"}>
+              {busyId === "bulk" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />} Email Login Info
+            </Button>
             <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}><Upload className="h-4 w-4 mr-2" /> Import CSV</Button>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={members.length === 0}><Download className="h-4 w-4 mr-2" /> Export</Button>
             <Button onClick={() => setEditing({ ...emptyMember })}>
@@ -297,9 +321,13 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
+                      <Button size="sm" variant="ghost" title="Email login instructions (email or 6-digit code)" disabled={busyId === m.id} onClick={() => sendLoginInstructions([m.id])}>
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
                       <Button size="sm" variant="ghost" title="Send password reset email" disabled={busyId === m.id} onClick={() => sendPasswordReset(m)}>
                         <Mail className="h-3.5 w-3.5" />
                       </Button>
+
                       <Button size="sm" variant="ghost" title="Edit member" onClick={() => setEditing({
                         ...m,
                         handicap_index: m.handicap_index ?? "",

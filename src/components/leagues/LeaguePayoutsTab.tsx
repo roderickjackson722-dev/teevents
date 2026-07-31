@@ -169,8 +169,11 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
       <Card>
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Recent charges</h3>
-          {rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No transactions yet.</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Only completed (paid) charges are shown. Abandoned or unpaid checkouts are excluded.
+          </p>
+          {paid.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No paid transactions yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -188,7 +191,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r) => (
+                  {paid.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="text-xs">{new Date(r.created_at).toLocaleString()}</TableCell>
                       <TableCell className="capitalize">{r.kind}</TableCell>

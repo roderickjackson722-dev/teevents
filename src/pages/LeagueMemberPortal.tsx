@@ -249,28 +249,42 @@ export default function LeagueMemberPortal() {
           );
         })()}
 
-        {/* Registration guard */}
+        {/* Registration guard — the member is already signed in with their code here,
+            so this is about joining the selected event, not logging in. */}
         {eventId && !isRegistered ? (
           <Card className="border-amber-400 bg-amber-50 dark:bg-amber-950/20">
             <CardContent className="pt-6 flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-start gap-3">
                 <Lock className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Registration required</p>
+                  <p className="font-semibold">Membership Required</p>
                   <p className="text-sm text-muted-foreground">
-                    You must be registered for this event before you can view the leaderboard or enter scores.
+                    Join this event to view the leaderboard and enter scores.
                   </p>
                 </div>
               </div>
               <Button asChild>
                 <Link to={`/league/${slug}/register/${code}?event=${eventId}`}>
-                  {feeCents > 0 ? `Register — $${(feeCents/100).toFixed(2)}` : "Register (Free)"}
+                  {feeCents > 0 ? `Join Event — $${(feeCents/100).toFixed(2)}` : "Join Event"}
                 </Link>
               </Button>
             </CardContent>
           </Card>
         ) : eventId && isRegistered ? (
           <>
+            <Card className="border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20">
+              <CardContent className="pt-6">
+                <p className="font-semibold text-emerald-800 dark:text-emerald-300">
+                  ✅ You are registered for this event.
+                </p>
+                <div className="mt-2 space-y-0.5 text-sm text-muted-foreground">
+                  <p>Event: {selectedEvent?.event_name}</p>
+                  <p>Date: {selectedEvent?.event_date}</p>
+                  {registration?.tee_time && <p>Tee Time: {registration.tee_time}</p>}
+                </div>
+              </CardContent>
+            </Card>
+
             {alloc && (
               <Card>
                 <CardContent className="pt-6 space-y-3">

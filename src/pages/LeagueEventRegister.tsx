@@ -106,8 +106,17 @@ export default function LeagueEventRegister() {
     setSubmitting(false);
     if (error) return toast({ title: "Registration failed", description: error.message, variant: "destructive" });
     setRegistration(data);
-    toast({ title: "You're registered!" });
+    // Confirmation email to the player + league managers + TeeVents admin.
+    if (data?.id) {
+      fetch("/api/public/league-event-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ registration_id: data.id }),
+      }).catch(() => {});
+    }
+    toast({ title: "You're registered!", description: "A confirmation email is on its way." });
   };
+
 
   const payAndRegister = async () => {
     setSubmitting(true);

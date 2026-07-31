@@ -2999,6 +2999,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           end_date: string | null
+          event_confirmation_email_config: Json | null
           flight_based_on: string
           flight_method: string
           flights_enabled: boolean
@@ -3033,6 +3034,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          event_confirmation_email_config?: Json | null
           flight_based_on?: string
           flight_method?: string
           flights_enabled?: boolean
@@ -3067,6 +3069,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          event_confirmation_email_config?: Json | null
           flight_based_on?: string
           flight_method?: string
           flights_enabled?: boolean
@@ -3403,6 +3406,7 @@ export type Database = {
       }
       league_event_registrations: {
         Row: {
+          confirmation_email_sent_at: string | null
           created_at: string
           event_id: string
           fee_paid: boolean | null
@@ -3421,6 +3425,7 @@ export type Database = {
           waitlist_position: number | null
         }
         Insert: {
+          confirmation_email_sent_at?: string | null
           created_at?: string
           event_id: string
           fee_paid?: boolean | null
@@ -3439,6 +3444,7 @@ export type Database = {
           waitlist_position?: number | null
         }
         Update: {
+          confirmation_email_sent_at?: string | null
           created_at?: string
           event_id?: string
           fee_paid?: boolean | null

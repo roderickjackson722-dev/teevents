@@ -38,6 +38,7 @@ import OrganizerNotes from "./pages/dashboard/OrganizerNotes";
 import Printables from "./pages/dashboard/Printables";
 import ComingSoon from "./pages/dashboard/ComingSoon";
 import SiteBuilder from "./pages/dashboard/SiteBuilder";
+import PublicPageEditor from "./pages/dashboard/PublicPageEditor";
 import WebpageLayout from "./pages/dashboard/WebpageLayout";
 import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
@@ -225,6 +226,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/select-workspace" element={<SelectWorkspace />} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
+          <Route path="/dashboard/public-page-editor" element={<DashboardLayout><PublicPageEditor /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/webpage-layout" element={<DashboardLayout><WebpageLayout /></DashboardLayout>} />
           <Route path="/dashboard/leagues" element={<DashboardLayout><Leagues /></DashboardLayout>} />

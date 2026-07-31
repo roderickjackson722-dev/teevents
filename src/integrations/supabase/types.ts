@@ -3011,6 +3011,7 @@ export type Database = {
           league_slug: string
           logo_url: string | null
           organization_id: string
+          pass_platform_fee_to_members: boolean
           primary_color: string | null
           publish_status: string
           season_year: number | null
@@ -3046,6 +3047,7 @@ export type Database = {
           league_slug: string
           logo_url?: string | null
           organization_id: string
+          pass_platform_fee_to_members?: boolean
           primary_color?: string | null
           publish_status?: string
           season_year?: number | null
@@ -3081,6 +3083,7 @@ export type Database = {
           league_slug?: string
           logo_url?: string | null
           organization_id?: string
+          pass_platform_fee_to_members?: boolean
           primary_color?: string | null
           publish_status?: string
           season_year?: number | null

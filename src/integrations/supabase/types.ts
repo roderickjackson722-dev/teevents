@@ -10853,6 +10853,33 @@ export type Database = {
         Args: { _email: string; _scoring_code: string; _tournament_id: string }
         Returns: number
       }
+      lookup_league_member_by_code: {
+        Args: { _code: string; _league_slug: string }
+        Returns: {
+          avg_18_score: number
+          avg_9_score: number
+          course_handicap: number
+          email: string
+          handicap_index: number
+          id: string
+          is_active: boolean
+          join_date: string
+          league_id: string
+          member_name: string
+          membership_fee_cents: number
+          membership_fee_paid: boolean
+          membership_status: string
+          phone: string
+          playing_handicap: number
+          profile_image_url: string
+          scoring_code: string
+          shirt_size: string
+        }[]
+      }
+      lookup_league_member_code_by_email: {
+        Args: { _email: string; _league_id: string }
+        Returns: string
+      }
       lookup_player_scoring_code: {
         Args: { _code: string; _tournament_id: string }
         Returns: string

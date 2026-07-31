@@ -114,6 +114,28 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return () => subscription.unsubscribe();
   }, [navigate, searchParams]);
 
+  // When a specific tournament is selected via ?tournament_id=, label the
+  // dashboard with that tournament's name instead of the organization name.
+  const selectedTournamentId = searchParams.get("tournament_id");
+  const [tournamentLabel, setTournamentLabel] = useState<string | null>(null);
+  useEffect(() => {
+    if (!selectedTournamentId) { setTournamentLabel(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("tournaments")
+        .select("title")
+        .eq("id", selectedTournamentId)
+        .maybeSingle();
+      if (!cancelled) setTournamentLabel((data as any)?.title ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [selectedTournamentId]);
+
+  const displayName = tournamentLabel || orgContext?.orgName || "";
+
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-golf-cream">
@@ -128,7 +150,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         {isAdminOverride && (
           <div className="bg-destructive text-destructive-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
             <ShieldCheck className="h-4 w-4 flex-shrink-0" />
-            <span>Admin Mode — Editing <strong>{orgContext?.orgName}</strong>'s dashboard</span>
+            <span>Admin Mode — Editing <strong>{displayName}</strong>'s dashboard</span>
             <Link
               to="/admin"
               className="inline-flex items-center gap-1 bg-destructive-foreground/20 hover:bg-destructive-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
@@ -183,7 +205,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   <div className="flex items-center gap-2">
                     <ArrowLeft className="h-5 w-5 text-foreground" />
                     <span className="text-base md:text-lg font-display font-bold text-foreground">
-                      {orgContext.orgName} Dashboard
+                      {displayName} Dashboard
                     </span>
                   </div>
                 )}

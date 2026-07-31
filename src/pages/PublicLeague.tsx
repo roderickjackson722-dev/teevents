@@ -25,12 +25,19 @@ export default function PublicLeague() {
       if (!lg) { setLoading(false); return; }
       setLeague(lg);
 
-      const [{ data: ev }, { data: st }] = await Promise.all([
+      // Member display names come from a safe lookup (no contact info is exposed publicly).
+      const [{ data: ev }, { data: st }, { data: roster }] = await Promise.all([
         (supabase as any).from("league_events").select("*").eq("league_id", lg.id).order("event_date"),
-        (supabase as any).from("league_standings").select("*, league_members!inner(member_name)").eq("league_id", lg.id).order("points", { ascending: false }).limit(25),
+        (supabase as any).from("league_standings").select("*").eq("league_id", lg.id).order("points", { ascending: false }).limit(25),
+        (supabase as any).rpc("get_public_league_member_names", { _league_id: lg.id }),
       ]);
+      const nameById: Record<string, string> = {};
+      (roster || []).forEach((m: any) => { nameById[m.id] = m.member_name; });
       setEvents(ev || []);
-      setStandings(st || []);
+      setStandings((st || []).map((s: any) => ({
+        ...s,
+        league_members: { member_name: nameById[s.member_id] || "Member" },
+      })));
 
       // Aggregate skins per member (season-wide)
       const eventIds = (ev || []).map((e: any) => e.id);
@@ -56,18 +63,19 @@ export default function PublicLeague() {
       for (const e of completed) {
         const { data: scores } = await (supabase as any)
           .from("league_event_scores")
-          .select("member_id, gross_score, net_score, league_members!inner(member_name)")
+          .select("member_id, gross_score, net_score")
           .eq("event_id", e.id);
         const byMember: Record<string, { name: string; gross: number; net: number }> = {};
         (scores || []).forEach((s: any) => {
           const key = s.member_id;
-          if (!byMember[key]) byMember[key] = { name: s.league_members.member_name, gross: 0, net: 0 };
+          if (!byMember[key]) byMember[key] = { name: nameById[key] || "Member", gross: 0, net: 0 };
           byMember[key].gross += Number(s.gross_score || 0);
           byMember[key].net += Number(s.net_score || s.gross_score || 0);
         });
         const rows = Object.values(byMember).sort((a, b) => a.gross - b.gross).slice(0, 3);
         results.push({ event: e, top: rows });
       }
+
       setPastResults(results);
       setLoading(false);
     })();

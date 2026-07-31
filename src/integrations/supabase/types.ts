@@ -10679,6 +10679,25 @@ export type Database = {
         Args: { _group_number: number; _tournament_id: string }
         Returns: Json
       }
+      get_member_event_registration: {
+        Args: { _code: string; _event_id: string; _league_slug: string }
+        Returns: {
+          created_at: string
+          event_id: string
+          fee_paid: boolean
+          fee_tier_amount_cents: number
+          fee_tier_id: string
+          fee_tier_label: string
+          id: string
+          member_id: string
+          paid_at: string
+          pairing_group: number
+          registration_fee_paid: boolean
+          status: string
+          team_name: string
+          tee_time: string
+        }[]
+      }
       get_player_hub_by_token: {
         Args: { _token: string }
         Returns: {
@@ -10731,6 +10750,14 @@ export type Database = {
           last_name: string
           registration_id: string
           strokes: number
+        }[]
+      }
+      get_public_league_member_names: {
+        Args: { _league_id: string }
+        Returns: {
+          handicap_index: number
+          id: string
+          member_name: string
         }[]
       }
       get_public_raffles: {

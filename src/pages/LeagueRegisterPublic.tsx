@@ -67,7 +67,10 @@ export default function LeagueRegisterPublic() {
   })();
   const passPlatformFee = !!form?.pass_platform_fee_to_player || (league as any)?.pass_platform_fee_to_members !== false;
   const platformFee = passPlatformFee ? Math.round(discounted * PLATFORM_FEE_RATE) : 0;
-  const total = discounted + platformFee;
+  const processingFee = passPlatformFee && discounted > 0
+    ? Math.max(0, Math.round((discounted + platformFee + 30) / (1 - 0.029)) - (discounted + platformFee))
+    : 0;
+  const total = discounted + platformFee + processingFee;
 
   const applyPromo = async () => {
     const code = promoInput.trim().toUpperCase();

@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   requireConnectedAccount,
   PLATFORM_FEE_RATE,
+  computeFees,
   stripeAccountOpts,
   acctQuerySuffix,
   applicationFeeBlock,
@@ -50,9 +51,9 @@ Deno.serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
     const account = await requireConnectedAccount(supabaseAdmin, stripe, league.organization_id, "league-member");
 
-    const feeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
+    const { platformFeeCents: feeCents, combinedFeesCents } = computeFees(amountCents);
     const passFee = (league as any).pass_platform_fee_to_members !== false;
-    const chargeCents = passFee ? amountCents + feeCents : amountCents;
+    const chargeCents = passFee ? amountCents + combinedFeesCents : amountCents;
     const origin = req.headers.get("origin") || "https://teevents.golf";
 
     const { data: payment } = await supabaseAdmin
@@ -82,7 +83,7 @@ Deno.serve(async (req) => {
               product_data: {
                 name: `${league.league_name} — Membership`,
                 description: passFee
-                  ? `Season membership for ${member.member_name} (includes 5% platform fee)`
+                  ? `Season membership for ${member.member_name} (includes 5% platform fee + card processing)`
                   : `Season membership for ${member.member_name}`,
               },
             },

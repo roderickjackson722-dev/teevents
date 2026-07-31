@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
     const { data: league } = await supabaseAdmin
       .from("golf_leagues")
-      .select("id, league_name, organization_id, access_status")
+      .select("id, league_name, organization_id, access_status, pass_platform_fee_to_members")
       .eq("id", event.league_id)
       .single();
     if (!league || league.access_status !== "paid") throw new Error("League is not unlocked");
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
     const account = await requireConnectedAccount(supabaseAdmin, stripe, league.organization_id, "league-event");
     const feeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
-    const passFee = !!(event as any).pass_platform_fee_to_player;
+    const passFee = !!(event as any).pass_platform_fee_to_player || (league as any).pass_platform_fee_to_members !== false;
     const chargeCents = passFee ? amountCents + feeCents : amountCents;
     const origin = req.headers.get("origin") || "https://teevents.golf";
 

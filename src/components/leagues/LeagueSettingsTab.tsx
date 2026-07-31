@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Loader2, Settings, Globe } from "lucide-react";
+import { Trash2, Loader2, Settings, Globe, CreditCard } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeagueForm from "./LeagueForm";
 
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
@@ -23,6 +24,25 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
     is_public: !!league.is_public,
     allow_search: league.allow_search ?? true,
   });
+
+  const [passFee, setPassFee] = useState(league.pass_platform_fee_to_members !== false);
+  const [savingFee, setSavingFee] = useState(false);
+
+  const saveFeeSetting = async (val: boolean) => {
+    setPassFee(val);
+    setSavingFee(true);
+    const { error } = await (supabase as any)
+      .from("golf_leagues")
+      .update({ pass_platform_fee_to_members: val })
+      .eq("id", league.id);
+    setSavingFee(false);
+    if (error) {
+      setPassFee(!val);
+      return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    }
+    toast({ title: val ? "Members will pay the 5% platform fee" : "Your league will absorb the 5% platform fee" });
+    onSaved();
+  };
 
   const saveVisibility = async () => {
     setSavingVis(true);
@@ -74,8 +94,61 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
     navigate("/dashboard/leagues");
   };
 
+  const paymentsCard = (
+    <Card>
+      <CardContent className="pt-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><CreditCard className="h-5 w-5" /> Platform Fee</h2>
+          <p className="text-sm text-muted-foreground">
+            Choose who covers the 5% TeeVents platform fee on every league transaction — memberships,
+            registrations, and event entry fees.
+          </p>
+        </div>
+
+        <div className="flex items-start justify-between gap-4 rounded-md border p-4">
+          <div>
+            <p className="font-medium text-sm">Pass the 5% platform fee to members</p>
+            <p className="text-xs text-muted-foreground">
+              On (recommended): the fee is added as a line item at checkout and your league receives the full
+              amount you set. Off: the fee is deducted from your payout.
+            </p>
+          </div>
+          <Switch checked={passFee} disabled={savingFee} onCheckedChange={saveFeeSetting} />
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4 text-sm">
+          <div className="rounded-md border p-3 space-y-1">
+            <p className="font-medium">Fee passed to member (on)</p>
+            <div className="flex justify-between text-muted-foreground"><span>Event fee</span><span>$50.00</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Platform fee (5%)</span><span>$2.50</span></div>
+            <div className="flex justify-between font-semibold"><span>Member pays</span><span>$52.50</span></div>
+            <div className="flex justify-between text-primary"><span>You receive</span><span>$50.00</span></div>
+          </div>
+          <div className="rounded-md border p-3 space-y-1">
+            <p className="font-medium">League absorbs the fee (off)</p>
+            <div className="flex justify-between text-muted-foreground"><span>Event fee</span><span>$50.00</span></div>
+            <div className="flex justify-between font-semibold"><span>Member pays</span><span>$50.00</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Platform fee (5%)</span><span>−$2.50</span></div>
+            <div className="flex justify-between text-primary"><span>You receive</span><span>$47.50</span></div>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Stripe processing fees are handled separately by your connected Stripe account.
+        </p>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="space-y-4">
+    <Tabs defaultValue="general" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="general">General</TabsTrigger>
+        <TabsTrigger value="payments">Payments</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="payments" className="space-y-4">{paymentsCard}</TabsContent>
+
+      <TabsContent value="general" className="space-y-4">
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
@@ -186,6 +259,7 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
           onSaved={() => { setShowEdit(false); onSaved(); }}
         />
       )}
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }

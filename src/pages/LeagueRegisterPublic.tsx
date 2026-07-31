@@ -38,7 +38,7 @@ export default function LeagueRegisterPublic() {
       try {
         const { data: lg } = await (supabase as any)
           .from("golf_leagues")
-          .select("id, league_name, league_slug, logo_url, tagline, is_public, is_active")
+          .select("id, league_name, league_slug, logo_url, tagline, is_public, is_active, pass_platform_fee_to_members")
           .eq("league_slug", slug)
           .maybeSingle();
         setLeague(lg);
@@ -65,7 +65,8 @@ export default function LeagueRegisterPublic() {
     if (promo.discount_cents) a -= promo.discount_cents;
     return Math.max(0, a);
   })();
-  const platformFee = form?.pass_platform_fee_to_player ? Math.round(discounted * PLATFORM_FEE_RATE) : 0;
+  const passPlatformFee = !!form?.pass_platform_fee_to_player || (league as any)?.pass_platform_fee_to_members !== false;
+  const platformFee = passPlatformFee ? Math.round(discounted * PLATFORM_FEE_RATE) : 0;
   const total = discounted + platformFee;
 
   const applyPromo = async () => {

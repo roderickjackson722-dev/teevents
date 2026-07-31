@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     const { data: league } = await supabaseAdmin
       .from("golf_leagues")
-      .select("id, league_name, organization_id, access_status")
+      .select("id, league_name, organization_id, access_status, pass_platform_fee_to_members")
       .eq("id", member.league_id)
       .single();
     if (!league) throw new Error("League not found");
@@ -51,6 +51,8 @@ Deno.serve(async (req) => {
     const account = await requireConnectedAccount(supabaseAdmin, stripe, league.organization_id, "league-member");
 
     const feeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
+    const passFee = (league as any).pass_platform_fee_to_members !== false;
+    const chargeCents = passFee ? amountCents + feeCents : amountCents;
     const origin = req.headers.get("origin") || "https://teevents.golf";
 
     const { data: payment } = await supabaseAdmin
@@ -76,10 +78,12 @@ Deno.serve(async (req) => {
           {
             price_data: {
               currency: "usd",
-              unit_amount: amountCents,
+              unit_amount: chargeCents,
               product_data: {
                 name: `${league.league_name} — Membership`,
-                description: `Season membership for ${member.member_name}`,
+                description: passFee
+                  ? `Season membership for ${member.member_name} (includes 5% platform fee)`
+                  : `Season membership for ${member.member_name}`,
               },
             },
             quantity: 1,

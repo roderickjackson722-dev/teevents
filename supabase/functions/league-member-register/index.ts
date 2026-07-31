@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
 
     const { data: league } = await supabaseAdmin
       .from("golf_leagues")
-      .select("id, league_name, league_slug, organization_id, access_status, is_active")
+      .select("id, league_name, league_slug, organization_id, access_status, is_active, pass_platform_fee_to_members")
       .eq("league_slug", leagueSlug)
       .maybeSingle();
     if (!league) return json({ error: "League not found" }, 404);
@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
     const account = await requireConnectedAccount(supabaseAdmin, stripe, league.organization_id, "league-registration");
     const feeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
-    const passFee = !!form.pass_platform_fee_to_player;
+    const passFee = !!form.pass_platform_fee_to_player || (league as any).pass_platform_fee_to_members !== false;
     const chargeCents = passFee ? amountCents + feeCents : amountCents;
     const origin = req.headers.get("origin") || "https://teevents.golf";
     const base = returnUrl || `${origin}/league/${league.league_slug}/register`;

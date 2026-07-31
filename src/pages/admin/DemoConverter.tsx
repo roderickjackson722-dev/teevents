@@ -492,7 +492,7 @@ export default function DemoConverter() {
                       <TableCell className="text-right">
                         <div className="flex flex-wrap justify-end gap-1">
                           <Button size="sm" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold" asChild>
-                            <a href={`/dashboard?admin_org=${d.organization_id}`} target="_blank" rel="noreferrer">
+                            <a href={`/dashboard?admin_org=${d.organization_id}&tournament_id=${d.id}`} target="_blank" rel="noreferrer">
                               Open Dashboard <ExternalLink className="h-3 w-3 ml-1" />
                             </a>
                           </Button>

@@ -313,24 +313,30 @@ export type Database = {
           created_at: string
           id: string
           is_read: boolean | null
+          link: string | null
           message: string
           organization_id: string | null
+          title: string | null
           type: string
         }
         Insert: {
           created_at?: string
           id?: string
           is_read?: boolean | null
+          link?: string | null
           message: string
           organization_id?: string | null
+          title?: string | null
           type: string
         }
         Update: {
           created_at?: string
           id?: string
           is_read?: boolean | null
+          link?: string | null
           message?: string
           organization_id?: string | null
+          title?: string | null
           type?: string
         }
         Relationships: [
@@ -10799,6 +10805,16 @@ export type Database = {
       org_has_active_league_subscription: {
         Args: { _org_id: string }
         Returns: boolean
+      }
+      push_admin_notification: {
+        Args: {
+          _link?: string
+          _message: string
+          _org?: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
       }
       recalculate_league_handicaps: {
         Args: { _league_id: string }

@@ -5,7 +5,7 @@ import {
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles
 } from "lucide-react";
-import AdminProspects from "@/components/admin/AdminProspects";
+import AdminNotificationCenter, { useAdminNotificationCount } from "@/components/admin/AdminNotificationCenter";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
 import CollegeTournamentHub from "@/components/admin/CollegeTournamentHub";
 import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
@@ -22,17 +22,14 @@ import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminFeatureUpdateEmails from "@/components/admin/AdminFeatureUpdateEmails";
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
 import AdminAuditLog from "@/components/admin/AdminAuditLog";
-import AdminProspectStats from "@/components/admin/AdminProspectStats";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
 import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import AdminFeatureFlags from "@/components/admin/AdminFeatureFlags";
 import AdminGroupTrips from "@/components/admin/AdminGroupTrips";
 import AdminSetupChecklist from "@/components/admin/AdminSetupChecklist";
-import SampleGenerator from "@/components/admin/SampleGenerator";
 import AdminInvoices from "@/components/admin/AdminInvoices";
 import TournamentInvoices from "@/components/admin/TournamentInvoices";
-import AdminDemoRequests from "@/components/admin/AdminDemoRequests";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import Layout from "@/components/Layout";
@@ -55,11 +52,13 @@ const AdminDashboard = () => {
   const initialTab = (() => {
     const params = new URLSearchParams(location.search);
     const t = params.get("tab");
-    if (t === "mockup-outreach" || location.pathname.includes("prospect-samples")) return "mockup-outreach" as const;
+    if (t === "notification-center") return "notification-center" as const;
+    if (t === "signups") return "signups" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "demos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "mockup-outreach" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "demo-requests" | "feature-update-emails" | "signups">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
+  const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -890,11 +889,9 @@ const AdminDashboard = () => {
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Sales Outreach</div>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ["mockup-outreach", "Sample Mockups (CRM)", Trophy],
                   ["sales-outreach", "Outreach Templates", Mail],
                   ["feature-update-emails", "Feature Update Emails", Mail],
                   ["sales-demo", "Demo / Sales Hub", FileText],
-                  ["demo-requests", "Demo Requests", UserCheck],
                 ] as const).map(([key, label, Icon]) => (
                   <button
                     key={key}
@@ -907,22 +904,10 @@ const AdminDashboard = () => {
                   </button>
                 ))}
                 <button
-                  onClick={() => navigate("/admin/sales/prospecting")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Target className="h-4 w-4" /> Sales Prospecting
-                </button>
-                <button
                   onClick={() => navigate("/admin/outreach")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <Megaphone className="h-4 w-4" /> Outreach Campaigns
-                </button>
-                <button
-                  onClick={() => navigate("/admin/demo-leads")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Users className="h-4 w-4" /> Demo Leads
                 </button>
                 <button
                   onClick={() => navigate("/admin/demo-converter")}
@@ -945,12 +930,12 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap gap-2">
                 {([
                   ["reviews", "Reviews", Star],
-                  ["demos", "Demo Events", Trophy],
                   ["promos", "Promo Codes", Tag],
                   ["store", "Store", ShoppingBag],
                   ["analytics", "Analytics", BarChart3],
                   ["flyer-templates", "Flyer Templates", FileText],
-                  ["notifications", "Notifications", Bell],
+                  ["notification-center", `Notification Center${unreadNotifications ? ` (${unreadNotifications})` : ""}`, Bell],
+                  ["notifications", "Payout & Message Alerts", Bell],
                   ["email-log", "Email Activity Log", Mail],
                   ["audit-log", "Dashboard Audit Log", ClipboardList],
                   ["transactions", "Transactions", DollarSign],
@@ -1608,88 +1593,6 @@ const AdminDashboard = () => {
           {/* Feature Guide PDF Tab */}
           {activeTab === "feature-guide" && <AdminFeatureGuide />}
 
-          {/* Demo Events Tab */}
-          {activeTab === "demos" && (
-            <>
-            <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-5 flex items-center justify-between mb-6">
-              <div>
-                <h3 className="font-display font-semibold text-foreground">Sample Organizer Dashboard</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Pre-built demo login page for live sales demos — fully populated sample event.
-                  <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded font-mono">/sample-organizer</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href="/sample-organizer"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-semibold hover:bg-secondary/90 transition-colors"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" /> Open Demo
-                </a>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="font-display font-bold text-lg mb-4">Create Demo Event</h2>
-                <p className="text-sm text-muted-foreground mb-4">Create a fully-functional demo tournament that you can manage and show to potential customers.</p>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  <Input placeholder="Label (e.g. Sales Demo)" value={newDemoLabel} onChange={e => setNewDemoLabel(e.target.value)} />
-                  <Input placeholder="Tournament Name *" value={newDemoTitle} onChange={e => setNewDemoTitle(e.target.value)} />
-                  <Button onClick={createDemoEvent} disabled={demoCreating}>
-                    {demoCreating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
-                    Create Demo
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {demoEvents.map(demo => (
-                  <div key={demo.id} className="bg-card rounded-lg border border-border p-5 flex items-center justify-between">
-                    <div>
-                      <h3 className="font-display font-semibold">{demo.label}</h3>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {demo.tournaments?.title || "Tournament"}
-                        {demo.tournaments?.slug && (
-                          <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded font-mono">/t/{demo.tournaments.slug}</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {demo.tournaments?.slug && (
-                        <a
-                          href={`/t/${demo.tournaments.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-secondary hover:text-secondary/80 font-medium"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" /> View Site
-                        </a>
-                      )}
-                      <a
-                        href={`/dashboard/tournaments/${demo.tournament_id}/site-builder`}
-                        className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium"
-                      >
-                        <Pencil className="h-3.5 w-3.5" /> Manage
-                      </a>
-                      <button onClick={() => deleteDemoEvent(demo.id)} className="text-muted-foreground hover:text-destructive ml-2">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {demoEvents.length === 0 && (
-                  <div className="text-center py-12 bg-card rounded-lg border border-border">
-                    <Trophy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                    <p className="text-muted-foreground">No demo events yet. Create one above to get started.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            </>
-          )}
 
           {/* All User Tournaments Tab */}
           {activeTab === "all-tournaments" && (
@@ -2117,6 +2020,7 @@ const AdminDashboard = () => {
           {activeTab === "flyer-templates" && <AdminFlyerTemplates />}
 
           {/* Notifications & Requests Tab */}
+          {activeTab === "notification-center" && <AdminNotificationCenter onCountChange={refreshNotificationCount} />}
           {activeTab === "notifications" && <AdminNotifications />}
           {activeTab === "signups" && <AdminSignups />}
 
@@ -2137,8 +2041,6 @@ const AdminDashboard = () => {
          {activeTab === "setup-checklist" && <AdminSetupChecklist />}
          {activeTab === "invoices" && <AdminInvoices />}
          {activeTab === "tournament-invoices" && <TournamentInvoices />}
-          {activeTab === "mockup-outreach" && <SampleGenerator />}
-          {activeTab === "demo-requests" && <AdminDemoRequests />}
         </div>
       </section>
 

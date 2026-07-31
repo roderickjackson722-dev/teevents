@@ -24,7 +24,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isDemoMode } = useDemoMode();
-  const { isSampleMode } = useSampleMode();
+  const { isSampleMode, sampleDaysRemaining } = useSampleMode();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -175,8 +175,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="bg-amber-400 text-amber-950 px-4 py-2.5 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold z-50">
             <Sparkles className="h-4 w-4 flex-shrink-0" />
             <span>
-              SAMPLE MODE — This is a preview of the organizer dashboard. Changes are not saved.
+              🔍 DEMO MODE — This is a preview of the tournament dashboard. You can click through all
+              features, but no changes are saved.
             </span>
+            {sampleDaysRemaining !== null && (
+              <span className="bg-amber-950/15 px-2 py-0.5 rounded-md text-xs uppercase tracking-wider">
+                {sampleDaysRemaining} {sampleDaysRemaining === 1 ? "day" : "days"} remaining
+              </span>
+            )}
+
             <Link
               to="/book"
               className="inline-flex items-center gap-1 bg-amber-950/15 hover:bg-amber-950/25 px-3 py-1 rounded-md text-xs uppercase tracking-wider transition-colors"

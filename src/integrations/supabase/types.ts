@@ -1757,6 +1757,63 @@ export type Database = {
           },
         ]
       }
+      demo_access: {
+        Row: {
+          access_count: number
+          access_token: string
+          created_at: string
+          demo_tournament_id: string | null
+          expires_at: string
+          id: string
+          last_accessed_at: string | null
+          prospect_email: string
+          prospect_name: string | null
+          revoked_at: string | null
+          tournament_id: string | null
+        }
+        Insert: {
+          access_count?: number
+          access_token: string
+          created_at?: string
+          demo_tournament_id?: string | null
+          expires_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          prospect_email: string
+          prospect_name?: string | null
+          revoked_at?: string | null
+          tournament_id?: string | null
+        }
+        Update: {
+          access_count?: number
+          access_token?: string
+          created_at?: string
+          demo_tournament_id?: string | null
+          expires_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          prospect_email?: string
+          prospect_name?: string | null
+          revoked_at?: string | null
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_access_demo_tournament_id_fkey"
+            columns: ["demo_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "demo_tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demo_access_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_agenda: {
         Row: {
           content: string
@@ -2167,6 +2224,7 @@ export type Database = {
           status: string
           tournament_name: string
           updated_at: string
+          view_only: boolean
         }
         Insert: {
           admin_id?: string | null
@@ -2186,6 +2244,7 @@ export type Database = {
           status?: string
           tournament_name: string
           updated_at?: string
+          view_only?: boolean
         }
         Update: {
           admin_id?: string | null
@@ -2205,6 +2264,7 @@ export type Database = {
           status?: string
           tournament_name?: string
           updated_at?: string
+          view_only?: boolean
         }
         Relationships: []
       }

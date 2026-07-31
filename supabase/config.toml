@@ -121,3 +121,6 @@ verify_jwt = false
 
 [functions.submit-college-survey]
 verify_jwt = false
+
+[functions.demo-access-verify]
+verify_jwt = false

@@ -186,6 +186,8 @@ import SampleTournament from "./pages/sample/SampleTournament";
 import SampleDashboardPreview from "./pages/sample/SampleDashboardPreview";
 import SampleLive from "./pages/sample/SampleLive";
 import SampleTournamentDashboard from "./pages/sample/SampleTournamentDashboard";
+import DemoAccess from "./pages/sample/DemoAccess";
+
 import EventDaySales from "./pages/dashboard/EventDaySales";
 import StressTest from "./pages/dashboard/StressTest";
 import { installSampleSafeClient } from "./lib/sampleSafeClient";
@@ -295,6 +297,8 @@ const App = () => (
           <Route path="/score/:slug" element={<ScoreLogin />} />
           <Route path="/score/:slug/:code" element={<GroupScoring />} />
           <Route path="/sample/dashboard/:token" element={<SampleTournamentDashboard />} />
+          <Route path="/sample/access/:token" element={<DemoAccess />} />
+
           <Route path="/sample/:slug" element={<SampleTournament />} />
           <Route path="/sample/:slug/dashboard" element={<SampleDashboardPreview />} />
           <Route path="/sample/:slug/live" element={<SampleLive />} />

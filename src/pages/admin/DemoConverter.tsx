@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw, Save } from "lucide-react";
+import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw, Save, Eye, Ban } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 
@@ -85,6 +85,31 @@ export default function DemoConverter() {
     discount_value: 0,
   });
   const [convSending, setConvSending] = useState(false);
+
+  // Demo access (view-only prospect links)
+  type AccessRow = {
+    id: string;
+    tournament_id: string | null;
+    prospect_email: string;
+    prospect_name: string | null;
+    access_token: string;
+    expires_at: string;
+    last_accessed_at: string | null;
+    access_count: number;
+    revoked_at: string | null;
+    created_at: string;
+  };
+  const [accessRows, setAccessRows] = useState<AccessRow[]>([]);
+  const [accessOpen, setAccessOpen] = useState(false);
+  const [accessTarget, setAccessTarget] = useState<DemoTournamentRow | null>(null);
+  const [accessForm, setAccessForm] = useState({
+    prospect_email: "",
+    prospect_name: "",
+    days: "7",
+    send_email: true,
+  });
+  const [granting, setGranting] = useState(false);
+
 
   // Welcome email settings
   const [welcomeEnabled, setWelcomeEnabled] = useState(true);
@@ -223,7 +248,90 @@ export default function DemoConverter() {
     await loadDemos();
   }
 
+  // ---- Demo access (view-only prospect links) ----
+  async function loadAccess() {
+    const { data } = await supabase
+      .from("demo_access")
+      .select("id, tournament_id, prospect_email, prospect_name, access_token, expires_at, last_accessed_at, access_count, revoked_at, created_at")
+      .order("created_at", { ascending: false });
+    setAccessRows((data as AccessRow[]) || []);
+  }
+
+  function accessLinkFor(a: AccessRow) {
+    return `${window.location.origin}/sample/access/${a.access_token}?email=${encodeURIComponent(a.prospect_email)}`;
+  }
+
+  function openAccess(d: DemoTournamentRow) {
+    setAccessTarget(d);
+    setAccessForm({ prospect_email: "", prospect_name: "", days: "7", send_email: true });
+    setAccessOpen(true);
+    loadAccess();
+  }
+
+  async function grantAccess() {
+    if (!accessTarget) return;
+    if (!accessForm.prospect_email.trim()) {
+      toast({ title: "Prospect email required", variant: "destructive" });
+      return;
+    }
+    setGranting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("demo-access-grant", {
+        body: {
+          tournament_id: accessTarget.id,
+          prospect_email: accessForm.prospect_email.trim(),
+          prospect_name: accessForm.prospect_name.trim() || null,
+          days: Number(accessForm.days) || 7,
+          send_email: accessForm.send_email,
+          origin: window.location.origin,
+        },
+      });
+      if (error || (data as any)?.error) {
+        toast({ title: "Grant failed", description: error?.message || (data as any)?.error, variant: "destructive" });
+        return;
+      }
+      const link = (data as any)?.link as string;
+      if (link) await navigator.clipboard.writeText(link).catch(() => null);
+      toast({
+        title: "Access granted",
+        description: `${(data as any)?.emailed ? "Email sent and link" : "Link"} copied to clipboard.`,
+      });
+      setAccessForm({ prospect_email: "", prospect_name: "", days: "7", send_email: true });
+      await loadAccess();
+    } finally {
+      setGranting(false);
+    }
+  }
+
+  async function revokeAccess(a: AccessRow) {
+    if (!confirm(`Revoke demo access for ${a.prospect_email}?`)) return;
+    const { error } = await supabase
+      .from("demo_access")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("id", a.id);
+    if (error) {
+      toast({ title: "Revoke failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Access revoked" });
+    await loadAccess();
+  }
+
+  async function resendAccess(a: AccessRow) {
+    const demo = demos.find((d) => d.id === a.tournament_id);
+    if (!demo) return;
+    setAccessForm({
+      prospect_email: a.prospect_email,
+      prospect_name: a.prospect_name || "",
+      days: "7",
+      send_email: true,
+    });
+    setAccessTarget(demo);
+    toast({ title: "Ready to resend", description: "Confirm the duration, then click Grant Access to issue a fresh link." });
+  }
+
   function copyLink(d: DemoTournamentRow) {
+
     if (!d.demo_conversion_token) return;
     const url = `${window.location.origin}/claim-demo/${d.demo_conversion_token}`;
     navigator.clipboard.writeText(url);
@@ -499,6 +607,10 @@ export default function DemoConverter() {
                           <Button size="sm" variant="secondary" onClick={() => navigate(`/admin/demo-converter/${d.id}`)}>
                             <Sparkles className="h-3 w-3 mr-1" /> Prepare Demo
                           </Button>
+                          <Button size="sm" variant="secondary" onClick={() => openAccess(d)}>
+                            <Eye className="h-3 w-3 mr-1" /> Manage Access
+
+                          </Button>
                           <Button
                             size="sm"
                             className="bg-[#1a5c38] text-white hover:bg-[#1a5c38]/90"
@@ -715,6 +827,151 @@ export default function DemoConverter() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={accessOpen} onOpenChange={setAccessOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Demo Access — {accessTarget?.title}</DialogTitle>
+            <DialogDescription>
+              Grant a prospect view-only access to this dashboard. No password needed — they enter
+              their email to get in, and nothing they do is saved.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="border rounded-md p-4 space-y-3">
+              <div className="font-semibold">Grant Access</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Prospect Email</Label>
+                  <Input
+                    type="email"
+                    value={accessForm.prospect_email}
+                    onChange={(e) => setAccessForm({ ...accessForm, prospect_email: e.target.value })}
+                    placeholder="prospect@example.com"
+                  />
+                </div>
+                <div>
+                  <Label>Prospect Name</Label>
+                  <Input
+                    value={accessForm.prospect_name}
+                    onChange={(e) => setAccessForm({ ...accessForm, prospect_name: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="max-w-xs">
+                <Label>Access Duration</Label>
+                <Select
+                  value={accessForm.days}
+                  onValueChange={(v) => setAccessForm({ ...accessForm, days: v })}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="14">14 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between border-t pt-3">
+                <div>
+                  <div className="text-sm font-medium">Email the access link to the prospect</div>
+                  <div className="text-xs text-muted-foreground">
+                    The link is always copied to your clipboard so you can send it yourself.
+                  </div>
+                </div>
+                <Switch
+                  checked={accessForm.send_email}
+                  onCheckedChange={(v) => setAccessForm({ ...accessForm, send_email: v })}
+                />
+              </div>
+              <Button
+                onClick={grantAccess}
+                disabled={granting}
+                className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold"
+              >
+                {granting ? "Granting…" : "Grant Access"}
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <div className="font-semibold">Active Access</div>
+              {(() => {
+                const rows = accessRows.filter((a) => a.tournament_id === accessTarget?.id);
+                if (rows.length === 0) {
+                  return <div className="text-sm text-muted-foreground">No access granted yet.</div>;
+                }
+                return (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Expires</TableHead>
+                        <TableHead>Views</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rows.map((a) => {
+                        const expired = new Date(a.expires_at) < new Date();
+                        return (
+                          <TableRow key={a.id}>
+                            <TableCell>{a.prospect_name || "—"}</TableCell>
+                            <TableCell className="text-sm">{a.prospect_email}</TableCell>
+                            <TableCell className="text-xs">
+                              {new Date(a.expires_at).toLocaleDateString()}
+                              {a.revoked_at ? (
+                                <Badge variant="destructive" className="ml-2">Revoked</Badge>
+                              ) : expired ? (
+                                <Badge variant="secondary" className="ml-2">Expired</Badge>
+                              ) : null}
+                            </TableCell>
+                            <TableCell>
+                              {a.access_count}
+                              {a.last_accessed_at && (
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(a.last_accessed_at).toLocaleString()}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(accessLinkFor(a));
+                                    toast({ title: "Link copied" });
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                                {!a.revoked_at && (
+                                  <Button size="sm" variant="outline" onClick={() => revokeAccess(a)}>
+                                    <Ban className="h-3 w-3 mr-1" /> Revoke
+                                  </Button>
+                                )}
+                                <Button size="sm" variant="outline" onClick={() => resendAccess(a)}>
+                                  <RotateCw className="h-3 w-3 mr-1" /> Resend
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                );
+              })()}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAccessOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
       <Dialog open={convOpen} onOpenChange={setConvOpen}>

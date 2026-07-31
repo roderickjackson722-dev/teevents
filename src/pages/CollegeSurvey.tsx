@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,14 +24,20 @@ export default function CollegeSurvey() {
 
   useEffect(() => {
     (async () => {
-      if (!slug) return;
-      const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active, hero_image_url").eq("slug", slug).eq("is_active", true).maybeSingle();
-      if (s) {
-        const { data: qs } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", s.id).order("display_order");
-        setSurvey(s);
-        setQuestions(qs || []);
+      if (!slug) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+      try {
+        const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active, hero_image_url").eq("slug", slug).eq("is_active", true).maybeSingle();
+        if (s) {
+          const { data: qs } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", s.id).order("display_order");
+          setSurvey(s);
+          setQuestions(qs || []);
+        }
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [slug]);
 

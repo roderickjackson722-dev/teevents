@@ -30,6 +30,7 @@ import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
 import { ChangePasswordCard } from "@/components/settings/ChangePasswordCard";
+import { AccountEmailCard } from "@/components/settings/AccountEmailCard";
 
 const REFUND_POLICY_PRESETS: { id: string; label: string; text: string }[] = [
   { id: "no_refunds", label: "No Refunds", text: "No refunds will be issued for this event, except in cases of full event cancellation." },

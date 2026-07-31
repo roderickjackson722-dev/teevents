@@ -115,7 +115,7 @@ async function handle(request: Request) {
         html: buildLoginEmailHtml({
           memberName: (m as any).member_name,
           leagueName: (league as any).league_name,
-          loginUrl,
+          loginUrl: `${loginBaseUrl}?email=${encodeURIComponent(email)}`,
           code: (m as any).scoring_code || null,
           email,
         }),

@@ -114,6 +114,28 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return () => subscription.unsubscribe();
   }, [navigate, searchParams]);
 
+  // When a specific tournament is selected via ?tournament_id=, label the
+  // dashboard with that tournament's name instead of the organization name.
+  const selectedTournamentId = searchParams.get("tournament_id");
+  const [tournamentLabel, setTournamentLabel] = useState<string | null>(null);
+  useEffect(() => {
+    if (!selectedTournamentId) { setTournamentLabel(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("tournaments")
+        .select("title")
+        .eq("id", selectedTournamentId)
+        .maybeSingle();
+      if (!cancelled) setTournamentLabel((data as any)?.title ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [selectedTournamentId]);
+
+  const displayName = tournamentLabel || orgContext?.orgName || "";
+
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-golf-cream">

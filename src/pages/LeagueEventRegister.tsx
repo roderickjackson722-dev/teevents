@@ -85,9 +85,13 @@ export default function LeagueEventRegister() {
     let tries = 0;
     const t = setInterval(async () => {
       tries++;
-      const { data: reg } = await (supabase as any)
-        .from("league_event_registrations").select("*")
-        .eq("event_id", eventId).eq("member_id", member.id).maybeSingle();
+      const { data: regRows } = await (supabase as any).rpc("get_member_event_registration", {
+        _league_slug: slug,
+        _code: (code || "").toUpperCase(),
+        _event_id: eventId,
+      });
+      const reg = Array.isArray(regRows) ? regRows[0] : regRows;
+
       if (reg?.fee_paid) {
         setRegistration(reg);
         await loadPayment(member.id);

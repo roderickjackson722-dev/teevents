@@ -64,21 +64,43 @@ const DashboardHome = () => {
     })();
   }, [searchParams, setSearchParams]);
 
+  const explicitTournamentId = searchParams.get("tournament_id");
+
   useEffect(() => {
     if (!org) return;
-    supabase
-      .from("tournaments")
-      .select("id, slug, title, date, is_pro, setup_checklist_dismissed", { count: "exact" })
-      .eq("organization_id", org.orgId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .then(({ data, count }) => {
-        setTournamentCount(count ?? 0);
-        if (data && data.length > 0) {
-          setLatestTournament(data[0] as Tournament);
+    let cancelled = false;
+    (async () => {
+      // Total count for this organization (unaffected by an explicit selection).
+      const { count } = await supabase
+        .from("tournaments")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", org.orgId);
+      if (!cancelled) setTournamentCount(count ?? 0);
+
+      // If a specific tournament is requested via ?tournament_id=, show THAT one.
+      if (explicitTournamentId) {
+        const { data } = await supabase
+          .from("tournaments")
+          .select("id, slug, title, date, is_pro, setup_checklist_dismissed")
+          .eq("organization_id", org.orgId)
+          .eq("id", explicitTournamentId)
+          .maybeSingle();
+        if (!cancelled && data) {
+          setLatestTournament(data as Tournament);
+          return;
         }
-      });
-  }, [org]);
+      }
+
+      const { data } = await supabase
+        .from("tournaments")
+        .select("id, slug, title, date, is_pro, setup_checklist_dismissed")
+        .eq("organization_id", org.orgId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (!cancelled && data && data.length > 0) setLatestTournament(data[0] as Tournament);
+    })();
+    return () => { cancelled = true; };
+  }, [org, explicitTournamentId]);
 
   useEffect(() => {
     if (!latestTournament?.date) return;

@@ -12,8 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 type Survey = { id: string; title: string; description: string | null; slug: string; is_active: boolean; hero_image_url: string | null };
 type Question = { id: string; question_text: string; question_type: string; display_order: number; is_required: boolean; options: string[] | null };
 
-export default function CollegeSurvey() {
-  const { slug } = useParams<{ slug: string }>();
+export default function CollegeSurvey({ slugOverride }: { slugOverride?: string } = {}) {
+  const { slug: routeSlug } = useParams<{ slug: string }>();
+  const slug = slugOverride ?? routeSlug;
   const { toast } = useToast();
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);

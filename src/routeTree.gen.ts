@@ -15,6 +15,7 @@ import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
+import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -46,6 +47,11 @@ const TournamentSlugRoute = TournamentSlugRouteImport.update({
   path: '/tournament/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
+  id: '/s/sassurvey/share',
+  path: '/s/sassurvey/share',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/t/$slug': typeof TSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/t/$slug': typeof TSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
+  '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/t/$slug': typeof TSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/s/sassurvey/share'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/tournament/$slug'
     | '/college'
+    | '/s/sassurvey/share'
   id:
     | '__root__'
     | '/$'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/s/sassurvey/share'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   TSlugRoute: typeof TSlugRoute
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
+  SSassurveyShareRoute: typeof SSassurveyShareRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TournamentSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/sassurvey/share': {
+      id: '/s/sassurvey/share'
+      path: '/s/sassurvey/share'
+      fullPath: '/s/sassurvey/share'
+      preLoaderRoute: typeof SSassurveyShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   TSlugRoute: TSlugRoute,
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
+  SSassurveyShareRoute: SSassurveyShareRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

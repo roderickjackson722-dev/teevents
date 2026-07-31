@@ -15,6 +15,7 @@ import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
+import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 
 const SplatRoute = SplatRouteImport.update({
@@ -47,6 +48,12 @@ const TournamentSlugRoute = TournamentSlugRouteImport.update({
   path: '/tournament/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLeagueEventConfirmationRoute =
+  ApiPublicLeagueEventConfirmationRouteImport.update({
+    id: '/api/public/league-event-confirmation',
+    path: '/api/public/league-event-confirmation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   id: '/s/sassurvey/share',
   path: '/s/sassurvey/share',
@@ -60,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/t/$slug': typeof TSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +77,7 @@ export interface FileRoutesByTo {
   '/t/$slug': typeof TSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
+  '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesById {
@@ -79,6 +88,7 @@ export interface FileRoutesById {
   '/t/$slug': typeof TSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +100,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/api/public/league-event-confirmation'
     | '/s/sassurvey/share'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +110,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/tournament/$slug'
     | '/college'
+    | '/api/public/league-event-confirmation'
     | '/s/sassurvey/share'
   id:
     | '__root__'
@@ -108,6 +120,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/api/public/league-event-confirmation'
     | '/s/sassurvey/share'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +131,7 @@ export interface RootRouteChildren {
   TSlugRoute: typeof TSlugRoute
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
+  ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
 }
 
@@ -165,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TournamentSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/league-event-confirmation': {
+      id: '/api/public/league-event-confirmation'
+      path: '/api/public/league-event-confirmation'
+      fullPath: '/api/public/league-event-confirmation'
+      preLoaderRoute: typeof ApiPublicLeagueEventConfirmationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/sassurvey/share': {
       id: '/s/sassurvey/share'
       path: '/s/sassurvey/share'
@@ -182,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   TSlugRoute: TSlugRoute,
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
+  ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
 }
 export const routeTree = rootRouteImport

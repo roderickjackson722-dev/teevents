@@ -20,6 +20,7 @@ import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
 import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
 import LeagueRegistrationTab from "@/components/leagues/LeagueRegistrationTab";
+import LeagueRegistrationsTab from "@/components/leagues/LeagueRegistrationsTab";
 import LeagueScoringPayoutsTab from "@/components/leagues/LeagueScoringPayoutsTab";
 
 
@@ -147,6 +148,7 @@ export default function LeagueManage() {
           <TabsTrigger value="members">Players</TabsTrigger>
           <TabsTrigger value="registration">Registration</TabsTrigger>
 
+          <TabsTrigger value="event-registrations">Event Registrations</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
@@ -154,7 +156,7 @@ export default function LeagueManage() {
           <TabsTrigger value="standings">Leaderboard</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="payouts">Payouts</TabsTrigger>
+          <TabsTrigger value="payouts">Finances &amp; Payouts</TabsTrigger>
           <TabsTrigger value="customize">Customize Page</TabsTrigger>
           <TabsTrigger value="public">Public Page</TabsTrigger>
           <TabsTrigger value="share">Share</TabsTrigger>
@@ -166,6 +168,7 @@ export default function LeagueManage() {
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>
         <TabsContent value="registration" className="mt-4"><LeagueRegistrationTab league={league} /></TabsContent>
 
+        <TabsContent value="event-registrations" className="mt-4"><LeagueRegistrationsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="events" className="mt-4"><LeagueEventsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="courses" className="mt-4"><LeagueCoursesTab leagueId={league.id} /></TabsContent>
         <TabsContent value="pairings" className="mt-4"><LeaguePairingsTab leagueId={league.id} /></TabsContent>

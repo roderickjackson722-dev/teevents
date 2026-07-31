@@ -263,70 +263,20 @@ Deno.serve(async (req) => {
           .update({ fee_paid: true })
           .eq("id", regId);
 
-        const { data: pay } = await supabaseAdmin
-          .from("league_payments")
-          .select("amount_cents, payer_email, league:golf_leagues(league_name, league_slug), event:league_events(event_name, event_date), member:league_members(member_name, scoring_code)")
-          .eq("id", paymentId)
-          .maybeSingle();
-        if (pay?.payer_email) {
-          const slug = (pay as any).league?.league_slug;
-          const code = (pay as any).member?.scoring_code;
-          const continueUrl = slug && code
-            ? `https://teevents.golf/league/${slug}/me/${code}?event=${session.metadata!.event_id}`
-            : undefined;
-          await sendConfirmationEmail({
-            to: pay.payer_email,
-            subject: `You're registered — ${(pay as any).event?.event_name || "event"}`,
-            html: confirmationHtml({
-              headline: "Registration Confirmed",
-              leagueName: (pay as any).league?.league_name || "",
-              eventName: (pay as any).event?.event_name,
-              eventDate: (pay as any).event?.event_date,
-              amountCents: pay.amount_cents,
-              reference: pi || String(session.id),
-              memberName: (pay as any).member?.member_name,
-              continueUrl,
-            }),
+        // Player confirmation + league manager + TeeVents admin copy (single
+        // source of truth so the template stays editable in the dashboard).
+        try {
+          const res = await fetch("https://www.teevents.golf/api/public/league-event-confirmation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ registration_id: regId, force: true }),
           });
+          if (!res.ok) console.error("League event confirmation email failed:", res.status, await res.text());
+        } catch (e) {
+          console.error("League event confirmation email error:", (e as Error).message);
         }
 
-        // Manager + platform copy of the event registration transaction
-        try {
-          const { data: ereg } = await supabaseAdmin
-            .from("league_event_registrations")
-            .select("team_name, fee_tier_label, fee_tier_amount_cents, tee_time, status")
-            .eq("id", regId)
-            .maybeSingle();
-          const rows = [
-            ["Member", (pay as any)?.member?.member_name],
-            ["Email", (pay as any)?.payer_email],
-            ["Event", (pay as any)?.event?.event_name],
-            ["Event Date", (pay as any)?.event?.event_date],
-            ["Team Name", ereg?.team_name],
-            ["Fee Option", ereg?.fee_tier_label],
-            ["Tee Time", ereg?.tee_time],
-            ["Status", ereg?.status],
-            ["Amount Paid", `$${(((pay as any)?.amount_cents || 0) / 100).toFixed(2)}`],
-            ["Reference", pi || String(session.id)],
-          ]
-            .filter(([, v]) => v !== null && v !== undefined && v !== "")
-            .map(([l, v]) =>
-              `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;font-weight:600;white-space:nowrap;">${l}</td><td style="padding:6px 0;color:#111827;font-size:14px;">${v}</td></tr>`)
-            .join("");
-          await notifyLeagueManagers({
-            supabaseAdmin,
-            leagueId: session.metadata!.league_id,
-            subject: `✅ New Event Registration — ${(pay as any)?.event?.event_name || "league event"}`,
-            htmlBody: buildNotificationHtml("New Event Registration 🎉", [
-              `A member has paid and registered for <strong>${(pay as any)?.event?.event_name || "your league event"}</strong>.`,
-            ], `<div style="margin:14px 0;padding:14px 16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
-                  <p style="margin:0 0 8px;color:#1a5c38;font-size:14px;font-weight:700;">📝 Full Registration Submission</p>
-                  <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">${rows}</table>
-                </div>`),
-          });
-        } catch (e) {
-          console.error("League event manager notification failed:", (e as Error).message);
-        }
+
 
       }
     }

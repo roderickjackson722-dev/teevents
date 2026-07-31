@@ -117,7 +117,7 @@ function buildManagerHtml(title: string, rows: Array<[string, unknown]>) {
 }
 
 async function sendAndLog(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   apiKey: string,
   payload: { to: string[]; bcc?: string; subject: string; html: string },
   meta: { templateName: string; source: string; organizationId?: string | null },

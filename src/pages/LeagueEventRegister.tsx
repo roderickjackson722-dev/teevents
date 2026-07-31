@@ -65,9 +65,14 @@ export default function LeagueEventRegister() {
       const m = Array.isArray(mRows) ? mRows[0] : mRows;
       if (!m) { setLoading(false); return; }
       const { data: ev } = await (supabase as any).from("league_events").select("*").eq("id", eventId).maybeSingle();
-      const { data: reg } = await (supabase as any)
-        .from("league_event_registrations").select("*")
-        .eq("event_id", eventId).eq("member_id", m.id).maybeSingle();
+      // Own registration is fetched through a code-verified lookup (not public data).
+      const { data: regRows } = await (supabase as any).rpc("get_member_event_registration", {
+        _league_slug: slug,
+        _code: code.toUpperCase(),
+        _event_id: eventId,
+      });
+      const reg = Array.isArray(regRows) ? regRows[0] : regRows;
+
       setLeague(lg); setMember(m); setEvent(ev); setRegistration(reg);
       await loadPayment(m.id);
       setLoading(false);

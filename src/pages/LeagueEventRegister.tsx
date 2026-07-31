@@ -108,13 +108,23 @@ export default function LeagueEventRegister() {
 
   const registerFree = async () => {
     setSubmitting(true);
-    const { data, error } = await (supabase as any)
+    const { error } = await (supabase as any)
       .from("league_event_registrations")
-      .insert({ event_id: eventId, member_id: member.id, status: "registered", registration_fee_paid: true, fee_paid: true, paid_at: new Date().toISOString() })
-      .select().maybeSingle();
+      .insert({ event_id: eventId, member_id: member.id, status: "registered", registration_fee_paid: true, fee_paid: true, paid_at: new Date().toISOString() });
+    if (error) {
+      setSubmitting(false);
+      return toast({ title: "Registration failed", description: error.message, variant: "destructive" });
+    }
+    // Read back through the code-verified lookup instead of a public read.
+    const { data: rows } = await (supabase as any).rpc("get_member_event_registration", {
+      _league_slug: slug,
+      _code: (code || "").toUpperCase(),
+      _event_id: eventId,
+    });
+    const data = Array.isArray(rows) ? rows[0] : rows;
     setSubmitting(false);
-    if (error) return toast({ title: "Registration failed", description: error.message, variant: "destructive" });
     setRegistration(data);
+
     // Confirmation email to the player + league managers + TeeVents admin.
     if (data?.id) {
       fetch("/api/public/league-event-confirmation", {

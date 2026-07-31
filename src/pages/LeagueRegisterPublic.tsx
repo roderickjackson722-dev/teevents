@@ -196,7 +196,12 @@ export default function LeagueRegisterPublic() {
                   )}
                   {platformFee > 0 && (
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>Processing fee</span><span>{formatCents(platformFee)}</span>
+                      <span>Platform fee (5%)</span><span>{formatCents(platformFee)}</span>
+                    </div>
+                  )}
+                  {processingFee > 0 && (
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Card processing fee</span><span>{formatCents(processingFee)}</span>
                     </div>
                   )}
                   {baseCents > 0 && (

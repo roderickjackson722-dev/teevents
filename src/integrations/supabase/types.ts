@@ -349,6 +349,42 @@ export type Database = {
           },
         ]
       }
+      admin_password_resets: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          emailed: boolean
+          expires_at: string
+          id: string
+          reset_token: string
+          target_email: string
+          used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          emailed?: boolean
+          expires_at?: string
+          id?: string
+          reset_token: string
+          target_email: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          emailed?: boolean
+          expires_at?: string
+          id?: string
+          reset_token?: string
+          target_email?: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_payout_overrides: {
         Row: {
           admin_id: string

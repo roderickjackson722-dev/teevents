@@ -189,7 +189,7 @@ const Tournaments = () => {
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">New here? Start with your Setup Checklist.</p>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Begin on the <strong>Tournament Details</strong> page below, then follow the step-by-step
+            Begin on the <strong>Public Page Editor</strong> page below, then follow the step-by-step
             Setup Checklist to launch your tournament. Tasks auto-complete as you save your work.
           </p>
         </div>

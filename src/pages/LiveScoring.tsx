@@ -60,6 +60,11 @@ export default function LiveScoring() {
   const [autoLogging, setAutoLogging] = useState(false);
   const [viewMode, setViewMode] = useState<"all" | "single">("single");
   const [focusHole, setFocusHole] = useState<number>(1);
+  const [teamName, setTeamName] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(true);
+
+  const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
+
 
 
   useEffect(() => {

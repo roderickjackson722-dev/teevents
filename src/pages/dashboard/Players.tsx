@@ -1787,6 +1787,11 @@ const Players = () => {
             </table>
           </div>
         </div>
+        {rosterCols.code !== false && (
+          <p className="text-xs text-muted-foreground">
+            💡 Scoring codes are generated when pairings are assigned — everyone in a group shares the same code.
+          </p>
+        )}
         {registrationGroups.length > 0 && (
           <div className="bg-card rounded-lg border border-border p-4 space-y-4">
             <div className="flex items-center gap-2">

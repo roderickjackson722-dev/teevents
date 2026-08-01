@@ -248,7 +248,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     </span>
                     <span className="hidden sm:inline text-foreground/30">|</span>
                     <Link
-                      to="/dashboard"
+                      to={dashboardHref}
                       title="Click 'Open Dashboard' to access your tournament dashboard."
                       className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
                     >

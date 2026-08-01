@@ -134,6 +134,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const displayName = tournamentLabel || orgContext?.orgName || "";
 
+  // Collapsible sidebar state, persisted in localStorage across sessions.
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("teevents:dashboard-sidebar");
+      if (saved !== null) setSidebarOpen(saved === "true");
+    } catch { /* ignore */ }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("teevents:dashboard-sidebar", String(sidebarOpen));
+    } catch { /* ignore */ }
+  }, [sidebarOpen]);
+
+
 
 
   if (loading) {

@@ -67,7 +67,7 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     subject: "{{event_name}} – Tomorrow is the big day!",
     greeting: "Hello {{first_name}},",
     body_text: "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
-    closing_text: "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
+    closing_text: "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
     button_text: "View Event Homepage",
     show_event_details: false,
   },
@@ -274,6 +274,7 @@ Deno.serve(async (req) => {
               || "Scoring code will be assigned when pairings are finalized",
             group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
+            leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,
           };
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);

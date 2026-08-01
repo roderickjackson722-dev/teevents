@@ -480,10 +480,56 @@ export default function LiveScoring() {
           )}
         </div>
 
-        {viewMode === "single" ? (
+        {viewMode === "single" && isScramble ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Team Score Entry — Hole {groupNumber}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-3">
+              {(() => {
+                const par = courseData?.hole_pars?.[focusHole - 1] ?? Math.round((tournament.course_par || 72) / 18);
+                const val = getTeamScore(focusHole);
+                const display = typeof val === "number" ? val : "";
+                return (
+                  <div className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-base">Hole {focusHole} · Par {par}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {players.map((p) => `${p.first_name} ${p.last_name?.[0] ?? ""}.`).join(", ")}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => adjustTeamScore(focusHole, -1)}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted flex items-center justify-center"
+                        aria-label="Decrease team score"
+                      >
+                        <Minus className="h-5 w-5" />
+                      </button>
+                      <div className="w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl font-bold flex items-center justify-center">
+                        {display === "" ? <span className="text-muted-foreground/60 text-xl">{par}</span> : display}
+                      </div>
+                      <button
+                        onClick={() => adjustTeamScore(focusHole, +1)}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center"
+                        aria-label="Increase team score"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+              <p className="text-xs text-muted-foreground">
+                One score per hole for the whole group — it applies to every player on the team.
+              </p>
+            </CardContent>
+          </Card>
+        ) : viewMode === "single" ? (
           <Card>
             <CardContent className="p-4 space-y-3">
               {players.map((p) => {
+
                 const strokeDots = handicapEnabled ? getStrokesOnHole(p, focusHole - 1) : 0;
                 const val = getScore(p.id, focusHole);
                 const display = typeof val === "number" ? val : "";

@@ -6302,6 +6302,7 @@ export type Database = {
           created_at: string
           group_name: string | null
           id: string
+          team_name: string | null
           tournament_id: string
           updated_at: string
         }
@@ -6309,6 +6310,7 @@ export type Database = {
           created_at?: string
           group_name?: string | null
           id?: string
+          team_name?: string | null
           tournament_id: string
           updated_at?: string
         }
@@ -6316,6 +6318,7 @@ export type Database = {
           created_at?: string
           group_name?: string | null
           id?: string
+          team_name?: string | null
           tournament_id?: string
           updated_at?: string
         }
@@ -8488,6 +8491,7 @@ export type Database = {
           handicap: number | null
           handicap_index: number | null
           id: string
+          is_captain: boolean
           last_name: string
           notes: string | null
           payment_method: string
@@ -8532,6 +8536,7 @@ export type Database = {
           handicap?: number | null
           handicap_index?: number | null
           id?: string
+          is_captain?: boolean
           last_name: string
           notes?: string | null
           payment_method?: string
@@ -8576,6 +8581,7 @@ export type Database = {
           handicap?: number | null
           handicap_index?: number | null
           id?: string
+          is_captain?: boolean
           last_name?: string
           notes?: string | null
           payment_method?: string
@@ -9254,6 +9260,7 @@ export type Database = {
           gallery_url: string | null
           golf_course_id: string | null
           golfers_register_first: boolean
+          group_field_rules: Json | null
           handicap_allowance: number | null
           handicap_enabled: boolean | null
           history: string | null
@@ -9516,6 +9523,7 @@ export type Database = {
           gallery_url?: string | null
           golf_course_id?: string | null
           golfers_register_first?: boolean
+          group_field_rules?: Json | null
           handicap_allowance?: number | null
           handicap_enabled?: boolean | null
           history?: string | null
@@ -9778,6 +9786,7 @@ export type Database = {
           gallery_url?: string | null
           golf_course_id?: string | null
           golfers_register_first?: boolean
+          group_field_rules?: Json | null
           handicap_allowance?: number | null
           handicap_enabled?: boolean | null
           history?: string | null

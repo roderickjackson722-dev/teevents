@@ -2318,7 +2318,7 @@ const Players = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Scoring Code</p>
-                  <p className="text-sm font-mono text-foreground">{viewingPlayer.scoring_code || "—"}</p>
+                  <p className="text-sm font-mono text-foreground">{codeOf(viewingPlayer) || "— Not assigned until pairings are set"}</p>
                 </div>
               </div>
               {viewingPlayer.dietary_restrictions && (

@@ -752,17 +752,9 @@ export default function EmailTemplateEditor() {
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(config, {
-                first_name: "John",
-                last_name: "Doe",
-                event_name: tournaments.find(t => t.id === selectedTournament)?.title || "Sample Tournament",
-                event_date: tournaments.find(t => t.id === selectedTournament)?.date
-                  ? formatTournamentDate(tournaments.find(t => t.id === selectedTournament).date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
-                  : "Saturday, June 15, 2026",
-                event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
-                scoring_code: "ABC123",
-              }, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
+              __html: renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
             }} />
+
           </div>
         </TabsContent>
 

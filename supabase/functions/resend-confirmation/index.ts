@@ -222,6 +222,13 @@ Deno.serve(async (req) => {
     // Fall back to the built-in defaults FOR THE SELECTED TEMPLATE — never to the
     // registration confirmation email — so the sent email always matches the choice.
     const emailConfig = { ...(DEFAULT_CONFIGS[kind] || DEFAULT_CONFIGS.confirmation), ...(stored || {}) };
+    // Older saved templates ended the scoring link with a period and had no leaderboard link.
+    if (typeof emailConfig.closing_text === "string" && emailConfig.closing_text.includes("{{scoring_link}}")) {
+      let ct = emailConfig.closing_text.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
+      if (!ct.includes("{{leaderboard_link}}")) ct += "\n\nView the live leaderboard:\n👉 {{leaderboard_link}}";
+      emailConfig.closing_text = ct;
+    }
+
     const useCustom = use_custom_template !== false;
     const headerText = TEMPLATE_HEADERS[kind] || TEMPLATE_HEADERS.confirmation;
 

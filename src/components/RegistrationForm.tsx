@@ -1087,6 +1087,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {groupRulesActive && (
+          <div>
+            <Label>Team Name <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder="e.g. Team Mulligan"
+              maxLength={100}
+            />
+          </div>
+        )}
 
         {players.map((player, i) => (
           <div key={i}>
@@ -1100,9 +1111,12 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               onRemove={() => removePlayer(i)}
               fields={fields}
               captainLabel={captainLabel}
+              groupRules={groupFieldRules}
+              groupMode={groupRulesActive}
             />
           </div>
         ))}
+
 
         {allowGroup && players.length < maxGroupSize && (
           <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>

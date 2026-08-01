@@ -762,7 +762,7 @@ export default function EmailTemplateEditor() {
                         <p className="text-xs text-muted-foreground truncate">
                           Scoring Code:{" "}
                           <span className="font-mono font-semibold text-foreground">
-                            {r.group_scoring_code || r.scoring_code || "—"}
+                            {r.group_scoring_code || r.scoring_code || "Not assigned yet"}
                           </span>
                           {r.group_number ? <span className="ml-1">(Group {r.group_number})</span> : null}
                         </p>

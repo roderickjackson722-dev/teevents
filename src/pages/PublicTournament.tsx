@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import RegistrationForm from "@/components/RegistrationForm";
+import { parseGroupFieldRules } from "@/lib/groupFieldRules";
+
 import WaitlistSignup from "@/components/WaitlistSignup";
 
 import { toast } from "@/hooks/use-toast";

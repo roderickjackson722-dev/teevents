@@ -827,7 +827,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     about_event: !!(tournament as any).description_html?.replace(/<[^>]*>/g, "").trim() || !!tournament.description,
     registration: !!tournament.registration_open,
     leaderboard: leaderboard.length > 0,
-    sponsors: sponsors.length > 0 || sponsorshipTiers.length > 0,
+    sponsors: ((tournament as any).show_sponsorships ?? true) && (sponsors.length > 0 || sponsorshipTiers.length > 0),
     gallery: photos.length > 0,
     media: mediaClips.length > 0,
     volunteers: volunteerRoles.length > 0,

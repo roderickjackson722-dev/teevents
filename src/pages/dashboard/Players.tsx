@@ -1669,11 +1669,13 @@ const Players = () => {
                           </div>
                         ) : (
                           <button
-                            onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
+                            onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(codeOf(p)); }}
                             className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-                            title="Click to edit scoring code"
+                            title={codeOf(p) ? "Click to edit this group's scoring code" : "Scoring codes are generated when pairings are assigned"}
                           >
-                            {p.scoring_code || "—"}
+                            {codeOf(p)
+                              ? `${codeOf(p)}${p.group_number != null ? ` (Group ${holeLabels[p.group_number] || p.group_number})` : ""}`
+                              : "— Not assigned"}
                             <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
                           </button>
                         )}

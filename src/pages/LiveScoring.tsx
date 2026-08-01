@@ -508,8 +508,8 @@ export default function LiveScoring() {
           {viewMode === "single" && (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setFocusHole((h) => Math.max(1, h - 1))}
-                disabled={focusHole <= 1}
+                onClick={() => goToHole(focusHole - 1)}
+                disabled={focusHole <= 1 || saving}
                 className="h-9 w-9 rounded border bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
                 aria-label="Previous hole"
               >
@@ -519,7 +519,7 @@ export default function LiveScoring() {
                 <span className="text-sm text-muted-foreground">Hole</span>
                 <select
                   value={focusHole}
-                  onChange={(e) => setFocusHole(parseInt(e.target.value))}
+                  onChange={(e) => goToHole(parseInt(e.target.value))}
                   className="h-9 rounded border bg-background px-2 text-sm font-semibold min-w-[64px]"
                 >
                   {holes.map((h) => (
@@ -529,18 +529,18 @@ export default function LiveScoring() {
                 {courseData?.hole_pars?.[focusHole - 1] != null && (
                   <span className="text-xs text-muted-foreground ml-1">
                     · Par {courseData.hole_pars[focusHole - 1]}
-                    {courseStrokeIndexes?.[focusHole - 1] ? ` · SI ${courseStrokeIndexes[focusHole - 1]}` : ""}
                   </span>
                 )}
               </div>
               <button
-                onClick={() => setFocusHole((h) => Math.min(18, h + 1))}
-                disabled={focusHole >= 18}
+                onClick={() => goToHole(focusHole + 1)}
+                disabled={focusHole >= 18 || saving}
                 className="h-9 w-9 rounded border bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center rotate-180"
                 aria-label="Next hole"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
+
             </div>
           )}
         </div>

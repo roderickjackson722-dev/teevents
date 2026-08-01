@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
+import DropdownOptionsEditor from "@/components/dashboard/DropdownOptionsEditor";
 import { useSearchParams } from "react-router-dom";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";

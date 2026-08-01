@@ -1091,7 +1091,14 @@ const Registration = () => {
                 Save Settings
               </Button>
             </motion.div>
+
+            {selectedTournament && (
+              <div className="mt-6">
+                <GroupRegistrationSettings tournamentId={selectedTournament} />
+              </div>
+            )}
           </TabsContent>
+
 
           {/* ── Tiers Tab ── */}
           <TabsContent value="tiers">

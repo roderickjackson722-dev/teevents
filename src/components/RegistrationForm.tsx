@@ -737,6 +737,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         shirt_size: players[i].shirt_size || null,
         dietary_restrictions: players[i].dietary_restrictions || null,
         notes: i === 0 ? groupNotes || null : null,
+        is_captain: allowGroup && players.length > 1 ? i === 0 : false,
+
         referral_code_used: referralCode,
         promoter_id: promoterId,
         flight_id: selectedFlight,

@@ -163,14 +163,35 @@ export default function GroupScoring() {
     return out;
   }, [players]);
 
+  const format = useMemo(() => getFormatById(tournament?.scoring_format || "stroke_play"), [tournament]);
+  const isScramble = format?.scoring === "scramble";
+
+  // Team score already recorded for this hole (all players share the same value in a scramble)
+  const teamScoreForHole = (hole: number) => {
+    for (const p of players) {
+      const v = scores[p.id]?.[hole];
+      if (v != null) return v;
+    }
+    return undefined;
+  };
+
+  const TEAM_KEY = "__team__";
+  const teamDraft = draft[TEAM_KEY];
+  const teamSaved = teamScoreForHole(currentHole);
+  const teamNum = teamDraft != null && teamDraft !== "" ? parseInt(teamDraft, 10) : teamSaved;
+
   const pendingChanges = useMemo(() => {
+    if (isScramble) return [];
     return players.filter((p) => {
       const d = draft[p.id];
       if (d == null || d === "") return false;
       const n = parseInt(d, 10);
       return !isNaN(n) && n !== scores[p.id]?.[currentHole];
     });
-  }, [draft, scores, players, currentHole]);
+  }, [draft, scores, players, currentHole, isScramble]);
+
+  const teamPending = isScramble && teamNum != null && !isNaN(teamNum) && teamNum !== teamSaved;
+  const hasPending = isScramble ? teamPending : pendingChanges.length > 0;
 
   const isPastHole = currentHole < (() => {
     for (let h = 1; h <= NUM_HOLES; h++) {
@@ -184,11 +205,17 @@ export default function GroupScoring() {
   const performSave = async () => {
     if (!tournament || !code) return;
     setSaving(true);
-    const rows = pendingChanges.map((p) => ({
-      registration_id: p.id,
-      hole_number: currentHole,
-      strokes: parseInt(draft[p.id], 10),
-    }));
+    const rows = isScramble
+      ? players.map((p) => ({
+          registration_id: p.id,
+          hole_number: currentHole,
+          strokes: teamNum as number,
+        }))
+      : pendingChanges.map((p) => ({
+          registration_id: p.id,
+          hole_number: currentHole,
+          strokes: parseInt(draft[p.id], 10),
+        }));
     const { error } = await supabase.rpc("save_group_scores", {
       _tournament_id: tournament.id,
       _code: code,
@@ -212,13 +239,14 @@ export default function GroupScoring() {
   };
 
   const handleSave = () => {
-    if (pendingChanges.length === 0) {
+    if (!hasPending) {
       if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
       return;
     }
     if (tournament?.live_require_confirm_save) setConfirmOpen(true);
     else performSave();
   };
+
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (error || !tournament) {

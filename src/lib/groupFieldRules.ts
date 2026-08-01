@@ -10,6 +10,8 @@ export const GROUP_FIELD_KEYS = [
   "handicap",
   "shirt_size",
   "dietary_restrictions",
+  "company",
+  "custom_questions",
 ] as const;
 
 export type GroupFieldKey = (typeof GROUP_FIELD_KEYS)[number];
@@ -21,6 +23,8 @@ export const GROUP_FIELD_LABELS: Record<GroupFieldKey, string> = {
   handicap: "Handicap",
   shirt_size: "Shirt Size",
   dietary_restrictions: "Dietary Needs",
+  company: "Company / Organization",
+  custom_questions: "Custom Questions",
 };
 
 export interface GroupFieldRules {
@@ -38,14 +42,18 @@ export const DEFAULT_GROUP_FIELD_RULES: GroupFieldRules = {
     handicap: "optional",
     shirt_size: "optional",
     dietary_restrictions: "optional",
+    company: "optional",
+    custom_questions: "optional",
   },
   member: {
     full_name: "required",
     email: "hidden",
     phone: "hidden",
     handicap: "optional",
-    shirt_size: "optional",
-    dietary_restrictions: "optional",
+    shirt_size: "hidden",
+    dietary_restrictions: "hidden",
+    company: "hidden",
+    custom_questions: "hidden",
   },
 };
 

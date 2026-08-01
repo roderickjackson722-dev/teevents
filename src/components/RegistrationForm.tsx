@@ -279,7 +279,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
   // When the organizer restricts group sizes (e.g. foursomes only), start at the
   // smallest allowed size so the total reflects the real number of players.
   const initialGroupSize = (() => {
@@ -292,7 +292,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [players, setPlayers] = useState<PlayerForm[]>(() =>
     Array.from({ length: initialGroupSize }, () => emptyPlayer()),
   );
+  const [teamName, setTeamName] = useState("");
   const [groupNotes, setGroupNotes] = useState("");
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);

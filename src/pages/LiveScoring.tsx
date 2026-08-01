@@ -530,11 +530,8 @@ export default function LiveScoring() {
             />
           </div>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <button onClick={() => setLoginMode(true)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-1">
-              <ArrowLeft className="h-3.5 w-3.5" /> Change Hole
-            </button>
             <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
             <p className="text-xs text-muted-foreground">
               {courseData?.name && `${courseData.name} · `}
@@ -542,14 +539,45 @@ export default function LiveScoring() {
               Par {tournament.course_par || 72}
             </p>
           </div>
-          {hasEdits && viewMode === "all" && (
-            <Button onClick={handleSave} disabled={saving} size="sm">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-              Save
-            </Button>
-          )}
-
+          <div className="flex items-center gap-2">
+            {hasEdits && viewMode === "all" && (
+              <Button onClick={handleSave} disabled={saving} size="sm">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+                Save
+              </Button>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="text-xs text-muted-foreground hover:text-foreground underline whitespace-nowrap"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
+
+        {/* Group roster — this group only */}
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold">
+                {teamName ? teamName : `Your Group — Hole ${groupNumber}`}
+                <span className="text-muted-foreground font-normal"> · {players.length} player{players.length === 1 ? "" : "s"}</span>
+              </p>
+            </div>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {players.map((p) => (
+                <li key={p.id} className="flex items-center gap-1">
+                  <span className="font-medium">{p.first_name} {p.last_name}</span>
+                  {(p.is_captain || p.group_leader) && (
+                    <span className="text-[10px] uppercase tracking-wide rounded bg-primary/10 text-primary px-1.5 py-0.5">Captain</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
 
         {(() => {
           const fmt = getFormatById(tournament?.scoring_format || "stroke_play");

@@ -583,7 +583,7 @@ export default function LiveScoring() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">Player</TableHead>
+                    <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">{isScramble ? "Team" : "Player"}</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}

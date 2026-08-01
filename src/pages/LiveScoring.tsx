@@ -141,7 +141,7 @@ export default function LiveScoring() {
 
       if (gNum) {
         setScoringCode(code.toUpperCase());
-        await loadGroup(gNum as number);
+        await loadGroup(gNum as number, code.toUpperCase());
       } else {
         setError("Invalid scoring code or player not assigned to a hole.");
       }
@@ -149,7 +149,63 @@ export default function LiveScoring() {
     })();
   }, [tournament, searchParams]);
 
-  const loadGroup = async (gNum: number) => {
+  // Restore a previously saved scoring session (no need to re-enter the code)
+  useEffect(() => {
+    if (!tournament || !sessionKey) return;
+    if (searchParams.get("code")) { setRestoring(false); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = localStorage.getItem(sessionKey);
+        if (!raw) return;
+        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number };
+        if (!saved?.code || saved.tournamentId !== tournament.id) return;
+        // Re-validate the stored code server-side; the group is derived from it, never from the client
+        const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
+          _tournament_id: tournament.id,
+          _scoring_code: saved.code,
+          _email: "",
+        });
+        if (cancelled) return;
+        if (gNum) {
+          setScoringCode(saved.code);
+          await loadGroup(gNum as number, saved.code);
+        } else {
+          localStorage.removeItem(sessionKey);
+        }
+      } catch {
+        /* ignore malformed session */
+      } finally {
+        if (!cancelled) setRestoring(false);
+      }
+    })();
+    return () => { cancelled = true; setRestoring(false); };
+  }, [tournament, sessionKey]);
+
+  const persistSession = (code: string | null, gNum: number) => {
+    if (!sessionKey || !tournament || !code) return;
+    try {
+      localStorage.setItem(
+        sessionKey,
+        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum })
+      );
+    } catch { /* storage unavailable */ }
+  };
+
+  const handleSignOut = () => {
+    if (sessionKey) { try { localStorage.removeItem(sessionKey); } catch { /* noop */ } }
+    setScoringCode(null);
+    setGroupNumber(null);
+    setPlayers([]);
+    setScores({});
+    setEditedScores({});
+    setTeamName(null);
+    setCodeInput("");
+    setEmailInput("");
+    setLoginMode(true);
+  };
+
+  const loadGroup = async (gNum: number, codeForSession?: string) => {
     if (!tournament) return;
 
     const { data: payload } = await supabase.rpc("get_live_scoring_group", {
@@ -178,19 +234,23 @@ export default function LiveScoring() {
       group_number: p.group_number,
       playing_handicap: p.playing_handicap,
       strokes_per_hole: p.strokes_per_hole as number[] | null,
+      is_captain: !!p.is_captain,
+      group_leader: !!p.group_leader,
     }));
 
     // Remember a scoring_code from the group so we can authorize saves
-    if (!scoringCode) {
-      const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
-      if (anyCode) setScoringCode(anyCode);
-    }
+    const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
+    const sessionCode = codeForSession || scoringCode || anyCode || null;
+    if (!scoringCode && anyCode) setScoringCode(anyCode);
 
+    setTeamName((payload as any)?.team_name || null);
     setPlayers(mappedPlayers);
     setScores(scoreMap);
     setGroupNumber(gNum);
     setLoginMode(false);
+    persistSession(sessionCode, gNum);
   };
+
 
   const handleLogin = async () => {
     if (!tournament) return;

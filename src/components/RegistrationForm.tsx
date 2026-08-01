@@ -62,7 +62,10 @@ interface RegistrationFormProps {
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
   captainLabel?: string | null;
+  /** Captain-vs-teammate field rules for group sign-ups */
+  groupFieldRules?: GroupFieldRules | null;
   showPromoCodeInput?: boolean;
+
   /** Donation prompt config */
   donationPrompt?: {
     enabled: boolean;

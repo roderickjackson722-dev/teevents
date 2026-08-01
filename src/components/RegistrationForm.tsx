@@ -81,13 +81,20 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel,
+  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel, groupRules, groupMode,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
   fields?: RegFieldConfig[]; captainLabel?: string | null;
+  groupRules?: GroupFieldRules | null; groupMode?: boolean;
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
+
+  // Captain-vs-teammate field rules (only when group registration rules are active)
+  const roleRules = groupRules && groupMode
+    ? (index === 0 ? groupRules.captain : groupRules.member)
+    : null;
+  const ruleFor = (key: GroupFieldKey) => roleRules?.[key] ?? null;
 
   // Map default field labels to player form keys
   const defaultFieldMap: Record<string, keyof PlayerForm> = {
@@ -99,18 +106,37 @@ const PlayerFields = ({
     "Skill Level": "skill_level",
   };
 
+  const ruleKeyByLabel: Record<string, GroupFieldKey> = {
+    "phone": "phone",
+    "handicap": "handicap",
+    "shirt size": "shirt_size",
+    "dietary restrictions": "dietary_restrictions",
+  };
+
   // If fields config provided, check which default fields are enabled
   const isFieldEnabled = (label: string) => {
+    const rk = ruleKeyByLabel[label.toLowerCase()];
+    if (rk && ruleFor(rk) === "hidden") return false;
     if (!fields || fields.length === 0) return true; // no config = show all defaults
     const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
     return f ? f.is_enabled : false;
   };
 
   const isFieldRequired = (label: string) => {
+    const rk = ruleKeyByLabel[label.toLowerCase()];
+    if (rk) {
+      const mode = ruleFor(rk);
+      if (mode === "required") return true;
+      if (mode === "optional" || mode === "hidden") return false;
+    }
     if (!fields || fields.length === 0) return false;
     const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
     return f ? f.is_required : false;
   };
+
+  const emailMode = ruleFor("email");
+  const showEmail = emailMode !== "hidden";
+  const emailRequired = emailMode ? emailMode === "required" : true;
 
   // Custom fields (non-default)
   const customFields = (fields || []).filter((f) => !f.is_default && f.is_enabled);
@@ -120,7 +146,9 @@ const PlayerFields = ({
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">
           {index === 0
-            ? (captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
+            ? (groupMode && groupRules?.enabled
+                ? `Team Captain (Primary Contact)`
+                : captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
             : `Player ${index + 1}`}
         </h4>
         {showRemove && onRemove && (
@@ -141,11 +169,14 @@ const PlayerFields = ({
           {errors[`${prefix}last_name`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}last_name`]}</p>}
         </div>
       </div>
-      <div>
-        <Label>Email *</Label>
-        <Input type="email" value={player.email} onChange={(e) => onChange({ ...player, email: e.target.value })} placeholder="john@example.com" maxLength={255} />
-        {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
-      </div>
+      {showEmail && (
+        <div>
+          <Label>Email{emailRequired ? " *" : ""}</Label>
+          <Input type="email" value={player.email} onChange={(e) => onChange({ ...player, email: e.target.value })} placeholder="john@example.com" maxLength={255} />
+          {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         {isFieldEnabled("Phone") && (
           <div>

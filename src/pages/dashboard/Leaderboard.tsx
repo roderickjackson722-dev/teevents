@@ -23,6 +23,8 @@ import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCar
 import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
+import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
+
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 
 // Score validation: strokes must be an integer between 1 and 20 inclusive.

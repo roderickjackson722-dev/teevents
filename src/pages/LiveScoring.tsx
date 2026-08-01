@@ -18,6 +18,8 @@ interface Player {
   group_number: number | null;
   playing_handicap: number | null;
   strokes_per_hole: number[] | null;
+  is_captain?: boolean;
+  group_leader?: boolean;
 }
 
 interface TournamentData {

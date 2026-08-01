@@ -283,6 +283,37 @@ export default function LiveScoring() {
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const hasEdits = Object.keys(editedScores).length > 0;
   const handicapEnabled = tournament?.handicap_enabled === true;
+  const activeFormat = getFormatById(tournament?.scoring_format || "stroke_play");
+  const isScramble = activeFormat?.scoring === "scramble";
+
+  // Scramble: one score for the whole group — applied to every player
+  const getTeamScore = (hole: number) => {
+    for (const p of players) {
+      const v = editedScores[p.id]?.[hole] ?? scores[p.id]?.[hole];
+      if (typeof v === "number") return v;
+    }
+    return "" as const;
+  };
+
+  const setTeamScore = (hole: number, num: number) => {
+    const clamped = Math.max(1, Math.min(12, num));
+    setEditedScores((prev) => {
+      const next = { ...prev };
+      players.forEach((p) => {
+        next[p.id] = { ...(next[p.id] || {}), [hole]: clamped };
+      });
+      return next;
+    });
+  };
+
+  const adjustTeamScore = (hole: number, delta: number) => {
+    const current = getTeamScore(hole);
+    const base = typeof current === "number"
+      ? current
+      : (courseData?.hole_pars?.[hole - 1] ?? Math.round((tournament?.course_par || 72) / 18));
+    setTeamScore(hole, base + delta);
+  };
+
 
   if (loading || autoLogging) {
     return (
@@ -449,10 +480,56 @@ export default function LiveScoring() {
           )}
         </div>
 
-        {viewMode === "single" ? (
+        {viewMode === "single" && isScramble ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Team Score Entry — Hole {groupNumber}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-3">
+              {(() => {
+                const par = courseData?.hole_pars?.[focusHole - 1] ?? Math.round((tournament.course_par || 72) / 18);
+                const val = getTeamScore(focusHole);
+                const display = typeof val === "number" ? val : "";
+                return (
+                  <div className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-base">Hole {focusHole} · Par {par}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {players.map((p) => `${p.first_name} ${p.last_name?.[0] ?? ""}.`).join(", ")}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => adjustTeamScore(focusHole, -1)}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted flex items-center justify-center"
+                        aria-label="Decrease team score"
+                      >
+                        <Minus className="h-5 w-5" />
+                      </button>
+                      <div className="w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl font-bold flex items-center justify-center">
+                        {display === "" ? <span className="text-muted-foreground/60 text-xl">{par}</span> : display}
+                      </div>
+                      <button
+                        onClick={() => adjustTeamScore(focusHole, +1)}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center"
+                        aria-label="Increase team score"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+              <p className="text-xs text-muted-foreground">
+                One score per hole for the whole group — it applies to every player on the team.
+              </p>
+            </CardContent>
+          </Card>
+        ) : viewMode === "single" ? (
           <Card>
             <CardContent className="p-4 space-y-3">
               {players.map((p) => {
+
                 const strokeDots = handicapEnabled ? getStrokesOnHole(p, focusHole - 1) : 0;
                 const val = getScore(p.id, focusHole);
                 const display = typeof val === "number" ? val : "";
@@ -506,7 +583,7 @@ export default function LiveScoring() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">Player</TableHead>
+                    <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">{isScramble ? "Team" : "Player"}</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}
@@ -541,7 +618,51 @@ export default function LiveScoring() {
                   )}
                 </TableHeader>
                 <TableBody>
-                  {players.map((p) => {
+                  {isScramble ? (
+                    <TableRow>
+                      <TableCell className="sticky left-0 bg-card z-10 font-medium text-sm">Team</TableCell>
+                      {holes.map((h) => {
+                        const val = getTeamScore(h);
+                        const display = typeof val === "number" ? val : "";
+                        return (
+                          <TableCell key={h} className="p-0.5 text-center">
+                            <div className="inline-flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                aria-label="Decrease"
+                                onClick={() => adjustTeamScore(h, -1)}
+                                className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              <div className="w-7 h-7 rounded border bg-card text-center text-sm font-semibold flex items-center justify-center">
+                                {display === "" ? (courseData?.hole_pars?.[h - 1] ?? "·") : display}
+                              </div>
+                              <button
+                                type="button"
+                                aria-label="Increase"
+                                onClick={() => adjustTeamScore(h, +1)}
+                                className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell className="text-center font-bold">
+                        {(() => {
+                          const total = holes.reduce((sum, h) => {
+                            const v = getTeamScore(h);
+                            return sum + (typeof v === "number" ? v : 0);
+                          }, 0);
+                          return total > 0 ? total : "—";
+                        })()}
+                      </TableCell>
+                      {handicapEnabled && <TableCell className="text-center font-bold text-primary">—</TableCell>}
+                    </TableRow>
+                  ) : players.map((p) => {
+
                     const grossTotal = holes.reduce((sum, h) => {
                       const val = getScore(p.id, h);
                       return sum + (typeof val === "number" ? val : 0);
@@ -619,6 +740,17 @@ export default function LiveScoring() {
           </CardContent>
         </Card>
         )}
+
+        {slug && (
+          <div className="pt-2 border-t">
+            <Button asChild variant="outline" className="w-full h-12">
+              <a href={`/live/${slug}`}>
+                <Trophy className="h-4 w-4 mr-2" /> View Leaderboard →
+              </a>
+            </Button>
+          </div>
+        )}
+
 
       </div>
     </div>

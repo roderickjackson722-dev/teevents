@@ -14,7 +14,8 @@ const DEFAULTS = {
   body_text:
     "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
-    "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
+    "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
+
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
 };
@@ -147,13 +148,23 @@ Deno.serve(async (req) => {
       if (!bt.includes("{{event_schedule}}")) bt += "\n\n🗓 Event Schedule:\n{{event_schedule}}";
       if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
       config.body_text = bt;
+
+      // Older saved templates ended the scoring link with a period and had no leaderboard link.
+      let ct = String(config.closing_text ?? DEFAULTS.closing_text);
+      ct = ct.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
+      if (!ct.includes("{{leaderboard_link}}")) ct += "\n\nView the live leaderboard:\n👉 {{leaderboard_link}}";
+      config.closing_text = ct;
     }
+
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
           .toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : "";
     const homepage = tournament.slug ? `https://www.teevents.golf/t/${tournament.slug}` : "https://www.teevents.golf";
     const scoringLink = tournament.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score";
+    const leaderboardLink = tournament.slug
+      ? `https://www.teevents.golf/live/${tournament.slug}`
+      : "https://www.teevents.golf";
     const courseAddress = (course as any)?.course_address || tournament.location || "See event homepage";
 
     const buildVars = (reg: any) => ({
@@ -169,6 +180,7 @@ Deno.serve(async (req) => {
       hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
       scoring_code: reg.group_scoring_code || reg.scoring_code || "Assigned when pairings are finalized",
       scoring_link: scoringLink,
+      leaderboard_link: leaderboardLink,
       event_homepage: homepage,
     });
 

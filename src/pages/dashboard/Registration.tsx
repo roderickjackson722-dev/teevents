@@ -1342,13 +1342,9 @@ const Registration = () => {
                     </Button>
                   </div>
                   {newFieldType === "dropdown" && (
-                    <Input
-                      placeholder="Options (comma-separated): Option A, Option B"
-                      value={newFieldOptions}
-                      onChange={(e) => setNewFieldOptions(e.target.value)}
-                      maxLength={500}
-                    />
+                    <DropdownOptionsEditor options={newFieldOptions} onChange={setNewFieldOptions} />
                   )}
+
                 </div>
               </div>
             </motion.div>

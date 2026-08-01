@@ -346,11 +346,13 @@ const Registration = () => {
   /* ── custom field CRUD ── */
   const [newFieldLabel, setNewFieldLabel] = useState("");
   const [newFieldType, setNewFieldType] = useState("text");
-  const [newFieldOptions, setNewFieldOptions] = useState("");
+  const [newFieldOptions, setNewFieldOptions] = useState<string[]>([""]);
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
   const [editFieldLabel, setEditFieldLabel] = useState("");
   const [editFieldType, setEditFieldType] = useState("text");
-  const [editFieldOptions, setEditFieldOptions] = useState("");
+  const [editFieldOptions, setEditFieldOptions] = useState<string[]>([""]);
+
+  const cleanOptions = (opts: string[]) => opts.map((o) => o.trim()).filter(Boolean);
 
   const addCustomField = async () => {
     if (!newFieldLabel.trim()) return;
@@ -358,7 +360,7 @@ const Registration = () => {
       tournament_id: selectedTournament,
       label: newFieldLabel.trim(),
       field_type: newFieldType,
-      options: newFieldType === "dropdown" ? newFieldOptions.split(",").map((o) => o.trim()).filter(Boolean) : null,
+      options: newFieldType === "dropdown" ? cleanOptions(newFieldOptions) : null,
       is_required: false,
       is_default: false,
       is_enabled: true,
@@ -369,7 +371,7 @@ const Registration = () => {
     else {
       setFields((prev) => [...prev, data as RegField]);
       setNewFieldLabel("");
-      setNewFieldOptions("");
+      setNewFieldOptions([""]);
       toast.success("Custom field added!");
     }
   };
@@ -378,14 +380,14 @@ const Registration = () => {
     setEditingFieldId(field.id!);
     setEditFieldLabel(field.label);
     setEditFieldType(field.field_type);
-    setEditFieldOptions(field.options ? (field.options as string[]).join(", ") : "");
+    setEditFieldOptions(field.options && (field.options as string[]).length ? [...(field.options as string[])] : [""]);
   };
 
   const cancelEditField = () => {
     setEditingFieldId(null);
     setEditFieldLabel("");
     setEditFieldType("text");
-    setEditFieldOptions("");
+    setEditFieldOptions([""]);
   };
 
   const saveEditField = async (id: string) => {
@@ -393,7 +395,7 @@ const Registration = () => {
     const updates: any = {
       label: editFieldLabel.trim(),
       field_type: editFieldType,
-      options: editFieldType === "dropdown" ? editFieldOptions.split(",").map((o) => o.trim()).filter(Boolean) : null,
+      options: editFieldType === "dropdown" ? cleanOptions(editFieldOptions) : null,
     };
     const { error } = await supabase.from("tournament_registration_fields").update(updates).eq("id", id);
     if (error) toast.error(error.message);
@@ -403,6 +405,7 @@ const Registration = () => {
       toast.success("Field updated!");
     }
   };
+
 
   const deleteField = async (id: string) => {
     const { error } = await supabase.from("tournament_registration_fields").delete().eq("id", id);

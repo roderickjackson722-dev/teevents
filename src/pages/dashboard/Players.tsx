@@ -332,7 +332,7 @@ const Players = () => {
         const t = p.group_number != null ? holeTeeTimes[p.group_number] : "";
         return t || "\uFFFF"; // empty sorts last
       }
-      case "code": return (p.scoring_code || "").toLowerCase();
+      case "code": return codeOf(p).toLowerCase();
       case "payment": return (p.payment_status || "").toLowerCase();
       default:
         if (key.startsWith("custom_")) return getCustomAnswer(p, key.slice("custom_".length)).toLowerCase();

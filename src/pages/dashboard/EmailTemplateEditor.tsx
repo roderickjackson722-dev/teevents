@@ -291,6 +291,57 @@ export default function EmailTemplateEditor() {
     load();
   }, [selectedTournament]);
 
+  // Course address for the selected tournament (used by the live preview)
+  const [courseAddress, setCourseAddress] = useState<string>("");
+  useEffect(() => {
+    if (!selectedTournament) { setCourseAddress(""); return; }
+    supabase
+      .from("golf_courses")
+      .select("course_address")
+      .eq("tournament_id", selectedTournament)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setCourseAddress((data as any)?.course_address || ""));
+  }, [selectedTournament]);
+
+  // Preview variables built from the ACTUAL selected tournament.
+  const previewVars = (() => {
+    const t = tournaments.find((x: any) => x.id === selectedTournament);
+    const stripTags = (s: string) =>
+      s.replace(/<br\s*\/?>(\s*)/gi, "\n")
+        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    const schedule = t?.schedule_info || (t?.schedule_info_html ? stripTags(t.schedule_info_html) : "");
+    const homepage = t?.slug ? `https://www.teevents.golf/t/${t.slug}` : "https://www.teevents.golf";
+    const location = [t?.location, t?.state].filter(Boolean).join(", ");
+    const sampleReg = registrations[0];
+    const vars: Record<string, string> = {
+      first_name: sampleReg?.first_name || "John",
+      last_name: sampleReg?.last_name || "Doe",
+      event_name: t?.title || "Sample Tournament",
+      event_date: t?.date
+        ? formatTournamentDate(t.date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+        : "Saturday, June 15, 2026",
+      event_location: location || t?.location || "Your golf course",
+      course_name: t?.course_name || t?.location || "Your golf course",
+      scoring_code: sampleReg?.group_scoring_code || sampleReg?.scoring_code || "Assigned when pairings are finalized",
+      group_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+      scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
+      event_homepage: homepage,
+      tee_time: "TBD",
+      hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+    };
+    if (courseAddress) vars.course_address = courseAddress;
+    else if (location) vars.course_address = location;
+    if (schedule) vars.event_schedule = String(schedule).trim();
+    else vars.event_schedule = "See the event homepage for the full schedule.";
+    return vars;
+  })();
+
+
+
   const handleTournamentChange = (id: string) => {
     setSelectedTournament(id);
     const t = tournaments.find((x: any) => x.id === id);

@@ -755,7 +755,7 @@ export default function LiveScoring() {
                   <TableRow>
                     <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">{isScramble ? "Team" : "Player"}</TableHead>
                     {holes.map((h) => (
-                      <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
+                      <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs border-r border-border last:border-r-0">{h}</TableHead>
                     ))}
                     <TableHead className="text-center font-bold min-w-[50px]">Gross</TableHead>
                     {handicapEnabled && <TableHead className="text-center font-bold min-w-[50px]">Net</TableHead>}
@@ -765,7 +765,7 @@ export default function LiveScoring() {
                     <TableRow className="bg-muted/30">
                       <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
                       {holes.map((h) => (
-                        <TableHead key={h} className="text-center text-xs text-muted-foreground">
+                        <TableHead key={h} className="text-center text-xs text-muted-foreground border-r border-border">
                           {courseData.hole_pars?.[h - 1] ?? ""}
                         </TableHead>
                       ))}
@@ -778,7 +778,7 @@ export default function LiveScoring() {
                     <TableRow className="bg-muted/20">
                       <TableHead className="sticky left-0 bg-muted/20 z-10 text-[10px] text-muted-foreground">SI</TableHead>
                       {holes.map((h) => (
-                        <TableHead key={h} className="text-center text-[10px] text-muted-foreground">
+                        <TableHead key={h} className="text-center text-[10px] text-muted-foreground border-r border-border">
                           {courseStrokeIndexes[h - 1] || ""}
                         </TableHead>
                       ))}
@@ -795,7 +795,7 @@ export default function LiveScoring() {
                         const val = getTeamScore(h);
                         const display = typeof val === "number" ? val : "";
                         return (
-                          <TableCell key={h} className="p-0.5 text-center">
+                          <TableCell key={h} className="p-0.5 text-center border-r border-border">
                             <div className="inline-flex items-center gap-0.5">
                               <button
                                 type="button"
@@ -861,7 +861,7 @@ export default function LiveScoring() {
                           const val = getScore(p.id, h);
                           const display = typeof val === "number" ? val : "";
                           return (
-                            <TableCell key={h} className="p-0.5 text-center">
+                            <TableCell key={h} className="p-0.5 text-center border-r border-border">
                               <div className="relative">
                                 <div className="inline-flex items-center gap-0.5">
                                   <button

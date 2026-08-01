@@ -804,6 +804,10 @@ const Sponsors = () => {
       )}
 
       {selectedTournament && (
+        <SponsorPublicDisplayCard tournamentId={selectedTournament} />
+      )}
+
+      {selectedTournament && (
         <SponsorLogoSizeCard tournamentId={selectedTournament} />
       )}
 

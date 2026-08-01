@@ -309,6 +309,15 @@ const Players = () => {
     return String(v);
   };
 
+  // Scoring codes live at the GROUP level and are only created once pairings are assigned.
+  const codeOf = (p: Registration): string => (p.group_scoring_code || p.scoring_code || "");
+  const newScoringCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  };
+
   const getSortValue = (p: Registration, key: string): string | number => {
     switch (key) {
       case "name": return `${p.first_name} ${p.last_name}`.toLowerCase();

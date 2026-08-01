@@ -206,6 +206,7 @@ export default function EmailTemplateEditor() {
   const [resendingSingle, setResendingSingle] = useState(false);
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
+  const [recipientSearch, setRecipientSearch] = useState("");
 
   // Prefill test email with the current user's email
   useEffect(() => {

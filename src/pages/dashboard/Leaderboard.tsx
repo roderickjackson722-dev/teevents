@@ -907,7 +907,10 @@ export default function Leaderboard() {
       )}
 
       {selectedTournament && (
-        <ScoreEditHistory tournamentId={selectedTournament} />
+        <LeaderboardHeaderCard
+          tournamentId={selectedTournament}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
+        />
       )}
 
       {selectedTournament && (
@@ -931,6 +934,12 @@ export default function Leaderboard() {
       {selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
       )}
+
+      {/* Edit history lives at the very bottom of the page */}
+      {selectedTournament && (
+        <ScoreEditHistory tournamentId={selectedTournament} />
+      )}
+
       <StickySaveBar onSave={() => {}} />
     </div>
   );

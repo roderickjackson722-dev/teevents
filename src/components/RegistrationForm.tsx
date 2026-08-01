@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { formatCents } from "@/lib/formatCurrency";
+import type { GroupFieldKey, GroupFieldRules } from "@/lib/groupFieldRules";
+
 
 interface AddonRow {
   id: string;
@@ -60,7 +62,10 @@ interface RegistrationFormProps {
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
   captainLabel?: string | null;
+  /** Captain-vs-teammate field rules for group sign-ups */
+  groupFieldRules?: GroupFieldRules | null;
   showPromoCodeInput?: boolean;
+
   /** Donation prompt config */
   donationPrompt?: {
     enabled: boolean;
@@ -81,13 +86,20 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel,
+  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel, groupRules, groupMode,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
   fields?: RegFieldConfig[]; captainLabel?: string | null;
+  groupRules?: GroupFieldRules | null; groupMode?: boolean;
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
+
+  // Captain-vs-teammate field rules (only when group registration rules are active)
+  const roleRules = groupRules && groupMode
+    ? (index === 0 ? groupRules.captain : groupRules.member)
+    : null;
+  const ruleFor = (key: GroupFieldKey) => roleRules?.[key] ?? null;
 
   // Map default field labels to player form keys
   const defaultFieldMap: Record<string, keyof PlayerForm> = {
@@ -99,18 +111,37 @@ const PlayerFields = ({
     "Skill Level": "skill_level",
   };
 
+  const ruleKeyByLabel: Record<string, GroupFieldKey> = {
+    "phone": "phone",
+    "handicap": "handicap",
+    "shirt size": "shirt_size",
+    "dietary restrictions": "dietary_restrictions",
+  };
+
   // If fields config provided, check which default fields are enabled
   const isFieldEnabled = (label: string) => {
+    const rk = ruleKeyByLabel[label.toLowerCase()];
+    if (rk && ruleFor(rk) === "hidden") return false;
     if (!fields || fields.length === 0) return true; // no config = show all defaults
     const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
     return f ? f.is_enabled : false;
   };
 
   const isFieldRequired = (label: string) => {
+    const rk = ruleKeyByLabel[label.toLowerCase()];
+    if (rk) {
+      const mode = ruleFor(rk);
+      if (mode === "required") return true;
+      if (mode === "optional" || mode === "hidden") return false;
+    }
     if (!fields || fields.length === 0) return false;
     const f = fields.find((fld) => fld.label.toLowerCase() === label.toLowerCase());
     return f ? f.is_required : false;
   };
+
+  const emailMode = ruleFor("email");
+  const showEmail = emailMode !== "hidden";
+  const emailRequired = emailMode ? emailMode === "required" : true;
 
   // Custom fields (non-default)
   const customFields = (fields || []).filter((f) => !f.is_default && f.is_enabled);
@@ -120,7 +151,9 @@ const PlayerFields = ({
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">
           {index === 0
-            ? (captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
+            ? (groupMode && groupRules?.enabled
+                ? `Team Captain (Primary Contact)`
+                : captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
             : `Player ${index + 1}`}
         </h4>
         {showRemove && onRemove && (
@@ -141,11 +174,14 @@ const PlayerFields = ({
           {errors[`${prefix}last_name`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}last_name`]}</p>}
         </div>
       </div>
-      <div>
-        <Label>Email *</Label>
-        <Input type="email" value={player.email} onChange={(e) => onChange({ ...player, email: e.target.value })} placeholder="john@example.com" maxLength={255} />
-        {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
-      </div>
+      {showEmail && (
+        <div>
+          <Label>Email{emailRequired ? " *" : ""}</Label>
+          <Input type="email" value={player.email} onChange={(e) => onChange({ ...player, email: e.target.value })} placeholder="john@example.com" maxLength={255} />
+          {errors[`${prefix}email`] && <p className="text-xs text-destructive mt-1">{errors[`${prefix}email`]}</p>}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         {isFieldEnabled("Phone") && (
           <div>
@@ -243,7 +279,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
   // When the organizer restricts group sizes (e.g. foursomes only), start at the
   // smallest allowed size so the total reflects the real number of players.
   const initialGroupSize = (() => {
@@ -256,7 +292,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
   const [players, setPlayers] = useState<PlayerForm[]>(() =>
     Array.from({ length: initialGroupSize }, () => emptyPlayer()),
   );
+  const [teamName, setTeamName] = useState("");
   const [groupNotes, setGroupNotes] = useState("");
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -390,6 +428,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
 
   const allowGroup = maxGroupSize > 1;
+  // Group rules only apply when more than one player is being registered together.
+  const groupRulesActive = !!groupFieldRules?.enabled && allowGroup && players.length > 1;
+
   const activeFee = selectedTier
     ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
     : registrationFeeCents;
@@ -496,11 +537,36 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     const fieldErrors: Record<string, string> = {};
 
+    // Captain / teammate rules for group sign-ups
+    const ruleKeyByLabel: Record<string, GroupFieldKey> = {
+      "phone": "phone",
+      "handicap": "handicap",
+      "shirt size": "shirt_size",
+      "dietary restrictions": "dietary_restrictions",
+    };
+    const rulesFor = (i: number) =>
+      groupRulesActive ? (i === 0 ? groupFieldRules!.captain : groupFieldRules!.member) : null;
+
+    // Teammates may not be asked for an email — reuse the captain's address with a
+    // +alias so every registration row still has a deliverable contact email.
+    const captainEmail = (players[0].email || "").trim();
+    const effectiveEmail = (i: number) => {
+      const own = (players[i].email || "").trim();
+      if (i === 0 || !groupRulesActive) return own;
+      if (own) return own;
+      const [local, domain] = captainEmail.split("@");
+      return local && domain ? `${local}+p${i + 1}@${domain}` : own;
+    };
+
     // Validate required custom fields from field config
-    const validateRequiredFields = (player: PlayerForm, prefix: string) => {
+    const validateRequiredFields = (player: PlayerForm, prefix: string, index: number) => {
+      const roleRules = rulesFor(index);
       if (fields && fields.length > 0) {
         const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions", "company / organization": "company", "skill level": "skill_level" };
         fields.filter((f) => f.is_enabled && f.is_required).forEach((f) => {
+          const rk = ruleKeyByLabel[f.label.toLowerCase()];
+          // Group rules win: skip fields the organizer made optional/hidden for this role
+          if (roleRules && rk && roleRules[rk] !== "required") return;
           const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
           const val = (player as any)[key];
           if (!val || (typeof val === "string" && !val.trim())) {
@@ -508,12 +574,30 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           }
         });
       }
+      if (roleRules) {
+        (Object.keys(ruleKeyByLabel) as string[]).forEach((label) => {
+          const rk = ruleKeyByLabel[label];
+          if (roleRules[rk] !== "required") return;
+          const key = rk;
+          const val = (player as any)[key];
+          if (!val || (typeof val === "string" && !val.trim())) {
+            fieldErrors[`${prefix}${key}`] = `This field is required`;
+          }
+        });
+      }
     };
 
     const parsedPlayers = players.map((player, i) => {
       const prefix = i > 0 ? `p${i}_` : "";
-      const parsed = playerSchema.safeParse({
+      const roleRules = rulesFor(i);
+      const emailOptional = !!roleRules && roleRules.email !== "required";
+      const email = effectiveEmail(i);
+      const schema = emailOptional
+        ? playerSchema.extend({ email: z.string().trim().max(255).optional().or(z.literal("")) })
+        : playerSchema;
+      const parsed = schema.safeParse({
         ...player,
+        email,
         handicap: player.handicap ? parseInt(player.handicap) : undefined,
       });
       if (!parsed.success) {
@@ -522,14 +606,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         });
         return null;
       }
-      validateRequiredFields(player, prefix);
-      return parsed.data;
+      validateRequiredFields(player, prefix, i);
+      return { ...parsed.data, email } as typeof playerSchema._type;
     });
 
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return;
     }
+
 
     setSubmitting(true);
 
@@ -572,7 +657,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               company: players[i].company || null,
               skill_level: players[i].skill_level || null,
               notes: i === 0 ? groupNotes || null : null,
+              is_captain: i === 0,
               custom_answers: buildCustomAnswers(i),
+
             }))
           : null;
 
@@ -609,8 +696,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         const promoCodeToSend = appliedPromo?.code || null;
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents }
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, team_name: teamName.trim() || null, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents }
             : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents, ...singleData };
+
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
@@ -649,6 +737,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         shirt_size: players[i].shirt_size || null,
         dietary_restrictions: players[i].dietary_restrictions || null,
         notes: i === 0 ? groupNotes || null : null,
+        is_captain: allowGroup && players.length > 1 ? i === 0 : false,
+
         referral_code_used: referralCode,
         promoter_id: promoterId,
         flight_id: selectedFlight,
@@ -997,6 +1087,17 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           </div>
         )}
 
+        {groupRulesActive && (
+          <div>
+            <Label>Team Name <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder="e.g. Team Mulligan"
+              maxLength={100}
+            />
+          </div>
+        )}
 
         {players.map((player, i) => (
           <div key={i}>
@@ -1010,9 +1111,12 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               onRemove={() => removePlayer(i)}
               fields={fields}
               captainLabel={captainLabel}
+              groupRules={groupFieldRules}
+              groupMode={groupRulesActive}
             />
           </div>
         ))}
+
 
         {allowGroup && players.length < maxGroupSize && (
           <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>

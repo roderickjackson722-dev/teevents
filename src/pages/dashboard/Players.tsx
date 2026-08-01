@@ -1839,15 +1839,32 @@ const Players = () => {
                     )}
                   </div>
 
+                  {(() => {
+                    const cap = g.players.find((p) => (p as any).is_captain || p.group_leader);
+                    if (!cap) return null;
+                    const contact = [cap.email, (cap as any).phone].filter(Boolean).join(" · ");
+                    return (
+                      <p className="px-3 pb-2 text-xs text-muted-foreground">
+                        Captain: <span className="text-foreground font-medium">{cap.first_name} {cap.last_name}</span>
+                        {contact ? ` (${contact})` : ""}
+                      </p>
+                    );
+                  })()}
+
                   <table className="w-full text-sm">
                     <tbody>
                       {g.players.map((p) => (
                         <tr key={p.id} className="border-t border-border">
                           <td className="px-3 py-2">
                             {p.first_name} {p.last_name}
-                            {p.group_leader && <span className="ml-2 text-[10px] uppercase tracking-wide text-primary">Captain</span>}
                           </td>
-                          <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            {(p as any).is_captain || p.group_leader ? (
+                              <span className="text-[10px] uppercase tracking-wide text-primary">Captain</span>
+                            ) : (
+                              <span className="text-[10px] uppercase tracking-wide">Player</span>
+                            )}
+                          </td>
                           <td className="px-3 py-2 text-center">{p.handicap ?? "—"}</td>
                           <td className="px-3 py-2 text-right">
                             <Button variant="ghost" size="sm" onClick={() => setViewingPlayer(p)}>View</Button>
@@ -1856,6 +1873,7 @@ const Players = () => {
                       ))}
                     </tbody>
                   </table>
+
                 </div>
               ))}
             </div>

@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import GroupRegistrationSettings from "@/components/dashboard/GroupRegistrationSettings";
+
 import {
   ClipboardList,
   Plus,
@@ -1091,7 +1093,14 @@ const Registration = () => {
                 Save Settings
               </Button>
             </motion.div>
+
+            {selectedTournament && (
+              <div className="mt-6">
+                <GroupRegistrationSettings tournamentId={selectedTournament} />
+              </div>
+            )}
           </TabsContent>
+
 
           {/* ── Tiers Tab ── */}
           <TabsContent value="tiers">

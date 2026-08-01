@@ -162,6 +162,9 @@ Deno.serve(async (req) => {
       : "";
     const homepage = tournament.slug ? `https://www.teevents.golf/t/${tournament.slug}` : "https://www.teevents.golf";
     const scoringLink = tournament.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score";
+    const leaderboardLink = tournament.slug
+      ? `https://www.teevents.golf/live/${tournament.slug}`
+      : "https://www.teevents.golf";
     const courseAddress = (course as any)?.course_address || tournament.location || "See event homepage";
 
     const buildVars = (reg: any) => ({
@@ -177,6 +180,7 @@ Deno.serve(async (req) => {
       hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
       scoring_code: reg.group_scoring_code || reg.scoring_code || "Assigned when pairings are finalized",
       scoring_link: scoringLink,
+      leaderboard_link: leaderboardLink,
       event_homepage: homepage,
     });
 

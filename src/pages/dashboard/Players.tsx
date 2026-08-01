@@ -513,7 +513,7 @@ const Players = () => {
       p.shirt_size || "",
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
-      p.scoring_code || "",
+      codeOf(p),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });

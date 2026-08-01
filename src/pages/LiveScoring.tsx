@@ -464,6 +464,14 @@ export default function LiveScoring() {
     );
   }
 
+  if (loginMode && restoring) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (loginMode) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">

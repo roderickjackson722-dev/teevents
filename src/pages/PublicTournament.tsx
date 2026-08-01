@@ -1219,6 +1219,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     fields={regFields}
                     addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
                     captainLabel={(tournament as any).captain_label || null}
+                    groupFieldRules={parseGroupFieldRules((tournament as any).group_field_rules)}
+
                     showPromoCodeInput={(tournament as any).show_promo_code_input !== false}
                     donationPrompt={(tournament as any).donation_prompt_enabled ? {
                       enabled: true,

@@ -482,16 +482,22 @@ const Players = () => {
       toast({ title: "Code cannot be empty", variant: "destructive" });
       return;
     }
+    const player = allPlayers.find((p) => p.id === playerId);
+    if (!player || player.group_number === null || player.group_number === undefined) {
+      toast({ title: "Assign pairings first", description: "Scoring codes are generated once this player is placed in a group.", variant: "destructive" });
+      return;
+    }
     const { error } = await supabase
       .from("tournament_registrations")
-      .update({ scoring_code: code })
-      .eq("id", playerId);
+      .update({ group_scoring_code: code, scoring_code: code })
+      .eq("tournament_id", selectedTournament)
+      .eq("group_number", player.group_number);
     if (error) {
       toast({ title: "Error", description: error.message.includes("unique") ? "This code is already in use" : error.message, variant: "destructive" });
     } else {
-      setAllPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
+      setAllPlayers((prev) => prev.map((p) => p.group_number === player.group_number ? { ...p, group_scoring_code: code, scoring_code: code } : p));
       setEditingScoringCode(null);
-      toast({ title: "Scoring code updated" });
+      toast({ title: "Group scoring code updated" });
     }
   };
 

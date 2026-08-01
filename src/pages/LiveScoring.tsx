@@ -618,7 +618,51 @@ export default function LiveScoring() {
                   )}
                 </TableHeader>
                 <TableBody>
-                  {players.map((p) => {
+                  {isScramble ? (
+                    <TableRow>
+                      <TableCell className="sticky left-0 bg-card z-10 font-medium text-sm">Team</TableCell>
+                      {holes.map((h) => {
+                        const val = getTeamScore(h);
+                        const display = typeof val === "number" ? val : "";
+                        return (
+                          <TableCell key={h} className="p-0.5 text-center">
+                            <div className="inline-flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                aria-label="Decrease"
+                                onClick={() => adjustTeamScore(h, -1)}
+                                className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              <div className="w-7 h-7 rounded border bg-card text-center text-sm font-semibold flex items-center justify-center">
+                                {display === "" ? (courseData?.hole_pars?.[h - 1] ?? "·") : display}
+                              </div>
+                              <button
+                                type="button"
+                                aria-label="Increase"
+                                onClick={() => adjustTeamScore(h, +1)}
+                                className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell className="text-center font-bold">
+                        {(() => {
+                          const total = holes.reduce((sum, h) => {
+                            const v = getTeamScore(h);
+                            return sum + (typeof v === "number" ? v : 0);
+                          }, 0);
+                          return total > 0 ? total : "—";
+                        })()}
+                      </TableCell>
+                      {handicapEnabled && <TableCell className="text-center font-bold text-primary">—</TableCell>}
+                    </TableRow>
+                  ) : players.map((p) => {
+
                     const grossTotal = holes.reduce((sum, h) => {
                       const val = getScore(p.id, h);
                       return sum + (typeof val === "number" ? val : 0);

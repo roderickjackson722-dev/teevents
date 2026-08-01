@@ -281,7 +281,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, payment_status")
+        .select("id, first_name, last_name, email, payment_status, scoring_code, group_scoring_code, group_number")
         .eq("tournament_id", selectedTournament)
         .order("created_at", { ascending: false });
       setRegistrations(data || []);
@@ -705,6 +705,7 @@ export default function EmailTemplateEditor() {
                   ? formatTournamentDate(tournaments.find(t => t.id === selectedTournament).date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
                   : "Saturday, June 15, 2026",
                 event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
+                scoring_code: "ABC123",
               }, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
             }} />
           </div>
@@ -743,11 +744,19 @@ export default function EmailTemplateEditor() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
                         <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          Scoring Code:{" "}
+                          <span className="font-mono font-semibold text-foreground">
+                            {r.group_scoring_code || r.scoring_code || "—"}
+                          </span>
+                          {r.group_number ? <span className="ml-1">(Group {r.group_number})</span> : null}
+                        </p>
                       </div>
                     </label>
                     <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
                       {r.payment_status}
                     </Badge>
+
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit email & resend" onClick={() => openEditModal(r)}>
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>

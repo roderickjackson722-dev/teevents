@@ -163,14 +163,35 @@ export default function GroupScoring() {
     return out;
   }, [players]);
 
+  const format = useMemo(() => getFormatById(tournament?.scoring_format || "stroke_play"), [tournament]);
+  const isScramble = format?.scoring === "scramble";
+
+  // Team score already recorded for this hole (all players share the same value in a scramble)
+  const teamScoreForHole = (hole: number) => {
+    for (const p of players) {
+      const v = scores[p.id]?.[hole];
+      if (v != null) return v;
+    }
+    return undefined;
+  };
+
+  const TEAM_KEY = "__team__";
+  const teamDraft = draft[TEAM_KEY];
+  const teamSaved = teamScoreForHole(currentHole);
+  const teamNum = teamDraft != null && teamDraft !== "" ? parseInt(teamDraft, 10) : teamSaved;
+
   const pendingChanges = useMemo(() => {
+    if (isScramble) return [];
     return players.filter((p) => {
       const d = draft[p.id];
       if (d == null || d === "") return false;
       const n = parseInt(d, 10);
       return !isNaN(n) && n !== scores[p.id]?.[currentHole];
     });
-  }, [draft, scores, players, currentHole]);
+  }, [draft, scores, players, currentHole, isScramble]);
+
+  const teamPending = isScramble && teamNum != null && !isNaN(teamNum) && teamNum !== teamSaved;
+  const hasPending = isScramble ? teamPending : pendingChanges.length > 0;
 
   const isPastHole = currentHole < (() => {
     for (let h = 1; h <= NUM_HOLES; h++) {
@@ -184,11 +205,17 @@ export default function GroupScoring() {
   const performSave = async () => {
     if (!tournament || !code) return;
     setSaving(true);
-    const rows = pendingChanges.map((p) => ({
-      registration_id: p.id,
-      hole_number: currentHole,
-      strokes: parseInt(draft[p.id], 10),
-    }));
+    const rows = isScramble
+      ? players.map((p) => ({
+          registration_id: p.id,
+          hole_number: currentHole,
+          strokes: teamNum as number,
+        }))
+      : pendingChanges.map((p) => ({
+          registration_id: p.id,
+          hole_number: currentHole,
+          strokes: parseInt(draft[p.id], 10),
+        }));
     const { error } = await supabase.rpc("save_group_scores", {
       _tournament_id: tournament.id,
       _code: code,
@@ -212,13 +239,14 @@ export default function GroupScoring() {
   };
 
   const handleSave = () => {
-    if (pendingChanges.length === 0) {
+    if (!hasPending) {
       if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
       return;
     }
     if (tournament?.live_require_confirm_save) setConfirmOpen(true);
     else performSave();
   };
+
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (error || !tournament) {
@@ -288,24 +316,84 @@ export default function GroupScoring() {
           </CardContent>
         </Card>
 
-        {(() => {
-          const fmt = getFormatById(tournament?.scoring_format || "stroke_play");
-          if (fmt && fmt.teamSize > 1) {
-            return (
-              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
-                <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                <p className="text-sm">
-                  <span className="font-semibold">Team scoring:</span> Only one player per team needs to enter the score for the team. You can edit a previously entered hole at any time.
-                </p>
-              </div>
-            );
-          }
-          return null;
-        })()}
+        {format && format.teamSize > 1 && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
+            <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+            <p className="text-sm">
+              <span className="font-semibold">{isScramble ? "Scramble scoring:" : "Team scoring:"}</span>{" "}
+              {isScramble
+                ? "Enter one team score per hole for the whole group. It applies to every player on the team."
+                : "Only one player per team needs to enter the score for the team. You can edit a previously entered hole at any time."}
+            </p>
+          </div>
+        )}
 
-        {/* Player rows */}
+        {isScramble ? (
+          /* Single team score entry */
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Team Score Entry — Group {code}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">Hole {currentHole} · Par {holePar}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {players.map((p) => `${p.first_name} ${p.last_name?.[0] ?? ""}.`).join(", ")}
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10"
+                    disabled={!!editLocked || (teamNum ?? holePar) <= 1}
+                    onClick={() =>
+                      setDraft((d) => ({ ...d, [TEAM_KEY]: String(Math.max(1, (teamNum ?? holePar) - 1)) }))
+                    }
+                    aria-label="Decrease team score"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div
+                    className={`w-16 h-12 rounded border text-center text-xl font-bold flex items-center justify-center ${
+                      teamNum != null ? "bg-card text-foreground" : "bg-muted/40 text-muted-foreground"
+                    }`}
+                    aria-label="Team score"
+                  >
+                    {teamNum ?? holePar}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10"
+                    disabled={!!editLocked || (teamNum ?? holePar) >= 12}
+                    onClick={() =>
+                      setDraft((d) => ({ ...d, [TEAM_KEY]: String(Math.min(12, (teamNum ?? holePar) + 1)) }))
+                    }
+                    aria-label="Increase team score"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              {teamNum == null && (
+                <p className="text-xs text-muted-foreground italic">Tap +/- to enter the team score for this hole.</p>
+              )}
+              {editLocked && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  Editing past holes is locked by the organizer.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+        /* Player rows */
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Scores</CardTitle></CardHeader>
+
           <CardContent className="space-y-2">
             {players.map((p) => {
               const sStrokes = strokesByPlayer[p.id]?.[currentHole - 1] || 0;
@@ -377,6 +465,8 @@ export default function GroupScoring() {
             )}
           </CardContent>
         </Card>
+        )}
+
 
         {/* Hole summary */}
         <Card>
@@ -417,7 +507,7 @@ export default function GroupScoring() {
             style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> :
-              pendingChanges.length > 0 ? `Save & ${currentHole < NUM_HOLES ? "Next Hole →" : "Finish"}` :
+              hasPending ? `Save & ${currentHole < NUM_HOLES ? "Next Hole →" : "Finish"}` :
               currentHole < NUM_HOLES ? "Next Hole →" : "Done"}
           </Button>
         </div>
@@ -428,8 +518,11 @@ export default function GroupScoring() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm scores for Hole {currentHole}</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingChanges.map((p) => `${p.first_name}: ${draft[p.id]}`).join(" · ")}
+              {isScramble
+                ? `Team score: ${teamNum ?? "—"}`
+                : pendingChanges.map((p) => `${p.first_name}: ${draft[p.id]}`).join(" · ")}
             </AlertDialogDescription>
+
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

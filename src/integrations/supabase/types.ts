@@ -8483,6 +8483,7 @@ export type Database = {
           group_leader: boolean
           group_number: number | null
           group_position: number | null
+          group_score: number | null
           group_scoring_code: string | null
           handicap: number | null
           handicap_index: number | null
@@ -8526,6 +8527,7 @@ export type Database = {
           group_leader?: boolean
           group_number?: number | null
           group_position?: number | null
+          group_score?: number | null
           group_scoring_code?: string | null
           handicap?: number | null
           handicap_index?: number | null
@@ -8569,6 +8571,7 @@ export type Database = {
           group_leader?: boolean
           group_number?: number | null
           group_position?: number | null
+          group_score?: number | null
           group_scoring_code?: string | null
           handicap?: number | null
           handicap_index?: number | null

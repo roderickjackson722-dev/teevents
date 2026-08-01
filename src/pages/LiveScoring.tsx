@@ -942,7 +942,7 @@ export default function LiveScoring() {
         {slug && (
           <div className="pt-2 border-t">
             <Button asChild variant="outline" className="w-full h-12">
-              <a href={`/live/${slug}`}>
+              <a href={`/live/${slug}`} target="_blank" rel="noopener noreferrer">
                 <Trophy className="h-4 w-4 mr-2" /> View Leaderboard →
               </a>
             </Button>

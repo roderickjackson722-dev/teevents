@@ -1780,7 +1780,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             )}
 
             {/* Sponsors button */}
-            {style.ctaLayout === "three" && (
+            {style.ctaLayout === "three" && isTabVisible("sponsors") && (
               <button
                 onClick={() => scrollTo("#become-a-sponsor")}
                 className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"

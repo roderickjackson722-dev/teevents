@@ -206,6 +206,7 @@ export default function EmailTemplateEditor() {
   const [resendingSingle, setResendingSingle] = useState(false);
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
+  const [recipientSearch, setRecipientSearch] = useState("");
 
   // Prefill test email with the current user's email
   useEffect(() => {
@@ -339,19 +340,20 @@ export default function EmailTemplateEditor() {
     toast.success("HTML copied to clipboard");
   };
 
-  const sendEmails = async () => {
-    if (selectedRecipients.length === 0) {
+  const sendEmails = async (ids?: string[]) => {
+    const targets = ids && ids.length > 0 ? ids : selectedRecipients;
+    if (targets.length === 0) {
       toast.error("Select at least one recipient");
       return;
     }
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("resend-confirmation", {
-        body: { registration_ids: selectedRecipients, use_custom_template: true },
+        body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
       });
       if (error) throw error;
       toast.success(`Sent ${data.sent} email(s)${data.failed ? `, ${data.failed} failed` : ""}`);
-      setSelectedRecipients([]);
+      if (!ids) setSelectedRecipients([]);
     } catch (e: any) {
       toast.error(e.message || "Failed to send emails");
     }
@@ -391,6 +393,7 @@ export default function EmailTemplateEditor() {
         body: {
           registration_ids: [editingReg.id],
           use_custom_template: true,
+          template_kind: templateKind,
           ...(needsUpdate ? { update_email: { registration_id: editingReg.id, new_email: editEmail.trim() } } : {}),
         },
       });
@@ -719,31 +722,43 @@ export default function EmailTemplateEditor() {
               <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
             </div>
           )}
-          {templateKind === "confirmation" && (
+          {templateKind !== "sponsor" && templateKind !== "vendor" && (
           <>
           <div className="bg-card rounded-lg border p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" /> Select Recipients
+                <Users className="h-4 w-4 text-primary" /> Players ({registrations.length})
               </h3>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
-                  {selectedRecipients.length === registrations.length ? "Deselect All" : "Select All"}
+                  {selectedRecipients.length === registrations.length && registrations.length > 0 ? "Deselect All" : "Select All"}
                 </Button>
                 <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
               </div>
             </div>
+            <Input
+              placeholder="Search by name or email…"
+              value={recipientSearch}
+              onChange={(e) => setRecipientSearch(e.target.value)}
+              className="mb-3"
+            />
             {registrations.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-6">No registrations found for this tournament.</p>
             ) : (
               <div className="max-h-[400px] overflow-y-auto divide-y">
-                {registrations.map(r => (
+                {registrations
+                  .filter((r) => {
+                    const q = recipientSearch.trim().toLowerCase();
+                    if (!q) return true;
+                    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
+                  })
+                  .map(r => (
                   <div key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
                     <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
                       <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                        <p className="text-xs text-muted-foreground truncate">{r.email || "No email on file"}</p>
                         <p className="text-xs text-muted-foreground truncate">
                           Scoring Code:{" "}
                           <span className="font-mono font-semibold text-foreground">
@@ -757,6 +772,16 @@ export default function EmailTemplateEditor() {
                       {r.payment_status}
                     </Badge>
 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 h-8"
+                      disabled={sending || !r.email}
+                      title={`Send ${TEMPLATE_LABELS[templateKind]} to ${r.email || "this player"}`}
+                      onClick={() => sendEmails([r.id])}
+                    >
+                      <Send className="h-3.5 w-3.5" /> Send
+                    </Button>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit email & resend" onClick={() => openEditModal(r)}>
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
@@ -767,9 +792,9 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button onClick={sendEmails} disabled={sending || selectedRecipients.length === 0} className="gap-2">
+            <Button onClick={() => sendEmails()} disabled={sending || selectedRecipients.length === 0} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send {TEMPLATE_LABELS[templateKind]}{selectedRecipients.length > 1 ? "s" : ""}
+              Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
           </div>
           </>

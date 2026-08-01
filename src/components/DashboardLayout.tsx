@@ -134,6 +134,20 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const displayName = tournamentLabel || orgContext?.orgName || "";
 
+  // Keep the current context (admin override / sample org / selected tournament)
+  // when linking back to the dashboard home, so the link never jumps to a
+  // different organization's event.
+  const dashboardHref = (() => {
+    const keep = new URLSearchParams();
+    for (const key of ["admin_org", "sample_org", "tournament_id"]) {
+      const v = searchParams.get(key);
+      if (v) keep.set(key, v);
+    }
+    const qs = keep.toString();
+    return qs ? `/dashboard?${qs}` : "/dashboard";
+  })();
+
+
   // Collapsible sidebar state, persisted in localStorage across sessions.
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   useEffect(() => {
@@ -234,7 +248,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     </span>
                     <span className="hidden sm:inline text-foreground/30">|</span>
                     <Link
-                      to="/dashboard"
+                      to={dashboardHref}
                       title="Click 'Open Dashboard' to access your tournament dashboard."
                       className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
                     >

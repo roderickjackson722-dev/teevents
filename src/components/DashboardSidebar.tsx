@@ -249,7 +249,7 @@ export function DashboardSidebar() {
 
     const linkContent = (
       <NavLink
-        to={item.url}
+        to={withContext(item.url)}
         end={item.url === "/dashboard"}
         className="flex items-center w-full text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
         activeClassName="bg-primary-foreground/15 text-secondary font-medium"

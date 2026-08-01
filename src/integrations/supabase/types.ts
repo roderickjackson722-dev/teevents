@@ -9355,6 +9355,7 @@ export type Database = {
           show_org_tab: boolean
           show_promo_code_input: boolean
           show_registration_count: boolean
+          show_sponsorships: boolean
           side_events_section_title: string | null
           site_background_color: string | null
           site_body_font_size: number | null
@@ -9616,6 +9617,7 @@ export type Database = {
           show_org_tab?: boolean
           show_promo_code_input?: boolean
           show_registration_count?: boolean
+          show_sponsorships?: boolean
           side_events_section_title?: string | null
           site_background_color?: string | null
           site_body_font_size?: number | null
@@ -9877,6 +9879,7 @@ export type Database = {
           show_org_tab?: boolean
           show_promo_code_input?: boolean
           show_registration_count?: boolean
+          show_sponsorships?: boolean
           side_events_section_title?: string | null
           site_background_color?: string | null
           site_body_font_size?: number | null

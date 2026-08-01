@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS show_sponsorships BOOLEAN NOT NULL DEFAULT TRUE;

@@ -8,7 +8,7 @@ import {
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt, Gauge,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logoWhite from "@/assets/logo-white.png";
 import { usePlanFeatures } from "@/hooks/usePlanFeatures";
@@ -183,10 +183,39 @@ export function DashboardSidebar() {
   const activeCategories = isLeagueWorkspace ? leagueCategories : categories;
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
+  const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
+
+  // Context params that identify WHICH event/org the dashboard is showing.
+  // Every sidebar link must carry them, otherwise navigating a tab falls back
+  // to the org's most recent tournament (wrong event on sample/demo links).
+  const selectedTournamentId = searchParams.get("tournament_id");
+  const contextQuery = (() => {
+    const keep = new URLSearchParams();
+    for (const key of ["admin_org", "sample_org", "sample", "tournament_id"]) {
+      const v = searchParams.get(key);
+      if (v) keep.set(key, v);
+    }
+    return keep.toString();
+  })();
+  const withContext = (url: string) => {
+    if (!contextQuery || !url.startsWith("/dashboard")) return url;
+    return `${url}${url.includes("?") ? "&" : "?"}${contextQuery}`;
+  };
 
   useEffect(() => {
     if (!org) { setTournamentSlug(null); return; }
+    // When a specific tournament is selected, its slug drives the public page
+    // link — never the org's latest tournament.
+    if (selectedTournamentId) {
+      supabase
+        .from("tournaments")
+        .select("slug")
+        .eq("id", selectedTournamentId)
+        .maybeSingle()
+        .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+      return;
+    }
     supabase
       .from("tournaments")
       .select("slug")
@@ -196,7 +225,7 @@ export function DashboardSidebar() {
       .limit(1)
       .maybeSingle()
       .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
-  }, [org]);
+  }, [org, selectedTournamentId]);
 
   const isOwner = !org || org.role === "owner";
   const permissions = org?.permissions || [];
@@ -220,7 +249,7 @@ export function DashboardSidebar() {
 
     const linkContent = (
       <NavLink
-        to={item.url}
+        to={withContext(item.url)}
         end={item.url === "/dashboard"}
         className="flex items-center w-full text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
         activeClassName="bg-primary-foreground/15 text-secondary font-medium"

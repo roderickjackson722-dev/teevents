@@ -23,6 +23,8 @@ import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCar
 import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
+import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
+
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 
 // Score validation: strokes must be an integer between 1 and 20 inclusive.
@@ -907,7 +909,10 @@ export default function Leaderboard() {
       )}
 
       {selectedTournament && (
-        <ScoreEditHistory tournamentId={selectedTournament} />
+        <LeaderboardHeaderCard
+          tournamentId={selectedTournament}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
+        />
       )}
 
       {selectedTournament && (
@@ -931,6 +936,12 @@ export default function Leaderboard() {
       {selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
       )}
+
+      {/* Edit history lives at the very bottom of the page */}
+      {selectedTournament && (
+        <ScoreEditHistory tournamentId={selectedTournament} />
+      )}
+
       <StickySaveBar onSave={() => {}} />
     </div>
   );

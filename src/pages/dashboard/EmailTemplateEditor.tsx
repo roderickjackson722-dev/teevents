@@ -165,6 +165,7 @@ const VARIABLE_TAGS = [
   { label: "Tee Time", value: "{{tee_time}}" },
   { label: "Starting Hole", value: "{{hole_number}}" },
   { label: "Scoring Code", value: "{{scoring_code}}" },
+  { label: "Group Number", value: "{{group_number}}" },
   { label: "Scoring Link", value: "{{scoring_link}}" },
   { label: "Event Homepage", value: "{{event_homepage}}" },
 ];

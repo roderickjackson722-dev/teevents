@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { formatCents } from "@/lib/formatCurrency";
+import type { GroupFieldKey, GroupFieldRules } from "@/lib/groupFieldRules";
+
 
 interface AddonRow {
   id: string;

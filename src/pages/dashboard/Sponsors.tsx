@@ -498,6 +498,72 @@ function SponsorLogoSizeCard({ tournamentId }: { tournamentId: string }) {
   );
 }
 
+function SponsorPublicDisplayCard({ tournamentId }: { tournamentId: string }) {
+  const { toast } = useToast();
+  const { demoGuard } = useDemoMode();
+  const [enabled, setEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    supabase
+      .from("tournaments")
+      .select("show_sponsorships")
+      .eq("id", tournamentId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setEnabled(((data as any)?.show_sponsorships ?? true) as boolean);
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [tournamentId]);
+
+  const save = async (next: boolean) => {
+    if (demoGuard()) return;
+    setEnabled(next);
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ show_sponsorships: next } as any)
+      .eq("id", tournamentId);
+    if (error) {
+      setEnabled(!next);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: next ? "Sponsorships shown on public page" : "Sponsorships hidden from public page",
+      });
+    }
+  };
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <ExternalLink className="h-4 w-4 text-primary" />
+          Public Display
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-medium text-sm">Show sponsorships on public tournament page</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              When enabled, the Sponsors tab will appear on your public tournament page. When disabled, the Sponsors tab will be hidden.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Note: If you have no active sponsorship tiers or sponsors, the section will not appear even if this toggle is on.
+            </p>
+          </div>
+          <Switch checked={enabled} disabled={loading} onCheckedChange={save} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+
 const Sponsors = () => {
 
   const { org } = useOrgContext();

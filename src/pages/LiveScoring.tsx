@@ -283,6 +283,37 @@ export default function LiveScoring() {
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const hasEdits = Object.keys(editedScores).length > 0;
   const handicapEnabled = tournament?.handicap_enabled === true;
+  const activeFormat = getFormatById(tournament?.scoring_format || "stroke_play");
+  const isScramble = activeFormat?.scoring === "scramble";
+
+  // Scramble: one score for the whole group — applied to every player
+  const getTeamScore = (hole: number) => {
+    for (const p of players) {
+      const v = editedScores[p.id]?.[hole] ?? scores[p.id]?.[hole];
+      if (typeof v === "number") return v;
+    }
+    return "" as const;
+  };
+
+  const setTeamScore = (hole: number, num: number) => {
+    const clamped = Math.max(1, Math.min(12, num));
+    setEditedScores((prev) => {
+      const next = { ...prev };
+      players.forEach((p) => {
+        next[p.id] = { ...(next[p.id] || {}), [hole]: clamped };
+      });
+      return next;
+    });
+  };
+
+  const adjustTeamScore = (hole: number, delta: number) => {
+    const current = getTeamScore(hole);
+    const base = typeof current === "number"
+      ? current
+      : (courseData?.hole_pars?.[hole - 1] ?? Math.round((tournament?.course_par || 72) / 18));
+    setTeamScore(hole, base + delta);
+  };
+
 
   if (loading || autoLogging) {
     return (

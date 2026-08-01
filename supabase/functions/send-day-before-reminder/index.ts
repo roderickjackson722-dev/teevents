@@ -148,7 +148,14 @@ Deno.serve(async (req) => {
       if (!bt.includes("{{event_schedule}}")) bt += "\n\n🗓 Event Schedule:\n{{event_schedule}}";
       if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
       config.body_text = bt;
+
+      // Older saved templates ended the scoring link with a period and had no leaderboard link.
+      let ct = String(config.closing_text ?? DEFAULTS.closing_text);
+      ct = ct.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
+      if (!ct.includes("{{leaderboard_link}}")) ct += "\n\nView the live leaderboard:\n👉 {{leaderboard_link}}";
+      config.closing_text = ct;
     }
+
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
           .toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })

@@ -393,6 +393,7 @@ export default function EmailTemplateEditor() {
         body: {
           registration_ids: [editingReg.id],
           use_custom_template: true,
+          template_kind: templateKind,
           ...(needsUpdate ? { update_email: { registration_id: editingReg.id, new_email: editEmail.trim() } } : {}),
         },
       });

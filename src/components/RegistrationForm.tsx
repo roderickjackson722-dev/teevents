@@ -116,6 +116,7 @@ const PlayerFields = ({
     "handicap": "handicap",
     "shirt size": "shirt_size",
     "dietary restrictions": "dietary_restrictions",
+    "company / organization": "company",
   };
 
   // If fields config provided, check which default fields are enabled
@@ -144,7 +145,9 @@ const PlayerFields = ({
   const emailRequired = emailMode ? emailMode === "required" : true;
 
   // Custom fields (non-default)
-  const customFields = (fields || []).filter((f) => !f.is_default && f.is_enabled);
+  const customFields = ruleFor("custom_questions") === "hidden"
+    ? []
+    : (fields || []).filter((f) => !f.is_default && f.is_enabled);
 
   return (
     <div className="space-y-4">
@@ -543,6 +546,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       "handicap": "handicap",
       "shirt size": "shirt_size",
       "dietary restrictions": "dietary_restrictions",
+      "company / organization": "company",
     };
     const rulesFor = (i: number) =>
       groupRulesActive ? (i === 0 ? groupFieldRules!.captain : groupFieldRules!.member) : null;
@@ -567,6 +571,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           const rk = ruleKeyByLabel[f.label.toLowerCase()];
           // Group rules win: skip fields the organizer made optional/hidden for this role
           if (roleRules && rk && roleRules[rk] !== "required") return;
+          if (roleRules && !rk && !f.is_default && roleRules.custom_questions === "hidden") return;
           const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
           const val = (player as any)[key];
           if (!val || (typeof val === "string" && !val.trim())) {
@@ -577,6 +582,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       if (roleRules) {
         (Object.keys(ruleKeyByLabel) as string[]).forEach((label) => {
           const rk = ruleKeyByLabel[label];
+          if (rk === "custom_questions") return;
           if (roleRules[rk] !== "required") return;
           const key = rk;
           const val = (player as any)[key];

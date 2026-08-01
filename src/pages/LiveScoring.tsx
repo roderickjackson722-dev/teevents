@@ -314,6 +314,70 @@ export default function LiveScoring() {
     setTeamScore(hole, base + delta);
   };
 
+  /** Save only the current hole's pending edits. Returns false if the save failed. */
+  const saveHole = async (hole: number): Promise<boolean> => {
+    if (!tournament) return false;
+    const upserts = Object.entries(editedScores).flatMap(([regId, holeMap]) =>
+      typeof holeMap[hole] === "number"
+        ? [{ registration_id: regId, hole_number: hole, strokes: holeMap[hole] }]
+        : []
+    );
+    if (upserts.length === 0) return true;
+    if (!scoringCode) {
+      toast.error("Missing scoring code. Please log in again with your code.");
+      return false;
+    }
+    setSaving(true);
+    const { error } = await supabase.rpc("save_group_scores", {
+      _tournament_id: tournament.id,
+      _code: scoringCode,
+      _scores: upserts,
+    });
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return false;
+    }
+    setScores((prev) => {
+      const next = { ...prev };
+      upserts.forEach((u) => {
+        next[u.registration_id] = { ...(next[u.registration_id] || {}), [hole]: u.strokes };
+      });
+      return next;
+    });
+    setEditedScores((prev) => {
+      const next: typeof prev = {};
+      Object.entries(prev).forEach(([regId, holeMap]) => {
+        const { [hole]: _removed, ...rest } = holeMap;
+        if (Object.keys(rest).length > 0) next[regId] = rest;
+      });
+      return next;
+    });
+    return true;
+  };
+
+  /** Save the current hole then navigate. Blank scores are allowed. */
+  const goToHole = async (nextHole: number) => {
+    const target = Math.max(1, Math.min(18, nextHole));
+    if (target === focusHole) return;
+    const hasAnyScore = players.some(
+      (p) =>
+        typeof (editedScores[p.id]?.[focusHole] ?? scores[p.id]?.[focusHole]) === "number"
+    );
+    const saved = await saveHole(focusHole);
+    if (!saved) return;
+    if (!hasAnyScore) {
+      toast("You haven't entered a score for this hole. You can leave it blank or go back.");
+    } else {
+      toast.success(`Score saved for Hole ${focusHole}`, {
+        description: `Moving to Hole ${target}...`,
+      });
+    }
+    setFocusHole(target);
+  };
+
+
+
 
   if (loading || autoLogging) {
     return (

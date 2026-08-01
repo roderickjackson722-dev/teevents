@@ -22,6 +22,57 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   day_before: "Tomorrow Is the Big Day!",
 };
 
+
+const BASE_DEFAULT = {
+  subject: "You're Registered — {{event_name}}",
+  greeting: "Hi {{first_name}},",
+  body_text: "We've received your registration for {{event_name}}. Thank you for signing up!",
+  closing_text: "We look forward to seeing you there!",
+  footer_text: "See you on the course! ⛳",
+  primary_color: "#1a5c38",
+  secondary_color: "#ffffff",
+  header_bg_color: "#1a5c38",
+  text_color: "#374151",
+  show_event_details: true,
+  show_logo: false,
+  logo_url: "",
+  logo_alignment: "center",
+  button_text: "View Event Details",
+  button_url: "",
+  show_button: false,
+  font_family: "Arial, sans-serif",
+};
+
+const DEFAULT_CONFIGS: Record<string, any> = {
+  confirmation: BASE_DEFAULT,
+  sponsor: {
+    ...BASE_DEFAULT,
+    subject: "Thank you for sponsoring {{event_name}}!",
+    body_text: "Thank you for your generous sponsorship of {{event_name}}.",
+  },
+  vendor: {
+    ...BASE_DEFAULT,
+    subject: "Vendor Registration Confirmed — {{event_name}}",
+    body_text: "Your vendor booth is confirmed for {{event_name}}.",
+  },
+  post_event: {
+    ...BASE_DEFAULT,
+    subject: "Thanks for playing in {{event_name}}!",
+    body_text: "Thank you for joining us at {{event_name}}! Keep an eye out for final results and photos.",
+    closing_text: "Want to be the first to know about our next tournament? Stay in the loop.",
+    show_event_details: false,
+  },
+  day_before: {
+    ...BASE_DEFAULT,
+    subject: "{{event_name}} – Tomorrow is the big day!",
+    greeting: "Hello {{first_name}},",
+    body_text: "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    closing_text: "Please arrive 30 minutes before your tee time. Enter your scores with your scoring code at {{scoring_link}}.",
+    button_text: "View Event Homepage",
+    show_event_details: false,
+  },
+};
+
 function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string; headerText?: string }): string {
   const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
   const body = replaceVars(config.body_text || "", vars).replace(/\n/g, "<br/>");
@@ -135,7 +186,7 @@ Deno.serve(async (req) => {
     // Get registrations with tournament info
     const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id, qr_token, scoring_code, group_scoring_code, group_number")
+      .select("id, first_name, last_name, email, tournament_id, qr_token, scoring_code, group_scoring_code, group_number, tee_time")
       .in("id", registration_ids);
 
     if (regErr || !registrations || registrations.length === 0) {
@@ -146,7 +197,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, slug")
+      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, schedule_info, schedule_info_html, slug")
       .eq("id", tournamentId)
       .single();
 
@@ -159,13 +210,41 @@ Deno.serve(async (req) => {
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const kind = template_kind || "confirmation";
-    const configColumn = kind === "post_event"
-      ? "post_event_email_config"
-      : kind === "day_before"
-        ? "day_before_email_config"
-        : "confirmation_email_config";
-    const emailConfig = (tournament as any)[configColumn] as any;
-    const useCustom = use_custom_template && emailConfig;
+    const CONFIG_COLUMN: Record<string, string> = {
+      confirmation: "confirmation_email_config",
+      post_event: "post_event_email_config",
+      day_before: "day_before_email_config",
+      sponsor: "sponsor_email_config",
+      vendor: "vendor_email_config",
+    };
+    const configColumn = CONFIG_COLUMN[kind] || "confirmation_email_config";
+    const stored = (tournament as any)[configColumn] as any;
+    // Fall back to the built-in defaults FOR THE SELECTED TEMPLATE — never to the
+    // registration confirmation email — so the sent email always matches the choice.
+    const emailConfig = { ...(DEFAULT_CONFIGS[kind] || DEFAULT_CONFIGS.confirmation), ...(stored || {}) };
+    const useCustom = use_custom_template !== false;
+    const headerText = TEMPLATE_HEADERS[kind] || TEMPLATE_HEADERS.confirmation;
+
+    // Course address / schedule for day-before style reminders
+    const { data: course } = await supabaseAdmin
+      .from("golf_courses")
+      .select("course_address")
+      .eq("tournament_id", tournamentId)
+      .limit(1)
+      .maybeSingle();
+    const stripTags = (str: string) =>
+      str.replace(/<br\s*\/?>(\s*)/gi, "\n")
+        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    const scheduleRaw = (tournament as any).schedule_info
+      || ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
+    const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
+    const locationFull = [(tournament as any).location, (tournament as any).state].filter(Boolean).join(", ");
+    const homepage = (tournament as any).slug
+      ? `https://www.teevents.golf/t/${(tournament as any).slug}`
+      : "https://www.teevents.golf";
 
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
@@ -179,24 +258,28 @@ Deno.serve(async (req) => {
       try {
         if (useCustom && RESEND_API_KEY) {
           // Use custom template
-          const vars = {
+          const vars: Record<string, string> = {
             first_name: reg.first_name,
             last_name: reg.last_name,
             event_name: tournament.title,
             event_date: dateStr || "",
-            event_location: tournament.location || "",
+            event_location: locationFull || tournament.location || "",
+            course_name: (tournament as any).course_name || tournament.location || "",
+            course_address: (course as any)?.course_address || locationFull || "See event homepage",
+            event_schedule: schedule,
+            tee_time: (reg as any).tee_time || "TBD",
+            hole_number: (reg as any).group_number != null ? String((reg as any).group_number) : "TBD",
             scoring_code: (reg as any).group_scoring_code || (reg as any).scoring_code
               || "Scoring code will be assigned when pairings are finalized",
             group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",
-            scoring_link: (tournament as any).slug
-              ? `https://www.teevents.golf/score/${(tournament as any).slug}`
-              : "https://www.teevents.golf",
+            scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
+            event_homepage: homepage,
           };
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
           const slug = (tournament as any).slug;
           const qrToken = (reg as any).qr_token;
           const hubUrl = slug && qrToken ? `https://www.teevents.golf/player/${slug}/${qrToken}` : "";
-          const html = buildCustomHtml(emailConfig, vars, { includePlayerHub: !!hubUrl, hubUrl });
+          const html = buildCustomHtml(emailConfig, vars, { includePlayerHub: kind === "confirmation" && !!hubUrl, hubUrl, headerText });
 
           const res = await fetch("https://api.resend.com/emails", {
             method: "POST",

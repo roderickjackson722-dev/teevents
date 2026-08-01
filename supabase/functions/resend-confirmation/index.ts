@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     ).auth.getUser(token);
     if (!user) throw new Error("Not authenticated");
 
-    const { registration_ids, use_custom_template, update_email } = await req.json();
+    const { registration_ids, use_custom_template, update_email, template_kind } = await req.json();
 
     // Optional: update a registrant's email before resending
     if (update_email && update_email.registration_id && update_email.new_email) {

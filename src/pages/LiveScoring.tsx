@@ -314,6 +314,70 @@ export default function LiveScoring() {
     setTeamScore(hole, base + delta);
   };
 
+  /** Save only the current hole's pending edits. Returns false if the save failed. */
+  const saveHole = async (hole: number): Promise<boolean> => {
+    if (!tournament) return false;
+    const upserts = Object.entries(editedScores).flatMap(([regId, holeMap]) =>
+      typeof holeMap[hole] === "number"
+        ? [{ registration_id: regId, hole_number: hole, strokes: holeMap[hole] }]
+        : []
+    );
+    if (upserts.length === 0) return true;
+    if (!scoringCode) {
+      toast.error("Missing scoring code. Please log in again with your code.");
+      return false;
+    }
+    setSaving(true);
+    const { error } = await supabase.rpc("save_group_scores", {
+      _tournament_id: tournament.id,
+      _code: scoringCode,
+      _scores: upserts,
+    });
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return false;
+    }
+    setScores((prev) => {
+      const next = { ...prev };
+      upserts.forEach((u) => {
+        next[u.registration_id] = { ...(next[u.registration_id] || {}), [hole]: u.strokes };
+      });
+      return next;
+    });
+    setEditedScores((prev) => {
+      const next: typeof prev = {};
+      Object.entries(prev).forEach(([regId, holeMap]) => {
+        const { [hole]: _removed, ...rest } = holeMap;
+        if (Object.keys(rest).length > 0) next[regId] = rest;
+      });
+      return next;
+    });
+    return true;
+  };
+
+  /** Save the current hole then navigate. Blank scores are allowed. */
+  const goToHole = async (nextHole: number) => {
+    const target = Math.max(1, Math.min(18, nextHole));
+    if (target === focusHole) return;
+    const hasAnyScore = players.some(
+      (p) =>
+        typeof (editedScores[p.id]?.[focusHole] ?? scores[p.id]?.[focusHole]) === "number"
+    );
+    const saved = await saveHole(focusHole);
+    if (!saved) return;
+    if (!hasAnyScore) {
+      toast("You haven't entered a score for this hole. You can leave it blank or go back.");
+    } else {
+      toast.success(`Score saved for Hole ${focusHole}`, {
+        description: `Moving to Hole ${target}...`,
+      });
+    }
+    setFocusHole(target);
+  };
+
+
+
 
   if (loading || autoLogging) {
     return (
@@ -401,12 +465,13 @@ export default function LiveScoring() {
               Par {tournament.course_par || 72}
             </p>
           </div>
-          {hasEdits && (
+          {hasEdits && viewMode === "all" && (
             <Button onClick={handleSave} disabled={saving} size="sm">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
               Save
             </Button>
           )}
+
         </div>
 
         {(() => {
@@ -443,8 +508,8 @@ export default function LiveScoring() {
           {viewMode === "single" && (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setFocusHole((h) => Math.max(1, h - 1))}
-                disabled={focusHole <= 1}
+                onClick={() => goToHole(focusHole - 1)}
+                disabled={focusHole <= 1 || saving}
                 className="h-9 w-9 rounded border bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
                 aria-label="Previous hole"
               >
@@ -454,7 +519,7 @@ export default function LiveScoring() {
                 <span className="text-sm text-muted-foreground">Hole</span>
                 <select
                   value={focusHole}
-                  onChange={(e) => setFocusHole(parseInt(e.target.value))}
+                  onChange={(e) => goToHole(parseInt(e.target.value))}
                   className="h-9 rounded border bg-background px-2 text-sm font-semibold min-w-[64px]"
                 >
                   {holes.map((h) => (
@@ -464,18 +529,18 @@ export default function LiveScoring() {
                 {courseData?.hole_pars?.[focusHole - 1] != null && (
                   <span className="text-xs text-muted-foreground ml-1">
                     · Par {courseData.hole_pars[focusHole - 1]}
-                    {courseStrokeIndexes?.[focusHole - 1] ? ` · SI ${courseStrokeIndexes[focusHole - 1]}` : ""}
                   </span>
                 )}
               </div>
               <button
-                onClick={() => setFocusHole((h) => Math.min(18, h + 1))}
-                disabled={focusHole >= 18}
+                onClick={() => goToHole(focusHole + 1)}
+                disabled={focusHole >= 18 || saving}
                 className="h-9 w-9 rounded border bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center rotate-180"
                 aria-label="Next hole"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
+
             </div>
           )}
         </div>
@@ -740,6 +805,34 @@ export default function LiveScoring() {
           </CardContent>
         </Card>
         )}
+
+        {viewMode === "single" && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 h-12"
+                disabled={focusHole <= 1 || saving}
+                onClick={() => goToHole(focusHole - 1)}
+              >
+                ← Previous
+              </Button>
+              <Button
+                className="flex-1 h-12"
+                disabled={focusHole >= 18 || saving}
+                onClick={() => goToHole(focusHole + 1)}
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                Next Hole →
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              💡 Score saved when you move to the next hole.
+            </p>
+          </div>
+        )}
+
+
 
         {slug && (
           <div className="pt-2 border-t">

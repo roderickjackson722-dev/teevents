@@ -657,7 +657,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               company: players[i].company || null,
               skill_level: players[i].skill_level || null,
               notes: i === 0 ? groupNotes || null : null,
+              is_captain: i === 0,
               custom_answers: buildCustomAnswers(i),
+
             }))
           : null;
 

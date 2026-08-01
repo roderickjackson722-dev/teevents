@@ -316,24 +316,84 @@ export default function GroupScoring() {
           </CardContent>
         </Card>
 
-        {(() => {
-          const fmt = getFormatById(tournament?.scoring_format || "stroke_play");
-          if (fmt && fmt.teamSize > 1) {
-            return (
-              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
-                <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                <p className="text-sm">
-                  <span className="font-semibold">Team scoring:</span> Only one player per team needs to enter the score for the team. You can edit a previously entered hole at any time.
-                </p>
-              </div>
-            );
-          }
-          return null;
-        })()}
+        {format && format.teamSize > 1 && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 flex items-start gap-2">
+            <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+            <p className="text-sm">
+              <span className="font-semibold">{isScramble ? "Scramble scoring:" : "Team scoring:"}</span>{" "}
+              {isScramble
+                ? "Enter one team score per hole for the whole group. It applies to every player on the team."
+                : "Only one player per team needs to enter the score for the team. You can edit a previously entered hole at any time."}
+            </p>
+          </div>
+        )}
 
-        {/* Player rows */}
+        {isScramble ? (
+          /* Single team score entry */
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Team Score Entry — Group {code}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">Hole {currentHole} · Par {holePar}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {players.map((p) => `${p.first_name} ${p.last_name?.[0] ?? ""}.`).join(", ")}
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10"
+                    disabled={!!editLocked || (teamNum ?? holePar) <= 1}
+                    onClick={() =>
+                      setDraft((d) => ({ ...d, [TEAM_KEY]: String(Math.max(1, (teamNum ?? holePar) - 1)) }))
+                    }
+                    aria-label="Decrease team score"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div
+                    className={`w-16 h-12 rounded border text-center text-xl font-bold flex items-center justify-center ${
+                      teamNum != null ? "bg-card text-foreground" : "bg-muted/40 text-muted-foreground"
+                    }`}
+                    aria-label="Team score"
+                  >
+                    {teamNum ?? holePar}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10"
+                    disabled={!!editLocked || (teamNum ?? holePar) >= 12}
+                    onClick={() =>
+                      setDraft((d) => ({ ...d, [TEAM_KEY]: String(Math.min(12, (teamNum ?? holePar) + 1)) }))
+                    }
+                    aria-label="Increase team score"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              {teamNum == null && (
+                <p className="text-xs text-muted-foreground italic">Tap +/- to enter the team score for this hole.</p>
+              )}
+              {editLocked && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  Editing past holes is locked by the organizer.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+        /* Player rows */
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Scores</CardTitle></CardHeader>
+
           <CardContent className="space-y-2">
             {players.map((p) => {
               const sStrokes = strokesByPlayer[p.id]?.[currentHole - 1] || 0;

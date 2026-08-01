@@ -165,6 +165,7 @@ const VARIABLE_TAGS = [
   { label: "Tee Time", value: "{{tee_time}}" },
   { label: "Starting Hole", value: "{{hole_number}}" },
   { label: "Scoring Code", value: "{{scoring_code}}" },
+  { label: "Group Number", value: "{{group_number}}" },
   { label: "Scoring Link", value: "{{scoring_link}}" },
   { label: "Event Homepage", value: "{{event_homepage}}" },
 ];
@@ -762,7 +763,7 @@ export default function EmailTemplateEditor() {
                         <p className="text-xs text-muted-foreground truncate">
                           Scoring Code:{" "}
                           <span className="font-mono font-semibold text-foreground">
-                            {r.group_scoring_code || r.scoring_code || "—"}
+                            {r.group_scoring_code || r.scoring_code || "Not assigned yet"}
                           </span>
                           {r.group_number ? <span className="ml-1">(Group {r.group_number})</span> : null}
                         </p>

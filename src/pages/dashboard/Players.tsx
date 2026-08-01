@@ -86,6 +86,7 @@ interface Registration {
 
   created_at: string;
   scoring_code: string | null;
+  group_scoring_code?: string | null;
   tier_id: string | null;
   custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null;
 }
@@ -308,6 +309,15 @@ const Players = () => {
     return String(v);
   };
 
+  // Scoring codes live at the GROUP level and are only created once pairings are assigned.
+  const codeOf = (p: Registration): string => (p.group_scoring_code || p.scoring_code || "");
+  const newScoringCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  };
+
   const getSortValue = (p: Registration, key: string): string | number => {
     switch (key) {
       case "name": return `${p.first_name} ${p.last_name}`.toLowerCase();
@@ -322,7 +332,7 @@ const Players = () => {
         const t = p.group_number != null ? holeTeeTimes[p.group_number] : "";
         return t || "\uFFFF"; // empty sorts last
       }
-      case "code": return (p.scoring_code || "").toLowerCase();
+      case "code": return codeOf(p).toLowerCase();
       case "payment": return (p.payment_status || "").toLowerCase();
       default:
         if (key.startsWith("custom_")) return getCustomAnswer(p, key.slice("custom_".length)).toLowerCase();
@@ -472,16 +482,22 @@ const Players = () => {
       toast({ title: "Code cannot be empty", variant: "destructive" });
       return;
     }
+    const player = allPlayers.find((p) => p.id === playerId);
+    if (!player || player.group_number === null || player.group_number === undefined) {
+      toast({ title: "Assign pairings first", description: "Scoring codes are generated once this player is placed in a group.", variant: "destructive" });
+      return;
+    }
     const { error } = await supabase
       .from("tournament_registrations")
-      .update({ scoring_code: code })
-      .eq("id", playerId);
+      .update({ group_scoring_code: code, scoring_code: code })
+      .eq("tournament_id", selectedTournament)
+      .eq("group_number", player.group_number);
     if (error) {
       toast({ title: "Error", description: error.message.includes("unique") ? "This code is already in use" : error.message, variant: "destructive" });
     } else {
-      setAllPlayers((prev) => prev.map((p) => p.id === playerId ? { ...p, scoring_code: code } : p));
+      setAllPlayers((prev) => prev.map((p) => p.group_number === player.group_number ? { ...p, group_scoring_code: code, scoring_code: code } : p));
       setEditingScoringCode(null);
-      toast({ title: "Scoring code updated" });
+      toast({ title: "Group scoring code updated" });
     }
   };
 
@@ -497,7 +513,7 @@ const Players = () => {
       p.shirt_size || "",
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
-      p.scoring_code || "",
+      codeOf(p),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -624,43 +640,51 @@ const Players = () => {
   };
 
 
-  const handleRegenerateAllCodes = async () => {
-    if (players.length === 0 || demoGuard()) return;
-    setRegenerating(true);
-    const generateCode = () => {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let code = "";
-      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-      return code;
-    };
-
-    const usedCodes = new Set<string>();
-    const updates: { id: string; code: string }[] = [];
-    for (const p of players) {
-      let code = generateCode();
-      while (usedCodes.has(code)) code = generateCode();
-      usedCodes.add(code);
-      updates.push({ id: p.id, code });
+  // Assign / regenerate the shared scoring code for one pairing group.
+  const setGroupCode = async (groupNumber: number, code: string | null) => {
+    const ids = allPlayers.filter((p) => p.group_number === groupNumber).map((p) => p.id);
+    if (ids.length === 0) return { error: { message: "No players in this group yet." } as any };
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ group_scoring_code: code, scoring_code: code })
+      .in("id", ids);
+    if (!error) {
+      setAllPlayers((prev) => prev.map((p) => p.group_number === groupNumber ? { ...p, group_scoring_code: code, scoring_code: code } : p));
     }
+    return { error };
+  };
 
+  const handleAssignGroupCode = async (groupNumber: number) => {
+    if (demoGuard()) return;
+    const used = new Set(allPlayers.map((p) => codeOf(p)).filter(Boolean));
+    let code = newScoringCode();
+    while (used.has(code)) code = newScoringCode();
+    const { error } = await setGroupCode(groupNumber, code);
+    if (error) toast({ title: "Could not assign code", description: error.message, variant: "destructive" });
+    else toast({ title: `Scoring code ${code} assigned`, description: `Shared by everyone on Hole ${groupNumber}.` });
+  };
+
+  const handleRegenerateAllCodes = async () => {
+    if (demoGuard()) return;
+    const nums = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))];
+    if (nums.length === 0) {
+      toast({ title: "Assign pairings first", description: "Scoring codes are generated once players are placed in groups.", variant: "destructive" });
+      return;
+    }
+    setRegenerating(true);
+    const used = new Set<string>();
     let success = 0;
-    for (const u of updates) {
-      const { error } = await supabase
-        .from("tournament_registrations")
-        .update({ scoring_code: u.code })
-        .eq("id", u.id);
+    for (const num of nums) {
+      let code = newScoringCode();
+      while (used.has(code)) code = newScoringCode();
+      used.add(code);
+      const { error } = await setGroupCode(num, code);
       if (!error) success++;
     }
-
-    setAllPlayers((prev) =>
-      prev.map((p) => {
-        const u = updates.find((u) => u.id === p.id);
-        return u ? { ...p, scoring_code: u.code } : p;
-      })
-    );
     setRegenerating(false);
-    toast({ title: "Codes regenerated", description: `${success} scoring codes updated.` });
+    toast({ title: "Codes regenerated", description: `${success} group scoring code(s) updated.` });
   };
+
 
 
   const maxGroupSize = 4;
@@ -1645,11 +1669,13 @@ const Players = () => {
                           </div>
                         ) : (
                           <button
-                            onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(p.scoring_code || ""); }}
+                            onClick={() => { setEditingScoringCode(p.id); setScoringCodeInput(codeOf(p)); }}
                             className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-                            title="Click to edit scoring code"
+                            title={codeOf(p) ? "Click to edit this group's scoring code" : "Scoring codes are generated when pairings are assigned"}
                           >
-                            {p.scoring_code || "—"}
+                            {codeOf(p)
+                              ? `${codeOf(p)}${p.group_number != null ? ` (Group ${holeLabels[p.group_number] || p.group_number})` : ""}`
+                              : "— Not assigned"}
                             <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
                           </button>
                         )}
@@ -1761,6 +1787,11 @@ const Players = () => {
             </table>
           </div>
         </div>
+        {rosterCols.code !== false && (
+          <p className="text-xs text-muted-foreground">
+            💡 Scoring codes are generated when pairings are assigned — everyone in a group shares the same code.
+          </p>
+        )}
         {registrationGroups.length > 0 && (
           <div className="bg-card rounded-lg border border-border p-4 space-y-4">
             <div className="flex items-center gap-2">
@@ -2141,7 +2172,28 @@ const Players = () => {
                             🕒 {holeTeeTimes[group.number] ? fmtTee12(holeTeeTimes[group.number]) : "Add tee time"}
                           </button>
                         )}
+                        {(() => {
+                          const gCode = group.players.map((p) => codeOf(p)).find(Boolean) || "";
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-muted-foreground">Scoring Code:</span>
+                              <span className="text-xs font-mono font-bold text-foreground">{gCode || "Not assigned"}</span>
+                              {group.players.length > 0 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 px-2 text-[11px]"
+                                  onClick={() => handleAssignGroupCode(group.number)}
+                                >
+                                  {gCode ? "Regenerate Code" : "Assign Code"}
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
+
+
 
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground mr-1">
@@ -2292,7 +2344,7 @@ const Players = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Scoring Code</p>
-                  <p className="text-sm font-mono text-foreground">{viewingPlayer.scoring_code || "—"}</p>
+                  <p className="text-sm font-mono text-foreground">{codeOf(viewingPlayer) || "— Not assigned until pairings are set"}</p>
                 </div>
               </div>
               {viewingPlayer.dietary_restrictions && (

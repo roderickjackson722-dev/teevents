@@ -381,16 +381,11 @@ export default function EmailTemplateEditor() {
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(config, {
-      first_name: "John",
-      last_name: "Doe",
-      event_name: "Sample Tournament",
-      event_date: "Saturday, June 15, 2026",
-      event_location: "Pine Valley Golf Club",
-    }, TEMPLATE_HEADERS[templateKind]);
+    const html = renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
+
 
   const sendEmails = async (ids?: string[]) => {
     const targets = ids && ids.length > 0 ? ids : selectedRecipients;

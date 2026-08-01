@@ -705,6 +705,7 @@ export default function EmailTemplateEditor() {
                   ? formatTournamentDate(tournaments.find(t => t.id === selectedTournament).date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
                   : "Saturday, June 15, 2026",
                 event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
+                scoring_code: "ABC123",
               }, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
             }} />
           </div>

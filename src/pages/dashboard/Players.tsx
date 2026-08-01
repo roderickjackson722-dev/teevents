@@ -634,43 +634,51 @@ const Players = () => {
   };
 
 
-  const handleRegenerateAllCodes = async () => {
-    if (players.length === 0 || demoGuard()) return;
-    setRegenerating(true);
-    const generateCode = () => {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let code = "";
-      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-      return code;
-    };
-
-    const usedCodes = new Set<string>();
-    const updates: { id: string; code: string }[] = [];
-    for (const p of players) {
-      let code = generateCode();
-      while (usedCodes.has(code)) code = generateCode();
-      usedCodes.add(code);
-      updates.push({ id: p.id, code });
+  // Assign / regenerate the shared scoring code for one pairing group.
+  const setGroupCode = async (groupNumber: number, code: string | null) => {
+    const ids = allPlayers.filter((p) => p.group_number === groupNumber).map((p) => p.id);
+    if (ids.length === 0) return { error: { message: "No players in this group yet." } as any };
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ group_scoring_code: code, scoring_code: code })
+      .in("id", ids);
+    if (!error) {
+      setAllPlayers((prev) => prev.map((p) => p.group_number === groupNumber ? { ...p, group_scoring_code: code, scoring_code: code } : p));
     }
+    return { error };
+  };
 
+  const handleAssignGroupCode = async (groupNumber: number) => {
+    if (demoGuard()) return;
+    const used = new Set(allPlayers.map((p) => codeOf(p)).filter(Boolean));
+    let code = newScoringCode();
+    while (used.has(code)) code = newScoringCode();
+    const { error } = await setGroupCode(groupNumber, code);
+    if (error) toast({ title: "Could not assign code", description: error.message, variant: "destructive" });
+    else toast({ title: `Scoring code ${code} assigned`, description: `Shared by everyone on Hole ${groupNumber}.` });
+  };
+
+  const handleRegenerateAllCodes = async () => {
+    if (demoGuard()) return;
+    const nums = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))];
+    if (nums.length === 0) {
+      toast({ title: "Assign pairings first", description: "Scoring codes are generated once players are placed in groups.", variant: "destructive" });
+      return;
+    }
+    setRegenerating(true);
+    const used = new Set<string>();
     let success = 0;
-    for (const u of updates) {
-      const { error } = await supabase
-        .from("tournament_registrations")
-        .update({ scoring_code: u.code })
-        .eq("id", u.id);
+    for (const num of nums) {
+      let code = newScoringCode();
+      while (used.has(code)) code = newScoringCode();
+      used.add(code);
+      const { error } = await setGroupCode(num, code);
       if (!error) success++;
     }
-
-    setAllPlayers((prev) =>
-      prev.map((p) => {
-        const u = updates.find((u) => u.id === p.id);
-        return u ? { ...p, scoring_code: u.code } : p;
-      })
-    );
     setRegenerating(false);
-    toast({ title: "Codes regenerated", description: `${success} scoring codes updated.` });
+    toast({ title: "Codes regenerated", description: `${success} group scoring code(s) updated.` });
   };
+
 
 
   const maxGroupSize = 4;

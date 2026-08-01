@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, organization_id, confirmation_email_config, slug")
+      .select("title, date, location, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, slug")
       .eq("id", tournamentId)
       .single();
 
@@ -157,7 +157,13 @@ Deno.serve(async (req) => {
     if (!isAdmin && !isMember) throw new Error("Not authorized");
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const emailConfig = tournament.confirmation_email_config as any;
+    const kind = template_kind || "confirmation";
+    const configColumn = kind === "post_event"
+      ? "post_event_email_config"
+      : kind === "day_before"
+        ? "day_before_email_config"
+        : "confirmation_email_config";
+    const emailConfig = (tournament as any)[configColumn] as any;
     const useCustom = use_custom_template && emailConfig;
 
     const dateStr = tournament.date

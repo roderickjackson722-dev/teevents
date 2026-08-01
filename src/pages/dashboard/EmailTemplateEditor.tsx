@@ -387,6 +387,8 @@ export default function EmailTemplateEditor() {
   };
 
 
+  const [confirmSendOpen, setConfirmSendOpen] = useState(false);
+
   const sendEmails = async (ids?: string[]) => {
     const targets = ids && ids.length > 0 ? ids : selectedRecipients;
     if (targets.length === 0) {
@@ -395,6 +397,7 @@ export default function EmailTemplateEditor() {
     }
     setSending(true);
     try {
+      console.log("[Email Templates] Sending template:", templateKind, "subject:", config.subject, "recipients:", targets.length);
       const { data, error } = await supabase.functions.invoke("resend-confirmation", {
         body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
       });
@@ -831,7 +834,7 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button onClick={() => sendEmails()} disabled={sending || selectedRecipients.length === 0} className="gap-2">
+            <Button onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
@@ -854,6 +857,36 @@ export default function EmailTemplateEditor() {
           <Copy className="h-4 w-4" /> Copy HTML
         </Button>
       </div>
+
+      {/* Send Confirmation Modal */}
+      <Dialog open={confirmSendOpen} onOpenChange={setConfirmSendOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-primary" /> Send Email
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2 text-sm">
+            <p className="text-muted-foreground">You are about to send the following email:</p>
+            <div className="rounded-lg border bg-muted/40 p-3 space-y-1">
+              <p><strong>Template:</strong> {TEMPLATE_LABELS[templateKind]}</p>
+              <p><strong>Subject:</strong> {replaceVariablesPlain(config.subject, previewVars)}</p>
+              <p><strong>Recipients:</strong> {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}</p>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setConfirmSendOpen(false)}>Cancel</Button>
+              <Button
+                className="gap-2"
+                disabled={sending}
+                onClick={async () => { setConfirmSendOpen(false); await sendEmails(); }}
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Confirm Send
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Email & Resend Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
@@ -908,6 +941,11 @@ const SAMPLE_VARS: Record<string, string> = {
   scoring_link: "https://www.teevents.golf/t/sample/scoring",
   event_homepage: "https://www.teevents.golf/t/sample",
 };
+
+function replaceVariablesPlain(text: string, vars: Record<string, string>): string {
+  const merged = { ...SAMPLE_VARS, ...vars };
+  return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

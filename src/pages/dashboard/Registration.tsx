@@ -1283,13 +1283,9 @@ const Registration = () => {
                               </div>
                             </div>
                             {editFieldType === "dropdown" && (
-                              <Input
-                                placeholder="Options (comma-separated): Option A, Option B"
-                                value={editFieldOptions}
-                                onChange={(e) => setEditFieldOptions(e.target.value)}
-                                maxLength={500}
-                              />
+                              <DropdownOptionsEditor options={editFieldOptions} onChange={setEditFieldOptions} />
                             )}
+
                           </div>
                         ) : (
                           <div className="flex items-center justify-between">

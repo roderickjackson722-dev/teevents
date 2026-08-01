@@ -537,11 +537,36 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
     const fieldErrors: Record<string, string> = {};
 
+    // Captain / teammate rules for group sign-ups
+    const ruleKeyByLabel: Record<string, GroupFieldKey> = {
+      "phone": "phone",
+      "handicap": "handicap",
+      "shirt size": "shirt_size",
+      "dietary restrictions": "dietary_restrictions",
+    };
+    const rulesFor = (i: number) =>
+      groupRulesActive ? (i === 0 ? groupFieldRules!.captain : groupFieldRules!.member) : null;
+
+    // Teammates may not be asked for an email — reuse the captain's address with a
+    // +alias so every registration row still has a deliverable contact email.
+    const captainEmail = (players[0].email || "").trim();
+    const effectiveEmail = (i: number) => {
+      const own = (players[i].email || "").trim();
+      if (i === 0 || !groupRulesActive) return own;
+      if (own) return own;
+      const [local, domain] = captainEmail.split("@");
+      return local && domain ? `${local}+p${i + 1}@${domain}` : own;
+    };
+
     // Validate required custom fields from field config
-    const validateRequiredFields = (player: PlayerForm, prefix: string) => {
+    const validateRequiredFields = (player: PlayerForm, prefix: string, index: number) => {
+      const roleRules = rulesFor(index);
       if (fields && fields.length > 0) {
         const fieldMap: Record<string, string> = { "phone": "phone", "handicap": "handicap", "shirt size": "shirt_size", "dietary restrictions": "dietary_restrictions", "company / organization": "company", "skill level": "skill_level" };
         fields.filter((f) => f.is_enabled && f.is_required).forEach((f) => {
+          const rk = ruleKeyByLabel[f.label.toLowerCase()];
+          // Group rules win: skip fields the organizer made optional/hidden for this role
+          if (roleRules && rk && roleRules[rk] !== "required") return;
           const key = fieldMap[f.label.toLowerCase()] || `custom_${f.id}`;
           const val = (player as any)[key];
           if (!val || (typeof val === "string" && !val.trim())) {
@@ -549,12 +574,30 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           }
         });
       }
+      if (roleRules) {
+        (Object.keys(ruleKeyByLabel) as string[]).forEach((label) => {
+          const rk = ruleKeyByLabel[label];
+          if (roleRules[rk] !== "required") return;
+          const key = rk;
+          const val = (player as any)[key];
+          if (!val || (typeof val === "string" && !val.trim())) {
+            fieldErrors[`${prefix}${key}`] = `This field is required`;
+          }
+        });
+      }
     };
 
     const parsedPlayers = players.map((player, i) => {
       const prefix = i > 0 ? `p${i}_` : "";
-      const parsed = playerSchema.safeParse({
+      const roleRules = rulesFor(i);
+      const emailOptional = !!roleRules && roleRules.email !== "required";
+      const email = effectiveEmail(i);
+      const schema = emailOptional
+        ? playerSchema.extend({ email: z.string().trim().max(255).optional().or(z.literal("")) })
+        : playerSchema;
+      const parsed = schema.safeParse({
         ...player,
+        email,
         handicap: player.handicap ? parseInt(player.handicap) : undefined,
       });
       if (!parsed.success) {
@@ -563,14 +606,15 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         });
         return null;
       }
-      validateRequiredFields(player, prefix);
-      return parsed.data;
+      validateRequiredFields(player, prefix, i);
+      return { ...parsed.data, email } as typeof playerSchema._type;
     });
 
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return;
     }
+
 
     setSubmitting(true);
 

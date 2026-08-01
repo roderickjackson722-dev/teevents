@@ -18,7 +18,8 @@ function replaceVars(text: string, vars: Record<string, string>): string {
     .replace(/\{\{event_date\}\}/g, vars.event_date || "")
     .replace(/\{\{event_location\}\}/g, vars.event_location || "")
     .replace(/\{\{scoring_code\}\}/g, vars.scoring_code || "")
-    .replace(/\{\{scoring_link\}\}/g, vars.scoring_link || "");
+    .replace(/\{\{scoring_link\}\}/g, vars.scoring_link || "")
+    .replace(/\{\{group_number\}\}/g, vars.group_number || "");
 }
 
 function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string }): string {
@@ -134,7 +135,7 @@ Deno.serve(async (req) => {
     // Get registrations with tournament info
     const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id, qr_token, scoring_code, group_scoring_code")
+      .select("id, first_name, last_name, email, tournament_id, qr_token, scoring_code, group_scoring_code, group_number")
       .in("id", registration_ids);
 
     if (regErr || !registrations || registrations.length === 0) {
@@ -184,7 +185,9 @@ Deno.serve(async (req) => {
             event_name: tournament.title,
             event_date: dateStr || "",
             event_location: tournament.location || "",
-            scoring_code: (reg as any).group_scoring_code || (reg as any).scoring_code || "",
+            scoring_code: (reg as any).group_scoring_code || (reg as any).scoring_code
+              || "Scoring code will be assigned when pairings are finalized",
+            group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",
             scoring_link: (tournament as any).slug
               ? `https://www.teevents.golf/score/${(tournament as any).slug}`
               : "https://www.teevents.golf",

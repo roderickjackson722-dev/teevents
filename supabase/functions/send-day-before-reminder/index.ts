@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
       event_schedule: schedule,
       tee_time: reg.tee_time || "TBD",
       hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
-      scoring_code: reg.scoring_code || "TBD",
+      scoring_code: reg.group_scoring_code || reg.scoring_code || "Assigned when pairings are finalized",
       scoring_link: scoringLink,
       event_homepage: homepage,
     });
@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
 
     const { data: regs } = await admin
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, scoring_code, group_number, tee_time")
+      .select("id, first_name, last_name, email, scoring_code, group_scoring_code, group_number, tee_time")
       .eq("tournament_id", tournament_id)
       .eq("payment_status", "paid");
 

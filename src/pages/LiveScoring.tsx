@@ -256,6 +256,7 @@ export default function LiveScoring() {
     if (!tournament) return;
     setError("");
     let gNum: number | null = null;
+    let loginCode: string | null = null;
 
     if (codeInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
@@ -264,7 +265,8 @@ export default function LiveScoring() {
         _email: "",
       });
       if (!data) { setError("Invalid scoring code."); return; }
-      setScoringCode(codeInput.trim().toUpperCase());
+      loginCode = codeInput.trim().toUpperCase();
+      setScoringCode(loginCode);
       gNum = data as number;
     } else if (emailInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
@@ -278,7 +280,7 @@ export default function LiveScoring() {
       setError("Enter your scoring code or email."); return;
     }
 
-    await loadGroup(gNum);
+    await loadGroup(gNum, loginCode ?? undefined);
     if (players.length === 0 && error === "") {
       setError(`No players found in Hole ${gNum}.`);
     }

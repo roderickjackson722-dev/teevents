@@ -507,7 +507,7 @@ export default function GroupScoring() {
             style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> :
-              pendingChanges.length > 0 ? `Save & ${currentHole < NUM_HOLES ? "Next Hole →" : "Finish"}` :
+              hasPending ? `Save & ${currentHole < NUM_HOLES ? "Next Hole →" : "Finish"}` :
               currentHole < NUM_HOLES ? "Next Hole →" : "Done"}
           </Button>
         </div>
@@ -518,8 +518,11 @@ export default function GroupScoring() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm scores for Hole {currentHole}</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingChanges.map((p) => `${p.first_name}: ${draft[p.id]}`).join(" · ")}
+              {isScramble
+                ? `Team score: ${teamNum ?? "—"}`
+                : pendingChanges.map((p) => `${p.first_name}: ${draft[p.id]}`).join(" · ")}
             </AlertDialogDescription>
+
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

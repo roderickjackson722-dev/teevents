@@ -276,11 +276,13 @@ Deno.serve(async (req) => {
     let groupId: string | null = null;
     if (players.length > 1) {
       const captain = players[0];
+      const teamName = typeof body.team_name === "string" ? body.team_name.trim().slice(0, 100) : "";
       const { data: groupRow } = await supabaseAdmin
         .from("registration_groups")
         .insert({
           tournament_id,
-          group_name: `${(captain.first_name || "").trim()} ${(captain.last_name || "").trim()}`.trim() || "Team",
+          team_name: teamName || null,
+          group_name: teamName || `${(captain.first_name || "").trim()} ${(captain.last_name || "").trim()}`.trim() || "Team",
         })
         .select("id")
         .maybeSingle();
@@ -307,8 +309,10 @@ Deno.serve(async (req) => {
       custom_answers: canonicalPlayerAnswers[i] || [],
       group_id: groupId,
       group_leader: groupId ? i === 0 : false,
+      is_captain: groupId ? i === 0 : false,
 
     }));
+
 
     const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")

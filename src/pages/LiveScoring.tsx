@@ -465,12 +465,13 @@ export default function LiveScoring() {
               Par {tournament.course_par || 72}
             </p>
           </div>
-          {hasEdits && (
+          {hasEdits && viewMode === "all" && (
             <Button onClick={handleSave} disabled={saving} size="sm">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
               Save
             </Button>
           )}
+
         </div>
 
         {(() => {

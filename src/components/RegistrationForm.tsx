@@ -428,6 +428,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
 
   const allowGroup = maxGroupSize > 1;
+  // Group rules only apply when more than one player is being registered together.
+  const groupRulesActive = !!groupFieldRules?.enabled && allowGroup && players.length > 1;
+
   const activeFee = selectedTier
     ? (tiers.find(t => t.id === selectedTier)?.price_cents || 0)
     : registrationFeeCents;

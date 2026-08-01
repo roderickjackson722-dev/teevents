@@ -134,6 +134,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const displayName = tournamentLabel || orgContext?.orgName || "";
 
+  // Collapsible sidebar state, persisted in localStorage across sessions.
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("teevents:dashboard-sidebar");
+      if (saved !== null) setSidebarOpen(saved === "true");
+    } catch { /* ignore */ }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("teevents:dashboard-sidebar", String(sidebarOpen));
+    } catch { /* ignore */ }
+  }, [sidebarOpen]);
+
+
 
 
   if (loading) {
@@ -145,7 +160,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="min-h-screen flex flex-col w-full">
         {isAdminOverride && (
           <div className="bg-destructive text-destructive-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
@@ -206,17 +221,29 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <DashboardSidebar />
           <div className="flex-1 flex flex-col min-w-0 w-full">
              <header className="h-16 flex items-center justify-between border-b-2 border-secondary bg-secondary/15 px-4">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger />
+              <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:flex min-w-0">
+                <SidebarTrigger
+                  aria-label={sidebarOpen ? "Collapse menu" : "Expand menu"}
+                  title={sidebarOpen ? "Collapse menu" : "Expand menu"}
+                  className="shrink-0 border border-secondary/60 bg-background/60 hover:bg-background"
+                />
                 {orgContext && (
-                  <div className="flex items-center gap-2">
-                    <ArrowLeft className="h-5 w-5 text-foreground" />
-                    <span className="text-base md:text-lg font-display font-bold text-foreground">
-                      {displayName} Dashboard
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <span className="truncate text-base md:text-lg font-display font-bold text-foreground">
+                      {displayName}
                     </span>
+                    <span className="hidden sm:inline text-foreground/30">|</span>
+                    <Link
+                      to="/dashboard"
+                      title="Click 'Open Dashboard' to access your tournament dashboard."
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
+                    >
+                      Open Dashboard <ArrowRight className="h-4 w-4" />
+                    </Link>
                   </div>
                 )}
               </div>
+
               {isAdminOverride && (
                 <Link
                   to="/admin"

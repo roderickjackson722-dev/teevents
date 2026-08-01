@@ -11,21 +11,21 @@ const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 
 function replaceVars(text: string, vars: Record<string, string>): string {
-  return text
-    .replace(/\{\{first_name\}\}/g, vars.first_name || "")
-    .replace(/\{\{last_name\}\}/g, vars.last_name || "")
-    .replace(/\{\{event_name\}\}/g, vars.event_name || "")
-    .replace(/\{\{event_date\}\}/g, vars.event_date || "")
-    .replace(/\{\{event_location\}\}/g, vars.event_location || "")
-    .replace(/\{\{scoring_code\}\}/g, vars.scoring_code || "")
-    .replace(/\{\{scoring_link\}\}/g, vars.scoring_link || "")
-    .replace(/\{\{group_number\}\}/g, vars.group_number || "");
+  return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => vars[k] ?? "");
 }
 
-function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string }): string {
+const TEMPLATE_HEADERS: Record<string, string> = {
+  confirmation: "Registration Confirmed!",
+  sponsor: "Thank You for Sponsoring!",
+  vendor: "Vendor Registration Confirmed!",
+  post_event: "Thanks for Playing!",
+  day_before: "Tomorrow Is the Big Day!",
+};
+
+function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string; headerText?: string }): string {
   const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
-  const body = replaceVars(config.body_text || "", vars);
-  const closing = replaceVars(config.closing_text || "", vars);
+  const body = replaceVars(config.body_text || "", vars).replace(/\n/g, "<br/>");
+  const closing = replaceVars(config.closing_text || "", vars).replace(/\n/g, "<br/>");
   const footer = replaceVars(config.footer_text || "", vars);
   const headerBg = config.header_bg_color || "#1a5c38";
   const textColor = config.text_color || "#374151";
@@ -72,7 +72,7 @@ function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { inc
       <table width="560" cellpadding="0" cellspacing="0" style="background:${bgColor};border-radius:8px;overflow:hidden;">
         <tr><td style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Registration Confirmed!</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${opts?.headerText || "Registration Confirmed!"}</h1>
         </td></tr>
         <tr><td style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>

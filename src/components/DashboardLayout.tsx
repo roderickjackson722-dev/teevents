@@ -145,7 +145,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="min-h-screen flex flex-col w-full">
         {isAdminOverride && (
           <div className="bg-destructive text-destructive-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">

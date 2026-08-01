@@ -465,6 +465,8 @@ export default function GroupScoring() {
             )}
           </CardContent>
         </Card>
+        )}
+
 
         {/* Hole summary */}
         <Card>

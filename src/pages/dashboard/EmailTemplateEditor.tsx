@@ -339,19 +339,20 @@ export default function EmailTemplateEditor() {
     toast.success("HTML copied to clipboard");
   };
 
-  const sendEmails = async () => {
-    if (selectedRecipients.length === 0) {
+  const sendEmails = async (ids?: string[]) => {
+    const targets = ids && ids.length > 0 ? ids : selectedRecipients;
+    if (targets.length === 0) {
       toast.error("Select at least one recipient");
       return;
     }
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("resend-confirmation", {
-        body: { registration_ids: selectedRecipients, use_custom_template: true },
+        body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
       });
       if (error) throw error;
       toast.success(`Sent ${data.sent} email(s)${data.failed ? `, ${data.failed} failed` : ""}`);
-      setSelectedRecipients([]);
+      if (!ids) setSelectedRecipients([]);
     } catch (e: any) {
       toast.error(e.message || "Failed to send emails");
     }

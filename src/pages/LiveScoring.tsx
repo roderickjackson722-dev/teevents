@@ -18,6 +18,8 @@ interface Player {
   group_number: number | null;
   playing_handicap: number | null;
   strokes_per_hole: number[] | null;
+  is_captain?: boolean;
+  group_leader?: boolean;
 }
 
 interface TournamentData {
@@ -58,6 +60,11 @@ export default function LiveScoring() {
   const [autoLogging, setAutoLogging] = useState(false);
   const [viewMode, setViewMode] = useState<"all" | "single">("single");
   const [focusHole, setFocusHole] = useState<number>(1);
+  const [teamName, setTeamName] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(true);
+
+  const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
+
 
 
   useEffect(() => {
@@ -134,7 +141,7 @@ export default function LiveScoring() {
 
       if (gNum) {
         setScoringCode(code.toUpperCase());
-        await loadGroup(gNum as number);
+        await loadGroup(gNum as number, code.toUpperCase());
       } else {
         setError("Invalid scoring code or player not assigned to a hole.");
       }
@@ -142,7 +149,63 @@ export default function LiveScoring() {
     })();
   }, [tournament, searchParams]);
 
-  const loadGroup = async (gNum: number) => {
+  // Restore a previously saved scoring session (no need to re-enter the code)
+  useEffect(() => {
+    if (!tournament || !sessionKey) return;
+    if (searchParams.get("code")) { setRestoring(false); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = localStorage.getItem(sessionKey);
+        if (!raw) return;
+        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number };
+        if (!saved?.code || saved.tournamentId !== tournament.id) return;
+        // Re-validate the stored code server-side; the group is derived from it, never from the client
+        const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
+          _tournament_id: tournament.id,
+          _scoring_code: saved.code,
+          _email: "",
+        });
+        if (cancelled) return;
+        if (gNum) {
+          setScoringCode(saved.code);
+          await loadGroup(gNum as number, saved.code);
+        } else {
+          localStorage.removeItem(sessionKey);
+        }
+      } catch {
+        /* ignore malformed session */
+      } finally {
+        if (!cancelled) setRestoring(false);
+      }
+    })();
+    return () => { cancelled = true; setRestoring(false); };
+  }, [tournament, sessionKey]);
+
+  const persistSession = (code: string | null, gNum: number) => {
+    if (!sessionKey || !tournament || !code) return;
+    try {
+      localStorage.setItem(
+        sessionKey,
+        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum })
+      );
+    } catch { /* storage unavailable */ }
+  };
+
+  const handleSignOut = () => {
+    if (sessionKey) { try { localStorage.removeItem(sessionKey); } catch { /* noop */ } }
+    setScoringCode(null);
+    setGroupNumber(null);
+    setPlayers([]);
+    setScores({});
+    setEditedScores({});
+    setTeamName(null);
+    setCodeInput("");
+    setEmailInput("");
+    setLoginMode(true);
+  };
+
+  const loadGroup = async (gNum: number, codeForSession?: string) => {
     if (!tournament) return;
 
     const { data: payload } = await supabase.rpc("get_live_scoring_group", {
@@ -171,24 +234,29 @@ export default function LiveScoring() {
       group_number: p.group_number,
       playing_handicap: p.playing_handicap,
       strokes_per_hole: p.strokes_per_hole as number[] | null,
+      is_captain: !!p.is_captain,
+      group_leader: !!p.group_leader,
     }));
 
     // Remember a scoring_code from the group so we can authorize saves
-    if (!scoringCode) {
-      const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
-      if (anyCode) setScoringCode(anyCode);
-    }
+    const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
+    const sessionCode = codeForSession || scoringCode || anyCode || null;
+    if (!scoringCode && anyCode) setScoringCode(anyCode);
 
+    setTeamName((payload as any)?.team_name || null);
     setPlayers(mappedPlayers);
     setScores(scoreMap);
     setGroupNumber(gNum);
     setLoginMode(false);
+    persistSession(sessionCode, gNum);
   };
+
 
   const handleLogin = async () => {
     if (!tournament) return;
     setError("");
     let gNum: number | null = null;
+    let loginCode: string | null = null;
 
     if (codeInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
@@ -197,7 +265,8 @@ export default function LiveScoring() {
         _email: "",
       });
       if (!data) { setError("Invalid scoring code."); return; }
-      setScoringCode(codeInput.trim().toUpperCase());
+      loginCode = codeInput.trim().toUpperCase();
+      setScoringCode(loginCode);
       gNum = data as number;
     } else if (emailInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
@@ -211,7 +280,7 @@ export default function LiveScoring() {
       setError("Enter your scoring code or email."); return;
     }
 
-    await loadGroup(gNum);
+    await loadGroup(gNum, loginCode ?? undefined);
     if (players.length === 0 && error === "") {
       setError(`No players found in Hole ${gNum}.`);
     }
@@ -395,6 +464,14 @@ export default function LiveScoring() {
     );
   }
 
+  if (loginMode && restoring) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (loginMode) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -453,11 +530,8 @@ export default function LiveScoring() {
             />
           </div>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <button onClick={() => setLoginMode(true)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-1">
-              <ArrowLeft className="h-3.5 w-3.5" /> Change Hole
-            </button>
             <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
             <p className="text-xs text-muted-foreground">
               {courseData?.name && `${courseData.name} · `}
@@ -465,14 +539,45 @@ export default function LiveScoring() {
               Par {tournament.course_par || 72}
             </p>
           </div>
-          {hasEdits && viewMode === "all" && (
-            <Button onClick={handleSave} disabled={saving} size="sm">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-              Save
-            </Button>
-          )}
-
+          <div className="flex items-center gap-2">
+            {hasEdits && viewMode === "all" && (
+              <Button onClick={handleSave} disabled={saving} size="sm">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+                Save
+              </Button>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="text-xs text-muted-foreground hover:text-foreground underline whitespace-nowrap"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
+
+        {/* Group roster — this group only */}
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold">
+                {teamName ? teamName : `Your Group — Hole ${groupNumber}`}
+                <span className="text-muted-foreground font-normal"> · {players.length} player{players.length === 1 ? "" : "s"}</span>
+              </p>
+            </div>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {players.map((p) => (
+                <li key={p.id} className="flex items-center gap-1">
+                  <span className="font-medium">{p.first_name} {p.last_name}</span>
+                  {(p.is_captain || p.group_leader) && (
+                    <span className="text-[10px] uppercase tracking-wide rounded bg-primary/10 text-primary px-1.5 py-0.5">Captain</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
 
         {(() => {
           const fmt = getFormatById(tournament?.scoring_format || "stroke_play");
@@ -650,7 +755,7 @@ export default function LiveScoring() {
                   <TableRow>
                     <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">{isScramble ? "Team" : "Player"}</TableHead>
                     {holes.map((h) => (
-                      <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
+                      <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs border-r border-border last:border-r-0">{h}</TableHead>
                     ))}
                     <TableHead className="text-center font-bold min-w-[50px]">Gross</TableHead>
                     {handicapEnabled && <TableHead className="text-center font-bold min-w-[50px]">Net</TableHead>}
@@ -660,7 +765,7 @@ export default function LiveScoring() {
                     <TableRow className="bg-muted/30">
                       <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
                       {holes.map((h) => (
-                        <TableHead key={h} className="text-center text-xs text-muted-foreground">
+                        <TableHead key={h} className="text-center text-xs text-muted-foreground border-r border-border">
                           {courseData.hole_pars?.[h - 1] ?? ""}
                         </TableHead>
                       ))}
@@ -673,7 +778,7 @@ export default function LiveScoring() {
                     <TableRow className="bg-muted/20">
                       <TableHead className="sticky left-0 bg-muted/20 z-10 text-[10px] text-muted-foreground">SI</TableHead>
                       {holes.map((h) => (
-                        <TableHead key={h} className="text-center text-[10px] text-muted-foreground">
+                        <TableHead key={h} className="text-center text-[10px] text-muted-foreground border-r border-border">
                           {courseStrokeIndexes[h - 1] || ""}
                         </TableHead>
                       ))}
@@ -690,7 +795,7 @@ export default function LiveScoring() {
                         const val = getTeamScore(h);
                         const display = typeof val === "number" ? val : "";
                         return (
-                          <TableCell key={h} className="p-0.5 text-center">
+                          <TableCell key={h} className="p-0.5 text-center border-r border-border">
                             <div className="inline-flex items-center gap-0.5">
                               <button
                                 type="button"
@@ -756,7 +861,7 @@ export default function LiveScoring() {
                           const val = getScore(p.id, h);
                           const display = typeof val === "number" ? val : "";
                           return (
-                            <TableCell key={h} className="p-0.5 text-center">
+                            <TableCell key={h} className="p-0.5 text-center border-r border-border">
                               <div className="relative">
                                 <div className="inline-flex items-center gap-0.5">
                                   <button
@@ -837,7 +942,7 @@ export default function LiveScoring() {
         {slug && (
           <div className="pt-2 border-t">
             <Button asChild variant="outline" className="w-full h-12">
-              <a href={`/live/${slug}`}>
+              <a href={`/live/${slug}`} target="_blank" rel="noopener noreferrer">
                 <Trophy className="h-4 w-4 mr-2" /> View Leaderboard →
               </a>
             </Button>

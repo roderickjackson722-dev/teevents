@@ -223,6 +223,7 @@ Deno.serve(async (req) => {
     // registration confirmation email — so the sent email always matches the choice.
     const emailConfig = { ...(DEFAULT_CONFIGS[kind] || DEFAULT_CONFIGS.confirmation), ...(stored || {}) };
     const useCustom = use_custom_template !== false;
+    if (!emailConfig.button_url) emailConfig.button_url = "";
     const headerText = TEMPLATE_HEADERS[kind] || TEMPLATE_HEADERS.confirmation;
 
     // Course address / schedule for day-before style reminders
@@ -245,6 +246,7 @@ Deno.serve(async (req) => {
     const homepage = (tournament as any).slug
       ? `https://www.teevents.golf/t/${(tournament as any).slug}`
       : "https://www.teevents.golf";
+    if (!emailConfig.button_url) emailConfig.button_url = homepage;
 
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)

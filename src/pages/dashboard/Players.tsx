@@ -2172,7 +2172,28 @@ const Players = () => {
                             🕒 {holeTeeTimes[group.number] ? fmtTee12(holeTeeTimes[group.number]) : "Add tee time"}
                           </button>
                         )}
+                        {(() => {
+                          const gCode = group.players.map((p) => codeOf(p)).find(Boolean) || "";
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-muted-foreground">Scoring Code:</span>
+                              <span className="text-xs font-mono font-bold text-foreground">{gCode || "Not assigned"}</span>
+                              {group.players.length > 0 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 px-2 text-[11px]"
+                                  onClick={() => handleAssignGroupCode(group.number)}
+                                >
+                                  {gCode ? "Regenerate Code" : "Assign Code"}
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
+
+
 
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground mr-1">

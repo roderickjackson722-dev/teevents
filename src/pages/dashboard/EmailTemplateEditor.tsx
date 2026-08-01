@@ -261,7 +261,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, site_logo_url")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -290,6 +290,57 @@ export default function EmailTemplateEditor() {
     };
     load();
   }, [selectedTournament]);
+
+  // Course address for the selected tournament (used by the live preview)
+  const [courseAddress, setCourseAddress] = useState<string>("");
+  useEffect(() => {
+    if (!selectedTournament) { setCourseAddress(""); return; }
+    supabase
+      .from("golf_courses")
+      .select("course_address")
+      .eq("tournament_id", selectedTournament)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setCourseAddress((data as any)?.course_address || ""));
+  }, [selectedTournament]);
+
+  // Preview variables built from the ACTUAL selected tournament.
+  const previewVars = (() => {
+    const t = tournaments.find((x: any) => x.id === selectedTournament);
+    const stripTags = (s: string) =>
+      s.replace(/<br\s*\/?>(\s*)/gi, "\n")
+        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    const schedule = t?.schedule_info || (t?.schedule_info_html ? stripTags(t.schedule_info_html) : "");
+    const homepage = t?.slug ? `https://www.teevents.golf/t/${t.slug}` : "https://www.teevents.golf";
+    const location = [t?.location, t?.state].filter(Boolean).join(", ");
+    const sampleReg = registrations[0];
+    const vars: Record<string, string> = {
+      first_name: sampleReg?.first_name || "John",
+      last_name: sampleReg?.last_name || "Doe",
+      event_name: t?.title || "Sample Tournament",
+      event_date: t?.date
+        ? formatTournamentDate(t.date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+        : "Saturday, June 15, 2026",
+      event_location: location || t?.location || "Your golf course",
+      course_name: t?.course_name || t?.location || "Your golf course",
+      scoring_code: sampleReg?.group_scoring_code || sampleReg?.scoring_code || "Assigned when pairings are finalized",
+      group_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+      scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
+      event_homepage: homepage,
+      tee_time: "TBD",
+      hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+    };
+    if (courseAddress) vars.course_address = courseAddress;
+    else if (location) vars.course_address = location;
+    if (schedule) vars.event_schedule = String(schedule).trim();
+    else vars.event_schedule = "See the event homepage for the full schedule.";
+    return vars;
+  })();
+
+
 
   const handleTournamentChange = (id: string) => {
     setSelectedTournament(id);
@@ -330,16 +381,13 @@ export default function EmailTemplateEditor() {
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(config, {
-      first_name: "John",
-      last_name: "Doe",
-      event_name: "Sample Tournament",
-      event_date: "Saturday, June 15, 2026",
-      event_location: "Pine Valley Golf Club",
-    }, TEMPLATE_HEADERS[templateKind]);
+    const html = renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
+
+
+  const [confirmSendOpen, setConfirmSendOpen] = useState(false);
 
   const sendEmails = async (ids?: string[]) => {
     const targets = ids && ids.length > 0 ? ids : selectedRecipients;
@@ -349,6 +397,7 @@ export default function EmailTemplateEditor() {
     }
     setSending(true);
     try {
+      console.log("[Email Templates] Sending template:", templateKind, "subject:", config.subject, "recipients:", targets.length);
       const { data, error } = await supabase.functions.invoke("resend-confirmation", {
         body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
       });
@@ -701,17 +750,9 @@ export default function EmailTemplateEditor() {
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(config, {
-                first_name: "John",
-                last_name: "Doe",
-                event_name: tournaments.find(t => t.id === selectedTournament)?.title || "Sample Tournament",
-                event_date: tournaments.find(t => t.id === selectedTournament)?.date
-                  ? formatTournamentDate(tournaments.find(t => t.id === selectedTournament).date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
-                  : "Saturday, June 15, 2026",
-                event_location: tournaments.find(t => t.id === selectedTournament)?.location || "Pine Valley Golf Club",
-                scoring_code: "ABC123",
-              }, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
+              __html: renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
             }} />
+
           </div>
         </TabsContent>
 
@@ -793,7 +834,7 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button onClick={() => sendEmails()} disabled={sending || selectedRecipients.length === 0} className="gap-2">
+            <Button onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
@@ -816,6 +857,36 @@ export default function EmailTemplateEditor() {
           <Copy className="h-4 w-4" /> Copy HTML
         </Button>
       </div>
+
+      {/* Send Confirmation Modal */}
+      <Dialog open={confirmSendOpen} onOpenChange={setConfirmSendOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-primary" /> Send Email
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2 text-sm">
+            <p className="text-muted-foreground">You are about to send the following email:</p>
+            <div className="rounded-lg border bg-muted/40 p-3 space-y-1">
+              <p><strong>Template:</strong> {TEMPLATE_LABELS[templateKind]}</p>
+              <p><strong>Subject:</strong> {replaceVariablesPlain(config.subject, previewVars)}</p>
+              <p><strong>Recipients:</strong> {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}</p>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setConfirmSendOpen(false)}>Cancel</Button>
+              <Button
+                className="gap-2"
+                disabled={sending}
+                onClick={async () => { setConfirmSendOpen(false); await sendEmails(); }}
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Confirm Send
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Email & Resend Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
@@ -870,6 +941,11 @@ const SAMPLE_VARS: Record<string, string> = {
   scoring_link: "https://www.teevents.golf/t/sample/scoring",
   event_homepage: "https://www.teevents.golf/t/sample",
 };
+
+function replaceVariablesPlain(text: string, vars: Record<string, string>): string {
+  const merged = { ...SAMPLE_VARS, ...vars };
+  return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

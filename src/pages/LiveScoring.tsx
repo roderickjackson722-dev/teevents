@@ -806,6 +806,34 @@ export default function LiveScoring() {
         </Card>
         )}
 
+        {viewMode === "single" && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 h-12"
+                disabled={focusHole <= 1 || saving}
+                onClick={() => goToHole(focusHole - 1)}
+              >
+                ← Previous
+              </Button>
+              <Button
+                className="flex-1 h-12"
+                disabled={focusHole >= 18 || saving}
+                onClick={() => goToHole(focusHole + 1)}
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                Next Hole →
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              💡 Score saved when you move to the next hole.
+            </p>
+          </div>
+        )}
+
+
+
         {slug && (
           <div className="pt-2 border-t">
             <Button asChild variant="outline" className="w-full h-12">

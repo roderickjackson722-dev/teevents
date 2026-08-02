@@ -123,7 +123,6 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
-      { title: "Messages", url: "/dashboard/messages", icon: MessageSquare, feature: "email-messaging", description: "Email and SMS blasts to players" },
       { title: "Team Performance", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Referral tracking, promoter leaderboard" },
       { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],

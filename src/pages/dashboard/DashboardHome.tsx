@@ -267,12 +267,6 @@ const DashboardHome = () => {
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to={buildLink("/dashboard/messages")}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Messages
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
                 <Link to={buildLink("/dashboard/leaderboard")}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Leaderboard

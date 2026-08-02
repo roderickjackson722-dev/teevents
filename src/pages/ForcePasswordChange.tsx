@@ -13,7 +13,7 @@ const PERMISSION_ROUTES: Record<string, string> = {
   manage_registration: "/dashboard/registration",
   manage_budget: "/dashboard/budget",
   manage_sponsors: "/dashboard/sponsors",
-  manage_messages: "/dashboard/messages",
+  manage_messages: "/dashboard/email-templates",
   manage_leaderboard: "/dashboard/leaderboard",
   manage_store: "/dashboard/store",
   manage_auction: "/dashboard/auction",

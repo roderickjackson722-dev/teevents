@@ -661,7 +661,15 @@ export default function CourseDetails() {
         </CardContent>
       </Card>
       </>
-      )}
+      ) : tournamentId ? (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Search for your course above to auto-fill par, rating, slope, and hole data — or click
+            "Enter Course Manually" if your course isn't in the database.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
 
 

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { checkAuthRateLimit } from "@/lib/authRateLimit";
+import { recordSecurityEvent } from "@/lib/security.functions";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 
 const AdminLogin = () => {
@@ -29,13 +30,32 @@ const AdminLogin = () => {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setLoading(false);
-      toast({ title: "Login Failed", description: error.message, variant: "destructive" });
+      const check = await recordSecurityEvent({
+        data: { actionType: "login_failed", userEmail: email, details: { surface: "admin" } },
+      }).catch(() => null);
+      toast({ title: "Login Failed", description: check?.message || error.message, variant: "destructive" });
       return;
     }
+
+    const check = await recordSecurityEvent({
+      data: {
+        actionType: "login",
+        userEmail: email,
+        userId: signInData?.user?.id ?? null,
+        details: { surface: "admin" },
+      },
+    }).catch(() => null);
+    if (check && check.allow === false) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      toast({ title: "Sign-in blocked", description: check.message || "Access denied.", variant: "destructive" });
+      return;
+    }
+
 
     // Verify admin role
     const { data: { user } } = await supabase.auth.getUser();

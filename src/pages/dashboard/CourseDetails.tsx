@@ -508,7 +508,7 @@ export default function CourseDetails() {
 
       {/* Validation Banner */}
 
-      {!validation.isComplete ? (
+      {!detailsVisible ? null : !validation.isComplete ? (
         <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>

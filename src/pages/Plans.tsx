@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Phone, Gavel, Send,
+  Package, Phone, Gavel, LayoutTemplate,
+
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";

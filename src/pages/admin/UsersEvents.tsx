@@ -250,7 +250,8 @@ export default function AdminUsersEvents() {
                   <thead className="bg-muted/50 border-b">
                     <tr>
                       <Th>#</Th><Th>User</Th><Th>Events</Th><Th>Type</Th>
-                      <Th>Date</Th><Th>Status</Th><Th>Notes</Th>
+                      <Th>Date</Th><Th>Status</Th><Th>Fees Collected</Th><Th>Notes</Th>
+
                     </tr>
                   </thead>
                   <tbody>
@@ -298,6 +299,10 @@ export default function AdminUsersEvents() {
                               </Badge>
                             ) : "—"}
                           </Td>
+                          <Td className="font-semibold whitespace-nowrap">
+                            {formatCents(u.platform_fees_cents)}
+                          </Td>
+
                           <Td>
                             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                               <StickyNote className="h-3.5 w-3.5" /> {u.notes.length}
@@ -368,8 +373,13 @@ export default function AdminUsersEvents() {
                       <span className="text-muted-foreground capitalize">— {e.type} —</span>
                       <span>{fmtDate(e.date)}</span>
                       <Badge variant="outline" className={`text-[10px] capitalize ${statusClass(e.status)}`}>{e.status}</Badge>
+                      <span className="text-muted-foreground">— Fees: <span className="font-semibold text-foreground">{formatCents(e.platform_fees_cents)}</span></span>
                     </div>
                   )) : <div className="text-muted-foreground">No events yet.</div>}
+                  <div className="pt-2 mt-2 border-t font-semibold">
+                    Total Fees Collected: {formatCents(selectedLive.platform_fees_cents)}
+                  </div>
+
                 </CardContent>
               </Card>
 

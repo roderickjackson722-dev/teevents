@@ -666,7 +666,6 @@ function DayOfInner() {
 
       </main>
       <TeeventsFooter tournament={tournament as any} />
-      <BrandingBadge show={(tournament as any).show_branding_badge !== false} />
     </div>
   );
 }

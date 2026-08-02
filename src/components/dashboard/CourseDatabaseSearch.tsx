@@ -52,7 +52,7 @@ function fullAddress(c: CourseDBResult): string {
   return [c.city, c.state].filter(Boolean).join(", ");
 }
 
-export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props) {
+export default function CourseDatabaseSearch({ onSelect, onSaveCurrent, onManualEntry, manualEntryOpen }: Props) {
   const [q, setQ] = useState("");
   const [stateFilter, setStateFilter] = useState<string>("");
   const [results, setResults] = useState<CourseDBResult[]>([]);

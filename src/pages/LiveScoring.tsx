@@ -532,7 +532,7 @@ export default function LiveScoring() {
         )}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold">{tournament.title} — Hole {groupNumber}</h1>
+            <h1 className="text-xl font-bold">{tournament.title} — Starting Hole {groupNumber}</h1>
             <p className="text-xs text-muted-foreground">
               {courseData?.name && `${courseData.name} · `}
               {courseData?.tee_name && `${courseData.tee_name} Tees · `}
@@ -561,7 +561,7 @@ export default function LiveScoring() {
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-4 w-4 text-primary" />
               <p className="text-sm font-semibold">
-                {teamName ? teamName : `Your Group — Hole ${groupNumber}`}
+                {teamName ? teamName : `Your Group — Starting Hole ${groupNumber}`}
                 <span className="text-muted-foreground font-normal"> · {players.length} player{players.length === 1 ? "" : "s"}</span>
               </p>
             </div>
@@ -653,7 +653,7 @@ export default function LiveScoring() {
         {viewMode === "single" && isScramble ? (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Team Score Entry — Hole {groupNumber}</CardTitle>
+              <CardTitle className="text-sm">Team Score Entry</CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-3">
               {(() => {

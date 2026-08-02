@@ -619,7 +619,7 @@ export const adminSaveAlertSettings = createServerFn({ method: "POST" })
     const admin = await getAdminClient();
 
     const recipients = data.recipients
-      .split(",").map((r) => r.trim()).filter((r) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r));
+      .split(",").map((r: string) => r.trim()).filter((r: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r));
     if (data.enabled && recipients.length === 0) throw new Error("Add at least one valid recipient email");
 
     const { error } = await admin.from("security_alert_settings").update({

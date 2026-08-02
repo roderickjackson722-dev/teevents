@@ -223,11 +223,16 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
         events,
         tournament_count: events.filter((e) => e.type === "tournament").length,
         league_count: events.filter((e) => e.type === "league").length,
+        platform_fees_cents: events.reduce((s, e) => s + (e.platform_fees_cents ?? 0), 0),
         notes: notesByUser.get(u.id) ?? [],
       };
     });
 
     rows.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+
+    const totalFeesCents =
+      (txns.data ?? []).reduce((s: number, t: any) => s + (t.platform_fee_cents ?? 0), 0) +
+      (leaguePays.data ?? []).reduce((s: number, p: any) => s + (p.platform_fee_cents ?? 0), 0);
 
     return {
       rows,
@@ -235,8 +240,10 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
         users: rows.length,
         tournaments: (tournaments.data ?? []).length,
         leagues: (leagues.data ?? []).length,
+        platform_fees_cents: totalFeesCents,
       },
     };
+
   });
 
 export const adminAddUserNote = createServerFn({ method: "POST" })

@@ -10,14 +10,14 @@ const corsHeaders = {
 /**
  * purchase-addons
  * Body: { tournament_id: string, addons: string[] }
- *   addons ⊆ ["custom_domain","unlimited_manual_entries","auction_raffle","sms_email_blasts","priority_support","bundle"]
+ *   addons ⊆ ["custom_domain","unlimited_manual_entries","auction_raffle","custom_event_page","priority_support","bundle"]
  * Creates a Stripe Checkout session for the selected add-ons.
  */
 const PRICES: Record<string, { name: string; cents: number }> = {
   custom_domain: { name: "Custom Domain", cents: 9900 },
   unlimited_manual_entries: { name: "Unlimited Manual Entries", cents: 14900 },
   auction_raffle: { name: "Auction & Raffle", cents: 14900 },
-  sms_email_blasts: { name: "SMS & Email Blasts", cents: 9900 },
+  custom_event_page: { name: "Custom Event Page Build Out", cents: 9900 },
   priority_support: { name: "Priority Support", cents: 9900 },
   bundle: { name: "All Add-ons Bundle", cents: 39900 },
 };

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useAdminLink } from "@/hooks/useAdminLink";
-import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, MessageSquare, BarChart3, ClipboardList } from "lucide-react";
+import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, BarChart3, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -264,12 +264,6 @@ const DashboardHome = () => {
                 <Link to={buildLink("/dashboard/check-in")}>
                   <ScanLine className="h-4 w-4 mr-2" />
                   Check-In
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link to={buildLink("/dashboard/messages")}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Messages
                 </Link>
               </Button>
               <Button variant="outline" asChild>

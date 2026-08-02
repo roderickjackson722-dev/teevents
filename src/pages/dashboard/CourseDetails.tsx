@@ -432,7 +432,10 @@ export default function CourseDetails() {
 
       {tournamentId && (
         <CourseDatabaseSearch
+          onManualEntry={() => setManualOpen(true)}
+          manualEntryOpen={manualOpen}
           onSelect={(c: CourseDBResult) => {
+            setCourseSelected(true);
             setCourseName(c.course_name);
             if (c.tee_name) setTeeName(c.tee_name);
             if (c.course_rating != null) setCourseRating(String(c.course_rating));

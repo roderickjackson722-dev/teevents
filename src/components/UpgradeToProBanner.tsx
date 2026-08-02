@@ -64,7 +64,7 @@ const UpgradeToProBanner = ({ tournamentId, tournamentTitle, variant = "banner" 
               <li>• Custom Domain <span className="text-muted-foreground">($99)</span></li>
               <li>• Unlimited Manual Entries <span className="text-muted-foreground">($149)</span></li>
               <li>• Auction & Raffle <span className="text-muted-foreground">($149)</span></li>
-              <li>• SMS & Email Blasts <span className="text-muted-foreground">($99)</span></li>
+              <li>• Custom Event Page Build Out <span className="text-muted-foreground">($99)</span></li>
               <li>• Priority Support <span className="text-muted-foreground">($99)</span></li>
             </ul>
             <p className="text-xs text-muted-foreground mt-2">Bundle saves $196 vs. buying individually ($595 total).</p>

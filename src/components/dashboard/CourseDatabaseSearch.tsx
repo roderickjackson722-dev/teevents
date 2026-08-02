@@ -42,6 +42,9 @@ export interface CourseDBResult {
 interface Props {
   onSelect: (course: CourseDBResult) => void;
   onSaveCurrent?: () => Promise<void> | void;
+  /** Reveals the manual course entry form for courses not in the database. */
+  onManualEntry?: () => void;
+  manualEntryOpen?: boolean;
 }
 
 function fullAddress(c: CourseDBResult): string {

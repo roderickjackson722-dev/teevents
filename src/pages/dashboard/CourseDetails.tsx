@@ -511,10 +511,15 @@ export default function CourseDetails() {
         </Alert>
       )}
 
-      {/* Basic Info */}
+      {detailsVisible ? (
+      <>
+      {/* Course Information (consolidated) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Basic Information</CardTitle>
+          <CardTitle className="text-lg">Course Information</CardTitle>
+          <CardDescription>
+            Auto-filled when you select a course from the database — edit any field to match your venue.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -532,20 +537,10 @@ export default function CourseDetails() {
                     ...TEE_OPTIONS,
                   ])).map(t => <SelectItem key={t} value={t}>{t} Tees</SelectItem>)}
                 </SelectContent>
-
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Course Ratings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Course Ratings (USGA)</CardTitle>
-          <CardDescription>These values are on the course scorecard or USGA website.</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <Separator />
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label>Par</Label>
@@ -561,8 +556,12 @@ export default function CourseDetails() {
               <Input type="number" value={slopeRating} onChange={e => setSlopeRating(e.target.value)} placeholder="135" />
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Course Rating and Slope Rating are on the course scorecard or the USGA website.
+          </p>
         </CardContent>
       </Card>
+
 
       {/* Hole-by-Hole */}
       <Card>

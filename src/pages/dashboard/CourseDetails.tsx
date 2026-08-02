@@ -187,6 +187,18 @@ export default function CourseDetails() {
     return { issues, isComplete: issues.length === 0 };
   }, [courseName, courseRating, slopeRating, holes]);
 
+  // Existing tournaments keep their saved course: show the editable form whenever
+  // course data already exists, a database course was just selected, or the
+  // organizer opted into manual entry.
+  const detailsVisible = manualOpen || courseSelected || !!course || !!courseName.trim();
+
+  // Reset the manual/selected flags when switching tournaments.
+  useEffect(() => {
+    setManualOpen(false);
+    setCourseSelected(false);
+  }, [tournamentId]);
+
+
   const updateHole = (idx: number, field: keyof HoleData, value: string) => {
     setHoles(prev => {
       const next = [...prev];

@@ -6727,6 +6727,239 @@ export type Database = {
           },
         ]
       }
+      security_activity_log: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          location_city: string | null
+          location_country: string | null
+          location_lat: number | null
+          location_lng: number | null
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_alert_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          flag_id: string | null
+          id: string
+          recipients: string | null
+          sent: boolean
+          severity: string | null
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          flag_id?: string | null
+          id?: string
+          recipients?: string | null
+          sent?: boolean
+          severity?: string | null
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          flag_id?: string | null
+          id?: string
+          recipients?: string | null
+          sent?: boolean
+          severity?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_alert_log_flag_id_fkey"
+            columns: ["flag_id"]
+            isOneToOne: false
+            referencedRelation: "security_flags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_alert_settings: {
+        Row: {
+          alert_high: boolean
+          alert_low: boolean
+          alert_medium: boolean
+          created_at: string
+          enabled: boolean
+          id: string
+          recipients: string
+          updated_at: string
+        }
+        Insert: {
+          alert_high?: boolean
+          alert_low?: boolean
+          alert_medium?: boolean
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          recipients?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_high?: boolean
+          alert_low?: boolean
+          alert_medium?: boolean
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          recipients?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      security_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          flag_type: string
+          id: string
+          ip_address: string | null
+          is_resolved: boolean
+          location_city: string | null
+          location_country: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          flag_type: string
+          id?: string
+          ip_address?: string | null
+          is_resolved?: boolean
+          location_city?: string | null
+          location_country?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          flag_type?: string
+          id?: string
+          ip_address?: string | null
+          is_resolved?: boolean
+          location_city?: string | null
+          location_country?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_ip_blacklist: {
+        Row: {
+          added_by: string | null
+          added_by_email: string | null
+          created_at: string
+          id: string
+          ip_address: string
+          reason: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          added_by_email?: string | null
+          created_at?: string
+          id?: string
+          ip_address: string
+          reason?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          added_by_email?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      security_suspensions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          reason: string | null
+          suspended_at: string
+          suspended_by: string | null
+          updated_at: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          suspended_at?: string
+          suspended_by?: string | null
+          updated_at?: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          suspended_at?: string
+          suspended_by?: string | null
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       setup_checklist_tasks: {
         Row: {
           auto_complete: boolean

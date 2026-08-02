@@ -177,6 +177,7 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
             date: t.date ?? null,
             status: t.status ?? "draft",
             organization_name: orgName,
+            platform_fees_cents: feesByTournament.get(t.id) ?? 0,
           });
         }
         for (const l of leaguesByOrg.get(orgId) ?? []) {
@@ -188,8 +189,10 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
             end_date: l.end_date ?? null,
             status: l.publish_status === "draft" ? "draft" : l.is_active ? "active" : "completed",
             organization_name: orgName,
+            platform_fees_cents: feesByLeague.get(l.id) ?? 0,
           });
         }
+
       }
       events.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 

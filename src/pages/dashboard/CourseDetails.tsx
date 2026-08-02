@@ -104,6 +104,9 @@ export default function CourseDetails() {
   const [importedTees, setImportedTees] = useState<CourseTee[]>([]);
   const [importWarning, setImportWarning] = useState<string | null>(null);
 
+  const [manualOpen, setManualOpen] = useState(false);
+  const [courseSelected, setCourseSelected] = useState(false);
+
   const [showTeeSets, setShowTeeSets] = useState(false);
   const [teeSetDialogOpen, setTeeSetDialogOpen] = useState(false);
 

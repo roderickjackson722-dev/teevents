@@ -60,22 +60,15 @@ Deno.serve(async (req) => {
       viewerId = created.user.id;
     }
 
-    // 3. Ensure viewer is a member of the sample tournament's org (viewer role, no perms)
-    const { data: existingMember } = await admin
-      .from("org_members")
-      .select("id")
-      .eq("organization_id", tournament.organization_id)
-      .eq("user_id", viewerId)
-      .maybeSingle();
-
-    if (!existingMember) {
-      const { error: mErr } = await admin.from("org_members").insert({
-        organization_id: tournament.organization_id,
-        user_id: viewerId,
-        role: "viewer",
-        permissions: [],
-      });
-      if (mErr) return json(500, { error: `Failed to attach viewer: ${mErr.message}` });
+    // 3. Attach viewer to the org ONLY when that org contains nothing but
+    //    sample/demo tournaments. Never grant membership on a real org.
+    const { data: attached, error: mErr } = await admin.rpc("attach_sample_viewer", {
+      _org_id: tournament.organization_id,
+      _viewer_id: viewerId,
+    });
+    if (mErr) return json(500, { error: `Failed to attach viewer: ${mErr.message}` });
+    if (attached !== true) {
+      return json(403, { error: "This sample link is no longer available." });
     }
 
     // 4. Sign in the viewer to mint access + refresh tokens

@@ -72,22 +72,14 @@ Deno.serve(async (req) => {
       viewerId = created.user.id;
     }
 
-    // Attach viewer to the demo tournament's org as a no-permission viewer
-    const { data: existingMember } = await admin
-      .from("org_members")
-      .select("id")
-      .eq("organization_id", tournament.organization_id)
-      .eq("user_id", viewerId)
-      .maybeSingle();
-    if (!existingMember) {
-      const { error: mErr } = await admin.from("org_members").insert({
-        organization_id: tournament.organization_id,
-        user_id: viewerId,
-        role: "viewer",
-        permissions: [],
-      });
-      if (mErr) return json(500, { error: `Failed to attach viewer: ${mErr.message}` });
-    }
+    // Attach viewer to the org ONLY when that org contains nothing but
+    // sample/demo tournaments. Never grant membership on a real org.
+    const { data: attached, error: mErr } = await admin.rpc("attach_sample_viewer", {
+      _org_id: tournament.organization_id,
+      _viewer_id: viewerId,
+    });
+    if (mErr) return json(500, { error: `Failed to attach viewer: ${mErr.message}` });
+    if (attached !== true) return json(403, { error: DENIED });
 
     const clientForAuth = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
       auth: { persistSession: false },

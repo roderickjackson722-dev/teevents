@@ -10861,6 +10861,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      attach_sample_viewer: {
+        Args: { _org_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       bump_sample_view: { Args: { _token: string }; Returns: string }
       check_auth_rate_limit: {
         Args: {
@@ -11213,6 +11217,7 @@ export type Database = {
         Args: { _org_id: string }
         Returns: boolean
       }
+      org_is_demo_only: { Args: { _org_id: string }; Returns: boolean }
       push_admin_notification: {
         Args: {
           _link?: string
@@ -11286,6 +11291,7 @@ export type Database = {
           title: string
         }[]
       }
+      sample_viewer_user_id: { Args: never; Returns: string }
       save_group_scores: {
         Args: { _code: string; _scores: Json; _tournament_id: string }
         Returns: undefined

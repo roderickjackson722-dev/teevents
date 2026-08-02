@@ -17,7 +17,7 @@ export default function DemoDashboardPreview() {
       if (!d) return;
       setDemo(d);
       const [{ count: pc }, { count: sc }, { count: scc }] = await Promise.all([
-        supabase.from("demo_players").select("*", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
+        supabase.from("demo_players").select("id", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
         supabase.from("demo_sponsors").select("*", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
         supabase.from("demo_scores").select("*", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
       ]);

@@ -47,11 +47,12 @@ const addons = [
     desc: "Silent auction and 50/50 raffle with mobile bidding and auto-draw at close.",
   },
   {
-    icon: Send,
-    title: "SMS & Email Blasts",
+    icon: LayoutTemplate,
+    title: "Custom Event Page Build Out",
     price: 99,
-    desc: "Send bulk SMS and email messages to players, sponsors, and volunteers with scheduling.",
+    desc: "Our team will work with you to build out a fully customized event page tailored to your tournament. This includes custom layout adjustments, color coordination, content placement, and branding to make your event page stand out. We'll handle the setup so you don't have to.",
   },
+
   {
     icon: Phone,
     title: "Priority Support",

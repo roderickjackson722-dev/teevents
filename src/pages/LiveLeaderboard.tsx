@@ -5,7 +5,6 @@ import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 import { LeaderboardRenderer, mergeDesign } from "@/components/leaderboard/LeaderboardCore";
-import { BrandingBadge } from "@/components/BrandingBadge";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 
@@ -416,7 +415,6 @@ export default function LiveLeaderboard() {
           </>
         }
       />
-      <BrandingBadge show={tournament.show_branding_badge !== false} />
       <TeeventsFooter tournament={tournament as any} />
     </>
   );

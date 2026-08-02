@@ -41,7 +41,7 @@ export function TeeventsFooter({ tournament }: { tournament: BrandingFooterField
       style={{ backgroundColor: "#1a5c38", fontFamily: "Arial, sans-serif" }}
     >
       <a
-        href="https://teevents.golf/get-started"
+        href="https://teevents.golf/"
         target="_blank"
         rel="noopener noreferrer"
         style={{ color: "#F5A623", textDecoration: "none", fontWeight: 600 }}

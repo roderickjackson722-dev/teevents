@@ -20,7 +20,6 @@ import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
-import { BrandingBadge } from "@/components/BrandingBadge";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { formatCents, formatMoney } from "@/lib/formatCurrency";
 
@@ -2911,7 +2910,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
 
       <TeeventsFooter tournament={tournament as any} />
-      <BrandingBadge show={(tournament as any).show_branding_badge !== false} />
     </div>
   );
 };

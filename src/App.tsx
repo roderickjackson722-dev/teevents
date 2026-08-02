@@ -44,7 +44,6 @@ import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
 import Store from "./pages/dashboard/Store";
-import Messages from "./pages/dashboard/Messages";
 import Leaderboard from "./pages/dashboard/Leaderboard";
 import Scoring from "./pages/dashboard/Scoring";
 import CRM from "./pages/dashboard/CRM";

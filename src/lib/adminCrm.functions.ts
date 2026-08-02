@@ -9,7 +9,10 @@ export type CrmEvent = {
   end_date?: string | null;
   status: string;
   organization_name: string | null;
+  /** Platform fees collected for this event, in cents. */
+  platform_fees_cents: number;
 };
+
 
 export type CrmNote = {
   id: string;
@@ -32,8 +35,11 @@ export type CrmUser = {
   events: CrmEvent[];
   tournament_count: number;
   league_count: number;
+  /** Total platform fees collected across all this user's events, in cents. */
+  platform_fees_cents: number;
   notes: CrmNote[];
 };
+
 
 /** Load every user with their events, vetting answers and admin notes. */
 export const adminListUserEvents = createServerFn({ method: "POST" })
@@ -67,7 +73,7 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
       if (batch.length < 200) break;
     }
 
-    const [vetting, members, orgs, tournaments, leagues, notes] = await Promise.all([
+    const [vetting, members, orgs, tournaments, leagues, notes, txns, leaguePays] = await Promise.all([
       admin.from("signup_vetting").select("*").order("created_at", { ascending: false }),
       admin.from("org_members").select("user_id, organization_id, role, name"),
       admin.from("organizations").select("id, name, workspace_type"),
@@ -79,11 +85,35 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
         .from("admin_user_notes")
         .select("id, user_id, note, created_at, created_by")
         .order("created_at", { ascending: false }),
+      admin
+        .from("platform_transactions")
+        .select("tournament_id, platform_fee_cents, status")
+        .eq("status", "succeeded"),
+      admin
+        .from("league_payments")
+        .select("league_id, platform_fee_cents, status")
+        .eq("status", "paid"),
     ]);
 
-    for (const r of [vetting, members, orgs, tournaments, leagues, notes]) {
+    for (const r of [vetting, members, orgs, tournaments, leagues, notes, txns, leaguePays]) {
       if (r.error) throw new Error(r.error.message);
     }
+
+    // Platform fees collected, keyed by event id
+    const feesByTournament = new Map<string, number>();
+    for (const t of txns.data ?? []) {
+      if (!t.tournament_id) continue;
+      feesByTournament.set(
+        t.tournament_id,
+        (feesByTournament.get(t.tournament_id) ?? 0) + (t.platform_fee_cents ?? 0),
+      );
+    }
+    const feesByLeague = new Map<string, number>();
+    for (const p of leaguePays.data ?? []) {
+      if (!p.league_id) continue;
+      feesByLeague.set(p.league_id, (feesByLeague.get(p.league_id) ?? 0) + (p.platform_fee_cents ?? 0));
+    }
+
 
     const orgById = new Map<string, { id: string; name: string }>();
     for (const o of orgs.data ?? []) orgById.set(o.id, { id: o.id, name: o.name });
@@ -147,6 +177,7 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
             date: t.date ?? null,
             status: t.status ?? "draft",
             organization_name: orgName,
+            platform_fees_cents: feesByTournament.get(t.id) ?? 0,
           });
         }
         for (const l of leaguesByOrg.get(orgId) ?? []) {
@@ -158,8 +189,10 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
             end_date: l.end_date ?? null,
             status: l.publish_status === "draft" ? "draft" : l.is_active ? "active" : "completed",
             organization_name: orgName,
+            platform_fees_cents: feesByLeague.get(l.id) ?? 0,
           });
         }
+
       }
       events.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 
@@ -190,11 +223,16 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
         events,
         tournament_count: events.filter((e) => e.type === "tournament").length,
         league_count: events.filter((e) => e.type === "league").length,
+        platform_fees_cents: events.reduce((s, e) => s + (e.platform_fees_cents ?? 0), 0),
         notes: notesByUser.get(u.id) ?? [],
       };
     });
 
     rows.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+
+    const totalFeesCents =
+      (txns.data ?? []).reduce((s: number, t: any) => s + (t.platform_fee_cents ?? 0), 0) +
+      (leaguePays.data ?? []).reduce((s: number, p: any) => s + (p.platform_fee_cents ?? 0), 0);
 
     return {
       rows,
@@ -202,8 +240,10 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
         users: rows.length,
         tournaments: (tournaments.data ?? []).length,
         leagues: (leagues.data ?? []).length,
+        platform_fees_cents: totalFeesCents,
       },
     };
+
   });
 
 export const adminAddUserNote = createServerFn({ method: "POST" })

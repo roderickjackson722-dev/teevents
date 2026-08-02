@@ -17,10 +17,12 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { formatCents } from "@/lib/formatCurrency";
 import {
   adminListUserEvents, adminAddUserNote, adminDeleteUserNote,
   type CrmUser, type CrmEvent,
 } from "@/lib/adminCrm.functions";
+
 
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
@@ -86,7 +88,8 @@ export default function AdminUsersEvents() {
   });
 
   const rows: CrmUser[] = (data as any)?.rows ?? [];
-  const totals = (data as any)?.totals ?? { users: 0, tournaments: 0, leagues: 0 };
+  const totals = (data as any)?.totals ?? { users: 0, tournaments: 0, leagues: 0, platform_fees_cents: 0 };
+
 
   // keep the open modal in sync with refreshed data
   const selectedLive = selected ? rows.find((r) => r.user_id === selected.user_id) ?? selected : null;
@@ -122,7 +125,7 @@ export default function AdminUsersEvents() {
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const header = [
       "Email", "Full Name", "Phone", "Organization", "Event Name", "Event Type",
-      "Event Date", "Status", "Vetting Answers", "Admin Notes",
+      "Event Date", "Status", "Platform Fees Collected", "Vetting Answers", "Admin Notes",
     ];
     const lines: string[] = [header.map(esc).join(",")];
     for (const u of filtered) {
@@ -135,10 +138,12 @@ export default function AdminUsersEvents() {
         lines.push([
           u.email, u.full_name, u.phone, u.organization_name,
           e?.name ?? "", e?.type ?? "", e?.date ?? "", e?.status ?? "",
+          formatCents(e ? e.platform_fees_cents : u.platform_fees_cents),
           vetting, notes,
         ].map(esc).join(","));
       }
     }
+
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -176,23 +181,25 @@ export default function AdminUsersEvents() {
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
         {/* Quick stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {([
-            ["Total Users", totals.users],
-            ["Tournaments", totals.tournaments],
-            ["Leagues", totals.leagues],
-            ["Active", statusCounts.active],
-            ["Draft", statusCounts.draft],
-            ["Completed", statusCounts.completed],
-            ["Pending", statusCounts.pending],
+            ["Total Users", String(totals.users ?? 0)],
+            ["Tournaments", String(totals.tournaments ?? 0)],
+            ["Leagues", String(totals.leagues ?? 0)],
+            ["Total Fees Collected", formatCents(totals.platform_fees_cents ?? 0)],
+            ["Active", String(statusCounts.active ?? 0)],
+            ["Draft", String(statusCounts.draft ?? 0)],
+            ["Completed", String(statusCounts.completed ?? 0)],
+            ["Pending", String(statusCounts.pending ?? 0)],
           ] as const).map(([label, value]) => (
             <Card key={label}>
               <CardContent className="p-3">
                 <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-bold">{label}</div>
-                <div className="text-2xl font-bold">{value ?? 0}</div>
+                <div className="text-2xl font-bold">{value}</div>
               </CardContent>
             </Card>
           ))}
+
         </div>
 
         {/* Filters */}
@@ -243,7 +250,8 @@ export default function AdminUsersEvents() {
                   <thead className="bg-muted/50 border-b">
                     <tr>
                       <Th>#</Th><Th>User</Th><Th>Events</Th><Th>Type</Th>
-                      <Th>Date</Th><Th>Status</Th><Th>Notes</Th>
+                      <Th>Date</Th><Th>Status</Th><Th>Fees Collected</Th><Th>Notes</Th>
+
                     </tr>
                   </thead>
                   <tbody>
@@ -291,6 +299,10 @@ export default function AdminUsersEvents() {
                               </Badge>
                             ) : "—"}
                           </Td>
+                          <Td className="font-semibold whitespace-nowrap">
+                            {formatCents(u.platform_fees_cents)}
+                          </Td>
+
                           <Td>
                             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                               <StickyNote className="h-3.5 w-3.5" /> {u.notes.length}
@@ -361,8 +373,13 @@ export default function AdminUsersEvents() {
                       <span className="text-muted-foreground capitalize">— {e.type} —</span>
                       <span>{fmtDate(e.date)}</span>
                       <Badge variant="outline" className={`text-[10px] capitalize ${statusClass(e.status)}`}>{e.status}</Badge>
+                      <span className="text-muted-foreground">— Fees: <span className="font-semibold text-foreground">{formatCents(e.platform_fees_cents)}</span></span>
                     </div>
                   )) : <div className="text-muted-foreground">No events yet.</div>}
+                  <div className="pt-2 mt-2 border-t font-semibold">
+                    Total Fees Collected: {formatCents(selectedLive.platform_fees_cents)}
+                  </div>
+
                 </CardContent>
               </Card>
 

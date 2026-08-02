@@ -220,10 +220,21 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent, onManual
 
         {q.trim().length >= 2 && !loading && results.length === 0 && !selected && (
           <p className="text-sm text-muted-foreground italic">
-            No matches yet. Keep typing, or enter your course details manually below — you can save
+            No matches yet. Keep typing, or use "Enter Course Manually" below — you can save
             it to the library after.
           </p>
         )}
+
+        {onManualEntry && (
+          <div className="flex items-center gap-3 pt-1">
+            <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
+            <Button variant="secondary" size="sm" onClick={onManualEntry} disabled={manualEntryOpen}>
+              {manualEntryOpen ? "Manual entry open below" : "Enter Course Manually"}
+            </Button>
+            <span className="text-xs text-muted-foreground">Course not in the database?</span>
+          </div>
+        )}
+
 
         {/* Selected course verification card */}
         {selected && (

@@ -181,23 +181,25 @@ export default function AdminUsersEvents() {
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
         {/* Quick stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {([
-            ["Total Users", totals.users],
-            ["Tournaments", totals.tournaments],
-            ["Leagues", totals.leagues],
-            ["Active", statusCounts.active],
-            ["Draft", statusCounts.draft],
-            ["Completed", statusCounts.completed],
-            ["Pending", statusCounts.pending],
+            ["Total Users", String(totals.users ?? 0)],
+            ["Tournaments", String(totals.tournaments ?? 0)],
+            ["Leagues", String(totals.leagues ?? 0)],
+            ["Total Fees Collected", formatCents(totals.platform_fees_cents ?? 0)],
+            ["Active", String(statusCounts.active ?? 0)],
+            ["Draft", String(statusCounts.draft ?? 0)],
+            ["Completed", String(statusCounts.completed ?? 0)],
+            ["Pending", String(statusCounts.pending ?? 0)],
           ] as const).map(([label, value]) => (
             <Card key={label}>
               <CardContent className="p-3">
                 <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-bold">{label}</div>
-                <div className="text-2xl font-bold">{value ?? 0}</div>
+                <div className="text-2xl font-bold">{value}</div>
               </CardContent>
             </Card>
           ))}
+
         </div>
 
         {/* Filters */}

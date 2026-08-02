@@ -312,6 +312,10 @@ const CustomerAuth = () => {
         body: { email, full_name: fullName.trim(), plan: "Base" },
       });
 
+      recordSecurityEvent({
+        data: { actionType: "signup", userEmail: email, userId: signUpData.user?.id ?? null },
+      }).catch(() => null);
+
       // Auto-login: if signup didn't return a session (email confirmation required),
       // attempt an immediate password sign-in so the user lands on the dashboard.
       let hasSession = !!signUpData.session;
@@ -334,8 +338,29 @@ const CustomerAuth = () => {
         toast({ title: "Too many attempts", description: rlLogin.message, variant: "destructive" });
         setLoading(false); return;
       }
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) toast({ title: "Error", description: signInError.message, variant: "destructive" });
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        const check = await recordSecurityEvent({
+          data: { actionType: "login_failed", userEmail: email },
+        }).catch(() => null);
+        toast({
+          title: "Error",
+          description: check?.message || signInError.message,
+          variant: "destructive",
+        });
+      } else {
+        const check = await recordSecurityEvent({
+          data: { actionType: "login", userEmail: email, userId: signInData?.user?.id ?? null },
+        }).catch(() => null);
+        if (check && check.allow === false) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Sign-in blocked",
+            description: check.message || "This account cannot sign in.",
+            variant: "destructive",
+          });
+        }
+      }
     }
 
     setLoading(false);

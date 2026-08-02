@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -112,7 +113,7 @@ export default function CRM() {
   const canEdit = isOwner || permissions.includes("manage_messages") || permissions.includes("manage_registration");
   const canDelete = isOwner;
 
-  const [tournamentId, setTournamentId] = useState<string | null>(() => localStorage.getItem("selectedTournamentId"));
+  const [tournamentId, setTournamentId] = useTournamentIdParam();
   const [tournaments, setTournaments] = useState<Array<{ id: string; title: string }>>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
@@ -132,9 +133,9 @@ export default function CRM() {
       .order("date", { ascending: false })
       .then(({ data }) => {
         setTournaments((data as any) || []);
-        if (!tournamentId && data && data.length > 0) {
-          setTournamentId(data[0].id);
-          localStorage.setItem("selectedTournamentId", data[0].id);
+        const rows = (data as any[]) || [];
+        if (rows.length > 0 && !rows.some((t) => t.id === tournamentId)) {
+          setTournamentId(rows[0].id);
         }
       });
   }, [org]); // eslint-disable-line
@@ -276,7 +277,7 @@ export default function CRM() {
           <p className="text-sm text-muted-foreground">Track prospects, log communications, manage tasks, and audit changes.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={tournamentId ?? ""} onValueChange={(v) => { setTournamentId(v); localStorage.setItem("selectedTournamentId", v); }}>
+          <Select value={tournamentId ?? ""} onValueChange={(v) => setTournamentId(v)}>
             <SelectTrigger className="w-[240px]"><SelectValue placeholder="Select tournament..." /></SelectTrigger>
             <SelectContent>
               {tournaments.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}

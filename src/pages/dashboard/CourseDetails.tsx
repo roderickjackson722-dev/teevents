@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Save, Loader2, MapPin, Globe, Plus, Trash2, Star, AlertTriangle, CheckCircle2, Trophy, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { calcCourseHandicap, calcPlayingHandicap, allocateStrokes } from "@/lib/handicapUtils";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 import { formatTournamentDate } from "@/lib/formatDate";
@@ -35,7 +36,7 @@ const TEE_OPTIONS = ["Black", "Blue", "White", "Red", "Gold", "Green", "Silver",
 export default function CourseDetails() {
   const queryClient = useQueryClient();
   const { org } = useOrgContext();
-  const [tournamentId, setTournamentId] = useState<string | null>(() => localStorage.getItem("selectedTournamentId"));
+  const [tournamentId, setTournamentId] = useTournamentIdParam();
 
   const { data: tournaments } = useQuery({
     queryKey: ["course-details-tournaments", org?.orgId],
@@ -52,16 +53,13 @@ export default function CourseDetails() {
   });
 
   useEffect(() => {
-    if (!tournamentId && tournaments && tournaments.length > 0) {
-      const first = tournaments[0].id;
-      setTournamentId(first);
-      localStorage.setItem("selectedTournamentId", first);
+    if (tournaments && tournaments.length > 0 && !tournaments.some((t) => t.id === tournamentId)) {
+      setTournamentId(tournaments[0].id);
     }
   }, [tournaments, tournamentId]);
 
   const handleTournamentChange = (id: string) => {
     setTournamentId(id);
-    localStorage.setItem("selectedTournamentId", id);
   };
 
   // Fetch existing course

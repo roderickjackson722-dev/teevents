@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import DropdownOptionsEditor from "@/components/dashboard/DropdownOptionsEditor";
 import { useSearchParams } from "react-router-dom";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { markChecklistTaskComplete } from "@/hooks/useSetupChecklist";
 import { motion } from "framer-motion";
@@ -135,7 +136,7 @@ const Registration = () => {
   const { demoGuard } = useDemoMode();
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState<string>("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -189,7 +190,7 @@ const Registration = () => {
       .then(({ data }: any) => {
         const t = (data as Tournament[]) || [];
         setTournaments(t);
-        if (t.length > 0) setSelectedTournament(t[0].id);
+        if (t.length > 0 && !t.some((x) => x.id === selectedTournament)) setSelectedTournament(t[0].id);
         setLoading(false);
       });
   }, [org]);

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Save, FileDown, Trophy, MapPin } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import SEO from "@/components/SEO";
 import { openPrintWindow } from "@/components/printables/printUtils";
@@ -42,7 +43,7 @@ const DEFAULT_ROWS: PinRow[] = Array.from({ length: 18 }, (_, i) => empty(i + 1)
 export default function PinSheets() {
   const queryClient = useQueryClient();
   const { org } = useOrgContext();
-  const [tournamentId, setTournamentId] = useState<string | null>(() => localStorage.getItem("selectedTournamentId"));
+  const [tournamentId, setTournamentId] = useTournamentIdParam();
 
   const { data: tournaments } = useQuery({
     queryKey: ["pin-sheets-tournaments", org?.orgId],
@@ -59,9 +60,8 @@ export default function PinSheets() {
   });
 
   useEffect(() => {
-    if (!tournamentId && tournaments && tournaments.length > 0) {
+    if (tournaments && tournaments.length > 0 && !tournaments.some((t) => t.id === tournamentId)) {
       setTournamentId(tournaments[0].id);
-      localStorage.setItem("selectedTournamentId", tournaments[0].id);
     }
   }, [tournaments, tournamentId]);
 
@@ -250,7 +250,6 @@ export default function PinSheets() {
               value={tournamentId ?? ""}
               onValueChange={(v) => {
                 setTournamentId(v);
-                localStorage.setItem("selectedTournamentId", v);
               }}
             >
               <SelectTrigger><SelectValue placeholder="Select a tournament..." /></SelectTrigger>

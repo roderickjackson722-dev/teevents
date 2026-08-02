@@ -658,6 +658,10 @@ export default function CourseDetails() {
           </div>
         </CardContent>
       </Card>
+      </>
+      )}
+
+
 
       {/* Multiple Tee Sets */}
       <Card>

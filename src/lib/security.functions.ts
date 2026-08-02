@@ -167,7 +167,7 @@ export const adminListActivity = createServerFn({ method: "POST" })
   .inputValidator((input: {
     search?: string; actionType?: string; from?: string; to?: string; limit?: number;
   }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -192,7 +192,7 @@ export const adminListActivity = createServerFn({ method: "POST" })
 
 export const adminListFlags = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }: any) => {
     const { getAdminClient, assertAdmin } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -208,7 +208,7 @@ export const adminListFlags = createServerFn({ method: "POST" })
 export const adminResolveFlag = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -226,7 +226,7 @@ export const adminResolveFlag = createServerFn({ method: "POST" })
 
 export const adminListSessions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }: any) => {
     const { getAdminClient, assertAdmin, friendlyDevice } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -281,7 +281,7 @@ export const adminListSessions = createServerFn({ method: "POST" })
 export const adminEndSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { userId?: string; all?: boolean }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -325,7 +325,7 @@ export const adminEndSession = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const adminListSecurityTournaments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }: any) => {
     const { getAdminClient, assertAdmin } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -402,7 +402,7 @@ export const adminListSecurityTournaments = createServerFn({ method: "POST" })
 export const adminSetTournamentState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; mode: "suspend" | "archive" }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -427,7 +427,7 @@ export const adminSetTournamentState = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const adminListSuspensions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }: any) => {
     const { getAdminClient, assertAdmin } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -446,7 +446,7 @@ export const adminSuspendUser = createServerFn({ method: "POST" })
     userId?: string | null; email: string; reason: string;
     permanent?: boolean; notify?: boolean;
   }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity, sendPlainEmail, suspensionEmailHtml } =
       await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
@@ -508,7 +508,7 @@ export const adminSuspendUser = createServerFn({ method: "POST" })
 export const adminUnsuspendUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -539,7 +539,7 @@ export const adminUnsuspendUser = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const adminListBlacklist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }: any) => {
     const { getAdminClient, assertAdmin } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -552,7 +552,7 @@ export const adminListBlacklist = createServerFn({ method: "POST" })
 export const adminAddBlacklistIp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { ip: string; reason?: string }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -578,7 +578,7 @@ export const adminAddBlacklistIp = createServerFn({ method: "POST" })
 export const adminRemoveBlacklistIp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -596,7 +596,7 @@ export const adminRemoveBlacklistIp = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 export const adminGetAlertSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }: any) => {
     const { getAdminClient, assertAdmin } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -613,7 +613,7 @@ export const adminSaveAlertSettings = createServerFn({ method: "POST" })
     id: string; enabled: boolean; recipients: string;
     alert_high: boolean; alert_medium: boolean; alert_low: boolean;
   }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, logActivity } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();
@@ -642,7 +642,7 @@ export const adminSaveAlertSettings = createServerFn({ method: "POST" })
 export const adminSendTestAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { severity: "high" | "medium" | "low" }) => input)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { getAdminClient, assertAdmin, createFlag } = await import("./security.server");
     await assertAdmin(context.supabase, context.userId);
     const admin = await getAdminClient();

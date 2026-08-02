@@ -5,7 +5,7 @@ export type AddonKey =
   | "custom_domain"
   | "unlimited_manual_entries"
   | "auction_raffle"
-  | "sms_email_blasts"
+  | "custom_event_page"
   | "priority_support"
   | "bundle";
 
@@ -13,7 +13,7 @@ export interface AddonFlags {
   custom_domain: boolean;
   unlimited_manual_entries: boolean;
   auction_raffle: boolean;
-  sms_email_blasts: boolean;
+  custom_event_page: boolean;
   priority_support: boolean;
   bundle: boolean;
 }
@@ -22,7 +22,7 @@ const DEFAULT: AddonFlags = {
   custom_domain: false,
   unlimited_manual_entries: false,
   auction_raffle: false,
-  sms_email_blasts: false,
+  custom_event_page: false,
   priority_support: false,
   bundle: false,
 };

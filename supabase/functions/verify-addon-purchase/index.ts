@@ -53,7 +53,7 @@ serve(async (req) => {
       next["custom_domain"] = true;
       next["unlimited_manual_entries"] = true;
       next["auction_raffle"] = true;
-      next["sms_email_blasts"] = true;
+      next["custom_event_page"] = true;
       next["priority_support"] = true;
     }
 

@@ -76,6 +76,7 @@ import Contests from "./pages/dashboard/Contests";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import ManualEntryGrantsAdmin from "./pages/admin/ManualEntryGrants";
 import AdminSecurity from "./pages/admin/Security";
+import AdminUsersEvents from "./pages/admin/UsersEvents";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
 import PublicSearch from "./pages/dashboard/PublicSearch";
@@ -364,6 +365,7 @@ const App = () => (
            <Route path="/admin/demo-leads" element={<DemoLeads />} />
            <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
            <Route path="/admin/security" element={<AdminSecurity />} />
+           <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />
            <Route path="/help" element={<HelpCenter />} />
            <Route path="/help/step-by-step" element={<StepByStep />} />

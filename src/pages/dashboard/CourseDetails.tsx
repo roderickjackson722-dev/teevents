@@ -104,6 +104,9 @@ export default function CourseDetails() {
   const [importedTees, setImportedTees] = useState<CourseTee[]>([]);
   const [importWarning, setImportWarning] = useState<string | null>(null);
 
+  const [manualOpen, setManualOpen] = useState(false);
+  const [courseSelected, setCourseSelected] = useState(false);
+
   const [showTeeSets, setShowTeeSets] = useState(false);
   const [teeSetDialogOpen, setTeeSetDialogOpen] = useState(false);
 
@@ -183,6 +186,18 @@ export default function CourseDetails() {
 
     return { issues, isComplete: issues.length === 0 };
   }, [courseName, courseRating, slopeRating, holes]);
+
+  // Existing tournaments keep their saved course: show the editable form whenever
+  // course data already exists, a database course was just selected, or the
+  // organizer opted into manual entry.
+  const detailsVisible = manualOpen || courseSelected || !!course || !!courseName.trim();
+
+  // Reset the manual/selected flags when switching tournaments.
+  useEffect(() => {
+    setManualOpen(false);
+    setCourseSelected(false);
+  }, [tournamentId]);
+
 
   const updateHole = (idx: number, field: keyof HoleData, value: string) => {
     setHoles(prev => {
@@ -417,7 +432,10 @@ export default function CourseDetails() {
 
       {tournamentId && (
         <CourseDatabaseSearch
+          onManualEntry={() => setManualOpen(true)}
+          manualEntryOpen={manualOpen}
           onSelect={(c: CourseDBResult) => {
+            setCourseSelected(true);
             setCourseName(c.course_name);
             if (c.tee_name) setTeeName(c.tee_name);
             if (c.course_rating != null) setCourseRating(String(c.course_rating));
@@ -490,7 +508,7 @@ export default function CourseDetails() {
 
       {/* Validation Banner */}
 
-      {!validation.isComplete ? (
+      {!detailsVisible ? null : !validation.isComplete ? (
         <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
@@ -511,10 +529,15 @@ export default function CourseDetails() {
         </Alert>
       )}
 
-      {/* Basic Info */}
+      {detailsVisible ? (
+      <>
+      {/* Course Information (consolidated) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Basic Information</CardTitle>
+          <CardTitle className="text-lg">Course Information</CardTitle>
+          <CardDescription>
+            Auto-filled when you select a course from the database — edit any field to match your venue.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -532,20 +555,10 @@ export default function CourseDetails() {
                     ...TEE_OPTIONS,
                   ])).map(t => <SelectItem key={t} value={t}>{t} Tees</SelectItem>)}
                 </SelectContent>
-
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Course Ratings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Course Ratings (USGA)</CardTitle>
-          <CardDescription>These values are on the course scorecard or USGA website.</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <Separator />
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label>Par</Label>
@@ -561,8 +574,12 @@ export default function CourseDetails() {
               <Input type="number" value={slopeRating} onChange={e => setSlopeRating(e.target.value)} placeholder="135" />
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Course Rating and Slope Rating are on the course scorecard or the USGA website.
+          </p>
         </CardContent>
       </Card>
+
 
       {/* Hole-by-Hole */}
       <Card>
@@ -658,6 +675,18 @@ export default function CourseDetails() {
           </div>
         </CardContent>
       </Card>
+      </>
+      ) : tournamentId ? (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Search for your course above to auto-fill par, rating, slope, and hole data — or click
+            "Enter Course Manually" if your course isn't in the database.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+
 
       {/* Multiple Tee Sets */}
       <Card>

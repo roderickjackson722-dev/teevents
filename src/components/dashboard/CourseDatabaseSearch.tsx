@@ -42,6 +42,9 @@ export interface CourseDBResult {
 interface Props {
   onSelect: (course: CourseDBResult) => void;
   onSaveCurrent?: () => Promise<void> | void;
+  /** Reveals the manual course entry form for courses not in the database. */
+  onManualEntry?: () => void;
+  manualEntryOpen?: boolean;
 }
 
 function fullAddress(c: CourseDBResult): string {
@@ -49,7 +52,7 @@ function fullAddress(c: CourseDBResult): string {
   return [c.city, c.state].filter(Boolean).join(", ");
 }
 
-export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props) {
+export default function CourseDatabaseSearch({ onSelect, onSaveCurrent, onManualEntry, manualEntryOpen }: Props) {
   const [q, setQ] = useState("");
   const [stateFilter, setStateFilter] = useState<string>("");
   const [results, setResults] = useState<CourseDBResult[]>([]);
@@ -217,10 +220,21 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent }: Props)
 
         {q.trim().length >= 2 && !loading && results.length === 0 && !selected && (
           <p className="text-sm text-muted-foreground italic">
-            No matches yet. Keep typing, or enter your course details manually below — you can save
+            No matches yet. Keep typing, or use "Enter Course Manually" below — you can save
             it to the library after.
           </p>
         )}
+
+        {onManualEntry && (
+          <div className="flex items-center gap-3 pt-1">
+            <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
+            <Button variant="secondary" size="sm" onClick={onManualEntry} disabled={manualEntryOpen}>
+              {manualEntryOpen ? "Manual entry open below" : "Enter Course Manually"}
+            </Button>
+            <span className="text-xs text-muted-foreground">Course not in the database?</span>
+          </div>
+        )}
+
 
         {/* Selected course verification card */}
         {selected && (

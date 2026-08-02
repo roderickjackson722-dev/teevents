@@ -9,7 +9,10 @@ export type CrmEvent = {
   end_date?: string | null;
   status: string;
   organization_name: string | null;
+  /** Platform fees collected for this event, in cents. */
+  platform_fees_cents: number;
 };
+
 
 export type CrmNote = {
   id: string;
@@ -32,8 +35,11 @@ export type CrmUser = {
   events: CrmEvent[];
   tournament_count: number;
   league_count: number;
+  /** Total platform fees collected across all this user's events, in cents. */
+  platform_fees_cents: number;
   notes: CrmNote[];
 };
+
 
 /** Load every user with their events, vetting answers and admin notes. */
 export const adminListUserEvents = createServerFn({ method: "POST" })

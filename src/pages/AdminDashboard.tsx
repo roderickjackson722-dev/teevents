@@ -797,6 +797,12 @@ const AdminDashboard = () => {
                   </button>
                 ))}
                 <button
+                  onClick={() => navigate("/admin/users-events")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Users className="h-4 w-4" /> Users & Events
+                </button>
+                <button
                   onClick={() => navigate("/admin/security")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >

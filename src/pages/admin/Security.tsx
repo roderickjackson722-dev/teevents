@@ -54,7 +54,7 @@ const sevBadge = (sev: string) => {
   return "bg-slate-100 text-slate-700 border-slate-200";
 };
 
-const Th = ({ children }: { children: React.ReactNode }) => (
+const Th = ({ children }: { children?: React.ReactNode }) => (
   <th className="text-left text-[11px] uppercase tracking-wide font-bold text-muted-foreground px-3 py-2">{children}</th>
 );
 const Td = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { checkAuthRateLimit } from "@/lib/authRateLimit";
+import { recordSecurityEvent } from "@/lib/security.functions";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 
 const AdminLogin = () => {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Sparkles, Globe, Users, Gavel, Send, Phone, Building2 } from "lucide-react";
+import { Check, ArrowRight, Loader2, Sparkles, Globe, Users, Gavel, LayoutTemplate, Phone, Building2 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

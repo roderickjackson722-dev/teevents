@@ -28,7 +28,7 @@ export type CrmUser = {
   phone: string | null;
   organization_name: string | null;
   organizations: string[];
-  vetting_answers: Record<string, unknown> | null;
+  vetting_answers: Record<string, string | null> | null;
   events: CrmEvent[];
   tournament_count: number;
   league_count: number;

@@ -73,7 +73,7 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
       if (batch.length < 200) break;
     }
 
-    const [vetting, members, orgs, tournaments, leagues, notes] = await Promise.all([
+    const [vetting, members, orgs, tournaments, leagues, notes, txns, leaguePays] = await Promise.all([
       admin.from("signup_vetting").select("*").order("created_at", { ascending: false }),
       admin.from("org_members").select("user_id, organization_id, role, name"),
       admin.from("organizations").select("id, name, workspace_type"),
@@ -85,11 +85,35 @@ export const adminListUserEvents = createServerFn({ method: "POST" })
         .from("admin_user_notes")
         .select("id, user_id, note, created_at, created_by")
         .order("created_at", { ascending: false }),
+      admin
+        .from("platform_transactions")
+        .select("tournament_id, platform_fee_cents, status")
+        .eq("status", "succeeded"),
+      admin
+        .from("league_payments")
+        .select("league_id, platform_fee_cents, status")
+        .eq("status", "paid"),
     ]);
 
-    for (const r of [vetting, members, orgs, tournaments, leagues, notes]) {
+    for (const r of [vetting, members, orgs, tournaments, leagues, notes, txns, leaguePays]) {
       if (r.error) throw new Error(r.error.message);
     }
+
+    // Platform fees collected, keyed by event id
+    const feesByTournament = new Map<string, number>();
+    for (const t of txns.data ?? []) {
+      if (!t.tournament_id) continue;
+      feesByTournament.set(
+        t.tournament_id,
+        (feesByTournament.get(t.tournament_id) ?? 0) + (t.platform_fee_cents ?? 0),
+      );
+    }
+    const feesByLeague = new Map<string, number>();
+    for (const p of leaguePays.data ?? []) {
+      if (!p.league_id) continue;
+      feesByLeague.set(p.league_id, (feesByLeague.get(p.league_id) ?? 0) + (p.platform_fee_cents ?? 0));
+    }
+
 
     const orgById = new Map<string, { id: string; name: string }>();
     for (const o of orgs.data ?? []) orgById.set(o.id, { id: o.id, name: o.name });

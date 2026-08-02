@@ -17,10 +17,12 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { formatCents } from "@/lib/formatCurrency";
 import {
   adminListUserEvents, adminAddUserNote, adminDeleteUserNote,
   type CrmUser, type CrmEvent,
 } from "@/lib/adminCrm.functions";
+
 
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
@@ -86,7 +88,8 @@ export default function AdminUsersEvents() {
   });
 
   const rows: CrmUser[] = (data as any)?.rows ?? [];
-  const totals = (data as any)?.totals ?? { users: 0, tournaments: 0, leagues: 0 };
+  const totals = (data as any)?.totals ?? { users: 0, tournaments: 0, leagues: 0, platform_fees_cents: 0 };
+
 
   // keep the open modal in sync with refreshed data
   const selectedLive = selected ? rows.find((r) => r.user_id === selected.user_id) ?? selected : null;

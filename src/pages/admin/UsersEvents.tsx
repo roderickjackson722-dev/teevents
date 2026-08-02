@@ -125,7 +125,7 @@ export default function AdminUsersEvents() {
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const header = [
       "Email", "Full Name", "Phone", "Organization", "Event Name", "Event Type",
-      "Event Date", "Status", "Vetting Answers", "Admin Notes",
+      "Event Date", "Status", "Platform Fees Collected", "Vetting Answers", "Admin Notes",
     ];
     const lines: string[] = [header.map(esc).join(",")];
     for (const u of filtered) {
@@ -138,10 +138,12 @@ export default function AdminUsersEvents() {
         lines.push([
           u.email, u.full_name, u.phone, u.organization_name,
           e?.name ?? "", e?.type ?? "", e?.date ?? "", e?.status ?? "",
+          formatCents(e ? e.platform_fees_cents : u.platform_fees_cents),
           vetting, notes,
         ].map(esc).join(","));
       }
     }
+
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

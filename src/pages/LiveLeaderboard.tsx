@@ -178,7 +178,7 @@ export default function LiveLeaderboard() {
         setLoading(false);
         return;
       }
-      setTournament(data as Tournament);
+      setTournament(data as unknown as Tournament);
       setDesign(mergeDesign((data as any).leaderboard_design));
       setLoading(false);
     })();

@@ -918,10 +918,60 @@ const Players = () => {
     saveNotes(next);
     setEditingNotesNum(null);
   };
+  /**
+   * Pairing tee times are the single source of truth for the {{tee_time}} email
+   * variable, so mirror them into the database (group row + each player's
+   * registration) whenever the organizer changes them here.
+   */
+  const persistTeeTimesToDb = async (forDay: Record<number, string>, dayIndex: number) => {
+    if (!selectedTournament || isSample) return;
+    const entries = Object.entries(forDay);
+    if (!entries.length) return;
+    for (const [holeStr, raw] of entries) {
+      const groupNumber = Number(holeStr);
+      if (!Number.isFinite(groupNumber)) continue;
+      const display = fmtTee12(raw);
+      const existing = teamGroups.find((g) => g.group_number === groupNumber);
+      try {
+        if (existing) {
+          await (supabase as any)
+            .from("registration_groups")
+            .update({ tee_time: display, tee_times: { ...forDay, [`day${dayIndex}`]: display } })
+            .eq("id", existing.id);
+        } else {
+          const res = await (supabase as any)
+            .from("registration_groups")
+            .insert({ tournament_id: selectedTournament, group_number: groupNumber, tee_time: display, tee_times: { [`day${dayIndex}`]: display } })
+            .select("id")
+            .maybeSingle();
+          if (res?.data?.id) {
+            setTeamGroups((p) => [...p, { id: res.data.id, name: "Unnamed team", group_number: groupNumber }]);
+          }
+        }
+        // Day 1 drives the tee time shown in confirmation / day-before emails.
+        if (dayIndex === 0) {
+          await (supabase as any)
+            .from("tournament_registrations")
+            .update({ tee_time: display })
+            .eq("tournament_id", selectedTournament)
+            .eq("group_number", groupNumber);
+        }
+      } catch { /* non-blocking */ }
+    }
+    if (dayIndex === 0) {
+      setAllPlayers((list) => list.map((p) => (
+        p.group_number != null && forDay[p.group_number]
+          ? { ...p, tee_time: fmtTee12(forDay[p.group_number]) } as any
+          : p
+      )));
+    }
+  };
+
   const saveTeeTimes = (nextForDay: Record<number, string>) => {
     const nextAll = { ...holeTeeTimesByDay, [activeDay]: nextForDay };
     setHoleTeeTimesByDay(nextAll);
     try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(nextAll)); } catch { /* noop */ }
+    void persistTeeTimesToDb(nextForDay, activeDay);
   };
   const fmtTee12 = (t?: string) => {
     if (!t) return "";

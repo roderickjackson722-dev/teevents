@@ -140,8 +140,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
   const money = (cents: number) =>
     `$${((cents || 0) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const addonBase = homepage || buttonUrl || "https://www.teevents.golf";
-  const addonsHtml = c.show_addons !== false && addons.length > 0
-    ? `<tr><td class="tv-pad" style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">
+  const showAddons = c.show_addons !== false && addons.length > 0;
+  const addonsInner = `
         <p style="margin:0 0 6px;color:${primary};font-size:17px;font-weight:700;">${esc(c.addons_heading || "⛳ Don't Forget Your Mulligans!")}</p>
         ${c.addons_intro ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">${esc(c.addons_intro)}</p>` : ""}
         ${addons.map((a: any) => `
@@ -155,9 +155,47 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
                 <a href="${addonBase}/add-ons?addon=${a.id}" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
               </td>
             </tr>
-          </table>`).join("")}
-       </td></tr>`
-    : "";
+          </table>`).join("")}`;
+
+  const richBlock = (html: string) =>
+    `<div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${html}</div>`;
+
+  // Every block is independent and rendered in the organizer's chosen order.
+  const storedOrder: string[] = Array.isArray(c.section_order)
+    ? c.section_order.filter((s: string) => DEFAULT_SECTION_ORDER.includes(s))
+    : [];
+  const order = storedOrder.length
+    ? [...storedOrder, ...DEFAULT_SECTION_ORDER.filter((s) => !storedOrder.includes(s))]
+    : [...DEFAULT_SECTION_ORDER];
+
+  const contentHtml = order.map((id) => {
+    switch (id) {
+      case "body":
+        return body.trim() ? richBlock(body) : "";
+      case "schedule":
+        return c.show_schedule !== false && vars.event_schedule
+          ? `${c.schedule_heading ? `<p style="margin:18px 0 8px;color:${textColor};font-size:15px;font-weight:700;">${esc(c.schedule_heading)}</p>` : ""}${richBlock(vars.event_schedule)}`
+          : "";
+      case "closing":
+        return closing.trim() ? richBlock(closing) : "";
+      case "action_buttons":
+        return actionButtonsHtml;
+      case "homepage_button":
+        return c.show_button !== false ? buttonHtml : "";
+      case "homepage_link":
+        return c.show_homepage_link && url
+          ? `<p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${esc(c.homepage_link_label || "🔗 Event Homepage")}: <a href="${url}" style="color:${primary};font-weight:600;">${url}</a></p>`
+          : "";
+      case "addons":
+        return showAddons
+          ? `<div style="margin:22px 0;padding:20px;border:1px solid #e5e7eb;border-radius:8px;background:#fffdf5;">${addonsInner}</div>`
+          : "";
+      case "footer":
+        return `<p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>`;
+      default:
+        return "";
+    }
+  }).join("");
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
@@ -187,12 +225,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
-          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
-          ${actionButtonsHtml}
-          ${buttonHtml}
-          <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
-        </td></tr>${addonsHtml}
+          ${contentHtml}
+        </td></tr>
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${primary};">teevents.golf</a></p>
         </td></tr>
@@ -201,6 +235,7 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
   </table>
 </body></html>`;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

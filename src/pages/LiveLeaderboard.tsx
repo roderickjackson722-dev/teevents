@@ -467,6 +467,8 @@ export default function LiveLeaderboard() {
         sidebarSponsors={sidebarSponsors}
         footerSponsors={footerSponsors}
         scrollingSponsors={scrollingSponsors}
+        scrollingSponsorsPosition={tournament.leaderboard_sponsor_banner_position || "bottom"}
+        scrollingSponsorsSpeedSeconds={tournament.leaderboard_sponsor_scroll_seconds || 20}
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}

@@ -2639,6 +2639,26 @@ const Players = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog open={!!newTeamForPlayer} onOpenChange={(open) => { if (!open) { setNewTeamForPlayer(null); setNewTeamName(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Create New Team</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Team name (e.g. Team Mulligan)"
+              value={newTeamName}
+              onChange={(e) => setNewTeamName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") createTeamForPlayer(); }}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => { setNewTeamForPlayer(null); setNewTeamName(""); }}>Cancel</Button>
+              <Button onClick={createTeamForPlayer} disabled={!newTeamName.trim()}>Create &amp; Assign</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <StickySaveBar onSave={() => {}} />
     </div>
   );

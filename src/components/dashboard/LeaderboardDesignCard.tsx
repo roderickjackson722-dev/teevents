@@ -150,11 +150,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
         <CardTitle className="flex items-center gap-2"><Tv2 className="w-5 h-5" /> Live Leaderboard Design</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* PREVIEW */}
-        <section>
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Preview</Label>
-          <LeaderboardPreview design={design} rows={previewRows} />
-        </section>
+        {/* DISPLAY SETTINGS */}
+
 
         {/* DISPLAY SETTINGS */}
         <section className="space-y-3 border-t pt-5">

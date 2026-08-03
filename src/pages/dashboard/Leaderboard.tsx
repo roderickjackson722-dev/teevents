@@ -989,9 +989,14 @@ export default function Leaderboard() {
         />
       )}
 
+      {selectedTournament && (
+        <TickerSponsorsCard tournamentId={selectedTournament} />
+      )}
+
       {selectedTournament && org && (
         <LeaderboardSponsorCard tournamentId={selectedTournament} orgId={org.orgId} />
       )}
+
 
       {selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />

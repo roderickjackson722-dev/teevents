@@ -52,11 +52,15 @@ interface PlayerScore {
 }
 
 interface TeamScore {
-  groupNumber: number;
+  key: string;
+  label: string;
+  isUnassigned?: boolean;
+  groupNumber: number | null;
   players: PlayerScore[];
   holeScores: Record<number, number>;
   total: number;
 }
+
 
 const DEFAULT_HOLE_PAR = 4;
 
@@ -289,26 +293,48 @@ export default function Leaderboard() {
       }
     });
 
-    return Object.entries(groups)
-      .map(([gn, players]) => {
-        const holeScores: Record<number, number> = {};
-        let total = 0;
-        holes.forEach((h) => {
-          const val = computeTeamHoleScore(players, h, scoringFormat, editedScores);
-          if (val != null) {
-            holeScores[h] = val;
-            total += val;
-          }
-        });
-        return { groupNumber: parseInt(gn), players, holeScores, total };
-      })
-      .sort((a, b) => {
-        if (a.total === 0 && b.total === 0) return 0;
-        if (a.total === 0) return 1;
-        if (b.total === 0) return -1;
-        return a.total - b.total;
+    const build = (players: PlayerScore[]) => {
+      const holeScores: Record<number, number> = {};
+      let total = 0;
+      holes.forEach((h) => {
+        const val = computeTeamHoleScore(players, h, scoringFormat, editedScores);
+        if (val != null) {
+          holeScores[h] = val;
+          total += val;
+        }
       });
+      return { holeScores, total };
+    };
+
+    const assigned: TeamScore[] = Object.entries(groups).map(([gn, players]) => ({
+      key: `g-${gn}`,
+      label: `Group ${gn}`,
+      groupNumber: parseInt(gn),
+      players,
+      ...build(players),
+    }));
+
+    // Players without a pairing assignment still need to appear — show each as
+    // their own single-player "team" so nobody is missing from the leaderboard.
+    const unassigned: TeamScore[] = playerScores
+      .filter((ps) => ps.group_number == null)
+      .map((ps) => ({
+        key: `u-${ps.registration_id}`,
+        label: `${ps.first_name} ${ps.last_name}`,
+        isUnassigned: true,
+        groupNumber: null,
+        players: [ps],
+        ...build([ps]),
+      }));
+
+    return [...assigned, ...unassigned].sort((a, b) => {
+      if (a.total === 0 && b.total === 0) return 0;
+      if (a.total === 0) return 1;
+      if (b.total === 0) return -1;
+      return a.total - b.total;
+    });
   }, [playerScores, isTeamFormat, scoringFormat, editedScores]);
+
 
   // Stableford leaderboard
   const stablefordScores = useMemo(() => {
@@ -493,7 +519,16 @@ export default function Leaderboard() {
   const getScoreError = (regId: string, hole: number): string | undefined =>
     scoreErrors[regId]?.[hole];
 
+  /** Team formats share one score per hole — apply the edit to every player on the team. */
+  const updateTeamScore = (players: PlayerScore[], hole: number, raw: string) => {
+    players.forEach((p) => updateScore(p.registration_id, hole, raw));
+  };
+  const setTeamScoreValue = (players: PlayerScore[], hole: number, n: number) => {
+    players.forEach((p) => setScore(p.registration_id, hole, n));
+  };
+
   const hasEdits = Object.keys(editedScores).length > 0;
+
   const hasErrors = Object.keys(scoreErrors).length > 0;
 
 
@@ -675,31 +710,53 @@ export default function Leaderboard() {
                 </TableHeader>
                 <TableBody>
                   {teamScores.map((team, i) => (
-                    <TableRow key={team.groupNumber}>
+                    <TableRow key={team.key}>
                       <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-medium">
-                        <div className="font-semibold">Group {team.groupNumber}</div>
+                        <div className="font-semibold flex items-center gap-2">
+                          {team.label}
+                          {team.isUnassigned && (
+                            <Badge variant="outline" className="text-[10px] font-normal">No pairing</Badge>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
                         </div>
                       </TableCell>
-                      {holes.map((h) => (
-                        <TableCell key={h} className="text-center text-sm p-1">
-                          {team.holeScores[h] != null ? (
-                            <span className={
-                              team.holeScores[h] < Math.round(holePar) ? "text-primary font-bold" :
-                              team.holeScores[h] > Math.round(holePar) ? "text-destructive" : ""
-                            }>
-                              {team.holeScores[h]}
-                            </span>
-                          ) : "—"}
-                        </TableCell>
-                      ))}
+                      {holes.map((h) => {
+                        const val = team.holeScores[h];
+                        if (canEditScores && !isFrozen) {
+                          return (
+                            <TableCell key={h} className="p-1 text-center">
+                              <ScoreInput
+                                value={Number(val ?? "")}
+                                par={getHolePar(h)}
+                                ariaLabel={`${team.label} hole ${h}`}
+                                onChange={(raw) => updateTeamScore(team.players, h, raw)}
+                                onSet={(n) => setTeamScoreValue(team.players, h, n)}
+                              />
+                            </TableCell>
+                          );
+                        }
+                        return (
+                          <TableCell key={h} className="text-center text-sm p-1">
+                            {val != null ? (
+                              <span className={
+                                val < Math.round(holePar) ? "text-primary font-bold" :
+                                val > Math.round(holePar) ? "text-destructive" : ""
+                              }>
+                                {val}
+                              </span>
+                            ) : "—"}
+                          </TableCell>
+                        );
+                      })}
                       <TableCell className="text-center font-bold text-lg">
                         {team.total > 0 ? team.total : "—"}
                       </TableCell>
                     </TableRow>
                   ))}
+
                 </TableBody>
               </Table>
             </div>

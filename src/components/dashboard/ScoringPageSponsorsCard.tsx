@@ -4,14 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, MonitorSmartphone } from "lucide-react";
+import { Loader2, MonitorSmartphone, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+type VisibilityField = "show_on_scoring_page" | "show_on_leaderboard";
 
 interface Row {
   id: string;
   name: string;
   tier: string;
-  show_on_scoring_page: boolean;
+  visible: boolean;
 }
 
 const TIER_LABEL: Record<string, string> = {
@@ -29,42 +31,58 @@ const tierOrder: Record<string, number> = {
 };
 
 /**
- * Lets organizers choose which sponsors appear on the player-facing scoring page.
+ * Lets organizers choose which sponsors appear on a player-facing surface —
+ * either the scoring page or the live leaderboard.
  */
-export default function ScoringPageSponsorsCard({ tournamentId }: { tournamentId: string }) {
+export default function ScoringPageSponsorsCard({
+  tournamentId,
+  field = "show_on_scoring_page",
+}: {
+  tournamentId: string;
+  field?: VisibilityField;
+}) {
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const isLeaderboard = field === "show_on_leaderboard";
+  const surface = isLeaderboard ? "live leaderboard" : "scoring page";
+
   useEffect(() => {
     if (!tournamentId) return;
+    let cancelled = false;
     setLoading(true);
-    supabase
-      .from("tournament_sponsors")
-      .select("id, name, tier, show_on_scoring_page")
-      .eq("tournament_id", tournamentId)
-      .order("sort_order", { ascending: true })
-      .then(({ data }) => {
-        const list = ((data as any[]) || []).map((r) => ({
-          id: r.id,
-          name: r.name,
-          tier: r.tier,
-          show_on_scoring_page: r.show_on_scoring_page !== false,
-        }));
-        list.sort((a, b) => (tierOrder[a.tier] ?? 99) - (tierOrder[b.tier] ?? 99));
-        setRows(list);
-        setLoading(false);
-      });
-  }, [tournamentId]);
+    (async () => {
+      const { data } = await supabase
+        .from("tournament_sponsors")
+        .select("id, name, tier, show_on_scoring_page, show_on_leaderboard")
+        .eq("tournament_id", tournamentId);
+      if (cancelled) return;
+      const list: Row[] = ((data as any[]) || []).map((r) => ({
+        id: r.id,
+        name: r.name,
+        tier: r.tier,
+        visible: r[field] !== false,
+      }));
+      list.sort(
+        (a, b) =>
+          (tierOrder[a.tier] ?? 99) - (tierOrder[b.tier] ?? 99) ||
+          (a.name || "").localeCompare(b.name || ""),
+      );
+      setRows(list);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [tournamentId, field]);
 
-  const allSelected = rows.length > 0 && rows.every((r) => r.show_on_scoring_page);
+  const allSelected = rows.length > 0 && rows.every((r) => r.visible);
 
   const toggleAll = (checked: boolean) =>
-    setRows((prev) => prev.map((r) => ({ ...r, show_on_scoring_page: checked })));
+    setRows((prev) => prev.map((r) => ({ ...r, visible: checked })));
 
   const toggleOne = (id: string, checked: boolean) =>
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, show_on_scoring_page: checked } : r)));
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, visible: checked } : r)));
 
   const save = async () => {
     setSaving(true);
@@ -72,7 +90,7 @@ export default function ScoringPageSponsorsCard({ tournamentId }: { tournamentId
       rows.map((r) =>
         supabase
           .from("tournament_sponsors")
-          .update({ show_on_scoring_page: r.show_on_scoring_page } as any)
+          .update({ [field]: r.visible } as any)
           .eq("id", r.id)
       )
     );
@@ -86,9 +104,13 @@ export default function ScoringPageSponsorsCard({ tournamentId }: { tournamentId
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MonitorSmartphone className="h-5 w-5" /> Display on Scoring Page
+          {isLeaderboard ? <Trophy className="h-5 w-5" /> : <MonitorSmartphone className="h-5 w-5" />}
+          {isLeaderboard ? "Sponsors on Live Leaderboard" : "Display on Scoring Page"}
         </CardTitle>
-        <CardDescription>Select which sponsors to display on the scoring page.</CardDescription>
+        <CardDescription>
+          Select which sponsors to display on the {surface}.
+          {rows.length > 0 && ` ${rows.length} sponsor${rows.length === 1 ? "" : "s"} added.`}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
@@ -105,7 +127,7 @@ export default function ScoringPageSponsorsCard({ tournamentId }: { tournamentId
               {rows.map((r) => (
                 <label key={r.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer">
                   <Checkbox
-                    checked={r.show_on_scoring_page}
+                    checked={r.visible}
                     onCheckedChange={(v) => toggleOne(r.id, !!v)}
                   />
                   <span className="text-sm">
@@ -118,7 +140,7 @@ export default function ScoringPageSponsorsCard({ tournamentId }: { tournamentId
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Sponsor Display Settings"}
             </Button>
             <Label className="block text-xs text-muted-foreground">
-              Sponsors you unselect stay on your public page — they just won't appear on the scoring page.
+              Sponsors you unselect stay on your public page — they just won't appear on the {surface}.
             </Label>
           </>
         )}

@@ -17,6 +17,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
+import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
+
 
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();
@@ -139,7 +141,11 @@ export default function Scoring() {
             <TabsTrigger value="live-settings">
               <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
             </TabsTrigger>
+            <TabsTrigger value="sponsors">
+              <Trophy className="h-4 w-4 mr-1.5" /> Sponsors
+            </TabsTrigger>
           </TabsList>
+
 
           {/* ===== SCORING LINKS TAB ===== */}
           <TabsContent value="links" className="space-y-4">
@@ -382,6 +388,14 @@ export default function Scoring() {
           <TabsContent value="live-settings" className="space-y-4">
             <LiveLeaderboardSettings tournamentId={selectedTournament} />
           </TabsContent>
+
+          {/* ===== SPONSOR DISPLAY TAB ===== */}
+          <TabsContent value="sponsors" className="space-y-4">
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_scoring_page" />
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_leaderboard" />
+          </TabsContent>
+
+
 
         </Tabs>
       )}

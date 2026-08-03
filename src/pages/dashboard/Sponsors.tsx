@@ -57,7 +57,6 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
-import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
 
 
 interface Sponsor {
@@ -813,9 +812,8 @@ const Sponsors = () => {
         <SponsorLogoSizeCard tournamentId={selectedTournament} />
       )}
 
-      {selectedTournament && (
-        <ScoringPageSponsorsCard tournamentId={selectedTournament} />
-      )}
+      {/* Scoring-page + leaderboard sponsor selection now lives in Scoring → Sponsors tab. */}
+
 
 
 

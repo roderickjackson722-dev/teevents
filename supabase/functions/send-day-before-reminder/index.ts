@@ -284,7 +284,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_id, test_email, service_run } = payload as any;
+    const { tournament_id, test_email, service_run, registration_ids } = payload as any;
+    const targetIds: string[] | null = Array.isArray(registration_ids) && registration_ids.length > 0
+      ? registration_ids.map((x: unknown) => String(x))
+      : null;
     if (!tournament_id || typeof tournament_id !== "string") throw new Error("Missing tournament_id");
 
     let user: { id: string } | null = null;
@@ -428,11 +431,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: regs } = await admin
+    let regQuery = admin
       .from("tournament_registrations")
       .select("id, first_name, last_name, email, scoring_code, group_scoring_code, group_number, tee_time")
-      .eq("tournament_id", tournament_id)
-      .eq("payment_status", "paid");
+      .eq("tournament_id", tournament_id);
+    // When the organizer hand-picks recipients, send only to those registrations
+    // (regardless of payment status). Otherwise default to all paid players.
+    if (targetIds) regQuery = regQuery.in("id", targetIds);
+    else regQuery = regQuery.eq("payment_status", "paid");
+    const { data: regs } = await regQuery;
 
     // Scoring codes are assigned per group; fill in any row missing its copy so the
     // emailed code matches the code shown in Players & Pairings.

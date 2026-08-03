@@ -4,6 +4,7 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, Award, BadgeCheck, QrCode } from "lucide-react";
+import { toast } from "sonner";
 import type { Tournament, Registration, Sponsor } from "@/components/printables/types";
 import CartSignsTab from "@/components/printables/CartSignsTab";
 import AlphaListTab from "@/components/printables/AlphaListTab";
@@ -12,6 +13,8 @@ import ScorecardsTab from "@/components/printables/ScorecardsTab";
 import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
 import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
+import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodesTab";
+import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions } from "@/components/printables/PrintablesOptionsCard";
 
 interface TournamentWithSlug extends Tournament {
   slug: string | null;
@@ -25,12 +28,16 @@ const Printables = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addons, setAddons] = useState<PrintableAddon[]>([]);
+  const [options, setOptions] = useState<PrintableOptions>(DEFAULT_PRINTABLE_OPTIONS);
+  const [savedOptions, setSavedOptions] = useState<PrintableOptions>(DEFAULT_PRINTABLE_OPTIONS);
+  const [savingOptions, setSavingOptions] = useState(false);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug")
+      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -58,7 +65,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, checked_in, created_at")
+        .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at")
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase
@@ -67,12 +74,22 @@ const Printables = () => {
         .eq("tournament_id", selectedTournament)
         .order("sort_order", { ascending: true }),
       supabase
+        .from("tournament_registration_addons")
+        .select("id, name, description, price_cents, is_active")
+        .eq("tournament_id", selectedTournament)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
+      supabase
         .from("golf_courses")
         .select("hole_pars, stroke_indexes, hole_distances, name, tee_name")
         .eq("tournament_id", selectedTournament)
         .limit(1)
         .maybeSingle(),
-    ]).then(([regRes, sponsorRes, courseRes]) => {
+    ]).then(([regRes, sponsorRes, addonRes, courseRes]) => {
+      setAddons((addonRes.data || []) as PrintableAddon[]);
+      const opts = { ...DEFAULT_PRINTABLE_OPTIONS, ...(((t as any)?.printable_options as Partial<PrintableOptions>) || {}) };
+      setOptions(opts);
+      setSavedOptions(opts);
       setRegistrations((regRes.data || []) as Registration[]);
       setSponsors((sponsorRes.data || []) as Sponsor[]);
       setCourseData(courseRes.data ? {
@@ -85,6 +102,20 @@ const Printables = () => {
       setLoading(false);
     });
   }, [selectedTournament, tournaments]);
+
+  const saveOptions = async () => {
+    if (!selectedTournament) return;
+    setSavingOptions(true);
+    const { error } = await (supabase.from("tournaments") as any)
+      .update({ printable_options: options })
+      .eq("id", selectedTournament);
+    if (error) toast.error("Could not save printables settings");
+    else {
+      setSavedOptions(options);
+      toast.success("Printables settings saved");
+    }
+    setSavingOptions(false);
+  };
 
   const handleUpdateHole = (regId: string, newGroup: number | null) => {
     setRegistrations((prev) =>
@@ -130,6 +161,15 @@ const Printables = () => {
         </Select>
       </div>
 
+      <PrintablesOptionsCard
+        options={options}
+        addons={addons}
+        saving={savingOptions}
+        dirty={JSON.stringify(options) !== JSON.stringify(savedOptions)}
+        onChange={setOptions}
+        onSave={saveOptions}
+      />
+
       <Tabs defaultValue="cart-signs">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="cart-signs" className="gap-2"><Car className="h-4 w-4" /> Cart Signs</TabsTrigger>
@@ -139,10 +179,20 @@ const Printables = () => {
           <TabsTrigger value="alpha-list" className="gap-2"><List className="h-4 w-4" /> Alpha List</TabsTrigger>
           <TabsTrigger value="hole-assignments" className="gap-2"><MapPin className="h-4 w-4" /> Hole Assignments</TabsTrigger>
           <TabsTrigger value="check-in-roster" className="gap-2"><QrCode className="h-4 w-4" /> Check-In Roster</TabsTrigger>
+          <TabsTrigger value="qr-codes" className="gap-2"><QrCode className="h-4 w-4" /> QR Codes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="check-in-roster">
           <CheckInRosterTab tournament={tournament} registrations={registrations as any} loading={loading} />
+        </TabsContent>
+
+        <TabsContent value="qr-codes">
+          <QRCodesTab
+            tournament={tournament}
+            addons={addons}
+            loading={loading}
+            enabled={{ walkup: savedOptions.qr_walkup, addonIds: savedOptions.qr_addon_ids }}
+          />
         </TabsContent>
 
         <TabsContent value="cart-signs">
@@ -158,10 +208,10 @@ const Printables = () => {
           <SponsorSignsTab tournament={tournament} sponsors={sponsors} loading={loading} />
         </TabsContent>
         <TabsContent value="alpha-list">
-          <AlphaListTab tournament={tournament} registrations={registrations} loading={loading} />
+          <AlphaListTab tournament={tournament} registrations={registrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />
         </TabsContent>
         <TabsContent value="hole-assignments">
-          <HoleAssignmentsTab tournament={tournament} registrations={registrations} loading={loading} onUpdate={handleUpdateHole} />
+          <HoleAssignmentsTab tournament={tournament} registrations={registrations} loading={loading} onUpdate={handleUpdateHole} showScoringCodes={savedOptions.show_scoring_codes_holes} />
         </TabsContent>
       </Tabs>
     </div>

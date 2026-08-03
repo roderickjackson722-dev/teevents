@@ -519,7 +519,16 @@ export default function Leaderboard() {
   const getScoreError = (regId: string, hole: number): string | undefined =>
     scoreErrors[regId]?.[hole];
 
+  /** Team formats share one score per hole — apply the edit to every player on the team. */
+  const updateTeamScore = (players: PlayerScore[], hole: number, raw: string) => {
+    players.forEach((p) => updateScore(p.registration_id, hole, raw));
+  };
+  const setTeamScoreValue = (players: PlayerScore[], hole: number, n: number) => {
+    players.forEach((p) => setScore(p.registration_id, hole, n));
+  };
+
   const hasEdits = Object.keys(editedScores).length > 0;
+
   const hasErrors = Object.keys(scoreErrors).length > 0;
 
 

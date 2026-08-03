@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatCents } from "@/lib/formatCurrency";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
-import { Loader2, Minus, Plus, ShoppingCart, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, Minus, Plus, ShoppingCart, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface AddonRow {

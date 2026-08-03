@@ -120,7 +120,7 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
       <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${bgColor};border-radius:8px;overflow:hidden;">
         <tr><td class="tv-pad" style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Tomorrow Is the Big Day!</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${esc(replaceVars(c.header_title || DEFAULTS.header_title, vars))}</h1>
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>

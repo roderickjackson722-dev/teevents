@@ -48,7 +48,10 @@ interface Tournament {
   leaderboard_sponsor_style?: string | null;
   leaderboard_sponsor_interval_ms?: number | null;
   leaderboard_sponsor_rotation_order?: string | null;
+  leaderboard_sponsor_banner_position?: string | null;
+  leaderboard_sponsor_scroll_seconds?: number | null;
   leaderboard_rotating_logos?: { url: string; name?: string; website_url?: string }[] | null;
+
 }
 
 interface LeaderboardRow {

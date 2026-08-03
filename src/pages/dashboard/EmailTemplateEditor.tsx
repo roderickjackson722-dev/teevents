@@ -333,11 +333,22 @@ export default function EmailTemplateEditor() {
     const stored = t?.[CONFIG_KEY[kind]];
     if (stored) {
       const loaded = { ...defaultsForKind(kind), ...(stored as any) };
-      if (kind === "day_before") loaded.closing_text = removeDuplicateLeaderboardText(loaded.closing_text);
-      setConfig(loaded);
+      setConfig(kind === "day_before" ? normalizeDayBefore(loaded) : loaded);
     }
     else setConfig(defaultsForKind(kind));
   };
+
+  const moveSection = (id: string, dir: -1 | 1) => {
+    setConfig((p) => {
+      const order = (p.section_order?.length ? [...p.section_order] : [...DEFAULT_SECTION_ORDER]);
+      const i = order.indexOf(id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= order.length) return p;
+      [order[i], order[j]] = [order[j], order[i]];
+      return { ...p, section_order: order };
+    });
+  };
+
 
 
   // Load tournaments

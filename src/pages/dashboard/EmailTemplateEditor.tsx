@@ -808,6 +808,77 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="border-t pt-4 space-y-3">
+            <p className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Layout className="h-4 w-4 text-primary" /> Email Layout &amp; Section Order
+            </p>
+            <p className="text-xs text-muted-foreground">
+              This is everything that appears in the reminder, top to bottom. Use the arrows to move a section, and the
+              switch to remove it entirely. The colored header band, greeting, and the &ldquo;Sent by TeeVents&rdquo; footer stay fixed.
+            </p>
+            <div className="rounded-md border divide-y">
+              {(config.section_order?.length ? config.section_order : DEFAULT_SECTION_ORDER).map((id, idx, arr) => {
+                const meta = DAY_BEFORE_SECTIONS.find((s) => s.id === id);
+                if (!meta) return null;
+                const toggles: Record<string, { on: boolean; set: (v: boolean) => void } | null> = {
+                  body: null,
+                  closing: null,
+                  footer: null,
+                  schedule: { on: config.show_schedule !== false, set: (v) => setConfig(p => ({ ...p, show_schedule: v })) },
+                  action_buttons: {
+                    on: config.show_scoring_button !== false || config.show_leaderboard_button !== false,
+                    set: (v) => setConfig(p => ({ ...p, show_scoring_button: v, show_leaderboard_button: v })),
+                  },
+                  homepage_button: { on: config.show_button !== false, set: (v) => setConfig(p => ({ ...p, show_button: v })) },
+                  homepage_link: { on: !!config.show_homepage_link, set: (v) => setConfig(p => ({ ...p, show_homepage_link: v })) },
+                  addons: { on: config.show_addons !== false, set: (v) => setConfig(p => ({ ...p, show_addons: v })) },
+                };
+                const t = toggles[id];
+                return (
+                  <div key={id} className="flex items-center gap-3 p-2.5">
+                    <span className="text-xs text-muted-foreground w-5 text-center">{idx + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{meta.label}</p>
+                      <p className="text-xs text-muted-foreground truncate">{meta.hint}</p>
+                    </div>
+                    {t ? (
+                      <Switch checked={t.on} onCheckedChange={t.set} aria-label={`Show ${meta.label}`} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Always</span>
+                    )}
+                    <div className="flex flex-col">
+                      <Button size="icon" variant="ghost" className="h-6 w-6" disabled={idx === 0} onClick={() => moveSection(id, -1)}>
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" disabled={idx === arr.length - 1} onClick={() => moveSection(id, 1)}>
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Schedule Heading (blank to hide)</Label>
+                <Input
+                  value={config.schedule_heading ?? "🗓 Event Schedule"}
+                  onChange={(e) => setConfig(p => ({ ...p, schedule_heading: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Homepage Link Label</Label>
+                <Input
+                  value={config.homepage_link_label ?? "🔗 Event Homepage"}
+                  onChange={(e) => setConfig(p => ({ ...p, homepage_link_label: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
+
+          <div className="border-t pt-4 space-y-3">
             <p className="text-sm font-medium text-foreground">Scoring &amp; Leaderboard Buttons</p>
             <p className="text-xs text-muted-foreground">
               Adds tap-friendly buttons to the reminder so players can jump straight into live scoring or the leaderboard.

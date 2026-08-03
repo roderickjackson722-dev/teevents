@@ -17,7 +17,7 @@ interface Props {
   addons: PrintableAddon[];
   loading: boolean;
   /** Which QR codes the organizer enabled in Printables Options. */
-  enabled: { walkup: boolean; addonIds: string[] };
+  enabled: { walkup: boolean; donation: boolean; addonIds: string[] };
 }
 
 const BASE = "https://www.teevents.golf";
@@ -28,6 +28,11 @@ export function walkupRegistrationUrl(slug?: string | null) {
 
 export function addonPurchaseUrl(slug: string | null | undefined, addonId: string) {
   return slug ? `${BASE}/t/${slug}?addon=${addonId}#register` : BASE;
+}
+
+/** Donation page for the event; falls back to the organization's generic donation page. */
+export function donationUrl(slug?: string | null) {
+  return slug ? `${BASE}/t/${slug}#donation` : `${BASE}/donate`;
 }
 
 function qrImg(url: string, size = 320) {
@@ -50,6 +55,13 @@ export default function QRCodesTab({ tournament, addons, loading, enabled }: Pro
       url: walkupRegistrationUrl(slug),
     });
   }
+  if (enabled.donation) {
+    cards.push({
+      title: "Donate",
+      subtitle: "Scan to support our mission",
+      url: donationUrl(slug),
+    });
+  }
   for (const a of addons) {
     if (!enabled.addonIds.includes(a.id)) continue;
     cards.push({
@@ -58,6 +70,7 @@ export default function QRCodesTab({ tournament, addons, loading, enabled }: Pro
       url: addonPurchaseUrl(slug, a.id),
     });
   }
+
 
   const printHtml = `
     <h1 style="font-size:22px;margin-bottom:4px;">${tournament?.title ?? ""}</h1>

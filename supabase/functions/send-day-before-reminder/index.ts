@@ -291,6 +291,19 @@ Deno.serve(async (req) => {
       .eq("tournament_id", tournament_id)
       .eq("payment_status", "paid");
 
+    // Scoring codes are assigned per group; fill in any row missing its copy so the
+    // emailed code matches the code shown in Players & Pairings.
+    const groupCodes = new Map<number, string>();
+    for (const r of (regs || []) as any[]) {
+      const code = r.group_scoring_code || r.scoring_code;
+      if (r.group_number != null && code && !groupCodes.has(r.group_number)) groupCodes.set(r.group_number, code);
+    }
+    for (const r of (regs || []) as any[]) {
+      if (!r.group_scoring_code && !r.scoring_code && r.group_number != null) {
+        r.group_scoring_code = groupCodes.get(r.group_number) || null;
+      }
+    }
+
     let sent = 0;
     let failed = 0;
     for (const reg of regs || []) {

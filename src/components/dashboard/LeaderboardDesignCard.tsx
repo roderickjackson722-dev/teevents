@@ -315,28 +315,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
   );
 }
 
-function LeaderboardPreview({ design, rows }: { design: LeaderboardDesign; rows: any[] }) {
-  // Use the same renderer as the public live leaderboard so the preview can
-  // never visually diverge from what players actually see.
-  const mockBanner = design.show_sponsor_banner
-    ? { id: "preview-sponsor", name: "Your Sponsor", logo_url: null }
-    : null;
-  return (
-    <div className="mt-2">
-      <LeaderboardRenderer
-        compact
-        design={design}
-        title="Tournament Title"
-        rows={rows.map((r) => ({
-          name: r.name,
-          total: design.default_view === "net" ? r.net : r.gross,
-          thru: r.thru,
-        }))}
-        bannerSponsor={mockBanner}
-      />
-    </div>
-  );
-}
+
+
 
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {

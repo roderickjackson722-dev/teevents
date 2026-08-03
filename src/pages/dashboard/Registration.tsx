@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import GroupRegistrationSettings from "@/components/dashboard/GroupRegistrationSettings";
+import AddonDisplaySettings from "@/components/dashboard/AddonDisplaySettings";
 
 import {
   ClipboardList,

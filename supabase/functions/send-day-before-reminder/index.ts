@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { formatScheduleText } from "../_shared/formatSchedule.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,10 +10,11 @@ const corsHeaders = {
 const SENDER = "TeeVents Golf Management <info@notifications.teevents.golf>";
 
 const DEFAULTS = {
-  subject: "{{event_name}} – Tomorrow is the big day!",
+  subject: "{{event_name}} – Your tournament is almost here!",
+  header_title: "Your Tournament Is Almost Here!",
   greeting: "Hello {{first_name}},",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
 

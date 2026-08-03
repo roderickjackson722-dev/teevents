@@ -439,7 +439,9 @@ Deno.serve(async (req) => {
     // (regardless of payment status). Otherwise default to all paid players.
     if (targetIds) regQuery = regQuery.in("id", targetIds);
     else regQuery = regQuery.eq("payment_status", "paid");
-    const { data: regs } = await regQuery;
+    const { data: regs, error: regErr } = await regQuery;
+    if (regErr) throw new Error(`Could not load recipients: ${regErr.message}`);
+    if (!regs || regs.length === 0) throw new Error("No recipients found for this tournament");
 
     // Scoring codes are assigned per group; fill in any row missing its copy so the
     // emailed code matches the code shown in Players & Pairings.

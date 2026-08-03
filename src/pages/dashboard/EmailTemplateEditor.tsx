@@ -438,8 +438,9 @@ export default function EmailTemplateEditor() {
     };
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
-    if (schedule) vars.event_schedule = String(schedule).trim();
-    else vars.event_schedule = "See the event homepage for the full schedule.";
+    const scheduleSource = (config.schedule_override || "").trim() || String(schedule || "").trim();
+    const formattedSchedule = formatScheduleText(scheduleSource);
+    vars.event_schedule = formattedSchedule || "See the event homepage for the full schedule.";
     return vars;
   })();
 
@@ -485,7 +486,7 @@ export default function EmailTemplateEditor() {
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind]);
+    const html = renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };

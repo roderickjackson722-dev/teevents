@@ -33,8 +33,22 @@ interface TournamentRow {
   branding_footer_custom_text?: string | null;
 }
 
+/** Falls back to parsing the URL when this page renders under a splat route (no typed slug param). */
+function useAddonSlug() {
+  const params = useParams<{ slug?: string; _splat?: string }>();
+  if (params?.slug) return params.slug;
+  const path = params?._splat || (typeof window !== "undefined" ? window.location.pathname : "");
+  const parts = path.split("/").filter(Boolean);
+  const idx = parts.findIndex((p) => p === "t" || p === "tournament");
+  if (idx >= 0 && parts[idx + 1]) return parts[idx + 1];
+  // /{slug}/add-ons style paths
+  const addonIdx = parts.findIndex((p) => p === "add-ons");
+  if (addonIdx > 0) return parts[addonIdx - 1];
+  return "";
+}
+
 export default function PublicAddons() {
-  const { slug } = useParams<{ slug: string }>();
+  const slug = useAddonSlug();
   const [loading, setLoading] = useState(true);
   const [tournament, setTournament] = useState<TournamentRow | null>(null);
   const [addons, setAddons] = useState<AddonRow[]>([]);

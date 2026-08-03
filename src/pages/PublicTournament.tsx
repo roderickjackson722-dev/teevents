@@ -1219,6 +1219,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     tiers={regTiers}
                     fields={regFields}
                     addonsSectionTitle={((tournament as any).store_section_title || "Add-Ons").toString()}
+                    showAddons={((tournament as any).add_on_display_location || "both") !== "addon_page"}
                     captainLabel={(tournament as any).captain_label || null}
                     groupFieldRules={parseGroupFieldRules((tournament as any).group_field_rules)}
 

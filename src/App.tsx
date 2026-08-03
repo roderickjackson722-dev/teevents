@@ -165,6 +165,7 @@ import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
 import VendorRegistration from "./pages/VendorRegistration";
+import PublicAddons from "./pages/PublicAddons";
 import Vendors from "./pages/dashboard/Vendors";
 import SideEvents from "./pages/dashboard/SideEvents";
 import TeamPerformance from "./pages/dashboard/TeamPerformance";
@@ -390,6 +391,8 @@ const App = () => (
               <Route path="/tournament/:slug/sponsor" element={<SponsorRegistration />} />
               <Route path="/t/:slug/vendors" element={<VendorRegistration />} />
               <Route path="/tournament/:slug/vendors" element={<VendorRegistration />} />
+              <Route path="/t/:slug/add-ons" element={<PublicAddons />} />
+              <Route path="/tournament/:slug/add-ons" element={<PublicAddons />} />
             <Route path="/dashboard/vendors" element={<DashboardLayout><Vendors /></DashboardLayout>} />
             <Route path="/dashboard/side-events" element={<DashboardLayout><SideEvents /></DashboardLayout>} />
             <Route path="/dashboard/team-performance" element={<DashboardLayout><TeamPerformance /></DashboardLayout>} />

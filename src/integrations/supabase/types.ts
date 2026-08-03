@@ -7745,6 +7745,59 @@ export type Database = {
           },
         ]
       }
+      tournament_addon_orders: {
+        Row: {
+          buyer_email: string
+          buyer_name: string | null
+          created_at: string
+          fees_cents: number
+          id: string
+          items: Json
+          payment_status: string
+          stripe_session_id: string | null
+          subtotal_cents: number
+          total_cents: number
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name?: string | null
+          created_at?: string
+          fees_cents?: number
+          id?: string
+          items?: Json
+          payment_status?: string
+          stripe_session_id?: string | null
+          subtotal_cents?: number
+          total_cents?: number
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string | null
+          created_at?: string
+          fees_cents?: number
+          id?: string
+          items?: Json
+          payment_status?: string
+          stripe_session_id?: string | null
+          subtotal_cents?: number
+          total_cents?: number
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_addon_orders_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_auction_bids: {
         Row: {
           amount: number
@@ -9412,6 +9465,7 @@ export type Database = {
       tournaments: {
         Row: {
           about_us: string | null
+          add_on_display_location: string
           admin_invitation_sent_at: string | null
           admin_notes: string | null
           allow_cash_registration: boolean
@@ -9679,6 +9733,7 @@ export type Database = {
         }
         Insert: {
           about_us?: string | null
+          add_on_display_location?: string
           admin_invitation_sent_at?: string | null
           admin_notes?: string | null
           allow_cash_registration?: boolean
@@ -9946,6 +10001,7 @@ export type Database = {
         }
         Update: {
           about_us?: string | null
+          add_on_display_location?: string
           admin_invitation_sent_at?: string | null
           admin_notes?: string | null
           allow_cash_registration?: boolean

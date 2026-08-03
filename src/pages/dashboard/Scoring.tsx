@@ -17,6 +17,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
+import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
+
 
 export default function Scoring() {
   const { org, loading: orgLoading } = useOrgContext();

@@ -357,8 +357,8 @@ export default function LiveScoring() {
   const activeFormat = getFormatById(tournament?.scoring_format || "stroke_play");
   // Team formats play one ball / one team score per hole — hide individual entry entirely.
   const TEAM_ENTRY_SCORING = ["scramble", "best_ball", "alternate_shot", "shootout"];
-  const isScramble =
-    !!activeFormat && (TEAM_ENTRY_SCORING.includes(activeFormat.scoring) || activeFormat.teamSize > 1);
+  const isScramble = !!activeFormat && TEAM_ENTRY_SCORING.includes(activeFormat.scoring);
+
 
 
   // Scramble: one score for the whole group — applied to every player

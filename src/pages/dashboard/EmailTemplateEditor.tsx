@@ -20,6 +20,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
+import { formatScheduleText } from "@/lib/formatSchedule";
 
 interface EmailConfig {
   subject: string;
@@ -48,6 +49,10 @@ interface EmailConfig {
   scoring_button_text?: string;
   show_leaderboard_button?: boolean;
   leaderboard_button_text?: string;
+  /** Editable headline shown in the colored email header band. */
+  header_title?: string;
+  /** Organizer-edited schedule text used for {{event_schedule}} in this email. */
+  schedule_override?: string;
 }
 
 type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
@@ -118,11 +123,12 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
 
 const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
   ...DEFAULT_CONFIG,
-  subject: "{{event_name}} – Tomorrow is the big day!",
+  subject: "{{event_name}} – Your tournament is almost here!",
 
   greeting: "Hello {{first_name}},",
+  header_title: "Your Tournament Is Almost Here!",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
   footer_text: "See you on the course! ⛳",
@@ -147,7 +153,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   sponsor: "Thank You for Sponsoring!",
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
-  day_before: "Tomorrow Is the Big Day!",
+  day_before: "Your Tournament Is Almost Here!",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {

@@ -8878,6 +8878,7 @@ export type Database = {
           survey_response_token: string | null
           team_handicap: number | null
           team_handicap_percentage: number | null
+          tee_time: string | null
           tier_id: string | null
           tournament_id: string
         }
@@ -8923,6 +8924,7 @@ export type Database = {
           survey_response_token?: string | null
           team_handicap?: number | null
           team_handicap_percentage?: number | null
+          tee_time?: string | null
           tier_id?: string | null
           tournament_id: string
         }
@@ -8968,6 +8970,7 @@ export type Database = {
           survey_response_token?: string | null
           team_handicap?: number | null
           team_handicap_percentage?: number | null
+          tee_time?: string | null
           tier_id?: string | null
           tournament_id?: string
         }

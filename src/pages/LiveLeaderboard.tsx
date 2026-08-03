@@ -19,6 +19,14 @@ interface Sponsor {
   display_order: number | null;
 }
 
+interface SponsorReg {
+  id: string;
+  company_name: string;
+  logo_url: string | null;
+  show_on_leaderboard: boolean | null;
+}
+
+
 interface GalleryItem {
   id: string;
   image_url: string;

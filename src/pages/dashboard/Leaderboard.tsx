@@ -293,26 +293,48 @@ export default function Leaderboard() {
       }
     });
 
-    return Object.entries(groups)
-      .map(([gn, players]) => {
-        const holeScores: Record<number, number> = {};
-        let total = 0;
-        holes.forEach((h) => {
-          const val = computeTeamHoleScore(players, h, scoringFormat, editedScores);
-          if (val != null) {
-            holeScores[h] = val;
-            total += val;
-          }
-        });
-        return { groupNumber: parseInt(gn), players, holeScores, total };
-      })
-      .sort((a, b) => {
-        if (a.total === 0 && b.total === 0) return 0;
-        if (a.total === 0) return 1;
-        if (b.total === 0) return -1;
-        return a.total - b.total;
+    const build = (players: PlayerScore[]) => {
+      const holeScores: Record<number, number> = {};
+      let total = 0;
+      holes.forEach((h) => {
+        const val = computeTeamHoleScore(players, h, scoringFormat, editedScores);
+        if (val != null) {
+          holeScores[h] = val;
+          total += val;
+        }
       });
+      return { holeScores, total };
+    };
+
+    const assigned: TeamScore[] = Object.entries(groups).map(([gn, players]) => ({
+      key: `g-${gn}`,
+      label: `Group ${gn}`,
+      groupNumber: parseInt(gn),
+      players,
+      ...build(players),
+    }));
+
+    // Players without a pairing assignment still need to appear — show each as
+    // their own single-player "team" so nobody is missing from the leaderboard.
+    const unassigned: TeamScore[] = playerScores
+      .filter((ps) => ps.group_number == null)
+      .map((ps) => ({
+        key: `u-${ps.registration_id}`,
+        label: `${ps.first_name} ${ps.last_name}`,
+        isUnassigned: true,
+        groupNumber: null,
+        players: [ps],
+        ...build([ps]),
+      }));
+
+    return [...assigned, ...unassigned].sort((a, b) => {
+      if (a.total === 0 && b.total === 0) return 0;
+      if (a.total === 0) return 1;
+      if (b.total === 0) return -1;
+      return a.total - b.total;
+    });
   }, [playerScores, isTeamFormat, scoringFormat, editedScores]);
+
 
   // Stableford leaderboard
   const stablefordScores = useMemo(() => {

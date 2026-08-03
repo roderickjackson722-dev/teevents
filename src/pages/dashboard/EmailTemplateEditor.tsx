@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import {
   Mail, Save, Eye, Send, Loader2, Palette, Type, Image, Layout,
   RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil, CalendarClock, ShoppingBag,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,

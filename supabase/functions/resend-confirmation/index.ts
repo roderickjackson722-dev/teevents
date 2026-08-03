@@ -19,7 +19,7 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   sponsor: "Thank You for Sponsoring!",
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
-  day_before: "Tomorrow Is the Big Day!",
+  day_before: "Your Tournament Is Almost Here!",
 };
 
 
@@ -64,10 +64,10 @@ const DEFAULT_CONFIGS: Record<string, any> = {
   },
   day_before: {
     ...BASE_DEFAULT,
-    subject: "{{event_name}} – Tomorrow is the big day!",
+    subject: "{{event_name}} – Your tournament is almost here!",
     greeting: "Hello {{first_name}},",
     body_text: "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
-    closing_text: "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
+    closing_text: "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}",
     button_text: "View Event Homepage",
     show_event_details: false,
   },
@@ -79,12 +79,24 @@ function isHtmlContent(s?: string): boolean {
   return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
 }
 
+function removeDuplicateLeaderboardText(text: string): string {
+  return (text || "")
+    .replace(/<p[^>]*>\s*View the live leaderboard:\s*<\/p>\s*<p[^>]*>\s*👉\s*\{\{leaderboard_link\}\}\s*<\/p>/gi, "")
+    .replace(/(?:<p[^>]*>)?\s*View the live leaderboard:\s*(?:<br\s*\/?>(?:\s|&nbsp;)*)?👉\s*\{\{leaderboard_link\}\}\s*(?:<\/p>)?/gi, "")
+    .replace(/\n*View the live leaderboard:\s*\n\s*👉\s*\{\{leaderboard_link\}\}/gi, "")
+    .trim();
+}
+
 function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string; headerText?: string }): string {
   const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
 
 
-  const body = isHtmlContent(replaceVars(config.body_text || "", vars))
-    ? replaceVars(config.body_text || "", vars)
+  const bodySource = (config.body_text || "").replace(
+    /<p(?:\s[^>]*)?>\s*\{\{event_schedule\}\}\s*<\/p>/gi,
+    vars.event_schedule || "",
+  );
+  const body = isHtmlContent(replaceVars(bodySource, vars))
+    ? replaceVars(bodySource, vars)
     : replaceVars(config.body_text || "", vars).replace(/\n/g, "<br/>");
   const closing = isHtmlContent(replaceVars(config.closing_text || "", vars))
     ? replaceVars(config.closing_text || "", vars)
@@ -128,20 +140,22 @@ function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { inc
   return `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+  .tv-rich h1,.tv-rich h2{margin:0 0 10px;font-size:17px;line-height:1.35;font-weight:700}.tv-rich h3{margin:20px 0 8px;font-size:15px;line-height:1.4;font-weight:700}.tv-rich h3:first-child{margin-top:0}.tv-rich p{margin:0;line-height:1.55}.tv-rich p+p{margin-top:14px}.tv-rich ul,.tv-rich ol{margin:6px 0 16px;padding-left:22px}.tv-rich li{margin:0 0 6px;line-height:1.5}.tv-rich section{margin:0 0 18px;padding:0 0 18px;border-bottom:1px solid #e5e7eb}.tv-rich section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:0}@media only screen and (max-width:600px){.tv-wrap{padding:16px 10px!important}.tv-card{width:100%!important}.tv-pad{padding:20px 18px!important}}
+</style></head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:${fontFamily};">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="tv-wrap" style="background:#f4f4f5;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:${bgColor};border-radius:8px;overflow:hidden;">
-        <tr><td style="background:${headerBg};padding:28px 32px;text-align:center;">
+      <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${bgColor};border-radius:8px;overflow:hidden;">
+        <tr><td class="tv-pad" style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
           <h1 style="margin:0;color:${config.header_text_color || "#ffffff"};font-size:22px;font-weight:700;">${config.header_title || opts?.headerText || "Registration Confirmed!"}</h1>
         </td></tr>
-        <tr><td style="padding:32px;">
+        <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</div>
+          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
           ${eventDetailsHtml}
-          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</div>
+          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
         </td></tr>${hubBlock}
@@ -254,11 +268,10 @@ Deno.serve(async (req) => {
     // Fall back to the built-in defaults FOR THE SELECTED TEMPLATE — never to the
     // registration confirmation email — so the sent email always matches the choice.
     const emailConfig = { ...(DEFAULT_CONFIGS[kind] || DEFAULT_CONFIGS.confirmation), ...(stored || {}) };
-    // Older saved templates ended the scoring link with a period and had no leaderboard link.
+    // Keep the leaderboard action in its dedicated button, not as duplicate closing copy.
     if (typeof emailConfig.closing_text === "string" && emailConfig.closing_text.includes("{{scoring_link}}")) {
       let ct = emailConfig.closing_text.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
-      if (!ct.includes("{{leaderboard_link}}")) ct += "\n\nView the live leaderboard:\n👉 {{leaderboard_link}}";
-      emailConfig.closing_text = ct;
+      emailConfig.closing_text = removeDuplicateLeaderboardText(ct);
     }
 
     const useCustom = use_custom_template !== false;
@@ -271,14 +284,9 @@ Deno.serve(async (req) => {
       .eq("tournament_id", tournamentId)
       .limit(1)
       .maybeSingle();
-    const stripTags = (str: string) =>
-      str.replace(/<br\s*\/?>(\s*)/gi, "\n")
-        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
-    const scheduleRaw = (tournament as any).schedule_info
-      || ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
+    const scheduleRaw = emailConfig.schedule_override
+      || (tournament as any).schedule_info_html
+      || (tournament as any).schedule_info;
     const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
     const locationFull = [(tournament as any).location, (tournament as any).state].filter(Boolean).join(", ");
     const homepage = (tournament as any).slug

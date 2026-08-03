@@ -165,6 +165,7 @@ import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
 import VendorRegistration from "./pages/VendorRegistration";
+import PublicAddons from "./pages/PublicAddons";
 import Vendors from "./pages/dashboard/Vendors";
 import SideEvents from "./pages/dashboard/SideEvents";
 import TeamPerformance from "./pages/dashboard/TeamPerformance";

@@ -415,6 +415,31 @@ export default function EmailTemplateEditor() {
     setSentAt(now);
   };
 
+  const [activeTab, setActiveTab] = useState("design");
+
+  // Pull the latest event content (schedule/timeline, logo, etc.) so the live
+  // preview always matches the most recent edits made in the Site Builder.
+  const refreshSelectedTournament = async () => {
+    if (!selectedTournament) return;
+    const { data } = await (supabase.from("tournaments") as any)
+      .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, site_logo_url")
+      .eq("id", selectedTournament)
+      .maybeSingle();
+    if (!data) return;
+    setTournaments((prev: any[]) => prev.map((t) => (t.id === data.id ? { ...t, ...data } : t)));
+  };
+
+  useEffect(() => {
+    if (!selectedTournament) return;
+    refreshSelectedTournament();
+    const onFocus = () => refreshSelectedTournament();
+    if (typeof window !== "undefined") window.addEventListener("focus", onFocus);
+    return () => {
+      if (typeof window !== "undefined") window.removeEventListener("focus", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTournament]);
+
   // Preview variables built from the ACTUAL selected tournament.
   const previewVars = (() => {
     const t = tournaments.find((x: any) => x.id === selectedTournament);
@@ -770,7 +795,7 @@ export default function EmailTemplateEditor() {
         </div>
       )}
 
-      <Tabs defaultValue="design" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v === "preview") refreshSelectedTournament(); }} className="space-y-4">
         <TabsList>
           <TabsTrigger value="design" className="gap-1"><Palette className="h-4 w-4" /> Design</TabsTrigger>
           <TabsTrigger value="content" className="gap-1"><Type className="h-4 w-4" /> Content</TabsTrigger>
@@ -1359,7 +1384,7 @@ function renderEmailHtml(
                 ${a.description ? `<br/><span style="color:#6b7280;font-size:12px;">${escapeHtml(a.description)}</span>` : ""}
               </td>
               <td align="right" style="padding:12px 14px;">
-                <a href="${addonBase}?addon=${a.id}#register" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
+                <a href="${addonBase}/add-ons?addon=${a.id}" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
               </td>
             </tr>
           </table>`).join("")}

@@ -283,6 +283,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
   const acct = searchParams.get("acct");
+  // Legacy add-on links (?addon=<id>#register) land here — send buyers straight
+  // to the dedicated add-on page so they never have to go through registration.
+  const addonParam = searchParams.get("addon");
+  useEffect(() => {
+    if (!addonParam || !slug || typeof window === "undefined") return;
+    window.location.replace(`/t/${slug}/add-ons?addon=${encodeURIComponent(addonParam)}`);
+  }, [addonParam, slug]);
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
    const [products, setProducts] = useState<PublicProduct[]>([]);

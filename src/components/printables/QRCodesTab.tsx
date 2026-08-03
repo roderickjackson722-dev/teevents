@@ -27,7 +27,7 @@ export function walkupRegistrationUrl(slug?: string | null) {
 }
 
 export function addonPurchaseUrl(slug: string | null | undefined, addonId: string) {
-  return slug ? `${BASE}/t/${slug}?addon=${addonId}#register` : BASE;
+  return slug ? `${BASE}/t/${slug}/add-ons?addon=${addonId}` : BASE;
 }
 
 /** Donation page for the event; falls back to the organization's generic donation page. */

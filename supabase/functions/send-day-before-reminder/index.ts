@@ -135,7 +135,7 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
                 ${a.description ? `<br/><span style="color:#6b7280;font-size:12px;">${esc(a.description)}</span>` : ""}
               </td>
               <td align="right" style="padding:12px 14px;">
-                <a href="${addonBase}?addon=${a.id}#register" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
+                <a href="${addonBase}/add-ons?addon=${a.id}" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
               </td>
             </tr>
           </table>`).join("")}

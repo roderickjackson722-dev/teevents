@@ -17,7 +17,7 @@ interface Props {
   addons: PrintableAddon[];
   loading: boolean;
   /** Which QR codes the organizer enabled in Printables Options. */
-  enabled: { walkup: boolean; addonIds: string[] };
+  enabled: { walkup: boolean; donation: boolean; addonIds: string[] };
 }
 
 const BASE = "https://www.teevents.golf";
@@ -28,6 +28,11 @@ export function walkupRegistrationUrl(slug?: string | null) {
 
 export function addonPurchaseUrl(slug: string | null | undefined, addonId: string) {
   return slug ? `${BASE}/t/${slug}?addon=${addonId}#register` : BASE;
+}
+
+/** Donation page for the event; falls back to the organization's generic donation page. */
+export function donationUrl(slug?: string | null) {
+  return slug ? `${BASE}/t/${slug}#donation` : `${BASE}/donate`;
 }
 
 function qrImg(url: string, size = 320) {
@@ -50,6 +55,13 @@ export default function QRCodesTab({ tournament, addons, loading, enabled }: Pro
       url: walkupRegistrationUrl(slug),
     });
   }
+  if (enabled.donation) {
+    cards.push({
+      title: "Donate",
+      subtitle: "Scan to support our mission",
+      url: donationUrl(slug),
+    });
+  }
   for (const a of addons) {
     if (!enabled.addonIds.includes(a.id)) continue;
     cards.push({
@@ -58,6 +70,7 @@ export default function QRCodesTab({ tournament, addons, loading, enabled }: Pro
       url: addonPurchaseUrl(slug, a.id),
     });
   }
+
 
   const printHtml = `
     <h1 style="font-size:22px;margin-bottom:4px;">${tournament?.title ?? ""}</h1>
@@ -101,6 +114,12 @@ export default function QRCodesTab({ tournament, addons, loading, enabled }: Pro
             <p className="text-xs text-muted-foreground mb-3">{c.subtitle}</p>
             <img src={qrImg(c.url, 220)} alt={`QR code for ${c.title}`} className="mx-auto h-40 w-40" loading="lazy" />
             <p className="text-[10px] text-muted-foreground mt-3 break-all">{c.url}</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <a href={qrImg(c.url, 800)} target="_blank" rel="noopener noreferrer" download={`${c.title} QR.png`}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download QR Code
+              </a>
+            </Button>
+
           </div>
         ))}
       </div>

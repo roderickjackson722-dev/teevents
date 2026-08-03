@@ -16,9 +16,11 @@ export interface Registration {
   first_name: string;
   last_name: string;
   email: string;
+  payment_status?: string | null;
   group_number: number | null;
   group_position: number | null;
 }
+
 
 export interface Sponsor {
   id: string;

@@ -67,7 +67,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at")
+        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at")
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase
@@ -118,6 +118,12 @@ const Printables = () => {
     }
     setSavingOptions(false);
   };
+
+  // Printables mirror the Players & Pairings roster: paid players only, no duplicates.
+  const printRegistrations = useMemo(
+    () => rosterForPrintables(registrations as any, options.data_source) as Registration[],
+    [registrations, options.data_source],
+  );
 
   const handleUpdateHole = (regId: string, newGroup: number | null) => {
     setRegistrations((prev) =>
@@ -185,7 +191,7 @@ const Printables = () => {
         </TabsList>
 
         <TabsContent value="check-in-roster">
-          <CheckInRosterTab tournament={tournament} registrations={registrations as any} loading={loading} />
+          <CheckInRosterTab tournament={tournament} registrations={printRegistrations as any} loading={loading} />
         </TabsContent>
 
         <TabsContent value="qr-codes">
@@ -193,27 +199,27 @@ const Printables = () => {
             tournament={tournament}
             addons={addons}
             loading={loading}
-            enabled={{ walkup: savedOptions.qr_walkup, addonIds: savedOptions.qr_addon_ids }}
+            enabled={{ walkup: savedOptions.qr_walkup, donation: savedOptions.qr_donation, addonIds: savedOptions.qr_addon_ids }}
           />
         </TabsContent>
 
         <TabsContent value="cart-signs">
-          <CartSignsTab tournament={tournament} registrations={registrations} loading={loading} />
+          <CartSignsTab tournament={tournament} registrations={printRegistrations} loading={loading} />
         </TabsContent>
         <TabsContent value="scorecards">
-          <ScorecardsTab tournament={tournament} registrations={registrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} />
+          <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} />
         </TabsContent>
         <TabsContent value="name-badges">
-          <NameBadgesTab tournament={tournament} registrations={registrations} loading={loading} />
+          <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} />
         </TabsContent>
         <TabsContent value="sponsor-signs">
           <SponsorSignsTab tournament={tournament} sponsors={sponsors} loading={loading} />
         </TabsContent>
         <TabsContent value="alpha-list">
-          <AlphaListTab tournament={tournament} registrations={registrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />
+          <AlphaListTab tournament={tournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />
         </TabsContent>
         <TabsContent value="hole-assignments">
-          <HoleAssignmentsTab tournament={tournament} registrations={registrations} loading={loading} onUpdate={handleUpdateHole} showScoringCodes={savedOptions.show_scoring_codes_holes} />
+          <HoleAssignmentsTab tournament={tournament} registrations={printRegistrations} loading={loading} onUpdate={handleUpdateHole} showScoringCodes={savedOptions.show_scoring_codes_holes} />
         </TabsContent>
       </Tabs>
     </div>

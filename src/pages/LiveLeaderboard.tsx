@@ -294,6 +294,26 @@ export default function LiveLeaderboard() {
   const sidebarSponsors = sortedSponsors.filter((s) => s.leaderboard_placement === "sidebar");
   const footerSponsors = sortedSponsors.filter((s) => s.leaderboard_placement === "footer");
 
+  /**
+   * Scrolling sponsors banner — driven by the dashboard toggle
+   * (leaderboard_sponsor_banner_enabled) and combines uploaded rotating logos
+   * with every sponsor marked "show on leaderboard".
+   */
+  const scrollingSponsors = useMemo(() => {
+    if (!tournament) return [];
+    if (tournament.leaderboard_sponsor_banner_enabled === false) return [];
+    const uploaded = (tournament.leaderboard_rotating_logos || []).map((l, idx) => ({
+      id: `uploaded-${idx}`,
+      name: l.name || "Sponsor",
+      logo_url: l.url,
+    }));
+    const list = [...uploaded, ...sortedSponsors.map((s) => ({ id: s.id, name: s.name, logo_url: s.logo_url }))];
+    if (list.length === 0) return [];
+    return (tournament.leaderboard_sponsor_rotation_order || "sequential") === "random"
+      ? [...list].sort(() => Math.random() - 0.5)
+      : list;
+  }, [tournament, sortedSponsors]);
+
   // Rotate banner sponsor
   useEffect(() => {
     if (bannerSponsors.length <= 1) return;

@@ -77,6 +77,7 @@ export function LeaderboardRenderer({
   bannerSponsor,
   sidebarSponsors = [],
   footerSponsors = [],
+  scrollingSponsors = [],
   heroImage,
   logoUrl,
   compact = false,

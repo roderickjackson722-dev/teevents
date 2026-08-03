@@ -44,6 +44,11 @@ interface Tournament {
   leaderboard_sponsor_logo_url?: string | null;
   leaderboard_sponsor_label?: string | null;
   leaderboard_title?: string | null;
+  leaderboard_sponsor_banner_enabled?: boolean | null;
+  leaderboard_sponsor_style?: string | null;
+  leaderboard_sponsor_interval_ms?: number | null;
+  leaderboard_sponsor_rotation_order?: string | null;
+  leaderboard_rotating_logos?: { url: string; name?: string; website_url?: string }[] | null;
 }
 
 interface LeaderboardRow {

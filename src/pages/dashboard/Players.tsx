@@ -224,6 +224,14 @@ const Players = () => {
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [groupNameInput, setGroupNameInput] = useState("");
+  // Team names attached to a pairing group (Hole / Group number) — these drive the live leaderboard.
+  const [teamNamesByHole, setTeamNamesByHole] = useState<Record<number, string>>({});
+  const [teamGroups, setTeamGroups] = useState<Array<{ id: string; name: string; group_number: number | null }>>([]);
+  const [editingTeamNum, setEditingTeamNum] = useState<number | null>(null);
+  const [teamNameInput, setTeamNameInput] = useState("");
+  const [newTeamForPlayer, setNewTeamForPlayer] = useState<string | null>(null);
+  const [newTeamName, setNewTeamName] = useState("");
+
 
   useEffect(() => {
     if (!rosterColsKey) return;

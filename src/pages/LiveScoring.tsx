@@ -85,11 +85,12 @@ export default function LiveScoring() {
           // Load sponsors + uploaded rotating logos
           supabase
             .from("tournament_sponsors")
-            .select("id, name, logo_url, website_url, tier, show_on_leaderboard")
+            .select("id, name, logo_url, website_url, tier, show_on_leaderboard, show_on_scoring_page")
             .eq("tournament_id", data.id)
-            .eq("show_on_leaderboard", true)
+            .eq("show_on_scoring_page", true)
             .order("sort_order")
             .then(({ data: sp }) => {
+
               const enabled = (data as any).leaderboard_sponsor_banner_enabled !== false;
               if (!enabled) { setSponsors([]); return; }
               const uploaded = (((data as any).leaderboard_rotating_logos) || []).map((l: any, idx: number) => ({

@@ -15,6 +15,8 @@ import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodesTab";
 import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions } from "@/components/printables/PrintablesOptionsCard";
+import { rosterForPrintables } from "@/components/printables/rosterSource";
+
 
 interface TournamentWithSlug extends Tournament {
   slug: string | null;

@@ -46,8 +46,13 @@ interface RendererProps {
   bannerSponsor?: LbSponsor | null;
   sidebarSponsors?: LbSponsor[];
   footerSponsors?: LbSponsor[];
-  /** Sponsors shown in a continuously scrolling banner at the bottom. */
+  /** Sponsors shown in a continuously scrolling banner. */
   scrollingSponsors?: LbSponsor[];
+  /** Where the scrolling sponsors banner renders: top | bottom | sidebar. */
+  scrollingSponsorsPosition?: string;
+  /** Seconds for one full scroll loop (lower = faster). */
+  scrollingSponsorsSpeedSeconds?: number;
+
   heroImage?: LbGalleryItem | null;
   logoUrl?: string | null;
   /** Compact mode for the in-dashboard preview card. */

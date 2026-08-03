@@ -56,9 +56,31 @@ interface EmailConfig {
   header_text_color?: string;
   /** Organizer-edited schedule text used for {{event_schedule}} in this email. */
   schedule_override?: string;
+  /** Day-before reminder: show the schedule block. */
+  show_schedule?: boolean;
+  schedule_heading?: string;
+  /** Day-before reminder: show the plain "Event Homepage: <url>" text line. */
+  show_homepage_link?: boolean;
+  homepage_link_label?: string;
+  /** Day-before reminder: order of the body sections, top to bottom. */
+  section_order?: string[];
 }
 
+/** Every movable block in the Day Before reminder, in default order. */
+const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
+  { id: "body", label: "Body text", hint: "Your main details paragraph (tee time, scoring code, etc.)" },
+  { id: "schedule", label: "Event schedule", hint: "The schedule block from the Content tab / your event page" },
+  { id: "closing", label: "Closing text", hint: "Your closing message" },
+  { id: "action_buttons", label: "Scoring & Leaderboard buttons", hint: "“Enter My Scores” + “View Live Leaderboard”" },
+  { id: "homepage_button", label: "“View Event Homepage” button", hint: "The gold call-to-action button" },
+  { id: "homepage_link", label: "Event homepage link (text URL)", hint: "The plain “🔗 Event Homepage: https://…” line" },
+  { id: "addons", label: "Add-ons / “Don’t Forget Your Mulligans!”", hint: "Purchasable add-on list with buy buttons" },
+  { id: "footer", label: "Footer sign-off", hint: "Your closing sign-off line (e.g. “See you on the course!”)" },
+];
+const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
+
 type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
+
 
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",

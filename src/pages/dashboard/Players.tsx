@@ -660,6 +660,91 @@ const Players = () => {
     }
   };
 
+  /**
+   * Save the team name for a pairing group (Hole / Group number). This is the name
+   * shown on the live leaderboard instead of "Team 1", "Team 2", ...
+   */
+  const saveHoleTeamName = async (groupNumber: number, name: string) => {
+    if (demoGuard()) return;
+    const trimmed = name.trim();
+    const prev = teamNamesByHole[groupNumber];
+    setEditingTeamNum(null);
+    setTeamNamesByHole((p) => {
+      const next = { ...p };
+      if (trimmed) next[groupNumber] = trimmed;
+      else delete next[groupNumber];
+      return next;
+    });
+    const existing = teamGroups.find((g) => g.group_number === groupNumber);
+    let error: any = null;
+    if (existing) {
+      ({ error } = await (supabase as any)
+        .from("registration_groups")
+        .update({ team_name: trimmed || null, group_name: trimmed || null })
+        .eq("id", existing.id));
+      if (!error) {
+        setTeamGroups((p) => p.map((g) => (g.id === existing.id ? { ...g, name: trimmed || "Unnamed team" } : g)));
+      }
+    } else {
+      const res = await (supabase as any)
+        .from("registration_groups")
+        .insert({ tournament_id: selectedTournament, group_number: groupNumber, team_name: trimmed || null, group_name: trimmed || null })
+        .select("id")
+        .maybeSingle();
+      error = res.error;
+      if (res.data?.id) {
+        setTeamGroups((p) => [...p, { id: res.data.id, name: trimmed || "Unnamed team", group_number: groupNumber }]);
+      }
+    }
+    if (error) {
+      setTeamNamesByHole((p) => ({ ...p, [groupNumber]: prev }));
+      toast({ title: "Couldn't save team name", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Team name saved", description: "It now shows on the live leaderboard." });
+    }
+  };
+
+  /** Attach a roster player to a team (registration group), or clear the assignment. */
+  const assignPlayerTeam = async (playerId: string, groupId: string | null) => {
+    if (demoGuard()) return;
+    const prev = allPlayers.find((p) => p.id === playerId)?.group_id ?? null;
+    setAllPlayers((list) => list.map((p) => (p.id === playerId ? { ...p, group_id: groupId } : p)));
+    const { error } = await (supabase as any)
+      .from("tournament_registrations")
+      .update({ group_id: groupId })
+      .eq("id", playerId);
+    if (error) {
+      setAllPlayers((list) => list.map((p) => (p.id === playerId ? { ...p, group_id: prev } : p)));
+      toast({ title: "Couldn't update team", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: groupId ? "Team updated" : "Removed from team" });
+    }
+  };
+
+  /** Create a brand new team from the roster and attach the player to it. */
+  const createTeamForPlayer = async () => {
+    if (demoGuard()) return;
+    const trimmed = newTeamName.trim();
+    const playerId = newTeamForPlayer;
+    if (!trimmed || !playerId || !selectedTournament) return;
+    const res = await (supabase as any)
+      .from("registration_groups")
+      .insert({ tournament_id: selectedTournament, team_name: trimmed, group_name: trimmed })
+      .select("id")
+      .maybeSingle();
+    if (res.error || !res.data?.id) {
+      toast({ title: "Couldn't create team", description: res.error?.message, variant: "destructive" });
+      return;
+    }
+    setTeamGroups((p) => [...p, { id: res.data.id, name: trimmed, group_number: null }]);
+    setGroupNames((p) => ({ ...p, [res.data.id]: trimmed }));
+    setNewTeamForPlayer(null);
+    setNewTeamName("");
+    await assignPlayerTeam(playerId, res.data.id);
+  };
+
+
+
 
   // Assign / regenerate the shared scoring code for one pairing group.
   const setGroupCode = async (groupNumber: number, code: string | null) => {

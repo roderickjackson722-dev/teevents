@@ -43,6 +43,11 @@ interface EmailConfig {
   show_addons?: boolean;
   addons_heading?: string;
   addons_intro?: string;
+  /** Day-before reminder: big action buttons for live scoring / leaderboard. */
+  show_scoring_button?: boolean;
+  scoring_button_text?: string;
+  show_leaderboard_button?: boolean;
+  leaderboard_button_text?: string;
 }
 
 type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
@@ -123,6 +128,10 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
   show_event_details: false,
+  show_scoring_button: true,
+  scoring_button_text: "Enter My Scores",
+  show_leaderboard_button: true,
+  leaderboard_button_text: "View Live Leaderboard",
 };
 
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
@@ -715,6 +724,36 @@ export default function EmailTemplateEditor() {
               </div>
             )}
           </div>
+
+          <div className="border-t pt-4 space-y-3">
+            <p className="text-sm font-medium text-foreground">Scoring &amp; Leaderboard Buttons</p>
+            <p className="text-xs text-muted-foreground">
+              Adds tap-friendly buttons to the reminder so players can jump straight into live scoring or the leaderboard.
+              Links are generated automatically for this tournament.
+            </p>
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm cursor-pointer" htmlFor="show-scoring-btn">Include &ldquo;Enter My Scores&rdquo; button</Label>
+              <Switch id="show-scoring-btn" checked={config.show_scoring_button !== false} onCheckedChange={(v) => setConfig(p => ({ ...p, show_scoring_button: v }))} />
+            </div>
+            {config.show_scoring_button !== false && (
+              <Input
+                value={config.scoring_button_text ?? "Enter My Scores"}
+                onChange={(e) => setConfig(p => ({ ...p, scoring_button_text: e.target.value }))}
+                placeholder="Enter My Scores"
+              />
+            )}
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm cursor-pointer" htmlFor="show-lb-btn">Include &ldquo;View Live Leaderboard&rdquo; button</Label>
+              <Switch id="show-lb-btn" checked={config.show_leaderboard_button !== false} onCheckedChange={(v) => setConfig(p => ({ ...p, show_leaderboard_button: v }))} />
+            </div>
+            {config.show_leaderboard_button !== false && (
+              <Input
+                value={config.leaderboard_button_text ?? "View Live Leaderboard"}
+                onChange={(e) => setConfig(p => ({ ...p, leaderboard_button_text: e.target.value }))}
+                placeholder="View Live Leaderboard"
+              />
+            )}
+          </div>
         </div>
       )}
 
@@ -919,6 +958,7 @@ export default function EmailTemplateEditor() {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,
+                showActionButtons: templateKind === "day_before",
               })
             }} />
 
@@ -1129,11 +1169,27 @@ function replaceVariables(text: string, vars: Record<string, string>): string {
     .replace(/\n/g, "<br/>");
 }
 
+function renderActionButtons(opts: {
+  primary: string;
+  scoring: { url: string; text: string } | null;
+  leaderboard: { url: string; text: string } | null;
+}): string {
+  const cells: string[] = [];
+  if (opts.scoring) {
+    cells.push(`<a href="${opts.scoring.url}" style="display:inline-block;margin:6px;padding:13px 26px;background-color:#F5A623;color:#1a5c38;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">⛳ ${escapeHtml(opts.scoring.text)}</a>`);
+  }
+  if (opts.leaderboard) {
+    cells.push(`<a href="${opts.leaderboard.url}" style="display:inline-block;margin:6px;padding:13px 26px;background-color:${opts.primary};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">📊 ${escapeHtml(opts.leaderboard.text)}</a>`);
+  }
+  if (!cells.length) return "";
+  return `<div style="text-align:center;margin:22px 0;padding:18px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">${cells.join("")}</div>`;
+}
+
 function renderEmailHtml(
   config: EmailConfig,
   vars: Record<string, string>,
   headerText: string = "Registration Confirmed!",
-  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string },
+  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string; showActionButtons?: boolean },
 ): string {
   const greeting = replaceVariables(config.greeting, vars);
   const body = replaceVariables(config.body_text, vars);
@@ -1157,6 +1213,16 @@ function renderEmailHtml(
     ? `<div style="text-align:center;margin:24px 0;">
         <a href="${config.button_url || '#'}" style="display:inline-block;padding:12px 28px;background:${config.primary_color};color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:6px;">${config.button_text}</a>
        </div>`
+    : "";
+
+  const scoringUrl = vars.scoring_link || SAMPLE_VARS.scoring_link;
+  const leaderboardUrl = vars.leaderboard_link || SAMPLE_VARS.leaderboard_link;
+  const actionButtonsHtml = opts?.showActionButtons
+    ? renderActionButtons({
+        primary: config.primary_color,
+        scoring: config.show_scoring_button !== false ? { url: scoringUrl, text: config.scoring_button_text || "Enter My Scores" } : null,
+        leaderboard: config.show_leaderboard_button !== false ? { url: leaderboardUrl, text: config.leaderboard_button_text || "View Live Leaderboard" } : null,
+      })
     : "";
 
   const hubUrl = opts?.hubUrl || "https://www.teevents.golf/player/sample/preview";
@@ -1218,6 +1284,7 @@ function renderEmailHtml(
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</p>
           ${eventDetailsHtml}
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</p>
+          ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>
         </td></tr>${addonsHtml}${hubBlock}

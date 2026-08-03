@@ -36,6 +36,9 @@ interface Settings {
   leaderboard_rotating_logos: RotatingLogo[];
   leaderboard_sponsor_banner_enabled: boolean;
   leaderboard_sponsor_rotation_order: string; // 'sequential' | 'random'
+  leaderboard_sponsor_banner_position: string; // 'top' | 'bottom' | 'sidebar'
+  leaderboard_sponsor_scroll_seconds: number;
+
 }
 
 const DEFAULTS: Settings = {

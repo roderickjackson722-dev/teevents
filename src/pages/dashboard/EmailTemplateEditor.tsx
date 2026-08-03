@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
 import { formatScheduleText } from "@/lib/formatSchedule";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 interface EmailConfig {
   subject: string;
@@ -531,8 +532,8 @@ export default function EmailTemplateEditor() {
     }
   };
 
-  const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject", variable: string) => {
-    setConfig(prev => ({ ...prev, [field]: prev[field] + " " + variable }));
+  const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject" | "header_title" | "schedule_override", variable: string) => {
+    setConfig(prev => ({ ...prev, [field]: ((prev as any)[field] || "") + " " + variable }));
   };
 
   const openEditModal = (reg: any) => {
@@ -613,6 +614,7 @@ export default function EmailTemplateEditor() {
                 primary_color: config.primary_color,
                 secondary_color: config.secondary_color,
                 header_bg_color: config.header_bg_color,
+                header_text_color: config.header_text_color,
                 text_color: config.text_color,
                 font_family: config.font_family,
                 show_logo: config.show_logo,
@@ -937,9 +939,9 @@ export default function EmailTemplateEditor() {
               {VARIABLE_TAGS.map(v => (
                 <Badge key={v.value} variant="outline" className="cursor-pointer hover:bg-primary/10 text-xs" onClick={() => {
                   const active = document.activeElement as HTMLElement;
-                  const field = active?.dataset?.field as any;
+                  const field = (active?.dataset?.field || active?.closest?.("[data-field]")?.getAttribute("data-field")) as any;
                   if (field) insertVariable(field, v.value);
-                  else insertVariable("body_text", v.value);
+                  else insertVariable(lastRichField, v.value);
                 }}>
                   {v.label}
                 </Badge>
@@ -968,20 +970,25 @@ export default function EmailTemplateEditor() {
               <Label>Greeting</Label>
               <Input data-field="greeting" value={config.greeting} onChange={e => setConfig(p => ({ ...p, greeting: e.target.value }))} className="mt-1" />
             </div>
-            <div>
+            <div data-field="body_text" onFocusCapture={() => setLastRichField("body_text")}>
               <Label>Body Text</Label>
-              <Textarea data-field="body_text" value={config.body_text} onChange={e => setConfig(p => ({ ...p, body_text: e.target.value }))} rows={8} className="mt-1 font-mono text-sm" />
+              <RichTextEditor
+                value={config.body_text}
+                onChange={(html) => setConfig(p => ({ ...p, body_text: html }))}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Use the toolbar to bold, add lists, links, colors and sizes. Variables above insert at the end of the
+                focused field.
+              </p>
             </div>
             {templateKind === "day_before" && (
-              <div>
+              <div data-field="schedule_override" onFocusCapture={() => setLastRichField("schedule_override")}>
                 <Label>Event Schedule (used for {"{{event_schedule}}"})</Label>
-                <Textarea
-                  data-field="schedule_override"
+                <RichTextEditor
                   value={config.schedule_override ?? ""}
-                  onChange={e => setConfig(p => ({ ...p, schedule_override: e.target.value }))}
-                  rows={6}
-                  placeholder={"7:30 AM — Check-in & breakfast\n9:00 AM — Shotgun start\n2:00 PM — Lunch & awards"}
-                  className="mt-1 font-mono text-sm"
+                  onChange={(html) => setConfig(p => ({ ...p, schedule_override: html }))}
+                  className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   One item per line — each line stays short and readable on phones. Leave blank to use the schedule
@@ -989,9 +996,13 @@ export default function EmailTemplateEditor() {
                 </p>
               </div>
             )}
-            <div>
+            <div data-field="closing_text" onFocusCapture={() => setLastRichField("closing_text")}>
               <Label>Closing Text</Label>
-              <Textarea data-field="closing_text" value={config.closing_text} onChange={e => setConfig(p => ({ ...p, closing_text: e.target.value }))} rows={5} className="mt-1 font-mono text-sm" />
+              <RichTextEditor
+                value={config.closing_text}
+                onChange={(html) => setConfig(p => ({ ...p, closing_text: html }))}
+                className="mt-1"
+              />
             </div>
             <div>
               <Label>Footer / Sign-off</Label>

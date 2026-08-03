@@ -51,6 +51,8 @@ interface EmailConfig {
   leaderboard_button_text?: string;
   /** Editable headline shown in the colored email header band. */
   header_title?: string;
+  /** Text color of the headline inside the colored header band. */
+  header_text_color?: string;
   /** Organizer-edited schedule text used for {{event_schedule}} in this email. */
   schedule_override?: string;
 }
@@ -774,6 +776,40 @@ export default function EmailTemplateEditor() {
 
         {/* Design Tab */}
         <TabsContent value="design" className="space-y-6">
+          <div className="space-y-4 bg-card rounded-lg border p-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Layout className="h-4 w-4 text-primary" /> Header Band
+            </h3>
+            <p className="text-xs text-muted-foreground -mt-2">
+              The colored bar at the top of the email that holds your logo and headline.
+            </p>
+            <div>
+              <Label className="text-xs text-muted-foreground">Header Headline</Label>
+              <Input
+                data-field="header_title"
+                value={config.header_title ?? TEMPLATE_HEADERS[templateKind]}
+                onChange={e => setConfig(p => ({ ...p, header_title: e.target.value }))}
+                placeholder={TEMPLATE_HEADERS[templateKind]}
+                className="mt-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Header Band Color</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input type="color" value={config.header_bg_color} onChange={e => setConfig(p => ({ ...p, header_bg_color: e.target.value }))} className="w-10 h-8 rounded cursor-pointer border-0" />
+                  <Input value={config.header_bg_color} onChange={e => setConfig(p => ({ ...p, header_bg_color: e.target.value }))} className="text-xs h-8" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Headline Text Color</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input type="color" value={config.header_text_color || "#ffffff"} onChange={e => setConfig(p => ({ ...p, header_text_color: e.target.value }))} className="w-10 h-8 rounded cursor-pointer border-0" />
+                  <Input value={config.header_text_color || "#ffffff"} onChange={e => setConfig(p => ({ ...p, header_text_color: e.target.value }))} className="text-xs h-8" />
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4 bg-card rounded-lg border p-5">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -1199,8 +1235,16 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/** True when organizer content was authored with the rich-text toolbar. */
+function isHtmlContent(s?: string): boolean {
+  return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
+}
+
 function replaceVariables(text: string, vars: Record<string, string>): string {
   const merged = { ...SAMPLE_VARS, ...vars };
+  if (isHtmlContent(text)) {
+    return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
+  }
   return escapeHtml(text || "")
     .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "")
     .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#1a5c38;font-weight:600;">${u}</a>`)
@@ -1315,13 +1359,13 @@ function renderEmailHtml(
       <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${config.secondary_color};border-radius:8px;overflow:hidden;">
         <tr><td class="tv-pad" style="background:${config.header_bg_color};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerText}</h1>
+          <h1 style="margin:0;color:${config.header_text_color || "#ffffff"};font-size:22px;font-weight:700;">${headerText}</h1>
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</p>
+          <div style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</div>
           ${eventDetailsHtml}
-          <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</p>
+          <div style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</div>
           ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>

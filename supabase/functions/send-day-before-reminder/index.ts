@@ -233,10 +233,13 @@ Deno.serve(async (req) => {
         .replace(/\n{3,}/g, "\n\n")
         .trim();
 
+    const savedCfg = ((tournament as any).day_before_email_config || {}) as any;
     const scheduleRaw =
+      (savedCfg.schedule_override || "").trim() ||
       (tournament as any).schedule_info ||
       ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
-    const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
+    const schedule = formatScheduleText(String(scheduleRaw || "")) ||
+      "See the event homepage for the full schedule.";
 
     const { data: addons } = await admin
       .from("tournament_registration_addons")

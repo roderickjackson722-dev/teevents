@@ -83,6 +83,8 @@ export function LeaderboardRenderer({
   sidebarSponsors = [],
   footerSponsors = [],
   scrollingSponsors = [],
+  scrollingSponsorsPosition = "bottom",
+  scrollingSponsorsSpeedSeconds = 20,
   heroImage,
   logoUrl,
   compact = false,
@@ -108,6 +110,45 @@ export function LeaderboardRenderer({
   const padY = compact ? "py-2" : "py-3";
   const headerPadY = compact ? "py-2" : "py-4 sm:py-6";
 
+  /**
+   * Seamless sponsor marquee. The logo list is repeated until it is wide enough
+   * to fill the screen, then that whole strip is duplicated once so the
+   * translateX(-50%) loop restarts with no blank gap.
+   */
+  const scrollPos = scrollingSponsorsPosition || "bottom";
+  const marqueeBase = (() => {
+    if (scrollingSponsors.length === 0) return [];
+    const out: LbSponsor[] = [];
+    const minItems = 8;
+    while (out.length < minItems) out.push(...scrollingSponsors);
+    return out;
+  })();
+  const loopSeconds = Math.max(5, Math.min(60, scrollingSponsorsSpeedSeconds || 20));
+
+  const sponsorMarquee =
+    marqueeBase.length > 0 ? (
+      <div
+        data-testid="lb-scrolling-sponsors"
+        className="overflow-hidden border-y w-full"
+        style={{ backgroundColor: headerBg, borderColor: `${accent}44` }}
+      >
+        <div
+          className={`flex items-center w-max whitespace-nowrap ${compact ? "py-2" : "py-4"}`}
+          style={{ animation: `marquee ${loopSeconds}s linear infinite` }}
+        >
+          {[...marqueeBase, ...marqueeBase].map((s, i) => (
+            <div key={`scroll-${s.id}-${i}`} className={`flex items-center shrink-0 ${compact ? "px-4" : "px-8"}`}>
+              {s.logo_url ? (
+                <img src={s.logo_url} alt={s.name} className={`${compact ? "h-6" : "h-10"} max-w-[160px] object-contain`} />
+              ) : (
+                <span className={`${compact ? "text-xs" : "text-sm"} font-semibold opacity-80`}>{s.name}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div
       data-testid="lb-root"
@@ -115,6 +156,9 @@ export function LeaderboardRenderer({
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
       {topNotice}
+
+      {scrollPos === "top" && sponsorMarquee}
+
 
       {showSponsorBanner && sponsorPos === "top" && bannerSponsor && (
         <div

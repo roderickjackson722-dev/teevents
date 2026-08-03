@@ -205,6 +205,8 @@ export default function EmailTemplateEditor() {
       : "confirmation";
   })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  // Last rich-text field the organizer touched — variable chips insert there.
+  const [lastRichField, setLastRichField] = useState<"body_text" | "closing_text" | "schedule_override">("body_text");
   const [config, setConfig] = useState<EmailConfig>(
     initialTemplate === "post_event"
       ? DEFAULT_POST_EVENT_CONFIG

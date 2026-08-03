@@ -474,6 +474,31 @@ export default function EmailTemplateEditor() {
     return vars;
   })();
 
+  // The day-before sender normalizes older saved templates before rendering
+  // (appends missing address/schedule/homepage lines, scrubs the legacy
+  // leaderboard sentence). Mirror it so the preview matches the real email.
+  const previewConfig = (() => {
+    if (templateKind !== "day_before") return config;
+    const html = isHtmlContent(config.body_text);
+    let bt = String(config.body_text || "");
+    const add = (plain: string) => {
+      bt += html ? `<p>${plain}</p>` : `\n${plain}`;
+    };
+    if (!bt.includes("{{course_address}}")) {
+      add("📍 Location: {{event_location}}");
+      add("🏠 Address: {{course_address}}");
+    }
+    if (!bt.includes("{{event_schedule}}")) {
+      add("🗓 Event Schedule:");
+      add("{{event_schedule}}");
+    }
+    if (!bt.includes("{{event_homepage}}")) add("🔗 Event Homepage: {{event_homepage}}");
+    const ct = removeDuplicateLeaderboardText(
+      String(config.closing_text ?? "").replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}"),
+    );
+    return { ...config, body_text: bt, closing_text: ct };
+  })();
+
 
 
   const handleTournamentChange = (id: string) => {
@@ -516,7 +541,7 @@ export default function EmailTemplateEditor() {
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
+    const html = renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
@@ -1066,7 +1091,7 @@ export default function EmailTemplateEditor() {
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+              __html: renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,

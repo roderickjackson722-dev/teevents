@@ -1710,19 +1710,28 @@ const Players = () => {
                     )}
                     {rosterCols.group !== false && (
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {(() => {
-                          const c = groupCellFor(p);
-                          return c.name ? (
-                            <span className="text-xs">
-                              <span className="font-semibold text-foreground">{c.name}</span>{" "}
-                              <span className="text-muted-foreground">{c.label}</span>
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">(Individual Registration)</span>
-                          );
-                        })()}
+                        <select
+                          aria-label="Team"
+                          className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground max-w-[190px]"
+                          value={p.group_id || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "__new") { setNewTeamForPlayer(p.id); setNewTeamName(""); return; }
+                            assignPlayerTeam(p.id, val || null);
+                          }}
+                        >
+                          <option value="">Unassigned</option>
+                          {teamGroups.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {groupNames[t.id] || t.name}
+                              {t.group_number != null ? ` (Hole ${t.group_number})` : ""}
+                            </option>
+                          ))}
+                          <option value="__new">+ Create new team…</option>
+                        </select>
                       </td>
                     )}
+
                     {rosterCols.tier !== false && (
                       <td className="px-4 py-3">
                         {p.tier_id ? (

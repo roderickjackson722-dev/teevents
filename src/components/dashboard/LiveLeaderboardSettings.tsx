@@ -56,10 +56,13 @@ const DEFAULTS: Settings = {
   leaderboard_rotating_logos: [],
   leaderboard_sponsor_banner_enabled: true,
   leaderboard_sponsor_rotation_order: "sequential",
+  leaderboard_sponsor_banner_position: "bottom",
+  leaderboard_sponsor_scroll_seconds: 20,
 };
 
 const SETTINGS_COLS =
-  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order";
+  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds";
+
 
 export default function LiveLeaderboardSettings({ tournamentId }: Props) {
   const { org } = useOrgContext();

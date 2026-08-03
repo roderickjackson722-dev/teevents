@@ -942,6 +942,18 @@ export default function Leaderboard() {
         <ScoreEditHistory tournamentId={selectedTournament} />
       )}
 
+      {selectedTournament && (
+        <LeaderboardResetCard
+          tournamentId={selectedTournament}
+          canManage={canManageFreeze}
+          lastResetAt={(selectedTournamentData as any)?.leaderboard_last_reset_at ?? null}
+          onChange={() => {
+            queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] });
+            queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
+          }}
+        />
+      )}
+
       <StickySaveBar onSave={() => {}} />
     </div>
   );

@@ -811,6 +811,11 @@ const Sponsors = () => {
         <SponsorLogoSizeCard tournamentId={selectedTournament} />
       )}
 
+      {selectedTournament && (
+        <ScoringPageSponsorsCard tournamentId={selectedTournament} />
+      )}
+
+
 
       {selectedTournament && (
         <div className="mb-6">

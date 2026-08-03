@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
-import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
 
 
 export interface LeaderboardDesign {
@@ -237,7 +236,7 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
                 <Label className="text-xs">Sponsor Display</Label>
                 <RadioGroup value={design.sponsor_filter} onValueChange={(v) => update("sponsor_filter", v as any)} className="flex flex-wrap gap-4 mt-1">
                   <RadioOpt value="all" label="All sponsors" />
-                  <RadioOpt value="selected" label="Selected only (use sponsor toggles)" />
+                  <RadioOpt value="selected" label="Selected only (use the ticker sponsor list below)" />
                 </RadioGroup>
               </div>
             </>

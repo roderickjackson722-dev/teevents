@@ -18,6 +18,10 @@ const DEFAULTS = {
 
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
+  show_scoring_button: true,
+  scoring_button_text: "Enter My Scores",
+  show_leaderboard_button: true,
+  leaderboard_button_text: "View Live Leaderboard",
 };
 
 function replaceVars(text: string, vars: Record<string, string>): string {
@@ -55,6 +59,23 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
   const footer = esc(replaceVars(c.footer_text, vars));
   const btnText = replaceVars(c.button_text || "View Event Homepage", vars);
   const url = c.button_url || buttonUrl;
+
+  const scoringUrl = vars.scoring_link || "";
+  const leaderboardUrl = vars.leaderboard_link || "";
+  const actionCells: string[] = [];
+  if (c.show_scoring_button !== false && scoringUrl) {
+    actionCells.push(
+      `<a href="${scoringUrl}" style="display:inline-block;margin:6px;padding:13px 26px;background-color:#F5A623;color:#1a5c38;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">⛳ ${esc(replaceVars(c.scoring_button_text || "Enter My Scores", vars))}</a>`,
+    );
+  }
+  if (c.show_leaderboard_button !== false && leaderboardUrl) {
+    actionCells.push(
+      `<a href="${leaderboardUrl}" style="display:inline-block;margin:6px;padding:13px 26px;background-color:${primary};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">📊 ${esc(replaceVars(c.leaderboard_button_text || "View Live Leaderboard", vars))}</a>`,
+    );
+  }
+  const actionButtonsHtml = actionCells.length
+    ? `<div style="text-align:center;margin:22px 0;padding:18px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">${actionCells.join("")}</div>`
+    : "";
 
   const buttonHtml = url
     ? `<div style="text-align:center;margin:24px 0;"><a href="${url}" style="display:inline-block;padding:12px 28px;background:#F5A623;color:#1a5c38;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">${esc(btnText)}</a></div>`
@@ -103,6 +124,7 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</p>
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</p>
+          ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
         </td></tr>${addonsHtml}

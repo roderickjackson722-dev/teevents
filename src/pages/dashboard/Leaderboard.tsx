@@ -110,7 +110,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, organizations(name)")
+        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, leaderboard_last_reset_at, organizations(name)")
         .order("date", { ascending: false });
       if (!isPlatformAdmin) {
         query = query.eq("organization_id", org!.orgId);

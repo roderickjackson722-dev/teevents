@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
 import { formatScheduleText } from "@/lib/formatSchedule";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 interface EmailConfig {
   subject: string;
@@ -51,6 +52,8 @@ interface EmailConfig {
   leaderboard_button_text?: string;
   /** Editable headline shown in the colored email header band. */
   header_title?: string;
+  /** Text color of the headline inside the colored header band. */
+  header_text_color?: string;
   /** Organizer-edited schedule text used for {{event_schedule}} in this email. */
   schedule_override?: string;
 }
@@ -202,6 +205,8 @@ export default function EmailTemplateEditor() {
       : "confirmation";
   })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  // Last rich-text field the organizer touched — variable chips insert there.
+  const [lastRichField, setLastRichField] = useState<"body_text" | "closing_text" | "schedule_override">("body_text");
   const [config, setConfig] = useState<EmailConfig>(
     initialTemplate === "post_event"
       ? DEFAULT_POST_EVENT_CONFIG
@@ -439,7 +444,8 @@ export default function EmailTemplateEditor() {
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
     const scheduleSource = (config.schedule_override || "").trim() || String(schedule || "").trim();
-    const formattedSchedule = formatScheduleText(scheduleSource);
+    // Rich-text schedules keep the organizer's own formatting; plain text is auto-tidied.
+    const formattedSchedule = isHtmlContent(scheduleSource) ? scheduleSource : formatScheduleText(scheduleSource);
     vars.event_schedule = formattedSchedule || "See the event homepage for the full schedule.";
     return vars;
   })();
@@ -529,8 +535,8 @@ export default function EmailTemplateEditor() {
     }
   };
 
-  const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject", variable: string) => {
-    setConfig(prev => ({ ...prev, [field]: prev[field] + " " + variable }));
+  const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject" | "header_title" | "schedule_override", variable: string) => {
+    setConfig(prev => ({ ...prev, [field]: ((prev as any)[field] || "") + " " + variable }));
   };
 
   const openEditModal = (reg: any) => {
@@ -611,6 +617,7 @@ export default function EmailTemplateEditor() {
                 primary_color: config.primary_color,
                 secondary_color: config.secondary_color,
                 header_bg_color: config.header_bg_color,
+                header_text_color: config.header_text_color,
                 text_color: config.text_color,
                 font_family: config.font_family,
                 show_logo: config.show_logo,
@@ -774,6 +781,40 @@ export default function EmailTemplateEditor() {
 
         {/* Design Tab */}
         <TabsContent value="design" className="space-y-6">
+          <div className="space-y-4 bg-card rounded-lg border p-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Layout className="h-4 w-4 text-primary" /> Header Band
+            </h3>
+            <p className="text-xs text-muted-foreground -mt-2">
+              The colored bar at the top of the email that holds your logo and headline.
+            </p>
+            <div>
+              <Label className="text-xs text-muted-foreground">Header Headline</Label>
+              <Input
+                data-field="header_title"
+                value={config.header_title ?? TEMPLATE_HEADERS[templateKind]}
+                onChange={e => setConfig(p => ({ ...p, header_title: e.target.value }))}
+                placeholder={TEMPLATE_HEADERS[templateKind]}
+                className="mt-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Header Band Color</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input type="color" value={config.header_bg_color} onChange={e => setConfig(p => ({ ...p, header_bg_color: e.target.value }))} className="w-10 h-8 rounded cursor-pointer border-0" />
+                  <Input value={config.header_bg_color} onChange={e => setConfig(p => ({ ...p, header_bg_color: e.target.value }))} className="text-xs h-8" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Headline Text Color</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input type="color" value={config.header_text_color || "#ffffff"} onChange={e => setConfig(p => ({ ...p, header_text_color: e.target.value }))} className="w-10 h-8 rounded cursor-pointer border-0" />
+                  <Input value={config.header_text_color || "#ffffff"} onChange={e => setConfig(p => ({ ...p, header_text_color: e.target.value }))} className="text-xs h-8" />
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4 bg-card rounded-lg border p-5">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -901,9 +942,9 @@ export default function EmailTemplateEditor() {
               {VARIABLE_TAGS.map(v => (
                 <Badge key={v.value} variant="outline" className="cursor-pointer hover:bg-primary/10 text-xs" onClick={() => {
                   const active = document.activeElement as HTMLElement;
-                  const field = active?.dataset?.field as any;
+                  const field = (active?.dataset?.field || active?.closest?.("[data-field]")?.getAttribute("data-field")) as any;
                   if (field) insertVariable(field, v.value);
-                  else insertVariable("body_text", v.value);
+                  else insertVariable(lastRichField, v.value);
                 }}>
                   {v.label}
                 </Badge>
@@ -932,20 +973,25 @@ export default function EmailTemplateEditor() {
               <Label>Greeting</Label>
               <Input data-field="greeting" value={config.greeting} onChange={e => setConfig(p => ({ ...p, greeting: e.target.value }))} className="mt-1" />
             </div>
-            <div>
+            <div data-field="body_text" onFocusCapture={() => setLastRichField("body_text")}>
               <Label>Body Text</Label>
-              <Textarea data-field="body_text" value={config.body_text} onChange={e => setConfig(p => ({ ...p, body_text: e.target.value }))} rows={8} className="mt-1 font-mono text-sm" />
+              <RichTextEditor
+                value={config.body_text}
+                onChange={(html) => setConfig(p => ({ ...p, body_text: html }))}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Use the toolbar to bold, add lists, links, colors and sizes. Variables above insert at the end of the
+                focused field.
+              </p>
             </div>
             {templateKind === "day_before" && (
-              <div>
+              <div data-field="schedule_override" onFocusCapture={() => setLastRichField("schedule_override")}>
                 <Label>Event Schedule (used for {"{{event_schedule}}"})</Label>
-                <Textarea
-                  data-field="schedule_override"
+                <RichTextEditor
                   value={config.schedule_override ?? ""}
-                  onChange={e => setConfig(p => ({ ...p, schedule_override: e.target.value }))}
-                  rows={6}
-                  placeholder={"7:30 AM — Check-in & breakfast\n9:00 AM — Shotgun start\n2:00 PM — Lunch & awards"}
-                  className="mt-1 font-mono text-sm"
+                  onChange={(html) => setConfig(p => ({ ...p, schedule_override: html }))}
+                  className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   One item per line — each line stays short and readable on phones. Leave blank to use the schedule
@@ -953,9 +999,13 @@ export default function EmailTemplateEditor() {
                 </p>
               </div>
             )}
-            <div>
+            <div data-field="closing_text" onFocusCapture={() => setLastRichField("closing_text")}>
               <Label>Closing Text</Label>
-              <Textarea data-field="closing_text" value={config.closing_text} onChange={e => setConfig(p => ({ ...p, closing_text: e.target.value }))} rows={5} className="mt-1 font-mono text-sm" />
+              <RichTextEditor
+                value={config.closing_text}
+                onChange={(html) => setConfig(p => ({ ...p, closing_text: html }))}
+                className="mt-1"
+              />
             </div>
             <div>
               <Label>Footer / Sign-off</Label>
@@ -1199,8 +1249,16 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/** True when organizer content was authored with the rich-text toolbar. */
+function isHtmlContent(s?: string): boolean {
+  return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
+}
+
 function replaceVariables(text: string, vars: Record<string, string>): string {
   const merged = { ...SAMPLE_VARS, ...vars };
+  if (isHtmlContent(text)) {
+    return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
+  }
   return escapeHtml(text || "")
     .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "")
     .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#1a5c38;font-weight:600;">${u}</a>`)
@@ -1315,13 +1373,13 @@ function renderEmailHtml(
       <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${config.secondary_color};border-radius:8px;overflow:hidden;">
         <tr><td class="tv-pad" style="background:${config.header_bg_color};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerText}</h1>
+          <h1 style="margin:0;color:${config.header_text_color || "#ffffff"};font-size:22px;font-weight:700;">${headerText}</h1>
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</p>
+          <div style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</div>
           ${eventDetailsHtml}
-          <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</p>
+          <div style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</div>
           ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>

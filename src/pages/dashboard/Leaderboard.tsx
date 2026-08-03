@@ -24,6 +24,7 @@ import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard"
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
+import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
 
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 

@@ -924,7 +924,7 @@ const Players = () => {
    * registration) whenever the organizer changes them here.
    */
   const persistTeeTimesToDb = async (forDay: Record<number, string>, dayIndex: number) => {
-    if (!selectedTournament || isSample) return;
+    if (!selectedTournament || demoGuard()) return;
     const entries = Object.entries(forDay);
     if (!entries.length) return;
     for (const [holeStr, raw] of entries) {

@@ -387,6 +387,14 @@ export default function Scoring() {
             <LiveLeaderboardSettings tournamentId={selectedTournament} />
           </TabsContent>
 
+          {/* ===== SPONSOR DISPLAY TAB ===== */}
+          <TabsContent value="sponsors" className="space-y-4">
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_scoring_page" />
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_leaderboard" />
+          </TabsContent>
+
+
+
         </Tabs>
       )}
     </div>

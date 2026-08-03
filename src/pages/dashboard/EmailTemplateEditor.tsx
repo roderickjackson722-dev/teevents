@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import {
   Mail, Save, Eye, Send, Loader2, Palette, Type, Image, Layout,
   RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil, CalendarClock, ShoppingBag,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -56,9 +58,31 @@ interface EmailConfig {
   header_text_color?: string;
   /** Organizer-edited schedule text used for {{event_schedule}} in this email. */
   schedule_override?: string;
+  /** Day-before reminder: show the schedule block. */
+  show_schedule?: boolean;
+  schedule_heading?: string;
+  /** Day-before reminder: show the plain "Event Homepage: <url>" text line. */
+  show_homepage_link?: boolean;
+  homepage_link_label?: string;
+  /** Day-before reminder: order of the body sections, top to bottom. */
+  section_order?: string[];
 }
 
+/** Every movable block in the Day Before reminder, in default order. */
+const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
+  { id: "body", label: "Body text", hint: "Your main details paragraph (tee time, scoring code, etc.)" },
+  { id: "schedule", label: "Event schedule", hint: "The schedule block from the Content tab / your event page" },
+  { id: "closing", label: "Closing text", hint: "Your closing message" },
+  { id: "action_buttons", label: "Scoring & Leaderboard buttons", hint: "“Enter My Scores” + “View Live Leaderboard”" },
+  { id: "homepage_button", label: "“View Event Homepage” button", hint: "The gold call-to-action button" },
+  { id: "homepage_link", label: "Event homepage link (text URL)", hint: "The plain “🔗 Event Homepage: https://…” line" },
+  { id: "addons", label: "Add-ons / “Don’t Forget Your Mulligans!”", hint: "Purchasable add-on list with buy buttons" },
+  { id: "footer", label: "Footer sign-off", hint: "Your closing sign-off line (e.g. “See you on the course!”)" },
+];
+const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
+
 type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
+
 
 const DEFAULT_CONFIG: EmailConfig = {
   subject: "You're Registered — {{event_name}}",
@@ -131,7 +155,7 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
   greeting: "Hello {{first_name}},",
   header_title: "Your Tournament Is Almost Here!",
   body_text:
-    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}",
   footer_text: "See you on the course! ⛳",
@@ -141,7 +165,13 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
   scoring_button_text: "Enter My Scores",
   show_leaderboard_button: true,
   leaderboard_button_text: "View Live Leaderboard",
+  show_schedule: true,
+  schedule_heading: "🗓 Event Schedule",
+  show_homepage_link: true,
+  homepage_link_label: "🔗 Event Homepage",
+  section_order: DEFAULT_SECTION_ORDER,
 };
+
 
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
@@ -305,11 +335,22 @@ export default function EmailTemplateEditor() {
     const stored = t?.[CONFIG_KEY[kind]];
     if (stored) {
       const loaded = { ...defaultsForKind(kind), ...(stored as any) };
-      if (kind === "day_before") loaded.closing_text = removeDuplicateLeaderboardText(loaded.closing_text);
-      setConfig(loaded);
+      setConfig(kind === "day_before" ? normalizeDayBefore(loaded) : loaded);
     }
     else setConfig(defaultsForKind(kind));
   };
+
+  const moveSection = (id: string, dir: -1 | 1) => {
+    setConfig((p) => {
+      const order = (p.section_order?.length ? [...p.section_order] : [...DEFAULT_SECTION_ORDER]);
+      const i = order.indexOf(id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= order.length) return p;
+      [order[i], order[j]] = [order[j], order[i]];
+      return { ...p, section_order: order };
+    });
+  };
+
 
 
   // Load tournaments
@@ -474,30 +515,10 @@ export default function EmailTemplateEditor() {
     return vars;
   })();
 
-  // The day-before sender normalizes older saved templates before rendering
-  // (appends missing address/schedule/homepage lines, scrubs the legacy
-  // leaderboard sentence). Mirror it so the preview matches the real email.
-  const previewConfig = (() => {
-    if (templateKind !== "day_before") return config;
-    const html = isHtmlContent(config.body_text);
-    let bt = String(config.body_text || "");
-    const add = (plain: string) => {
-      bt += html ? `<p>${plain}</p>` : `\n${plain}`;
-    };
-    if (!bt.includes("{{course_address}}")) {
-      add("📍 Location: {{event_location}}");
-      add("🏠 Address: {{course_address}}");
-    }
-    if (!bt.includes("{{event_schedule}}")) {
-      add("🗓 Event Schedule:");
-      add("{{event_schedule}}");
-    }
-    if (!bt.includes("{{event_homepage}}")) add("🔗 Event Homepage: {{event_homepage}}");
-    const ct = removeDuplicateLeaderboardText(
-      String(config.closing_text ?? "").replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}"),
-    );
-    return { ...config, body_text: bt, closing_text: ct };
-  })();
+  // Day-before templates render each block independently and in the organizer's
+  // chosen order, so the schedule / homepage link are no longer baked into the body.
+  const previewConfig = templateKind === "day_before" ? normalizeDayBefore(config) : config;
+
 
 
 
@@ -787,6 +808,77 @@ export default function EmailTemplateEditor() {
               </div>
             )}
           </div>
+
+          <div className="border-t pt-4 space-y-3">
+            <p className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Layout className="h-4 w-4 text-primary" /> Email Layout &amp; Section Order
+            </p>
+            <p className="text-xs text-muted-foreground">
+              This is everything that appears in the reminder, top to bottom. Use the arrows to move a section, and the
+              switch to remove it entirely. The colored header band, greeting, and the &ldquo;Sent by TeeVents&rdquo; footer stay fixed.
+            </p>
+            <div className="rounded-md border divide-y">
+              {(config.section_order?.length ? config.section_order : DEFAULT_SECTION_ORDER).map((id, idx, arr) => {
+                const meta = DAY_BEFORE_SECTIONS.find((s) => s.id === id);
+                if (!meta) return null;
+                const toggles: Record<string, { on: boolean; set: (v: boolean) => void } | null> = {
+                  body: null,
+                  closing: null,
+                  footer: null,
+                  schedule: { on: config.show_schedule !== false, set: (v) => setConfig(p => ({ ...p, show_schedule: v })) },
+                  action_buttons: {
+                    on: config.show_scoring_button !== false || config.show_leaderboard_button !== false,
+                    set: (v) => setConfig(p => ({ ...p, show_scoring_button: v, show_leaderboard_button: v })),
+                  },
+                  homepage_button: { on: config.show_button !== false, set: (v) => setConfig(p => ({ ...p, show_button: v })) },
+                  homepage_link: { on: !!config.show_homepage_link, set: (v) => setConfig(p => ({ ...p, show_homepage_link: v })) },
+                  addons: { on: config.show_addons !== false, set: (v) => setConfig(p => ({ ...p, show_addons: v })) },
+                };
+                const t = toggles[id];
+                return (
+                  <div key={id} className="flex items-center gap-3 p-2.5">
+                    <span className="text-xs text-muted-foreground w-5 text-center">{idx + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{meta.label}</p>
+                      <p className="text-xs text-muted-foreground truncate">{meta.hint}</p>
+                    </div>
+                    {t ? (
+                      <Switch checked={t.on} onCheckedChange={t.set} aria-label={`Show ${meta.label}`} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Always</span>
+                    )}
+                    <div className="flex flex-col">
+                      <Button size="icon" variant="ghost" className="h-6 w-6" disabled={idx === 0} onClick={() => moveSection(id, -1)}>
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" disabled={idx === arr.length - 1} onClick={() => moveSection(id, 1)}>
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Schedule Heading (blank to hide)</Label>
+                <Input
+                  value={config.schedule_heading ?? "🗓 Event Schedule"}
+                  onChange={(e) => setConfig(p => ({ ...p, schedule_heading: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Homepage Link Label</Label>
+                <Input
+                  value={config.homepage_link_label ?? "🔗 Event Homepage"}
+                  onChange={(e) => setConfig(p => ({ ...p, homepage_link_label: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
 
           <div className="border-t pt-4 space-y-3">
             <p className="text-sm font-medium text-foreground">Scoring &amp; Leaderboard Buttons</p>
@@ -1096,6 +1188,8 @@ export default function EmailTemplateEditor() {
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,
                 showActionButtons: templateKind === "day_before",
+                sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
+
               })
             }} />
 
@@ -1326,6 +1420,48 @@ function removeDuplicateLeaderboardText(text: string): string {
     .trim();
 }
 
+/** Pull the legacy schedule / homepage lines out of the body so they become their own movable blocks. */
+function stripLegacyDayBeforeBlocks(bt: string): string {
+  return (bt || "")
+    .replace(/<p[^>]*>\s*(?:🗓\s*)?Event Schedule:?\s*<\/p>/gi, "")
+    .replace(/<p[^>]*>\s*\{\{event_schedule\}\}\s*<\/p>/gi, "")
+    .replace(/<p[^>]*>\s*🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}\s*<\/p>/gi, "")
+    .replace(/(?:🗓\s*)?Event Schedule:?\s*\n?/gi, "")
+    .replace(/🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}/gi, "")
+    .replace(/\{\{event_schedule\}\}/g, "")
+    .replace(/\{\{event_homepage\}\}/g, "")
+    .replace(/(?:<p[^>]*>\s*(?:<br\s*\/?>)?\s*<\/p>\s*)+$/gi, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * Normalizes a Day Before reminder config: every block (body, schedule, closing,
+ * buttons, homepage link, add-ons, footer) is independent and ordered by
+ * `section_order`, so organizers can move or remove any of them.
+ */
+function normalizeDayBefore(cfg: EmailConfig): EmailConfig {
+  const hadHomepage = /\{\{event_homepage\}\}/i.test(String(cfg.body_text || ""));
+  const stored = Array.isArray(cfg.section_order) ? cfg.section_order.filter((s) => DEFAULT_SECTION_ORDER.includes(s)) : [];
+  const order = stored.length
+    ? [...stored, ...DEFAULT_SECTION_ORDER.filter((s) => !stored.includes(s))]
+    : [...DEFAULT_SECTION_ORDER];
+  return {
+    ...cfg,
+    body_text: stripLegacyDayBeforeBlocks(String(cfg.body_text || "")),
+    closing_text: removeDuplicateLeaderboardText(
+      String(cfg.closing_text ?? "").replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}"),
+    ),
+    show_schedule: cfg.show_schedule ?? true,
+    schedule_heading: cfg.schedule_heading ?? "🗓 Event Schedule",
+    show_homepage_link: cfg.show_homepage_link ?? (cfg.section_order ? false : hadHomepage),
+    homepage_link_label: cfg.homepage_link_label ?? "🔗 Event Homepage",
+    section_order: order,
+  };
+}
+
+
+
 function renderActionButtons(opts: {
   primary: string;
   scoring: { url: string; text: string } | null;
@@ -1346,7 +1482,7 @@ function renderEmailHtml(
   config: EmailConfig,
   vars: Record<string, string>,
   headerText: string = "Registration Confirmed!",
-  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string; showActionButtons?: boolean },
+  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string; showActionButtons?: boolean; sectionOrder?: string[] },
 ): string {
   const greeting = replaceVariables(config.greeting, vars);
   const body = replaceVariables(config.body_text, vars);
@@ -1397,8 +1533,7 @@ function renderEmailHtml(
   const addonList = opts?.addons || [];
   const addonBase = opts?.addonBaseUrl || vars.event_homepage || "https://www.teevents.golf";
   const money = (c: number) => `$${((c || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const addonsHtml = config.show_addons !== false && addonList.length > 0
-    ? `<tr><td style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">
+  const addonsInner = `
         <p style="margin:0 0 6px;color:${config.primary_color};font-size:17px;font-weight:700;">${escapeHtml(config.addons_heading || "⛳ Don't Forget Your Mulligans!")}</p>
         ${config.addons_intro ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">${escapeHtml(config.addons_intro)}</p>` : ""}
         ${addonList.map((a: any) => `
@@ -1412,9 +1547,55 @@ function renderEmailHtml(
                 <a href="${addonBase}/add-ons?addon=${a.id}" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
               </td>
             </tr>
-          </table>`).join("")}
-       </td></tr>`
+          </table>`).join("")}`;
+  const showAddons = config.show_addons !== false && addonList.length > 0;
+  const addonsHtml = showAddons && !opts?.sectionOrder
+    ? `<tr><td style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">${addonsInner}</td></tr>`
     : "";
+
+  const richBlock = (html: string) =>
+    `<div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${html}</div>`;
+  const footerBlock = `<p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>`;
+
+  // Day-before reminders render every block independently, in the organizer's order.
+  const homepageUrl = config.button_url || vars.event_homepage || "https://www.teevents.golf";
+  const orderedBlocks = (opts?.sectionOrder || [])
+    .map((id) => {
+      switch (id) {
+        case "body":
+          return body?.trim() ? richBlock(body) : "";
+        case "schedule":
+          return config.show_schedule !== false && vars.event_schedule
+            ? `${config.schedule_heading ? `<p style="margin:18px 0 8px;color:${config.text_color};font-size:15px;font-weight:700;">${escapeHtml(config.schedule_heading)}</p>` : ""}${richBlock(vars.event_schedule)}`
+            : "";
+        case "closing":
+          return closing?.trim() ? richBlock(closing) : "";
+        case "action_buttons":
+          return actionButtonsHtml;
+        case "homepage_button":
+          return config.show_button !== false && config.button_text
+            ? `<div style="text-align:center;margin:24px 0;"><a href="${homepageUrl}" style="display:inline-block;padding:12px 28px;background:#F5A623;color:#1a5c38;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">${escapeHtml(config.button_text)}</a></div>`
+            : "";
+        case "homepage_link":
+          return config.show_homepage_link
+            ? `<p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${escapeHtml(config.homepage_link_label || "🔗 Event Homepage")}: <a href="${homepageUrl}" style="color:${config.primary_color};font-weight:600;">${homepageUrl}</a></p>`
+            : "";
+        case "addons":
+          return showAddons
+            ? `<div style="margin:22px 0;padding:20px;border:1px solid #e5e7eb;border-radius:8px;background:#fffdf5;">${addonsInner}</div>`
+            : "";
+        case "footer":
+          return footerBlock;
+        default:
+          return "";
+      }
+    })
+    .filter(Boolean)
+    .join("");
+
+  const contentHtml = opts?.sectionOrder
+    ? orderedBlocks
+    : `${richBlock(body)}${eventDetailsHtml}${richBlock(closing)}${actionButtonsHtml}${buttonHtml}<p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>`;
 
   return `
 <!DOCTYPE html>
@@ -1447,13 +1628,9 @@ function renderEmailHtml(
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
-          ${eventDetailsHtml}
-          <div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
-          ${actionButtonsHtml}
-          ${buttonHtml}
-          <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>
+          ${contentHtml}
         </td></tr>${addonsHtml}${hubBlock}
+
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${config.primary_color};">teevents.golf</a></p>
         </td></tr>

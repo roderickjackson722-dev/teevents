@@ -8,12 +8,23 @@ const corsHeaders = {
 
 const SENDER = "TeeVents Golf Management <info@notifications.teevents.golf>";
 
+const DEFAULT_SECTION_ORDER = [
+  "body",
+  "schedule",
+  "closing",
+  "action_buttons",
+  "homepage_button",
+  "homepage_link",
+  "addons",
+  "footer",
+];
+
 const DEFAULTS = {
   subject: "{{event_name}} – Your tournament is almost here!",
   header_title: "Your Tournament Is Almost Here!",
   greeting: "Hello {{first_name}},",
   body_text:
-    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}",
 
@@ -23,7 +34,13 @@ const DEFAULTS = {
   scoring_button_text: "Enter My Scores",
   show_leaderboard_button: true,
   leaderboard_button_text: "View Live Leaderboard",
+  show_schedule: true,
+  schedule_heading: "🗓 Event Schedule",
+  show_homepage_link: false,
+  homepage_link_label: "🔗 Event Homepage",
+  section_order: DEFAULT_SECTION_ORDER,
 };
+
 
 function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k) => vars[k] ?? "");
@@ -123,8 +140,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
   const money = (cents: number) =>
     `$${((cents || 0) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const addonBase = homepage || buttonUrl || "https://www.teevents.golf";
-  const addonsHtml = c.show_addons !== false && addons.length > 0
-    ? `<tr><td class="tv-pad" style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">
+  const showAddons = c.show_addons !== false && addons.length > 0;
+  const addonsInner = `
         <p style="margin:0 0 6px;color:${primary};font-size:17px;font-weight:700;">${esc(c.addons_heading || "⛳ Don't Forget Your Mulligans!")}</p>
         ${c.addons_intro ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">${esc(c.addons_intro)}</p>` : ""}
         ${addons.map((a: any) => `
@@ -138,9 +155,47 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
                 <a href="${addonBase}/add-ons?addon=${a.id}" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
               </td>
             </tr>
-          </table>`).join("")}
-       </td></tr>`
-    : "";
+          </table>`).join("")}`;
+
+  const richBlock = (html: string) =>
+    `<div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${html}</div>`;
+
+  // Every block is independent and rendered in the organizer's chosen order.
+  const storedOrder: string[] = Array.isArray(c.section_order)
+    ? c.section_order.filter((s: string) => DEFAULT_SECTION_ORDER.includes(s))
+    : [];
+  const order = storedOrder.length
+    ? [...storedOrder, ...DEFAULT_SECTION_ORDER.filter((s) => !storedOrder.includes(s))]
+    : [...DEFAULT_SECTION_ORDER];
+
+  const contentHtml = order.map((id) => {
+    switch (id) {
+      case "body":
+        return body.trim() ? richBlock(body) : "";
+      case "schedule":
+        return c.show_schedule !== false && vars.event_schedule
+          ? `${c.schedule_heading ? `<p style="margin:18px 0 8px;color:${textColor};font-size:15px;font-weight:700;">${esc(c.schedule_heading)}</p>` : ""}${richBlock(vars.event_schedule)}`
+          : "";
+      case "closing":
+        return closing.trim() ? richBlock(closing) : "";
+      case "action_buttons":
+        return actionButtonsHtml;
+      case "homepage_button":
+        return c.show_button !== false ? buttonHtml : "";
+      case "homepage_link":
+        return c.show_homepage_link && url
+          ? `<p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${esc(c.homepage_link_label || "🔗 Event Homepage")}: <a href="${url}" style="color:${primary};font-weight:600;">${url}</a></p>`
+          : "";
+      case "addons":
+        return showAddons
+          ? `<div style="margin:22px 0;padding:20px;border:1px solid #e5e7eb;border-radius:8px;background:#fffdf5;">${addonsInner}</div>`
+          : "";
+      case "footer":
+        return `<p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>`;
+      default:
+        return "";
+    }
+  }).join("");
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
@@ -170,12 +225,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
-          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
-          ${actionButtonsHtml}
-          ${buttonHtml}
-          <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
-        </td></tr>${addonsHtml}
+          ${contentHtml}
+        </td></tr>
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${primary};">teevents.golf</a></p>
         </td></tr>
@@ -184,6 +235,7 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
   </table>
 </body></html>`;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -285,19 +337,37 @@ Deno.serve(async (req) => {
       .eq("is_active", true);
 
     const config = { ...DEFAULTS, ...((tournament as any).day_before_email_config || {}) };
-    // Older saved templates may predate address / schedule / homepage — append what's missing.
+    // Legacy templates baked the schedule / homepage lines into the body text.
+    // They are now standalone, movable sections, so strip them out to avoid duplicates.
     {
+      const hadHomepage = /\{\{event_homepage\}\}/i.test(String(config.body_text || ""));
       let bt = String(config.body_text || DEFAULTS.body_text);
       if (!bt.includes("{{course_address}}")) bt += "\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}";
-      if (!bt.includes("{{event_schedule}}")) bt += "\n\n🗓 Event Schedule:\n{{event_schedule}}";
-      if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
+      bt = bt
+        .replace(/<p[^>]*>\s*(?:🗓\s*)?Event Schedule:?\s*<\/p>/gi, "")
+        .replace(/<p[^>]*>\s*\{\{event_schedule\}\}\s*<\/p>/gi, "")
+        .replace(/<p[^>]*>\s*🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}\s*<\/p>/gi, "")
+        .replace(/(?:🗓\s*)?Event Schedule:?\s*\n?/gi, "")
+        .replace(/🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}/gi, "")
+        .replace(/\{\{event_schedule\}\}/g, "")
+        .replace(/\{\{event_homepage\}\}/g, "")
+        .replace(/(?:<p[^>]*>\s*(?:<br\s*\/?>)?\s*<\/p>\s*)+$/gi, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
       config.body_text = bt;
+      if (config.show_schedule === undefined) config.show_schedule = true;
+      if (config.show_homepage_link === undefined) {
+        config.show_homepage_link = Array.isArray((tournament as any).day_before_email_config?.section_order)
+          ? false
+          : hadHomepage;
+      }
 
       // Keep the leaderboard action in its dedicated button, not as duplicate closing copy.
       let ct = String(config.closing_text ?? DEFAULTS.closing_text);
       ct = ct.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
       config.closing_text = removeDuplicateLeaderboardText(ct);
     }
+
 
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)

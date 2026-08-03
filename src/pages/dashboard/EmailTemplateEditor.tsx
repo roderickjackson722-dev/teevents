@@ -579,6 +579,16 @@ export default function EmailTemplateEditor() {
     setSending(true);
     try {
       console.log("[Email Templates] Sending template:", templateKind, "subject:", config.subject, "recipients:", targets.length);
+      if (templateKind === "day_before") {
+        const { data, error } = await supabase.functions.invoke("send-day-before-reminder", {
+          body: { tournament_id: selectedTournament, registration_ids: targets },
+        });
+        if (error) throw error;
+        toast.success(`Sent ${data?.sent ?? 0} reminder(s)${data?.failed ? `, ${data.failed} failed` : ""}`);
+        if (!ids) setSelectedRecipients([]);
+        setSending(false);
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("resend-confirmation", {
         body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
       });
@@ -774,6 +784,78 @@ export default function EmailTemplateEditor() {
                 : "Not scheduled yet — turn on automatic sending or use Send Now."}
             {" "}Test emails go to <span className="font-medium text-foreground">{testEmail || "your account email"}</span>.
           </p>
+
+          <div className="border-t pt-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Send this reminder to specific players
+              </Label>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={selectAll}>
+                  {selectedRecipients.length === registrations.length && registrations.length > 0 ? "Deselect All" : "Select All"}
+                </Button>
+                <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Pick one player or a hand-picked group from your registration list — only the people you check receive this reminder.
+            </p>
+            <Input
+              placeholder="Search by name or email…"
+              value={recipientSearch}
+              onChange={(e) => setRecipientSearch(e.target.value)}
+            />
+            {registrations.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-4">No registrations found for this tournament.</p>
+            ) : (
+              <div className="max-h-64 overflow-y-auto divide-y border rounded">
+                {registrations
+                  .filter((r) => {
+                    const q = recipientSearch.trim().toLowerCase();
+                    if (!q) return true;
+                    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
+                  })
+                  .map((r) => (
+                    <div key={r.id} className="flex items-center gap-3 py-2 px-2 hover:bg-muted/50">
+                      <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedRecipients.includes(r.id)}
+                          onChange={() => toggleRecipient(r.id)}
+                          className="rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{r.email || "No email on file"}</p>
+                        </div>
+                      </label>
+                      <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
+                        {r.payment_status}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 h-8"
+                        disabled={sending || !r.email}
+                        onClick={() => sendEmails([r.id])}
+                      >
+                        <Send className="h-3.5 w-3.5" /> Send
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            )}
+            <div className="flex justify-end">
+              <Button
+                onClick={() => sendEmails()}
+                disabled={sending || selectedRecipients.length === 0}
+                className="gap-2"
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Send Reminder to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
+              </Button>
+            </div>
+          </div>
 
           <div className="border-t pt-4 space-y-3">
             <div className="flex items-center justify-between gap-3">

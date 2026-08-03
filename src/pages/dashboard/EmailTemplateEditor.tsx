@@ -234,6 +234,15 @@ export default function EmailTemplateEditor() {
     }
     setSendingTest(true);
     try {
+      if (templateKind === "day_before" && selectedTournament) {
+        const { error: dbErr } = await supabase.functions.invoke("send-day-before-reminder", {
+          body: { tournament_id: selectedTournament, test_email: testEmail.trim() },
+        });
+        if (dbErr) throw dbErr;
+        toast.success(`Test reminder sent to ${testEmail.trim()}`);
+        setSendingTest(false);
+        return;
+      }
       const { error } = await supabase.functions.invoke("send-confirmation-test", {
         body: {
           recipient_email: testEmail.trim(),
@@ -364,7 +373,19 @@ export default function EmailTemplateEditor() {
     const withEmail = registrations.filter(r => r.email);
     if (withEmail.length === 0) { toast.error("No registrants with an email address"); return; }
     if (!confirm(`Send the Day Before Event Reminder to all ${withEmail.length} registrant(s) now?`)) return;
-    await sendEmails(withEmail.map(r => r.id));
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-before-reminder", {
+        body: { tournament_id: selectedTournament },
+      });
+      if (error) throw error;
+      toast.success(`Sent ${data?.sent ?? 0} reminder(s)${data?.failed ? `, ${data.failed} failed` : ""}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send reminders");
+      setSending(false);
+      return;
+    }
+    setSending(false);
     const now = new Date().toISOString();
     await (supabase.from("tournaments") as any).update({ day_before_sent_at: now }).eq("id", selectedTournament);
     setSentAt(now);

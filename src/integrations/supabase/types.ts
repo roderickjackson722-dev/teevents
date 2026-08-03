@@ -6372,6 +6372,7 @@ export type Database = {
         Row: {
           created_at: string
           group_name: string | null
+          group_number: number | null
           id: string
           team_name: string | null
           tournament_id: string
@@ -6380,6 +6381,7 @@ export type Database = {
         Insert: {
           created_at?: string
           group_name?: string | null
+          group_number?: number | null
           id?: string
           team_name?: string | null
           tournament_id: string
@@ -6388,6 +6390,7 @@ export type Database = {
         Update: {
           created_at?: string
           group_name?: string | null
+          group_number?: number | null
           id?: string
           team_name?: string | null
           tournament_id?: string

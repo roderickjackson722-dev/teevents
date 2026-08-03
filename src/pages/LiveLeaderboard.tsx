@@ -120,7 +120,7 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
           }
         }
         // Prefer the organizer-entered team name; fall back to the default "Group X".
-        const teamName = players.find((p) => p.teamName)?.teamName || `Group ${gn}`;
+        const teamName = players.find((p) => p.teamName)?.teamName || `Team ${gn}`;
         return { name: teamName, total, thru: holesPlayed, isTeam: true, players: players.map((p) => p.name) };
       })
       .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));

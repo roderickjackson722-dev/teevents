@@ -224,6 +224,14 @@ const Players = () => {
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [groupNameInput, setGroupNameInput] = useState("");
+  // Team names attached to a pairing group (Hole / Group number) — these drive the live leaderboard.
+  const [teamNamesByHole, setTeamNamesByHole] = useState<Record<number, string>>({});
+  const [teamGroups, setTeamGroups] = useState<Array<{ id: string; name: string; group_number: number | null }>>([]);
+  const [editingTeamNum, setEditingTeamNum] = useState<number | null>(null);
+  const [teamNameInput, setTeamNameInput] = useState("");
+  const [newTeamForPlayer, setNewTeamForPlayer] = useState<string | null>(null);
+  const [newTeamName, setNewTeamName] = useState("");
+
 
   useEffect(() => {
     if (!rosterColsKey) return;
@@ -277,14 +285,27 @@ const Players = () => {
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
-      (supabase as any).from("registration_groups").select("id, group_name").eq("tournament_id", selectedTournament).order("created_at"),
+      (supabase as any).from("registration_groups").select("id, group_name, team_name, group_number").eq("tournament_id", selectedTournament).order("created_at"),
     ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
       setAllPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
+      const rows: any[] = groupsRes?.data || [];
       const gm: Record<string, string> = {};
-      (groupsRes?.data || []).forEach((g: any, i: number) => { gm[g.id] = g.group_name || `Group ${i + 1}`; });
+      const tn: Record<number, string> = {};
+      rows.forEach((g: any, i: number) => {
+        const nm = String(g.team_name || g.group_name || "").trim();
+        gm[g.id] = nm || `Team ${i + 1}`;
+        if (g.group_number != null && nm) tn[g.group_number] = nm;
+      });
       setGroupNames(gm);
+      setTeamNamesByHole(tn);
+      setTeamGroups(rows.map((g: any) => ({
+        id: g.id,
+        name: String(g.team_name || g.group_name || "").trim() || "Unnamed team",
+        group_number: g.group_number ?? null,
+      })));
+
       setLoading(false);
     });
   }, [selectedTournament]);
@@ -638,6 +659,91 @@ const Players = () => {
       toast({ title: "Team name updated" });
     }
   };
+
+  /**
+   * Save the team name for a pairing group (Hole / Group number). This is the name
+   * shown on the live leaderboard instead of "Team 1", "Team 2", ...
+   */
+  const saveHoleTeamName = async (groupNumber: number, name: string) => {
+    if (demoGuard()) return;
+    const trimmed = name.trim();
+    const prev = teamNamesByHole[groupNumber];
+    setEditingTeamNum(null);
+    setTeamNamesByHole((p) => {
+      const next = { ...p };
+      if (trimmed) next[groupNumber] = trimmed;
+      else delete next[groupNumber];
+      return next;
+    });
+    const existing = teamGroups.find((g) => g.group_number === groupNumber);
+    let error: any = null;
+    if (existing) {
+      ({ error } = await (supabase as any)
+        .from("registration_groups")
+        .update({ team_name: trimmed || null, group_name: trimmed || null })
+        .eq("id", existing.id));
+      if (!error) {
+        setTeamGroups((p) => p.map((g) => (g.id === existing.id ? { ...g, name: trimmed || "Unnamed team" } : g)));
+      }
+    } else {
+      const res = await (supabase as any)
+        .from("registration_groups")
+        .insert({ tournament_id: selectedTournament, group_number: groupNumber, team_name: trimmed || null, group_name: trimmed || null })
+        .select("id")
+        .maybeSingle();
+      error = res.error;
+      if (res.data?.id) {
+        setTeamGroups((p) => [...p, { id: res.data.id, name: trimmed || "Unnamed team", group_number: groupNumber }]);
+      }
+    }
+    if (error) {
+      setTeamNamesByHole((p) => ({ ...p, [groupNumber]: prev }));
+      toast({ title: "Couldn't save team name", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Team name saved", description: "It now shows on the live leaderboard." });
+    }
+  };
+
+  /** Attach a roster player to a team (registration group), or clear the assignment. */
+  const assignPlayerTeam = async (playerId: string, groupId: string | null) => {
+    if (demoGuard()) return;
+    const prev = allPlayers.find((p) => p.id === playerId)?.group_id ?? null;
+    setAllPlayers((list) => list.map((p) => (p.id === playerId ? { ...p, group_id: groupId } : p)));
+    const { error } = await (supabase as any)
+      .from("tournament_registrations")
+      .update({ group_id: groupId })
+      .eq("id", playerId);
+    if (error) {
+      setAllPlayers((list) => list.map((p) => (p.id === playerId ? { ...p, group_id: prev } : p)));
+      toast({ title: "Couldn't update team", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: groupId ? "Team updated" : "Removed from team" });
+    }
+  };
+
+  /** Create a brand new team from the roster and attach the player to it. */
+  const createTeamForPlayer = async () => {
+    if (demoGuard()) return;
+    const trimmed = newTeamName.trim();
+    const playerId = newTeamForPlayer;
+    if (!trimmed || !playerId || !selectedTournament) return;
+    const res = await (supabase as any)
+      .from("registration_groups")
+      .insert({ tournament_id: selectedTournament, team_name: trimmed, group_name: trimmed })
+      .select("id")
+      .maybeSingle();
+    if (res.error || !res.data?.id) {
+      toast({ title: "Couldn't create team", description: res.error?.message, variant: "destructive" });
+      return;
+    }
+    setTeamGroups((p) => [...p, { id: res.data.id, name: trimmed, group_number: null }]);
+    setGroupNames((p) => ({ ...p, [res.data.id]: trimmed }));
+    setNewTeamForPlayer(null);
+    setNewTeamName("");
+    await assignPlayerTeam(playerId, res.data.id);
+  };
+
+
 
 
   // Assign / regenerate the shared scoring code for one pairing group.
@@ -1604,19 +1710,28 @@ const Players = () => {
                     )}
                     {rosterCols.group !== false && (
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {(() => {
-                          const c = groupCellFor(p);
-                          return c.name ? (
-                            <span className="text-xs">
-                              <span className="font-semibold text-foreground">{c.name}</span>{" "}
-                              <span className="text-muted-foreground">{c.label}</span>
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">(Individual Registration)</span>
-                          );
-                        })()}
+                        <select
+                          aria-label="Team"
+                          className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground max-w-[190px]"
+                          value={p.group_id || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "__new") { setNewTeamForPlayer(p.id); setNewTeamName(""); return; }
+                            assignPlayerTeam(p.id, val || null);
+                          }}
+                        >
+                          <option value="">Unassigned</option>
+                          {teamGroups.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {groupNames[t.id] || t.name}
+                              {t.group_number != null ? ` (Hole ${t.group_number})` : ""}
+                            </option>
+                          ))}
+                          <option value="__new">+ Create new team…</option>
+                        </select>
                       </td>
                     )}
+
                     {rosterCols.tier !== false && (
                       <td className="px-4 py-3">
                         {p.tier_id ? (
@@ -2110,6 +2225,38 @@ const Players = () => {
                             <Pencil className="h-3 w-3 opacity-60" />
                           </button>
                         )}
+                        {editingTeamNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              className="h-7 w-44 text-xs"
+                              placeholder="Team name (e.g. Team Mulligan)"
+                              value={teamNameInput}
+                              onChange={(e) => setTeamNameInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleTeamName(group.number, teamNameInput);
+                                if (e.key === "Escape") setEditingTeamNum(null);
+                              }}
+                              aria-label="Team name"
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleTeamName(group.number, teamNameInput)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setEditingTeamNum(null)}>
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+                            onClick={() => { setEditingTeamNum(group.number); setTeamNameInput(teamNamesByHole[group.number] || ""); }}
+                            title="Edit the team name shown on the live leaderboard"
+                          >
+                            {teamNamesByHole[group.number] || `Team ${group.number} — add name`}
+                            <Pencil className="h-2.5 w-2.5 opacity-70" />
+                          </button>
+                        )}
+
                         {editingLocationNum === group.number ? (
                           <div className="flex items-center gap-1">
                             <Input
@@ -2488,6 +2635,26 @@ const Players = () => {
                 {savingEdit ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
                 Save Changes
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!newTeamForPlayer} onOpenChange={(open) => { if (!open) { setNewTeamForPlayer(null); setNewTeamName(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Create New Team</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Team name (e.g. Team Mulligan)"
+              value={newTeamName}
+              onChange={(e) => setNewTeamName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") createTeamForPlayer(); }}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => { setNewTeamForPlayer(null); setNewTeamName(""); }}>Cancel</Button>
+              <Button onClick={createTeamForPlayer} disabled={!newTeamName.trim()}>Create &amp; Assign</Button>
             </div>
           </div>
         </DialogContent>

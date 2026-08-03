@@ -188,6 +188,30 @@ export default function Leaderboard() {
   });
 
 
+  // Team names saved per pairing group — shown instead of "Team 1", "Team 2", ...
+  const { data: teamNameRows } = useQuery({
+    queryKey: ["leaderboard-team-names", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("registration_groups")
+        .select("group_number, team_name, group_name")
+        .eq("tournament_id", selectedTournament)
+        .not("group_number", "is", null);
+      if (error) throw error;
+      return (data || []) as Array<{ group_number: number; team_name: string | null; group_name: string | null }>;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const teamNamesByHole = useMemo(() => {
+    const m: Record<number, string> = {};
+    (teamNameRows || []).forEach((r) => {
+      const nm = String(r.team_name || r.group_name || "").trim();
+      if (nm) m[r.group_number] = nm;
+    });
+    return m;
+  }, [teamNameRows]);
+
   const { data: scores, isLoading: scoresLoading } = useQuery({
     queryKey: ["tournament-scores", selectedTournament],
     queryFn: async () => {
@@ -312,7 +336,7 @@ export default function Leaderboard() {
 
     const assigned: TeamScore[] = Object.entries(groups).map(([gn, players]) => ({
       key: `g-${gn}`,
-      label: `Group ${gn}`,
+      label: teamNamesByHole[parseInt(gn)] || `Team ${gn}`,
       groupNumber: parseInt(gn),
       players,
       ...build(players),
@@ -337,7 +361,7 @@ export default function Leaderboard() {
       if (b.total === 0) return -1;
       return a.total - b.total;
     });
-  }, [playerScores, isTeamFormat, scoringFormat, editedScores]);
+  }, [playerScores, isTeamFormat, scoringFormat, editedScores, teamNamesByHole]);
 
 
   // Stableford leaderboard

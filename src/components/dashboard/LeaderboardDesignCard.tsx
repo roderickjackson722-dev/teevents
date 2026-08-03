@@ -124,17 +124,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
     toast({ title: "Copied!" });
   };
 
-  // Mock preview rows
-  const previewRows = useMemo(
-    () => [
-      { pos: 1, name: "Mike Wilson", gross: 68, net: 62, thru: 18 },
-      { pos: 2, name: "Sarah Lee", gross: 70, net: 64, thru: 18 },
-      { pos: 3, name: "John Smith", gross: 72, net: 66, thru: 17 },
-      { pos: 4, name: "Jane Doe", gross: 73, net: 68, thru: 18 },
-      { pos: 5, name: "Bob Johnson", gross: 75, net: 70, thru: 16 },
-    ],
-    []
-  );
+
+
 
   if (loading) {
     return (

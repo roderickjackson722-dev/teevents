@@ -133,15 +133,27 @@ export function LeaderboardRenderer({
         style={{ backgroundColor: headerBg, borderColor: `${accent}44` }}
       >
         <div
-          className={`flex items-center w-max whitespace-nowrap ${compact ? "py-2" : "py-4"}`}
-          style={{ animation: `marquee ${loopSeconds}s linear infinite` }}
+          className={`flex items-center w-max whitespace-nowrap transform-gpu ${compact ? "py-2" : "py-4"}`}
+          style={{
+            animation: `marquee ${loopSeconds}s linear infinite`,
+            willChange: "transform",
+            backfaceVisibility: "hidden",
+            WebkitFontSmoothing: "antialiased",
+          }}
         >
           {[...marqueeBase, ...marqueeBase].map((s, i) => (
             <div key={`scroll-${s.id}-${i}`} className={`flex items-center shrink-0 ${compact ? "px-4" : "px-8"}`}>
               {s.logo_url ? (
-                <img src={s.logo_url} alt={s.name} className={`${compact ? "h-6" : "h-10"} max-w-[160px] object-contain`} />
+                <img
+                  src={s.logo_url}
+                  alt={s.name}
+                  loading="lazy"
+                  decoding="async"
+                  className={`${compact ? "h-6" : "h-10"} w-auto max-w-[200px] object-contain`}
+                  style={{ imageRendering: "auto" }}
+                />
               ) : (
-                <span className={`${compact ? "text-xs" : "text-sm"} font-semibold opacity-80`}>{s.name}</span>
+                <span className={`${compact ? "text-xs" : "text-base"} font-semibold tracking-wide`}>{s.name}</span>
               )}
             </div>
           ))}
@@ -297,15 +309,19 @@ export function LeaderboardRenderer({
                   <h3 className="text-[10px] uppercase tracking-widest font-bold mb-3 opacity-80">Our Sponsors</h3>
                   <div className="h-64 overflow-hidden relative">
                     <div
-                      className="flex flex-col items-center gap-6"
-                      style={{ animation: `marquee-y ${loopSeconds}s linear infinite` }}
+                      className="flex flex-col items-center gap-6 transform-gpu"
+                      style={{
+                        animation: `marquee-y ${loopSeconds}s linear infinite`,
+                        willChange: "transform",
+                        backfaceVisibility: "hidden",
+                      }}
                     >
                       {[...marqueeBase, ...marqueeBase].map((s, i) => (
                         <div key={`side-${s.id}-${i}`} className="flex items-center justify-center w-full shrink-0">
                           {s.logo_url ? (
-                            <img src={s.logo_url} alt={s.name} className="h-12 max-w-full object-contain" />
+                            <img src={s.logo_url} alt={s.name} decoding="async" className="h-12 w-auto max-w-full object-contain" />
                           ) : (
-                            <span className="text-xs font-semibold text-center">{s.name}</span>
+                            <span className="text-sm font-semibold text-center tracking-wide">{s.name}</span>
                           )}
                         </div>
                       ))}

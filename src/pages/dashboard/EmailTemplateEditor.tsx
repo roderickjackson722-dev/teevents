@@ -1115,6 +1115,8 @@ export default function EmailTemplateEditor() {
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,
                 showActionButtons: templateKind === "day_before",
+                sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
+
               })
             }} />
 

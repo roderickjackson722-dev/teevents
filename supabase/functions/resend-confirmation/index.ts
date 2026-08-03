@@ -234,6 +234,19 @@ Deno.serve(async (req) => {
         groupCodes.set(r.group_number, code);
       }
     }
+    // Tee times are finalized in Players & Pairings at the GROUP level; prefer those.
+    const { data: pairGroups } = await supabaseAdmin
+      .from("registration_groups")
+      .select("group_number, tee_time")
+      .eq("tournament_id", tId);
+    const groupTeeTimes = new Map<number, string>();
+    for (const g of (pairGroups || []) as any[]) {
+      if (g.group_number != null && g.tee_time) groupTeeTimes.set(g.group_number, String(g.tee_time));
+    }
+    const teeTimeFor = (r: any) =>
+      (r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
+      || r.tee_time || "TBD";
+
     const codeFor = (r: any) =>
       r.group_scoring_code || r.scoring_code
       || (r.group_number != null ? groupCodes.get(r.group_number) : undefined)
@@ -315,7 +328,7 @@ Deno.serve(async (req) => {
             course_name: (tournament as any).course_name || tournament.location || "",
             course_address: (course as any)?.course_address || locationFull || "See event homepage",
             event_schedule: schedule,
-            tee_time: (reg as any).tee_time || "TBD",
+            tee_time: teeTimeFor(reg as any),
             hole_number: (reg as any).group_number != null ? String((reg as any).group_number) : "TBD",
             scoring_code: codeFor(reg as any)
               || "Scoring code will be assigned when pairings are finalized",

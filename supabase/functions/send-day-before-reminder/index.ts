@@ -380,6 +380,16 @@ Deno.serve(async (req) => {
       : "https://www.teevents.golf";
     const courseAddress = (course as any)?.course_address || tournament.location || "See event homepage";
 
+    // Pairing groups own the finalized tee time; fall back to the registration value.
+    const { data: pairGroups } = await admin
+      .from("registration_groups")
+      .select("group_number, tee_time")
+      .eq("tournament_id", tournament_id);
+    const groupTeeTimes = new Map<number, string>();
+    for (const g of (pairGroups || []) as any[]) {
+      if (g.group_number != null && g.tee_time) groupTeeTimes.set(g.group_number, String(g.tee_time));
+    }
+
     const buildVars = (reg: any) => ({
       first_name: reg.first_name || "",
       last_name: reg.last_name || "",
@@ -389,7 +399,7 @@ Deno.serve(async (req) => {
       course_name: (tournament as any).course_name || tournament.location || "",
       course_address: courseAddress,
       event_schedule: schedule,
-      tee_time: reg.tee_time || "TBD",
+      tee_time: (reg.group_number != null ? groupTeeTimes.get(reg.group_number) : undefined) || reg.tee_time || "TBD",
       hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
       scoring_code: reg.group_scoring_code || reg.scoring_code || "Assigned when pairings are finalized",
       scoring_link: scoringLink,

@@ -114,6 +114,12 @@ export default function QRCodesTab({ tournament, addons, loading, enabled }: Pro
             <p className="text-xs text-muted-foreground mb-3">{c.subtitle}</p>
             <img src={qrImg(c.url, 220)} alt={`QR code for ${c.title}`} className="mx-auto h-40 w-40" loading="lazy" />
             <p className="text-[10px] text-muted-foreground mt-3 break-all">{c.url}</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <a href={qrImg(c.url, 800)} target="_blank" rel="noopener noreferrer" download={`${c.title} QR.png`}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download QR Code
+              </a>
+            </Button>
+
           </div>
         ))}
       </div>

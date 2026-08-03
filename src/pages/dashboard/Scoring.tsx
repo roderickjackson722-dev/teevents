@@ -139,7 +139,11 @@ export default function Scoring() {
             <TabsTrigger value="live-settings">
               <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
             </TabsTrigger>
+            <TabsTrigger value="sponsors">
+              <Trophy className="h-4 w-4 mr-1.5" /> Sponsors
+            </TabsTrigger>
           </TabsList>
+
 
           {/* ===== SCORING LINKS TAB ===== */}
           <TabsContent value="links" className="space-y-4">

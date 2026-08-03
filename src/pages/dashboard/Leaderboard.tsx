@@ -52,11 +52,15 @@ interface PlayerScore {
 }
 
 interface TeamScore {
-  groupNumber: number;
+  key: string;
+  label: string;
+  isUnassigned?: boolean;
+  groupNumber: number | null;
   players: PlayerScore[];
   holeScores: Record<number, number>;
   total: number;
 }
+
 
 const DEFAULT_HOLE_PAR = 4;
 

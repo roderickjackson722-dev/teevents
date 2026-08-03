@@ -193,6 +193,26 @@ Deno.serve(async (req) => {
       throw new Error("Registrations not found");
     }
 
+    // Scoring codes live at the GROUP level. Build a map of group_number -> code from
+    // every registration in the tournament so the emailed code always matches the code
+    // shown next to the player in Players & Pairings.
+    const tId = registrations[0].tournament_id;
+    const { data: allRegs } = await supabaseAdmin
+      .from("tournament_registrations")
+      .select("group_number, scoring_code, group_scoring_code")
+      .eq("tournament_id", tId);
+    const groupCodes = new Map<number, string>();
+    for (const r of (allRegs || []) as any[]) {
+      const code = r.group_scoring_code || r.scoring_code;
+      if (r.group_number != null && code && !groupCodes.has(r.group_number)) {
+        groupCodes.set(r.group_number, code);
+      }
+    }
+    const codeFor = (r: any) =>
+      r.group_scoring_code || r.scoring_code
+      || (r.group_number != null ? groupCodes.get(r.group_number) : undefined)
+      || "";
+
     // Get tournament info
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
@@ -277,7 +297,7 @@ Deno.serve(async (req) => {
             event_schedule: schedule,
             tee_time: (reg as any).tee_time || "TBD",
             hole_number: (reg as any).group_number != null ? String((reg as any).group_number) : "TBD",
-            scoring_code: (reg as any).group_scoring_code || (reg as any).scoring_code
+            scoring_code: codeFor(reg as any)
               || "Scoring code will be assigned when pairings are finalized",
             group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",

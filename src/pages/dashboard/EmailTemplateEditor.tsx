@@ -1345,6 +1345,48 @@ function removeDuplicateLeaderboardText(text: string): string {
     .trim();
 }
 
+/** Pull the legacy schedule / homepage lines out of the body so they become their own movable blocks. */
+function stripLegacyDayBeforeBlocks(bt: string): string {
+  return (bt || "")
+    .replace(/<p[^>]*>\s*(?:🗓\s*)?Event Schedule:?\s*<\/p>/gi, "")
+    .replace(/<p[^>]*>\s*\{\{event_schedule\}\}\s*<\/p>/gi, "")
+    .replace(/<p[^>]*>\s*🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}\s*<\/p>/gi, "")
+    .replace(/(?:🗓\s*)?Event Schedule:?\s*\n?/gi, "")
+    .replace(/🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}/gi, "")
+    .replace(/\{\{event_schedule\}\}/g, "")
+    .replace(/\{\{event_homepage\}\}/g, "")
+    .replace(/(?:<p[^>]*>\s*(?:<br\s*\/?>)?\s*<\/p>\s*)+$/gi, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * Normalizes a Day Before reminder config: every block (body, schedule, closing,
+ * buttons, homepage link, add-ons, footer) is independent and ordered by
+ * `section_order`, so organizers can move or remove any of them.
+ */
+function normalizeDayBefore(cfg: EmailConfig): EmailConfig {
+  const hadHomepage = /\{\{event_homepage\}\}/i.test(String(cfg.body_text || ""));
+  const stored = Array.isArray(cfg.section_order) ? cfg.section_order.filter((s) => DEFAULT_SECTION_ORDER.includes(s)) : [];
+  const order = stored.length
+    ? [...stored, ...DEFAULT_SECTION_ORDER.filter((s) => !stored.includes(s))]
+    : [...DEFAULT_SECTION_ORDER];
+  return {
+    ...cfg,
+    body_text: stripLegacyDayBeforeBlocks(String(cfg.body_text || "")),
+    closing_text: removeDuplicateLeaderboardText(
+      String(cfg.closing_text ?? "").replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}"),
+    ),
+    show_schedule: cfg.show_schedule ?? true,
+    schedule_heading: cfg.schedule_heading ?? "🗓 Event Schedule",
+    show_homepage_link: cfg.show_homepage_link ?? (cfg.section_order ? false : hadHomepage),
+    homepage_link_label: cfg.homepage_link_label ?? "🔗 Event Homepage",
+    section_order: order,
+  };
+}
+
+
+
 function renderActionButtons(opts: {
   primary: string;
   scoring: { url: string; text: string } | null;

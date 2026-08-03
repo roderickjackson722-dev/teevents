@@ -285,14 +285,27 @@ const Players = () => {
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
-      (supabase as any).from("registration_groups").select("id, group_name").eq("tournament_id", selectedTournament).order("created_at"),
+      (supabase as any).from("registration_groups").select("id, group_name, team_name, group_number").eq("tournament_id", selectedTournament).order("created_at"),
     ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
       setAllPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
+      const rows: any[] = groupsRes?.data || [];
       const gm: Record<string, string> = {};
-      (groupsRes?.data || []).forEach((g: any, i: number) => { gm[g.id] = g.group_name || `Group ${i + 1}`; });
+      const tn: Record<number, string> = {};
+      rows.forEach((g: any, i: number) => {
+        const nm = String(g.team_name || g.group_name || "").trim();
+        gm[g.id] = nm || `Team ${i + 1}`;
+        if (g.group_number != null && nm) tn[g.group_number] = nm;
+      });
       setGroupNames(gm);
+      setTeamNamesByHole(tn);
+      setTeamGroups(rows.map((g: any) => ({
+        id: g.id,
+        name: String(g.team_name || g.group_name || "").trim() || "Unnamed team",
+        group_number: g.group_number ?? null,
+      })));
+
       setLoading(false);
     });
   }, [selectedTournament]);

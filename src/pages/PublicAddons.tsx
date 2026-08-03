@@ -187,6 +187,13 @@ export default function PublicAddons() {
     <div className="min-h-screen bg-background">
       <header className="bg-primary text-primary-foreground py-8 px-4">
         <div className="max-w-3xl mx-auto">
+          <a
+            href={`/t/${publicSlug}`}
+            className="inline-flex items-center gap-1 text-sm opacity-90 hover:opacity-100 underline underline-offset-2 mb-3"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to tournament page
+          </a>
           <h1 className="text-2xl sm:text-3xl font-display font-bold">
             {tournament.title} — Add-Ons
           </h1>

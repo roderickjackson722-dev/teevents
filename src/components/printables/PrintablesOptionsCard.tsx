@@ -1,22 +1,29 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Settings2, Save, Loader2, QrCode } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Settings2, Save, Loader2, QrCode, Users } from "lucide-react";
 import type { PrintableAddon } from "./QRCodesTab";
+import type { PrintablesDataSource } from "./rosterSource";
 
 export interface PrintableOptions {
   show_scoring_codes_alpha: boolean;
   show_scoring_codes_holes: boolean;
   qr_walkup: boolean;
+  qr_donation: boolean;
   qr_addon_ids: string[];
+  data_source: PrintablesDataSource;
 }
 
 export const DEFAULT_PRINTABLE_OPTIONS: PrintableOptions = {
   show_scoring_codes_alpha: true,
   show_scoring_codes_holes: true,
   qr_walkup: false,
+  qr_donation: false,
   qr_addon_ids: [],
+  data_source: "roster",
 };
+
 
 interface Props {
   options: PrintableOptions;

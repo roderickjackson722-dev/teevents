@@ -840,8 +840,8 @@ export default function Leaderboard() {
         </Card>
       )}
 
-      {/* ===== INDIVIDUAL SCORECARD (stroke play or score entry for team formats) ===== */}
-      {selectedTournament && (
+      {/* ===== INDIVIDUAL SCORECARD (stroke play only — team formats score from the team leaderboard) ===== */}
+      {selectedTournament && !isTeamFormat && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">

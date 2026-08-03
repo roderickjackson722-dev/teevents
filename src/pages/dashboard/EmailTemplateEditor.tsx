@@ -541,7 +541,7 @@ export default function EmailTemplateEditor() {
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
+    const html = renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
@@ -1091,7 +1091,7 @@ export default function EmailTemplateEditor() {
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+              __html: renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,

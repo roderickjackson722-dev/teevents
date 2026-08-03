@@ -175,14 +175,16 @@ export default function Leaderboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole")
+        .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status")
         .eq("tournament_id", selectedTournament)
         .order("last_name");
       if (error) throw error;
-      return data;
+      // Mirror Players & Pairings: only paid roster players appear on the leaderboard.
+      return (data || []).filter((r: any) => (r.payment_status || "").toLowerCase() === "paid");
     },
     enabled: !!selectedTournament,
   });
+
 
   const { data: scores, isLoading: scoresLoading } = useQuery({
     queryKey: ["tournament-scores", selectedTournament],

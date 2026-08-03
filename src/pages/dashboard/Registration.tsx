@@ -1372,6 +1372,9 @@ const Registration = () => {
                 Offer optional add-ons during checkout (e.g., Lunch Package, Mulligan Pack, Raffle Tickets).
               </p>
 
+              <AddonDisplaySettings tournamentId={selectedTournament} demoGuard={demoGuard} />
+
+
               {addons.length > 0 && (
                 <div className="space-y-3">
                   {addons.map((addon) => (

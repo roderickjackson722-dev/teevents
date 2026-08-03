@@ -250,24 +250,59 @@ export default function LiveLeaderboard() {
     };
   }, [tournament]);
 
-  // Realtime design updates — propagate organizer design changes immediately
+  // Realtime tournament updates — design + sponsor banner settings, applied live
   useEffect(() => {
-    if (!tournament) return;
+    const tid = tournament?.id;
+    if (!tid) return;
     const channel = supabase
-      .channel(`live-design-${tournament.id}`)
+      .channel(`live-design-${tid}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "tournaments", filter: `id=eq.${tournament.id}` },
+        { event: "UPDATE", schema: "public", table: "tournaments", filter: `id=eq.${tid}` },
         (payload: any) => {
-          const next = payload?.new?.leaderboard_design;
-          if (next !== undefined) setDesign(mergeDesign(next));
+          const next = payload?.new;
+          if (!next) return;
+          if (next.leaderboard_design !== undefined) setDesign(mergeDesign(next.leaderboard_design));
+          setTournament((prev) => (prev ? { ...prev, ...next } : prev));
         }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament]);
+  }, [tournament?.id]);
+
+  // Realtime sponsor + team-name updates
+  useEffect(() => {
+    const tid = tournament?.id;
+    if (!tid) return;
+
+    const refetchSponsors = () => {
+      supabase
+        .from("tournament_sponsors")
+        .select("id, name, logo_url, website_url, tier, show_on_leaderboard, leaderboard_placement, display_order")
+        .eq("tournament_id", tid)
+        .eq("show_on_leaderboard", true)
+        .then(({ data }) => setSponsors((data as Sponsor[]) || []));
+    };
+    const refetchScores = () => {
+      (supabase as any)
+        .rpc("get_public_leaderboard_scores", { _tournament_id: tid })
+        .then(({ data }: any) => setScores(data || []));
+    };
+
+    const channel = supabase
+      .channel(`live-meta-${tid}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_sponsors", filter: `tournament_id=eq.${tid}` }, refetchSponsors)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${tid}` }, refetchScores)
+      .on("postgres_changes", { event: "*", schema: "public", table: "registration_groups", filter: `tournament_id=eq.${tid}` }, refetchScores)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tournament?.id]);
+
 
 
 

@@ -8,12 +8,23 @@ const corsHeaders = {
 
 const SENDER = "TeeVents Golf Management <info@notifications.teevents.golf>";
 
+const DEFAULT_SECTION_ORDER = [
+  "body",
+  "schedule",
+  "closing",
+  "action_buttons",
+  "homepage_button",
+  "homepage_link",
+  "addons",
+  "footer",
+];
+
 const DEFAULTS = {
   subject: "{{event_name}} – Your tournament is almost here!",
   header_title: "Your Tournament Is Almost Here!",
   greeting: "Hello {{first_name}},",
   body_text:
-    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}",
 
@@ -23,7 +34,13 @@ const DEFAULTS = {
   scoring_button_text: "Enter My Scores",
   show_leaderboard_button: true,
   leaderboard_button_text: "View Live Leaderboard",
+  show_schedule: true,
+  schedule_heading: "🗓 Event Schedule",
+  show_homepage_link: false,
+  homepage_link_label: "🔗 Event Homepage",
+  section_order: DEFAULT_SECTION_ORDER,
 };
+
 
 function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k) => vars[k] ?? "");

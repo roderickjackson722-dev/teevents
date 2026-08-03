@@ -1458,8 +1458,7 @@ function renderEmailHtml(
   const addonList = opts?.addons || [];
   const addonBase = opts?.addonBaseUrl || vars.event_homepage || "https://www.teevents.golf";
   const money = (c: number) => `$${((c || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const addonsHtml = config.show_addons !== false && addonList.length > 0
-    ? `<tr><td style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">
+  const addonsInner = `
         <p style="margin:0 0 6px;color:${config.primary_color};font-size:17px;font-weight:700;">${escapeHtml(config.addons_heading || "⛳ Don't Forget Your Mulligans!")}</p>
         ${config.addons_intro ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">${escapeHtml(config.addons_intro)}</p>` : ""}
         ${addonList.map((a: any) => `
@@ -1473,9 +1472,55 @@ function renderEmailHtml(
                 <a href="${addonBase}/add-ons?addon=${a.id}" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
               </td>
             </tr>
-          </table>`).join("")}
-       </td></tr>`
+          </table>`).join("")}`;
+  const showAddons = config.show_addons !== false && addonList.length > 0;
+  const addonsHtml = showAddons && !opts?.sectionOrder
+    ? `<tr><td style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">${addonsInner}</td></tr>`
     : "";
+
+  const richBlock = (html: string) =>
+    `<div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${html}</div>`;
+  const footerBlock = `<p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>`;
+
+  // Day-before reminders render every block independently, in the organizer's order.
+  const homepageUrl = config.button_url || vars.event_homepage || "https://www.teevents.golf";
+  const orderedBlocks = (opts?.sectionOrder || [])
+    .map((id) => {
+      switch (id) {
+        case "body":
+          return body?.trim() ? richBlock(body) : "";
+        case "schedule":
+          return config.show_schedule !== false && vars.event_schedule
+            ? `${config.schedule_heading ? `<p style="margin:18px 0 8px;color:${config.text_color};font-size:15px;font-weight:700;">${escapeHtml(config.schedule_heading)}</p>` : ""}${richBlock(vars.event_schedule)}`
+            : "";
+        case "closing":
+          return closing?.trim() ? richBlock(closing) : "";
+        case "action_buttons":
+          return actionButtonsHtml;
+        case "homepage_button":
+          return config.show_button !== false && config.button_text
+            ? `<div style="text-align:center;margin:24px 0;"><a href="${homepageUrl}" style="display:inline-block;padding:12px 28px;background:#F5A623;color:#1a5c38;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">${escapeHtml(config.button_text)}</a></div>`
+            : "";
+        case "homepage_link":
+          return config.show_homepage_link
+            ? `<p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${escapeHtml(config.homepage_link_label || "🔗 Event Homepage")}: <a href="${homepageUrl}" style="color:${config.primary_color};font-weight:600;">${homepageUrl}</a></p>`
+            : "";
+        case "addons":
+          return showAddons
+            ? `<div style="margin:22px 0;padding:20px;border:1px solid #e5e7eb;border-radius:8px;background:#fffdf5;">${addonsInner}</div>`
+            : "";
+        case "footer":
+          return footerBlock;
+        default:
+          return "";
+      }
+    })
+    .filter(Boolean)
+    .join("");
+
+  const contentHtml = opts?.sectionOrder
+    ? orderedBlocks
+    : `${richBlock(body)}${eventDetailsHtml}${richBlock(closing)}${actionButtonsHtml}${buttonHtml}<p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>`;
 
   return `
 <!DOCTYPE html>
@@ -1508,13 +1553,9 @@ function renderEmailHtml(
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
-          ${eventDetailsHtml}
-          <div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
-          ${actionButtonsHtml}
-          ${buttonHtml}
-          <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>
+          ${contentHtml}
         </td></tr>${addonsHtml}${hubBlock}
+
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${config.primary_color};">teevents.golf</a></p>
         </td></tr>

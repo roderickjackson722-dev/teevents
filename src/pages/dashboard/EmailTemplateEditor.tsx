@@ -444,7 +444,8 @@ export default function EmailTemplateEditor() {
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
     const scheduleSource = (config.schedule_override || "").trim() || String(schedule || "").trim();
-    const formattedSchedule = formatScheduleText(scheduleSource);
+    // Rich-text schedules keep the organizer's own formatting; plain text is auto-tidied.
+    const formattedSchedule = isHtmlContent(scheduleSource) ? scheduleSource : formatScheduleText(scheduleSource);
     vars.event_schedule = formattedSchedule || "See the event homepage for the full schedule.";
     return vars;
   })();

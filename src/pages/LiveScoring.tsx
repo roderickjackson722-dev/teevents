@@ -91,8 +91,9 @@ export default function LiveScoring() {
             .order("sort_order")
             .then(({ data: sp }) => {
 
-              const enabled = (data as any).leaderboard_sponsor_banner_enabled !== false;
-              if (!enabled) { setSponsors([]); return; }
+              // Scoring-page sponsors are controlled by the "Display on Scoring Page"
+              // selection only — independent of the leaderboard banner toggle.
+
               const uploaded = (((data as any).leaderboard_rotating_logos) || []).map((l: any, idx: number) => ({
                 id: `uploaded-${idx}`,
                 name: l.name || "Sponsor",

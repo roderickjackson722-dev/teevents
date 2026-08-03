@@ -73,13 +73,15 @@ const DEFAULT_CONFIGS: Record<string, any> = {
   },
 };
 
-function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string; headerText?: string }): string {
-  const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
 
 /** True when organizer content was authored with the rich-text toolbar. */
 function isHtmlContent(s?: string): boolean {
   return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
 }
+
+function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string; headerText?: string }): string {
+  const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
+
 
   const body = isHtmlContent(replaceVars(config.body_text || "", vars))
     ? replaceVars(config.body_text || "", vars)
@@ -137,9 +139,9 @@ function isHtmlContent(s?: string): boolean {
         </td></tr>
         <tr><td style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</p>
+          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</div>
           ${eventDetailsHtml}
-          <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</p>
+          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</div>
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
         </td></tr>${hubBlock}

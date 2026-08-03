@@ -11153,6 +11153,7 @@ export type Database = {
           last_name: string
           registration_id: string
           strokes: number
+          team_name: string
         }[]
       }
       get_public_league_member_names: {

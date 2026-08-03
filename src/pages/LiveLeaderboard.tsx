@@ -44,6 +44,11 @@ interface Tournament {
   leaderboard_sponsor_logo_url?: string | null;
   leaderboard_sponsor_label?: string | null;
   leaderboard_title?: string | null;
+  leaderboard_sponsor_banner_enabled?: boolean | null;
+  leaderboard_sponsor_style?: string | null;
+  leaderboard_sponsor_interval_ms?: number | null;
+  leaderboard_sponsor_rotation_order?: string | null;
+  leaderboard_rotating_logos?: { url: string; name?: string; website_url?: string }[] | null;
 }
 
 interface LeaderboardRow {
@@ -66,7 +71,7 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
   const cPar = t.course_par || 72;
   const holePar = Math.round(cPar / 18);
 
-  const playerData: Record<string, { name: string; group: number | null; holes: Record<number, number> }> = {};
+  const playerData: Record<string, { name: string; group: number | null; teamName: string | null; holes: Record<number, number> }> = {};
   scoresData.forEach((s: any) => {
     const key = s.registration_id;
     if (!playerData[key]) {
@@ -77,6 +82,7 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
       playerData[key] = {
         name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
         group: grp,
+        teamName: (reg?.team_name ?? s.team_name ?? null) || null,
         holes: {},
       };
     }
@@ -102,7 +108,9 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
             holesPlayed++;
           }
         }
-        return { name: `Group ${gn}`, total, thru: holesPlayed, isTeam: true, players: players.map((p) => p.name) };
+        // Prefer the organizer-entered team name; fall back to the default "Group X".
+        const teamName = players.find((p) => p.teamName)?.teamName || `Group ${gn}`;
+        return { name: teamName, total, thru: holesPlayed, isTeam: true, players: players.map((p) => p.name) };
       })
       .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));
   }
@@ -156,7 +164,7 @@ export default function LiveLeaderboard() {
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, slug, scoring_format, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title");
+        .select("id, title, slug, scoring_format, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_sponsor_rotation_order, leaderboard_rotating_logos");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.or(`custom_slug.eq.${slug},slug.eq.${slug}`).limit(1).maybeSingle();
@@ -170,7 +178,7 @@ export default function LiveLeaderboard() {
         setLoading(false);
         return;
       }
-      setTournament(data as Tournament);
+      setTournament(data as unknown as Tournament);
       setDesign(mergeDesign((data as any).leaderboard_design));
       setLoading(false);
     })();
@@ -286,6 +294,26 @@ export default function LiveLeaderboard() {
   const sidebarSponsors = sortedSponsors.filter((s) => s.leaderboard_placement === "sidebar");
   const footerSponsors = sortedSponsors.filter((s) => s.leaderboard_placement === "footer");
 
+  /**
+   * Scrolling sponsors banner — driven by the dashboard toggle
+   * (leaderboard_sponsor_banner_enabled) and combines uploaded rotating logos
+   * with every sponsor marked "show on leaderboard".
+   */
+  const scrollingSponsors = useMemo(() => {
+    if (!tournament) return [];
+    if (tournament.leaderboard_sponsor_banner_enabled === false) return [];
+    const uploaded = (tournament.leaderboard_rotating_logos || []).map((l, idx) => ({
+      id: `uploaded-${idx}`,
+      name: l.name || "Sponsor",
+      logo_url: l.url,
+    }));
+    const list = [...uploaded, ...sortedSponsors.map((s) => ({ id: s.id, name: s.name, logo_url: s.logo_url }))];
+    if (list.length === 0) return [];
+    return (tournament.leaderboard_sponsor_rotation_order || "sequential") === "random"
+      ? [...list].sort(() => Math.random() - 0.5)
+      : list;
+  }, [tournament, sortedSponsors]);
+
   // Rotate banner sponsor
   useEffect(() => {
     if (bannerSponsors.length <= 1) return;
@@ -400,6 +428,7 @@ export default function LiveLeaderboard() {
         bannerSponsor={bannerSponsor}
         sidebarSponsors={sidebarSponsors}
         footerSponsors={footerSponsors}
+        scrollingSponsors={scrollingSponsors}
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}

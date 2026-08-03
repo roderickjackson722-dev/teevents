@@ -46,6 +46,8 @@ interface RendererProps {
   bannerSponsor?: LbSponsor | null;
   sidebarSponsors?: LbSponsor[];
   footerSponsors?: LbSponsor[];
+  /** Sponsors shown in a continuously scrolling banner at the bottom. */
+  scrollingSponsors?: LbSponsor[];
   heroImage?: LbGalleryItem | null;
   logoUrl?: string | null;
   /** Compact mode for the in-dashboard preview card. */
@@ -75,6 +77,7 @@ export function LeaderboardRenderer({
   bannerSponsor,
   sidebarSponsors = [],
   footerSponsors = [],
+  scrollingSponsors = [],
   heroImage,
   logoUrl,
   compact = false,
@@ -285,6 +288,27 @@ export function LeaderboardRenderer({
           )}
         </div>
       )}
+
+      {scrollingSponsors.length > 0 && (
+        <div
+          data-testid="lb-scrolling-sponsors"
+          className="overflow-hidden border-t"
+          style={{ backgroundColor: headerBg, borderColor: `${accent}44` }}
+        >
+          <div className={`flex items-center whitespace-nowrap ${compact ? "gap-6 py-2" : "gap-12 py-4"} animate-marquee`}>
+            {[...scrollingSponsors, ...scrollingSponsors].map((s, i) => (
+              <div key={`scroll-${s.id}-${i}`} className="flex items-center gap-3 shrink-0 px-4">
+                {s.logo_url ? (
+                  <img src={s.logo_url} alt={s.name} className={`${compact ? "h-6" : "h-10"} max-w-[160px] object-contain`} />
+                ) : (
+                  <span className={`${compact ? "text-xs" : "text-sm"} font-semibold opacity-80`}>{s.name}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
 
       {footerSponsors.length > 0 && !compact && (
         <footer className="overflow-hidden" style={{ backgroundColor: headerBg }} data-testid="lb-footer">

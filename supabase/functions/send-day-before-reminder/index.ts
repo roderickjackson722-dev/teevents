@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { formatScheduleText } from "../_shared/formatSchedule.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +15,7 @@ const DEFAULTS = {
   body_text:
     "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
-    "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
+    "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}",
 
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
@@ -38,6 +37,29 @@ function isHtmlContent(s?: string): boolean {
 
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function removeDuplicateLeaderboardText(text: string): string {
+  return (text || "")
+    .replace(/(?:<p[^>]*>)?\s*View the live leaderboard:\s*(?:<br\s*\/?>(?:\s|&nbsp;)*)?👉\s*\{\{leaderboard_link\}\}\s*(?:<\/p>)?/gi, "")
+    .replace(/\n*View the live leaderboard:\s*\n\s*👉\s*\{\{leaderboard_link\}\}/gi, "")
+    .trim();
+}
+
+function agendaFromPlainText(raw: string): string {
+  const text = (raw || "").replace(/\r/g, "").trim();
+  if (!text) return "";
+  const sections = text.split(/[━─]{3,}/).map((part) => part.trim()).filter(Boolean);
+  if (sections.length > 1 || text.includes("•")) {
+    return sections.map((section) => {
+      const parts = section.split(/\s*•\s*/).map((part) => part.trim()).filter(Boolean);
+      const heading = parts.shift() || "";
+      const headingTag = /^\d{1,2}:\d{2}\s*(?:am|pm)\b/i.test(heading) ? "h3" : "h2";
+      const items = parts.length ? `<ul>${parts.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : "";
+      return `<section><${headingTag}>${esc(heading)}</${headingTag}>${items}</section>`;
+    }).join("");
+  }
+  return text.split(/\n+/).map((line) => `<p>${esc(line.trim())}</p>`).join("");
 }
 
 // Turn bare URLs into clickable links (input must already be escaped).
@@ -62,7 +84,11 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
     : "";
 
   const rich = (t: string) => {
-    const filled = replaceVars(t, vars);
+    const unwrapped = (t || "").replace(
+      /<p(?:\s[^>]*)?>\s*\{\{event_schedule\}\}\s*<\/p>/gi,
+      vars.event_schedule || "",
+    );
+    const filled = replaceVars(unwrapped, vars);
     return isHtmlContent(filled) ? filled : linkify(esc(filled), primary).replace(/\n/g, "<br/>");
   };
   const body = rich(c.body_text);
@@ -117,6 +143,15 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
+  .tv-rich h1, .tv-rich h2 { margin:0 0 10px;font-size:17px;line-height:1.35;font-weight:700; }
+  .tv-rich h3 { margin:20px 0 8px;font-size:15px;line-height:1.4;font-weight:700; }
+  .tv-rich h3:first-child { margin-top:0; }
+  .tv-rich p { margin:0;line-height:1.55; }
+  .tv-rich p + p { margin-top:14px; }
+  .tv-rich ul, .tv-rich ol { margin:6px 0 16px;padding-left:22px; }
+  .tv-rich li { margin:0 0 6px;line-height:1.5; }
+  .tv-rich section { margin:0 0 18px;padding:0 0 18px;border-bottom:1px solid #e5e7eb; }
+  .tv-rich section:last-child { margin-bottom:0;padding-bottom:0;border-bottom:0; }
   @media only screen and (max-width:600px) {
     .tv-wrap { padding:16px 10px !important; }
     .tv-card { width:100% !important; }
@@ -134,8 +169,8 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</div>
-          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</div>
+          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
+          <div class="tv-rich" style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
           ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
@@ -236,19 +271,10 @@ Deno.serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    const stripTags = (s: string) =>
-      s.replace(/<br\s*\/?>(\s*)/gi, "\n")
-        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
-
     const savedCfg = ((tournament as any).day_before_email_config || {}) as any;
-    const scheduleRaw =
-      (savedCfg.schedule_override || "").trim() ||
-      (tournament as any).schedule_info ||
-      ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
-    const schedule = formatScheduleText(String(scheduleRaw || "")) ||
+    const scheduleOverride = String(savedCfg.schedule_override || "").trim();
+    const publicScheduleHtml = String((tournament as any).schedule_info_html || "").trim();
+    const schedule = scheduleOverride || publicScheduleHtml || agendaFromPlainText(String((tournament as any).schedule_info || "")) ||
       "See the event homepage for the full schedule.";
 
     const { data: addons } = await admin
@@ -266,11 +292,10 @@ Deno.serve(async (req) => {
       if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
       config.body_text = bt;
 
-      // Older saved templates ended the scoring link with a period and had no leaderboard link.
+      // Keep the leaderboard action in its dedicated button, not as duplicate closing copy.
       let ct = String(config.closing_text ?? DEFAULTS.closing_text);
       ct = ct.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
-      if (!ct.includes("{{leaderboard_link}}")) ct += "\n\nView the live leaderboard:\n👉 {{leaderboard_link}}";
-      config.closing_text = ct;
+      config.closing_text = removeDuplicateLeaderboardText(ct);
     }
 
     const dateStr = tournament.date

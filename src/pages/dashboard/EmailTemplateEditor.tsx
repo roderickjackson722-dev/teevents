@@ -20,7 +20,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
-import { formatScheduleText } from "@/lib/formatSchedule";
+import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 interface EmailConfig {
@@ -133,7 +133,7 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
   body_text:
     "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
-    "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
+    "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}",
   footer_text: "See you on the course! ⛳",
   button_text: "View Event Homepage",
   show_event_details: false,
@@ -303,7 +303,11 @@ export default function EmailTemplateEditor() {
 
   const loadConfigFor = (t: any, kind: TemplateKind) => {
     const stored = t?.[CONFIG_KEY[kind]];
-    if (stored) setConfig({ ...defaultsForKind(kind), ...(stored as any) });
+    if (stored) {
+      const loaded = { ...defaultsForKind(kind), ...(stored as any) };
+      if (kind === "day_before") loaded.closing_text = removeDuplicateLeaderboardText(loaded.closing_text);
+      setConfig(loaded);
+    }
     else setConfig(defaultsForKind(kind));
   };
 
@@ -414,13 +418,8 @@ export default function EmailTemplateEditor() {
   // Preview variables built from the ACTUAL selected tournament.
   const previewVars = (() => {
     const t = tournaments.find((x: any) => x.id === selectedTournament);
-    const stripTags = (s: string) =>
-      s.replace(/<br\s*\/?>(\s*)/gi, "\n")
-        .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
-    const schedule = t?.schedule_info || (t?.schedule_info_html ? stripTags(t.schedule_info_html) : "");
+    const scheduleHtml = String(t?.schedule_info_html || "").trim();
+    const schedulePlain = String(t?.schedule_info || "").trim();
     const homepage = t?.slug ? `https://www.teevents.golf/t/${t.slug}` : "https://www.teevents.golf";
     const location = [t?.location, t?.state].filter(Boolean).join(", ");
     const sampleReg = registrations[0];
@@ -443,10 +442,10 @@ export default function EmailTemplateEditor() {
     };
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
-    const scheduleSource = (config.schedule_override || "").trim() || String(schedule || "").trim();
-    // Rich-text schedules keep the organizer's own formatting; plain text is auto-tidied.
-    const formattedSchedule = isHtmlContent(scheduleSource) ? scheduleSource : formatScheduleText(scheduleSource);
-    vars.event_schedule = formattedSchedule || "See the event homepage for the full schedule.";
+    const scheduleSource = (config.schedule_override || "").trim() || scheduleHtml;
+    // Match the public event page: preserve the organizer's rich text exactly,
+    // falling back to the same agenda formatter only for legacy plain text.
+    vars.event_schedule = scheduleSource || autoFormatAgenda(schedulePlain) || "See the event homepage for the full schedule.";
     return vars;
   })();
 
@@ -1257,12 +1256,23 @@ function isHtmlContent(s?: string): boolean {
 function replaceVariables(text: string, vars: Record<string, string>): string {
   const merged = { ...SAMPLE_VARS, ...vars };
   if (isHtmlContent(text)) {
-    return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
+    // A block schedule cannot legally sit inside a paragraph. Rich-text editors
+    // commonly wrap the variable in <p>, so unwrap it before inserting headings/lists.
+    return (text || "")
+      .replace(/<p(?:\s[^>]*)?>\s*\{\{event_schedule\}\}\s*<\/p>/gi, merged.event_schedule || "")
+      .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
   }
   return escapeHtml(text || "")
     .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "")
     .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#1a5c38;font-weight:600;">${u}</a>`)
     .replace(/\n/g, "<br/>");
+}
+
+function removeDuplicateLeaderboardText(text: string): string {
+  return (text || "")
+    .replace(/(?:<p[^>]*>)?\s*View the live leaderboard:\s*(?:<br\s*\/?>(?:\s|&nbsp;)*)?👉\s*\{\{leaderboard_link\}\}\s*(?:<\/p>)?/gi, "")
+    .replace(/\n*View the live leaderboard:\s*\n\s*👉\s*\{\{leaderboard_link\}\}/gi, "")
+    .trim();
 }
 
 function renderActionButtons(opts: {
@@ -1360,6 +1370,15 @@ function renderEmailHtml(
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
+  .tv-rich h1, .tv-rich h2 { margin:0 0 10px;font-size:17px;line-height:1.35;font-weight:700; }
+  .tv-rich h3 { margin:20px 0 8px;font-size:15px;line-height:1.4;font-weight:700; }
+  .tv-rich h3:first-child { margin-top:0; }
+  .tv-rich p { margin:0;line-height:1.55; }
+  .tv-rich p + p { margin-top:14px; }
+  .tv-rich ul, .tv-rich ol { margin:6px 0 16px;padding-left:22px; }
+  .tv-rich li { margin:0 0 6px;line-height:1.5; }
+  .tv-rich section { margin:0 0 18px;padding:0 0 18px;border-bottom:1px solid #e5e7eb; }
+  .tv-rich section:last-child { margin-bottom:0;padding-bottom:0;border-bottom:0; }
   @media only screen and (max-width:600px) {
     .tv-wrap { padding:16px 10px !important; }
     .tv-card { width:100% !important; }
@@ -1377,9 +1396,9 @@ function renderEmailHtml(
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <div style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</div>
+          <div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${body}</div>
           ${eventDetailsHtml}
-          <div style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</div>
+          <div class="tv-rich" style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;overflow-wrap:anywhere;word-break:normal;">${closing}</div>
           ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>

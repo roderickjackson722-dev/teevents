@@ -53,8 +53,39 @@ export default function PrintablesOptionsCard({ options, addons, saving, dirty, 
         </Button>
       </div>
 
+      <div className="mb-6 rounded-md border border-border bg-muted/30 p-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1 mb-2">
+          <Users className="h-3.5 w-3.5" /> Data Source: Players &amp; Pairings
+        </p>
+        <RadioGroup
+          value={options.data_source}
+          onValueChange={(v) => set("data_source", v as PrintableOptions["data_source"])}
+          className="gap-2"
+        >
+          <div className="flex items-start gap-2">
+            <RadioGroupItem value="roster" id="ds-roster" className="mt-1" />
+            <Label htmlFor="ds-roster" className="text-sm cursor-pointer font-normal">
+              Sync with current roster
+              <span className="block text-xs text-muted-foreground">
+                Only paid players on the Players &amp; Pairings roster, duplicates removed.
+              </span>
+            </Label>
+          </div>
+          <div className="flex items-start gap-2">
+            <RadioGroupItem value="legacy" id="ds-legacy" className="mt-1" />
+            <Label htmlFor="ds-legacy" className="text-sm cursor-pointer font-normal">
+              Use manual list (legacy)
+              <span className="block text-xs text-muted-foreground">
+                Includes every registration record, even unpaid or duplicated entries.
+              </span>
+            </Label>
+          </div>
+        </RadioGroup>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
+
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Scoring Codes</p>
           <div className="flex items-center justify-between gap-3">
             <Label htmlFor="opt-alpha" className="text-sm cursor-pointer">Show scoring codes on Alpha List</Label>

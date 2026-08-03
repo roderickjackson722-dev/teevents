@@ -3258,6 +3258,50 @@ export type Database = {
           },
         ]
       }
+      leaderboard_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          reset_by: string | null
+          retrieved_at: string | null
+          retrieved_by: string | null
+          score_count: number
+          snapshot_data: Json
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reset_by?: string | null
+          retrieved_at?: string | null
+          retrieved_by?: string | null
+          score_count?: number
+          snapshot_data?: Json
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reset_by?: string | null
+          retrieved_at?: string | null
+          retrieved_by?: string | null
+          score_count?: number
+          snapshot_data?: Json
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_snapshots_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       league_access_promo_codes: {
         Row: {
           code: string
@@ -9591,6 +9635,9 @@ export type Database = {
           leaderboard_design: Json
           leaderboard_frozen_at: string | null
           leaderboard_frozen_by: string | null
+          leaderboard_last_reset_at: string | null
+          leaderboard_last_reset_by: string | null
+          leaderboard_reset_count: number
           leaderboard_rotating_logos: Json
           leaderboard_show_sponsor: boolean
           leaderboard_sponsor_banner_enabled: boolean
@@ -9859,6 +9906,9 @@ export type Database = {
           leaderboard_design?: Json
           leaderboard_frozen_at?: string | null
           leaderboard_frozen_by?: string | null
+          leaderboard_last_reset_at?: string | null
+          leaderboard_last_reset_by?: string | null
+          leaderboard_reset_count?: number
           leaderboard_rotating_logos?: Json
           leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean
@@ -10127,6 +10177,9 @@ export type Database = {
           leaderboard_design?: Json
           leaderboard_frozen_at?: string | null
           leaderboard_frozen_by?: string | null
+          leaderboard_last_reset_at?: string | null
+          leaderboard_last_reset_by?: string | null
+          leaderboard_reset_count?: number
           leaderboard_rotating_logos?: Json
           leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean

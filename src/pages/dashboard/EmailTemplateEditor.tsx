@@ -20,6 +20,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
+import { formatScheduleText } from "@/lib/formatSchedule";
 
 interface EmailConfig {
   subject: string;
@@ -48,6 +49,10 @@ interface EmailConfig {
   scoring_button_text?: string;
   show_leaderboard_button?: boolean;
   leaderboard_button_text?: string;
+  /** Editable headline shown in the colored email header band. */
+  header_title?: string;
+  /** Organizer-edited schedule text used for {{event_schedule}} in this email. */
+  schedule_override?: string;
 }
 
 type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
@@ -118,11 +123,12 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
 
 const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
   ...DEFAULT_CONFIG,
-  subject: "{{event_name}} – Tomorrow is the big day!",
+  subject: "{{event_name}} – Your tournament is almost here!",
 
   greeting: "Hello {{first_name}},",
+  header_title: "Your Tournament Is Almost Here!",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
   footer_text: "See you on the course! ⛳",
@@ -147,7 +153,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   sponsor: "Thank You for Sponsoring!",
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
-  day_before: "Tomorrow Is the Big Day!",
+  day_before: "Your Tournament Is Almost Here!",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -432,8 +438,9 @@ export default function EmailTemplateEditor() {
     };
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
-    if (schedule) vars.event_schedule = String(schedule).trim();
-    else vars.event_schedule = "See the event homepage for the full schedule.";
+    const scheduleSource = (config.schedule_override || "").trim() || String(schedule || "").trim();
+    const formattedSchedule = formatScheduleText(scheduleSource);
+    vars.event_schedule = formattedSchedule || "See the event homepage for the full schedule.";
     return vars;
   })();
 
@@ -479,7 +486,7 @@ export default function EmailTemplateEditor() {
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind]);
+    const html = renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
@@ -908,16 +915,47 @@ export default function EmailTemplateEditor() {
               <Input data-field="subject" value={config.subject} onChange={e => setConfig(p => ({ ...p, subject: e.target.value }))} className="mt-1" />
             </div>
             <div>
+              <Label>Header Headline</Label>
+              <Input
+                data-field="header_title"
+                value={config.header_title ?? TEMPLATE_HEADERS[templateKind]}
+                onChange={e => setConfig(p => ({ ...p, header_title: e.target.value }))}
+                placeholder={TEMPLATE_HEADERS[templateKind]}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The large text inside the colored header band next to your logo. Reminders often go out several days
+                early, so avoid wording like &ldquo;tomorrow&rdquo; unless that&rsquo;s exactly when you send.
+              </p>
+            </div>
+            <div>
               <Label>Greeting</Label>
               <Input data-field="greeting" value={config.greeting} onChange={e => setConfig(p => ({ ...p, greeting: e.target.value }))} className="mt-1" />
             </div>
             <div>
               <Label>Body Text</Label>
-              <Textarea data-field="body_text" value={config.body_text} onChange={e => setConfig(p => ({ ...p, body_text: e.target.value }))} rows={4} className="mt-1" />
+              <Textarea data-field="body_text" value={config.body_text} onChange={e => setConfig(p => ({ ...p, body_text: e.target.value }))} rows={8} className="mt-1 font-mono text-sm" />
             </div>
+            {templateKind === "day_before" && (
+              <div>
+                <Label>Event Schedule (used for {"{{event_schedule}}"})</Label>
+                <Textarea
+                  data-field="schedule_override"
+                  value={config.schedule_override ?? ""}
+                  onChange={e => setConfig(p => ({ ...p, schedule_override: e.target.value }))}
+                  rows={6}
+                  placeholder={"7:30 AM — Check-in & breakfast\n9:00 AM — Shotgun start\n2:00 PM — Lunch & awards"}
+                  className="mt-1 font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  One item per line — each line stays short and readable on phones. Leave blank to use the schedule
+                  from your event page.
+                </p>
+              </div>
+            )}
             <div>
               <Label>Closing Text</Label>
-              <Textarea data-field="closing_text" value={config.closing_text} onChange={e => setConfig(p => ({ ...p, closing_text: e.target.value }))} rows={3} className="mt-1" />
+              <Textarea data-field="closing_text" value={config.closing_text} onChange={e => setConfig(p => ({ ...p, closing_text: e.target.value }))} rows={5} className="mt-1 font-mono text-sm" />
             </div>
             <div>
               <Label>Footer / Sign-off</Label>
@@ -954,7 +992,7 @@ export default function EmailTemplateEditor() {
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind], {
+              __html: renderEmailHtml(config, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,

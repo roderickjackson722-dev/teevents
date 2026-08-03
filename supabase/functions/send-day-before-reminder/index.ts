@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { formatScheduleText } from "../_shared/formatSchedule.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,10 +10,11 @@ const corsHeaders = {
 const SENDER = "TeeVents Golf Management <info@notifications.teevents.golf>";
 
 const DEFAULTS = {
-  subject: "{{event_name}} – Tomorrow is the big day!",
+  subject: "{{event_name}} – Your tournament is almost here!",
+  header_title: "Your Tournament Is Almost Here!",
   greeting: "Hello {{first_name}},",
   body_text:
-    "This is a reminder that your tournament is tomorrow at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
+    "Here are your final details for {{event_name}} at {{course_name}}.\n\n📅 Date: {{event_date}}\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n🔑 Your Scoring Code: {{scoring_code}}\n\n🗓 Event Schedule:\n{{event_schedule}}\n\n🔗 Event Homepage: {{event_homepage}}",
   closing_text:
     "Please arrive 30 minutes before your tee time.\n\nEnter your scores with your scoring code at:\n👉 {{scoring_link}}\n\nView the live leaderboard:\n👉 {{leaderboard_link}}",
 
@@ -118,7 +120,7 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
       <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${bgColor};border-radius:8px;overflow:hidden;">
         <tr><td class="tv-pad" style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Tomorrow Is the Big Day!</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${esc(replaceVars(c.header_title || DEFAULTS.header_title, vars))}</h1>
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
@@ -231,10 +233,13 @@ Deno.serve(async (req) => {
         .replace(/\n{3,}/g, "\n\n")
         .trim();
 
+    const savedCfg = ((tournament as any).day_before_email_config || {}) as any;
     const scheduleRaw =
+      (savedCfg.schedule_override || "").trim() ||
       (tournament as any).schedule_info ||
       ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
-    const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
+    const schedule = formatScheduleText(String(scheduleRaw || "")) ||
+      "See the event homepage for the full schedule.";
 
     const { data: addons } = await admin
       .from("tournament_registration_addons")

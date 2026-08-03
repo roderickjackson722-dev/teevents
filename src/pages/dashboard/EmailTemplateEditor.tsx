@@ -915,16 +915,47 @@ export default function EmailTemplateEditor() {
               <Input data-field="subject" value={config.subject} onChange={e => setConfig(p => ({ ...p, subject: e.target.value }))} className="mt-1" />
             </div>
             <div>
+              <Label>Header Headline</Label>
+              <Input
+                data-field="header_title"
+                value={config.header_title ?? TEMPLATE_HEADERS[templateKind]}
+                onChange={e => setConfig(p => ({ ...p, header_title: e.target.value }))}
+                placeholder={TEMPLATE_HEADERS[templateKind]}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The large text inside the colored header band next to your logo. Reminders often go out several days
+                early, so avoid wording like &ldquo;tomorrow&rdquo; unless that&rsquo;s exactly when you send.
+              </p>
+            </div>
+            <div>
               <Label>Greeting</Label>
               <Input data-field="greeting" value={config.greeting} onChange={e => setConfig(p => ({ ...p, greeting: e.target.value }))} className="mt-1" />
             </div>
             <div>
               <Label>Body Text</Label>
-              <Textarea data-field="body_text" value={config.body_text} onChange={e => setConfig(p => ({ ...p, body_text: e.target.value }))} rows={4} className="mt-1" />
+              <Textarea data-field="body_text" value={config.body_text} onChange={e => setConfig(p => ({ ...p, body_text: e.target.value }))} rows={8} className="mt-1 font-mono text-sm" />
             </div>
+            {templateKind === "day_before" && (
+              <div>
+                <Label>Event Schedule (used for {"{{event_schedule}}"})</Label>
+                <Textarea
+                  data-field="schedule_override"
+                  value={config.schedule_override ?? ""}
+                  onChange={e => setConfig(p => ({ ...p, schedule_override: e.target.value }))}
+                  rows={6}
+                  placeholder={"7:30 AM — Check-in & breakfast\n9:00 AM — Shotgun start\n2:00 PM — Lunch & awards"}
+                  className="mt-1 font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  One item per line — each line stays short and readable on phones. Leave blank to use the schedule
+                  from your event page.
+                </p>
+              </div>
+            )}
             <div>
               <Label>Closing Text</Label>
-              <Textarea data-field="closing_text" value={config.closing_text} onChange={e => setConfig(p => ({ ...p, closing_text: e.target.value }))} rows={3} className="mt-1" />
+              <Textarea data-field="closing_text" value={config.closing_text} onChange={e => setConfig(p => ({ ...p, closing_text: e.target.value }))} rows={5} className="mt-1 font-mono text-sm" />
             </div>
             <div>
               <Label>Footer / Sign-off</Label>

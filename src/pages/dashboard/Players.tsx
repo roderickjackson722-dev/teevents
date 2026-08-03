@@ -2216,6 +2216,38 @@ const Players = () => {
                             <Pencil className="h-3 w-3 opacity-60" />
                           </button>
                         )}
+                        {editingTeamNum === group.number ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              className="h-7 w-44 text-xs"
+                              placeholder="Team name (e.g. Team Mulligan)"
+                              value={teamNameInput}
+                              onChange={(e) => setTeamNameInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveHoleTeamName(group.number, teamNameInput);
+                                if (e.key === "Escape") setEditingTeamNum(null);
+                              }}
+                              aria-label="Team name"
+                              autoFocus
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleTeamName(group.number, teamNameInput)}>
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setEditingTeamNum(null)}>
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+                            onClick={() => { setEditingTeamNum(group.number); setTeamNameInput(teamNamesByHole[group.number] || ""); }}
+                            title="Edit the team name shown on the live leaderboard"
+                          >
+                            {teamNamesByHole[group.number] || `Team ${group.number} — add name`}
+                            <Pencil className="h-2.5 w-2.5 opacity-70" />
+                          </button>
+                        )}
+
                         {editingLocationNum === group.number ? (
                           <div className="flex items-center gap-1">
                             <Input

@@ -813,9 +813,8 @@ const Sponsors = () => {
         <SponsorLogoSizeCard tournamentId={selectedTournament} />
       )}
 
-      {selectedTournament && (
-        <ScoringPageSponsorsCard tournamentId={selectedTournament} />
-      )}
+      {/* Scoring-page + leaderboard sponsor selection now lives in Scoring → Sponsors tab. */}
+
 
 
 

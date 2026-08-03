@@ -71,7 +71,7 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
   const cPar = t.course_par || 72;
   const holePar = Math.round(cPar / 18);
 
-  const playerData: Record<string, { name: string; group: number | null; holes: Record<number, number> }> = {};
+  const playerData: Record<string, { name: string; group: number | null; teamName: string | null; holes: Record<number, number> }> = {};
   scoresData.forEach((s: any) => {
     const key = s.registration_id;
     if (!playerData[key]) {
@@ -82,6 +82,7 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
       playerData[key] = {
         name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
         group: grp,
+        teamName: (reg?.team_name ?? s.team_name ?? null) || null,
         holes: {},
       };
     }
@@ -107,7 +108,9 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
             holesPlayed++;
           }
         }
-        return { name: `Group ${gn}`, total, thru: holesPlayed, isTeam: true, players: players.map((p) => p.name) };
+        // Prefer the organizer-entered team name; fall back to the default "Group X".
+        const teamName = players.find((p) => p.teamName)?.teamName || `Group ${gn}`;
+        return { name: teamName, total, thru: holesPlayed, isTeam: true, players: players.map((p) => p.name) };
       })
       .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));
   }

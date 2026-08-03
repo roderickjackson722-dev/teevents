@@ -12,9 +12,14 @@ interface Props {
   registrations: Registration[];
   loading: boolean;
   onUpdate: (id: string, groupNumber: number | null) => void;
+  /** Show the Pairings-synced scoring code next to each player. */
+  showScoringCodes?: boolean;
 }
 
-export default function HoleAssignmentsTab({ tournament, registrations, loading, onUpdate }: Props) {
+const codeOf = (r: Registration) =>
+  (r as any).group_scoring_code || (r as any).scoring_code || null;
+
+export default function HoleAssignmentsTab({ tournament, registrations, loading, onUpdate, showScoringCodes = false }: Props) {
   const [editingHole, setEditingHole] = useState<{ id: string; value: string } | null>(null);
 
   const holeGroups = registrations.reduce((acc, r) => {
@@ -38,7 +43,7 @@ export default function HoleAssignmentsTab({ tournament, registrations, loading,
     ${sortedHoles.map((hole) => `
       <div style="margin-bottom:20px;">
         <div style="font-size:16px;font-weight:700;padding:6px 12px;background:#f0f0f0;border-radius:4px;margin-bottom:4px;">${hole === 0 ? "Unassigned" : `Hole ${hole}`}</div>
-        ${holeGroups[hole].map((r) => `<div style="padding:6px 12px;font-size:14px;border-bottom:1px solid #eee;">${r.last_name}, ${r.first_name}</div>`).join("")}
+        ${holeGroups[hole].map((r) => `<div style="padding:6px 12px;font-size:14px;border-bottom:1px solid #eee;">${r.last_name}, ${r.first_name}${showScoringCodes ? ` <span style="float:right;font-family:monospace;letter-spacing:1px;color:#444;">${codeOf(r) ?? "Not assigned"}</span>` : ""}</div>`).join("")}
       </div>
     `).join("")}`;
 
@@ -69,7 +74,14 @@ export default function HoleAssignmentsTab({ tournament, registrations, loading,
             <div className="bg-card rounded-lg border border-border divide-y divide-border">
               {holeGroups[hole].map((r) => (
                 <div key={r.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
-                  <span className="text-sm font-medium text-foreground">{r.last_name}, {r.first_name}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {r.last_name}, {r.first_name}
+                    {showScoringCodes && (
+                      <span className="ml-3 font-mono tracking-wider text-xs text-muted-foreground">
+                        {codeOf(r) ?? "Not assigned"}
+                      </span>
+                    )}
+                  </span>
                   {editingHole?.id === r.id ? (
                     <div className="flex items-center gap-2">
                       <Input type="number" className="w-20 h-8 text-sm" value={editingHole.value}

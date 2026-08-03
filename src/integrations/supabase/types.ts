@@ -9435,7 +9435,10 @@ export type Database = {
           custom_org_sections: Json
           custom_slug: string | null
           date: string | null
+          day_before_approved: boolean
           day_before_email_config: Json | null
+          day_before_send_at: string | null
+          day_before_sent_at: string | null
           day_of_accent_color: string | null
           day_of_announcements: string | null
           day_of_announcements_list: Json
@@ -9587,6 +9590,7 @@ export type Database = {
           printable_font: string
           printable_layout: string
           printable_logo_url: string | null
+          printable_options: Json
           pro_paid_at: string | null
           pro_payment_intent_id: string | null
           public_tabs: Json | null
@@ -9698,7 +9702,10 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_before_approved?: boolean
           day_before_email_config?: Json | null
+          day_before_send_at?: string | null
+          day_before_sent_at?: string | null
           day_of_accent_color?: string | null
           day_of_announcements?: string | null
           day_of_announcements_list?: Json
@@ -9850,6 +9857,7 @@ export type Database = {
           printable_font?: string
           printable_layout?: string
           printable_logo_url?: string | null
+          printable_options?: Json
           pro_paid_at?: string | null
           pro_payment_intent_id?: string | null
           public_tabs?: Json | null
@@ -9961,7 +9969,10 @@ export type Database = {
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
+          day_before_approved?: boolean
           day_before_email_config?: Json | null
+          day_before_send_at?: string | null
+          day_before_sent_at?: string | null
           day_of_accent_color?: string | null
           day_of_announcements?: string | null
           day_of_announcements_list?: Json
@@ -10113,6 +10124,7 @@ export type Database = {
           printable_font?: string
           printable_layout?: string
           printable_logo_url?: string | null
+          printable_options?: Json
           pro_paid_at?: string | null
           pro_payment_intent_id?: string | null
           public_tabs?: Json | null

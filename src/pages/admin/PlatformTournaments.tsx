@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
 import SampleModePanel from "@/components/admin/SampleModePanel";
 import { toast } from "sonner";
@@ -35,6 +36,10 @@ type Row = {
   revenue_cents?: number;
   sponsors_count?: number;
   is_sample?: boolean | null;
+  pass_fees_to_registrants?: boolean | null;
+  org_plan?: string | null;
+  org_feature_overrides?: Record<string, boolean> | null;
+  org_fee_override?: number | null;
 };
 
 export default function PlatformTournaments() {
@@ -51,6 +56,8 @@ export default function PlatformTournaments() {
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
   const [attaching, setAttaching] = useState<string | null>(null);
   const [sampleFor, setSampleFor] = useState<Row | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [togglingFees, setTogglingFees] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -68,7 +75,7 @@ export default function PlatformTournaments() {
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -77,13 +84,13 @@ export default function PlatformTournaments() {
     const tIds = list.map((t) => t.id);
 
     const [{ data: orgs }, { data: regs }, { data: spons }] = await Promise.all([
-      supabase.from("organizations").select("id, name").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
+      supabase.from("organizations").select("id, name, plan, feature_overrides, fee_override").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_registrations").select("tournament_id, payment_status, amount_paid_cents").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_sponsors").select("tournament_id").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
     ]);
 
-    const orgMap: Record<string, { name: string | null }> = {};
-    for (const o of (orgs as any[]) || []) orgMap[o.id] = { name: o.name };
+    const orgMap: Record<string, any> = {};
+    for (const o of (orgs as any[]) || []) orgMap[o.id] = o;
 
     const regAgg: Record<string, { count: number; paid: number; revenue: number }> = {};
     for (const r of (regs as any[]) || []) {
@@ -97,12 +104,49 @@ export default function PlatformTournaments() {
     setRows(list.map((t) => ({
       ...t,
       org_name: orgMap[t.organization_id || ""]?.name || null,
+      org_plan: orgMap[t.organization_id || ""]?.plan || "base",
+      org_feature_overrides: orgMap[t.organization_id || ""]?.feature_overrides || null,
+      org_fee_override: orgMap[t.organization_id || ""]?.fee_override ?? null,
       registrations_count: regAgg[t.id]?.count || 0,
       paid_count: regAgg[t.id]?.paid || 0,
       revenue_cents: regAgg[t.id]?.revenue || 0,
       sponsors_count: sponsorCount[t.id] || 0,
     })));
     setLoading(false);
+  }
+
+  const callAdminApi = useCallback(async (action?: string, body?: Record<string, unknown>) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Not authenticated");
+    const url = new URL(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-data`);
+    if (action) url.searchParams.set("action", action);
+    const res = await fetch(url.toString(), {
+      method: body ? "POST" : "GET",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as any).error || "Request failed");
+    }
+    return res.json();
+  }, []);
+
+  async function togglePassFees(t: Row) {
+    setTogglingFees(t.id);
+    try {
+      await callAdminApi("toggle-pass-fees", { tournament_id: t.id, pass_fees_to_registrants: !t.pass_fees_to_registrants });
+      setRows((prev) => prev.map((r) => (r.id === t.id ? { ...r, pass_fees_to_registrants: !t.pass_fees_to_registrants } : r)));
+      toast.success("Fee setting updated");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update");
+    } finally {
+      setTogglingFees(null);
+    }
   }
 
   async function sendInvitation(t: Row) {
@@ -312,7 +356,8 @@ export default function PlatformTournaments() {
                   </TableHeader>
                   <TableBody>
                     {filtered.map((r) => (
-                      <TableRow key={r.id}>
+                      <Fragment key={r.id}>
+                      <TableRow>
                         <TableCell>
                           <div className="font-medium">{r.title}</div>
                           <div className="text-xs text-muted-foreground flex items-center gap-1">
@@ -390,10 +435,56 @@ export default function PlatformTournaments() {
                                 </Button>
                               </>
                             )}
-
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Feature toggles & overrides"
+                              onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+                            >
+                              {expanded === r.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
+                      {expanded === r.id && (
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
+                          <TableCell colSpan={10} className="p-6">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button
+                                onClick={() => togglePassFees(r)}
+                                disabled={togglingFees === r.id}
+                                className={`inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${
+                                  r.pass_fees_to_registrants
+                                    ? "bg-primary/15 text-primary hover:bg-primary/25"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                }`}
+                              >
+                                <DollarSign className="h-4 w-4" />
+                                {r.pass_fees_to_registrants ? "Fees Passed to Registrants ✓" : "Pass Fees to Registrants"}
+                              </button>
+                              <span className="text-xs text-muted-foreground">
+                                {r.pass_fees_to_registrants
+                                  ? "Platform + Stripe fees are added to the registration total."
+                                  : "Organizer absorbs the platform + Stripe fees."}
+                              </span>
+                            </div>
+                            {r.organization_id ? (
+                              <AdminFeatureToggles
+                                organizationId={r.organization_id}
+                                orgName={r.org_name || "Organization"}
+                                currentPlan={r.org_plan || "base"}
+                                currentOverrides={r.org_feature_overrides || null}
+                                currentFeeOverride={r.org_fee_override ?? null}
+                                callAdminApi={callAdminApi}
+                                onRefresh={load}
+                              />
+                            ) : (
+                              <p className="mt-4 text-sm text-muted-foreground">No organization attached — feature overrides unavailable.</p>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
                     ))}
                     {filtered.length === 0 && (
                       <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No tournaments match your filters.</TableCell></TableRow>

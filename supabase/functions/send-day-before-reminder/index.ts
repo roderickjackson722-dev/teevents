@@ -36,7 +36,7 @@ function linkify(s: string, color: string) {
   );
 }
 
-function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string) {
+function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string, addons: any[] = [], homepage = "") {
   const c = { ...DEFAULTS, ...(config || {}) };
   const headerBg = c.header_bg_color || "#1a5c38";
   const textColor = c.text_color || "#374151";
@@ -60,22 +60,52 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string)
     ? `<div style="text-align:center;margin:24px 0;"><a href="${url}" style="display:inline-block;padding:12px 28px;background:#F5A623;color:#1a5c38;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;">${esc(btnText)}</a></div>`
     : "";
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  const money = (cents: number) =>
+    `$${((cents || 0) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const addonBase = homepage || buttonUrl || "https://www.teevents.golf";
+  const addonsHtml = c.show_addons !== false && addons.length > 0
+    ? `<tr><td class="tv-pad" style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">
+        <p style="margin:0 0 6px;color:${primary};font-size:17px;font-weight:700;">${esc(c.addons_heading || "⛳ Don't Forget Your Mulligans!")}</p>
+        ${c.addons_intro ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">${esc(c.addons_intro)}</p>` : ""}
+        ${addons.map((a: any) => `
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px;background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;">
+            <tr>
+              <td style="padding:12px 14px;font-size:14px;color:${textColor};">
+                <strong>${esc(a.name || "")}</strong> — ${money(a.price_cents)}
+                ${a.description ? `<br/><span style="color:#6b7280;font-size:12px;">${esc(a.description)}</span>` : ""}
+              </td>
+              <td align="right" style="padding:12px 14px;">
+                <a href="${addonBase}?addon=${a.id}#register" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
+              </td>
+            </tr>
+          </table>`).join("")}
+       </td></tr>`
+    : "";
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  @media only screen and (max-width:600px) {
+    .tv-wrap { padding:16px 10px !important; }
+    .tv-card { width:100% !important; }
+    .tv-pad { padding:20px 18px !important; }
+  }
+</style>
+</head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:${font};">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="tv-wrap" style="background:#f4f4f5;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:${bgColor};border-radius:8px;overflow:hidden;">
-        <tr><td style="background:${headerBg};padding:28px 32px;text-align:center;">
+      <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${bgColor};border-radius:8px;overflow:hidden;">
+        <tr><td class="tv-pad" style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
           <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Tomorrow Is the Big Day!</h1>
         </td></tr>
-        <tr><td style="padding:32px;">
+        <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</p>
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</p>
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>
-        </td></tr>
+        </td></tr>${addonsHtml}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${primary};">teevents.golf</a></p>
         </td></tr>
@@ -94,17 +124,59 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Not authenticated");
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-    ).auth.getUser(token);
-    if (!user) throw new Error("Not authenticated");
+    const payload = await req.json().catch(() => ({}));
 
-    const { tournament_id, test_email } = await req.json();
+    // Scheduled (pg_cron) mode: only sends reminders the organizer already
+    // approved with a send time in the past. No user session required.
+    if (payload?.cron === true) {
+      const nowIso = new Date().toISOString();
+      const { data: due } = await admin
+        .from("tournaments")
+        .select("id")
+        .eq("day_before_approved", true)
+        .is("day_before_sent_at", null)
+        .lte("day_before_send_at", nowIso);
+
+      const results: any[] = [];
+      for (const t of due || []) {
+        try {
+          const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-day-before-reminder`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+            },
+            body: JSON.stringify({ tournament_id: t.id, service_run: true }),
+          });
+          const body = await res.json();
+          await admin.from("tournaments").update({ day_before_sent_at: new Date().toISOString() }).eq("id", t.id);
+          results.push({ tournament_id: t.id, ...body });
+        } catch (e) {
+          console.error("[day-before-reminder] cron send failed", t.id, e);
+          results.push({ tournament_id: t.id, error: (e as Error).message });
+        }
+      }
+      return new Response(JSON.stringify({ processed: results.length, results }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { tournament_id, test_email, service_run } = payload as any;
     if (!tournament_id || typeof tournament_id !== "string") throw new Error("Missing tournament_id");
+
+    let user: { id: string } | null = null;
+    if (!service_run) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) throw new Error("Not authenticated");
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user: u } } = await createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+      ).auth.getUser(token);
+      if (!u) throw new Error("Not authenticated");
+      user = u;
+    }
 
     const { data: tournament } = await admin
       .from("tournaments")
@@ -113,9 +185,11 @@ Deno.serve(async (req) => {
       .single();
     if (!tournament) throw new Error("Tournament not found");
 
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-    const { data: isMember } = await admin.rpc("is_org_member", { _user_id: user.id, _org_id: tournament.organization_id });
-    if (!isAdmin && !isMember) throw new Error("Not authorized");
+    if (user) {
+      const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      const { data: isMember } = await admin.rpc("is_org_member", { _user_id: user.id, _org_id: tournament.organization_id });
+      if (!isAdmin && !isMember) throw new Error("Not authorized");
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email is not configured");
@@ -139,6 +213,12 @@ Deno.serve(async (req) => {
       (tournament as any).schedule_info ||
       ((tournament as any).schedule_info_html ? stripTags((tournament as any).schedule_info_html) : "");
     const schedule = scheduleRaw ? String(scheduleRaw).trim() : "See the event homepage for the full schedule.";
+
+    const { data: addons } = await admin
+      .from("tournament_registration_addons")
+      .select("id, name, description, price_cents, is_active")
+      .eq("tournament_id", tournament_id)
+      .eq("is_active", true);
 
     const config = { ...DEFAULTS, ...((tournament as any).day_before_email_config || {}) };
     // Older saved templates may predate address / schedule / homepage — append what's missing.
@@ -192,7 +272,7 @@ Deno.serve(async (req) => {
           from: SENDER,
           to: [to],
           subject: replaceVars(config.subject || DEFAULTS.subject, vars),
-          html: buildHtml(config, vars, homepage),
+          html: buildHtml(config, vars, homepage, addons || [], homepage),
         }),
       });
       if (!res.ok) throw new Error(await res.text());

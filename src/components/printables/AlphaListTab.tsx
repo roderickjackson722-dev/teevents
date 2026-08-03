@@ -7,9 +7,14 @@ interface Props {
   tournament: Tournament | null;
   registrations: Registration[];
   loading: boolean;
+  /** Show the Pairings-synced scoring code column. */
+  showScoringCodes?: boolean;
 }
 
-function buildHtml(tournament: Tournament | null, list: Registration[]) {
+const codeOf = (r: Registration) =>
+  (r as any).group_scoring_code || (r as any).scoring_code || null;
+
+function buildHtml(tournament: Tournament | null, list: Registration[], showScoringCodes: boolean) {
   return `
     <h1 style="font-size:22px;margin-bottom:4px;">${tournament?.title ?? ""}</h1>
     <p style="color:#666;font-size:13px;margin-bottom:20px;">Alphabetical Player List &bull; ${list.length} Players</p>
@@ -19,12 +24,13 @@ function buildHtml(tournament: Tournament | null, list: Registration[]) {
         <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;background:#f5f5f5;font-weight:700;">Last Name</th>
         <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;background:#f5f5f5;font-weight:700;">First Name</th>
         <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;background:#f5f5f5;font-weight:700;">Hole</th>
+        ${showScoringCodes ? `<th style="text-align:left;padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;background:#f5f5f5;font-weight:700;">Scoring Code</th>` : ""}
       </tr></thead>
-      <tbody>${list.map((r, i) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${i + 1}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.last_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.first_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.group_number ?? "—"}</td></tr>`).join("")}</tbody>
+      <tbody>${list.map((r, i) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${i + 1}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.last_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.first_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.group_number ?? "—"}</td>${showScoringCodes ? `<td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;font-family:monospace;letter-spacing:1px;">${codeOf(r) ?? "Not assigned"}</td>` : ""}</tr>`).join("")}</tbody>
     </table>`;
 }
 
-export default function AlphaListTab({ tournament, registrations, loading }: Props) {
+export default function AlphaListTab({ tournament, registrations, loading, showScoringCodes = false }: Props) {
   const alphaList = [...registrations].sort((a, b) =>
     a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name)
   );
@@ -32,7 +38,7 @@ export default function AlphaListTab({ tournament, registrations, loading }: Pro
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (alphaList.length === 0) return <div className="text-center py-12 bg-card rounded-lg border border-border"><p className="text-muted-foreground">No registered players yet.</p></div>;
 
-  const html = buildHtml(tournament, alphaList);
+  const html = buildHtml(tournament, alphaList, showScoringCodes);
 
   return (
     <>
@@ -52,6 +58,7 @@ export default function AlphaListTab({ tournament, registrations, loading }: Pro
               <th className="text-left px-4 py-3 font-semibold text-foreground">Last Name</th>
               <th className="text-left px-4 py-3 font-semibold text-foreground">First Name</th>
               <th className="text-left px-4 py-3 font-semibold text-foreground w-24">Hole</th>
+              {showScoringCodes && <th className="text-left px-4 py-3 font-semibold text-foreground w-32">Scoring Code</th>}
             </tr>
           </thead>
           <tbody>
@@ -61,6 +68,11 @@ export default function AlphaListTab({ tournament, registrations, loading }: Pro
                 <td className="px-4 py-3 font-medium text-foreground">{r.last_name}</td>
                 <td className="px-4 py-3 text-foreground">{r.first_name}</td>
                 <td className="px-4 py-3 text-foreground">{r.group_number ?? "—"}</td>
+                {showScoringCodes && (
+                  <td className="px-4 py-3 font-mono tracking-wider text-foreground">
+                    {codeOf(r) ?? <span className="text-muted-foreground font-sans tracking-normal text-xs">Not assigned</span>}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

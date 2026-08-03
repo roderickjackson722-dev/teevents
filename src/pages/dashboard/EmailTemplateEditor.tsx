@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   Mail, Save, Eye, Send, Loader2, Palette, Type, Image, Layout,
-  RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil,
+  RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil, CalendarClock, ShoppingBag,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -39,6 +39,10 @@ interface EmailConfig {
   button_url: string;
   show_button: boolean;
   font_family: string;
+  /** Day-before reminder: include the add-ons ("Don't Forget Your Mulligans!") section. */
+  show_addons?: boolean;
+  addons_heading?: string;
+  addons_intro?: string;
 }
 
 type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
@@ -209,6 +213,12 @@ export default function EmailTemplateEditor() {
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
+  // Day-before reminder scheduling + add-ons
+  const [addons, setAddons] = useState<any[]>([]);
+  const [sendAt, setSendAt] = useState<string>("");
+  const [autoSend, setAutoSend] = useState(false);
+  const [sentAt, setSentAt] = useState<string | null>(null);
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   // Prefill test email with the current user's email
   useEffect(() => {
@@ -224,6 +234,15 @@ export default function EmailTemplateEditor() {
     }
     setSendingTest(true);
     try {
+      if (templateKind === "day_before" && selectedTournament) {
+        const { error: dbErr } = await supabase.functions.invoke("send-day-before-reminder", {
+          body: { tournament_id: selectedTournament, test_email: testEmail.trim() },
+        });
+        if (dbErr) throw dbErr;
+        toast.success(`Test reminder sent to ${testEmail.trim()}`);
+        setSendingTest(false);
+        return;
+      }
       const { error } = await supabase.functions.invoke("send-confirmation-test", {
         body: {
           recipient_email: testEmail.trim(),
@@ -249,6 +268,19 @@ export default function EmailTemplateEditor() {
     return DEFAULT_CONFIG;
   };
 
+  const toLocalInput = (iso: string | null | undefined) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const loadScheduleFor = (t: any) => {
+    setSendAt(toLocalInput(t?.day_before_send_at));
+    setAutoSend(!!t?.day_before_approved);
+    setSentAt(t?.day_before_sent_at || null);
+  };
+
   const loadConfigFor = (t: any, kind: TemplateKind) => {
     const stored = t?.[CONFIG_KEY[kind]];
     if (stored) setConfig({ ...defaultsForKind(kind), ...(stored as any) });
@@ -262,7 +294,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, site_logo_url")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -271,6 +303,7 @@ export default function EmailTemplateEditor() {
         setSelectedTournament(tid);
         const t = (data || []).find((x: any) => x.id === tid);
         loadConfigFor(t, templateKind);
+        loadScheduleFor(t);
       }
       setLoading(false);
     };
@@ -304,6 +337,59 @@ export default function EmailTemplateEditor() {
       .maybeSingle()
       .then(({ data }) => setCourseAddress((data as any)?.course_address || ""));
   }, [selectedTournament]);
+
+  // Active add-ons for the day-before reminder "Mulligans" section
+  useEffect(() => {
+    if (!selectedTournament) { setAddons([]); return; }
+    supabase
+      .from("tournament_registration_addons")
+      .select("id, name, description, price_cents, is_active")
+      .eq("tournament_id", selectedTournament)
+      .eq("is_active", true)
+      .then(({ data }) => setAddons(data || []));
+  }, [selectedTournament]);
+
+  const saveSchedule = async () => {
+    if (!selectedTournament) return;
+    setSavingSchedule(true);
+    const { error } = await (supabase.from("tournaments") as any)
+      .update({
+        day_before_send_at: sendAt ? new Date(sendAt).toISOString() : null,
+        day_before_approved: autoSend,
+      })
+      .eq("id", selectedTournament);
+    setSavingSchedule(false);
+    if (error) toast.error("Could not save the schedule");
+    else {
+      toast.success(autoSend && sendAt ? "Reminder scheduled" : "Schedule saved");
+      setTournaments(prev => prev.map(t => t.id === selectedTournament
+        ? { ...t, day_before_send_at: sendAt ? new Date(sendAt).toISOString() : null, day_before_approved: autoSend }
+        : t));
+    }
+  };
+
+  const sendNow = async () => {
+    if (!selectedTournament) return;
+    const withEmail = registrations.filter(r => r.email);
+    if (withEmail.length === 0) { toast.error("No registrants with an email address"); return; }
+    if (!confirm(`Send the Day Before Event Reminder to all ${withEmail.length} registrant(s) now?`)) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-day-before-reminder", {
+        body: { tournament_id: selectedTournament },
+      });
+      if (error) throw error;
+      toast.success(`Sent ${data?.sent ?? 0} reminder(s)${data?.failed ? `, ${data.failed} failed` : ""}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send reminders");
+      setSending(false);
+      return;
+    }
+    setSending(false);
+    const now = new Date().toISOString();
+    await (supabase.from("tournaments") as any).update({ day_before_sent_at: now }).eq("id", selectedTournament);
+    setSentAt(now);
+  };
 
   // Preview variables built from the ACTUAL selected tournament.
   const previewVars = (() => {
@@ -348,6 +434,7 @@ export default function EmailTemplateEditor() {
     setSelectedTournament(id);
     const t = tournaments.find((x: any) => x.id === id);
     loadConfigFor(t, templateKind);
+    loadScheduleFor(t);
     setSelectedRecipients([]);
   };
 
@@ -552,8 +639,84 @@ export default function EmailTemplateEditor() {
         <strong>{TEMPLATE_LABELS[templateKind]}:</strong>{" "}
         {templateKind === "post_event"
           ? "Sent after the tournament to thank players and invite them to your next event. Use the call-to-action button to link a sign-up form, mailing list, or your next event's registration page."
-          : "Sent automatically when a player registers for this tournament."}
+          : templateKind === "day_before"
+            ? "This reminder is NOT sent on registration. Choose a send date and time below, or send it now — nothing goes out until you schedule or send it."
+            : "Sent automatically when a player registers for this tournament."}
       </div>
+
+      {templateKind === "day_before" && (
+        <div className="bg-card rounded-lg border p-5 space-y-4">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <CalendarClock className="h-4 w-4 text-primary" /> Reminder Scheduling
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <Label className="text-xs text-muted-foreground">Send Date &amp; Time</Label>
+              <Input type="datetime-local" value={sendAt} onChange={(e) => setSendAt(e.target.value)} className="mt-1" />
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch id="auto-send" checked={autoSend} onCheckedChange={setAutoSend} />
+              <Label htmlFor="auto-send" className="text-sm cursor-pointer">Send automatically at that time</Label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={saveSchedule} disabled={savingSchedule}>
+                {savingSchedule ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+                Save Schedule
+              </Button>
+              <Button size="sm" variant="outline" onClick={sendNow} disabled={sending}>
+                {sending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Send className="h-4 w-4 mr-1" />}
+                Send Now
+              </Button>
+              <Button size="sm" variant="outline" onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()}>
+                {sendingTest ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
+                Test Email
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {sentAt
+              ? `Last sent ${new Date(sentAt).toLocaleString()}.`
+              : autoSend && sendAt
+                ? `Scheduled to send ${new Date(sendAt).toLocaleString()}.`
+                : "Not scheduled yet — turn on automatic sending or use Send Now."}
+            {" "}Test emails go to <span className="font-medium text-foreground">{testEmail || "your account email"}</span>.
+          </p>
+
+          <div className="border-t pt-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm flex items-center gap-2 cursor-pointer" htmlFor="show-addons">
+                <ShoppingBag className="h-4 w-4 text-secondary" /> Include the &ldquo;Don&rsquo;t Forget Your Mulligans!&rdquo; add-on section
+              </Label>
+              <Switch id="show-addons" checked={config.show_addons !== false} onCheckedChange={(v) => setConfig(p => ({ ...p, show_addons: v }))} />
+            </div>
+            {config.show_addons !== false && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Section Heading</Label>
+                  <Input
+                    value={config.addons_heading ?? "⛳ Don't Forget Your Mulligans!"}
+                    onChange={(e) => setConfig(p => ({ ...p, addons_heading: e.target.value }))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Intro Text</Label>
+                  <Input
+                    value={config.addons_intro ?? ""}
+                    onChange={(e) => setConfig(p => ({ ...p, addons_intro: e.target.value }))}
+                    className="mt-1"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground md:col-span-2">
+                  {addons.length === 0
+                    ? "No active add-ons yet — create them in Registration Management → Add-Ons and they will appear here automatically."
+                    : `${addons.length} active add-on(s) will be listed with a “Purchase Now” link: ${addons.map(a => a.name).join(", ")}.`}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue="design" className="space-y-4">
         <TabsList>
@@ -752,7 +915,11 @@ export default function EmailTemplateEditor() {
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind], { includePlayerHub: templateKind === "confirmation" })
+              __html: renderEmailHtml(config, previewVars, TEMPLATE_HEADERS[templateKind], {
+                includePlayerHub: templateKind === "confirmation",
+                addons: templateKind === "day_before" ? addons : [],
+                addonBaseUrl: previewVars.event_homepage,
+              })
             }} />
 
           </div>
@@ -962,7 +1129,12 @@ function replaceVariables(text: string, vars: Record<string, string>): string {
     .replace(/\n/g, "<br/>");
 }
 
-function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, headerText: string = "Registration Confirmed!", opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string }): string {
+function renderEmailHtml(
+  config: EmailConfig,
+  vars: Record<string, string>,
+  headerText: string = "Registration Confirmed!",
+  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string },
+): string {
   const greeting = replaceVariables(config.greeting, vars);
   const body = replaceVariables(config.body_text, vars);
   const closing = replaceVariables(config.closing_text, vars);
@@ -999,26 +1171,56 @@ function renderEmailHtml(config: EmailConfig, vars: Record<string, string>, head
        </td></tr>`
     : "";
 
+  const addonList = opts?.addons || [];
+  const addonBase = opts?.addonBaseUrl || vars.event_homepage || "https://www.teevents.golf";
+  const money = (c: number) => `$${((c || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const addonsHtml = config.show_addons !== false && addonList.length > 0
+    ? `<tr><td style="padding:24px 32px;border-top:1px solid #e5e7eb;background:#fffdf5;">
+        <p style="margin:0 0 6px;color:${config.primary_color};font-size:17px;font-weight:700;">${escapeHtml(config.addons_heading || "⛳ Don't Forget Your Mulligans!")}</p>
+        ${config.addons_intro ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;line-height:1.5;">${escapeHtml(config.addons_intro)}</p>` : ""}
+        ${addonList.map((a: any) => `
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px;background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;">
+            <tr>
+              <td style="padding:12px 14px;font-size:14px;color:${config.text_color};">
+                <strong>${escapeHtml(a.name || "")}</strong> — ${money(a.price_cents)}
+                ${a.description ? `<br/><span style="color:#6b7280;font-size:12px;">${escapeHtml(a.description)}</span>` : ""}
+              </td>
+              <td align="right" style="padding:12px 14px;">
+                <a href="${addonBase}?addon=${a.id}#register" style="display:inline-block;padding:9px 16px;background-color:#F5A623;color:#1a5c38;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;">Purchase Now</a>
+              </td>
+            </tr>
+          </table>`).join("")}
+       </td></tr>`
+    : "";
+
   return `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  @media only screen and (max-width:600px) {
+    .tv-wrap { padding:16px 10px !important; }
+    .tv-card { width:100% !important; }
+    .tv-pad { padding:20px 18px !important; }
+  }
+</style>
+</head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:${config.font_family};">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="tv-wrap" style="background:#f4f4f5;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:${config.secondary_color};border-radius:8px;overflow:hidden;">
-        <tr><td style="background:${config.header_bg_color};padding:28px 32px;text-align:center;">
+      <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${config.secondary_color};border-radius:8px;overflow:hidden;">
+        <tr><td class="tv-pad" style="background:${config.header_bg_color};padding:28px 32px;text-align:center;">
           ${logoHtml}
           <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${headerText}</h1>
         </td></tr>
-        <tr><td style="padding:32px;">
+        <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${body}</p>
           ${eventDetailsHtml}
           <p style="margin:0 0 14px;color:${config.text_color};font-size:15px;line-height:1.7;">${closing}</p>
           ${buttonHtml}
           <p style="margin:0;color:${config.text_color};font-size:15px;line-height:1.7;">${footer}</p>
-        </td></tr>${hubBlock}
+        </td></tr>${addonsHtml}${hubBlock}
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
           <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Sent by TeeVents • <a href="https://teevents.golf" style="color:${config.primary_color};">teevents.golf</a></p>
         </td></tr>

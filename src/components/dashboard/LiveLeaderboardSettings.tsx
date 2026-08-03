@@ -36,6 +36,9 @@ interface Settings {
   leaderboard_rotating_logos: RotatingLogo[];
   leaderboard_sponsor_banner_enabled: boolean;
   leaderboard_sponsor_rotation_order: string; // 'sequential' | 'random'
+  leaderboard_sponsor_banner_position: string; // 'top' | 'bottom' | 'sidebar'
+  leaderboard_sponsor_scroll_seconds: number;
+
 }
 
 const DEFAULTS: Settings = {
@@ -53,10 +56,13 @@ const DEFAULTS: Settings = {
   leaderboard_rotating_logos: [],
   leaderboard_sponsor_banner_enabled: true,
   leaderboard_sponsor_rotation_order: "sequential",
+  leaderboard_sponsor_banner_position: "bottom",
+  leaderboard_sponsor_scroll_seconds: 20,
 };
 
 const SETTINGS_COLS =
-  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order";
+  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds";
+
 
 export default function LiveLeaderboardSettings({ tournamentId }: Props) {
   const { org } = useOrgContext();
@@ -288,6 +294,37 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
                   </div>
                 </>
               )}
+
+              <div>
+                <Label className="text-sm mb-2 block">Banner Placement</Label>
+                <RadioGroup
+                  className="flex gap-4"
+                  value={s.leaderboard_sponsor_banner_position}
+                  onValueChange={(v) => { set("leaderboard_sponsor_banner_position", v); persist({ leaderboard_sponsor_banner_position: v }); }}
+                >
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="top" id="sp-top" /><Label htmlFor="sp-top">Top</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="bottom" id="sp-bottom" /><Label htmlFor="sp-bottom">Bottom</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="sidebar" id="sp-side" /><Label htmlFor="sp-side">Sidebar</Label></div>
+                </RadioGroup>
+                <p className="text-xs text-muted-foreground mt-1">Where the sponsors banner appears on the live leaderboard.</p>
+              </div>
+
+              <div>
+                <Label className="text-sm mb-2 block">
+                  Scroll Speed: {s.leaderboard_sponsor_scroll_seconds >= 30 ? "Slow" : s.leaderboard_sponsor_scroll_seconds <= 12 ? "Fast" : "Medium"} ({s.leaderboard_sponsor_scroll_seconds}s per loop)
+                </Label>
+                <Slider
+                  value={[45 - s.leaderboard_sponsor_scroll_seconds]}
+                  onValueChange={([v]) => set("leaderboard_sponsor_scroll_seconds", 45 - v)}
+                  onValueCommit={([v]) => persist({ leaderboard_sponsor_scroll_seconds: 45 - v })}
+                  min={5}
+                  max={40}
+                  step={1}
+                  className="w-64"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Drag right for a faster scroll, left for slower.</p>
+              </div>
+
             </>
           )}
 

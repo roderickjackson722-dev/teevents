@@ -9089,6 +9089,7 @@ export type Database = {
           logo_url: string | null
           name: string
           show_on_leaderboard: boolean
+          show_on_scoring_page: boolean
           sort_order: number | null
           tier: string
           tournament_id: string
@@ -9105,6 +9106,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           show_on_leaderboard?: boolean
+          show_on_scoring_page?: boolean
           sort_order?: number | null
           tier?: string
           tournament_id: string
@@ -9121,6 +9123,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           show_on_leaderboard?: boolean
+          show_on_scoring_page?: boolean
           sort_order?: number | null
           tier?: string
           tournament_id?: string
@@ -9641,11 +9644,13 @@ export type Database = {
           leaderboard_rotating_logos: Json
           leaderboard_show_sponsor: boolean
           leaderboard_sponsor_banner_enabled: boolean
+          leaderboard_sponsor_banner_position: string
           leaderboard_sponsor_interval_ms: number
           leaderboard_sponsor_label: string
           leaderboard_sponsor_logo_url: string | null
           leaderboard_sponsor_name: string | null
           leaderboard_sponsor_rotation_order: string
+          leaderboard_sponsor_scroll_seconds: number
           leaderboard_sponsor_style: string
           leaderboard_title: string | null
           live_allow_edit_past_holes: boolean
@@ -9912,11 +9917,13 @@ export type Database = {
           leaderboard_rotating_logos?: Json
           leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean
+          leaderboard_sponsor_banner_position?: string
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_label?: string
           leaderboard_sponsor_logo_url?: string | null
           leaderboard_sponsor_name?: string | null
           leaderboard_sponsor_rotation_order?: string
+          leaderboard_sponsor_scroll_seconds?: number
           leaderboard_sponsor_style?: string
           leaderboard_title?: string | null
           live_allow_edit_past_holes?: boolean
@@ -10183,11 +10190,13 @@ export type Database = {
           leaderboard_rotating_logos?: Json
           leaderboard_show_sponsor?: boolean
           leaderboard_sponsor_banner_enabled?: boolean
+          leaderboard_sponsor_banner_position?: string
           leaderboard_sponsor_interval_ms?: number
           leaderboard_sponsor_label?: string
           leaderboard_sponsor_logo_url?: string | null
           leaderboard_sponsor_name?: string | null
           leaderboard_sponsor_rotation_order?: string
+          leaderboard_sponsor_scroll_seconds?: number
           leaderboard_sponsor_style?: string
           leaderboard_title?: string | null
           live_allow_edit_past_holes?: boolean

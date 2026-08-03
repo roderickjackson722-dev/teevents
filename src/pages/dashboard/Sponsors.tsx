@@ -57,6 +57,8 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
+import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
+
 
 interface Sponsor {
   id: string;
@@ -810,6 +812,11 @@ const Sponsors = () => {
       {selectedTournament && (
         <SponsorLogoSizeCard tournamentId={selectedTournament} />
       )}
+
+      {selectedTournament && (
+        <ScoringPageSponsorsCard tournamentId={selectedTournament} />
+      )}
+
 
 
       {selectedTournament && (

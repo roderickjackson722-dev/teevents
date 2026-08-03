@@ -48,7 +48,10 @@ interface Tournament {
   leaderboard_sponsor_style?: string | null;
   leaderboard_sponsor_interval_ms?: number | null;
   leaderboard_sponsor_rotation_order?: string | null;
+  leaderboard_sponsor_banner_position?: string | null;
+  leaderboard_sponsor_scroll_seconds?: number | null;
   leaderboard_rotating_logos?: { url: string; name?: string; website_url?: string }[] | null;
+
 }
 
 interface LeaderboardRow {
@@ -164,7 +167,7 @@ export default function LiveLeaderboard() {
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, slug, scoring_format, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_sponsor_rotation_order, leaderboard_rotating_logos");
+        .select("id, title, slug, scoring_format, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds, leaderboard_rotating_logos");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.or(`custom_slug.eq.${slug},slug.eq.${slug}`).limit(1).maybeSingle();
@@ -245,26 +248,61 @@ export default function LiveLeaderboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament]);
+  }, [tournament?.id]);
 
-  // Realtime design updates — propagate organizer design changes immediately
+  // Realtime tournament updates — design + sponsor banner settings, applied live
   useEffect(() => {
-    if (!tournament) return;
+    const tid = tournament?.id;
+    if (!tid) return;
     const channel = supabase
-      .channel(`live-design-${tournament.id}`)
+      .channel(`live-design-${tid}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "tournaments", filter: `id=eq.${tournament.id}` },
+        { event: "UPDATE", schema: "public", table: "tournaments", filter: `id=eq.${tid}` },
         (payload: any) => {
-          const next = payload?.new?.leaderboard_design;
-          if (next !== undefined) setDesign(mergeDesign(next));
+          const next = payload?.new;
+          if (!next) return;
+          if (next.leaderboard_design !== undefined) setDesign(mergeDesign(next.leaderboard_design));
+          setTournament((prev) => (prev ? { ...prev, ...next } : prev));
         }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament]);
+  }, [tournament?.id]);
+
+  // Realtime sponsor + team-name updates
+  useEffect(() => {
+    const tid = tournament?.id;
+    if (!tid) return;
+
+    const refetchSponsors = () => {
+      supabase
+        .from("tournament_sponsors")
+        .select("id, name, logo_url, website_url, tier, show_on_leaderboard, leaderboard_placement, display_order")
+        .eq("tournament_id", tid)
+        .eq("show_on_leaderboard", true)
+        .then(({ data }) => setSponsors((data as Sponsor[]) || []));
+    };
+    const refetchScores = () => {
+      (supabase as any)
+        .rpc("get_public_leaderboard_scores", { _tournament_id: tid })
+        .then(({ data }: any) => setScores(data || []));
+    };
+
+    const channel = supabase
+      .channel(`live-meta-${tid}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_sponsors", filter: `tournament_id=eq.${tid}` }, refetchSponsors)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${tid}` }, refetchScores)
+      .on("postgres_changes", { event: "*", schema: "public", table: "registration_groups", filter: `tournament_id=eq.${tid}` }, refetchScores)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tournament?.id]);
+
 
 
 
@@ -429,6 +467,8 @@ export default function LiveLeaderboard() {
         sidebarSponsors={sidebarSponsors}
         footerSponsors={footerSponsors}
         scrollingSponsors={scrollingSponsors}
+        scrollingSponsorsPosition={tournament.leaderboard_sponsor_banner_position || "bottom"}
+        scrollingSponsorsSpeedSeconds={tournament.leaderboard_sponsor_scroll_seconds || 20}
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}

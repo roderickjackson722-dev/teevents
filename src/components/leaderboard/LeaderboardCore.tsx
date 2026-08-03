@@ -46,8 +46,13 @@ interface RendererProps {
   bannerSponsor?: LbSponsor | null;
   sidebarSponsors?: LbSponsor[];
   footerSponsors?: LbSponsor[];
-  /** Sponsors shown in a continuously scrolling banner at the bottom. */
+  /** Sponsors shown in a continuously scrolling banner. */
   scrollingSponsors?: LbSponsor[];
+  /** Where the scrolling sponsors banner renders: top | bottom | sidebar. */
+  scrollingSponsorsPosition?: string;
+  /** Seconds for one full scroll loop (lower = faster). */
+  scrollingSponsorsSpeedSeconds?: number;
+
   heroImage?: LbGalleryItem | null;
   logoUrl?: string | null;
   /** Compact mode for the in-dashboard preview card. */
@@ -78,6 +83,8 @@ export function LeaderboardRenderer({
   sidebarSponsors = [],
   footerSponsors = [],
   scrollingSponsors = [],
+  scrollingSponsorsPosition = "bottom",
+  scrollingSponsorsSpeedSeconds = 20,
   heroImage,
   logoUrl,
   compact = false,
@@ -103,6 +110,45 @@ export function LeaderboardRenderer({
   const padY = compact ? "py-2" : "py-3";
   const headerPadY = compact ? "py-2" : "py-4 sm:py-6";
 
+  /**
+   * Seamless sponsor marquee. The logo list is repeated until it is wide enough
+   * to fill the screen, then that whole strip is duplicated once so the
+   * translateX(-50%) loop restarts with no blank gap.
+   */
+  const scrollPos = scrollingSponsorsPosition || "bottom";
+  const marqueeBase = (() => {
+    if (scrollingSponsors.length === 0) return [];
+    const out: LbSponsor[] = [];
+    const minItems = 8;
+    while (out.length < minItems) out.push(...scrollingSponsors);
+    return out;
+  })();
+  const loopSeconds = Math.max(5, Math.min(60, scrollingSponsorsSpeedSeconds || 20));
+
+  const sponsorMarquee =
+    marqueeBase.length > 0 ? (
+      <div
+        data-testid="lb-scrolling-sponsors"
+        className="overflow-hidden border-y w-full"
+        style={{ backgroundColor: headerBg, borderColor: `${accent}44` }}
+      >
+        <div
+          className={`flex items-center w-max whitespace-nowrap ${compact ? "py-2" : "py-4"}`}
+          style={{ animation: `marquee ${loopSeconds}s linear infinite` }}
+        >
+          {[...marqueeBase, ...marqueeBase].map((s, i) => (
+            <div key={`scroll-${s.id}-${i}`} className={`flex items-center shrink-0 ${compact ? "px-4" : "px-8"}`}>
+              {s.logo_url ? (
+                <img src={s.logo_url} alt={s.name} className={`${compact ? "h-6" : "h-10"} max-w-[160px] object-contain`} />
+              ) : (
+                <span className={`${compact ? "text-xs" : "text-sm"} font-semibold opacity-80`}>{s.name}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div
       data-testid="lb-root"
@@ -110,6 +156,9 @@ export function LeaderboardRenderer({
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
       {topNotice}
+
+      {scrollPos === "top" && sponsorMarquee}
+
 
       {showSponsorBanner && sponsorPos === "top" && bannerSponsor && (
         <div
@@ -235,12 +284,33 @@ export function LeaderboardRenderer({
             )}
           </section>
 
-          {showSponsorBanner && sponsorPos === "sidebar" && !compact && (
+          {((showSponsorBanner && sponsorPos === "sidebar") || (scrollPos === "sidebar" && marqueeBase.length > 0)) && !compact && (
             <aside className="space-y-4" data-testid="lb-sidebar">
               {heroImage && (
                 <div className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}55` }}>
                   <img src={heroImage.image_url} alt={heroImage.caption || "Tournament photo"} className="w-full h-48 object-cover" />
                   {heroImage.caption && <div className="px-3 py-2 text-xs opacity-80">{heroImage.caption}</div>}
+                </div>
+              )}
+              {scrollPos === "sidebar" && marqueeBase.length > 0 && (
+                <div className="rounded-lg p-4 overflow-hidden" style={{ backgroundColor: `${headerBg}55` }} data-testid="lb-scrolling-sponsors">
+                  <h3 className="text-[10px] uppercase tracking-widest font-bold mb-3 opacity-80">Our Sponsors</h3>
+                  <div className="h-64 overflow-hidden relative">
+                    <div
+                      className="flex flex-col items-center gap-6"
+                      style={{ animation: `marquee-y ${loopSeconds}s linear infinite` }}
+                    >
+                      {[...marqueeBase, ...marqueeBase].map((s, i) => (
+                        <div key={`side-${s.id}-${i}`} className="flex items-center justify-center w-full shrink-0">
+                          {s.logo_url ? (
+                            <img src={s.logo_url} alt={s.name} className="h-12 max-w-full object-contain" />
+                          ) : (
+                            <span className="text-xs font-semibold text-center">{s.name}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               {sidebarSponsors.length > 0 && (
@@ -261,6 +331,7 @@ export function LeaderboardRenderer({
               )}
             </aside>
           )}
+
         </div>
       </main>
 
@@ -289,25 +360,9 @@ export function LeaderboardRenderer({
         </div>
       )}
 
-      {scrollingSponsors.length > 0 && (
-        <div
-          data-testid="lb-scrolling-sponsors"
-          className="overflow-hidden border-t"
-          style={{ backgroundColor: headerBg, borderColor: `${accent}44` }}
-        >
-          <div className={`flex items-center whitespace-nowrap ${compact ? "gap-6 py-2" : "gap-12 py-4"} animate-marquee`}>
-            {[...scrollingSponsors, ...scrollingSponsors].map((s, i) => (
-              <div key={`scroll-${s.id}-${i}`} className="flex items-center gap-3 shrink-0 px-4">
-                {s.logo_url ? (
-                  <img src={s.logo_url} alt={s.name} className={`${compact ? "h-6" : "h-10"} max-w-[160px] object-contain`} />
-                ) : (
-                  <span className={`${compact ? "text-xs" : "text-sm"} font-semibold opacity-80`}>{s.name}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {scrollPos !== "top" && scrollPos !== "sidebar" && sponsorMarquee}
+
+
 
 
       {footerSponsors.length > 0 && !compact && (

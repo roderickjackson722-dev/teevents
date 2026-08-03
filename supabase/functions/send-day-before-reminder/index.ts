@@ -337,19 +337,37 @@ Deno.serve(async (req) => {
       .eq("is_active", true);
 
     const config = { ...DEFAULTS, ...((tournament as any).day_before_email_config || {}) };
-    // Older saved templates may predate address / schedule / homepage — append what's missing.
+    // Legacy templates baked the schedule / homepage lines into the body text.
+    // They are now standalone, movable sections, so strip them out to avoid duplicates.
     {
+      const hadHomepage = /\{\{event_homepage\}\}/i.test(String(config.body_text || ""));
       let bt = String(config.body_text || DEFAULTS.body_text);
       if (!bt.includes("{{course_address}}")) bt += "\n📍 Location: {{event_location}}\n🏠 Address: {{course_address}}";
-      if (!bt.includes("{{event_schedule}}")) bt += "\n\n🗓 Event Schedule:\n{{event_schedule}}";
-      if (!bt.includes("{{event_homepage}}")) bt += "\n\n🔗 Event Homepage: {{event_homepage}}";
+      bt = bt
+        .replace(/<p[^>]*>\s*(?:🗓\s*)?Event Schedule:?\s*<\/p>/gi, "")
+        .replace(/<p[^>]*>\s*\{\{event_schedule\}\}\s*<\/p>/gi, "")
+        .replace(/<p[^>]*>\s*🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}\s*<\/p>/gi, "")
+        .replace(/(?:🗓\s*)?Event Schedule:?\s*\n?/gi, "")
+        .replace(/🔗?\s*Event Homepage:?\s*\{\{event_homepage\}\}/gi, "")
+        .replace(/\{\{event_schedule\}\}/g, "")
+        .replace(/\{\{event_homepage\}\}/g, "")
+        .replace(/(?:<p[^>]*>\s*(?:<br\s*\/?>)?\s*<\/p>\s*)+$/gi, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
       config.body_text = bt;
+      if (config.show_schedule === undefined) config.show_schedule = true;
+      if (config.show_homepage_link === undefined) {
+        config.show_homepage_link = Array.isArray((tournament as any).day_before_email_config?.section_order)
+          ? false
+          : hadHomepage;
+      }
 
       // Keep the leaderboard action in its dedicated button, not as duplicate closing copy.
       let ct = String(config.closing_text ?? DEFAULTS.closing_text);
       ct = ct.replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}");
       config.closing_text = removeDuplicateLeaderboardText(ct);
     }
+
 
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)

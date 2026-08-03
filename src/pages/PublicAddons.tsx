@@ -64,7 +64,15 @@ export default function PublicAddons() {
           .eq("tournament_id", t.id)
           .eq("is_active", true)
           .order("sort_order", { ascending: true });
-        if (!cancelled) setAddons(((rows as AddonRow[]) || []).filter((a) => a.price_cents > 0));
+        if (!cancelled) {
+          const list = ((rows as AddonRow[]) || []).filter((a) => a.price_cents > 0);
+          setAddons(list);
+          // Deep link from emails/QR codes: /t/{slug}/add-ons?addon=<id> preselects it.
+          if (typeof window !== "undefined") {
+            const wanted = new URLSearchParams(window.location.search).get("addon");
+            if (wanted && list.some((a) => a.id === wanted)) setCart((prev) => ({ ...prev, [wanted]: prev[wanted] || 1 }));
+          }
+        }
       }
       setLoading(false);
     })();

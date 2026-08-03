@@ -710,31 +710,53 @@ export default function Leaderboard() {
                 </TableHeader>
                 <TableBody>
                   {teamScores.map((team, i) => (
-                    <TableRow key={team.groupNumber}>
+                    <TableRow key={team.key}>
                       <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-medium">
-                        <div className="font-semibold">Group {team.groupNumber}</div>
+                        <div className="font-semibold flex items-center gap-2">
+                          {team.label}
+                          {team.isUnassigned && (
+                            <Badge variant="outline" className="text-[10px] font-normal">No pairing</Badge>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
                         </div>
                       </TableCell>
-                      {holes.map((h) => (
-                        <TableCell key={h} className="text-center text-sm p-1">
-                          {team.holeScores[h] != null ? (
-                            <span className={
-                              team.holeScores[h] < Math.round(holePar) ? "text-primary font-bold" :
-                              team.holeScores[h] > Math.round(holePar) ? "text-destructive" : ""
-                            }>
-                              {team.holeScores[h]}
-                            </span>
-                          ) : "—"}
-                        </TableCell>
-                      ))}
+                      {holes.map((h) => {
+                        const val = team.holeScores[h];
+                        if (canEditScores && !isFrozen) {
+                          return (
+                            <TableCell key={h} className="p-1 text-center">
+                              <ScoreInput
+                                value={Number(val ?? "")}
+                                par={getHolePar(h)}
+                                ariaLabel={`${team.label} hole ${h}`}
+                                onChange={(raw) => updateTeamScore(team.players, h, raw)}
+                                onSet={(n) => setTeamScoreValue(team.players, h, n)}
+                              />
+                            </TableCell>
+                          );
+                        }
+                        return (
+                          <TableCell key={h} className="text-center text-sm p-1">
+                            {val != null ? (
+                              <span className={
+                                val < Math.round(holePar) ? "text-primary font-bold" :
+                                val > Math.round(holePar) ? "text-destructive" : ""
+                              }>
+                                {val}
+                              </span>
+                            ) : "—"}
+                          </TableCell>
+                        );
+                      })}
                       <TableCell className="text-center font-bold text-lg">
                         {team.total > 0 ? team.total : "—"}
                       </TableCell>
                     </TableRow>
                   ))}
+
                 </TableBody>
               </Table>
             </div>

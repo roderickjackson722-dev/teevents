@@ -86,12 +86,33 @@ export async function sendNotificationEmails(
       if (t?.contact_email) recipientsSet.add(String(t.contact_email).trim().toLowerCase());
     }
 
-    // (Organizations table has no contact_email — tournament.contact_email is the canonical organizer address.)
+    // 3) Last-resort fallback: the organization OWNER's account email. Without this,
+    // an organizer who never opened Notification Settings AND never entered a
+    // tournament contact email would silently receive NO transaction emails.
+    if (recipientsSet.size === 0) {
+      try {
+        const { data: owner } = await supabaseAdmin
+          .from("org_members")
+          .select("user_id")
+          .eq("organization_id", organizationId)
+          .eq("role", "owner")
+          .limit(1)
+          .maybeSingle() as any;
+        if (owner?.user_id) {
+          const { data: authUser } = await (supabaseAdmin as any).auth.admin.getUserById(owner.user_id);
+          const ownerEmail = authUser?.user?.email;
+          if (ownerEmail) recipientsSet.add(String(ownerEmail).trim().toLowerCase());
+        }
+      } catch (ownerErr) {
+        console.error("[Notification] Owner email fallback failed:", ownerErr);
+      }
+    }
 
     if (recipientsSet.size === 0) {
       console.warn(`[Notification] No recipients found for ${eventType} (org=${organizationId} tournament=${tournamentId || "n/a"})`);
       return;
     }
+
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {

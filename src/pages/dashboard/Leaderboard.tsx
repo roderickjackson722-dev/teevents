@@ -24,6 +24,7 @@ import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard"
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
+import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
 
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 
@@ -110,7 +111,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, organizations(name)")
+        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, leaderboard_last_reset_at, organizations(name)")
         .order("date", { ascending: false });
       if (!isPlatformAdmin) {
         query = query.eq("organization_id", org!.orgId);
@@ -940,6 +941,18 @@ export default function Leaderboard() {
       {/* Edit history lives at the very bottom of the page */}
       {selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />
+      )}
+
+      {selectedTournament && (
+        <LeaderboardResetCard
+          tournamentId={selectedTournament}
+          canManage={canManageFreeze}
+          lastResetAt={(selectedTournamentData as any)?.leaderboard_last_reset_at ?? null}
+          onChange={() => {
+            queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] });
+            queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
+          }}
+        />
       )}
 
       <StickySaveBar onSave={() => {}} />

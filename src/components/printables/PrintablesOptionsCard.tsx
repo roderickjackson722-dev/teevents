@@ -105,6 +105,12 @@ export default function PrintablesOptionsCard({ options, addons, saving, dirty, 
             <Label htmlFor="opt-walkup" className="text-sm cursor-pointer">Walk-up Registration QR</Label>
             <Switch id="opt-walkup" checked={options.qr_walkup} onCheckedChange={(v) => set("qr_walkup", v)} />
           </div>
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="opt-donation" className="text-sm cursor-pointer">Donation QR</Label>
+            <Switch id="opt-donation" checked={options.qr_donation} onCheckedChange={(v) => set("qr_donation", v)} />
+          </div>
+
+          </div>
           {addons.length === 0 ? (
             <p className="text-xs text-muted-foreground">
               No add-ons yet — create them in Registration Management → Add-Ons.

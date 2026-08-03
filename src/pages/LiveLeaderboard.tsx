@@ -248,7 +248,7 @@ export default function LiveLeaderboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament]);
+  }, [tournament?.id]);
 
   // Realtime tournament updates — design + sponsor banner settings, applied live
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -356,8 +356,8 @@ export default function PlatformTournaments() {
                   </TableHeader>
                   <TableBody>
                     {filtered.map((r) => (
-                      <>
-                      <TableRow key={r.id}>
+                      <Fragment key={r.id}>
+                      <TableRow>
                         <TableCell>
                           <div className="font-medium">{r.title}</div>
                           <div className="text-xs text-muted-foreground flex items-center gap-1">
@@ -447,7 +447,7 @@ export default function PlatformTournaments() {
                         </TableCell>
                       </TableRow>
                       {expanded === r.id && (
-                        <TableRow key={`${r.id}-exp`} className="bg-muted/30 hover:bg-muted/30">
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
                           <TableCell colSpan={10} className="p-6">
                             <div className="flex flex-wrap items-center gap-3">
                               <button
@@ -484,7 +484,7 @@ export default function PlatformTournaments() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                     ))}
                     {filtered.length === 0 && (
                       <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No tournaments match your filters.</TableCell></TableRow>

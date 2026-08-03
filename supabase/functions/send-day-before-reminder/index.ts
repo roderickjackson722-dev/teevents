@@ -30,6 +30,12 @@ function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k) => vars[k] ?? "");
 }
 
+
+/** True when organizer content was authored with the rich-text toolbar. */
+function isHtmlContent(s?: string): boolean {
+  return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
+}
+
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -55,8 +61,12 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
     ? `<div style="text-align:${align};margin-bottom:12px;"><img src="${c.logo_url}" alt="Logo" style="max-height:60px;display:inline-block;" /></div>`
     : "";
 
-  const body = linkify(esc(replaceVars(c.body_text, vars)), primary).replace(/\n/g, "<br/>");
-  const closing = linkify(esc(replaceVars(c.closing_text, vars)), primary).replace(/\n/g, "<br/>");
+  const rich = (t: string) => {
+    const filled = replaceVars(t, vars);
+    return isHtmlContent(filled) ? filled : linkify(esc(filled), primary).replace(/\n/g, "<br/>");
+  };
+  const body = rich(c.body_text);
+  const closing = rich(c.closing_text);
   const greeting = esc(replaceVars(c.greeting, vars));
   const footer = esc(replaceVars(c.footer_text, vars));
   const btnText = replaceVars(c.button_text || "View Event Homepage", vars);
@@ -120,12 +130,12 @@ function buildHtml(config: any, vars: Record<string, string>, buttonUrl: string,
       <table width="560" cellpadding="0" cellspacing="0" class="tv-card" style="max-width:100%;background:${bgColor};border-radius:8px;overflow:hidden;">
         <tr><td class="tv-pad" style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${esc(replaceVars(c.header_title || DEFAULTS.header_title, vars))}</h1>
+          <h1 style="margin:0;color:${c.header_text_color || "#ffffff"};font-size:22px;font-weight:700;">${esc(replaceVars(c.header_title || DEFAULTS.header_title, vars))}</h1>
         </td></tr>
         <tr><td class="tv-pad" style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>
-          <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</p>
-          <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</p>
+          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${body}</div>
+          <div style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;">${closing}</div>
           ${actionButtonsHtml}
           ${buttonHtml}
           <p style="margin:0;color:${textColor};font-size:15px;line-height:1.7;">${footer}</p>

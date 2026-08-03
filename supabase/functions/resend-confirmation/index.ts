@@ -75,8 +75,18 @@ const DEFAULT_CONFIGS: Record<string, any> = {
 
 function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { includePlayerHub?: boolean; hubUrl?: string; headerText?: string }): string {
   const greeting = replaceVars(config.greeting || "Hi {{first_name}},", vars);
-  const body = replaceVars(config.body_text || "", vars).replace(/\n/g, "<br/>");
-  const closing = replaceVars(config.closing_text || "", vars).replace(/\n/g, "<br/>");
+
+/** True when organizer content was authored with the rich-text toolbar. */
+function isHtmlContent(s?: string): boolean {
+  return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
+}
+
+  const body = isHtmlContent(replaceVars(config.body_text || "", vars))
+    ? replaceVars(config.body_text || "", vars)
+    : replaceVars(config.body_text || "", vars).replace(/\n/g, "<br/>");
+  const closing = isHtmlContent(replaceVars(config.closing_text || "", vars))
+    ? replaceVars(config.closing_text || "", vars)
+    : replaceVars(config.closing_text || "", vars).replace(/\n/g, "<br/>");
   const footer = replaceVars(config.footer_text || "", vars);
   const headerBg = config.header_bg_color || "#1a5c38";
   const textColor = config.text_color || "#374151";
@@ -123,7 +133,7 @@ function buildCustomHtml(config: any, vars: Record<string, string>, opts?: { inc
       <table width="560" cellpadding="0" cellspacing="0" style="background:${bgColor};border-radius:8px;overflow:hidden;">
         <tr><td style="background:${headerBg};padding:28px 32px;text-align:center;">
           ${logoHtml}
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${opts?.headerText || "Registration Confirmed!"}</h1>
+          <h1 style="margin:0;color:${config.header_text_color || "#ffffff"};font-size:22px;font-weight:700;">${config.header_title || opts?.headerText || "Registration Confirmed!"}</h1>
         </td></tr>
         <tr><td style="padding:32px;">
           <p style="margin:0 0 14px;color:${textColor};font-size:15px;line-height:1.7;"><strong>${greeting}</strong></p>

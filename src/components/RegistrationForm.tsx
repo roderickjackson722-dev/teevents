@@ -61,6 +61,8 @@ interface RegistrationFormProps {
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
   fields?: RegFieldConfig[];
   addonsSectionTitle?: string;
+  /** When false, add-ons are hidden on the registration form (they live on the dedicated add-on page). */
+  showAddons?: boolean;
   captainLabel?: string | null;
   /** Captain-vs-teammate field rules for group sign-ups */
   groupFieldRules?: GroupFieldRules | null;
@@ -282,7 +284,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", showAddons = true, captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
   // When the organizer restricts group sizes (e.g. foursomes only), start at the
   // smallest allowed size so the total reflects the real number of players.
   const initialGroupSize = (() => {
@@ -1004,7 +1006,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         )}
 
         {/* Optional Add-ons */}
-        {addons.length > 0 && (
+        {showAddons && addons.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-muted-foreground" />

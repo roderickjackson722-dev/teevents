@@ -7365,6 +7365,7 @@ export type Database = {
           manually_approved: boolean
           paid_at: string | null
           payment_status: string
+          show_on_leaderboard: boolean
           show_on_public: boolean
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
@@ -7388,6 +7389,7 @@ export type Database = {
           manually_approved?: boolean
           paid_at?: string | null
           payment_status?: string
+          show_on_leaderboard?: boolean
           show_on_public?: boolean
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
@@ -7411,6 +7413,7 @@ export type Database = {
           manually_approved?: boolean
           paid_at?: string | null
           payment_status?: string
+          show_on_leaderboard?: boolean
           show_on_public?: boolean
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
@@ -11202,6 +11205,7 @@ export type Database = {
           logo_url: string
           manually_approved: boolean
           payment_status: string
+          show_on_leaderboard: boolean
           show_on_public: boolean
           tier_id: string
           tournament_id: string

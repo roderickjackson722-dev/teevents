@@ -20,6 +20,8 @@ import LeaderboardGallery from "@/components/dashboard/LeaderboardGallery";
 import LiveDisplayShareCard from "@/components/dashboard/LiveDisplayShareCard";
 import LeaderboardDesignCard from "@/components/dashboard/LeaderboardDesignCard";
 import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCard";
+import TickerSponsorsCard from "@/components/dashboard/TickerSponsorsCard";
+
 import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
 import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
@@ -989,9 +991,14 @@ export default function Leaderboard() {
         />
       )}
 
+      {selectedTournament && (
+        <TickerSponsorsCard tournamentId={selectedTournament} />
+      )}
+
       {selectedTournament && org && (
         <LeaderboardSponsorCard tournamentId={selectedTournament} orgId={org.orgId} />
       )}
+
 
       {selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />

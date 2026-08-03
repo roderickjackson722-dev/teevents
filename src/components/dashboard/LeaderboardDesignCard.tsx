@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
-import { LeaderboardRenderer } from "@/components/leaderboard/LeaderboardCore";
 
 
 export interface LeaderboardDesign {
@@ -124,17 +123,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
     toast({ title: "Copied!" });
   };
 
-  // Mock preview rows
-  const previewRows = useMemo(
-    () => [
-      { pos: 1, name: "Mike Wilson", gross: 68, net: 62, thru: 18 },
-      { pos: 2, name: "Sarah Lee", gross: 70, net: 64, thru: 18 },
-      { pos: 3, name: "John Smith", gross: 72, net: 66, thru: 17 },
-      { pos: 4, name: "Jane Doe", gross: 73, net: 68, thru: 18 },
-      { pos: 5, name: "Bob Johnson", gross: 75, net: 70, thru: 16 },
-    ],
-    []
-  );
+
+
 
   if (loading) {
     return (
@@ -150,11 +140,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
         <CardTitle className="flex items-center gap-2"><Tv2 className="w-5 h-5" /> Live Leaderboard Design</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* PREVIEW */}
-        <section>
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Preview</Label>
-          <LeaderboardPreview design={design} rows={previewRows} />
-        </section>
+        {/* DISPLAY SETTINGS */}
+
 
         {/* DISPLAY SETTINGS */}
         <section className="space-y-3 border-t pt-5">
@@ -249,7 +236,7 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
                 <Label className="text-xs">Sponsor Display</Label>
                 <RadioGroup value={design.sponsor_filter} onValueChange={(v) => update("sponsor_filter", v as any)} className="flex flex-wrap gap-4 mt-1">
                   <RadioOpt value="all" label="All sponsors" />
-                  <RadioOpt value="selected" label="Selected only (use sponsor toggles)" />
+                  <RadioOpt value="selected" label="Selected only (use the ticker sponsor list below)" />
                 </RadioGroup>
               </div>
             </>
@@ -318,28 +305,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
   );
 }
 
-function LeaderboardPreview({ design, rows }: { design: LeaderboardDesign; rows: any[] }) {
-  // Use the same renderer as the public live leaderboard so the preview can
-  // never visually diverge from what players actually see.
-  const mockBanner = design.show_sponsor_banner
-    ? { id: "preview-sponsor", name: "Your Sponsor", logo_url: null }
-    : null;
-  return (
-    <div className="mt-2">
-      <LeaderboardRenderer
-        compact
-        design={design}
-        title="Tournament Title"
-        rows={rows.map((r) => ({
-          name: r.name,
-          total: design.default_view === "net" ? r.net : r.gross,
-          thru: r.thru,
-        }))}
-        bannerSponsor={mockBanner}
-      />
-    </div>
-  );
-}
+
+
 
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {

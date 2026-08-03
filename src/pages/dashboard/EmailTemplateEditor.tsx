@@ -1407,7 +1407,7 @@ function renderEmailHtml(
   config: EmailConfig,
   vars: Record<string, string>,
   headerText: string = "Registration Confirmed!",
-  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string; showActionButtons?: boolean },
+  opts?: { includePlayerHub?: boolean; hubUrl?: string; qrImg?: string; addons?: any[]; addonBaseUrl?: string; showActionButtons?: boolean; sectionOrder?: string[] },
 ): string {
   const greeting = replaceVariables(config.greeting, vars);
   const body = replaceVariables(config.body_text, vars);

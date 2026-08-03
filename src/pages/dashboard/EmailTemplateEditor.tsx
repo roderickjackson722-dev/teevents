@@ -502,30 +502,10 @@ export default function EmailTemplateEditor() {
     return vars;
   })();
 
-  // The day-before sender normalizes older saved templates before rendering
-  // (appends missing address/schedule/homepage lines, scrubs the legacy
-  // leaderboard sentence). Mirror it so the preview matches the real email.
-  const previewConfig = (() => {
-    if (templateKind !== "day_before") return config;
-    const html = isHtmlContent(config.body_text);
-    let bt = String(config.body_text || "");
-    const add = (plain: string) => {
-      bt += html ? `<p>${plain}</p>` : `\n${plain}`;
-    };
-    if (!bt.includes("{{course_address}}")) {
-      add("📍 Location: {{event_location}}");
-      add("🏠 Address: {{course_address}}");
-    }
-    if (!bt.includes("{{event_schedule}}")) {
-      add("🗓 Event Schedule:");
-      add("{{event_schedule}}");
-    }
-    if (!bt.includes("{{event_homepage}}")) add("🔗 Event Homepage: {{event_homepage}}");
-    const ct = removeDuplicateLeaderboardText(
-      String(config.closing_text ?? "").replace(/\{\{scoring_link\}\}\./g, "{{scoring_link}}"),
-    );
-    return { ...config, body_text: bt, closing_text: ct };
-  })();
+  // Day-before templates render each block independently and in the organizer's
+  // chosen order, so the schedule / homepage link are no longer baked into the body.
+  const previewConfig = templateKind === "day_before" ? normalizeDayBefore(config) : config;
+
 
 
 

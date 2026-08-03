@@ -6375,6 +6375,8 @@ export type Database = {
           group_number: number | null
           id: string
           team_name: string | null
+          tee_time: string | null
+          tee_times: Json
           tournament_id: string
           updated_at: string
         }
@@ -6384,6 +6386,8 @@ export type Database = {
           group_number?: number | null
           id?: string
           team_name?: string | null
+          tee_time?: string | null
+          tee_times?: Json
           tournament_id: string
           updated_at?: string
         }
@@ -6393,6 +6397,8 @@ export type Database = {
           group_number?: number | null
           id?: string
           team_name?: string | null
+          tee_time?: string | null
+          tee_times?: Json
           tournament_id?: string
           updated_at?: string
         }

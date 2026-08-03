@@ -151,6 +151,7 @@ export default function LiveLeaderboard() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [scores, setScores] = useState<any[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [sponsorRegs, setSponsorRegs] = useState<SponsorReg[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
@@ -197,16 +198,17 @@ export default function LiveLeaderboard() {
       supabase
         .from("tournament_sponsors")
         .select("id, name, logo_url, website_url, tier, show_on_leaderboard, leaderboard_placement, display_order")
-        .eq("tournament_id", tournament.id)
-        .eq("show_on_leaderboard", true),
+        .eq("tournament_id", tournament.id),
+      (supabase as any).rpc("get_public_sponsor_registrations", { _tournament_id: tournament.id }),
       supabase
         .from("leaderboard_gallery")
         .select("id, image_url, caption, is_hero")
         .eq("tournament_id", tournament.id)
         .order("sort_order", { ascending: true }),
-    ]).then(([scRes, spRes, galRes]) => {
+    ]).then(([scRes, spRes, regRes, galRes]) => {
       setScores((scRes as any).data || []);
       setSponsors((spRes.data as Sponsor[]) || []);
+      setSponsorRegs(((regRes as any)?.data as SponsorReg[]) || []);
       setGallery((galRes.data as GalleryItem[]) || []);
     });
 
@@ -321,7 +323,7 @@ export default function LiveLeaderboard() {
 
   // Sort sponsors by tier + display order
   const sortedSponsors = useMemo(() => {
-    return [...sponsors].sort((a, b) => {
+    return sponsors.filter((s) => s.show_on_leaderboard !== false).sort((a, b) => {
       const ord = (a.display_order ?? 0) - (b.display_order ?? 0);
       if (ord !== 0) return ord;
       return (tierOrder[a.tier] ?? 99) - (tierOrder[b.tier] ?? 99);
@@ -345,12 +347,25 @@ export default function LiveLeaderboard() {
       name: l.name || "Sponsor",
       logo_url: l.url,
     }));
-    const list = [...uploaded, ...sortedSponsors.map((s) => ({ id: s.id, name: s.name, logo_url: s.logo_url }))];
+    // "all" shows every sponsor; "selected" honors the ticker sponsor checkboxes.
+    const selectedOnly = (design.sponsor_filter || "all") === "selected";
+    const fromSponsors = sponsors
+      .filter((s) => (selectedOnly ? s.show_on_leaderboard !== false : true))
+      .sort((a, b) => {
+        const ord = (a.display_order ?? 0) - (b.display_order ?? 0);
+        if (ord !== 0) return ord;
+        return (tierOrder[a.tier] ?? 99) - (tierOrder[b.tier] ?? 99);
+      })
+      .map((s) => ({ id: s.id, name: s.name, logo_url: s.logo_url }));
+    const fromRegs = sponsorRegs
+      .filter((r) => (selectedOnly ? r.show_on_leaderboard !== false : true))
+      .map((r) => ({ id: `reg-${r.id}`, name: r.company_name, logo_url: r.logo_url || null }));
+    const list = [...uploaded, ...fromSponsors, ...fromRegs];
     if (list.length === 0) return [];
     return (tournament.leaderboard_sponsor_rotation_order || "sequential") === "random"
       ? [...list].sort(() => Math.random() - 0.5)
       : list;
-  }, [tournament, sortedSponsors]);
+  }, [tournament, sponsors, sponsorRegs, design.sponsor_filter]);
 
   // Rotate banner sponsor
   useEffect(() => {

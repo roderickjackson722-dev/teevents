@@ -3034,6 +3034,8 @@ export type Database = {
           id: string
           is_active: boolean
           is_public: boolean
+          leaderboard_show_gross: boolean
+          leaderboard_show_net: boolean
           league_name: string
           league_slug: string
           logo_url: string | null
@@ -3070,6 +3072,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_public?: boolean
+          leaderboard_show_gross?: boolean
+          leaderboard_show_net?: boolean
           league_name: string
           league_slug: string
           logo_url?: string | null
@@ -3106,6 +3110,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_public?: boolean
+          leaderboard_show_gross?: boolean
+          leaderboard_show_net?: boolean
           league_name?: string
           league_slug?: string
           logo_url?: string | null
@@ -3480,14 +3486,18 @@ export type Database = {
       }
       league_event_registrations: {
         Row: {
+          added_by: string | null
           confirmation_email_sent_at: string | null
           created_at: string
+          entry_type: string | null
           event_id: string
           fee_paid: boolean | null
           fee_tier_amount_cents: number | null
           fee_tier_id: string | null
           fee_tier_label: string | null
           id: string
+          is_manual_entry: boolean | null
+          manual_notes: string | null
           member_id: string
           paid_at: string | null
           pairing_group: number | null
@@ -3499,14 +3509,18 @@ export type Database = {
           waitlist_position: number | null
         }
         Insert: {
+          added_by?: string | null
           confirmation_email_sent_at?: string | null
           created_at?: string
+          entry_type?: string | null
           event_id: string
           fee_paid?: boolean | null
           fee_tier_amount_cents?: number | null
           fee_tier_id?: string | null
           fee_tier_label?: string | null
           id?: string
+          is_manual_entry?: boolean | null
+          manual_notes?: string | null
           member_id: string
           paid_at?: string | null
           pairing_group?: number | null
@@ -3518,14 +3532,18 @@ export type Database = {
           waitlist_position?: number | null
         }
         Update: {
+          added_by?: string | null
           confirmation_email_sent_at?: string | null
           created_at?: string
+          entry_type?: string | null
           event_id?: string
           fee_paid?: boolean | null
           fee_tier_amount_cents?: number | null
           fee_tier_id?: string | null
           fee_tier_label?: string | null
           id?: string
+          is_manual_entry?: boolean | null
+          manual_notes?: string | null
           member_id?: string
           paid_at?: string | null
           pairing_group?: number | null

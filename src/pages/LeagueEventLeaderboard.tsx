@@ -58,7 +58,7 @@ export default function LeagueEventLeaderboard() {
         </Card>
         <p className="text-xs text-center text-muted-foreground">Scores update live as teams enter them.</p>
       </main>
-      <TeeventsFooter />
+      <TeeventsFooter tournament={null} />
     </div>
   );
 }

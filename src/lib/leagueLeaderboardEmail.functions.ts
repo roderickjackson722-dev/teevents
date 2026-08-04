@@ -18,7 +18,7 @@ export const sendLeagueLeaderboardLink = createServerFn({ method: "POST" })
     if (emails.length === 0) throw new Error("At least one valid email is required");
     return { eventId: data.eventId, emails, message: (data.message || "").slice(0, 2000) };
   })
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: any) => {
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

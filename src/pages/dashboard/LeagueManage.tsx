@@ -20,6 +20,8 @@ import LeagueCommunicationTab from "@/components/leagues/LeagueCommunicationTab"
 import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
 import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
+import LeaguePaymentsTab from "@/components/leagues/LeaguePaymentsTab";
+
 import LeagueRegistrationTab from "@/components/leagues/LeagueRegistrationTab";
 import LeagueRegistrationsTab from "@/components/leagues/LeagueRegistrationsTab";
 import LeagueScoringPayoutsTab from "@/components/leagues/LeagueScoringPayoutsTab";
@@ -158,7 +160,9 @@ export default function LeagueManage() {
           <TabsTrigger value="standings">Leaderboard</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="payouts">Finances</TabsTrigger>
+
           <TabsTrigger value="customize">Customize Page</TabsTrigger>
           <TabsTrigger value="public">Public Page</TabsTrigger>
           <TabsTrigger value="share">Share</TabsTrigger>
@@ -179,7 +183,9 @@ export default function LeagueManage() {
         <TabsContent value="standings" className="mt-4"><LeagueStandingsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="skins" className="mt-4"><LeagueSkinsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="messages" className="mt-4"><LeagueCommunicationTab leagueId={league.id} /></TabsContent>
+        <TabsContent value="payments" className="mt-4"><LeaguePaymentsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="payouts" className="mt-4"><LeaguePayoutsTab leagueId={league.id} /></TabsContent>
+
 
         <TabsContent value="customize" className="mt-4"><LeagueCustomizeTab league={league} onSaved={load} /></TabsContent>
         <TabsContent value="public" className="mt-4">

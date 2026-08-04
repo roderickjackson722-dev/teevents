@@ -167,7 +167,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                     <TableCell className="text-right">{e.count}</TableCell>
                     <TableCell className="text-right">{fmt(e.gross)}</TableCell>
                     <TableCell className="text-right text-amber-700">{fmt(e.fee)}</TableCell>
-                    <TableCell className="text-right font-semibold">{fmt(e.gross - e.fee)}</TableCell>
+                    <TableCell className="text-right font-semibold">{fmt(netOf(e.gross, e.fee))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

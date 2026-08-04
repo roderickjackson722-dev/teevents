@@ -3617,6 +3617,7 @@ export type Database = {
           flight_method: string
           flights_enabled: boolean
           format_type: string
+          holes: number
           id: string
           is_completed: boolean
           league_course_id: string | null
@@ -3648,6 +3649,7 @@ export type Database = {
           flight_method?: string
           flights_enabled?: boolean
           format_type?: string
+          holes?: number
           id?: string
           is_completed?: boolean
           league_course_id?: string | null
@@ -3679,6 +3681,7 @@ export type Database = {
           flight_method?: string
           flights_enabled?: boolean
           format_type?: string
+          holes?: number
           id?: string
           is_completed?: boolean
           league_course_id?: string | null
@@ -4357,6 +4360,122 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_team_pairings: {
+        Row: {
+          created_at: string
+          event_id: string
+          holes: number
+          id: string
+          league_id: string
+          player1_id: string | null
+          player2_id: string | null
+          scoring_code: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          holes?: number
+          id?: string
+          league_id: string
+          player1_id?: string | null
+          player2_id?: string | null
+          scoring_code: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          holes?: number
+          id?: string
+          league_id?: string
+          player1_id?: string | null
+          player2_id?: string | null
+          scoring_code?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_team_pairings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_team_pairings_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_team_pairings_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_team_pairings_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_team_scores: {
+        Row: {
+          created_at: string
+          event_id: string
+          gross_score: number | null
+          hole_number: number
+          id: string
+          net_score: number | null
+          pairing_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          gross_score?: number | null
+          hole_number: number
+          id?: string
+          net_score?: number | null
+          pairing_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          gross_score?: number | null
+          hole_number?: number
+          id?: string
+          net_score?: number | null
+          pairing_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_team_scores_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_team_scores_pairing_id_fkey"
+            columns: ["pairing_id"]
+            isOneToOne: false
+            referencedRelation: "league_team_pairings"
             referencedColumns: ["id"]
           },
         ]
@@ -11115,6 +11234,7 @@ export type Database = {
           season_year: number
         }[]
       }
+      generate_league_team_scoring_code: { Args: never; Returns: string }
       get_college_invitation_by_token: {
         Args: { _token: string; _tournament_id: string }
         Returns: {
@@ -11395,6 +11515,7 @@ export type Database = {
         Args: { _email: string; _league_id: string }
         Returns: string
       }
+      lookup_league_team_by_code: { Args: { _code: string }; Returns: Json }
       lookup_player_scoring_code: {
         Args: { _code: string; _tournament_id: string }
         Returns: string
@@ -11522,6 +11643,10 @@ export type Database = {
       save_group_scores: {
         Args: { _code: string; _scores: Json; _tournament_id: string }
         Returns: undefined
+      }
+      save_league_team_scores: {
+        Args: { _code: string; _scores: Json }
+        Returns: Json
       }
       settle_manual_entry_liabilities: {
         Args: { _max_deduct_cents: number; _organization_id: string }

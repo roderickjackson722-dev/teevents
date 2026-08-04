@@ -83,20 +83,23 @@ export default function TickerSponsorsCard({ tournamentId }: { tournamentId: str
         });
       });
 
+      // Every sponsor submitted through Sponsorship Management is selectable here —
+      // including ones still awaiting payment — so the list never silently drops one.
       ((regsRes.data as any[]) || [])
-        .filter((r) => r.show_on_public !== false && (r.payment_status === "paid" || r.manually_approved === true))
         .forEach((r) => {
           const label = r.is_title_sponsor ? "Title Sponsor" : tierNames.get(r.tier_id) || "Sponsor";
+          const unpaid = r.payment_status !== "paid" && r.manually_approved !== true;
           list.push({
             key: `registration:${r.id}`,
             id: r.id,
             source: "registration",
-            name: r.company_name || "Sponsor",
+            name: `${r.company_name || "Sponsor"}${unpaid ? " — payment pending" : ""}`,
             tierLabel: label,
             tierRank: r.is_title_sponsor ? 0 : tierRank[String(label).toLowerCase().split(" ")[0]] ?? 91,
             visible: r.show_on_leaderboard !== false,
           });
         });
+
 
       list.sort((a, b) => a.tierRank - b.tierRank || a.name.localeCompare(b.name));
       setRows(list);

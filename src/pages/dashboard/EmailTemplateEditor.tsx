@@ -569,6 +569,23 @@ export default function EmailTemplateEditor() {
 
 
   const [confirmSendOpen, setConfirmSendOpen] = useState(false);
+  /** Per-recipient delivery status from the last send, keyed by registration id. */
+  const [sendResults, setSendResults] = useState<Record<string, { status: string; error?: string }>>({});
+
+  /** Records queued/sent/failed status per recipient so organizers see exactly who got the email. */
+  const recordResults = (targets: string[], results?: any[]) => {
+    setSendResults(prev => {
+      const next = { ...prev };
+      if (Array.isArray(results) && results.length > 0) {
+        for (const r of results) {
+          if (r?.registration_id) next[r.registration_id] = { status: r.status, error: r.error };
+        }
+      } else {
+        for (const id of targets) next[id] = { status: "sent" };
+      }
+      return next;
+    });
+  };
 
   const sendEmails = async (ids?: string[]) => {
     const targets = ids && ids.length > 0 ? ids : selectedRecipients;
@@ -577,6 +594,11 @@ export default function EmailTemplateEditor() {
       return;
     }
     setSending(true);
+    setSendResults(prev => {
+      const next = { ...prev };
+      for (const id of targets) next[id] = { status: "pending" };
+      return next;
+    });
     try {
       console.log("[Email Templates] Sending template:", templateKind, "subject:", config.subject, "recipients:", targets.length);
       if (templateKind === "day_before") {
@@ -584,6 +606,7 @@ export default function EmailTemplateEditor() {
           body: { tournament_id: selectedTournament, registration_ids: targets },
         });
         if (error) throw error;
+        recordResults(targets, data?.results);
         toast.success(`Sent ${data?.sent ?? 0} reminder(s)${data?.failed ? `, ${data.failed} failed` : ""}`);
         if (!ids) setSelectedRecipients([]);
         setSending(false);
@@ -593,12 +616,29 @@ export default function EmailTemplateEditor() {
         body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
       });
       if (error) throw error;
+      recordResults(targets, data?.results);
       toast.success(`Sent ${data.sent} email(s)${data.failed ? `, ${data.failed} failed` : ""}`);
       if (!ids) setSelectedRecipients([]);
     } catch (e: any) {
+      setSendResults(prev => {
+        const next = { ...prev };
+        for (const id of targets) next[id] = { status: "failed", error: e.message };
+        return next;
+      });
       toast.error(e.message || "Failed to send emails");
     }
     setSending(false);
+  };
+
+  /** Small inline badge showing this recipient's delivery result from the last send. */
+  const DeliveryStatus = ({ id }: { id: string }) => {
+    const r = sendResults[id];
+    if (!r) return null;
+    if (r.status === "pending") return <Badge variant="outline" className="text-xs">Queued…</Badge>;
+    if (r.status === "sent") return <Badge className="text-xs bg-emerald-100 text-emerald-900 hover:bg-emerald-100">Sent</Badge>;
+    return (
+      <Badge variant="destructive" className="text-xs" title={r.error || "Send failed"}>Failed</Badge>
+    );
   };
 
   const toggleRecipient = (id: string) => {
@@ -829,6 +869,7 @@ export default function EmailTemplateEditor() {
                           <p className="text-xs text-muted-foreground truncate">{r.email || "No email on file"}</p>
                         </div>
                       </label>
+                      <DeliveryStatus id={r.id} />
                       <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
                         {r.payment_status}
                       </Badge>
@@ -1332,6 +1373,7 @@ export default function EmailTemplateEditor() {
                         </p>
                       </div>
                     </label>
+                    <DeliveryStatus id={r.id} />
                     <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
                       {r.payment_status}
                     </Badge>

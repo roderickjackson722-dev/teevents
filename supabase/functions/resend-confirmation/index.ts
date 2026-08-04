@@ -313,9 +313,32 @@ Deno.serve(async (req) => {
       : null;
 
     // Send emails
+    const results: any[] = [];
+    const logEmail = async (row: { email: string; subject: string; status: "sent" | "failed"; error?: string | null; meta?: Record<string, unknown> }) => {
+      try {
+        await supabaseAdmin.from("email_send_log").insert({
+          message_id: crypto.randomUUID(),
+          template_name: `${kind}-email`,
+          recipient_email: row.email,
+          subject: row.subject,
+          status: row.status,
+          source: "resend-confirmation",
+          error_message: row.error || null,
+          metadata: row.meta || {},
+          organization_id: (tournament as any).organization_id || null,
+          tournament_id: tournamentId,
+          triggered_by: user?.id || null,
+        });
+      } catch (e) {
+        console.error("[resend-confirmation] log insert failed", e);
+      }
+    };
     let sent = 0;
     let failed = 0;
     for (const reg of registrations) {
+      const regName = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
+      let regSubject = `You're Registered — ${tournament.title}`;
+      let regTeeTime = "";
       try {
         if (useCustom && RESEND_API_KEY) {
           // Use custom template
@@ -338,6 +361,8 @@ Deno.serve(async (req) => {
             event_homepage: homepage,
           };
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
+          regSubject = subject;
+          regTeeTime = vars.tee_time;
           const slug = (tournament as any).slug;
           const qrToken = (reg as any).qr_token;
           const hubUrl = slug && qrToken ? `https://www.teevents.golf/player/${slug}/${qrToken}` : "";
@@ -361,9 +386,13 @@ Deno.serve(async (req) => {
             const err = await res.text();
             console.error(`Resend API error (${res.status}):`, err);
             failed++;
+            results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "failed", error: err, tee_time: regTeeTime });
+            await logEmail({ email: reg.email, subject, status: "failed", error: err, meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
           } else {
             console.log(`[Custom Confirmation] Sent to ${reg.email}`);
             sent++;
+            results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
+            await logEmail({ email: reg.email, subject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
           }
         } else {
           // Use default template
@@ -379,15 +408,19 @@ Deno.serve(async (req) => {
             (reg as any).qr_token || null,
           );
           sent++;
+          results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
+          await logEmail({ email: reg.email, subject: regSubject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime, default_template: true } });
         }
       } catch (e) {
         console.error(`Failed to send to ${reg.email}:`, e);
         failed++;
+        results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "failed", error: (e as Error).message, tee_time: regTeeTime });
+        await logEmail({ email: reg.email, subject: regSubject, status: "failed", error: (e as Error).message, meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, sent, failed }),
+      JSON.stringify({ success: true, sent, failed, results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {

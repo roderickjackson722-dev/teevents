@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Users, Trash2, Copy, Mail, Trophy, Pencil, Check, X } from "lucide-react";
+import { Loader2, Users, Trash2, Copy, Mail, Trophy, Pencil, Check, X, Share2 } from "lucide-react";
 import LeagueTeamLeaderboard from "@/components/leagues/LeagueTeamLeaderboard";
 import { Textarea } from "@/components/ui/textarea";
 import { useServerFn } from "@tanstack/react-start";

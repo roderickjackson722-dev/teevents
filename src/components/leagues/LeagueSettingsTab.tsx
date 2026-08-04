@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeagueForm from "./LeagueForm";
+import LeaderboardDisplaySettingsCard from "./LeaderboardDisplaySettingsCard";
 
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
   const navigate = useNavigate();

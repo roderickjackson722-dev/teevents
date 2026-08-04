@@ -133,8 +133,13 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
         </CardContent></Card>
         <Card><CardContent className="p-4 flex items-center gap-3">
           <Wallet className="h-5 w-5 text-primary" />
-          <div><p className="text-xs text-muted-foreground">Your net</p><p className="text-2xl font-bold">{fmt(totals.net)}</p></div>
+          <div>
+            <p className="text-xs text-muted-foreground">Your net</p>
+            <p className="text-2xl font-bold">{fmt(totals.net)}</p>
+            <p className="text-[10px] text-muted-foreground">{passFees ? "fees paid by registrants" : "fees deducted"}</p>
+          </div>
         </CardContent></Card>
+
       </div>
 
       <Card>

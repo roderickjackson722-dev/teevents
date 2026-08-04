@@ -169,6 +169,9 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
         </CardContent>
       </Card>
 
+      <LeaderboardDisplaySettingsCard league={league} onSaved={onSaved} />
+
+
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div>

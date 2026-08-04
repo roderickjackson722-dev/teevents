@@ -11,6 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Users, Trash2, Copy, Mail, Trophy, Pencil, Check, X } from "lucide-react";
 import LeagueTeamLeaderboard from "@/components/leagues/LeagueTeamLeaderboard";
+import { Textarea } from "@/components/ui/textarea";
+import { useServerFn } from "@tanstack/react-start";
+import { sendLeagueLeaderboardLink } from "@/lib/leagueLeaderboardEmail.functions";
+
 
 interface Member {
   id: string;

@@ -317,6 +317,17 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>Number of Holes</Label>
+                  <Select value={String(editing.holes ?? 18)} onValueChange={(v) => setEditing({ ...editing, holes: Number(v) })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="18">18 holes</SelectItem>
+                      <SelectItem value="9">9 holes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
 
                 {editing.format_type === "three_man_scramble" && (
                   <p className="text-xs text-muted-foreground rounded-md border bg-muted/30 p-2">

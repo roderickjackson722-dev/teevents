@@ -175,6 +175,8 @@ import LiveLeaderboard from "./pages/LiveLeaderboard";
 import ScoreLogin from "./pages/ScoreLogin";
 import GroupScoring from "./pages/GroupScoring";
 import LeagueTeamScoring from "./pages/LeagueTeamScoring";
+import LeagueEventLeaderboard from "./pages/LeagueEventLeaderboard";
+
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";

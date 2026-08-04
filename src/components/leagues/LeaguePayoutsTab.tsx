@@ -209,7 +209,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                       <TableCell>{r.event?.event_name || "—"}</TableCell>
                       <TableCell className="text-right">{fmt(r.amount_cents)}</TableCell>
                       <TableCell className="text-right text-amber-700">{fmt(r.platform_fee_cents)}</TableCell>
-                      <TableCell className="text-right font-medium">{fmt((r.amount_cents || 0) - (r.platform_fee_cents || 0))}</TableCell>
+                      <TableCell className="text-right font-medium">{fmt(netOf(r.amount_cents || 0, r.platform_fee_cents || 0))}</TableCell>
                       <TableCell>
                         <Badge variant={r.status === "paid" ? "default" : "secondary"}>{r.status}</Badge>
                       </TableCell>

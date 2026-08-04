@@ -159,16 +159,19 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
       .filter((r) => r.member)
   );
 
+  const scoringLink = (code: string) => `https://teevents.golf/league-score/${code}`;
+
   const copyAll = async () => {
     const text = pairings
       .map((p) => {
         const names = [p.player1_id, p.player2_id].map((id) => memberById.get(id || "")?.member_name).filter(Boolean).join(", ");
-        return `${p.team_name} — ${p.scoring_code} (${p.holes} holes) — ${names}`;
+        return `${p.team_name} — ${p.scoring_code} (${p.holes} holes) — ${names}\nEnter scores: ${scoringLink(p.scoring_code)}`;
       })
-      .join("\n");
+      .join("\n\n");
     await navigator.clipboard.writeText(text);
-    toast({ title: "Codes copied" });
+    toast({ title: "Codes and score entry links copied" });
   };
+
 
   const sendCodes = async () => {
     const ids = Object.entries(recipients).filter(([, v]) => v).map(([k]) => k);

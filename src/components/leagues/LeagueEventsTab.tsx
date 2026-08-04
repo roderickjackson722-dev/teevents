@@ -45,6 +45,7 @@ const empty = {
   end_date: "",
   course_name: "",
   format_type: "individual_stroke",
+  holes: 18,
   start_time: "",
   registration_deadline: "",
   max_players: "" as any,
@@ -107,6 +108,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
       course_name: editing.course_name || null,
       league_course_id: editing.league_course_id || null,
       format_type: editing.format_type,
+      holes: Number(editing.holes) === 9 ? 9 : 18,
       start_time: editing.start_time || null,
       registration_deadline: editing.registration_deadline || null,
       max_players: editing.max_players !== "" ? Number(editing.max_players) : null,
@@ -228,6 +230,8 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                         pass_platform_fee_to_player: !!e.pass_platform_fee_to_player,
                         start_format: e.start_format || "shotgun",
                         tee_interval_minutes: e.tee_interval_minutes ?? 10,
+                        holes: e.holes === 9 ? 9 : 18,
+
                         recurrence_freq: e.recurrence_rule?.freq || "",
                         recurrence_count: "",
                         fee_tiers: Array.isArray(e.fee_tiers)
@@ -317,6 +321,17 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>Number of Holes</Label>
+                  <Select value={String(editing.holes ?? 18)} onValueChange={(v) => setEditing({ ...editing, holes: Number(v) })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="18">18 holes</SelectItem>
+                      <SelectItem value="9">9 holes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
 
                 {editing.format_type === "three_man_scramble" && (
                   <p className="text-xs text-muted-foreground rounded-md border bg-muted/30 p-2">

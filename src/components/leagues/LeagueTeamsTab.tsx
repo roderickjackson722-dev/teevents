@@ -43,6 +43,11 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
   const [editName, setEditName] = useState("");
   const [recipients, setRecipients] = useState<Record<string, boolean>>({});
   const [sending, setSending] = useState(false);
+  const [boardRecipients, setBoardRecipients] = useState<Record<string, boolean>>({});
+  const [extraEmails, setExtraEmails] = useState("");
+  const [boardMessage, setBoardMessage] = useState("");
+  const [sendingBoard, setSendingBoard] = useState(false);
+
 
   const event = events.find((e) => e.id === eventId);
 

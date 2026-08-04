@@ -13,6 +13,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeagueForm from "./LeagueForm";
 import LeaderboardDisplaySettingsCard from "./LeaderboardDisplaySettingsCard";
 
+const PLACES: [string, string][] = [
+  ["1", "1st Place"],
+  ["2", "2nd Place"],
+  ["3", "3rd Place"],
+  ["4", "4th Place"],
+  ["5", "5th Place"],
+  ["6", "6th Place"],
+];
+
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
   const navigate = useNavigate();
   const [showEdit, setShowEdit] = useState(false);
@@ -65,7 +74,15 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
   const load = async () => {
     setLoading(true);
     const { data } = await (supabase as any).from("league_point_systems").select("*").eq("league_id", league.id).maybeSingle();
-    setPts(data || { win_points: 2, tie_points: 1, loss_points: 0, position_points: { "1": 10, "2": 8, "3": 6, "4": 4, "5": 2 } });
+    setPts(
+      data || {
+        win_points: 2,
+        tie_points: 1,
+        loss_points: 0,
+        participation_points: 0,
+        position_points: { "1": 10, "2": 6, "3": 4, "4": 3, "5": 2, "6": 1 },
+      },
+    );
     setLoading(false);
   };
 
@@ -78,12 +95,23 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
       win_points: Number(pts.win_points),
       tie_points: Number(pts.tie_points),
       loss_points: Number(pts.loss_points),
+      participation_points: Number(pts.participation_points || 0),
       position_points: typeof pts.position_points === "string" ? JSON.parse(pts.position_points) : pts.position_points,
     };
     const { error } = await (supabase as any).from("league_point_systems").upsert(payload, { onConflict: "league_id" });
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
     else toast({ title: "Point system saved" });
     setSaving(false);
+  };
+
+  const positionPoints: Record<string, number> = (() => {
+    const pp = pts?.position_points;
+    if (!pp) return {};
+    return typeof pp === "string" ? (() => { try { return JSON.parse(pp); } catch { return {}; } })() : pp;
+  })();
+
+  const setPositionPoint = (key: string, val: string) => {
+    setPts({ ...pts, position_points: { ...positionPoints, [key]: Number(val) || 0 } });
   };
 
   const del = async () => {
@@ -217,16 +245,39 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
 
       <Card>
         <CardContent className="pt-6 space-y-4">
-          <h2 className="text-lg font-semibold">Point System</h2>
-          {loading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : (
+          <h2 className="text-lg font-semibold">Points Settings</h2>
+          <p className="text-sm text-muted-foreground">
+            Points awarded by finishing position each event. These drive the Season Standings.
+          </p>
+          {loading || !pts ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {PLACES.map(([key, label]) => (
+                  <div key={key}>
+                    <Label>{label}</Label>
+                    <Input
+                      type="number"
+                      value={positionPoints[key] ?? 0}
+                      onChange={(e) => setPositionPoint(key, e.target.value)}
+                    />
+                  </div>
+                ))}
                 <div>
-                  <Label>Win Points</Label>
+                  <Label>Participation</Label>
+                  <Input
+                    type="number"
+                    value={pts.participation_points ?? 0}
+                    onChange={(e) => setPts({ ...pts, participation_points: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 border-t pt-4">
+                <div>
+                  <Label>Win Bonus</Label>
                   <Input type="number" value={pts.win_points} onChange={(e) => setPts({ ...pts, win_points: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Tie Points</Label>
+                  <Label>Tie Bonus</Label>
                   <Input type="number" value={pts.tie_points} onChange={(e) => setPts({ ...pts, tie_points: e.target.value })} />
                 </div>
                 <div>
@@ -234,16 +285,8 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
                   <Input type="number" value={pts.loss_points} onChange={(e) => setPts({ ...pts, loss_points: e.target.value })} />
                 </div>
               </div>
-              <div>
-                <Label>Position Points (JSON)</Label>
-                <Input
-                  value={typeof pts.position_points === "string" ? pts.position_points : JSON.stringify(pts.position_points)}
-                  onChange={(e) => setPts({ ...pts, position_points: e.target.value })}
-                />
-                <p className="text-xs text-muted-foreground mt-1">Example: {`{"1":10,"2":8,"3":6,"4":4,"5":2}`}</p>
-              </div>
               <Button onClick={savePts} disabled={saving}>
-                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save Point System
+                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save Points Settings
               </Button>
             </>
           )}

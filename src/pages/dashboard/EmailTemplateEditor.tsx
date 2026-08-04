@@ -1373,6 +1373,7 @@ export default function EmailTemplateEditor() {
                         </p>
                       </div>
                     </label>
+                    <DeliveryStatus id={r.id} />
                     <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
                       {r.payment_status}
                     </Badge>

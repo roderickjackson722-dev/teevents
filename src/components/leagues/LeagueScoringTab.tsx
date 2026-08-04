@@ -5,11 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LeagueTeamLeaderboard from "@/components/leagues/LeagueTeamLeaderboard";
-import { Trophy } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Save, PenLine, Sparkles } from "lucide-react";
+import { Loader2, Save, PenLine, Sparkles, Trophy } from "lucide-react";
 import { buildAllocation, netForHole, capNetDoubleBogey, type CourseSnapshot } from "@/lib/leagueHandicap";
 import { computeEventSkins } from "@/lib/leagueSkins";
 
@@ -168,7 +167,6 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         if (g === "" || g == null) clears.push({ member_id: p.member_id, hole_number: h });
       }
     }
-    for (const c of clears.length ? [null] : []) void c;
     if (clears.length > 0) {
       const byMember: Record<string, number[]> = {};
       clears.forEach((c) => { (byMember[c.member_id] ||= []).push(c.hole_number); });

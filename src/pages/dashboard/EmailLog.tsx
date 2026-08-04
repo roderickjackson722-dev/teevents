@@ -52,7 +52,9 @@ const statusBadge = (s: string) => {
  * resend for the day-before reminder.
  */
 export default function EmailLog() {
-  const { organizationId } = useOrgContext();
+  const { org } = useOrgContext();
+  const organizationId = org?.orgId;
+
   const [rows, setRows] = useState<LogRow[]>([]);
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [tournaments, setTournaments] = useState<{ id: string; title: string }[]>([]);

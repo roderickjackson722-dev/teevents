@@ -14,8 +14,8 @@ export const clamp = (value: string, max = 300) => (value.length <= max ? value 
 const absolute = (value: unknown) => { const url = String(value ?? ""); return /^https?:\/\//i.test(url) ? url : url.startsWith("/") ? `${SITE}${url}` : DEFAULT_IMAGE; };
 
 async function query(table: string, params: URLSearchParams) {
-  const base = process.env.VITE_SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   if (!base || !key) return undefined;
   const response = await fetch(`${base}/rest/v1/${table}?${params}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
   if (!response.ok) return undefined;
@@ -32,8 +32,8 @@ export async function getCollegeMeta(slug: string): Promise<PageMeta> {
 export interface CollegeHubItem { slug: string; title: string; tagline: string }
 
 export async function getCollegeHubList(): Promise<CollegeHubItem[]> {
-  const base = process.env.VITE_SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   if (!base || !key) return [];
   const params = new URLSearchParams({ select: "slug,title,hero_tagline", status: "eq.active", order: "created_at.desc", limit: "50" });
   const response = await fetch(`${base}/rest/v1/college_tournaments?${params}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
@@ -45,7 +45,7 @@ export async function getCollegeHubList(): Promise<CollegeHubItem[]> {
 export async function getTournamentMeta(slug: string, route: "t" | "tournament"): Promise<PageMeta> {
   const filter = `or=(custom_slug.eq.${encodeURIComponent(slug)},slug.eq.${encodeURIComponent(slug)})`;
   const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url&${filter}&site_published=eq.true&limit=1`;
-  const base = process.env.VITE_SUPABASE_URL; const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const base = import.meta.env.VITE_SUPABASE_URL; const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   let row: Record<string, unknown> | undefined;
   if (base && key) { const response = await fetch(`${base}/rest/v1/tournaments?${params}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } }); if (response.ok) row = ((await response.json()) as Record<string, unknown>[])[0]; }
   const title = plain(row?.title) || "Golf Tournament";

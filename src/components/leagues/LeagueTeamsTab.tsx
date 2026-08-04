@@ -443,17 +443,76 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
         </Card>
       )}
 
-      {/* Part 4 — leaderboard */}
+      {/* Part 4 — leaderboard (always visible, editable by the league manager) */}
       {eventId && (
         <Card>
           <CardContent className="pt-6">
             <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
               <Trophy className="h-5 w-5" /> Event Leaderboard
             </h2>
-            <LeagueTeamLeaderboard eventId={eventId} />
+            <LeagueTeamLeaderboard eventId={eventId} editable />
           </CardContent>
         </Card>
       )}
+
+      {/* Share the leaderboard */}
+      {eventId && (
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Share2 className="h-5 w-5" /> Share Leaderboard
+            </h2>
+            <div className="flex gap-2 flex-wrap items-center">
+              <Input readOnly value={leaderboardUrl} className="max-w-md font-mono text-xs" />
+              <Button variant="outline" onClick={copyLeaderboardLink}><Copy className="h-4 w-4 mr-2" /> Copy Link</Button>
+              <Button asChild variant="ghost">
+                <a href={leaderboardUrl} target="_blank" rel="noreferrer">Open</a>
+              </Button>
+            </div>
+
+            <div className="rounded-md border p-3 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <p className="font-medium">Email the leaderboard link</p>
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={members.length > 0 && members.every((m) => boardRecipients[m.id])}
+                    onCheckedChange={(v) => {
+                      const next: Record<string, boolean> = {};
+                      members.forEach((m) => { next[m.id] = !!v; });
+                      setBoardRecipients(next);
+                    }}
+                  />
+                  Select All Players
+                </label>
+              </div>
+              <div className="max-h-56 overflow-y-auto divide-y">
+                {members.map((m) => (
+                  <label key={m.id} className="flex items-center gap-3 py-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={!!boardRecipients[m.id]}
+                      onCheckedChange={(v) => setBoardRecipients((prev) => ({ ...prev, [m.id]: !!v }))}
+                    />
+                    <span className="font-medium">{m.member_name}</span>
+                    <span className="text-muted-foreground">({m.email || "no email"})</span>
+                  </label>
+                ))}
+              </div>
+              <div>
+                <Label>Additional emails (comma separated)</Label>
+                <Input value={extraEmails} onChange={(e) => setExtraEmails(e.target.value)} placeholder="guest@example.com, sponsor@example.com" />
+              </div>
+              <div>
+                <Label>Optional message</Label>
+                <Textarea value={boardMessage} onChange={(e) => setBoardMessage(e.target.value)} rows={3} placeholder="Follow the action live today!" />
+              </div>
+              <Button onClick={sendLeaderboard} disabled={sendingBoard}>
+                {sendingBoard ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />} Email Leaderboard Link
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }

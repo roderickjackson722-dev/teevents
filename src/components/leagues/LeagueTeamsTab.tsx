@@ -159,16 +159,19 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
       .filter((r) => r.member)
   );
 
+  const scoringLink = (code: string) => `https://teevents.golf/league-score/${code}`;
+
   const copyAll = async () => {
     const text = pairings
       .map((p) => {
         const names = [p.player1_id, p.player2_id].map((id) => memberById.get(id || "")?.member_name).filter(Boolean).join(", ");
-        return `${p.team_name} — ${p.scoring_code} (${p.holes} holes) — ${names}`;
+        return `${p.team_name} — ${p.scoring_code} (${p.holes} holes) — ${names}\nEnter scores: ${scoringLink(p.scoring_code)}`;
       })
-      .join("\n");
+      .join("\n\n");
     await navigator.clipboard.writeText(text);
-    toast({ title: "Codes copied" });
+    toast({ title: "Codes and score entry links copied" });
   };
+
 
   const sendCodes = async () => {
     const ids = Object.entries(recipients).filter(([, v]) => v).map(([k]) => k);
@@ -389,6 +392,7 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
                     <TableHead>Scoring Code</TableHead>
                     <TableHead>Holes</TableHead>
                     <TableHead>Players</TableHead>
+                    <TableHead>Score Entry Link</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -398,8 +402,31 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
                       <TableCell className="font-mono">{p.scoring_code}</TableCell>
                       <TableCell>{p.holes}</TableCell>
                       <TableCell>{[p.player1_id, p.player2_id].map((id) => memberById.get(id || "")?.member_name).filter(Boolean).join(", ")}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <a
+                            href={scoringLink(p.scoring_code)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-sm underline text-primary whitespace-nowrap"
+                          >
+                            Enter Scores
+                          </a>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(scoringLink(p.scoring_code));
+                              toast({ title: "Score entry link copied" });
+                            }}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
+
                 </TableBody>
               </Table>
             </div>

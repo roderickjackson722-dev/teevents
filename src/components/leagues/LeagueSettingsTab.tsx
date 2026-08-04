@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeagueForm from "./LeagueForm";
+import LeaderboardDisplaySettingsCard from "./LeaderboardDisplaySettingsCard";
 
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
   const navigate = useNavigate();
@@ -168,6 +169,9 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
           </div>
         </CardContent>
       </Card>
+
+      <LeaderboardDisplaySettingsCard league={league} onSaved={onSaved} />
+
 
       <Card>
         <CardContent className="pt-6 space-y-4">

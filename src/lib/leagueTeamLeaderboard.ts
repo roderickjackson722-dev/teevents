@@ -21,6 +21,8 @@ export interface LeaderboardPayload {
   league_name?: string | null;
   league_slug?: string | null;
   league_logo_url?: string | null;
+  show_gross?: boolean;
+  show_net?: boolean;
   teams?: LeaderboardTeamRaw[];
 }
 

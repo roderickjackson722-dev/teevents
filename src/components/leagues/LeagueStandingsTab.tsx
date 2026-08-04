@@ -68,7 +68,7 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
     <Card>
       <CardContent className="pt-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Standings</h2>
+          <h2 className="text-lg font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Season Standings</h2>
           <Button onClick={recompute} disabled={computing}>
             {computing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Recompute

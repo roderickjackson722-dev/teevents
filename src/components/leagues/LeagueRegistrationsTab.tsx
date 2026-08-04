@@ -10,7 +10,24 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Download, Mail, Save, RotateCcw, Users, DollarSign, Send } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Loader2, Download, Mail, Save, RotateCcw, Users, DollarSign, Send, Plus } from "lucide-react";
+
+const ENTRY_TYPES = [
+  { value: "online", label: "Paid (online)" },
+  { value: "cash", label: "Paid (cash/check)" },
+  { value: "comped_free", label: "Comped (free)" },
+  { value: "comped_discount", label: "Comped (discount)" },
+];
+
+const ENTRY_LABEL: Record<string, string> = {
+  online: "Online",
+  cash: "Cash/Check",
+  check: "Cash/Check",
+  comped_free: "Comped",
+  comped_discount: "Comped (disc.)",
+};
 
 const DEFAULTS = {
   subject: "You're Registered — {{event_name}}",
@@ -46,6 +63,9 @@ type Row = {
   pairing_group: number | null;
   pairing_position: number | null;
   confirmation_email_sent_at: string | null;
+  entry_type: string | null;
+  manual_notes: string | null;
+  is_manual_entry: boolean | null;
   member: { member_name: string; email: string | null; phone: string | null; handicap_index: number | null; scoring_code: string | null } | null;
 };
 
@@ -57,6 +77,9 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
   const [sending, setSending] = useState<string | null>(null);
   const [config, setConfig] = useState<typeof DEFAULTS>(DEFAULTS);
   const [saving, setSaving] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualSaving, setManualSaving] = useState(false);
+  const [manual, setManual] = useState({ name: "", email: "", entry_type: "cash", amount: "", notes: "" });
 
   useEffect(() => {
     (async () => {
@@ -76,7 +99,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
     setLoading(true);
     const { data } = await (supabase as any)
       .from("league_event_registrations")
-      .select("id, created_at, status, fee_paid, team_name, fee_tier_label, fee_tier_amount_cents, tee_time, pairing_group, pairing_position, confirmation_email_sent_at, member:league_members(member_name, email, phone, handicap_index, scoring_code)")
+      .select("id, created_at, status, fee_paid, team_name, fee_tier_label, fee_tier_amount_cents, tee_time, pairing_group, pairing_position, confirmation_email_sent_at, entry_type, manual_notes, is_manual_entry, member:league_members(member_name, email, phone, handicap_index, scoring_code)")
       .eq("event_id", evId)
       .order("created_at", { ascending: true });
     setRows((data as Row[]) || []);
@@ -133,6 +156,62 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
     await load(eventId);
   };
 
+  const addManualEntry = async () => {
+    if (!eventId) return toast({ title: "Choose an event first", variant: "destructive" });
+    if (!manual.name.trim() || !manual.email.trim()) {
+      return toast({ title: "Name and email are required", variant: "destructive" });
+    }
+    setManualSaving(true);
+    try {
+      const email = manual.email.trim().toLowerCase();
+      const { data: existingMember } = await (supabase as any)
+        .from("league_members")
+        .select("id")
+        .eq("league_id", leagueId)
+        .ilike("email", email)
+        .maybeSingle();
+
+      let memberId = existingMember?.id as string | undefined;
+      if (!memberId) {
+        const { data: created, error: mErr } = await (supabase as any)
+          .from("league_members")
+          .insert({ league_id: leagueId, member_name: manual.name.trim(), email })
+          .select("id")
+          .single();
+        if (mErr) throw mErr;
+        memberId = created.id;
+      }
+
+      const comped = manual.entry_type.startsWith("comped");
+      const cents = Math.round((Number(manual.amount) || 0) * 100);
+      const { data: authData } = await (supabase as any).auth.getUser();
+
+      const { error } = await (supabase as any).from("league_event_registrations").insert({
+        event_id: eventId,
+        member_id: memberId,
+        entry_type: manual.entry_type,
+        manual_notes: manual.notes.trim() || null,
+        is_manual_entry: true,
+        added_by: authData?.user?.id ?? null,
+        fee_paid: true,
+        registration_fee_paid: true,
+        paid_at: new Date().toISOString(),
+        fee_tier_label: ENTRY_TYPES.find((t) => t.value === manual.entry_type)?.label ?? null,
+        fee_tier_amount_cents: comped && !cents ? 0 : cents,
+      });
+      if (error) throw error;
+
+      toast({ title: "Manual entry added" });
+      setManualOpen(false);
+      setManual({ name: "", email: "", entry_type: "cash", amount: "", notes: "" });
+      await load(eventId);
+    } catch (e: any) {
+      toast({ title: "Could not add entry", description: e.message, variant: "destructive" });
+    } finally {
+      setManualSaving(false);
+    }
+  };
+
   const exportCsv = () => {
     const ev = events.find(e => e.id === eventId);
     const header = ["Name", "Email", "Phone", "Handicap", "Member Code", "Team", "Fee Option", "Amount", "Paid", "Tee Time", "Group", "Registered At", "Confirmation Sent"];
@@ -179,6 +258,63 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
             </SelectContent>
           </Select>
         </div>
+        <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+          <DialogTrigger asChild>
+            <Button disabled={!eventId}><Plus className="h-4 w-4 mr-2" />Add Manual Entry</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                Add Manual Entry{events.find((e) => e.id === eventId)?.event_name ? ` — ${events.find((e) => e.id === eventId)?.event_name}` : ""}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>Event</Label>
+                <Select value={eventId} onValueChange={setEventId}>
+                  <SelectTrigger><SelectValue placeholder="Select an event" /></SelectTrigger>
+                  <SelectContent>
+                    {events.map(e => (
+                      <SelectItem key={e.id} value={e.id}>{e.event_name}{e.event_date ? ` — ${e.event_date}` : ""}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Player name</Label>
+                <Input value={manual.name} onChange={e => setManual({ ...manual, name: e.target.value })} />
+              </div>
+              <div>
+                <Label>Player email</Label>
+                <Input type="email" value={manual.email} onChange={e => setManual({ ...manual, email: e.target.value })} />
+              </div>
+              <div>
+                <Label>Entry type</Label>
+                <RadioGroup value={manual.entry_type} onValueChange={v => setManual({ ...manual, entry_type: v })} className="mt-1 space-y-1">
+                  {ENTRY_TYPES.map(t => (
+                    <label key={t.value} className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value={t.value} /> {t.label}
+                    </label>
+                  ))}
+                </RadioGroup>
+              </div>
+              <div>
+                <Label>Amount (if paid)</Label>
+                <Input inputMode="decimal" placeholder="0.00" value={manual.amount} onChange={e => setManual({ ...manual, amount: e.target.value.replace(/[^0-9.]/g, "") })} />
+              </div>
+              <div>
+                <Label>Notes</Label>
+                <Textarea rows={3} value={manual.notes} onChange={e => setManual({ ...manual, notes: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setManualOpen(false)}>Cancel</Button>
+              <Button onClick={addManualEntry} disabled={manualSaving}>
+                {manualSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}Add Entry
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Button variant="outline" onClick={exportCsv} disabled={!rows.length}>
           <Download className="h-4 w-4 mr-2" />Export CSV
         </Button>
@@ -204,7 +340,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Who's registered</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Event Registrations — who's registered</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           {loading ? (
             <div className="py-10 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div>
@@ -218,11 +354,13 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
                   <TableHead>Email</TableHead>
                   <TableHead>Hcp</TableHead>
                   <TableHead>Code</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Fee option</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Paid</TableHead>
                   <TableHead>Tee time</TableHead>
                   <TableHead>Group</TableHead>
+                  <TableHead>Notes</TableHead>
                   <TableHead>Confirmation</TableHead>
                 </TableRow>
               </TableHeader>
@@ -236,6 +374,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
                     <TableCell className="text-xs">{r.member?.email || "—"}</TableCell>
                     <TableCell>{r.member?.handicap_index ?? "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{r.member?.scoring_code || "—"}</TableCell>
+                    <TableCell className="text-xs">{ENTRY_LABEL[r.entry_type || "online"] || "Online"}</TableCell>
                     <TableCell className="text-xs">{r.fee_tier_label || "—"}</TableCell>
                     <TableCell>{money(r.fee_tier_amount_cents)}</TableCell>
                     <TableCell>
@@ -243,6 +382,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
                     </TableCell>
                     <TableCell className="text-xs">{r.tee_time || "—"}</TableCell>
                     <TableCell className="text-xs">{r.pairing_group ?? "—"}</TableCell>
+                    <TableCell className="text-xs max-w-[200px]">{r.manual_notes || "—"}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground whitespace-nowrap">

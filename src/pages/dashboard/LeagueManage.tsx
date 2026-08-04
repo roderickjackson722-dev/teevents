@@ -149,7 +149,7 @@ export default function LeagueManage() {
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
           <TabsTrigger value="scoring-payouts">Scoring &amp; Payouts</TabsTrigger>
           <TabsTrigger value="members">Players</TabsTrigger>
-          <TabsTrigger value="registration">Registration</TabsTrigger>
+          <TabsTrigger value="registration">League Registrations</TabsTrigger>
 
           <TabsTrigger value="event-registrations">Event Registrations</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
@@ -157,7 +157,7 @@ export default function LeagueManage() {
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
           <TabsTrigger value="teams">Teams &amp; Codes</TabsTrigger>
           <TabsTrigger value="scoring">Scoring</TabsTrigger>
-          <TabsTrigger value="standings">Leaderboard</TabsTrigger>
+          <TabsTrigger value="standings">Season Standings</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Trophy } from "lucide-react";
 import { recomputeLeagueStandings } from "@/lib/leagueStandings";
+import { formatCents } from "@/lib/formatCurrency";
 import { assignFlights, flightLabel, flightsForMethod, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
 
 export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
@@ -94,6 +95,7 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                     <TableHead className="text-right">W-L-T</TableHead>
                     <TableHead className="text-right">Gross</TableHead>
                     <TableHead className="text-right">Net</TableHead>
+                    <TableHead className="text-right">Prize $</TableHead>
                     <TableHead className="text-right font-bold">Points</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -107,6 +109,7 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                       <TableCell className="text-right">{r.wins}-{r.losses}-{r.ties}</TableCell>
                       <TableCell className="text-right">{r.total_gross}</TableCell>
                       <TableCell className="text-right">{r.total_net}</TableCell>
+                      <TableCell className="text-right">{formatCents(r.prize_money_cents || 0)}</TableCell>
                       <TableCell className="text-right font-bold">{r.points}</TableCell>
                     </TableRow>
                   ))}

@@ -88,6 +88,14 @@ export async function recomputeLeagueStandings(leagueId: string) {
     });
   });
 
+  // Preserve manually tracked prize money across recomputes
+  const { data: existing } = await (supabase as any)
+    .from("league_standings")
+    .select("member_id, prize_money_cents")
+    .eq("league_id", leagueId);
+  const prizeByMember: Record<string, number> = {};
+  (existing || []).forEach((e: any) => { prizeByMember[e.member_id] = e.prize_money_cents || 0; });
+
   // Clear then upsert
   await (supabase as any).from("league_standings").delete().eq("league_id", leagueId);
   const rows = Object.entries(perMember).map(([memberId, r]) => ({
@@ -101,6 +109,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
     ties: r.ties,
     total_gross: r.totalGross,
     total_net: r.totalNet,
+    prize_money_cents: prizeByMember[memberId] || 0,
   }));
   if (rows.length) {
     await (supabase as any).from("league_standings").insert(rows);

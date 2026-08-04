@@ -410,22 +410,82 @@ Deno.serve(async (req) => {
       event_homepage: homepage,
     });
 
+    /** Writes one row per send attempt so organizers get an auditable log. */
+    const logEmail = async (row: {
+      email: string;
+      subject: string;
+      status: "sent" | "failed";
+      resendId?: string | null;
+      error?: string | null;
+      meta?: Record<string, unknown>;
+    }) => {
+      try {
+        await admin.from("email_send_log").insert({
+          message_id: crypto.randomUUID(),
+          template_name: "day-before-reminder",
+          recipient_email: row.email,
+          subject: row.subject,
+          status: row.status,
+          source: "send-day-before-reminder",
+          resend_id: row.resendId || null,
+          error_message: row.error || null,
+          metadata: row.meta || {},
+          organization_id: (tournament as any).organization_id || null,
+          tournament_id: tournament_id,
+          triggered_by: user?.id || null,
+        });
+      } catch (e) {
+        console.error("[day-before-reminder] log insert failed", e);
+      }
+    };
+
+    /** In-app organizer alert so a failed/zero-recipient send is never silent. */
+    const alertOrganizer = async (title: string, message: string, meta: Record<string, unknown> = {}) => {
+      try {
+        if (!(tournament as any).organization_id) return;
+        await admin.from("organizer_notifications").insert({
+          organization_id: (tournament as any).organization_id,
+          tournament_id: tournament_id,
+          type: "day_before_reminder_failure",
+          severity: "error",
+          title,
+          message,
+          link: "/dashboard/email-log",
+          metadata: meta,
+        });
+      } catch (e) {
+        console.error("[day-before-reminder] alert insert failed", e);
+      }
+    };
+
     const send = async (to: string, vars: Record<string, string>) => {
+      const subject = replaceVars(config.subject || DEFAULTS.subject, vars);
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
           from: SENDER,
           to: [to],
-          subject: replaceVars(config.subject || DEFAULTS.subject, vars),
+          subject,
           html: buildHtml(config, vars, homepage, addons || [], homepage),
         }),
       });
-      if (!res.ok) throw new Error(await res.text());
+      const text = await res.text();
+      if (!res.ok) throw new Error(text);
+      let resendId: string | null = null;
+      try { resendId = JSON.parse(text)?.id ?? null; } catch { /* non-JSON success body */ }
+      return { subject, resendId };
     };
 
     if (test_email) {
-      await send(String(test_email), buildVars({ first_name: "Test", last_name: "Player", scoring_code: "ABC123", group_number: 1, tee_time: "8:30 AM" }));
+      const vars = buildVars({ first_name: "Test", last_name: "Player", scoring_code: "ABC123", group_number: 1, tee_time: "8:30 AM" });
+      try {
+        const out = await send(String(test_email), vars);
+        await logEmail({ email: String(test_email), subject: out.subject, status: "sent", resendId: out.resendId, meta: { test: true } });
+      } catch (e) {
+        await logEmail({ email: String(test_email), subject: replaceVars(config.subject || DEFAULTS.subject, vars), status: "failed", error: (e as Error).message, meta: { test: true } });
+        throw e;
+      }
       return new Response(JSON.stringify({ sent: 1, failed: 0, test: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -440,8 +500,22 @@ Deno.serve(async (req) => {
     if (targetIds) regQuery = regQuery.in("id", targetIds);
     else regQuery = regQuery.eq("payment_status", "paid");
     const { data: regs, error: regErr } = await regQuery;
-    if (regErr) throw new Error(`Could not load recipients: ${regErr.message}`);
-    if (!regs || regs.length === 0) throw new Error("No recipients found for this tournament");
+    if (regErr) {
+      await alertOrganizer(
+        "Day Before Reminder could not load recipients",
+        `The reminder send failed before any email went out: ${regErr.message}`,
+        { stage: "recipient_query" },
+      );
+      throw new Error(`Could not load recipients: ${regErr.message}`);
+    }
+    if (!regs || regs.length === 0) {
+      await alertOrganizer(
+        "Day Before Reminder reached 0 recipients",
+        "No registrations matched this send, so no reminder emails were delivered. Check that players are registered and paid, then resend.",
+        { stage: "zero_recipients", hand_picked: !!targetIds },
+      );
+      throw new Error("No recipients found for this tournament");
+    }
 
     // Scoring codes are assigned per group; fill in any row missing its copy so the
     // emailed code matches the code shown in Players & Pairings.
@@ -458,18 +532,39 @@ Deno.serve(async (req) => {
 
     let sent = 0;
     let failed = 0;
+    const results: any[] = [];
     for (const reg of regs || []) {
-      if (!reg.email) { failed++; continue; }
+      const name = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
+      const vars = buildVars(reg);
+      if (!reg.email) {
+        failed++;
+        results.push({ registration_id: reg.id, name, email: null, status: "failed", error: "No email address on file", tee_time: vars.tee_time });
+        await logEmail({ email: "(missing)", subject: replaceVars(config.subject || DEFAULTS.subject, vars), status: "failed", error: "No email address on file", meta: { registration_id: reg.id, name, tee_time: vars.tee_time } });
+        continue;
+      }
       try {
-        await send(reg.email, buildVars(reg));
+        const out = await send(reg.email, vars);
         sent++;
+        results.push({ registration_id: reg.id, name, email: reg.email, status: "sent", tee_time: vars.tee_time });
+        await logEmail({ email: reg.email, subject: out.subject, status: "sent", resendId: out.resendId, meta: { registration_id: reg.id, name, tee_time: vars.tee_time, group_number: reg.group_number ?? null } });
       } catch (e) {
         console.error("[day-before-reminder] send failed", reg.id, e);
         failed++;
+        const msg = (e as Error).message;
+        results.push({ registration_id: reg.id, name, email: reg.email, status: "failed", error: msg, tee_time: vars.tee_time });
+        await logEmail({ email: reg.email, subject: replaceVars(config.subject || DEFAULTS.subject, vars), status: "failed", error: msg, meta: { registration_id: reg.id, name, tee_time: vars.tee_time, group_number: reg.group_number ?? null } });
       }
     }
 
-    return new Response(JSON.stringify({ sent, failed }), {
+    if (failed > 0) {
+      await alertOrganizer(
+        `Day Before Reminder: ${failed} email${failed === 1 ? "" : "s"} failed`,
+        `${sent} reminder${sent === 1 ? "" : "s"} delivered, ${failed} failed. Open the email send log to review the errors and resend.`,
+        { stage: "send", sent, failed },
+      );
+    }
+
+    return new Response(JSON.stringify({ sent, failed, results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

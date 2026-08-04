@@ -76,7 +76,7 @@ export const sendLeagueLeaderboardLink = createServerFn({ method: "POST" })
           <strong>Format:</strong> ${holes} holes${ev.format_type ? ` (${ev.format_type})` : ""}</p>
           <p><a href="${scoreLink}" style="background:#F5A623;color:#1a5c38;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">Enter Your Scores</a></p>
           <p style="color:#555;font-size:13px;margin-top:-6px">Use your 6-character team scoring code to enter scores.</p>
-          <p><a href="${boardLink}" style="background:#1a5c38;color:#ffffff;color:#1a5c38;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">View Live Leaderboard</a></p>
+          <p><a href="${boardLink}" style="background:#1a5c38;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">View Live Leaderboard</a></p>
           ${leagueLink ? `<p><a href="${leagueLink}" style="color:#1a5c38">Visit the ${league.league_name} league page</a></p>` : ""}
           <p style="color:#888;font-size:12px;margin-top:24px">${boardLink}</p>
         </div>

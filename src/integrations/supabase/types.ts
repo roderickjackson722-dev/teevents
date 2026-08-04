@@ -11275,6 +11275,10 @@ export type Database = {
           playing_handicap: number
         }[]
       }
+      get_league_event_leaderboard: {
+        Args: { _event_id: string }
+        Returns: Json
+      }
       get_live_scoring_group: {
         Args: { _group_number: number; _tournament_id: string }
         Returns: Json

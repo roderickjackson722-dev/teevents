@@ -63,6 +63,7 @@ import Donations from "./pages/dashboard/Donations";
 import Finances from "./pages/dashboard/Finances";
 import Transactions from "./pages/dashboard/Transactions";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
+import EmailLog from "./pages/dashboard/EmailLog";
 import Registration from "./pages/dashboard/Registration";
 import ScoringPayouts from "./pages/dashboard/ScoringPayouts";
 import Settings from "./pages/dashboard/Settings";
@@ -276,6 +277,7 @@ const App = () => (
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/transactions" element={<DashboardLayout><Transactions /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
+          <Route path="/dashboard/email-log" element={<DashboardLayout><EmailLog /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />

@@ -11,6 +11,7 @@ import LeagueMembersTab from "@/components/leagues/LeagueMembersTab";
 import LeagueEventsTab from "@/components/leagues/LeagueEventsTab";
 import LeagueCoursesTab from "@/components/leagues/LeagueCoursesTab";
 import LeaguePairingsTab from "@/components/leagues/LeaguePairingsTab";
+import LeagueTeamsTab from "@/components/leagues/LeagueTeamsTab";
 import LeagueScoringTab from "@/components/leagues/LeagueScoringTab";
 import LeagueStandingsTab from "@/components/leagues/LeagueStandingsTab";
 import LeagueSkinsTab from "@/components/leagues/LeagueSkinsTab";
@@ -152,6 +153,7 @@ export default function LeagueManage() {
           <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
+          <TabsTrigger value="teams">Teams &amp; Codes</TabsTrigger>
           <TabsTrigger value="scoring">Scoring</TabsTrigger>
           <TabsTrigger value="standings">Leaderboard</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
@@ -163,6 +165,7 @@ export default function LeagueManage() {
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="teams" className="mt-4"><LeagueTeamsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="overview" className="mt-4"><LeagueOverviewTab leagueId={league.id} /></TabsContent>
         <TabsContent value="scoring-payouts" className="mt-4"><LeagueScoringPayoutsTab leagueId={league.id} /></TabsContent>
         <TabsContent value="members" className="mt-4"><LeagueMembersTab leagueId={league.id} /></TabsContent>

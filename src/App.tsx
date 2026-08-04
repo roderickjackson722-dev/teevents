@@ -174,6 +174,7 @@ import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import ScoreLogin from "./pages/ScoreLogin";
 import GroupScoring from "./pages/GroupScoring";
+import LeagueTeamScoring from "./pages/LeagueTeamScoring";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
@@ -299,6 +300,8 @@ const App = () => (
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
+          <Route path="/league-score" element={<LeagueTeamScoring />} />
+          <Route path="/league-score/:code" element={<LeagueTeamScoring />} />
           <Route path="/score/:slug" element={<ScoreLogin />} />
           <Route path="/score/:slug/:code" element={<GroupScoring />} />
           <Route path="/sample/dashboard/:token" element={<SampleTournamentDashboard />} />

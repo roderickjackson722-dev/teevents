@@ -26,6 +26,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Golf tournament management for registration, payments, live scoring, sponsors, and pairings." },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "TeeVents Golf Tournaments" },
+      { property: "og:title", content: "TeeVents Golf Tournaments" },
+      { property: "og:description", content: "Golf tournament management for registration, payments, live scoring, sponsors, and pairings." },
+      { name: "twitter:title", content: "TeeVents Golf Tournaments" },
+      { name: "twitter:description", content: "Golf tournament management for registration, payments, live scoring, sponsors, and pairings." },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [

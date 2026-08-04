@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import LeagueTeamLeaderboard from "@/components/leagues/LeagueTeamLeaderboard";
+import { Trophy } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
@@ -157,8 +159,30 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         }
       }
     }
+    // Blanked cells clear the stored score for that player/hole
+    const clears: { member_id: string; hole_number: number }[] = [];
+    for (const p of players) {
+      const holes = scores[p.member_id] || {};
+      for (let h = 1; h <= 18; h++) {
+        const g = holes[h];
+        if (g === "" || g == null) clears.push({ member_id: p.member_id, hole_number: h });
+      }
+    }
+    for (const c of clears.length ? [null] : []) void c;
+    if (clears.length > 0) {
+      const byMember: Record<string, number[]> = {};
+      clears.forEach((c) => { (byMember[c.member_id] ||= []).push(c.hole_number); });
+      for (const [mid, hs] of Object.entries(byMember)) {
+        await (supabase as any)
+          .from("league_event_scores")
+          .delete()
+          .eq("event_id", eventId)
+          .eq("member_id", mid)
+          .in("hole_number", hs);
+      }
+    }
     if (rows.length === 0) {
-      toast({ title: "No scores to save" });
+      toast({ title: clears.length ? "Cleared blank scores" : "No scores to save" });
       setSaving(false);
       return;
     }
@@ -201,6 +225,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   const skinsOn = !!event?.skins_enabled;
 
   return (
+    <div className="space-y-6">
     <Card>
       <CardContent className="pt-6 space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
@@ -305,5 +330,18 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         )}
       </CardContent>
     </Card>
+
+    {eventId && (
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <h3 className="font-semibold flex items-center gap-2"><Trophy className="h-5 w-5 text-primary" /> Live Leaderboard</h3>
+          <p className="text-xs text-muted-foreground">
+            Team results for this event, updating live. Use the pencil to edit hole-by-hole scores — clear a hole and save to remove it.
+          </p>
+          <LeagueTeamLeaderboard eventId={eventId} editable />
+        </CardContent>
+      </Card>
+    )}
+    </div>
   );
 }

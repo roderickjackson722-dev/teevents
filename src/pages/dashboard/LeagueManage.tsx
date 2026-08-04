@@ -20,6 +20,8 @@ import LeagueCommunicationTab from "@/components/leagues/LeagueCommunicationTab"
 import LeagueCustomizeTab from "@/components/leagues/LeagueCustomizeTab";
 import LeagueShareTab from "@/components/leagues/LeagueShareTab";
 import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
+import LeaguePaymentsTab from "@/components/leagues/LeaguePaymentsTab";
+
 import LeagueRegistrationTab from "@/components/leagues/LeagueRegistrationTab";
 import LeagueRegistrationsTab from "@/components/leagues/LeagueRegistrationsTab";
 import LeagueScoringPayoutsTab from "@/components/leagues/LeagueScoringPayoutsTab";

@@ -83,6 +83,8 @@ serve(async (req) => {
       if (!pairing) continue;
       const holes = pairing.holes === 9 ? 9 : (ev.holes === 9 ? 9 : 18);
       const link = `https://teevents.golf/league-score/${pairing.scoring_code}`;
+      const boardLink = `https://teevents.golf/league-leaderboard/${ev.id}`;
+
 
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222">
@@ -96,8 +98,10 @@ serve(async (req) => {
           ${courseName ? `<strong>Course:</strong> ${courseName}<br/>` : ""}
           ${ev.event_date ? `<strong>Date:</strong> ${ev.event_date}` : ""}</p>
           <p><a href="${link}" style="background:#F5A623;color:#1a5c38;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">Enter Your Score</a></p>
+          <p><a href="${boardLink}" style="background:#1a5c38;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">View Live Leaderboard</a></p>
           <p style="color:#888;font-size:12px;margin-top:24px">${link}</p>
           <p style="color:#888;font-size:12px">${league.league_name}</p>
+
         </div>
       `;
 
@@ -105,7 +109,7 @@ serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: "TeeVents <no-reply@teevents.golf>",
+          from: "TeeVents Golf Management <info@notifications.teevents.golf>",
           to: m.email,
           subject: `Your Scoring Code for ${ev.event_name} – ${holes} Holes`,
           html,

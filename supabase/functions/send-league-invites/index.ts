@@ -48,7 +48,7 @@ serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: "TeeVents <no-reply@teevents.golf>",
+          from: "TeeVents Golf Management <info@notifications.teevents.golf>",
           to,
           subject: `You're invited to ${league.league_name}`,
           html,

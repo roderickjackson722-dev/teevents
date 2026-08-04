@@ -9,8 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Users, Trash2, Copy, Mail, Trophy, Pencil, Check, X } from "lucide-react";
+import { Loader2, Users, Trash2, Copy, Mail, Trophy, Pencil, Check, X, Share2 } from "lucide-react";
 import LeagueTeamLeaderboard from "@/components/leagues/LeagueTeamLeaderboard";
+import { Textarea } from "@/components/ui/textarea";
+import { useServerFn } from "@tanstack/react-start";
+import { sendLeagueLeaderboardLink } from "@/lib/leagueLeaderboardEmail.functions";
+
 
 interface Member {
   id: string;
@@ -35,6 +39,8 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
   const [pairings, setPairings] = useState<Pairing[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const sendLeaderboardLink = useServerFn(sendLeagueLeaderboardLink);
+
   const [teamName, setTeamName] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [holes, setHoles] = useState<number>(18);
@@ -43,6 +49,11 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
   const [editName, setEditName] = useState("");
   const [recipients, setRecipients] = useState<Record<string, boolean>>({});
   const [sending, setSending] = useState(false);
+  const [boardRecipients, setBoardRecipients] = useState<Record<string, boolean>>({});
+  const [extraEmails, setExtraEmails] = useState("");
+  const [boardMessage, setBoardMessage] = useState("");
+  const [sendingBoard, setSendingBoard] = useState(false);
+
 
   const event = events.find((e) => e.id === eventId);
 
@@ -170,8 +181,52 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
     if (error || data?.error) {
       return toast({ title: "Send failed", description: error?.message || data?.error, variant: "destructive" });
     }
-    toast({ title: `Sent ${data?.sent ?? 0} scoring code email${data?.sent === 1 ? "" : "s"}` });
+    const sent = data?.sent ?? 0;
+    const failures = (data?.results || []).filter((r: any) => !r.ok);
+    if (sent === 0) {
+      return toast({
+        title: "No emails sent",
+        description: failures[0]?.error ? String(failures[0].error).slice(0, 200) : "No players with a valid email address.",
+        variant: "destructive",
+      });
+    }
+    toast({
+      title: `Sent ${sent} scoring code email${sent === 1 ? "" : "s"}`,
+      description: failures.length ? `${failures.length} failed to send.` : undefined,
+    });
   };
+
+  const leaderboardUrl = eventId ? `${window.location.origin}/league-leaderboard/${eventId}` : "";
+
+  const copyLeaderboardLink = async () => {
+    await navigator.clipboard.writeText(leaderboardUrl);
+    toast({ title: "Leaderboard link copied" });
+  };
+
+  const sendLeaderboard = async () => {
+    if (!eventId) return;
+    const emails = Object.entries(boardRecipients)
+      .filter(([, v]) => v)
+      .map(([id]) => memberById.get(id)?.email)
+      .filter(Boolean) as string[];
+    const extra = extraEmails.split(/[,\s;]+/).map((e) => e.trim()).filter(Boolean);
+    const all = Array.from(new Set([...emails, ...extra]));
+    if (all.length === 0) return toast({ title: "Select at least one recipient", variant: "destructive" });
+    setSendingBoard(true);
+    try {
+      const res = await sendLeaderboardLink({ data: { eventId, emails: all, message: boardMessage.trim() || undefined } });
+      const sent = res?.sent ?? 0;
+      if (sent === 0) {
+        toast({ title: "No emails sent", description: "The email service rejected the request.", variant: "destructive" });
+      } else {
+        toast({ title: `Leaderboard link sent to ${sent} recipient${sent === 1 ? "" : "s"}` });
+      }
+    } catch (e: any) {
+      toast({ title: "Send failed", description: e?.message || String(e), variant: "destructive" });
+    }
+    setSendingBoard(false);
+  };
+
 
   if (loading) {
     return <div className="py-10 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
@@ -388,17 +443,76 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
         </Card>
       )}
 
-      {/* Part 4 — leaderboard */}
+      {/* Part 4 — leaderboard (always visible, editable by the league manager) */}
       {eventId && (
         <Card>
           <CardContent className="pt-6">
             <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
               <Trophy className="h-5 w-5" /> Event Leaderboard
             </h2>
-            <LeagueTeamLeaderboard eventId={eventId} />
+            <LeagueTeamLeaderboard eventId={eventId} editable />
           </CardContent>
         </Card>
       )}
+
+      {/* Share the leaderboard */}
+      {eventId && (
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Share2 className="h-5 w-5" /> Share Leaderboard
+            </h2>
+            <div className="flex gap-2 flex-wrap items-center">
+              <Input readOnly value={leaderboardUrl} className="max-w-md font-mono text-xs" />
+              <Button variant="outline" onClick={copyLeaderboardLink}><Copy className="h-4 w-4 mr-2" /> Copy Link</Button>
+              <Button asChild variant="ghost">
+                <a href={leaderboardUrl} target="_blank" rel="noreferrer">Open</a>
+              </Button>
+            </div>
+
+            <div className="rounded-md border p-3 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <p className="font-medium">Email the leaderboard link</p>
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={members.length > 0 && members.every((m) => boardRecipients[m.id])}
+                    onCheckedChange={(v) => {
+                      const next: Record<string, boolean> = {};
+                      members.forEach((m) => { next[m.id] = !!v; });
+                      setBoardRecipients(next);
+                    }}
+                  />
+                  Select All Players
+                </label>
+              </div>
+              <div className="max-h-56 overflow-y-auto divide-y">
+                {members.map((m) => (
+                  <label key={m.id} className="flex items-center gap-3 py-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={!!boardRecipients[m.id]}
+                      onCheckedChange={(v) => setBoardRecipients((prev) => ({ ...prev, [m.id]: !!v }))}
+                    />
+                    <span className="font-medium">{m.member_name}</span>
+                    <span className="text-muted-foreground">({m.email || "no email"})</span>
+                  </label>
+                ))}
+              </div>
+              <div>
+                <Label>Additional emails (comma separated)</Label>
+                <Input value={extraEmails} onChange={(e) => setExtraEmails(e.target.value)} placeholder="guest@example.com, sponsor@example.com" />
+              </div>
+              <div>
+                <Label>Optional message</Label>
+                <Textarea value={boardMessage} onChange={(e) => setBoardMessage(e.target.value)} rows={3} placeholder="Follow the action live today!" />
+              </div>
+              <Button onClick={sendLeaderboard} disabled={sendingBoard}>
+                {sendingBoard ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />} Email Leaderboard Link
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }

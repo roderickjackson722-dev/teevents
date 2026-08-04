@@ -27,7 +27,7 @@ async function sendConfirmationEmail(opts: {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "TeeVents <no-reply@teevents.golf>",
+        from: "TeeVents Golf Management <info@notifications.teevents.golf>",
         to: opts.to,
         subject: opts.subject,
         html: opts.html,

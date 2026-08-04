@@ -15,6 +15,8 @@ interface TeamInfo {
   team_name?: string;
   scoring_code?: string;
   holes?: number;
+  event_id?: string;
+
   event_name?: string;
   event_date?: string;
   league_name?: string;
@@ -198,7 +200,13 @@ export default function LeagueTeamScoring() {
           </CardContent>
         </Card>
 
+        {team.event_id && (
+          <Button asChild variant="secondary" className="w-full">
+            <a href={`/league-leaderboard/${team.event_id}`} target="_blank" rel="noreferrer">View Live Leaderboard</a>
+          </Button>
+        )}
         <Button variant="outline" className="w-full" onClick={signOut}>Exit scoring</Button>
+
       </div>
       <TeeventsFooter tournament={null} />
     </div>

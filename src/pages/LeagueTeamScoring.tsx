@@ -15,6 +15,8 @@ interface TeamInfo {
   team_name?: string;
   scoring_code?: string;
   holes?: number;
+  event_id?: string;
+
   event_name?: string;
   event_date?: string;
   league_name?: string;

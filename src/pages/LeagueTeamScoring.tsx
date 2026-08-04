@@ -198,7 +198,13 @@ export default function LeagueTeamScoring() {
           </CardContent>
         </Card>
 
+        {team.event_id && (
+          <Button asChild variant="secondary" className="w-full">
+            <a href={`/league-leaderboard/${team.event_id}`} target="_blank" rel="noreferrer">View Live Leaderboard</a>
+          </Button>
+        )}
         <Button variant="outline" className="w-full" onClick={signOut}>Exit scoring</Button>
+
       </div>
       <TeeventsFooter tournament={null} />
     </div>

@@ -1,100 +1,96 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
+import { Loader2, Pencil, RefreshCw } from "lucide-react";
+import {
+  buildLeaderboardRows,
+  formatToPar,
+  type LeaderboardPayload,
+  type LeaderboardRow,
+} from "@/lib/leagueTeamLeaderboard";
 
-interface Row {
-  pairing_id: string;
-  team_name: string;
-  holes: number;
-  gross: number;
-  net: number;
-  thru: number;
-  toParGross: number;
-  toParNet: number;
-}
-
-function fmt(n: number) {
-  if (n === 0) return "E";
-  return n > 0 ? `+${n}` : String(n);
+interface Props {
+  eventId: string;
+  /** Allows league managers to edit team scores inline. */
+  editable?: boolean;
 }
 
 /** Team leaderboard for a league event. Supports 9- and 18-hole events. */
-export default function LeagueTeamLeaderboard({ eventId }: { eventId: string }) {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [holes, setHoles] = useState(18);
+export default function LeagueTeamLeaderboard({ eventId, editable = false }: Props) {
+  const [payload, setPayload] = useState<LeaderboardPayload | null>(null);
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<LeaderboardRow | null>(null);
+  const [draft, setDraft] = useState<Record<number, string>>({});
+  const [saving, setSaving] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!eventId) return;
-    setLoading(true);
-
-    const { data: ev } = await (supabase as any)
-      .from("league_events")
-      .select("id, holes, league_course_id")
-      .eq("id", eventId)
-      .maybeSingle();
-    const eventHoles = ev?.holes === 9 ? 9 : 18;
-
-    let holePars: number[] | null = null;
-    if (ev?.league_course_id) {
-      const { data: c } = await (supabase as any)
-        .from("league_courses")
-        .select("hole_pars, par_total")
-        .eq("id", ev.league_course_id)
-        .maybeSingle();
-      if (Array.isArray(c?.hole_pars) && c.hole_pars.length >= 18) {
-        holePars = c.hole_pars.map((p: any) => Number(p) || 4);
-      }
+    const { data, error } = await (supabase as any).rpc("get_league_event_leaderboard", { _event_id: eventId });
+    if (!error && data?.found) {
+      setPayload(data as LeaderboardPayload);
+      setRows(buildLeaderboardRows(data as LeaderboardPayload));
     }
-
-    const [{ data: pairings }, { data: scores }, { data: members }] = await Promise.all([
-      (supabase as any).from("league_team_pairings").select("id, team_name, holes, player1_id, player2_id").eq("event_id", eventId),
-      (supabase as any).from("league_team_scores").select("pairing_id, hole_number, gross_score").eq("event_id", eventId),
-      (supabase as any).from("league_members").select("id, handicap_index"),
-    ]);
-
-    const hcpById = new Map((members || []).map((m: any) => [m.id, m.handicap_index]));
-
-    const built: Row[] = (pairings || []).map((p: any) => {
-      const teamHoles = p.holes === 9 ? 9 : eventHoles;
-      const mine = (scores || []).filter((s: any) => s.pairing_id === p.id && s.hole_number <= teamHoles && s.gross_score != null);
-      const gross = mine.reduce((sum: number, s: any) => sum + Number(s.gross_score), 0);
-      const parPlayed = mine.reduce((sum: number, s: any) => sum + (holePars ? holePars[s.hole_number - 1] || 4 : 4), 0);
-      // 2-person scramble allowance: 35% of the combined handicap average
-      const h1 = Number(hcpById.get(p.player1_id) ?? 0);
-      const h2 = Number(hcpById.get(p.player2_id) ?? 0);
-      const fullTeamHcp = ((h1 + h2) / 2) * 0.35;
-      const teamHcp = Math.round(teamHoles === 9 ? fullTeamHcp / 2 : fullTeamHcp);
-      const net = Math.max(0, gross - (mine.length > 0 ? teamHcp : 0));
-      return {
-        pairing_id: p.id,
-        team_name: p.team_name,
-        holes: teamHoles,
-        gross,
-        net,
-        thru: mine.length,
-        toParGross: gross - parPlayed,
-        toParNet: net - parPlayed,
-      };
-    });
-
-    built.sort((a, b) => (a.thru === 0 ? 1 : 0) - (b.thru === 0 ? 1 : 0) || a.toParNet - b.toParNet);
-    setHoles(eventHoles);
-    setRows(built);
     setLoading(false);
-  };
+  }, [eventId]);
 
-  useEffect(() => { load(); }, [eventId]);
+  useEffect(() => { setLoading(true); load(); }, [load]);
 
   useEffect(() => {
     if (!eventId) return;
     const channel = (supabase as any)
       .channel(`league-team-scores-${eventId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "league_team_scores", filter: `event_id=eq.${eventId}` }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "league_team_pairings", filter: `event_id=eq.${eventId}` }, () => load())
       .subscribe();
     return () => { (supabase as any).removeChannel(channel); };
-  }, [eventId]);
+  }, [eventId, load]);
+
+  const openEdit = (row: LeaderboardRow) => {
+    const d: Record<number, string> = {};
+    for (let h = 1; h <= row.holes; h++) d[h] = row.scores[h] != null ? String(row.scores[h]) : "";
+    setDraft(d);
+    setEditing(row);
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    const upserts = Object.entries(draft)
+      .filter(([, v]) => v.trim() !== "")
+      .map(([h, v]) => ({
+        pairing_id: editing.pairing_id,
+        event_id: eventId,
+        hole_number: Number(h),
+        gross_score: Number(v),
+      }));
+    const clears = Object.entries(draft).filter(([, v]) => v.trim() === "").map(([h]) => Number(h));
+
+    let err: any = null;
+    if (upserts.length > 0) {
+      const { error } = await (supabase as any)
+        .from("league_team_scores")
+        .upsert(upserts, { onConflict: "pairing_id,hole_number" });
+      err = error;
+    }
+    if (!err && clears.length > 0) {
+      const { error } = await (supabase as any)
+        .from("league_team_scores")
+        .delete()
+        .eq("pairing_id", editing.pairing_id)
+        .in("hole_number", clears);
+      err = error;
+    }
+    setSaving(false);
+    if (err) return toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    toast({ title: "Scores updated" });
+    setEditing(null);
+    load();
+  };
 
   if (loading) {
     return <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
@@ -106,7 +102,12 @@ export default function LeagueTeamLeaderboard({ eventId }: { eventId: string }) 
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">{holes} holes</p>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <p className="text-xs text-muted-foreground">
+          {payload?.holes === 9 ? 9 : 18} holes{payload?.course_name ? ` • ${payload.course_name}` : ""}
+        </p>
+        <Button size="sm" variant="ghost" onClick={load}><RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh</Button>
+      </div>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -116,21 +117,54 @@ export default function LeagueTeamLeaderboard({ eventId }: { eventId: string }) 
               <TableHead className="text-right">Gross</TableHead>
               <TableHead className="text-right">Net</TableHead>
               <TableHead className="text-right">Thru</TableHead>
+              {editable && <TableHead className="text-right">Edit</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((r, i) => (
               <TableRow key={r.pairing_id}>
                 <TableCell className="font-bold">{r.thru > 0 ? i + 1 : "—"}</TableCell>
-                <TableCell className="font-medium">{r.team_name}</TableCell>
-                <TableCell className="text-right">{r.thru > 0 ? fmt(r.toParGross) : "—"}</TableCell>
-                <TableCell className="text-right">{r.thru > 0 ? fmt(r.toParNet) : "—"}</TableCell>
+                <TableCell className="font-medium">
+                  {r.team_name}
+                  {r.players && <span className="block text-xs text-muted-foreground">{r.players}</span>}
+                </TableCell>
+                <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParGross) : "—"}</TableCell>
+                <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParNet) : "—"}</TableCell>
                 <TableCell className="text-right">{r.thru}</TableCell>
+                {editable && (
+                  <TableCell className="text-right">
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Edit scores — {editing?.team_name}</DialogTitle></DialogHeader>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-h-[50vh] overflow-y-auto">
+            {Object.keys(draft).map((h) => (
+              <div key={h}>
+                <p className="text-xs text-muted-foreground mb-1">Hole {h}</p>
+                <Input
+                  inputMode="numeric"
+                  value={draft[Number(h)]}
+                  onChange={(e) => setDraft((p) => ({ ...p, [Number(h)]: e.target.value.replace(/[^0-9]/g, "") }))}
+                />
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null} Save Scores
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

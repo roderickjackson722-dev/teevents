@@ -112,7 +112,7 @@ export default function LeagueTeamScoring() {
             </Button>
           </CardContent>
         </Card>
-        <TeeventsFooter />
+        <TeeventsFooter tournament={null} />
       </div>
     );
   }
@@ -200,7 +200,7 @@ export default function LeagueTeamScoring() {
 
         <Button variant="outline" className="w-full" onClick={signOut}>Exit scoring</Button>
       </div>
-      <TeeventsFooter />
+      <TeeventsFooter tournament={null} />
     </div>
   );
 }

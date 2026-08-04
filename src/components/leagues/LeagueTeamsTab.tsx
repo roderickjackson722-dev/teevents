@@ -170,8 +170,52 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
     if (error || data?.error) {
       return toast({ title: "Send failed", description: error?.message || data?.error, variant: "destructive" });
     }
-    toast({ title: `Sent ${data?.sent ?? 0} scoring code email${data?.sent === 1 ? "" : "s"}` });
+    const sent = data?.sent ?? 0;
+    const failures = (data?.results || []).filter((r: any) => !r.ok);
+    if (sent === 0) {
+      return toast({
+        title: "No emails sent",
+        description: failures[0]?.error ? String(failures[0].error).slice(0, 200) : "No players with a valid email address.",
+        variant: "destructive",
+      });
+    }
+    toast({
+      title: `Sent ${sent} scoring code email${sent === 1 ? "" : "s"}`,
+      description: failures.length ? `${failures.length} failed to send.` : undefined,
+    });
   };
+
+  const leaderboardUrl = eventId ? `${window.location.origin}/league-leaderboard/${eventId}` : "";
+
+  const copyLeaderboardLink = async () => {
+    await navigator.clipboard.writeText(leaderboardUrl);
+    toast({ title: "Leaderboard link copied" });
+  };
+
+  const sendLeaderboard = async () => {
+    if (!eventId) return;
+    const emails = Object.entries(boardRecipients)
+      .filter(([, v]) => v)
+      .map(([id]) => memberById.get(id)?.email)
+      .filter(Boolean) as string[];
+    const extra = extraEmails.split(/[,\s;]+/).map((e) => e.trim()).filter(Boolean);
+    const all = Array.from(new Set([...emails, ...extra]));
+    if (all.length === 0) return toast({ title: "Select at least one recipient", variant: "destructive" });
+    setSendingBoard(true);
+    try {
+      const res = await sendLeaderboardLink({ data: { eventId, emails: all, message: boardMessage.trim() || undefined } });
+      const sent = res?.sent ?? 0;
+      if (sent === 0) {
+        toast({ title: "No emails sent", description: "The email service rejected the request.", variant: "destructive" });
+      } else {
+        toast({ title: `Leaderboard link sent to ${sent} recipient${sent === 1 ? "" : "s"}` });
+      }
+    } catch (e: any) {
+      toast({ title: "Send failed", description: e?.message || String(e), variant: "destructive" });
+    }
+    setSendingBoard(false);
+  };
+
 
   if (loading) {
     return <div className="py-10 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;

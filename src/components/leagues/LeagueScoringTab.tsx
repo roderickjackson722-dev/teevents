@@ -105,6 +105,32 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
 
   useEffect(() => { load(); }, [eventId, events]);
 
+  // Live sync: pull in scores as players enter them (player scoring pages, portal, etc.)
+  useEffect(() => {
+    if (!eventId) return;
+    const refreshScores = async () => {
+      const { data: existing } = await (supabase as any)
+        .from("league_event_scores")
+        .select("member_id, hole_number, gross_score")
+        .eq("event_id", eventId);
+      const map: Record<string, Record<number, string>> = {};
+      (existing || []).forEach((s: any) => {
+        if (!map[s.member_id]) map[s.member_id] = {};
+        map[s.member_id][s.hole_number] = String(s.gross_score ?? "");
+      });
+      setScores(map);
+    };
+    const channel = (supabase as any)
+      .channel(`league-event-scores-${eventId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "league_event_scores", filter: `event_id=eq.${eventId}` },
+        () => refreshScores(),
+      )
+      .subscribe();
+    return () => { (supabase as any).removeChannel(channel); };
+  }, [eventId]);
+
   const setGross = (mid: string, hole: number, val: string) => {
     setScores((prev) => ({ ...prev, [mid]: { ...(prev[mid] || {}), [hole]: val } }));
   };
@@ -179,6 +205,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       <CardContent className="pt-6 space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
           <PenLine className="h-5 w-5" />
+          <span className="text-xs text-muted-foreground hidden sm:inline">Live &mdash; syncs as players enter scores</span>
           <div className="flex-1 max-w-xs">
             <Label className="sr-only">Event</Label>
             <Select value={eventId} onValueChange={setEventId}>
